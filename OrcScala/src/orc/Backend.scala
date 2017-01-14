@@ -25,6 +25,8 @@ import java.io.PrintWriter
 import orc.error.runtime.ExecutionException
 import orc.progress.NullProgressMonitor
 import orc.ast.oil.nameless.Expression
+import orc.error.compiletime.ExceptionCollectingCompileLogger
+import orc.error.compiletime.CompilationException
 
 /** An enumeration over the supported backends.
   */
@@ -35,7 +37,8 @@ sealed trait BackendType {
 object BackendType {
   private val stringToBackendType = Map[String, BackendType](
     TokenInterpreterBackend.toString -> TokenInterpreterBackend,
-    DistributedBackendType.toString -> DistributedBackendType)
+    DistributedBackendType.toString -> DistributedBackendType,
+    "porc" -> PorcCompilerBackend)
 
   def knownBackendNames = stringToBackendType.keys
 
@@ -59,6 +62,13 @@ case object DistributedBackendType extends BackendType {
   override def newBackend(): Backend[Expression] = new DistributedBackend()
 }
 
+/** The target based on the Orctimizer and porc.
+  */
+case object PorcCompilerBackend extends BackendType {
+  override val toString = "Porc"
+  def it = this
+}
+
 /** This represents an abstract Orc compiler. It generates an opaque code object that can be
   * executed on a matching Runtime.
   *
@@ -79,14 +89,27 @@ trait Compiler[+CompiledCode] {
     override def toURI = file.toURI
     override def toURL = toURI.toURL
   }
+  
+  class ManyCompilationExceptions(exceptions: Seq[Throwable]) extends CompilationException("Multiple compiler errors") {
+    exceptions.foreach(addSuppressed)
+  }
 
   /** Compile the code in the reader using the given options and produce error messages on the
     * err writer. This is a simple wrapper around the other compile function.
     */
-  @throws(classOf[IOException])
+  @throws(classOf[IOException]) @throws(classOf[CompilationException])
   def compile(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): CompiledCode = {
-    compile(new OrcReaderInputContext(source, options.filename), options,
-      new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
+    val logger = new ExceptionCollectingCompileLogger(new PrintWriter(err, true))
+    val res = compile(new OrcReaderInputContext(source, options.filename), options,
+      logger, NullProgressMonitor)
+    logger.exceptions match {
+      case Seq() =>
+        res
+      case Seq(e: CompilationException) =>
+        throw e
+      case es =>
+        throw new ManyCompilationExceptions(es)
+    }
   }
 }
 

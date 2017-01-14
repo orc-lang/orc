@@ -79,7 +79,7 @@ trait AST {
     */
   def transferOptionalVariableName(source: AST, target: AST) {
     (source, target) match {
-      case (x: hasOptionalVariableName, y: hasOptionalVariableName) => {
+      case (x: hasOptionalVariableName, y: hasOptionalVariableName) if x.optionalVariableName.isDefined => {
         y.optionalVariableName = x.optionalVariableName
       }
       case _ => {}
@@ -144,4 +144,22 @@ trait OrcSyntaxConvertible {
 
 trait hasOptionalVariableName extends AST {
   var optionalVariableName: Option[String] = None
+}
+
+trait hasAutomaticVariableName extends hasOptionalVariableName {
+  def autoName(namePrefix: String): Unit = {
+    optionalVariableName = optionalVariableName match {
+      case Some(n) => Some(n)
+      case None =>
+        Some(hasAutomaticVariableName.getNextVariableName(namePrefix))
+    }
+  }
+}
+
+object hasAutomaticVariableName {
+  private var nextVar: Int = 0
+  def getNextVariableName(s: String): String = synchronized {
+    nextVar += 1
+    s"`$s$nextVar"
+  }
 }

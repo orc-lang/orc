@@ -7,6 +7,7 @@ import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.util.component.LifeCycle
 import orc.values.sites.TotalSite
 import javax.servlet.Servlet
+import orc.values.sites.HasFields
 import orc.values.sites.Site
 import orc.values.Field
 import orc.error.runtime.ArgumentTypeMismatchException
@@ -39,7 +40,7 @@ trait CastArgumentSupport {
   }
 }
 
-class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrapper) extends HttpServlet with Site {
+class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrapper) extends HttpServlet with Site with HasFields {
   val requestQueue = new ConcurrentLinkedQueue[AsyncContext]()
   val getQueue = new ConcurrentLinkedQueue[orc.Handle]()
 
@@ -116,14 +117,12 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
     fields contains f
   }
 
-  def call(args: List[AnyRef], h: orc.Handle): Unit = {
-    //h !! new UncallableValueException("This site is not callable, but has fields.")
-    val List(f: Field) = args
-    h.publish(getField(f))
+  def call(args: Array[AnyRef], h: orc.Handle): Unit = {
+    h !! new UncallableValueException("This site is not callable, but has fields.")
   }
 }
 
-class ServletServerWrapper(val server: Server, val context: ServletContextHandler) extends Site {
+class ServletServerWrapper(val server: Server, val context: ServletContextHandler) extends Site with HasFields {
   private[this] var nextId = 0
   private def genId() = synchronized {
     nextId += 1
@@ -209,17 +208,15 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
     fields contains f
   }
 
-  def call(args: List[AnyRef], h: orc.Handle): Unit = {
-    //h !! new UncallableValueException("This site is not callable, but has fields.")
-    val List(f: Field) = args
-    h.publish(getField(f))
+  def call(args: Array[AnyRef], h: orc.Handle): Unit = {
+    h !! new UncallableValueException("This site is not callable, but has fields.")
   }
 }
 
 object ServletServer extends TotalSite with CastArgumentSupport {
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     val port = args match {
-      case List(a) => {
+      case Array(a) => {
         val p = castArgument[Number](0, a)
         p.intValue()
       }

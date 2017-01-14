@@ -149,7 +149,9 @@ case class ClassForms(val translator: Translator) {
     *
     * Return the BoundVar for this and the mapping of fields to expressions.
     */
-  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (BoundVar, BoundVar, Map[Field, Expression]) = {
+  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit ctx: TranslatorContext): (BoundVar, BoundVar, Map[Field, Expression]) = {
+    import ctx._
+    
     val thisName = lit.thisname.getOrElse("this")
     val thisVar = new BoundVar(Some(thisName))
     val superVar = new BoundVar(Some("super"))
@@ -216,7 +218,7 @@ case class ClassForms(val translator: Translator) {
 
   /** Convert a ClassInfo to a real class.
     */
-  def makeClassFromInfo(info: ClassInfo)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): Class = {
+  def makeClassFromInfo(info: ClassInfo)(implicit ctx: TranslatorContext): Class = {
     val (self, superVar, fields) = convertClassLiteral(info.literal, info.members)
     info.literal ->> Class(info.name, self, superVar, fields, info.linearization)
   }
@@ -244,7 +246,7 @@ case class ClassForms(val translator: Translator) {
     *
     * This also returns a new class context to be used for subexpressions.
     */
-  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[Class], Seq[Callable], Map[String, Argument], Map[String, Type], Map[String, ClassInfo]) = {
+  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit ctx: TranslatorContext): (Seq[Class], Seq[Callable], Map[String, Argument], Map[String, Type], Map[String, ClassInfo]) = {
     // Check for duplicate names
     for (c :: cs <- clss.tails) {
       cs.find(_.name == c.name) match {
@@ -334,7 +336,7 @@ case class ClassForms(val translator: Translator) {
     * The appoach is to first collect type and name information about all the constructors and then update
     * classes and build constructor maker closures using that information.
     */
-  private def desugarClasses(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[ext.ClassDeclaration], Map[String, (Map[String, Type], Map[String, ClassInfo]) => Callable]) = {
+  private def desugarClasses(clss: Seq[ext.ClassDeclaration])(implicit ctx: TranslatorContext): (Seq[ext.ClassDeclaration], Map[String, (Map[String, Type], Map[String, ClassInfo]) => Callable]) = {
     // Generate constructor names and ext types
     val constructorInfo = (for (ext.ClassDeclaration(constructor: ext.ClassCallableConstructor, _, _) <- clss) yield {
       val argOptTypes = constructor.formals map { p =>

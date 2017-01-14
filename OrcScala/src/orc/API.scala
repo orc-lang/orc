@@ -22,6 +22,8 @@ import orc.error.compiletime.CompileLogger
 import orc.error.runtime.ExecutionException
 import orc.progress.ProgressMonitor
 import orc.values.Signal
+import scala.util.parsing.input.Position
+import orc.compile.CompilerFlagValue
 
 /** The interface from a caller to the Orc compiler
   */
@@ -60,7 +62,7 @@ trait OrcRuntimeRequires extends InvocationBehavior
 trait InvocationBehavior {
   /** Called to handle a site call.  Called on a thread that can block, if needed. */
   /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) { h.halt }
+  def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) { h.halt }
 }
 
 trait Schedulable extends Runnable {
@@ -201,6 +203,13 @@ trait OrcCompilationOptions extends OrcCommonOptions {
   def compileOnly_=(newVal: Boolean)
   def runOil: Boolean
   def runOil_=(newVal: Boolean)
+  
+  def optimizationLevel: Int
+  def optimizationLevel_=(newVal: Int)
+  def optimizationOptions: java.util.List[String]
+  def optimizationOptions_=(v: java.util.List[String])
+
+  def optimizationFlags: Map[String, CompilerFlagValue]
 }
 
 trait OrcExecutionOptions extends OrcCommonOptions {

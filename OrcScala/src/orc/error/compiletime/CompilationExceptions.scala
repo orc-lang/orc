@@ -203,3 +203,7 @@ case class ConflictingOrderWarning(leftOrder: Iterable[String], rightOrder: Iter
   extends ClassException(s"Classes are in different orders in linearizations of mix-ins. ${leftOrder.mkString(", ")} is different from ${rightOrder.mkString(", ")}")
   with SeverityWarning
 
+// TODO: Add doc and make sure position is correct
+case class FeatureNotSupportedException(feature: String, pos: Position) 
+  extends CompilationException(s"$feature is unsupported") 
+  with SeverityFatal { this.resetPosition(pos) }

@@ -21,7 +21,7 @@ import orc.values.sites.JavaCall
   */
 trait SupportForJavaObjectInvocation extends InvocationBehavior {
 
-  override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) {
+  override def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) {
     v match {
       case v: OrcValue => super.invoke(h, v, vs)
       case _ => {

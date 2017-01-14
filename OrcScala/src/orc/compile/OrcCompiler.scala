@@ -200,12 +200,12 @@ trait CoreOrcCompilerPhases {
     override def apply(co: CompilerOptions) = { ast => ast.withoutNames }
   }
 
-  def outputIR[A](irNumber: Int) = new CompilerPhase[CompilerOptions, A, A] {
+  def outputIR[A](irNumber: Int, pred: (CompilerOptions) => Boolean = (co) => true) = new CompilerPhase[CompilerOptions, A, A] {
     val phaseName = s"Output IR #$irNumber"
     override def apply(co: CompilerOptions) = { ast =>
       val irMask = 1 << (irNumber - 1)
       val echoIR = co.options.echoIR
-      if ((echoIR & irMask) == irMask) {
+      if ((echoIR & irMask) == irMask && pred(co)) {
         println(s"============ Begin Dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")
         println(ast)
         println(s"============ End dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")
@@ -261,6 +261,7 @@ abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
   // Compiler methods
   ////////
 
+  // FIXME: This returns null on failure. This is NOT scala style. Bad programmer who ever did this.
   @throws(classOf[IOException])
   def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E = {
     //Logger.config(options)

@@ -32,12 +32,11 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
     * The supplied args are the formal parameters of the overall function.
     */
   def convert(args: List[named.BoundVar],
-    fallthrough: named.Expression)(implicit context: Map[String, named.Argument],
-      typecontext: Map[String, named.Type],
-      classcontext: Map[String, ClassInfo],
+    fallthrough: named.Expression)(implicit ctx: TranslatorContext,
       translator: Translator): named.Expression = {
 
     import translator._
+    import ctx._
 
     var targetConversion: Conversion = id
     def extendConversion(f: Conversion) {
@@ -60,7 +59,7 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
      * using the current targetConversion.
      */
     def convertInContext(e: Expression): named.Expression = {
-      targetConversion(translator.convert(e)(context ++ targetContext, typecontext, classcontext))
+      targetConversion(translator.convert(e)(ctx.copy(context = context ++ targetContext)))
     }
 
     val (strictPairs, nonstrictPairs) = {
@@ -172,9 +171,7 @@ object Clause {
     *
     * The list of clauses is assumed to be nonempty.
     */
-  def convertClauses(clauses: List[Clause])(implicit context: Map[String, named.Argument],
-    typecontext: Map[String, named.Type],
-    classcontext: Map[String, ClassInfo],
+  def convertClauses(clauses: List[Clause])(implicit ctx: TranslatorContext,
     translator: Translator): (List[named.BoundVar], named.Expression) = {
     val arity = commonArity(clauses)
     val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList

@@ -22,6 +22,7 @@ import orc.error.runtime.{ SiteException, JavaException }
 import orc.values.sites.{ TotalSite, Site2, Site0 }
 import orc.values.OrcRecord
 import orc.Handle
+import orc.util.ArrayExtensions._
 
 /** The HTTP site provides a simple mechanism to send GET and POST requests to a URL.
   *
@@ -29,16 +30,16 @@ import orc.Handle
   */
 object HTTP extends TotalSite {
 
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     args match {
-      case List(s: String) => {
+      case Array1(s: String) => {
         createHTTPInstance(new URL(s))
       }
-      case List(s: String, OrcRecord(q)) => {
+      case Array2(s: String, OrcRecord(q)) => {
         val query = if (q.isEmpty) { "" } else { "?" + convertToQueryPairs(q) }
         createHTTPInstance(new URL(s + query))
       }
-      case List(url: URL) => {
+      case Array1(url: URL) => {
         createHTTPInstance(url)
       }
       case _ => throw new SiteException("Malformed arguments to HTTP. Arguments should be (String), (String, {..}), or (URL).")

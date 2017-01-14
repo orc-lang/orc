@@ -37,6 +37,7 @@ import orc.OrcEvent;
 import orc.OrcEventAction;
 import orc.Runtime;
 import orc.error.OrcException;
+import orc.error.compiletime.CompilationException;
 import orc.error.loadtime.LoadingException;
 import orc.lib.str.PrintEvent;
 import orc.run.OrcDesktopEventAction;
@@ -79,7 +80,7 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
     }
 
     public class OrcCompiledScript extends CompiledScript {
-        private final CompiledCode code;
+    final CompiledCode code;
 
         /**
          * Constructs an object of class OrcCompiledScript.
@@ -226,6 +227,8 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
             throw e;
         } catch (final IOException e) {
             throw new ScriptException(e);
+    } catch (final CompilationException e) {
+      throw new ScriptException(e);
         }
     }
 
@@ -331,12 +334,14 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
         return new OrcCompiledScript(getBackend().serializer().get().deserialize(in));
     }
 
-  /**
-   */
-  public OrcCompiledScript importLoaded(final CompiledScript script) throws LoadingException {
-    if(script instanceof OrcScriptEngine.OrcCompiledScript)
-      return new OrcCompiledScript(((OrcCompiledScript)script).code);
-    else
-      throw new IllegalArgumentException("Provided compiled script is not of the correct type.");
-  }
+    /**
+     * Import an existing compiled object into a new OrcCompiledScript.
+     */
+    @SuppressWarnings("unchecked")
+    public OrcCompiledScript importLoaded(final CompiledScript script) throws LoadingException {
+        if(script instanceof OrcScriptEngine.OrcCompiledScript)
+            return new OrcCompiledScript(((OrcCompiledScript)script).code);
+        else
+            throw new IllegalArgumentException("Provided compiled script is not of the correct type.");
+    }
 }

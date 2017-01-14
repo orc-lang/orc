@@ -24,9 +24,12 @@ import orc.types.Type
 import orc.types.Bot
 import orc.types.RecordType
 import orc.error.runtime.RightException
+import orc.run.tojava.HaltException
+import orc.run.tojava.ExceptionHaltException
+import orc.util.ArrayExtensions._
 
 trait Site extends OrcValue with SiteMetadata {
-  def call(args: List[AnyRef], h: Handle): Unit
+  def call(args: Array[AnyRef], h: Handle): Unit
 
   override def toOrcSyntax() = this.name
 
@@ -35,6 +38,14 @@ trait Site extends OrcValue with SiteMetadata {
       throw new RightException(rightName);
     }
   }
+}
+
+trait DirectSite extends Site {
+  override val isDirectCallable = true
+  
+  def call(args: Array[AnyRef], h: Handle): Unit // This could be implemented here if it was useful
+  
+  def calldirect(args: Array[AnyRef]): AnyRef
 }
 
 /* A site which provides type information. */
@@ -53,9 +64,11 @@ trait SpecificArity extends Site {
   val arity: Int
 }
 
+// TODO: TotalSite and PartialSite will not work correctly if they are DirectSites and any site is actually blocking.
+
 /* Enforce totality */
-trait TotalSite extends Site {
-  def call(args: List[AnyRef], h: Handle) {
+trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
+  def call(args: Array[AnyRef], h: Handle) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
       h.publish(evaluate(args))
@@ -63,24 +76,47 @@ trait TotalSite extends Site {
       case (e: OrcException) => h !! e
     }
   }
+  def calldirect(args: Array[AnyRef]): AnyRef =  {
+    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    try {
+      evaluate(args)
+    } catch {
+      case e: Exception => 
+        //throw HaltException.SINGLETON
+        throw new ExceptionHaltException(e)
+    }
+  }
 
-  def evaluate(args: List[AnyRef]): AnyRef
+  def evaluate(args: Array[AnyRef]): AnyRef
 
   override def publications: Range = super.publications intersect Range(0, 1)
 }
 
 /* Enforce nonblocking, but do not enforce totality */
-trait PartialSite extends Site {
-  def call(args: List[AnyRef], h: Handle) {
+trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
+  def call(args: Array[AnyRef], h: Handle) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     evaluate(args) match {
       case Some(v) => h.publish(v)
       case None => h.halt
     }
   }
+  def calldirect(args: Array[AnyRef]): AnyRef =  {
+    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    (try {
+      evaluate(args) 
+    } catch {
+      case e: Exception => 
+        //throw HaltException.SINGLETON
+        throw new ExceptionHaltException(e)
+    }) match {
+      case Some(v) => v
+      case None => throw HaltException.SINGLETON
+    }
+  }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef]
-
+  def evaluate(args: Array[AnyRef]): Option[AnyRef]
+  
   override def publications: Range = super.publications intersect Range(0, 1)
 }
 
@@ -89,7 +125,7 @@ trait UnimplementedSite extends Site {
   def orcType(argTypes: List[Type]): Nothing = {
     throw new NotYetImplementedException("Site " + this + " is unimplemented.")
   }
-  def call(args: List[AnyRef], h: Handle): Nothing = {
+  def call(args: Array[AnyRef], h: Handle): Nothing = {
     throw new NotYetImplementedException("Site " + this + " is unimplemented.")
   }
 }
@@ -99,9 +135,9 @@ trait Site0 extends Site with SpecificArity {
 
   val arity = 0
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case Nil => call(h)
+      case Array0() => call(h)
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }
@@ -114,9 +150,9 @@ trait Site1 extends Site with SpecificArity {
 
   val arity = 1
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case List(a) => call(a, h)
+      case Array1(a) => call(a, h)
       case _ => throw new ArityMismatchException(1, args.size)
     }
   }
@@ -129,9 +165,9 @@ trait Site2 extends Site with SpecificArity {
 
   val arity = 2
 
-  def call(args: List[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case List(a, b) => call(a, b, h)
+      case Array2(a, b) => call(a, b, h)
       case _ => throw new ArityMismatchException(2, args.size)
     }
   }
@@ -145,9 +181,9 @@ trait PartialSite0 extends PartialSite with SpecificArity {
 
   val arity = 0
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
     args match {
-      case Nil => eval()
+      case Array0() => eval()
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }
@@ -159,9 +195,9 @@ trait PartialSite1 extends PartialSite with SpecificArity {
 
   val arity = 1
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
     args match {
-      case List(x) => eval(x)
+      case Array1(x) => eval(x)
       case _ => throw new ArityMismatchException(1, args.size)
     }
   }
@@ -173,9 +209,9 @@ trait PartialSite2 extends PartialSite with SpecificArity {
 
   val arity = 2
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
     args match {
-      case List(x, y) => eval(x, y)
+      case Array2(x, y) => eval(x, y)
       case _ => throw new ArityMismatchException(2, args.size)
     }
   }
@@ -188,9 +224,9 @@ trait TotalSite0 extends TotalSite with SpecificArity {
 
   val arity = 0
 
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     args match {
-      case List() => eval()
+      case Array0() => eval()
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }
@@ -202,9 +238,9 @@ trait TotalSite1 extends TotalSite with SpecificArity {
 
   val arity = 1
 
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     args match {
-      case List(x) => eval(x)
+      case Array1(x) => eval(x)
       case _ => throw new ArityMismatchException(1, args.size)
     }
   }
@@ -216,9 +252,9 @@ trait TotalSite2 extends TotalSite with SpecificArity {
 
   val arity = 2
 
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     args match {
-      case List(x, y) => eval(x, y)
+      case Array2(x, y) => eval(x, y)
       case _ => throw new ArityMismatchException(2, args.size)
     }
   }
@@ -230,9 +266,9 @@ trait TotalSite3 extends TotalSite with SpecificArity {
 
   val arity = 3
 
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     args match {
-      case List(x, y, z) => eval(x, y, z)
+      case Array3(x, y, z) => eval(x, y, z)
       case _ => throw new ArityMismatchException(3, args.size)
     }
   }
@@ -253,6 +289,12 @@ class StructurePairSite(
     "unapply" -> unapplySite.orcType())
 }
 
+// TODO: Merge with OrcObjectInterface
+trait HasFields extends Site {
+  def getField(f: Field): AnyRef
+  def hasField(f: Field): Boolean
+}
+
 trait NonBlockingSite extends Site {
   override def timeToPublish: Delay = Delay.NonBlocking
   override def timeToHalt: Delay = Delay.NonBlocking
@@ -260,6 +302,9 @@ trait NonBlockingSite extends Site {
 
 trait EffectFreeSite extends Site {
   override def effects: Effects = Effects.None
+}
+trait EffectFreeAfterPubSite extends Site {
+  override def effects: Effects = Effects.BeforePub
 }
 
 trait TalkativeSite extends Site {

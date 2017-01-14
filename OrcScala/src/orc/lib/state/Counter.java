@@ -43,6 +43,7 @@ public class Counter extends EvalSite implements TypedSite {
         }
 
         return new DotSite() {
+		    // TODO: Reimplement this without the lock. It will probably scale much better with AtomicInteger
             protected int count = init;
             protected final LinkedList<Handle> waiters = new LinkedList<Handle>();
 

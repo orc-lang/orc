@@ -40,11 +40,11 @@ object OrcValue {
     * @param vs
     * @return
     */
-  def letLike(vs: List[AnyRef]) = {
+  def letLike(vs: Seq[AnyRef]) = {
     vs match {
-      case Nil => Signal
-      case List(v) => v
-      case _ => OrcTuple(vs)
+      case Seq() => Signal
+      case Seq(v) => v
+      case _ => OrcTuple(vs.toArray)
     }
   }
 
@@ -63,6 +63,6 @@ case class Field(field: String) extends OrcValue {
 
 class Tag(val name: String)
 
-case class TaggedValue(tag: Tag, values: List[AnyRef]) extends OrcValue {
+case class TaggedValue(tag: Tag, values: Array[AnyRef]) extends OrcValue {
   override def toOrcSyntax = tag.name + "(" + Format.formatSequence(values) + ")"
 }

@@ -198,8 +198,12 @@ sealed trait Var extends Argument with hasOptionalVariableName
 sealed case class UnboundVar(name: String) extends Var {
   optionalVariableName = Some(name)
 }
-sealed class BoundVar(optionalName: Option[String] = None) extends Var with hasOptionalVariableName {
-  optionalVariableName = Some(optionalName getOrElse Var.getNextVariableName())
+class BoundVar(optionalName: Option[String] = None) extends Var with hasAutomaticVariableName {
+
+  optionalVariableName = optionalName
+  autoName("v")
+  assert(optionalVariableName.isDefined)
+
   def productIterator = optionalVariableName.toList.iterator
 }
 object Var {
@@ -283,9 +287,10 @@ sealed trait Typevar extends Type with hasOptionalVariableName
 sealed case class UnboundTypevar(name: String) extends Typevar {
   optionalVariableName = Some(name)
 }
-class BoundTypevar(optionalName: Option[String] = None) extends Typevar with hasOptionalVariableName {
+class BoundTypevar(optionalName: Option[String] = None) extends Typevar with hasAutomaticVariableName {
 
   optionalVariableName = optionalName
+  autoName("t")
 
   def productIterator = optionalVariableName.toList.iterator
 }

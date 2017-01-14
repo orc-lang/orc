@@ -21,6 +21,7 @@ import scala.collection.immutable.Map
 import orc.run.core.BoundValue
 import orc.run.core.Binding
 import orc.values.sites.NonBlockingSite
+import orc.error.runtime.UncallableValueException
 
 /** @author dkitchin
   */
@@ -40,12 +41,7 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonB
   }
   def contains(f: Field): Boolean = entries contains f.field
 
-  override def evaluate(args: List[AnyRef]) =
-    args match {
-      case List(f @ Field(_)) => Some(this(f).v)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Field", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
+  override def evaluate(args: Array[AnyRef]) = throw new UncallableValueException(this)
 
   override def toOrcSyntax() = {
     val formattedEntries =
@@ -71,4 +67,13 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonB
   /* Aliased for easier use in Java code */
   def extendWith(other: OrcRecord): OrcRecord = this + other
 
+  def getField(field: Field): AnyRef = {
+    entries.get(field.field) match {
+      case Some(v) => v
+      case None => throw new NoSuchMemberException(this, name)
+    }
+  }
+  def hasField(field: Field): Boolean = {
+    entries.contains(field.field) 
+  }
 }

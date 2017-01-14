@@ -22,7 +22,7 @@ import orc.error.runtime.JavaException
   */
 trait SupportForSiteInvocation extends InvocationBehavior {
 
-  override def invoke(h: Handle, v: AnyRef, vs: List[AnyRef]) {
+  override def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) {
     v match {
       case (s: Site) =>
         try {

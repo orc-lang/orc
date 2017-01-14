@@ -78,15 +78,17 @@ case class AggregateDef(clauses: List[Clause],
     result aggregatePosWith this
   }
 
-  def convert(x: named.BoundVar, context: Map[String, named.Argument], typecontext: Map[String, named.Type], classcontext: Map[String, ClassInfo]): named.Callable = {
+  def convert(x: named.BoundVar, ctx: TranslatorContext): named.Callable = {
+    import ctx._
+    
     if (clauses.isEmpty) { reportProblem(UnusedFunctionSignature() at this) }
 
     val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals.getOrElse(Nil), this)
     val newtypecontext = typecontext ++ dtypecontext
-    val newArgTypes = argtypes map { _ map { convertType(_)(newtypecontext) } }
-    val newReturnType = returntype map { convertType(_)(newtypecontext) }
+    val newArgTypes = argtypes map { _ map { convertType(_)(ctx.copy(typecontext = newtypecontext)) } }
+    val newReturnType = returntype map { convertType(_)(ctx.copy(typecontext = newtypecontext)) }
 
-    val (newformals, newbody) = Clause.convertClauses(clauses)(context, newtypecontext, classcontext, translator)
+    val (newformals, newbody) = Clause.convertClauses(clauses)(ctx.copy(typecontext = newtypecontext), translator)
 
     kindSample.get match {
       case _: DefDeclaration =>

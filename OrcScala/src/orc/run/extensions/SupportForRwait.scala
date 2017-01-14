@@ -19,6 +19,7 @@ import orc.OrcExecutionOptions
 import java.util.Timer
 import java.util.TimerTask
 import orc.run.core.Execution
+import orc.run.core.EventHandler
 
 /** @author dkitchin
   */
@@ -35,7 +36,7 @@ trait SupportForRwait extends Orc {
    * timer when the runtime is shut down.
    */
 
-  override def installHandlers(host: Execution) {
+  override def installHandlers(host: EventHandler) {
     val thisHandler = {
       case RwaitEvent(delay, caller) => {
         val callback =

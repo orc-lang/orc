@@ -43,6 +43,6 @@ abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
     * Traits which add support for more events will override this
     * method and introduce more handlers.
     */
-  def installHandlers(host: Execution) {}
+  def installHandlers(host: EventHandler) {}
 
 }

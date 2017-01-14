@@ -31,6 +31,7 @@ import java.io.StringWriter
 import java.io.PrintWriter
 import java.util.logging.SimpleFormatter
 import java.util.logging.Formatter
+import orc.error.compiletime.CompilationException
 
 /** A command-line tool invocation of the Orc compiler and runtime engine
   *
@@ -67,8 +68,15 @@ object Main {
       }
 
       val printPubs = new OrcDesktopEventAction() {
-        override def published(value: AnyRef) { println(Format.formatValue(value)); Console.out.flush() }
-        override def caught(e: Throwable) { Console.out.flush(); printException(e, Console.err, options.showJavaStackTrace); Console.err.flush() }
+        override def published(value: AnyRef) { 
+          println(Format.formatValue(value))
+          Console.out.flush()
+        }
+        override def caught(e: Throwable) { 
+          Console.out.flush()
+          printException(e, Console.err, options.showJavaStackTrace)
+          Console.err.flush() 
+        }
       }
       compiledOrc.run(printPubs)
 
@@ -77,6 +85,7 @@ object Main {
       case e: PrintVersionAndMessageException => println(orcImplName + " " + orcVersion + "\n" + orcURL + "\n" + orcCopyright + "\n\n" + e.getMessage)
       case e: FileNotFoundException => Console.err.println("Orc: File not found: " + e.getMessage)
       case e: ScriptException if (e.getCause == null) => Console.err.println(e.getMessage)
+      case e: ScriptException if (e.getCause.isInstanceOf[CompilationException]) => {} // Ignore compilation errors. They will already have been printed.
       case e: ScriptException => printException(e.getCause, Console.err, false)
     }
   }
@@ -203,6 +212,9 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
   StringOpt(() => backend.toString, s =>
     backend = BackendType.fromStringOption(s) match {
       case Some(b) => b
-      case None => throw new UnrecognizedCmdLineOptArgException("Backend does not exist or is not supported.", "backend", s, this)
+      case None => throw new UnrecognizedCmdLineOptArgException(s"Backend \"${s}\" does not exist or is not supported.", "backend", s, this)
     }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed values: " + BackendType.knownBackendNames.mkString(", ") + ". Default is \"token\".")
+
+  StringListOpt(() => optimizationOptions, optimizationOptions = _, ' ', "opt-opt", separator=",", 
+      usage = "Provide option for use by the optimizers separated by commas. Options in the form '[optimizer-name]' and '-[optimizer-name]=off' enable and disable optimizers. Other options are arbitrary key-value pairs used by the optimizer (the value defaults to 'true').")
 }
