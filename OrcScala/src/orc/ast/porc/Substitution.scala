@@ -2,8 +2,6 @@
 // Substitution.scala -- Scala trait Substitution
 // Project OrcScala
 //
-// $Id: Substitution.scala 2933 2011-12-15 16:26:02Z jthywissen $
-//
 // Created by dkitchin on Jul 13, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.

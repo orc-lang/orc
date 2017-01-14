@@ -2,8 +2,6 @@
 // Accessors.scala -- Scala class/trait/object Accessors
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Jul 4, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

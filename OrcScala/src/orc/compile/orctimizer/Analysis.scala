@@ -2,8 +2,6 @@
 // Analysis.scala -- Scala class/trait/object Analysis
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Apr 30, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

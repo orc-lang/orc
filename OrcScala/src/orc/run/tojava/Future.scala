@@ -2,8 +2,6 @@
 // Future.scala -- Scala class Future
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Dec 6, 2014.
 //
 // Copyright (c) 2015 The University of Texas at Austin. All rights reserved.

@@ -2,8 +2,6 @@
 // OrcProgram.java -- Scala class/trait/object OrcProgram
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Jan 8, 2016.
 //
 // Copyright (c) 2016 The University of Texas at Austin. All rights reserved.

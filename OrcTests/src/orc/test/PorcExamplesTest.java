@@ -2,8 +2,6 @@
 // TypedExamplesTest.java -- Java class TypedExamplesTest
 // Project OrcTests
 //
-// $Id$
-//
 // Created by dkitchin on Mar 30, 2011.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

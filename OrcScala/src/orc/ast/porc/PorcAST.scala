@@ -1,9 +1,6 @@
 //
 // PorcAST.scala -- Scala class/trait/object PorcAST
-
 // Project OrcScala
-//
-// $Id$
 //
 // Created by amp on May 27, 2013.
 //

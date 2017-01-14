@@ -2,8 +2,6 @@
 // PrecomputeHash.scala -- Scala class/trait/object PrecomputeHash
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Jul 3, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

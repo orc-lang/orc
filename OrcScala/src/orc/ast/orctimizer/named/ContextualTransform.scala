@@ -2,8 +2,6 @@
 // ContextualTransform.scala -- Scala class/trait/object ContextualTransform
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on May 31, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

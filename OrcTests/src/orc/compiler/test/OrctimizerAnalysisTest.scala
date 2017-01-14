@@ -2,8 +2,6 @@
 // OrctimizerAnalysisTest.scala -- OrctimizerAnalysisTest class to test orc.compiler.orctimizer.Analysis
 // Project OrcTest
 //
-// $Id$
-//
 // Created by amp on Sept 14, 2015.
 //
 // Copyright (c) 2015 The University of Texas at Austin. All rights reserved.

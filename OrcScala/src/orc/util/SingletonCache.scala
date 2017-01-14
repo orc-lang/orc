@@ -2,8 +2,6 @@
 // SingletonCache.scala -- Scala class/trait/object SingletonCache
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Jan 27, 2014.
 //
 // Copyright (c) 2014 The University of Texas at Austin. All rights reserved.

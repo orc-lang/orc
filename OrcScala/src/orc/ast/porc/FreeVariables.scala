@@ -2,8 +2,6 @@
 // FreeVariables.scala -- Scala class/trait/object FreeVariables
 // Project OrcScala
 //
-// $Id$
-//
 // Created by amp on Jun 2, 2013.
 //
 // Copyright (c) 2013 The University of Texas at Austin. All rights reserved.

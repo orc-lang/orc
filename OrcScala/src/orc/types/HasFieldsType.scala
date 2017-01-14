@@ -2,8 +2,6 @@
 // HasFieldsType.scala -- Scala trait HasFieldsType
 // Project OrcScala
 //
-// $Id: CallableType.scala 3313 2013-09-26 02:38:29Z arthur.peters@gmail.com $
-//
 // Created by dkitchin on Nov 26, 2010.
 //
 // Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
