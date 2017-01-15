@@ -12,10 +12,7 @@
 //
 package orc.ast.orctimizer.named
 
-import Bindings.ArgumentBound
-import Bindings.DefBound
-import Bindings.RecursiveDefBound
-import Bindings.SeqBound
+import Bindings._
 
 trait ContextualTransform extends NamedASTFunction {
   import Bindings._
@@ -25,7 +22,7 @@ trait ContextualTransform extends NamedASTFunction {
   def apply(a: Argument): Argument = transform(a)(TransformContext())
   def apply(e: Expression): Expression = transform(e)(TransformContext())
   def apply(t: Type): Type = transform(t)(TransformContext())
-  def apply(d: Def): Def = transform(d)(TransformContext())
+  def apply(d: Callable): Callable = transform(d)(TransformContext())
 
   def onExpression(implicit ctx: TransformContext): PartialFunction[Expression, Expression] = new PartialFunction[Expression, Expression] {
     def isDefinedAt(e: Expression) = pf.isDefinedAt(e in ctx)
@@ -39,14 +36,14 @@ trait ContextualTransform extends NamedASTFunction {
 
   def onType(implicit ctx: TransformContext): PartialFunction[Type, Type] = EmptyFunction
 
-  def onDef(implicit ctx: TransformContext): PartialFunction[Def, Def] = EmptyFunction
+  def onCallable(implicit ctx: TransformContext): PartialFunction[Callable, Callable] = EmptyFunction
 
   def recurseWithContext(implicit ctx: TransformContext) =
     new NamedASTFunction {
       def apply(a: Argument) = transform(a)
       def apply(e: Expression) = transform(e)
       def apply(t: Type) = transform(t)
-      def apply(d: Def) = transform(d)
+      def apply(d: Callable) = transform(d)
     }
 
   def transform(a: Argument)(implicit ctx: TransformContext): Argument = {
@@ -81,12 +78,12 @@ trait ContextualTransform extends NamedASTFunction {
         case e@Future(x, left, right) => Future(x, recurse(left), transform(right)(ctx + FutureBound(ctx, e)))
         case left Otherwise right => Otherwise(recurse(left), recurse(right))
         case IfDef(a, f, g) => IfDef(recurse(a), recurse(f), recurse(g))
-        case e@DeclareDefs(defs, body) => {
-          val newctxrec = ctx extendBindings (defs map { RecursiveDefBound(ctx, e, _) })
+        case e@DeclareCallables(defs, body) => {
+          val newctxrec = ctx extendBindings (defs map { RecursiveCallableBound(ctx, e, _) })
           val newdefs = defs map { transform(_)(newctxrec) }
-          val newctx = ctx extendBindings (defs map { DefBound(newctxrec, e, _) })
+          val newctx = ctx extendBindings (defs map { CallableBound(newctxrec, e, _) })
           val newbody = transform(body)(newctx)
-          DeclareDefs(newdefs, newbody)
+          DeclareCallables(newdefs, newbody)
         }
         case e@DeclareType(u, t, body) => {
           val newctx = ctx + TypeBinding(ctx, u)
@@ -137,9 +134,16 @@ trait ContextualTransform extends NamedASTFunction {
       })(t)
   }
 
-  def transform(d: Def)(implicit ctx: TransformContext): Def = {
-    order[Def](onDef, {
+  def transform(d: Callable)(implicit ctx: TransformContext): Callable = {
+    order[Callable](onCallable, {
       case d @ Def(name, formals, body, typeformals, argtypes, returntype) => {
+        val newcontext = ctx extendBindings (formals map { ArgumentBound(ctx, d, _) }) extendTypeBindings (typeformals map { TypeBinding(ctx, _) })
+        val newbody = transform(body)(newcontext)
+        val newargtypes = argtypes map { _ map { transform(_)(newcontext) } }
+        val newreturntype = returntype map { transform(_)(newcontext) }
+        Def(name, formals, newbody, typeformals, newargtypes, newreturntype)
+      }
+      case d @ Site(name, formals, body, typeformals, argtypes, returntype) => {
         val newcontext = ctx extendBindings (formals map { ArgumentBound(ctx, d, _) }) extendTypeBindings (typeformals map { TypeBinding(ctx, _) })
         val newbody = transform(body)(newcontext)
         val newargtypes = argtypes map { _ map { transform(_)(newcontext) } }

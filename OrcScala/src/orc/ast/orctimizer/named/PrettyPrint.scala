@@ -67,7 +67,7 @@ class PrettyPrint {
       case Force(xs, vs, b, e) => s"force_${if(b) "p" else "c"} ${commasep(xs)} = ${commasep(vs)} #\n${reduce(e)}"
       case left Otherwise right => "(" + reduce(left) + " ; " + reduce(right) + ")"
       case IfDef(a, l, r) => s"ifdef ${reduce(a)} then\n  ${reduce(l)}\nelse\n  ${reduce(r)}"
-      case DeclareDefs(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
+      case DeclareCallables(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case Def(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))
         "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
@@ -77,6 +77,17 @@ class PrettyPrint {
           }) +
           "\n" +
           "def " + name + paren(formals) + " = " + reduce(body) +
+          "\n"
+      }
+      case Site(f, formals, body, typeformals, argtypes, returntype) => {
+        val name = f.optionalVariableName.getOrElse(lookup(f))
+        "site " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
+          (returntype match {
+            case Some(t) => " :: " + reduce(t)
+            case None => ""
+          }) +
+          "\n" +
+          "site " + name + paren(formals) + " = " + reduce(body) +
           "\n"
       }
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"

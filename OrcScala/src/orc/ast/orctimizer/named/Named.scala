@@ -39,7 +39,7 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
     case IfDef(v, l, r) => List(v, l, r)
     case Future(x, f, g) => List(f, g)
     case left Otherwise right => List(left, right)
-    case DeclareDefs(defs, body) => defs ::: List(body)
+    case DeclareCallables(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case FieldAccess(o, f) => List(o)
     case HasType(body, expectedType) => List(body, expectedType)
@@ -138,7 +138,7 @@ case class Branch(left: Expression, x: BoundVar, right: Expression) extends Expr
 case class Trim(expr: Expression) extends Expression
 case class Otherwise(left: Expression, right: Expression) extends Expression
 
-case class DeclareDefs(defs: List[Def], body: Expression) extends Expression
+case class DeclareCallables(defs: List[Callable], body: Expression) extends Expression
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 case class HasType(body: Expression, expectedType: Type) extends Expression
@@ -163,13 +163,28 @@ class BoundVar(optionalName: Option[String] = None) extends Var with hasAutomati
   def productIterator = optionalVariableName.toList.iterator
 }
 
-sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type])
+sealed abstract class Callable
   extends NamedAST
-  //with hasFreeVars
-  //with hasFreeTypeVars
   with hasOptionalVariableName
-  with Substitution[Def] 
-  {
+  with Substitution[Callable] {
+
+  val name: BoundVar
+  val formals: List[BoundVar]
+  val body: Expression
+  val typeformals: List[BoundTypevar]
+  val argtypes: Option[List[Type]]
+  val returntype: Option[Type]
+
+  def copy(name: BoundVar = name,
+    formals: List[BoundVar] = formals,
+    body: Expression = body,
+    typeformals: List[BoundTypevar] = typeformals,
+    argtypes: Option[List[Type]] = argtypes,
+    returntype: Option[Type] = returntype): Callable
+}
+
+sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type])
+  extends Callable {
   //TODO: Does Def need to have the closed variables listed here? Probably not unless we are type checking.
   
   transferOptionalVariableName(name, this)
@@ -182,6 +197,21 @@ sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression,
     argtypes: Option[List[Type]] = argtypes,
     returntype: Option[Type] = returntype) = {
     this ->> Def(name, formals, body, typeformals, argtypes, returntype)
+  }
+}
+
+sealed case class Site(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type])
+  extends Callable {
+  transferOptionalVariableName(name, this)
+  //lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
+
+  def copy(name: BoundVar = name,
+    formals: List[BoundVar] = formals,
+    body: Expression = body,
+    typeformals: List[BoundTypevar] = typeformals,
+    argtypes: Option[List[Type]] = argtypes,
+    returntype: Option[Type] = returntype) = {
+    this ->> Site(name, formals, body, typeformals, argtypes, returntype)
   }
 }
 

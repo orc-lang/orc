@@ -66,11 +66,11 @@ object > {
 }
 
 
-object DeclareDefsAt {
+object DeclareCallablesAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@DeclareDefs(defs, body)) in ctx => {
-      val defsctx = ctx extendBindings (defs map { Bindings.RecursiveDefBound(ctx, n, _) })
-      val bodyctx = ctx extendBindings (defs map { Bindings.DefBound(defsctx, n, _) })
+    case (n@DeclareCallables(defs, body)) in ctx => {
+      val defsctx = ctx extendBindings (defs map { Bindings.RecursiveCallableBound(ctx, n, _) })
+      val bodyctx = ctx extendBindings (defs map { Bindings.CallableBound(defsctx, n, _) })
       Some(defs, defsctx, body in bodyctx)
     }
     case _ => None

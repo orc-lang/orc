@@ -151,20 +151,20 @@ object Bindings {
     val variable = ast.x
   }
   
-  case class DefBound(ctx: TransformContext, ast: DeclareDefs, d: Def) extends Binding {
+  case class CallableBound(ctx: TransformContext, ast: DeclareCallables, d: Callable) extends Binding {
     assert(ast.defs.contains(d))
     def variable = d.name
   }
 
-  case class ArgumentBound(ctx: TransformContext, ast: Def, variable: BoundVar) extends Binding {
+  case class ArgumentBound(ctx: TransformContext, ast: Callable, variable: BoundVar) extends Binding {
     assert(ast.formals.contains(variable))
   }
 
-  case class RecursiveDefBound(ctx: TransformContext, ast: DeclareDefs, d: Def) extends Binding {
+  case class RecursiveCallableBound(ctx: TransformContext, ast: DeclareCallables, d: Callable) extends Binding {
     assert(ast.defs.contains(d))
     def variable = d.name
 
-    override def nonRecursive: Binding = DefBound(ctx, ast, d)
+    override def nonRecursive: Binding = CallableBound(ctx, ast, d)
   }
 }
 

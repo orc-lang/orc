@@ -52,7 +52,7 @@ trait NamedASTTransform extends NamedASTFunction {
   def apply(a: Argument): Argument = transform(a, Nil)
   def apply(e: Expression): Expression = transform(e, Nil, Nil)
   def apply(t: Type): Type = transform(t, Nil)
-  def apply(d: Def): Def = transform(d, Nil, Nil)
+  def apply(d: Callable): Callable = transform(d, Nil, Nil)
 
   def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = EmptyFunction
 
@@ -60,14 +60,14 @@ trait NamedASTTransform extends NamedASTFunction {
 
   def onType(typecontext: List[BoundTypevar]): PartialFunction[Type, Type] = EmptyFunction
 
-  def onDef(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Def, Def] = EmptyFunction
+  def onDef(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Callable, Callable] = EmptyFunction
 
   def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) =
     new NamedASTFunction {
       def apply(a: Argument) = transform(a, context)
       def apply(e: Expression) = transform(e, context, typecontext)
       def apply(t: Type) = transform(t, typecontext)
-      def apply(d: Def) = transform(d, context, typecontext)
+      def apply(d: Callable) = transform(d, context, typecontext)
     }
 
   def transform(a: Argument, context: List[BoundVar]): Argument = {
@@ -106,11 +106,11 @@ trait NamedASTTransform extends NamedASTFunction {
         case Future(x, f, g) => Future(x, recurse(f), transform(g, x :: context, typecontext))
         case left Otherwise right => Otherwise(recurse(left), recurse(right))
         case IfDef(a, f, g) => IfDef(recurse(a), recurse(f), recurse(g))
-        case DeclareDefs(defs, body) => {
+        case DeclareCallables(defs, body) => {
           val defnames = defs map { _.name }
           val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
           val newbody = transform(body, defnames ::: context, typecontext)
-          DeclareDefs(newdefs, newbody)
+          DeclareCallables(newdefs, newbody)
         }
         case DeclareType(u, t, body) => {
           val newt = transform(t, u :: typecontext)
@@ -166,7 +166,7 @@ trait NamedASTTransform extends NamedASTFunction {
     }
   }
 
-  def transform(d: Def, context: List[BoundVar], typecontext: List[BoundTypevar]): Def = {
+  def transform(d: Callable, context: List[BoundVar], typecontext: List[BoundTypevar]): Callable = {
     val pf = onDef(context, typecontext)
     if (pf isDefinedAt d) {
       d -> pf
@@ -179,6 +179,14 @@ trait NamedASTTransform extends NamedASTFunction {
           val newargtypes = argtypes map { _ map { transform(_, newtypecontext) } }
           val newreturntype = returntype map { transform(_, newtypecontext) }
           Def(name, formals, newbody, typeformals, newargtypes, newreturntype)
+        }
+        case Site(name, formals, body, typeformals, argtypes, returntype) => {
+          val newcontext = formals ::: context
+          val newtypecontext = typeformals ::: typecontext
+          val newbody = transform(body, newcontext, newtypecontext)
+          val newargtypes = argtypes map { _ map { transform(_, newtypecontext) } }
+          val newreturntype = returntype map { transform(_, newtypecontext) }
+          d.copy(name, formals, newbody, typeformals, newargtypes, newreturntype)
         }
       }
     }
