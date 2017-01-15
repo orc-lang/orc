@@ -29,9 +29,9 @@ import orc.run.extensions.SupportForCallsIntoOrc
 class Execution(
   val node: Expression,
   override val options: OrcExecutionOptions,
-  private var eventHandler: OrcEvent => Unit,
+  protected var eventHandler: OrcEvent => Unit,
   override val runtime: OrcRuntime)
-  extends Group with ExecutionRoot with SupportForCallsIntoOrc {
+  extends Group with ExecutionRoot with SupportForCallsIntoOrc with EventHandler {
 
   override val execution = this
 

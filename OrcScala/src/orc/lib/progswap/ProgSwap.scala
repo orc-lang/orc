@@ -30,6 +30,7 @@ import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException
 import orc.run.core.Execution
 import orc.run.core.Token
 import orc.run.core.ExternalSiteCallHandle
+import orc.util.ArrayExtensions._
 
 /** Update a running Orc program to the supplied OIL program. One argument is
   * expected, an OIL file name.
@@ -38,13 +39,13 @@ import orc.run.core.ExternalSiteCallHandle
   */
 object ProgSwap extends Site with UntypedSite {
 
-  override def call(args: List[AnyRef], callHandle: Handle) {
+  override def call(args: Array[AnyRef], callHandle: Handle) {
     def handleCracker(callHandle: Handle): Token = callHandle.asInstanceOf[ExternalSiteCallHandle].caller
     val execGroup: Execution = ??? //handleCracker(callHandle).getGroup().root
     var updateSuceeded = false
     args match {
-      case Array(filename: String) => updateSuceeded = update(execGroup, new File(filename))
-      case Array(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
+      case Array1(filename: String) => updateSuceeded = update(execGroup, new File(filename))
+      case Array1(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
     //    } catch {

@@ -209,10 +209,10 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   IntOpt(() => maxSiteThreads, maxSiteThreads = _, ' ', "max-site-threads", usage = "Limit the number of simultaneously outstanding site calls to this number. Default=infinity.")
 
-  StringOpt(() => backend.toString, s =>
-    backend = BackendType.fromStringOption(s) match {
+  StringOpt(() => backend.toString, arg =>
+    backend = BackendType.fromStringOption(arg) match {
       case Some(b) => b
-      case None => throw new UnrecognizedCmdLineOptArgException(s"Backend \"${s}\" does not exist or is not supported.", "backend", s, this)
+      case None => throw new UnrecognizedCmdLineOptArgException(s"""Backend "${arg}" does not exist or is not supported.""", "backend", arg, this)
     }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed values: " + BackendType.knownBackendNames.mkString(", ") + ". Default is \"token\".")
 
   StringListOpt(() => optimizationOptions, optimizationOptions = _, ' ', "opt-opt", separator=",", 

@@ -18,6 +18,7 @@ import scala.util.parsing.input.Position
 import orc.compile.parse.OrcInputContext
 import java.io.PrintWriter
 import scala.collection.mutable
+import orc.compile.parse.OrcSourceRange
 
 /**
  * A CompileMessageRecorder that writes messages to a PrintWriter (such as one
@@ -33,7 +34,7 @@ class ExceptionCollectingCompileLogger(logToWriter: PrintWriter) extends PrintWr
   /* (non-Javadoc)
      * @see orc.error.compiletime.CompileLogger#recordMessage(Severity, int, String, Position, AST, Throwable)
      */
-  override def recordMessage(severity: Severity, code: Int, message: String, location: Position, astNode: AST, exception: Throwable) {
+  override def recordMessage(severity: Severity, code: Int, message: String, location: Option[OrcSourceRange], astNode: AST, exception: Throwable) {
     super.recordMessage(severity, code, message, location, astNode, exception)
     try {
       ExceptionCompileLogger.throwExceptionIfNeeded(Severity.ERROR, severity, message, location, exception)

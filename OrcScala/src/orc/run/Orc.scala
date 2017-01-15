@@ -15,7 +15,7 @@ package orc.run
 
 import orc.{ ExecutionRoot, OrcEvent, OrcExecutionOptions, OrcRuntime }
 import orc.ast.oil.nameless.Expression
-import orc.run.core.{ Execution, Token }
+import orc.run.core.{ EventHandler, Execution, Token }
 
 abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
   thisruntime =>

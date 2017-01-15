@@ -283,7 +283,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     * and
     *     a mapping from their string names to their new bound names
     */
-  def convertDefs(defs: List[ext.DefDeclaration])(implicit ctx: TranslatorContext): (List[Callable], Map[String, BoundVar]) = {
+  def convertDefs(defs: List[ext.CallableDeclaration])(implicit ctx: TranslatorContext): (List[Callable], Map[String, BoundVar]) = {
     import ctx._
 
     var defsMap: Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))

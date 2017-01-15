@@ -69,15 +69,15 @@ class ExceptionCompileLogger() extends CompileLogger {
 object ExceptionCompileLogger {  
   class GenericCompilationException(message: String) extends CompilationException(message)
 
-  def throwExceptionIfNeeded(minSeverity: Severity, severity: Severity, message: String, location: Position, exception: Throwable) {
+  def throwExceptionIfNeeded(minSeverity: Severity, severity: Severity, message: String, location: Option[OrcSourceRange], exception: Throwable) {
     if (severity.ordinal() >= minSeverity.ordinal()) {
       if (exception != null) {
         throw exception;
       } else {
         // We don't have an exception to throw -- use our "fake" one
         val e = new GenericCompilationException(message)
-        if (location != null) {
-          e.setPosition(location)
+        location foreach { l =>
+          e.setPosition(l)
         }
         throw e
       }
