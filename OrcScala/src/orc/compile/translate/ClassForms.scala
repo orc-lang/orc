@@ -272,8 +272,7 @@ case class ClassForms(val translator: Translator) {
         case Some(s) => ext.ClassSubclassLiteral(s, body)
         case None => body
       }
-      implicit val classcontext = incrementalClassContext
-      val info = linearize(e, additionalClasses, Some(clsNames(name)))
+      val info = linearize(e, additionalClasses, Some(clsNames(name)))(ctx.copy(classcontext=incrementalClassContext.toMap))
       info match {
         case i: ClassInfo => {
           incrementalClassContext += name -> i.copy(concreteMembers = i.concreteMembers ++ constructorMakers.keys)
