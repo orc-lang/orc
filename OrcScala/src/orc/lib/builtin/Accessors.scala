@@ -12,6 +12,7 @@
 //
 package orc.lib.builtin
 
+/*
 import orc.error.compiletime.typing.{ArgumentTypecheckingException, ExpectedType}
 import orc.error.runtime.{ArgumentTypeMismatchException, NoSuchMemberException}
 import orc.types.{BinaryCallableType, FieldType, HasFieldsType, RecordType, TupleType, Type, UnaryCallableType}
@@ -23,7 +24,6 @@ import orc.types.IntegerConstantType
 import orc.types.JavaObjectType
 import orc.types.NumberType
 
-/*
 object GetField extends PartialSite2 with TypedSite {
   override def name = "GetField"
   def eval(v: AnyRef, f: AnyRef) = {
@@ -88,7 +88,6 @@ object GetElem extends PartialSite2 with TypedSite {
 
   override val effectFree = true
 }
-*/
 
 object ProjectClosure extends TotalSite1 with TypedSite with FunctionalSite with TalkativeSite {
   override def name = "ProjectClosure"
@@ -140,3 +139,4 @@ object ProjectUnapply extends TotalSite1 with TypedSite with FunctionalSite with
     }
   }
 }
+*/

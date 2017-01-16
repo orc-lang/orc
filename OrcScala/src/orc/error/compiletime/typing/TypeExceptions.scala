@@ -12,9 +12,8 @@
 //
 package orc.error.compiletime.typing
 
-import orc.types.Type
-import orc.values.Field
-import orc.error.compiletime._
+import orc.error.compiletime.{ CompilationException, SeverityError, SeverityWarning }
+import orc.types._
 
 @SerialVersionUID(5465406067160056556L)
 class ArgumentArityException(val arityExpected: Int, val arityReceived: Int) extends TypeException("Expected " + arityExpected + " arguments to call, got " + arityReceived + " arguments instead.") with SeverityError

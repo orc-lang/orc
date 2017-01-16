@@ -479,8 +479,8 @@ class Token protected (
       case c: Closure => {
         functionCall(c.code, c.context, params)
       }
-      case o: OrcObjectInterface if (o contains Field("apply")) => {
-        resolve(o(Field("apply"))) { makeCall(_, params) }
+      case o: HasMembers if o.hasMember(Field("apply")) => {
+        resolve(o.getMember(Field("apply"))) { makeCall(_, params) }
       }
       case s => {
         params match {
@@ -690,9 +690,9 @@ class Token protected (
       case FieldAccess(o, f) => {
         resolve(lookup(o)) {
           _ match {
-            case o: OrcObjectInterface =>
+            case o: HasMembers =>
               //Logger.finer(s"resolving $o$f")
-              resolve(o(f)) { x =>
+              resolve(o.getMember(f)) { x =>
                 //Logger.finer(s"resolved $o$f = $x")
                 publish(Some(x))
               }

@@ -9,7 +9,6 @@ import orc.error.OrcException
 import orc.error.runtime.JavaException
 import orc.CaughtEvent
 import orc.values.OrcRecord
-import orc.values.sites.HasFields
 import orc.values.Field
 import orc.run.Logger
 import orc.OrcEvent
@@ -18,6 +17,9 @@ import orc.Handle
 import orc.OrcRuntime
 import orc.compile.parse.OrcSourceRange
 import orc.ExecutionRoot
+import orc.values.HasMembers
+import orc.run.core.BoundValue
+import orc.run.core.BoundReadable
 
 trait Continuation {
   def call(v: AnyRef)
@@ -209,21 +211,23 @@ final class RuntimeDirectCallable(override val underlying: DirectSite) extends R
   }
 }
 
-
 object Callable {
   def findSite(s: AnyRef): AnyRef = s match {
-    case r: HasFields if r.hasField(Field("apply")) => 
-      r.getField(Field("apply")) match {
-      case applySite: Site => findSite(applySite)
-      case _ => s
-    }
+    case r: HasMembers if r.hasMember(Field("apply")) =>
+      r.getMember(Field("apply")) match {
+        case BoundReadable(r) => ??? // Handle readables
+        case BoundValue(applySite: Site) => findSite(applySite)
+        case _ => s
+      }
     case _ => s
   }
   def findSite(s: DirectSite): DirectSite = s match {
-    case r: HasFields if r.hasField(Field("apply")) => r.getField(Field("apply")) match {
-      case applySite: DirectSite => findSite(applySite)
-      case _ => s
-    }
+    case r: HasMembers if r.hasMember(Field("apply")) =>
+      r.getMember(Field("apply")) match {
+        case BoundReadable(r) => ??? // Handle readables
+        case BoundValue(applySite: DirectSite) => findSite(applySite)
+        case _ => s
+      }
     case _ => s
   }
   

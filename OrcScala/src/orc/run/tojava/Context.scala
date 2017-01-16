@@ -13,13 +13,13 @@ import orc.values.Field
 import orc.Handle
 import orc.OrcEvent
 import orc.PublishedEvent
-import orc.values.sites.HasFields
 import orc.error.runtime.NoSuchMemberException
 import orc.CaughtEvent
 import orc.values.sites.JavaCall
 import orc.values.OrcValue
 import orc.Schedulable
 import orc.ExecutionRoot
+import orc.values.HasMembers
 
 /** The root of the context tree. Analogous to Execution.
   *
@@ -205,8 +205,10 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     // TODO: Since getField always returns a value immediately it should probably not use a continuation and instead just return the value.
     //       That would make for fewer megamorphic call sites.
     Wrapper.unwrap(v) match {
-      case r: HasFields if r.hasField(f) => {
-        p.call(r.getField(f))
+      case r: HasMembers if r.hasMember(f) => {
+        val binding = r.getMember(f)
+        // TODO: Handle bindings here somehow.
+        p.call(???)
       }
       case _: OrcValue => {
         // OrcValues must HasFields to have fields accessed.

@@ -90,7 +90,7 @@ class MethodTypeMismatchException(val methodName: String, val clazz: Class[_]) e
 /** Exception raised when an uncallable value occurs in call argPosition.
   */
 @SerialVersionUID(7171287004340017499L)
-class UncallableValueException(val uncallable: Any) extends RuntimeTypeException("Value not callable: \"" + uncallable.toString() + "\"")
+class UncallableValueException(val uncallable: Any) extends RuntimeTypeException("Value not callable: " + uncallable.toString())
 
 /** Attempted dot access at an unknown member.
   */

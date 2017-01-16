@@ -15,9 +15,12 @@ import java.util.HashMap;
 
 import orc.Handle;
 import orc.error.runtime.TokenException;
+import orc.error.runtime.UncallableValueException;
 import orc.lib.state.Ref.RefInstance;
+import orc.run.core.Binding;
+import orc.run.core.BoundValue;
 import orc.values.Field;
-import orc.values.sites.HasFields;
+import orc.values.HasMembers;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 import scala.Option;
@@ -28,12 +31,12 @@ import scala.collection.immutable.List;
  * @author quark
  */
 public class Dictionary extends EvalSite {
-	protected static class DictionaryInstance extends EvalSite implements HasFields {
+	protected static class DictionaryInstance extends EvalSite implements HasMembers {
         private final HashMap<String, RefInstance> map = new HashMap<String, RefInstance>();
 
         @Override
         public Object evaluate(final Args args) throws TokenException {
-			return getField((Field)args.getArg(0));
+			throw new UncallableValueException(this);
 		}
 
 		@Override
@@ -42,17 +45,17 @@ public class Dictionary extends EvalSite {
 		}
 
         @Override
-        synchronized public Object getField(Field f) {
+        synchronized public Binding getMember(Field f) {
           final String field = f.field();
                 RefInstance out = map.get(field);
                 if (out == null) {
                     out = new RefInstance();
                     map.put(field, out);
                 }
-                return out;
+                return new BoundValue(out);
             }
         @Override
-        synchronized public boolean hasField(Field f) {
+        synchronized public boolean hasMember(Field f) {
           return true;
         }
     }

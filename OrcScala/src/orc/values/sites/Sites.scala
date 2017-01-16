@@ -13,7 +13,7 @@
 
 package orc.values.sites
 
-import orc.values.{ OrcValue, Field, OrcRecord }
+import orc.values.{ OrcValue, OrcRecord }
 import orc.Handle
 import orc.error.OrcException
 import orc.error.compiletime.typing.TypeException
@@ -27,6 +27,7 @@ import orc.error.runtime.RightException
 import orc.run.tojava.HaltException
 import orc.run.tojava.ExceptionHaltException
 import orc.util.ArrayExtensions._
+import orc.values.HasMembers
 
 trait Site extends OrcValue with SiteMetadata {
   def call(args: Array[AnyRef], h: Handle): Unit
@@ -287,12 +288,6 @@ class StructurePairSite(
   def orcType() = new RecordType(
     "apply" -> applySite.orcType(),
     "unapply" -> unapplySite.orcType())
-}
-
-// TODO: Merge with OrcObjectInterface
-trait HasFields extends Site {
-  def getField(f: Field): AnyRef
-  def hasField(f: Field): Boolean
 }
 
 trait NonBlockingSite extends Site {

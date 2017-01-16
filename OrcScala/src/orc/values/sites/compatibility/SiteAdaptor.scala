@@ -23,8 +23,6 @@ import orc.error.runtime.TokenException
 import orc.types.Type
 import orc.values.sites.FunctionalSite
 import orc.values.sites.DirectSite
-import orc.values.sites.HasFields
-import orc.values.Field
 
 /** Adapts old OrcJava sites to the new OrcScala site interface
   *
@@ -95,20 +93,6 @@ object SiteAdaptor {
     }
     new Args(args)
   }
-}
-
-abstract class FieldSiteAdapter extends SiteAdaptor with HasFields {
-  def getField(f: Field): AnyRef = {
-    getField(f.field)
-  }
-  def hasField(f: Field): Boolean = {
-    hasField(f.field)
-  }
-  
-  @throws(classOf[TokenException])
-  def getField(f: String): Object
-  @throws(classOf[TokenException])
-  def hasField(f: String): Boolean
 }
 
 abstract class SiteAdaptorFunctional extends SiteAdaptor with FunctionalSite

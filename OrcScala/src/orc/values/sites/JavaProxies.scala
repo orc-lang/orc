@@ -34,6 +34,10 @@ import orc.values.sites.OrcJavaCompatibility._
 import orc.compile.typecheck.Typeloader._
 import orc.error.runtime.NoSuchMemberException
 import orc.util.ArrayExtensions._
+import orc.error.runtime.UncallableValueException
+import orc.values.HasMembers
+import orc.run.core.BoundValue
+import orc.run.core.Binding
 
 /** Transforms an Orc site call to an appropriate Java invocation
   *
@@ -46,13 +50,27 @@ object JavaCall extends Function3[Object, Array[AnyRef], Handle, Boolean] {
    */
   def apply(target: Object, args: Array[AnyRef], h: Handle): Boolean = {
     args match {
+      // MEMBER LOOKUPS
+      // TODO: Remove the need for this.
+      case Array1(f: OrcField) => {
+        val proxy = JavaObjectProxy(target)
+        proxy.getMember(f) match {
+          case BoundValue(v) => h.publish(v)
+          case _ => throw new AssertionError("This should not be reachable")
+        }
+        true
+      }
+      
+      // ARRAYS
       case Array1(i: BigInt) if (target.getClass.isArray) => {
         h.publish(new JavaArrayAccess(target.asInstanceOf[Array[Any]], i.toInt))
         true
       }
       // We should have boxed any java.lang.Integer, java.lang.Short, or java.lang.Byte value into BigInt
       case _ if (target.getClass.isArray) => throw new MalformedArrayAccessException(args)
-      case _ if (!target.getClass.isArray) => {
+      
+      // NORMAL CALLS
+      case _  => {
         val proxy = JavaObjectProxy(target)
         if (proxy.hasMember("apply")) {
           h.publish(proxy.invoke(target, "apply", args))
@@ -61,7 +79,7 @@ object JavaCall extends Function3[Object, Array[AnyRef], Handle, Boolean] {
           false
         }
       }
-      case _ => false
+      //case _ => false
     }
   }
   
@@ -148,7 +166,7 @@ abstract class JavaProxy extends Site {
   *
   * @author jthywiss
   */
-case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends JavaProxy with TypedSite with HasFields {
+case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends JavaProxy with TypedSite with HasMembers {
   // Reminder: A java.lang.Class could be a regular class, an interface, an array, or a primitive type.
 
   override lazy val name = javaClass.getName()
@@ -160,13 +178,13 @@ case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends J
   }
 
   // FIXME: The way this interacts with ProjectClosure means that a static apply method on a class will shadow the constructor.
-  def getField(f: OrcField) = {
+  def getMember(f: OrcField) = {
     if(hasMember(f.field))
-      new JavaStaticMemberProxy(javaClass, f.field)
+      BoundValue(new JavaStaticMemberProxy(javaClass, f.field))
     else
       throw new NoSuchMemberException(this, f.field)
   }
-  def hasField(f: OrcField) = {
+  override def hasMember(f: OrcField): Boolean = {
     hasMember(f.field)
   }
 
@@ -178,7 +196,7 @@ case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends J
   *
   * @author jthywiss
   */
-case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSite with HasFields {
+case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSite with HasMembers {
 
   override def javaClass = theObject.getClass()
 
@@ -190,12 +208,11 @@ case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSi
 
   def orcType = liftJavaType(javaClass)
 
-  def getField(f: OrcField): AnyRef = {
-    JavaCall.getField(theObject, f)
+  def getMember(f: OrcField) = {
+    BoundValue(JavaCall.getField(theObject, f))
   }
-  def hasField(f: OrcField) = {
-    // TODO: We probably shouldn't leave this check until the member proxy is accessed.
-    true
+  override def hasMember(f: OrcField) = {
+    hasMember(f.field)
   }
 }
 
@@ -203,7 +220,7 @@ case class JavaObjectProxy(val theObject: Object) extends JavaProxy with TypedSi
   *
   * @author jthywiss
   */
-case class JavaMemberProxy(val theObject: Object, val memberName: String) extends JavaProxy with HasFields {
+case class JavaMemberProxy(val theObject: Object, val memberName: String) extends JavaProxy with HasMembers {
   // Could be a method or field.  We defer this decision until we are called.
 
   override lazy val name = this.getClass().getCanonicalName() + "(" + javaClassName + "." + memberName + ", " + theObject.toString() + ")"
@@ -217,32 +234,27 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
   }
 
   // FIXME: There is a bug where calls to null fields of java objects cause and NPE in the runtime. Not sure how to fix it. 
-  def getField(f: OrcField): AnyRef = {
+  def getMember(f: OrcField): Binding = {
     val submemberName = f.field
 
         // In violation of JLS §10.7, arrays don't really have a length field!  Java bug 5047859
         if (memberName.equals("length") && submemberName.equals("read") && javaClass.isArray())
-      return new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]])
+      return BoundValue(new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]]))
 
-        val javaField = javaClass.getField(memberName)
-    
+      val javaField = try {
+        javaClass.getField(memberName)
+      } catch {
+        case _: NoSuchFieldException => throw new NoSuchMemberException(this, submemberName)
+      }
+        
     if(Modifier.isPublic(javaField.getModifiers())) {
-      submemberName match {
+      BoundValue(submemberName match {
           case "read" if !hasMember("read") => new JavaFieldDerefSite(theObject, javaField)
           case "write" if !hasMember("write") => new JavaFieldAssignSite(theObject, javaField)
           case _ => new JavaMemberProxy(javaField.get(theObject), submemberName)
-      }
+      })
     } else {
-      throw new NoSuchFieldException(submemberName)
-    }
-  }
-  def hasField(f: OrcField) = {
-    // FIXME: This will be slow, a better implementation should replace it.
-    try {
-      getField(f)
-      true
-    } catch {
-      case _: NoSuchFieldException => false
+      throw new NoSuchMemberException(this, submemberName)
     }
   }
 }
@@ -304,31 +316,28 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
   *
   * @author jthywiss
   */
-case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends JavaProxy with HasFields {
+case class JavaArrayAccess(val theArray: Array[Any], val index: Int) extends JavaProxy with HasMembers {
 
   override lazy val name = this.getClass().getCanonicalName() + "(element " + index + " of " + theArray + ")"
 
   override def javaClass = theArray.getClass()
 
   def call(args: Array[AnyRef], h: Handle) {
-    args match {
-      case Array1(v) => throw new ArgumentTypeMismatchException(0, "message", v.getClass().toString())
-      case _ => throw new ArityMismatchException(1, args.length) //Is there a better exception to throw?
-    }
+     throw new UncallableValueException(this)
   }
   
-  def getField(f: OrcField) = {
-    f match {
+  def getMember(f: OrcField) = {
+    BoundValue(f match {
       case OrcField("read") => new JavaArrayDerefSite(theArray, index)
       case OrcField("readnb") => new JavaArrayDerefSite(theArray, index)
       case OrcField("write") => new JavaArrayAssignSite(theArray, index)
       case OrcField(fieldname) => throw new NoSuchMethodException(fieldname + " in Ref") //A "white lie"
-    }
+    })
   }
   
   private val fields = Set(OrcField("read"), OrcField("readnb"), OrcField("write"))
   
-  def hasField(f: OrcField) = {
+  override def hasMember(f: OrcField) = {
     fields.contains(f)
   }
 }

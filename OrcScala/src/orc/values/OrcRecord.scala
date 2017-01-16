@@ -25,21 +25,13 @@ import orc.error.runtime.UncallableValueException
 
 /** @author dkitchin
   */
-case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonBlockingSite with OrcObjectInterface {
+case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonBlockingSite with HasMembers {
 
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)
   }
 
   def this(entries: List[(String, AnyRef)]) = this(entries.toMap)
-
-  def apply(f: Field): BoundValue = {
-    entries.get(f.field) match {
-      case Some(v) => BoundValue(v)
-      case None => throw new NoSuchMemberException(this, name)
-    }
-  }
-  def contains(f: Field): Boolean = entries contains f.field
 
   override def evaluate(args: Array[AnyRef]) = throw new UncallableValueException(this)
 
@@ -67,13 +59,14 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonB
   /* Aliased for easier use in Java code */
   def extendWith(other: OrcRecord): OrcRecord = this + other
 
-  def getField(field: Field): AnyRef = {
+  def getMember(field: Field) = {
     entries.get(field.field) match {
-      case Some(v) => v
+      case Some(v) => BoundValue(v)
       case None => throw new NoSuchMemberException(this, name)
     }
   }
-  def hasField(field: Field): Boolean = {
+  
+  override def hasMember(field: Field): Boolean = {
     entries.contains(field.field) 
   }
 }

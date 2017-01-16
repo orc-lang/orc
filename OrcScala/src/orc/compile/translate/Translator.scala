@@ -29,7 +29,6 @@ import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
 import orc.error.compiletime.{CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException, SiteResolutionException}
 import orc.lib.builtin
 import orc.values.sites.Site
-import orc.values.sites.HasFields
 
  case class TranslatorContext(context: Map[String, Argument], typecontext: Map[String, Type],
          boundDefs: Set[BoundVar], classcontext: Map[String, ClassInfo])
