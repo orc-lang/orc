@@ -212,7 +212,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
       outputIR(1) >>>
-      splitPrune.timePhase >>>
       noUnguardedRecursion.timePhase >>>
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>

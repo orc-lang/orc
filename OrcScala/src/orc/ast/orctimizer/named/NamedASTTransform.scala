@@ -20,14 +20,14 @@ trait NamedASTFunction {
   def apply(a: Argument): Argument
   def apply(e: Expression): Expression
   def apply(t: Type): Type
-  def apply(d: Def): Def
+  def apply(d: Callable): Callable
 
   def apply(ast: NamedAST): NamedAST = {
     ast match {
       case a: Argument => this(a)
       case e: Expression => this(e)
       case t: Type => this(t)
-      case d: Def => this(d)
+      case d: Callable => this(d)
     }
   }
 
@@ -37,7 +37,7 @@ trait NamedASTFunction {
       def apply(a: Argument): Argument = g(f(a))
       def apply(e: Expression): Expression = g(f(e))
       def apply(t: Type): Type = g(f(t))
-      def apply(d: Def): Def = g(f(d))
+      def apply(d: Callable): Callable = g(f(d))
     }
   }
 

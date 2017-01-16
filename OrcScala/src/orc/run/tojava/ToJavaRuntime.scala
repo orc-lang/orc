@@ -21,8 +21,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /** @author amp
   */
-class ToJavaRuntime(private val runtime: Orc) {
+class ToJavaRuntime(private[tojava] val runtime: Orc) {
   // TODO: ToJavaRuntime should really be a runtime not have a runtime. For now I'm avoiding abstracting and duplicating code from the other interpreter.
+  
   private[this] var executions = Set[Execution]()
   private[this] var isDone = false
 

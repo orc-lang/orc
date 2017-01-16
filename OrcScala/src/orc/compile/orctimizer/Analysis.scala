@@ -283,7 +283,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           }
         }).getOrElse(Delay.Blocking)
       }
-      case DeclareDefsAt(defs, defsctx, body) =>
+      case DeclareCallablesAt(defs, defsctx, body) =>
         body.timeToHalt
       case DeclareTypeAt(_, _, b) =>
         b.timeToHalt
@@ -294,8 +294,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case (v: BoundVar) in ctx =>
         ctx(v) match {
           case Bindings.SeqBound(_, _)
-            | Bindings.DefBound(_, _, _)
-            | Bindings.RecursiveDefBound(_, _, _) => 
+            | Bindings.CallableBound(_, _, _)
+            | Bindings.RecursiveCallableBound(_, _, _) => 
             Delay.NonBlocking
           case Bindings.ArgumentBound(_, _, _) => 
             Delay.NonBlocking
@@ -334,8 +334,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
                 (source in sctx).timeToPublish
               case Bindings.ForceBound(_, _, _) =>
                 Delay.NonBlocking
-              case Bindings.DefBound(_, _, _)
-                 | Bindings.RecursiveDefBound(_, _, _) =>
+              case Bindings.CallableBound(_, _, _)
+                 | Bindings.RecursiveCallableBound(_, _, _) =>
                 (x in ctx).valueForceDelay
               case _ =>
                 Delay.Blocking
@@ -362,7 +362,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case IfDefAt(a, f, g) =>
         // TODO: Define an analysis to give Def/Unknown/Site
         f.timeToPublish max g.timeToPublish
-      case DeclareDefsAt(defs, _, body) =>
+      case DeclareCallablesAt(defs, _, body) =>
         body.timeToPublish
       case DeclareTypeAt(_, _, b) =>
         b.timeToPublish
@@ -410,8 +410,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
                 true
               case Bindings.ForceBound(_, _, _) =>
                 false
-              case Bindings.DefBound(_, _, _)
-                 | Bindings.RecursiveDefBound(_, _, _) =>
+              case Bindings.CallableBound(_, _, _)
+                 | Bindings.RecursiveCallableBound(_, _, _) =>
                 false
               case _ =>
                 false
@@ -438,7 +438,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case IfDefAt(a, f, g) =>
         // TODO: Define an analysis to give Def/Unknown/Site
         f.publications union g.publications
-      case DeclareDefsAt(defs, defsctx, body) => {
+      case DeclareCallablesAt(defs, defsctx, body) => {
         body.publications
       }
       case DeclareTypeAt(_, _, b) =>
@@ -470,13 +470,14 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case CallDefAt(target in _, args, _, ctx) => target match {
         case v: BoundVar => {
           val callstr = ctx(v) match {
-            case Bindings.DefBound(ctx, _, d) => d in ctx match {
+            case Bindings.CallableBound(ctx, _, d) => d in ctx match {
               case DefAt(name in _, formals, body, _, _, _, _) => {
                 assert(name == v)
                 (for ((f, a: BoundVar) <- formals zip args) yield {
                   (a, body.forces(f))
                 }).toMap
               }
+              // TODO: Handle site case. This will crash on a site.
             }
             // TODO: The system really needs some limited recursive analysis.
 //            case Bindings.RecursiveDefBound(ctx, _, d) => d in ctx match {
@@ -537,7 +538,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         ForceType.mergeMaps(
             _ max _, ForceType.Never, 
             f.forceTypes, g.forceTypes)
-      case DeclareDefsAt(defs, defsctx, body) =>
+      case DeclareCallablesAt(defs, defsctx, body) =>
         body.forceTypes
       case DeclareTypeAt(_, _, b) =>
         b.forceTypes
@@ -586,7 +587,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case IfDefAt(a, f, g) =>
         // TODO: Define an analysis to give Def/Unknown/Site
         f.effects max g.effects
-      case DeclareDefsAt(defs, defsctx, body) =>
+      case DeclareCallablesAt(defs, defsctx, body) =>
         body.effects
       case DeclareTypeAt(_, _, b) =>
         b.effects
@@ -614,8 +615,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         target match {
           case v: BoundVar => ctx(v) match {
             // TODO: I need to prove that all calls will actually return concrete values that will not block.
-            case Bindings.DefBound(_, _, _) | 
-                 Bindings.RecursiveDefBound(_, _, _) => {
+            case Bindings.CallableBound(_, _, _) | 
+                 Bindings.RecursiveCallableBound(_, _, _) => {
               Delay.NonBlocking
             }
             // TODO: Prove that no called value will publish a future.
@@ -648,7 +649,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case IfDefAt(a, f, g) =>
         // TODO: Define an analysis to give Def/Unknown/Site
         f.valueForceDelay max g.valueForceDelay
-      case DeclareDefsAt(defs, defsctx, body) =>
+      case DeclareCallablesAt(defs, defsctx, body) =>
         body.valueForceDelay
       case DeclareTypeAt(_, _, b) =>
         b.valueForceDelay
@@ -657,8 +658,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case Constant(_) in _ =>
         Delay.NonBlocking
       case (x: BoundVar) in ctx => 
-        def handleDef(decls: DeclareDefs, ctx: TransformContext, d: Def) = {
-          val DeclareDefsAt(_, dctx, _) = decls in ctx
+        def handleDef(decls: DeclareCallables, ctx: TransformContext, d: Def) = {
+          val DeclareCallablesAt(_, dctx, _) = decls in ctx
           val DefAt(_, _, body, _, _, _, _) = d in dctx
           // Remove all arguments because they are not closed variables.
           // Remove all recursive references. Because those will always 
@@ -679,9 +680,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             // However in the optimizer uses valueForceDelay to detect if force can be removed.
             // So futures should never be NonBlocking
             ((s in sctx).timeToPublish min (s in sctx).timeToHalt) max Delay.Blocking          
-          case Bindings.DefBound(ctx, decls, d) => 
+          case Bindings.CallableBound(ctx, decls, d: Def) => 
             handleDef(decls, ctx, d)
-          case Bindings.RecursiveDefBound(ctx, decls, d) =>
+          case Bindings.RecursiveCallableBound(ctx, decls, d: Def) =>
             handleDef(decls, ctx, d)
           case _ =>
             Delay.Blocking

@@ -25,6 +25,7 @@ import java.io.FileNotFoundException
 import java.io.OutputStreamWriter
 import org.codehaus.jettison.json.JSONArray
 import orc.lib.web.OrcJSONParser
+import orc.util.ArrayExtensions._
 
 class YandexTranslateFactory extends PartialSite with SpecificArity {
   val arity = 1
@@ -39,8 +40,8 @@ class YandexTranslateFactory extends PartialSite with SpecificArity {
     p.getProperty("orc.lib.net.yandex.translate.key")
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(file: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array1(file: String) = args
     val key = try {
       loadProperties(file)
     } catch {
@@ -59,8 +60,8 @@ class YandexTranslate(key: String) extends PartialSite with SpecificArity {
   val url = new URL(
     s"https://translate.yandex.net/api/v1.5/tr.json/translate?key=${URLEncoder.encode(key, "UTF-8")}")
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(text: String, target: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array2(text: String, target: String) = args
 
     val params = s"text=${URLEncoder.encode(text, "UTF-8")}&lang=${URLEncoder.encode(target, "UTF-8")}&options=1"
 

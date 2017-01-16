@@ -6,12 +6,13 @@ import javax.swing.UIManager
 import scala.collection.JavaConversions._
 import orc.values.Signal
 import ScalaSwingUtils._
+import orc.util.ArrayExtensions._
 
 class SetSwingFontSize extends TotalSite with SpecificArity {
   val arity = 1
 
-  def evaluate(args: List[AnyRef]): AnyRef = {
-    val List(sizeN: Number) = args
+  def evaluate(args: Array[AnyRef]): AnyRef = {
+    val Array1(sizeN: Number) = args
     val size = sizeN.intValue()
 
     onEDTNow {

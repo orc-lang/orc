@@ -51,7 +51,7 @@ trait ContextualTransform {
   def transferMetadata[E <: PorcAST](e: E, e1: E): E = {
     (e, e1) match {
       case (_: Value, _: Value) => {
-        e1.pushDownPosition(e.pos)
+        e1.pushDownPosition(e.sourceTextRange)
         e1
       }
       case _ => e ->> e1

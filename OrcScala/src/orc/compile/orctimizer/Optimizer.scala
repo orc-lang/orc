@@ -15,7 +15,7 @@ package orc.compile.orctimizer
 import orc.compile.Logger
 import orc.values.OrcRecord
 import orc.ast.orctimizer.named._
-import Bindings.{DefBound, RecursiveDefBound, SeqBound, FutureBound}
+import Bindings.{CallableBound, RecursiveCallableBound, SeqBound, FutureBound}
 import orc.values.Field
 import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
@@ -197,8 +197,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             ctx(x) match {
               case Bindings.SeqBound(_, from > _ > _) =>
                 true
-              case _: Bindings.DefBound | _: Bindings.RecursiveDefBound if !forceClosures =>
-                true
+              // TODO: Correctly handle defs and sites
+              //case _: Bindings.CallableBound | _: Bindings.RecursiveCallableBound if !forceClosures =>
+              //  true
               case Bindings.ForceBound(_, _, _) => true
               case _ => false          
             }
@@ -329,8 +330,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           case x: BoundVar =>
             ctx(x) match {
               case Bindings.SeqBound(_, from > _ > _) => None
-              case _: Bindings.DefBound | _: Bindings.RecursiveDefBound =>
-                Some(f)
+              // TODO: Need to distinguish def and site properly here!
+              case _: Bindings.CallableBound | _: Bindings.RecursiveCallableBound =>
+                ??? // Some(f)
               case Bindings.ForceBound(_, _, _) => None
               case _ => None
             } 
@@ -409,8 +411,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
   val DefSeqNorm = Opt("def-seq-norm") {
-    case (DeclareDefsAt(defs, ctx, b) > x > e, a) if (e.freeVars & defs.map(_.name).toSet).isEmpty  => {
-       DeclareDefs(defs, b > x > e)
+    case (DeclareCallablesAt(defs, ctx, b) > x > e, a) if (e.freeVars & defs.map(_.name).toSet).isEmpty  => {
+       DeclareCallables(defs, b > x > e)
     }
   }
  
@@ -458,8 +460,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     
     e match {
       case CallDefAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
-        case Bindings.DefBound(dctx, decls, d) => {
-          val DeclareDefsAt(_, declsctx, _) = decls in dctx
+        // TODO: Add inlining for sites.
+        case Bindings.CallableBound(dctx, decls, d: Def) => {
+          val DeclareCallablesAt(_, declsctx, _) = decls in dctx
           val DefAt(_, _, body, _, _, _, _) = d in declsctx
           val cost = Analysis.cost(body)
           // If the body contains references to any other def in the recursive group.
@@ -497,8 +500,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     
     e match {
       case CallDefAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
-        case Bindings.RecursiveDefBound(dctx, decls, d) => {
-          val DeclareDefsAt(_, declsctx, _) = decls in dctx
+        // TODO: Add unrolling for sites.
+        case Bindings.RecursiveCallableBound(dctx, decls, d: Def) => {
+          val DeclareCallablesAt(_, declsctx, _) = decls in dctx
           val DefAt(_, _, body, _, _, _, _) = d in declsctx
           def cost = Analysis.cost(body)
           if (cost > unrollCostThreshold) {
@@ -544,10 +548,11 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         case Force(xs, vs, b, e) => Force(xs.map(replaceVar), vs, b, e)
       }
       
-      override def onDef(implicit ctx: TransformContext) = {
+      override def onCallable(implicit ctx: TransformContext) = {
         case d @ Def(name, formals, body, typeformals, argtypes, returntype) => {
           d.copy(name=replaceVar(name), formals=formals.map(replaceVar))
         }
+        // TODO: Add handling of sites.
       }
 
       override def onArgument(implicit ctx: TransformContext) = {
@@ -560,9 +565,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     result
   }
 
-  def areContextsCompat(a: ExpressionAnalysisProvider[Expression], decls: DeclareDefs, 
+  def areContextsCompat(a: ExpressionAnalysisProvider[Expression], decls: DeclareCallables, 
       d: Def, dctx: TransformContext, ctx: TransformContext) = {
-    val DeclareDefsAt(_, declsctx, _) = decls in dctx
+    val DeclareCallablesAt(_, declsctx, _) = decls in dctx
+    // TODO: This will crash on encountering a site. It should handle it.
     val DefAt(_, _, body, _, _, _, _) = d in declsctx
     val bodyfree = body.freeVars
     def isRelevant(b: Bindings.Binding) = bodyfree.contains(b.variable)
@@ -585,7 +591,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   
   val DefElim = Opt("def-elim") {
-    case (DeclareDefsAt(defs, ctx, b), a) if (b.freeVars & defs.map(_.name).toSet).isEmpty => b
+    case (DeclareCallablesAt(defs, ctx, b), a) if (b.freeVars & defs.map(_.name).toSet).isEmpty => b
   }
 
   def containsType(b: Expression, tv: BoundTypevar) = {
@@ -605,7 +611,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   def isClosureBinding(b: Bindings.Binding): Boolean = {
     import Bindings._
     b match {
-      case DefBound(_,_,_) | RecursiveDefBound(_,_,_) => true
+      case CallableBound(_,_,d) if d.isInstanceOf[Def] => true 
+      case RecursiveCallableBound(_,_,d) if d.isInstanceOf[Def] => true
+      // TODO: Should sites also be counted as closures?
       case ForceBound(ctx, f, x) => 
         f.argForVar(x) match {
           case y: BoundVar => isClosureBinding(ctx(y)) 

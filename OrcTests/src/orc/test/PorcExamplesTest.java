@@ -16,7 +16,7 @@ package orc.test;
 import java.io.File;
 
 import junit.framework.Test;
-import orc.PorcCompilerBackend;
+import orc.PorcCompilerBackend$;
 import orc.script.OrcBindings;
 import orc.test.TestUtils.OrcTestCase;
 
@@ -36,8 +36,8 @@ public class PorcExamplesTest {
   public static Test suite() {
     OrcBindings bindings = new OrcBindings();
 
-    // Turn on typechecking
-    bindings.backend_$eq(PorcCompilerBackend.it());
+    // Turn on Orctimizer
+    bindings.backend_$eq(PorcCompilerBackend$.MODULE$);
     bindings.optimizationLevel_$eq(3);
 
     return TestUtils.buildSuite(PorcExamplesTest.class.getSimpleName(), PorcExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));

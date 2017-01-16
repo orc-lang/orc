@@ -14,6 +14,7 @@ import orc.values.OrcRecord
 
 import TwitterUtil._
 import java.io.FileInputStream
+import orc.util.ArrayExtensions._
 
 object TwitterUtil {
   private def loadProperties(file: String): (String, String) = {
@@ -59,8 +60,8 @@ class TwitterFactoryPropertyFile extends PartialSite with SpecificArity with Typ
     FunctionType(Nil, List(string), JavaObjectType(classOf[Twitter]))
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(file: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array(file: String) = args
     val i = new TwitterFactory().getInstance()
     i.loadAuth(file)
     Some(i)
@@ -75,8 +76,8 @@ class TwitterFactoryKeySecret extends PartialSite with SpecificArity with TypedS
     FunctionType(Nil, List(string, string), JavaObjectType(classOf[Twitter]))
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(key: String, secret: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array(key: String, secret: String) = args
     val i = new TwitterFactory().getInstance()
     i.loadAuth(key, secret)
     Some(i)
@@ -92,8 +93,8 @@ class TwitterStreamFactoryPropertyFile extends PartialSite with SpecificArity wi
     FunctionType(Nil, List(string), JavaObjectType(classOf[TwitterStream]))
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(file: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array(file: String) = args
     val i = new TwitterStreamFactory().getInstance()
     i.loadAuth(file)
     Some(i)
@@ -108,8 +109,8 @@ class TwitterStreamFactoryKeySecret extends PartialSite with SpecificArity with 
     FunctionType(Nil, List(string, string), JavaObjectType(classOf[TwitterStream]))
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(key: String, secret: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array(key: String, secret: String) = args
     val i = new TwitterStreamFactory().getInstance()
     i.loadAuth(key, secret)
     Some(i)
@@ -126,8 +127,8 @@ private class EventGetterSite extends PartialSite with SpecificArity {
     channel.write(v)
   }
   
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List() = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array0() = args
     Some(channel.read)
   }
 }
@@ -141,12 +142,12 @@ class WrapTwitterStream extends TotalSite with SpecificArity with TypedSite {
     FunctionType(Nil, List(JavaObjectType(classOf[TwitterStream])), bot)
   }
 
-  def evaluate(args: List[AnyRef]): AnyRef = {
-    val List(twitter: TwitterStream) = args
+  def evaluate(args: Array[AnyRef]): AnyRef = {
+    val Array(twitter: TwitterStream) = args
     object GetStreamListener extends TotalSite with SpecificArity {
       val arity = 0
     
-      def evaluate(args: List[AnyRef]): AnyRef = {
+      def evaluate(args: Array[AnyRef]): AnyRef = {
         val status = new EventGetterSite()
         twitter.addListener(new StatusListener {
           def onDeletionNotice(e: StatusDeletionNotice): Unit = ()   

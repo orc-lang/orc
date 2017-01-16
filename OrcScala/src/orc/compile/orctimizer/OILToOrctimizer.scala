@@ -15,7 +15,6 @@ package orc.compile.orctimizer
 import orc.ast.oil.named._
 import orc.ast.orctimizer.{named => orct}
 import scala.collection.mutable
-import orc.lib.builtin.MakeSite
 import orc.error.compiletime.FeatureNotSupportedException
 
 /** @author amp
@@ -23,7 +22,8 @@ import orc.error.compiletime.FeatureNotSupportedException
 // Conversions from named to nameless representations
 class OILToOrctimizer {  
   private def isDef(b: BoundVar)(implicit ctx: Map[BoundVar, Expression]) = ctx.get(b) match {
-    case Some(_: DeclareDefs) => true
+    // TODO: How to handle sites?
+    case Some(d: DeclareCallables) if d.defs.head.isInstanceOf[Def] => true
     case _ => false
   }
   
@@ -39,13 +39,7 @@ class OILToOrctimizer {
         val x = new orct.BoundVar()
         orct.Force(List(x), List(apply(a)), true, x)
       }
-      case Call(target, args, typeargs) => {
-        target match {
-          case Constant(MakeSite) =>
-            throw new FeatureNotSupportedException("Classes or MakeSite", e.pos)
-          case _ => {}
-        }
-        
+      case Call(target, args, typeargs) => {        
         // TODO: Add special case for site constants and maybe known defs (if we have enough information for that)
         
         val t = new orct.BoundVar(Some(s"f_$target"))
@@ -69,16 +63,16 @@ class OILToOrctimizer {
         val bctx = ctx + ((x, e))
         orct.Branch(apply(left), apply(x), apply(right)(bctx)) 
       }
-      case left < x <| right => {
+      case Graft(x, left, right) => {
         val bctx = ctx + ((x, e))
         orct.Future(apply(x), apply(right), apply(left)(bctx))
       }
-      case Limit(f) => orct.Trim(apply(f))
+      case Trim(f) => orct.Trim(apply(f))
       case left ow right => 
         orct.Otherwise(apply(left), apply(right))
-      case DeclareDefs(defs, body) => {
+      case DeclareCallables(defs, body) => {
         val bctx = ctx ++ (defs map { d => (d.name, e) })        
-        orct.DeclareDefs(defs map { apply(_)(bctx) }, apply(body)(bctx))
+        orct.DeclareCallables(defs map { apply(_)(bctx) }, apply(body)(bctx))
       }
       case DeclareType(x, t, body) => {
         orct.DeclareType(apply(x), apply(t), apply(body))
@@ -153,10 +147,14 @@ class OILToOrctimizer {
     }
   }
   
-  def apply(defn: Def)(implicit ctx: Map[BoundVar, Expression]): orct.Def = {
+  def apply(defn: Callable)(implicit ctx: Map[BoundVar, Expression]): orct.Callable = {
     defn -> {
       case Def(name, formals, body, typeformals, argtypes, returntype) => {
         orct.Def(apply(name), formals map apply, apply(body), typeformals map apply, 
+            argtypes map { _ map apply }, returntype map apply)
+      }
+      case Site(name, formals, body, typeformals, argtypes, returntype) => {
+        orct.Site(apply(name), formals map apply, apply(body), typeformals map apply, 
             argtypes map { _ map apply }, returntype map apply)
       }
     }

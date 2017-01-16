@@ -31,14 +31,14 @@ import orc.error.compiletime.CompilationException
 /** An enumeration over the supported backends.
   */
 sealed trait BackendType {
-  def newBackend(): Backend[Expression]
+  def newBackend(): Backend[_]
 }
 
 object BackendType {
   private val stringToBackendType = Map[String, BackendType](
     TokenInterpreterBackend.toString -> TokenInterpreterBackend,
     DistributedBackendType.toString -> DistributedBackendType,
-    "porc" -> PorcCompilerBackend)
+    PorcCompilerBackend.toString -> PorcCompilerBackend)
 
   def knownBackendNames = stringToBackendType.keys
 
@@ -65,8 +65,8 @@ case object DistributedBackendType extends BackendType {
 /** The target based on the Orctimizer and porc.
   */
 case object PorcCompilerBackend extends BackendType {
-  override val toString = "Porc"
-  def it = this
+  override val toString = "porc"
+  override def newBackend(): Backend[PorcBackend.CompiledOrcProgram] = new PorcBackend()
 }
 
 /** This represents an abstract Orc compiler. It generates an opaque code object that can be

@@ -19,12 +19,13 @@ import orc.CaughtEvent
 import orc.values.sites.JavaCall
 import orc.values.OrcValue
 import orc.Schedulable
+import orc.ExecutionRoot
 
 /** The root of the context tree. Analogous to Execution.
   *
   * It implements top-level publication and halting.
   */
-final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: OrcEvent => Unit) extends EventHandler {
+final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: OrcEvent => Unit) extends EventHandler with ExecutionRoot {
   root =>
   private var isDone = false
 

@@ -15,6 +15,9 @@ import orc.run.Logger
 import orc.OrcEvent
 import scala.util.parsing.input.Position
 import orc.Handle
+import orc.OrcRuntime
+import orc.compile.parse.OrcSourceRange
+import orc.ExecutionRoot
 
 trait Continuation {
   def call(v: AnyRef)
@@ -76,11 +79,16 @@ final class ForcableDirectCallable(val closedValues: Array[AnyRef], impl: Direct
 /** A wrapper around ToJava runtime state which interacts correctly with the Orc site API.
  *  
  */
-final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Terminator, val callSitePosition: Position) extends Handle with Terminatable {
+final class PCTHandle(val execution: Execution, p: Continuation, c: Counter, t: Terminator) extends Handle with Terminatable {
   val halted = new AtomicBoolean(false)
   
   t.addChild(this)
+
   
+  def publishNonterminal(v: AnyRef): Unit = {
+    execution.stageOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
+  }
+
   /** Handle a site call publication.
     *
     * The semantics of a publication for a handle include halting so add that.
@@ -123,6 +131,15 @@ final class PCTHandle(execution: Execution, p: Continuation, c: Counter, t: Term
   def isLive: Boolean = {
     t.isLive()
   }
+
+  def callSitePosition: Option[OrcSourceRange] = None
+
+  val runtime: OrcRuntime = execution.runtime.runtime
+
+  def discorporate(): Unit = {
+    // TODO: Add support for discorporation to Porc and the ToJava backend.
+    ???
+  }
 }
 
 /** A Callable implementation that uses ctx.runtime to handle the actual call.
@@ -144,7 +161,7 @@ sealed class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapp
     // Matched to: halt in PCTHandle.
     execution.setStage()
     try {
-      execution.invoke(new PCTHandle(execution, p, c, t, null), site, args)
+      execution.invoke(new PCTHandle(execution, p, c, t), site, args)
     } finally {
       execution.flushStage()    
     }

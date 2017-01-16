@@ -20,10 +20,11 @@ import orc.ast.hasOptionalVariableName
 import orc.ast.hasAutomaticVariableName
 import orc.values
 
-// TODO: Consider porting ODO FieldAccess combinator to this.
 // TODO: Consider porting Porc Tuple access sites. Or should it be a varient of FieldAccess (_1, _2, ...)?
 // This issue with this is that while it's easy to detect field access (Field constants don't appear anywhere else)
 // it's hard to tell what is a tuple access.
+
+// TODO: Add support for New and Classes.
 
 sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
   def prettyprint() = (new PrettyPrint()).reduce(this)

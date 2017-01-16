@@ -215,6 +215,7 @@ class OrctimizerAnalysisTest {
   }
 
   
+  /*
   @Test
   def analyzeDefCall(): Unit = {
     val x = new BoundVar(Some("x"))
@@ -228,7 +229,6 @@ class OrctimizerAnalysisTest {
     // So nothing worth testing here.
   }
   
-  /*
   @Test
   def analyzeDefPub(): Unit = {
     val x = new BoundVar(Some("x"))
@@ -307,6 +307,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.Forever, a.timeToPublish)
   }
   
+  /*
   @Test
   def analyzeComplex2(): Unit = {
     val x = new BoundVar(Some("x"))
@@ -326,6 +327,9 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.NonBlocking, a.timeToHalt)
     assertEquals(Delay.Forever, a.timeToPublish)
   }
+  */
+  
   // TODO: test timeToHalt for: 
   // (Tuple(.apply, toattr) >`v1541> (Tuple(.unapply, fromattr) >`v1542> (Record(`v1541, `v1542) >`ov1784> stop)))
 }
+

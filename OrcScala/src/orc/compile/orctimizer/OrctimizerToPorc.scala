@@ -133,8 +133,10 @@ class OrctimizerToPorc {
       case IfDef(a, f, g) => {
         porc.IfDef(argument(a), expression(f), expression(g))
       }
-      case DeclareDefs(defs, body) => {
-        porc.DefDeclaration(defs.map(orcdef(defs.map(_.name), _)), expression(body))
+      case DeclareCallables(defs, body) => {
+        ???
+        // TODO: Reinstate support after adding sites to Porc.
+        // porc.DefDeclaration(defs.map(orcdef(defs.map(_.name), _)), expression(body))
       }
 
       // We do not handle types
@@ -142,7 +144,7 @@ class OrctimizerToPorc {
       case DeclareType(u, t, body) => expression(body)
 
       case VtimeZone(timeOrder, body) =>
-        throw new FeatureNotSupportedException("Virtual time", expr.pos)
+        throw new FeatureNotSupportedException("Virtual time").setPosition(expr.sourceTextRange.getOrElse(null))
 
       case FieldAccess(o, f) => {
         porc.GetField(ctx.p, ctx.c, ctx.t, argument(o), f)
