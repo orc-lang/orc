@@ -7,7 +7,6 @@ import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.util.component.LifeCycle
 import orc.values.sites.TotalSite
 import javax.servlet.Servlet
-import orc.values.sites.HasFields
 import orc.values.sites.Site
 import orc.values.Field
 import orc.error.runtime.ArgumentTypeMismatchException
@@ -26,6 +25,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import orc.values.OrcTuple
 import javax.servlet.AsyncContext
 import org.eclipse.jetty.servlet.ServletMapping
+import orc.run.core.BoundValue
+import orc.values.HasMembers
 
 trait CastArgumentSupport {
   def castArgument[T <: AnyRef: ClassTag](i: Int, a: AnyRef, typeName: String = null): T = {
@@ -40,7 +41,7 @@ trait CastArgumentSupport {
   }
 }
 
-class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrapper) extends HttpServlet with Site with HasFields {
+class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrapper) extends HttpServlet with Site with HasMembers {
   val requestQueue = new ConcurrentLinkedQueue[AsyncContext]()
   val getQueue = new ConcurrentLinkedQueue[orc.Handle]()
 
@@ -109,11 +110,11 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
     Field("join") -> JoinSite,
     Field("stop") -> StopSite)
 
-  def getField(f: Field): AnyRef = {
-    fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field))
+  def getMember(f: Field) = {
+    BoundValue(fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field)))
   }
 
-  def hasField(f: Field): Boolean = {
+  override def hasMember(f: Field): Boolean = {
     fields contains f
   }
 
@@ -122,7 +123,7 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
   }
 }
 
-class ServletServerWrapper(val server: Server, val context: ServletContextHandler) extends Site with HasFields {
+class ServletServerWrapper(val server: Server, val context: ServletContextHandler) extends Site with HasMembers {
   private[this] var nextId = 0
   private def genId() = synchronized {
     nextId += 1
@@ -200,11 +201,11 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
     Field("join") -> JoinSite,
     Field("stop") -> StopSite)
 
-  def getField(f: Field): AnyRef = {
-    fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field))
+  def getMember(f: Field) = {
+    BoundValue(fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field)))
   }
 
-  def hasField(f: Field): Boolean = {
+  override def hasMember(f: Field): Boolean = {
     fields contains f
   }
 
@@ -234,6 +235,7 @@ object ServletServer extends TotalSite with CastArgumentSupport {
     new ServletServerWrapper(server, context)
   }
 
+  /** Servlet for testing */
   private class EmbeddedAsyncServlet extends HttpServlet {
     import javax.servlet.http.HttpServletRequest
     import javax.servlet.http.HttpServletResponse
@@ -249,6 +251,7 @@ object ServletServer extends TotalSite with CastArgumentSupport {
     }
   }
 
+  /** Main for testing */
   def main(args: Array[String]): Unit = {
     val w = ServletServer(8080)
 
