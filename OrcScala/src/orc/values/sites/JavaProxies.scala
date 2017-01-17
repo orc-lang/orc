@@ -34,10 +34,10 @@ import orc.values.sites.OrcJavaCompatibility._
 import orc.compile.typecheck.Typeloader._
 import orc.error.runtime.NoSuchMemberException
 import orc.util.ArrayExtensions._
-import orc.error.runtime.UncallableValueException
 import orc.values.HasMembers
 import orc.run.core.BoundValue
 import orc.run.core.Binding
+import orc.error.runtime.UncallableValueException
 
 /** Transforms an Orc site call to an appropriate Java invocation
   *
@@ -112,7 +112,8 @@ abstract class JavaProxy extends Site {
         // TODO:PERFORMANCE: We are converting to list here. This should be avoided.
         chooseMethodForInvocation(javaClass, methodName, unOrcWrappedArgs.map({ a => { if (a != null) a.getClass() else null } }).toList)
       } catch { // Fill in "blank" exceptions with more details
-        case e: java.lang.NoSuchMethodException if (e.getMessage() == null) => throw new java.lang.NoSuchMethodException(classNameAndSignatureA(methodName, unOrcWrappedArgs))
+        case e: java.lang.NoSuchMethodException if (e.getMessage() == null) => 
+          throw new java.lang.NoSuchMethodException(classNameAndSignatureA(methodName, unOrcWrappedArgs))
       }
       if (theObject == null && !method.isStatic) {
         throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
@@ -177,7 +178,6 @@ case class JavaClassProxy(val javaClass: Class[_ <: java.lang.Object]) extends J
     }
   }
 
-  // FIXME: The way this interacts with ProjectClosure means that a static apply method on a class will shadow the constructor.
   def getMember(f: OrcField) = {
     if(hasMember(f.field))
       BoundValue(new JavaStaticMemberProxy(javaClass, f.field))

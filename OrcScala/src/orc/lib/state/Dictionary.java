@@ -15,7 +15,6 @@ import java.util.HashMap;
 
 import orc.Handle;
 import orc.error.runtime.TokenException;
-import orc.error.runtime.UncallableValueException;
 import orc.lib.state.Ref.RefInstance;
 import orc.run.core.Binding;
 import orc.run.core.BoundValue;
@@ -31,13 +30,8 @@ import scala.collection.immutable.List;
  * @author quark
  */
 public class Dictionary extends EvalSite {
-	protected static class DictionaryInstance extends EvalSite implements HasMembers {
+	protected static class DictionaryInstance implements HasMembers {
         private final HashMap<String, RefInstance> map = new HashMap<String, RefInstance>();
-
-        @Override
-        public Object evaluate(final Args args) throws TokenException {
-			throw new UncallableValueException(this);
-		}
 
 		@Override
 		public String toString() {
@@ -57,6 +51,11 @@ public class Dictionary extends EvalSite {
         @Override
         synchronized public boolean hasMember(Field f) {
           return true;
+        }
+
+        @Override
+        public String toOrcSyntax() {
+          return "DictionaryInstance";
         }
     }
 

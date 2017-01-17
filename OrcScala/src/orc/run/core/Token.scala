@@ -479,7 +479,9 @@ class Token protected (
       case c: Closure => {
         functionCall(c.code, c.context, params)
       }
-      case o: HasMembers if o.hasMember(Field("apply")) => {
+      // Check for HasMembers, but only on non-sites and OrcRecords
+      // TODO: This is a horrible list of special cases. We should remove this need by fully disentangling sites and values.
+      case o: HasMembers if (!o.isInstanceOf[orc.values.sites.Site] || o.isInstanceOf[orc.values.OrcRecord]) && o.hasMember(Field("apply")) => {
         resolve(o.getMember(Field("apply"))) { makeCall(_, params) }
       }
       case s => {
@@ -696,6 +698,8 @@ class Token protected (
                 //Logger.finer(s"resolved $o$f = $x")
                 publish(Some(x))
               }
+            // Fallback on old call style fields
+            // TODO: Remove the need for this.
             case s: AnyRef =>
               siteCall(s, List(f))
             case null =>

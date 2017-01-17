@@ -21,19 +21,16 @@ import scala.collection.immutable.Map
 import orc.run.core.BoundValue
 import orc.run.core.Binding
 import orc.values.sites.NonBlockingSite
-import orc.error.runtime.UncallableValueException
 
 /** @author dkitchin
   */
-case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonBlockingSite with HasMembers {
+case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers {
 
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)
   }
 
   def this(entries: List[(String, AnyRef)]) = this(entries.toMap)
-
-  override def evaluate(args: Array[AnyRef]) = throw new UncallableValueException(this)
 
   override def toOrcSyntax() = {
     val formattedEntries =
@@ -62,7 +59,7 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonB
   def getMember(field: Field) = {
     entries.get(field.field) match {
       case Some(v) => BoundValue(v)
-      case None => throw new NoSuchMemberException(this, name)
+      case None => throw new NoSuchMemberException(this, "this record")
     }
   }
   

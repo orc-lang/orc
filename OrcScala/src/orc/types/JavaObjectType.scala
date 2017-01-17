@@ -18,7 +18,6 @@ import orc.compile.typecheck.Typeloader._
 import orc.error.compiletime.typing.TypeArgumentArityException
 import orc.error.compiletime.typing.UncallableTypeException
 import orc.error.compiletime.typing.NoSuchMemberException
-import orc.error.runtime.UncallableValueException
 
 /** The type of a Java object.
   *
@@ -55,7 +54,8 @@ case class JavaObjectType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_]
   }
 
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
-    throw new UncallableValueException(this);
+    // TODO: I have no idea what I should be doing here.
+    throw new UncallableTypeException(this);
         }
   
   def getField(f: FieldType): Type = {

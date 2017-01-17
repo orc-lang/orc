@@ -77,7 +77,7 @@ public abstract class DotSite extends SiteAdaptor implements HasMembers {
     }
 
     protected void defaultTo(final Args args, final Handle token) throws TokenException {
-        throw new UncallableValueException("This dot site has no default behavior; it only responds to messages.");
+        throw new UncallableValueException("This dot site is not callable. It only has members.");
     }
 
     @Override

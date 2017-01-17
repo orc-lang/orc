@@ -28,6 +28,7 @@ import orc.run.tojava.HaltException
 import orc.run.tojava.ExceptionHaltException
 import orc.util.ArrayExtensions._
 import orc.values.HasMembers
+import orc.error.runtime.UncallableValueException
 
 trait Site extends OrcValue with SiteMetadata {
   def call(args: Array[AnyRef], h: Handle): Unit
@@ -284,7 +285,10 @@ class StructurePairSite(
   applySite: TotalSite with TypedSite,
   unapplySite: PartialSite1 with TypedSite) extends OrcRecord(
   "apply" -> applySite,
-  "unapply" -> unapplySite) with TypedSite {
+  "unapply" -> unapplySite) with TypedSite with PartialSite {
+  
+  override def evaluate(args: Array[AnyRef]) = throw new UncallableValueException(this)
+  
   def orcType() = new RecordType(
     "apply" -> applySite.orcType(),
     "unapply" -> unapplySite.orcType())
