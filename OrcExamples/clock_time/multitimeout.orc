@@ -19,7 +19,7 @@ SOLUTION:
 val c = Channel[Integer]()
 repeat(c.get) |
 ({| f() >x> c.put(x) >> stop
-    | Rwait(100) >> c.closeD() |} >> stop)
+    | Rwait(1000) >> c.closeD() |} >> stop)
 
 
 {- 

@@ -20,8 +20,10 @@ f(50000) |
 g(50000) |
 h(50000)
 
+
+-- TODO: Reenable test for Porc backend.
 {-
-OUTPUT:PERMUTABLE
+--OUTPUT:PERMUTABLE
 50000
 0
 50000
