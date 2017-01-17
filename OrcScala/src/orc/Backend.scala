@@ -62,7 +62,7 @@ case object DistributedBackendType extends BackendType {
   override def newBackend(): Backend[Expression] = new DistributedBackend()
 }
 
-/** The target based on the Orctimizer and porc.
+/** The target based on the Orctimizer and Porc.
   */
 case object PorcCompilerBackend extends BackendType {
   override val toString = "porc"

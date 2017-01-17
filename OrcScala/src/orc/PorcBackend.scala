@@ -26,7 +26,7 @@ import orc.run.tojava.ToJavaRuntime
 import orc.run.tojava.Execution
 import orc.run.tojava.OrcProgram
 
-/** A backend implementation using the Token interpreter.
+/** A backend implementation using the Orctimizer and Porc compilers.
   *
   * @author amp
   */
