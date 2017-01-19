@@ -17,36 +17,16 @@ import scala.language.reflectiveCalls
 import scala.math.{ BigDecimal, BigInt }
 
 import orc.ast.oil.{ named => syntactic }
-import orc.ast.oil.named.{
-  Constant,
-  DeclareCallables,
-  DeclareType,
-  Callable,
-  Def,
-  Site,
-  Expression,
-  FoldedCall,
-  FoldedLambda,
-  HasType,
-  Hole,
-  Otherwise,
-  Parallel,
-  Graft,
-  Trim,
-  Sequence,
-  Stop,
-  UnboundVar,
-  VtimeZone
-}
+import orc.ast.oil.named.{ Callable, Constant, DeclareCallables, DeclareClasses, DeclareType, Expression, FieldAccess, FoldedCall, FoldedLambda, Graft, HasType, Hole, New, Otherwise, Parallel, Sequence, Stop, Trim, UnboundVar, VtimeZone }
 import orc.compile.typecheck.ConstraintSet.meetAll
 import orc.compile.typecheck.Typeloader.{ lift, liftEither, liftJavaType, reify }
 import orc.error.OrcExceptionExtension.extendOrcException
 import orc.error.compiletime.{ CompilationException, ContinuableSeverity, UnboundVariableException }
 import orc.error.compiletime.typing.{ ArgumentArityException, FunctionTypeExpectedException, NoMinimalTypeWarning, OverloadedTypeException, TypeArgumentArityException, TypeException, UncallableTypeException, UnspecifiedArgTypesException, UnspecifiedReturnTypeException }
-import orc.types.{ BooleanType, Bot, CallableType, Contravariant, Covariant, FieldType, FunctionType, IntegerConstantType, IntegerType, Invariant, JavaObjectType, NullType, NumberType, OverloadedType, RecordType, SignalType, StrictType, StringType, Top, TupleType, Type, TypeInstance, TypeOperator, TypeVariable }
+import orc.types._
 import orc.util.OptionMapExtension.addOptionMapToList
-import orc.values.{ Field, Signal }
-import orc.values.sites.TypedSite
+import orc.values._
+import orc.values.sites._
 
 /** Typechecker for Orc expressions.
   *
@@ -94,6 +74,15 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           case FoldedCall(target, args, typeArgs) => {
             typeFoldedCall(target, args, typeArgs, None, expr)
           }
+          case FieldAccess(target, f) => {
+            val (newTarget, typeTarget) = typeSynthExpr(target)
+            // TODO: Add support for fields.
+            ???
+          }
+          case New(linearization) => {
+            // TODO: Add support for classes.
+            ???
+          }
           case Parallel(left, right) => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
             val (newRight, typeRight) = typeSynthExpr(right)
@@ -122,6 +111,10 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             val (newDefs, defBindings) = typeDefs(defs)
             val (newBody, typeBody) = typeSynthExpr(body)(context ++ defBindings, typeContext, typeOperatorContext)
             (DeclareCallables(newDefs, newBody), typeBody)
+          }
+          case DeclareClasses(defs, body) => {
+            // TODO: Add support for classes.
+            ???
           }
           case VtimeZone(order, body) => {
             val (newBody, typeBody) = typeSynthExpr(body)
