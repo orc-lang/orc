@@ -66,7 +66,7 @@ class ExceptionCompileLogger() extends CompileLogger {
 
 }
 
-object ExceptionCompileLogger {  
+object ExceptionCompileLogger {
   class GenericCompilationException(message: String) extends CompilationException(message)
 
   def throwExceptionIfNeeded(minSeverity: Severity, severity: Severity, message: String, location: Option[OrcSourceRange], exception: Throwable) {

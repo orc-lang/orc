@@ -88,7 +88,7 @@ class TableDisplay(title: String) extends JFrame {
       model.setValueAt(v, row, getColumn(name))
       updateRowHeights()
     }
-    
+
   }
 
   def addItem() = new Item()

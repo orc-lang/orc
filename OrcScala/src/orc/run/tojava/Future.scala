@@ -81,7 +81,7 @@ final class Future() extends OrcValue {
     * This may call publish in this thread if the future is already bound, or
     * if this is unbound, it adds blocked to the blockers list to be called
     * later.
-    * 
+    *
     * Return true if the value was already available.
     */
   def forceIn(blocked: Blockable): Boolean = {

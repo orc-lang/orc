@@ -50,33 +50,33 @@ case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_],
 
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
     // Static member access is via getField
-      // Constructor call
-        val formals = cl.getTypeParameters()
-        if (formals.size != typeArgs.size) {
-          throw new TypeArgumentArityException(formals.size, typeArgs.size)
-        } else {
-          val newJavaContext = javaContext ++ (formals zip typeArgs)
-          def valid(ctor: jvm.Constructor[_]): Boolean = {
-            val ctorFormals = ctor.getGenericParameterTypes()
-            jvm.Modifier.isPublic(ctor.getModifiers()) &&
-              ctorFormals.size == argTypes.size &&
-              {
-                val orcFormals = ctorFormals map { liftJavaType(_, newJavaContext) }
-                (argTypes corresponds orcFormals) { _ < _ }
-              }
+    // Constructor call
+    val formals = cl.getTypeParameters()
+    if (formals.size != typeArgs.size) {
+      throw new TypeArgumentArityException(formals.size, typeArgs.size)
+    } else {
+      val newJavaContext = javaContext ++ (formals zip typeArgs)
+      def valid(ctor: jvm.Constructor[_]): Boolean = {
+        val ctorFormals = ctor.getGenericParameterTypes()
+        jvm.Modifier.isPublic(ctor.getModifiers()) &&
+          ctorFormals.size == argTypes.size &&
+          {
+            val orcFormals = ctorFormals map { liftJavaType(_, newJavaContext) }
+            (argTypes corresponds orcFormals) { _ < _ }
           }
-          if (cl.getConstructors() exists valid) {
-            if (formals.isEmpty) {
-              liftJavaType(cl)
-            } else {
-              liftJavaTypeOperator(cl).operate(typeArgs)
-            }
-          } else {
-            throw new NoMatchingConstructorException()
-          }
-        }
       }
-  
+      if (cl.getConstructors() exists valid) {
+        if (formals.isEmpty) {
+          liftJavaType(cl)
+        } else {
+          liftJavaTypeOperator(cl).operate(typeArgs)
+        }
+      } else {
+        throw new NoMatchingConstructorException()
+      }
+    }
+  }
+
   def getField(f: FieldType): Type = {
     typeOfMember(f.f, true, javaContext)
   }
@@ -86,7 +86,7 @@ case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_],
       typeOfMember(f.f, true, javaContext)
       true
     } catch {
-      case _ : NoSuchMemberException =>
+      case _: NoSuchMemberException =>
         false
     }
   }

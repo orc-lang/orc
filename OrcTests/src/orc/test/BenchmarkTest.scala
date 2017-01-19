@@ -213,7 +213,7 @@ object BenchmarkTest {
           write("Config," + orcTests.map(c => {
             val cname = c._1
             (if (config.outputCompileTime) s"$cname Comp. Avg,$cname Comp. Stdev," else "") +
-              s"$cname Run Avg" + (if(config.outputStdDev) s",$cname Run Stdev" else "")
+              s"$cname Run Avg" + (if (config.outputStdDev) s",$cname Run Stdev" else "")
           }).mkString(",") + "\n")
         }
         write(s"${config.name}")
@@ -230,7 +230,7 @@ object BenchmarkTest {
           write("Config," + scalaTests.map(c => {
             val cname = c._1
             (if (config.outputCompileTime) s"$cname Comp. Avg,$cname Comp. Stdev," else "") +
-              s"$cname Run Avg" + (if(config.outputStdDev) s",$cname Run Stdev" else "")
+              s"$cname Run Avg" + (if (config.outputStdDev) s",$cname Run Stdev" else "")
           }).mkString(",") + "\n")
         }
         write(s"${config.name}")

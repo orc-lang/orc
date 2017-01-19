@@ -42,15 +42,23 @@ public class Floor extends EvalSite implements TypedSite {
         }
     }
 
-	@Override
-	public Type orcType() {
-		return Types.function(Types.number(), Types.integer());
-	}
+    @Override
+    public Type orcType() {
+        return Types.function(Types.number(), Types.integer());
+    }
 
     @Override
-    public boolean nonBlocking() { return true; }
+    public boolean nonBlocking() {
+        return true;
+    }
+
     @Override
-    public int maxPublications() { return 1; }
+    public int maxPublications() {
+        return 1;
+    }
+
     @Override
-    public boolean effectFree() { return true; }
+    public boolean effectFree() {
+        return true;
+    }
 }

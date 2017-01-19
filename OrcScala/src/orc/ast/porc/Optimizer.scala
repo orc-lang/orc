@@ -128,16 +128,16 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(30)
-  
+
   val InlineSpawn = OptFull("inline-spawn") { (e, a) =>
     import a.ImplicitResults._
     e match {
       case SpawnIn(c, t, e) => {
-          val c = Analysis.cost(e)
-          if (c <= spawnCostInlineThreshold && e.fastTerminating)
-            Some(e)
-          else
-            None
+        val c = Analysis.cost(e)
+        if (c <= spawnCostInlineThreshold && e.fastTerminating)
+          Some(e)
+        else
+          None
       }
       case _ => None
     }
@@ -178,9 +178,9 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
    */
 
   val allOpts = List(
-      VarLetElim, SpecializeSiteCall, InlineSpawn, 
-      InlineLet, LetElim, DefElim, OnHaltedElim,
-      EtaReduce)
+    VarLetElim, SpecializeSiteCall, InlineSpawn,
+    InlineLet, LetElim, DefElim, OnHaltedElim,
+    EtaReduce)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -259,8 +259,7 @@ object Optimizer {
     import a.ImplicitResults._
     import PorcInfixNotation._
     e match {
-      case SiteCallIn(target, p, c, t, args, ctx) 
-          if target.siteMetadata.map(_.isDirectCallable).getOrElse(false) =>
+      case SiteCallIn(target, p, c, t, args, ctx) if target.siteMetadata.map(_.isDirectCallable).getOrElse(false) =>
         val v = new Var()
         Some(
           TryOnHalted({

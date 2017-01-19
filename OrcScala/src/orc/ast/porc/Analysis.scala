@@ -47,9 +47,9 @@ sealed trait AnalysisProvider[E <: PorcAST] {
   */
 class Analyzer extends AnalysisProvider[PorcAST] {
   val cache = mutable.Map[WithContext[PorcAST], AnalysisResults]()
-  
+
   // TODO: Somehow this is running the system out of memory on some programs. For example, /OrcExamples/OrcSites/simanim/baboon.orc
-  
+
   def apply(e: WithContext[PorcAST]) = {
     cache.get(e) match {
       case Some(r) => {
@@ -81,7 +81,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case (_: DefCallDirect) in _ => true
       case (v: Var) in ctx => ctx(v) match {
         // Somehow hack in enough context dependance to catch obvious cases of arguments that have nonfuture args.
-        case ContinuationArgumentBound(ctx, cont, _) => 
+        case ContinuationArgumentBound(ctx, cont, _) =>
           // Continuation args can never be a future or an unresolved closure because they are publication values
           true
         case LetBound(lctx, l) => {
@@ -126,17 +126,17 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     }
   }
 
-  def nonHalt(e : WithContext[PorcAST]): Boolean = {
+  def nonHalt(e: WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
     // TODO: Fill this out to be a more accurate analysis. It should be a type analysis.
     e match {
-      case (_:OrcValue | _:Unit | _:Var) in _ => true
+      case (_: OrcValue | _: Unit | _: Var) in _ => true
       case ContinuationIn(_, _, _) => true
       case SiteCallIn(_, _, _, _, _, _) => true
       case SiteCallDirectIn(target, _, _) => target.siteMetadata.map(_.publications > 0).getOrElse(false)
       case DefCallIn(_, _, _, _, _, _) => true
       case DefCallDirectIn(target, _, _) => false
-      
+
       /*
       case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
         case LetBound(dctx, l) => 
@@ -158,24 +158,24 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       */
       case _ => false
     }
-  }  
-  
+  }
+
   // TODO: detect more fast cases for defcall and call. This is important for eliminating spawns at def calls when they are not needed.
-  def fastTerminating(e : WithContext[PorcAST]): Boolean = {
+  def fastTerminating(e: WithContext[PorcAST]): Boolean = {
     import ImplicitResults._
     e match {
       case SiteCallDirectIn(target, args, _) if target.siteMetadata.map(_.timeToHalt == Delay.NonBlocking).getOrElse(false) => {
         true
       }
       case SiteCallIn(_, p, c, t, args, _) => true
-      
+
       case DefCallIn((target: Var) in ctx, p, c, t, args, _) => {
         ctx(target) match {
           case DefBound(_, _, _) => true
           case _ => false
         }
       }
-      
+
       case DefCallIn(target, p, c, t, args, _) => false
 
       case CallIn((t: Var) in ctx, _, _) => {
@@ -201,7 +201,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
           case _ => false
         }
       }
-        
+
       case TryOnHaltedIn(b, h) => b.fastTerminating && h.fastTerminating
       case TryOnKilledIn(b, h) => b.fastTerminating && h.fastTerminating
       case LetIn(_, v, b) => v.fastTerminating && b.fastTerminating
@@ -225,23 +225,23 @@ object Analysis {
   val callCost = 1
   val externalCallCost = 5
   val atomicOperation = 2
-  
-  def cost(e : PorcAST): Int = {
+
+  def cost(e: PorcAST): Int = {
     val cs = e.subtrees.asInstanceOf[Iterable[PorcAST]]
     (e match {
-      case _ : Spawn => spawnCost
-      case _ : Force => forceCost
-      case _ : Kill => killCost
-      case _ : Continuation | _ : Def | _ : NewCounter => closureCost
-      case _ : NewTerminator => closureCost
-      case _ : Call => callCost
-      case _ : SiteCallDirect => externalCallCost
-      case _ : SiteCall => externalCallCost + spawnCost
-      case _ : Kill | _ : Halt => atomicOperation
+      case _: Spawn => spawnCost
+      case _: Force => forceCost
+      case _: Kill => killCost
+      case _: Continuation | _: Def | _: NewCounter => closureCost
+      case _: NewTerminator => closureCost
+      case _: Call => callCost
+      case _: SiteCallDirect => externalCallCost
+      case _: SiteCall => externalCallCost + spawnCost
+      case _: Kill | _: Halt => atomicOperation
       case _ => 0
-    }) + (cs.map( cost ).sum)
+    }) + (cs.map(cost).sum)
   }
-  
+
   def count(t: PorcAST, p: (Expr => Boolean)): Int = {
     val cs = t.subtrees.asInstanceOf[Iterable[PorcAST]]
     (t match {

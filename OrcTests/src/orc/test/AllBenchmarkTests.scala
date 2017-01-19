@@ -114,19 +114,19 @@ object AllBenchmarkTests {
 
     for (conf <- config.configs) {
       import scala.sys.process._
-      
+
       val bootpath = if (System.getProperty("sun.boot.class.path") ne null) {
-        System.getProperty("path.separator", ":") + System.getProperty("sun.boot.class.path")        
+        System.getProperty("path.separator", ":") + System.getProperty("sun.boot.class.path")
       } else {
         ""
       }
-      
+
       val jvm = if (System.getProperty("os.name").startsWith("Win")) {
         System.getProperty("java.home") + File.separator + "bin" + File.separator + "java.exe";
       } else {
         System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
       }
-      
+
       val cmd = Seq(jvm, "-cp", System.getProperty("java.class.path") + bootpath) ++
         config.jvmArguments ++
         Seq(BenchmarkTest.getClass().getCanonicalName().stripSuffix("$")) ++ conf.asArguments

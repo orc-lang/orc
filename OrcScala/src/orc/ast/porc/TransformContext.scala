@@ -34,8 +34,8 @@ abstract class TransformContext extends PrecomputeHashcode with Product {
   def +(b: Binding): TransformContext = {
     normalize(ExtendBindings(List(b), this))
   }
-  
-  def lookupBoundTo(v: Expr): Option[LetBound]    
+
+  def lookupBoundTo(v: Expr): Option[LetBound]
 
   def enclosingTerminator: Option[PorcAST]
   def setTerminator(n: PorcAST): TransformContext = {
@@ -93,7 +93,7 @@ object TransformContext {
     }
     r
   }
-  
+
   def clear() {
     cache.clear()
   }
@@ -127,7 +127,7 @@ object TransformContext {
 
     def lookupBoundTo(v: Expr): Option[LetBound] = {
       val thisRes = nbindings.collect({
-        case b@LetBound(_, Let(_, lv, _)) if lv == v => b
+        case b @ LetBound(_, Let(_, lv, _)) if lv == v => b
       }).headOption
       if (thisRes.isDefined)
         thisRes
@@ -139,7 +139,7 @@ object TransformContext {
       normalize(ExtendBindings(b :: nbindings, prev))
     }
   }
-  
+
   case class SetCounterTerminator(enclosingCounter: Option[PorcAST], enclosingTerminator: Option[PorcAST], prev: TransformContext) extends TransformContext {
     def apply(v: Var) = prev(v)
     def contains(v: Var): Boolean = prev.contains(v)
@@ -209,14 +209,14 @@ final case class WithContext[+E <: PorcAST](e: E, ctx: TransformContext) extends
     case SiteCallDirectIn(target, a, ctx) => Seq(target) ++ a.map(_ in ctx)
     case DefCallIn(target, p, c, t, args, ctx) => Seq(target, p in ctx, c in ctx, t in ctx) ++ args.map(_ in ctx)
     case DefCallDirectIn(target, a, ctx) => Seq(target) ++ a.map(_ in ctx)
-    
+
     case SpawnFutureIn(c, t, pArg, cArg, expr) => Seq(c, t, expr)
 
     case ContinuationIn(args, ctx, b) => Seq(b)
 
     case NewCounterIn(c, h) => Seq(h)
 
-    case e in ctx => e.subtrees.collect { case e : PorcAST => e in ctx }
+    case e in ctx => e.subtrees.collect { case e: PorcAST => e in ctx }
   }
 }
 object WithContext {

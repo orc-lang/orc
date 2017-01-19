@@ -26,13 +26,12 @@ import orc.values.Field
 import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.RecordConstructor
 
-/**
- * @author amp
- */
+/** @author amp
+  */
 class OrctimizerAnalysisTest {
   val analyzer = new ExpressionAnalyzer
   import analyzer.ImplicitResults._
-  
+
   def getInContext(expr: Expression, f: Expression) = {
     println(s"Testing analysis of $f in:\n$expr")
     var res: Option[WithContext[Expression]] = None
@@ -46,9 +45,9 @@ class OrctimizerAnalysisTest {
       throw new IllegalArgumentException("f must be a subexpression of expr. Your test is buggy.")
     }
   }
-  
+
   lazy val unanalyzableCall = CallSite(Constant(new orc.lib.net.BingSearchFactoryUsernameKey), List(), None)
-  
+
   @Test
   def analyzeStop(): Unit = {
     val f = Stop()
@@ -58,7 +57,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Effects.None, a.effects)
     assertEquals(Range(0, 0), a.publications)
   }
-  
+
   @Test
   def analyzeConstant(): Unit = {
     val f = Constant("")
@@ -90,7 +89,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Effects.None, a.effects)
     assertEquals(Range(1, 1), a.publications)
   }
-  
+
   /*
   
   @Test
@@ -142,7 +141,7 @@ class OrctimizerAnalysisTest {
     assertEquals(ForceType.Eventually, a.forces(x))
   }
   */
-  
+
   @Test
   def analyzeLimit(): Unit = {
     val e = Trim(unanalyzableCall || unanalyzableCall)
@@ -150,7 +149,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Range(0, 1), a.publications)
     assertEquals(Effects.BeforePub, a.effects)
   }
-  
+
   /*
   @Test
   def analyzePar(): Unit = {
@@ -203,7 +202,7 @@ class OrctimizerAnalysisTest {
     assertEquals(ForceType.Eventually, a.forces(x))
   }
   */
-  
+
   @Test
   def analyzeStopSeq(): Unit = {
     val e = Stop() >> unanalyzableCall
@@ -214,7 +213,6 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.Forever, a.timeToPublish)
   }
 
-  
   /*
   @Test
   def analyzeDefCall(): Unit = {
@@ -292,21 +290,21 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.NonBlocking, a.timeToPublish)
   }
   */
-  
+
   @Test
   def analyzeComplex1(): Unit = {
     val v1541 = new BoundVar()
     val v1542 = new BoundVar()
-    val e = (CallSite(Constant(TupleConstructor), List(Constant(Field("apply")), Constant("")), None) > v1541 > 
-      (CallSite(Constant(TupleConstructor), List(Constant(Field("unapply")), Constant("")), None) > v1542 > 
-      (CallSite(Constant(RecordConstructor), List(v1541, v1542), None) >> Stop())))
+    val e = (CallSite(Constant(TupleConstructor), List(Constant(Field("apply")), Constant("")), None) > v1541 >
+      (CallSite(Constant(TupleConstructor), List(Constant(Field("unapply")), Constant("")), None) > v1542 >
+        (CallSite(Constant(RecordConstructor), List(v1541, v1542), None) >> Stop())))
     val a = getInContext(e, e)
     assertEquals(Range(0, 0), a.publications)
     assertEquals(Effects.None, a.effects)
     assertEquals(Delay.NonBlocking, a.timeToHalt)
     assertEquals(Delay.Forever, a.timeToPublish)
   }
-  
+
   /*
   @Test
   def analyzeComplex2(): Unit = {
@@ -328,7 +326,7 @@ class OrctimizerAnalysisTest {
     assertEquals(Delay.Forever, a.timeToPublish)
   }
   */
-  
+
   // TODO: test timeToHalt for: 
   // (Tuple(.apply, toattr) >`v1541> (Tuple(.unapply, fromattr) >`v1542> (Record(`v1541, `v1542) >`ov1784> stop)))
 }

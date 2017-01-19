@@ -15,7 +15,6 @@ package orc.ast.porc
 import scala.collection.mutable
 
 /**
-  *
   * @author amp
   */
 trait FreeVariables {
@@ -25,7 +24,7 @@ trait FreeVariables {
     // TODO: Do not use ContextualTransform here. It will generate a bunch of useless contexts.
     (new ContextualTransform.NonDescending {
       override def onVar = {
-        case (v : Var) in ctx if !ctx.contains(v) => 
+        case (v: Var) in ctx if !ctx.contains(v) =>
           s += v
           v
       }

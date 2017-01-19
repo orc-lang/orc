@@ -28,7 +28,7 @@ trait NamedInfixCombinators {
     new WithGreater {
       def >(g: Expression) = Branch(NamedInfixCombinators.this, x, g)
     }
-  
+
   def otw(g: Expression) = Otherwise(this, g)
 }
 
@@ -55,7 +55,7 @@ object > {
   }
   def unapply(e: WithContext[NamedAST]) = {
     e match {
-      case (n@Branch(f, x, g)) in ctx => {
+      case (n @ Branch(f, x, g)) in ctx => {
         val newctx = ctx + Bindings.SeqBound(ctx, n)
         Some(((f in ctx, x), g in newctx))
       }
@@ -65,10 +65,9 @@ object > {
   def unapply[T](p: (T, BoundVar)) = Some(p)
 }
 
-
 object DeclareCallablesAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@DeclareCallables(defs, body)) in ctx => {
+    case (n @ DeclareCallables(defs, body)) in ctx => {
       val defsctx = ctx extendBindings (defs map { Bindings.RecursiveCallableBound(ctx, n, _) })
       val bodyctx = ctx extendBindings (defs map { Bindings.CallableBound(defsctx, n, _) })
       Some(defs, defsctx, body in bodyctx)
@@ -78,7 +77,7 @@ object DeclareCallablesAt {
 }
 object DefAt {
   def unapply(e: WithContext[NamedAST]) = e match {
-    case (d@Def(name, formals, body, typeformals, argtypes, returntype)) in ctx => {
+    case (d @ Def(name, formals, body, typeformals, argtypes, returntype)) in ctx => {
       val newctx = ctx extendBindings (formals map { Bindings.ArgumentBound(ctx, d, _) }) extendTypeBindings (typeformals map { TypeBinding(ctx, _) })
       Some(name in ctx, formals, body in newctx, typeformals, argtypes, returntype, newctx)
     }
@@ -87,7 +86,7 @@ object DefAt {
 }
 object TrimAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Trim(f)) in ctx => {
+    case (n @ Trim(f)) in ctx => {
       Some(f in ctx)
     }
     case _ => None
@@ -95,7 +94,7 @@ object TrimAt {
 }
 object FutureAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Future(x, f, g)) in ctx => {
+    case (n @ Future(x, f, g)) in ctx => {
       val newctx = ctx + Bindings.FutureBound(ctx, n)
       Some(x, f in ctx, g in newctx)
     }
@@ -104,7 +103,7 @@ object FutureAt {
 }
 object ForceAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Force(xs, vs, b, e)) in ctx => {
+    case (n @ Force(xs, vs, b, e)) in ctx => {
       val newctx = ctx extendBindings (xs.map(x => Bindings.ForceBound(ctx, n, x)))
       Some(xs, vs map (_ in ctx), b, e in newctx)
     }
@@ -113,7 +112,7 @@ object ForceAt {
 }
 object CallDefAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@CallDef(t, args, targs)) in ctx => {
+    case (n @ CallDef(t, args, targs)) in ctx => {
       Some(t in ctx, args, targs, ctx)
     }
     case _ => None
@@ -121,7 +120,7 @@ object CallDefAt {
 }
 object CallSiteAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@CallSite(t, args, targs)) in ctx => {
+    case (n @ CallSite(t, args, targs)) in ctx => {
       Some(t in ctx, args, targs, ctx)
     }
     case _ => None
@@ -129,7 +128,7 @@ object CallSiteAt {
 }
 object OtherwiseAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@Otherwise(f, g)) in ctx => {
+    case (n @ Otherwise(f, g)) in ctx => {
       Some(f in ctx, g in ctx)
     }
     case _ => None
@@ -137,7 +136,7 @@ object OtherwiseAt {
 }
 object IfDefAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@IfDef(a, f, g)) in ctx => {
+    case (n @ IfDef(a, f, g)) in ctx => {
       Some(a in ctx, f in ctx, g in ctx)
     }
     case _ => None
@@ -145,7 +144,7 @@ object IfDefAt {
 }
 object DeclareTypeAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n@DeclareType(tv, t, b)) in ctx => {
+    case (n @ DeclareType(tv, t, b)) in ctx => {
       val newctx = ctx + TypeBinding(ctx, tv)
       Some(tv in newctx, t in newctx, b in newctx)
     }

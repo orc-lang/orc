@@ -72,8 +72,7 @@ object BingSearch {
   // TODO: This is not quite right and will probably not work when type checked.
 }
 
-/**
-  * @author amp
+/** @author amp
   */
 class BingSearch(user: String, key: String, source: String) extends PartialSite with SpecificArity with TypedSite {
   val arity = 1

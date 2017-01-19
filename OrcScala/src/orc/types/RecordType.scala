@@ -30,11 +30,11 @@ case class RecordType(entries: Map[String, Type]) extends CallableType with Stri
 
   override def call(typeArgs: List[Type], argTypes: List[Type]) = {
     throw new UncallableTypeException(this)
-      }
+  }
 
   override def getField(f: FieldType): Type = {
     entries.getOrElse(f.f, throw new NoSuchMemberException(this, f.f))
-    }
+  }
   override def hasField(f: FieldType): Boolean = {
     entries.contains(f.f)
   }

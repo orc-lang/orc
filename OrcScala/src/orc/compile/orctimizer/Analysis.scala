@@ -33,7 +33,7 @@ sealed trait ForceType {
     case Delay.Blocking => this max ForceType.Eventually(this.haltsWith)
     case Delay.Forever => this max ForceType.Never
   }
- 
+
   def <=(o: ForceType): Boolean = {
     (this max o) == o
   }
@@ -60,7 +60,7 @@ object ForceType {
       case Immediately(_) => Immediately(haltsWith || o.haltsWith)
       case _ => this
     }
-    
+
     override def withHalting(b: Boolean): ForceType = Eventually(b)
   }
   case object Never extends ForceType {
@@ -133,7 +133,7 @@ trait AnalysisResults {
   /** How many times will this expression publish?
     */
   def publications: Range
-  
+
   /** Metadata on the site published by this expression if available.
     */
   def siteMetadata: Option[SiteMetadata]
@@ -144,7 +144,7 @@ trait AnalysisResults {
     */
   def forces(x: BoundVar) = forceTypes.getOrElse(x, ForceType.Never)
   def forceTypes: Map[BoundVar, ForceType]
-  
+
   // TODO: This may not be the right way to represent this.
   /*   For each future I basically want to know full analyses of what a force on it will do.
    *   Maybe I should just create phantom force operations and have the force case in each analyses
@@ -153,14 +153,14 @@ trait AnalysisResults {
   /** The amount of time forcing values published by this expression will cost.
     */
   def valueForceDelay: Delay
-  
+
   //def publishedValueInfo: ValueInfo
-  
+
   def silent = publications only 0
   def talkative = publications > 0
-  
+
   def effectFree = effects == Effects.None
-  
+
   def nonBlockingHalt = timeToHalt == Delay.NonBlocking
   def nonBlockingPublish = timeToPublish == Delay.NonBlocking
 }
@@ -241,9 +241,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
 
   // TODO: This is missing cases throughout and needs to be checked for currectness in all analyses!!
 
-  
   // TODO: For correctness I need to assume values to calls are futures. So I need to block on them at future call time.
-  
+
   def timeToHalt(e: WithContext[Expression]): Delay = {
     import ImplicitResults._
     e match {
@@ -295,11 +294,11 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         ctx(v) match {
           case Bindings.SeqBound(_, _)
             | Bindings.CallableBound(_, _, _)
-            | Bindings.RecursiveCallableBound(_, _, _) => 
+            | Bindings.RecursiveCallableBound(_, _, _) =>
             Delay.NonBlocking
-          case Bindings.ArgumentBound(_, _, _) => 
+          case Bindings.ArgumentBound(_, _, _) =>
             Delay.NonBlocking
-          case _ => 
+          case _ =>
             Delay.Blocking
         }
       case FieldAccess(_, _) in _ =>
@@ -328,14 +327,14 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         val ctx = e.ctx
         // TODO: Why doesn't this use valueForceDelay
         def delayForArgument(a: Argument) = a match {
-          case x : BoundVar =>
+          case x: BoundVar =>
             ctx(x) match {
               case Bindings.FutureBound(sctx, Future(_, source, _)) =>
                 (source in sctx).timeToPublish
               case Bindings.ForceBound(_, _, _) =>
                 Delay.NonBlocking
               case Bindings.CallableBound(_, _, _)
-                 | Bindings.RecursiveCallableBound(_, _, _) =>
+                | Bindings.RecursiveCallableBound(_, _, _) =>
                 (x in ctx).valueForceDelay
               case _ =>
                 Delay.Blocking
@@ -354,8 +353,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case CallSiteAt(target, args, _, ctx) => {
         implicit val _ctx = ctx
         target.siteMetadata.map(s => {
-          s.timeToPublish max args.foldRight(Delay.NonBlocking: Delay) { 
-            (a, acc) => a.valueForceDelay max acc 
+          s.timeToPublish max args.foldRight(Delay.NonBlocking: Delay) {
+            (a, acc) => a.valueForceDelay max acc
           }
         }).getOrElse(Delay.Blocking)
       }
@@ -370,7 +369,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         (b in ctx).timeToPublish
       case Constant(_) in _ =>
         Delay.NonBlocking
-      case (v: BoundVar) in ctx => 
+      case (v: BoundVar) in ctx =>
         Delay.NonBlocking
       case FieldAccess(_, _) in _ =>
         Delay.NonBlocking
@@ -387,12 +386,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       case CallSiteAt(target, args, _, ctx) => {
         implicit val _ctx = ctx
         target.siteMetadata.map(s => {
-            if (args.forall(a => a.publications > 0))
-              s.publications
-            else if (args.exists(a => a.publications only 0))
-              Range(0, 0)
-            else
-              s.publications.mayHalt
+          if (args.forall(a => a.publications > 0))
+            s.publications
+          else if (args.exists(a => a.publications only 0))
+            Range(0, 0)
+          else
+            s.publications.mayHalt
         }).getOrElse(Range(0, None))
       }
       case CallDefAt(target, args, _, ctx) => {
@@ -404,25 +403,25 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         val ctx = e.ctx
         // Determine if the force could halt totally and add zero to the set for e if needed.
         def canHalt(a: Argument) = a match {
-          case x : BoundVar =>
+          case x: BoundVar =>
             ctx(x) match {
               case Bindings.FutureBound(sctx, Future(_, source, _)) =>
                 true
               case Bindings.ForceBound(_, _, _) =>
                 false
               case Bindings.CallableBound(_, _, _)
-                 | Bindings.RecursiveCallableBound(_, _, _) =>
+                | Bindings.RecursiveCallableBound(_, _, _) =>
                 false
               case _ =>
                 false
             }
           case x: Constant =>
             false
-          case _ => 
+          case _ =>
             true
         }
         val mayNotRun = vs.foldRight(false) { (a, acc) => canHalt(a) || acc }
-        if(mayNotRun)
+        if (mayNotRun)
           l.publications.mayHalt
         else
           l.publications
@@ -465,7 +464,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Map()
       case Constant(_) in _ =>
         Map()
-      case CallSiteAt(_, _, _, _) => 
+      case CallSiteAt(_, _, _, _) =>
         Map()
       case CallDefAt(target in _, args, _, ctx) => target match {
         case v: BoundVar => {
@@ -480,11 +479,11 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
               // TODO: Handle site case. This will crash on a site.
             }
             // TODO: The system really needs some limited recursive analysis.
-//            case Bindings.RecursiveDefBound(ctx, _, d) => d in ctx match {
-//              case DefAt(name in _, formals, body, _, _, _, _) => {
-//                assert(name == v)
-//              }
-//            }
+            //            case Bindings.RecursiveDefBound(ctx, _, d) => d in ctx match {
+            //              case DefAt(name in _, formals, body, _, _, _, _) => {
+            //                assert(name == v)
+            //              }
+            //            }
             case _ => Map[BoundVar, ForceType]()
           }
           callstr.updated(v, ForceType.Immediately(true))
@@ -493,24 +492,24 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
       }
       case f || g =>
         ForceType.mergeMaps(
-            _ max _, ForceType.Never, 
-            f.forceTypes, g.forceTypes)
+          _ max _, ForceType.Never,
+          f.forceTypes, g.forceTypes)
       // Adding f.publishesAtLeast(1) means that this expression cannot halt without forcing.
       case f OtherwiseAt g =>
         // Take the minimum force of f and g (shifted by the halt time of f).
         // And never claim to halt with anything in g.
         if (f.publications only 0)
           ForceType.mergeMaps(
-              _ min _, ForceType.Never,
-              f.forceTypes, g.forceTypes.mapValues { t => t.delayBy(f.timeToHalt) }).mapValues { _.withHalting(false) }
+            _ min _, ForceType.Never,
+            f.forceTypes, g.forceTypes.mapValues { t => t.delayBy(f.timeToHalt) }).mapValues { _.withHalting(false) }
         else
           ForceType.mergeMaps(
-              _ min _, ForceType.Never,
-              f.forceTypes, g.forceTypes.mapValues { t => t max ForceType.Eventually(false) }).mapValues { _.withHalting(false) }
+            _ min _, ForceType.Never,
+            f.forceTypes, g.forceTypes.mapValues { t => t max ForceType.Eventually(false) }).mapValues { _.withHalting(false) }
       case f > x > g =>
         ForceType.mergeMaps(
-            _ min _, ForceType.Never,
-            f.forceTypes, (g.forceTypes - x).mapValues { t => t.delayBy(f.timeToPublish) })
+          _ min _, ForceType.Never,
+          f.forceTypes, (g.forceTypes - x).mapValues { t => t.delayBy(f.timeToPublish) })
       case TrimAt(f) =>
         f.forceTypes
       case ForceAt(xs, vs, _, l) =>
@@ -527,17 +526,17 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
          * 
          */
         vs.collect({ case (x: BoundVar) in _ => (x, ForceType.Immediately(true)) }).toMap ++ l.forceTypes
-        // TODO: These may also wait on the content of closures which could be useful. (for functions returning functions for instance)
+      // TODO: These may also wait on the content of closures which could be useful. (for functions returning functions for instance)
       case FutureAt(x, f, g) =>
         val fForces = f.forceTypes.mapValues { t => t max ForceType.Eventually(false) }
         ForceType.mergeMaps(
-            _ max _, ForceType.Never, 
-            fForces, g.forceTypes)
+          _ max _, ForceType.Never,
+          fForces, g.forceTypes)
       case IfDefAt(a, f, g) =>
         // TODO: Define an analysis to give Def/Unknown/Site
         ForceType.mergeMaps(
-            _ max _, ForceType.Never, 
-            f.forceTypes, g.forceTypes)
+          _ max _, ForceType.Never,
+          f.forceTypes, g.forceTypes)
       case DeclareCallablesAt(defs, defsctx, body) =>
         body.forceTypes
       case DeclareTypeAt(_, _, b) =>
@@ -552,21 +551,21 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Map()
     }
   }
-  
+
   def effects(e: WithContext[Expression]): Effects = {
     import ImplicitResults._
     e match {
       case Stop() in _ =>
         Effects.None
-      case CallSiteAt(target, args, _, _) => 
+      case CallSiteAt(target, args, _, _) =>
         target.siteMetadata.map(_.effects).getOrElse(Effects.Anytime)
-      case CallDefAt(target, args, _, _) => 
+      case CallDefAt(target, args, _, _) =>
         Effects.Anytime
       case f || g =>
         f.effects max g.effects
       case f > x > g if f.publications only 0 =>
         f.effects
-      case f > x > g => 
+      case f > x > g =>
         g.effects max f.effects
       case f OtherwiseAt g => f.effects match {
         case Effects.Anytime if f.publications only 0 =>
@@ -610,31 +609,31 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
     e match {
       case Stop() in _ =>
         Delay.NonBlocking
-      case CallSiteAt(target in _, args, _, ctx) => Delay.NonBlocking 
-      case CallDefAt(target in _, args, _, ctx) => 
+      case CallSiteAt(target in _, args, _, ctx) => Delay.NonBlocking
+      case CallDefAt(target in _, args, _, ctx) =>
         target match {
           case v: BoundVar => ctx(v) match {
             // TODO: I need to prove that all calls will actually return concrete values that will not block.
-            case Bindings.CallableBound(_, _, _) | 
-                 Bindings.RecursiveCallableBound(_, _, _) => {
+            case Bindings.CallableBound(_, _, _) |
+              Bindings.RecursiveCallableBound(_, _, _) => {
               Delay.NonBlocking
             }
             // TODO: Prove that no called value will publish a future.
             case _ => Delay.NonBlocking
           }
           case _ => Delay.Blocking
-        }        
-        // TODO: Figure out if this should be required to be NonBlocking
-        // This restricts all calls (sites and defs) from publishing futures
+        }
+      // TODO: Figure out if this should be required to be NonBlocking
+      // This restricts all calls (sites and defs) from publishing futures
       case f || g =>
         // TODO: Can Blocking actually be treated as the join of other elements in Delay?
         if (f.valueForceDelay == g.valueForceDelay)
           g.valueForceDelay
         else
           Delay.Blocking
-      case f > x > g => 
+      case f > x > g =>
         g.valueForceDelay
-      case f OtherwiseAt g => 
+      case f OtherwiseAt g =>
         // TODO: Can Blocking actually be treated as the join of other elements in Delay?
         if (f.valueForceDelay == g.valueForceDelay)
           g.valueForceDelay
@@ -657,7 +656,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         (b in ctx).valueForceDelay
       case Constant(_) in _ =>
         Delay.NonBlocking
-      case (x: BoundVar) in ctx => 
+      case (x: BoundVar) in ctx =>
         def handleDef(decls: DeclareCallables, ctx: TransformContext, d: Def) = {
           val DeclareCallablesAt(_, dctx, _) = decls in ctx
           val DefAt(_, _, body, _, _, _, _) = d in dctx
@@ -671,7 +670,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           }).foldLeft(Delay.NonBlocking: Delay)(_ max _)
           closedVarDelay
         }
-        
+
         ctx(x) match {
           case Bindings.SeqBound(sctx, s) =>
             Delay.NonBlocking
@@ -679,8 +678,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             // This could sort of be: (f in ctx).timeToPublish min (f in ctx).timeToHalt
             // However in the optimizer uses valueForceDelay to detect if force can be removed.
             // So futures should never be NonBlocking
-            ((s in sctx).timeToPublish min (s in sctx).timeToHalt) max Delay.Blocking          
-          case Bindings.CallableBound(ctx, decls, d: Def) => 
+            ((s in sctx).timeToPublish min (s in sctx).timeToHalt) max Delay.Blocking
+          case Bindings.CallableBound(ctx, decls, d: Def) =>
             handleDef(decls, ctx, d)
           case Bindings.RecursiveCallableBound(ctx, decls, d: Def) =>
             handleDef(decls, ctx, d)
@@ -693,7 +692,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Delay.Blocking
     }
   }
-  
+
   def siteMetadata(e: WithContext[Expression]): Option[SiteMetadata] = {
     import ImplicitResults._
     e match {
@@ -732,33 +731,33 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
 }
 
 object Analysis {
-  def count(t : NamedAST, p : (Expression => Boolean)) : Int = {
+  def count(t: NamedAST, p: (Expression => Boolean)): Int = {
     val cs = t.subtrees
     (t match {
-      case e : Expression if p(e) => 1
+      case e: Expression if p(e) => 1
       case _ => 0
     }) +
-    (cs.map( count(_, p) ).sum)
+      (cs.map(count(_, p)).sum)
   }
-  
+
   val futureCost = 4
   val forceCost = 4
   val sequenceCost = 1
   val limitCost = 3
   val callCost = 1
   val siteCost = 2
-  
-  def cost(t : NamedAST) : Int = {
+
+  def cost(t: NamedAST): Int = {
     val cs = t.subtrees
     (t match {
-      case _ : Future => futureCost
-      case _ : Force => forceCost
-      case _ : Branch => sequenceCost
-      case _ : Trim => limitCost
-      case _ : CallDef => callCost
-      case _ : CallSite => siteCost
+      case _: Future => futureCost
+      case _: Force => forceCost
+      case _: Branch => sequenceCost
+      case _: Trim => limitCost
+      case _: CallDef => callCost
+      case _: CallSite => siteCost
       case _ => 0
     }) +
-    (cs.map( cost(_) ).sum)
+      (cs.map(cost(_)).sum)
   }
 }

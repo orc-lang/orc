@@ -20,7 +20,7 @@ package orc.ast.porc
 trait Substitution[X <: PorcAST] {
   self: PorcAST =>
 
-  def substAll(subs : collection.Map[Var, Value]): X = Substitution.allArgs(subs)(this).asInstanceOf[X]
+  def substAll(subs: collection.Map[Var, Value]): X = Substitution.allArgs(subs)(this).asInstanceOf[X]
 }
 
 object Substitution {

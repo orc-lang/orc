@@ -27,7 +27,7 @@ sealed abstract class PorcAST extends AST with Product with WithContextInfixComb
   override def toString() = prettyprint()
 
   var number: Option[Int] = None
-  
+
   /** Assign numbers in depth first order stating at 0.
     */
   def assignNumbers() {
@@ -104,7 +104,7 @@ case class Let(x: Var, v: Expr, body: Expr) extends Expr
 
 case class Sequence(es: List[Expr]) extends Expr with UnnumberedPorcAST {
   //assert(!es.isEmpty)
-  
+
   def simplify = es match {
     case List(e) => e
     case _ => this
@@ -132,7 +132,7 @@ sealed abstract class Def extends PorcAST {
   def name: Var
   def arguments: List[Var]
   def body: Expr
-  
+
   def allArguments: List[Var] = arguments
 }
 final case class DefCPS(name: Var, pArg: Var, cArg: Var, tArg: Var, arguments: List[Var], body: Expr) extends Def {

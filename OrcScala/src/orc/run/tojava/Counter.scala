@@ -11,17 +11,17 @@ import scala.annotation.elidable
 
 object Counter {
   val liveCounters = new LinkedBlockingDeque[Counter]()
-  
+
   def exceptionString(e: Exception) = {
     val ss = new StringWriter()
     e.printStackTrace(new PrintWriter(ss))
     ss.toString()
   }
-  
+
   def report() = {
     if (Logger.julLogger.isLoggable(Level.FINE)) {
       import scala.collection.JavaConversions._
-      Logger.fine(s"Live Counter Report: ${liveCounters.size}") 
+      Logger.fine(s"Live Counter Report: ${liveCounters.size}")
       for (c <- liveCounters) {
         Logger.fine(s"$c: log size = ${c.log.size}, count = ${c.count.get}")
       }
@@ -32,25 +32,24 @@ object Counter {
       Logger.warning(s"Cannot report Counter information if FINE is not loggable in ${Logger.julLogger.getName}")
     }
   }
-  
-  @elidable(elidable.ASSERTION) 
-  def addCounter(c: Counter) =  {
+
+  @elidable(elidable.ASSERTION)
+  def addCounter(c: Counter) = {
     if (Logger.julLogger.isLoggable(Level.FINE)) {
       liveCounters.add(c)
     }
   }
-  
-  @elidable(elidable.ASSERTION) 
-  def removeCounter(c: Counter) =  {
+
+  @elidable(elidable.ASSERTION)
+  def removeCounter(c: Counter) = {
     if (Logger.julLogger.isLoggable(Level.FINE)) {
       liveCounters.remove(c)
     }
   }
 }
 
-/**
- * @author amp
- */
+/** @author amp
+  */
 abstract class Counter {
   /*
   @elidable(elidable.ASSERTION) 
@@ -66,7 +65,7 @@ abstract class Counter {
   
   Counter.addCounter(this)
   */
-  
+
   val log: LinkedBlockingDeque[Exception] = null
   @inline
   private def logChange(s: => String) = {
@@ -112,13 +111,12 @@ abstract class Counter {
   def onContextHalted(): Unit
 }
 
-/**
- * @author amp
- */
+/** @author amp
+  */
 abstract class CounterNestedBase(parent: Counter) extends Counter {
   // Matched against: onContextHalted call to halt
   parent.prepareSpawn()
-  
+
   /** Called when this whole context has halted.
     */
   def onContextHalted(): Unit = {
@@ -127,10 +125,9 @@ abstract class CounterNestedBase(parent: Counter) extends Counter {
   }
 }
 
-/**
- * @author amp
- */
-final class CounterNested(execution: Execution, parent: Counter, haltContinuation: Runnable) extends CounterNestedBase(parent) {  
+/** @author amp
+  */
+final class CounterNested(execution: Execution, parent: Counter, haltContinuation: Runnable) extends CounterNestedBase(parent) {
   /** Called when this whole context has halted.
     */
   override def onContextHalted(): Unit = {

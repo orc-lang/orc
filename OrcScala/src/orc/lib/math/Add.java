@@ -76,24 +76,24 @@ public class Add extends EvalSite implements TypedSite {
         }
     }
 
-	@Override
-	public Object evaluate(final Args args) throws TokenException {
+    @Override
+    public Object evaluate(final Args args) throws TokenException {
         Object a = args.getArg(0);
         Object b = args.getArg(1);
-        
+
         if (a instanceof Number && b instanceof Number) {
-  			return Args.applyNumericOperator(args.numberArg(0), args.numberArg(1), op);
+            return Args.applyNumericOperator(args.numberArg(0), args.numberArg(1), op);
         } else if (a instanceof String) {
-            return (String)a + orc.values.Format.formatValueR(args.getArg(1), false);
+            return (String) a + orc.values.Format.formatValueR(args.getArg(1), false);
         } else if (b instanceof String) {
-            return orc.values.Format.formatValueR(args.getArg(0), false) + (String)b;
+            return orc.values.Format.formatValueR(args.getArg(0), false) + (String) b;
         } else if (a instanceof orc.values.OrcRecord || b instanceof orc.values.OrcRecord) {
-            return ((orc.values.OrcRecord)a).extendWith((orc.values.OrcRecord)b);
-		} else {
-		  // TODO: This is not accurate, since we don't know WHICH parameter has the wrong time. However the old version wasn't very specific either.
-		  throw new ArgumentTypeMismatchException(0, "Number, String, or record", a != null ? a.getClass().toString() : "null");
-		}
-	}
+            return ((orc.values.OrcRecord) a).extendWith((orc.values.OrcRecord) b);
+        } else {
+            // TODO: This is not accurate, since we don't know WHICH parameter has the wrong time. However the old version wasn't very specific either.
+            throw new ArgumentTypeMismatchException(0, "Number, String, or record", a != null ? a.getClass().toString() : "null");
+        }
+    }
 
     @Override
     public Type orcType() {
@@ -101,9 +101,17 @@ public class Add extends EvalSite implements TypedSite {
     }
 
     @Override
-    public boolean nonBlocking() { return true; }
+    public boolean nonBlocking() {
+        return true;
+    }
+
     @Override
-    public int maxPublications() { return 1; }
+    public int maxPublications() {
+        return 1;
+    }
+
     @Override
-    public boolean effectFree() { return true; }
+    public boolean effectFree() {
+        return true;
+    }
 }

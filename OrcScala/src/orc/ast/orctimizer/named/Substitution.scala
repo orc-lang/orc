@@ -12,14 +12,13 @@
 //
 package orc.ast.orctimizer.named
 
-
 /** Direct substitutions on named ASTs.
   *
   * @author dkitchin
   */
 trait Substitution[X <: NamedAST] {
   self: NamedAST =>
-  
+
   def subst(a: Argument, x: Argument): X = Substitution(a, x)(this).asInstanceOf[X]
   def subst(a: Argument, s: String): X = Substitution(a, UnboundVar(s))(this).asInstanceOf[X]
 
@@ -46,12 +45,11 @@ trait Substitution[X <: NamedAST] {
       subs += ((u, t))
     }
     Substitution.allTypes(subs)(this).asInstanceOf[X]
-  }  
+  }
   def substAllTypes(subs: Map[Typevar, Type]): X = {
     Substitution.allTypes(subs)(this).asInstanceOf[X]
-  }  
+  }
 }
-
 
 object Substitution {
 

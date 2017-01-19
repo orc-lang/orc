@@ -113,7 +113,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   }
   // Now decrement the unbound count by the number of non-futures we found.
   // And maybe finish immediately.
-  if(nNonFutures > 0)
+  if (nNonFutures > 0)
     // Don't do this if it will not change the value. Otherwise this could
     // cause multiple calls to done.
     checkComplete(nUnbound.addAndGet(-nNonFutures))
@@ -142,8 +142,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   def halt(): Unit
 }
 
-
-/** Join a number of futures by blocking on all of them simultaneously waiting for them to ALL either be 
+/** Join a number of futures by blocking on all of them simultaneously waiting for them to ALL either be
   * bound or halt.
   *
   * @param inValues a list of value which may contain futures. All the futures in this array will be blocked on.
@@ -158,7 +157,7 @@ abstract class Resolve(inValues: Array[AnyRef]) {
    * if needed and will always call halt or done (but not both) when it is
    * completed.
    */
-    
+
   require(inValues.size > 0, "Resolve must have at least one argument. Check before call.")
 
   // The number of unbound values in values.
@@ -198,16 +197,16 @@ abstract class Resolve(inValues: Array[AnyRef]) {
       nNonFutures += 1
     }
   }
-  
+
   // Now decrement the unbound count by the number of non-futures we found.
   // And maybe finish immediately.
-  if(nNonFutures > 0)
+  if (nNonFutures > 0)
     // Don't do this if it will not change the value. Otherwise this could
     // cause multiple calls to done.
     checkComplete(nUnbound.addAndGet(-nNonFutures))
 
   Logger.finest(s"$resolve: Resolve setup with (${inValues.mkString(", ")}) and nonfut=$nNonFutures and unbound=$nUnbound")
-  
+
   /** Check if we are done by looking at n which must be the current number of
     * unbound values.
     */

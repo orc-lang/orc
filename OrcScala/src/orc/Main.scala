@@ -68,14 +68,14 @@ object Main {
       }
 
       val printPubs = new OrcDesktopEventAction() {
-        override def published(value: AnyRef) { 
+        override def published(value: AnyRef) {
           println(Format.formatValue(value))
           Console.out.flush()
         }
-        override def caught(e: Throwable) { 
+        override def caught(e: Throwable) {
           Console.out.flush()
           printException(e, Console.err, options.showJavaStackTrace)
-          Console.err.flush() 
+          Console.err.flush()
         }
       }
       compiledOrc.run(printPubs)
@@ -215,6 +215,6 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
       case None => throw new UnrecognizedCmdLineOptArgException(s"""Backend "${arg}" does not exist or is not supported.""", "backend", arg, this)
     }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed values: " + BackendType.knownBackendNames.mkString(", ") + ". Default is \"token\".")
 
-  StringListOpt(() => optimizationOptions, optimizationOptions = _, ' ', "opt-opt", separator=",", 
-      usage = "Provide option for use by the optimizers separated by commas. Options in the form '[optimizer-name]' and '-[optimizer-name]=off' enable and disable optimizers. Other options are arbitrary key-value pairs used by the optimizer (the value defaults to 'true').")
+  StringListOpt(() => optimizationOptions, optimizationOptions = _, ' ', "opt-opt", separator = ",",
+    usage = "Provide option for use by the optimizers separated by commas. Options in the form '[optimizer-name]' and '-[optimizer-name]=off' enable and disable optimizers. Other options are arbitrary key-value pairs used by the optimizer (the value defaults to 'true').")
 }

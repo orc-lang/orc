@@ -131,7 +131,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
       c.halt()
     }
   }
-  
+
   def forceSingle(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef], forceClosures: Boolean): Unit = {
     assert(vs.length == 1)
     val v = vs(0)
@@ -252,14 +252,14 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   }
 
   /** Setup the stage and begin staging any tasks that can be staged.
-   */
+    */
   def setStage() = {
     assert(Context.stagedTasks.get() == null)
     Context.stagedTasks.set(Nil)
   }
 
   /** Stage a task if possible for scheduling or running. If it cannot be staged, just schedule or run it directly.
-   */
+    */
   def stageOrRun(s: Schedulable) = {
     val ts = Context.stagedTasks.get()
     if (ts != null) {
@@ -270,7 +270,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   }
 
   /** Empty the staged tasks by scheduling or running them.
-   */
+    */
   def flushStage() = {
     assert(Context.stagedTasks.get() != null)
     val ts = Context.stagedTasks.get()

@@ -4,9 +4,8 @@ import orc.values.sites.DirectSite
 import orc.run.Logger
 import orc.values.sites.Site
 
-/**
- * @author amp
- */
+/** @author amp
+  */
 object Coercions {
   /** Coerce any value to a Callable.
     *
@@ -21,7 +20,7 @@ object Coercions {
       case v => new RuntimeCallable(v)
     }
   }
-  
+
   def coerceSiteToDirectCallable(v: AnyRef): DirectCallable = {
     v match {
       case c: DirectCallable => c
@@ -30,12 +29,12 @@ object Coercions {
       case s: Site => throw new IllegalArgumentException(s"Non-direct site found when direct site expected.")
     }
   }
-  
+
   def isInstanceOfDef(v: AnyRef): Boolean = {
     // This is kind of opaque, but all defs are always forcable and no other callable is.
     v.isInstanceOf[ForcableCallableBase]
   }
-  
+
   //def coerceToContinuation(v: AnyRef): Continuation = v.asInstanceOf[Continuation]
   //def coerceToTerminator(v: AnyRef): Terminator = v.asInstanceOf[Terminator]
   //def coerceToCounter(v: AnyRef): Counter = v.asInstanceOf[Counter]

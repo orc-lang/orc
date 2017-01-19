@@ -1,8 +1,7 @@
 package orc.run.tojava
 
-/**
- * @author amp
- */
+/** @author amp
+  */
 trait Wrapper {
   def underlying: AnyRef
 }

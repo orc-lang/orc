@@ -17,9 +17,27 @@ import scala.language.reflectiveCalls
 import scala.math.{ BigDecimal, BigInt }
 
 import orc.ast.oil.{ named => syntactic }
-import orc.ast.oil.named.{ Constant, DeclareCallables, DeclareType, Callable, Def, Site, 
-  Expression, FoldedCall, FoldedLambda, HasType, Hole, Otherwise, Parallel, 
-  Graft, Trim, Sequence, Stop, UnboundVar, VtimeZone }
+import orc.ast.oil.named.{
+  Constant,
+  DeclareCallables,
+  DeclareType,
+  Callable,
+  Def,
+  Site,
+  Expression,
+  FoldedCall,
+  FoldedLambda,
+  HasType,
+  Hole,
+  Otherwise,
+  Parallel,
+  Graft,
+  Trim,
+  Sequence,
+  Stop,
+  UnboundVar,
+  VtimeZone
+}
 import orc.compile.typecheck.ConstraintSet.meetAll
 import orc.compile.typecheck.Typeloader.{ lift, liftEither, liftJavaType, reify }
 import orc.error.OrcExceptionExtension.extendOrcException

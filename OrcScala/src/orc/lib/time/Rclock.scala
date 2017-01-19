@@ -41,7 +41,6 @@ object Rclock extends TotalSite0 with TypedSite with FunctionalSite with Talkati
         "time" -> SimpleFunctionType(IntegerType),
         "wait" -> SimpleFunctionType(IntegerType, SignalType)))
 
-  
   override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(new SiteMetadata {
     override def fieldMetadata(f: Field): Option[SiteMetadata] = f match {
       case Field("time") => Some(new Rtime(0))

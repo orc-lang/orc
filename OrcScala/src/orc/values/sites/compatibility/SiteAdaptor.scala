@@ -79,9 +79,9 @@ object SiteAdaptor {
   def nilList[T](): List[T] = Nil
 
   /** Convert the array to the format needed for external calls.
-   *  
-   *  This will mutate the original array.
-   */
+    *
+    * This will mutate the original array.
+    */
   def convertArgs(args: Array[AnyRef]) = {
     val jl = new java.util.ArrayList[Object](args.size)
     for (ind <- 0 until args.length) {

@@ -21,9 +21,9 @@ import orc.script.OrcBindings;
 import orc.test.TestUtils.OrcTestCase;
 
 /**
- * Test Orc by running annotated sample programs from the "../OrcExamples" directory.
- * The Orc type checker is enabled for these tests.
- * Each program is given at most 10 seconds to complete.
+ * Test Orc by running annotated sample programs from the "../OrcExamples"
+ * directory. The Orc type checker is enabled for these tests. Each program is
+ * given at most 10 seconds to complete.
  * <p>
  * We look for one or more comment blocks formatted per
  * <code>ExampleOutput</code>'s specs.
@@ -33,18 +33,18 @@ import orc.test.TestUtils.OrcTestCase;
  */
 public class PorcExamplesTest {
 
-  public static Test suite() {
-    OrcBindings bindings = new OrcBindings();
+    public static Test suite() {
+        OrcBindings bindings = new OrcBindings();
 
-    // Turn on Orctimizer
-    bindings.backend_$eq(PorcCompilerBackend$.MODULE$);
-    bindings.optimizationLevel_$eq(3);
+        // Turn on Orctimizer
+        bindings.backend_$eq(PorcCompilerBackend$.MODULE$);
+        bindings.optimizationLevel_$eq(3);
 
-    return TestUtils.buildSuite(PorcExamplesTest.class.getSimpleName(), PorcExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));
-  }
+        return TestUtils.buildSuite(PorcExamplesTest.class.getSimpleName(), PorcExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));
+    }
 
-  public static class PorcExamplesTestCase extends OrcTestCase {
-      /* No overrides */
-  }
+    public static class PorcExamplesTestCase extends OrcTestCase {
+        /* No overrides */
+    }
 
 }

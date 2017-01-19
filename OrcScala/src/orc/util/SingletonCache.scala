@@ -16,7 +16,6 @@ import scala.collection.mutable
 import scala.ref.WeakReference
 
 /**
-  *
   * @author amp
   */
 class SingletonCache[T <: AnyRef] {
@@ -29,11 +28,11 @@ class SingletonCache[T <: AnyRef] {
       wc
     }.get.getOrElse(c)
   }
-  
+
   def size = cache.size
 
   def items = cache.keys
-  
+
   def clear() {
     cache.clear()
   }

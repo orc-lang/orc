@@ -16,9 +16,9 @@ Description from
 http://shootout.alioth.debian.org/u32q/benchmark.php?test=threadring&lang=all
 */
 
-object ThreadRing extends BenchmarkApplication {  
+object ThreadRing extends BenchmarkApplication {
   import Util._
-  
+
   def threadRing(id: Int, m: Int, in: Channel[Int], next: Channel[Int]): Int = {
     val x = in.read
     if (m == x)
@@ -30,32 +30,32 @@ object ThreadRing extends BenchmarkApplication {
   }
 
   val N = 503
-  
+
   def threadRingRunner(p: Int): Unit = {
     val ring = (0 until N).map(_ => new Channel[Int]()).toArray
     ring(0).write(0)
-      
+
     val result = synchronized {
       var result: Option[Int] = None
-      val threads = (0 until N).map(i => thread { 
-        result = Some(threadRing(i+1, p, ring(i), ring((i+1) % N)))
+      val threads = (0 until N).map(i => thread {
+        result = Some(threadRing(i + 1, p, ring(i), ring((i + 1) % N)))
         synchronized {
           notify()
         }
       })
 
-      while(result.isEmpty) {
+      while (result.isEmpty) {
         wait()
       }
-      
+
       threads.foreach(_.terminate())
-      
+
       result.get
     }
-    
+
     println(result)
   }
-  
+
   def main(args: Array[String]): Unit = {
     threadRingRunner(5000)
     threadRingRunner(50000)

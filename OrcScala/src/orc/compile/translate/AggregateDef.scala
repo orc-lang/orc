@@ -80,7 +80,7 @@ case class AggregateDef(clauses: List[Clause],
 
   def convert(x: named.BoundVar, ctx: TranslatorContext): named.Callable = {
     import ctx._
-    
+
     if (clauses.isEmpty) { reportProblem(UnusedFunctionSignature() at this) }
 
     val (newTypeFormals, dtypecontext) = convertTypeFormals(typeformals.getOrElse(Nil), this)

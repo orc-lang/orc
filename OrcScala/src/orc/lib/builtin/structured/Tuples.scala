@@ -39,7 +39,7 @@ object TupleArityChecker extends PartialSite2 with TypedSite with FunctionalSite
   override def name = "TupleArityChecker"
   def eval(x: AnyRef, y: AnyRef) =
     (x, y) match {
-      case (t@OrcTuple(elems), arity: BigInt) =>
+      case (t @ OrcTuple(elems), arity: BigInt) =>
         if (elems.length == arity.toInt) {
           Some(t)
         } else {
@@ -53,7 +53,7 @@ object TupleArityChecker extends PartialSite2 with TypedSite with FunctionalSite
     case List(_, Some(arity: BigInt)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toArray))
     case _ => None
   }
-  
+
   def orcType() = new BinaryCallableType with StrictType {
     def call(r: Type, s: Type): Type = {
       (r, s) match {

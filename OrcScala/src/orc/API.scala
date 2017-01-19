@@ -203,7 +203,7 @@ trait OrcCompilationOptions extends OrcCommonOptions {
   def compileOnly_=(newVal: Boolean)
   def runOil: Boolean
   def runOil_=(newVal: Boolean)
-  
+
   def optimizationLevel: Int
   def optimizationLevel_=(newVal: Int)
   def optimizationOptions: java.util.List[String]

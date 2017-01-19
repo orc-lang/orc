@@ -14,25 +14,25 @@ package orc.ast.porc
 
 import orc.ast.oil.named.EmptyFunction
 
-trait ContextualTransform {  
+trait ContextualTransform {
   def order[E <: PorcAST](pf: WithContext[E] => Option[E], descend: WithContext[E] => E)(e: WithContext[E]): E
-  
+
   def apply(c: Expr): Expr = transformExpr(c in TransformContext())
   def apply(c: Value): Value = transformValue(c in TransformContext())
   def apply(c: Def): Def = transformDef(c in TransformContext())
   def apply(c: WithContext[Expr]): Expr = transformExpr(c)
   def apply(c: WithContext[Value]): Value = transformValue(c)
   def apply(c: WithContext[Def]): Def = transformDef(c)
-  
+
   def apply(c: PorcAST): PorcAST = c match {
     case c: Value => this(c)
     case c: Expr => this(c)
     case c: Def => this(c)
   }
   def apply(c: WithContext[PorcAST]): PorcAST = c match {
-    case c@((_: Value) in _) => this(c)
-    case c@((_: Expr) in _) => this(c)
-    case c@((_: Def) in _) => this(c)
+    case c @ ((_: Value) in _) => this(c)
+    case c @ ((_: Expr) in _) => this(c)
+    case c @ ((_: Def) in _) => this(c)
   }
 
   def onExpr: PartialFunction[WithContext[Expr], Expr] = EmptyFunction
@@ -47,7 +47,7 @@ trait ContextualTransform {
       case _ => None
     }
   }
-  
+
   def transferMetadata[E <: PorcAST](e: E, e1: E): E = {
     (e, e1) match {
       case (_: Value, _: Value) => {
@@ -57,7 +57,7 @@ trait ContextualTransform {
       case _ => e ->> e1
     }
   }
-  
+
   def transformExpr(expr: WithContext[Expr]): Expr = {
     order[Expr](callHandler, {
       case LetIn(x, v, b) => {
@@ -65,7 +65,7 @@ trait ContextualTransform {
         val bctx = x.ctx + LetBound(x.ctx, e1)
         Let(e1.x, e1.v, transformExpr(b.e in bctx))
       }
-      case s@DefDeclarationIn(l, ctx, b) => {
+      case s @ DefDeclarationIn(l, ctx, b) => {
         val ls1 = l map { v => transformDef(v in ctx) }
         val e1 = DefDeclaration(ls1, b)
         val ctx1 = s.ctx extendBindings ls1.map(DefBound(ctx, e1, _))
@@ -82,50 +82,49 @@ trait ContextualTransform {
       case ContinuationIn(arg, ctx, b) => Continuation(arg in ctx, transformExpr(b))
 
       case SequenceIn(l, ctx) => {
-        Sequence(l map {e => transformExpr(e in ctx)})
+        Sequence(l map { e => transformExpr(e in ctx) })
       }
 
       case TryOnKilled(b, h) in ctx => TryOnKilled(transformExpr(b in ctx), transformExpr(h in ctx))
       case TryOnHalted(b, h) in ctx => TryOnHalted(transformExpr(b in ctx), transformExpr(h in ctx))
       case TryFinally(b, h) in ctx => TryFinally(transformExpr(b in ctx), transformExpr(h in ctx))
-      
-      
+
       case SpawnIn(c, t, e) => Spawn(transformValue(c), transformValue(t), transformExpr(e))
       case SpawnFutureIn(c, t, pArg, cArg, e) => {
         // TODO: This is actually wrong. IT needs to make an intermediate node for the context of e. Like let does.
         SpawnFuture(transformValue(c), transformValue(t), pArg, cArg, transformExpr(e))
       }
-        
+
       case NewCounterIn(c, e) => NewCounter(transformValue(c), transformExpr(e))
       case Halt(c) in ctx => Halt(transformValue(c in ctx))
 
       case NewTerminatorIn(t) => NewTerminator(transformValue(t))
       case KillIn(t) => Kill(transformValue(t))
-        
+
       case ForceIn(p, c, t, b, vs, ctx) => Force(transformValue(p), transformValue(c), transformValue(t), b, vs.map(v => transformValue(v in ctx)))
       case TupleElem(v, i) in ctx => TupleElem(transformValue(v in ctx), i)
 
       case GetField(p, c, t, o, f) in ctx => GetField(transformValue(p in ctx), transformValue(c in ctx), transformValue(t in ctx), transformValue(o in ctx), f)
-      
+
       case e in _ if e.productArity == 0 => e
     })(expr)
   }
-  
+
   def transformDef(expr: WithContext[Def]): Def = {
     order[Def](callHandler, {
-      case DefCPSIn(name, p, c, t, args, ctx, body) => 
+      case DefCPSIn(name, p, c, t, args, ctx, body) =>
         DefCPS(
-            name, 
-            p,
-            c,
-            t,
-            args, 
-            transformExpr(body))
-      case DefDirectIn(name, args, ctx, body) => 
+          name,
+          p,
+          c,
+          t,
+          args,
+          transformExpr(body))
+      case DefDirectIn(name, args, ctx, body) =>
         DefDirect(
-            name, 
-            args,
-            transformExpr(body))
+          name,
+          args,
+          transformExpr(body))
     })(expr)
   }
 
@@ -133,7 +132,7 @@ trait ContextualTransform {
     order[Value](callHandler, {
       case (n @ OrcValue(_)) in _ => n
       //case (n @ Tuple(vs)) in ctx => Tuple(vs.map(v => transformValue(v in ctx)))
-      case (v @ Unit()) in _ => v 
+      case (v @ Unit()) in _ => v
       case (v: Var) in ctx => v
     })(expr)
   }

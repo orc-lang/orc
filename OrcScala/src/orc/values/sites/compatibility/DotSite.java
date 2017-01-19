@@ -81,15 +81,17 @@ public abstract class DotSite extends SiteAdaptor implements HasMembers {
     }
 
     @Override
-    public boolean nonBlocking() { return true; }
-    
-	@Override
-    public Binding getMember(Field f) {
-      return new BoundValue(getMember(f.field()));
+    public boolean nonBlocking() {
+        return true;
     }
-	
+
+    @Override
+    public Binding getMember(Field f) {
+        return new BoundValue(getMember(f.field()));
+    }
+
     @Override
     public boolean hasMember(Field f) {
-      return methodMap.containsKey(f.field());
+        return methodMap.containsKey(f.field());
     }
 }

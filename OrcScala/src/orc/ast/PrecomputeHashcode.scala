@@ -12,6 +12,6 @@
 //
 package orc.ast
 
-trait PrecomputeHashcode { self: Product => 
+trait PrecomputeHashcode { self: Product =>
   override val hashCode: Int = scala.runtime.ScalaRunTime._hashCode(this)
 }

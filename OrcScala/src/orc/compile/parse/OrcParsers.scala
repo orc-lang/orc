@@ -237,11 +237,11 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | ("{|" ~> parseExpression <~ "|}") -> Trim
     | ("{" ~> parseExpression <~ "}") -> Section
     | "lambda" ~> (ListOf(parseTypeVariable)?)
-        ~ (TupleOf(parsePattern))
-        ~ (parseReturnType?)
-        //~ (parseGuard?) TODO: guards on lambdas are not supported any more
-        ~ ("=" ~> parseExpression)
-        -> Lambda
+    ~ (TupleOf(parsePattern))
+    ~ (parseReturnType?)
+    //~ (parseGuard?) TODO: guards on lambdas are not supported any more
+    ~ ("=" ~> parseExpression)
+    -> Lambda
     | failExpecting("expression"))
 
   val parseArgumentGroup: Parser[ArgumentGroup] = (

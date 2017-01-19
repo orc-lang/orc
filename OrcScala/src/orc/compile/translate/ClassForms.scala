@@ -153,7 +153,7 @@ case class ClassForms(val translator: Translator) {
     */
   def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit ctx: TranslatorContext): (BoundVar, BoundVar, Map[Field, Expression]) = {
     import ctx._
-    
+
     val thisName = lit.thisname.getOrElse("this")
     val thisVar = new BoundVar(Some(thisName))
     val superVar = new BoundVar(Some("super"))
@@ -257,9 +257,8 @@ case class ClassForms(val translator: Translator) {
         case None => ()
       }
     }
-    
-    val clsNames = (for (cd @ ext.ClassDeclaration(constructor, _, _) <- clss) yield 
-                      (constructor.name -> new BoundVar(Some(constructor.name)))).toMap
+
+    val clsNames = (for (cd @ ext.ClassDeclaration(constructor, _, _) <- clss) yield (constructor.name -> new BoundVar(Some(constructor.name)))).toMap
 
     val (desugaredClss, constructorMakers) = desugarClasses(clss)
     assert(desugaredClss.forall(_.constructor.isInstanceOf[ext.ClassConstructor.None]))
@@ -272,7 +271,7 @@ case class ClassForms(val translator: Translator) {
         case Some(s) => ext.ClassSubclassLiteral(s, body)
         case None => body
       }
-      val info = linearize(e, additionalClasses, Some(clsNames(name)))(ctx.copy(classcontext=incrementalClassContext.toMap))
+      val info = linearize(e, additionalClasses, Some(clsNames(name)))(ctx.copy(classcontext = incrementalClassContext.toMap))
       info match {
         case i: ClassInfo => {
           incrementalClassContext += name -> i.copy(concreteMembers = i.concreteMembers ++ constructorMakers.keys)
@@ -284,7 +283,7 @@ case class ClassForms(val translator: Translator) {
     val recursiveClassContext = incrementalClassContext.toMap
     val recursiveTypeContext = ctx.typecontext ++ additionalClasses.map(info => info.name.optionalVariableName.get -> ClassType(info.name.optionalVariableName.get))
     val newClss = for (info <- additionalClasses) yield {
-      val cls = makeClassFromInfo(info)(ctx.copy(typecontext=recursiveTypeContext, classcontext=recursiveClassContext))
+      val cls = makeClassFromInfo(info)(ctx.copy(typecontext = recursiveTypeContext, classcontext = recursiveClassContext))
       val additionalBindings = constructorMakers.map {
         case (n, b) =>
           val newdef = b(recursiveTypeContext, recursiveClassContext)
@@ -376,12 +375,12 @@ case class ClassForms(val translator: Translator) {
             body.copy(decls = body.decls ++ newDecls))
 
           def constrMaker(tc: Map[String, Type], cc: Map[String, ClassInfo]) = {
-            val newCtx = ctx.copy(typecontext=tc, classcontext=cc)
+            val newCtx = ctx.copy(typecontext = tc, classcontext = cc)
             makeClassConstructor(constructor.isInstanceOf[ext.ClassConstructor.Site],
               constructor.name, constructorInfo(constructor.name)._1, newFields, Map(),
               argTypesOpt.map(_.map(convertType(_)(newCtx))), constructor.returntype map { convertType(_)(newCtx) })(newCtx)
           }
-          
+
           (newCls, Some(constructor.name -> constrMaker _))
         }
       }

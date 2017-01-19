@@ -112,8 +112,8 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Callab
         ft.getField(f)
       }
       case u => {
-         // FIXME: What exception should this be?
-       throw new TypeHasNoFieldsException(u)
+        // FIXME: What exception should this be?
+        throw new TypeHasNoFieldsException(u)
       }
     }
   }
@@ -128,8 +128,8 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Callab
         ft.hasField(f)
       }
       case u => {
-         // FIXME: What exception should this be?
-       throw new TypeHasNoFieldsException(u)
+        // FIXME: What exception should this be?
+        throw new TypeHasNoFieldsException(u)
       }
     }
   }

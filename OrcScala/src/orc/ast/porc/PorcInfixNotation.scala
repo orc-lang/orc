@@ -45,7 +45,7 @@ object PorcInfixNotation {
 
 object LetIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (l@Let(x, v, b)) in ctx =>
+    case (l @ Let(x, v, b)) in ctx =>
       val bodyctx = ctx + LetBound(ctx, l)
       //val valctx = ctx + BoundTo(ctx, l)
       Some(x in ctx, v in bodyctx, b in bodyctx)
@@ -54,7 +54,7 @@ object LetIn {
 }
 object ContinuationIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (l@Continuation(arg, b)) in ctx =>
+    case (l @ Continuation(arg, b)) in ctx =>
       val bodyctx = ctx + ContinuationArgumentBound(ctx, l, arg)
       Some(arg, bodyctx, b in bodyctx)
     case _ => None
@@ -71,7 +71,7 @@ object SequenceIn {
 
 object DefDeclarationIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (s@DefDeclaration(ds, b)) in ctx =>
+    case (s @ DefDeclaration(ds, b)) in ctx =>
       val bodyctx = ctx extendBindings ds.map(DefBound(ctx, s, _))
       val sitectx = ctx extendBindings ds.map(RecursiveDefBound(ctx, s, _))
       Some(ds, sitectx, b in bodyctx)
@@ -90,8 +90,8 @@ object DefIn {
 object DefCPSIn {
   type MatchResult = Option[(Var, Var, Var, Var, List[Var], TransformContext, WithContext[Expr])]
   def unapply(e: WithContext[PorcAST]): MatchResult = e match {
-    case (s : DefCPS) in ctx =>
-      val bodyctx = ctx extendBindings (s.arguments :+ s.pArg  :+ s.cArg :+ s.tArg).map(DefArgumentBound(ctx, s, _))
+    case (s: DefCPS) in ctx =>
+      val bodyctx = ctx extendBindings (s.arguments :+ s.pArg :+ s.cArg :+ s.tArg).map(DefArgumentBound(ctx, s, _))
       Some(s.name, s.pArg, s.cArg, s.tArg, s.arguments, bodyctx, s.body in bodyctx)
     case _ => None
   }
@@ -100,7 +100,7 @@ object DefCPSIn {
 object DefDirectIn {
   type MatchResult = Option[(Var, List[Var], TransformContext, WithContext[Expr])]
   def unapply(e: WithContext[PorcAST]): MatchResult = e match {
-    case (s : DefDirect) in ctx =>
+    case (s: DefDirect) in ctx =>
       val bodyctx = ctx extendBindings s.arguments.map(DefArgumentBound(ctx, s, _))
       Some(s.name, s.arguments, bodyctx, s.body in bodyctx)
     case _ => None
@@ -109,14 +109,14 @@ object DefDirectIn {
 
 object IfDefIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (c@IfDef(a, f, g)) in ctx => Some(a in ctx, f in ctx, g in ctx)
+    case (c @ IfDef(a, f, g)) in ctx => Some(a in ctx, f in ctx, g in ctx)
     case _ => None
   }
 }
 
 object CallIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (c@Call(t, args)) in ctx => Some(t in ctx, args, ctx)
+    case (c @ Call(t, args)) in ctx => Some(t in ctx, args, ctx)
     case _ => None
   }
 }
@@ -151,21 +151,20 @@ object TryOnHaltedIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case TryOnHalted(b, h) in ctx => Some(b in ctx, h in ctx)
     case _ => None
-  } 
+  }
 }
 object TryOnKilledIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case TryOnKilled(b, h) in ctx => Some(b in ctx, h in ctx)
     case _ => None
-  } 
+  }
 }
 object TryFinallyIn {
   def unapply(e: WithContext[PorcAST]) = e match {
     case TryFinally(b, h) in ctx => Some(b in ctx, h in ctx)
     case _ => None
-  } 
+  }
 }
-
 
 // ==================== PROCESS ===================
 
@@ -178,7 +177,7 @@ object SpawnIn {
 
 object SpawnFutureIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (s@SpawnFuture(c, t, pArg, cArg, e)) in ctx =>
+    case (s @ SpawnFuture(c, t, pArg, cArg, e)) in ctx =>
       val bodyCtx = ctx extendBindings List(SpawnFutureBound(ctx, s, pArg), SpawnFutureBound(ctx, s, cArg))
       Some(c in ctx, t in ctx, pArg, cArg, e in bodyCtx)
     case _ => None
@@ -205,7 +204,6 @@ object KillIn {
     case _ => None
   }
 }
-
 
 // ==================== FUTURE ===================
 

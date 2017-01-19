@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
   */
 class ToJavaRuntime(private[tojava] val runtime: Orc) {
   // TODO: ToJavaRuntime should really be a runtime not have a runtime. For now I'm avoiding abstracting and duplicating code from the other interpreter.
-  
+
   private[this] var executions = Set[Execution]()
   private[this] var isDone = false
 
@@ -46,11 +46,11 @@ class ToJavaRuntime(private[tojava] val runtime: Orc) {
   final def installHandlers(h: EventHandler) = runtime.installHandlers(h)
   final def schedule(s: Schedulable) = runtime.schedule(s)
   final def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) = runtime.invoke(h, v, vs)
-  
+
   if (Logger.julLogger.isLoggable(Level.FINE)) {
     val t = new Thread() {
       override def run(): Unit = {
-        Thread.sleep(10*1000)
+        Thread.sleep(10 * 1000)
         Counter.report()
       }
     }

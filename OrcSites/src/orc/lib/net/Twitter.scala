@@ -1,7 +1,7 @@
 package orc.lib.net
 
 import twitter4j._
-import twitter4j.auth.{OAuthSupport, OAuth2Support}
+import twitter4j.auth.{ OAuthSupport, OAuth2Support }
 
 import java.util.Properties
 import java.util.Collections
@@ -9,7 +9,7 @@ import java.io.FileNotFoundException
 
 import orc.values.sites._
 import orc.types._
-import orc.values.sites.compatibility.{Types, Args, DotSite}
+import orc.values.sites.compatibility.{ Types, Args, DotSite }
 import orc.values.OrcRecord
 
 import TwitterUtil._
@@ -32,7 +32,7 @@ object TwitterUtil {
     (p.getProperty("orc.lib.net.twitter.key"),
       p.getProperty("orc.lib.net.twitter.secret"))
   }
-  
+
   implicit class OAuthAdd(val twitter: OAuthSupport) extends AnyVal {
     def loadAuth(file: String): Unit = {
       val (key, secret) = loadProperties(file)
@@ -43,7 +43,7 @@ object TwitterUtil {
       twitter.setOAuthConsumer(key, secret)
     }
   }
-  
+
   implicit class OAuth2Add(val twitter: OAuth2Support) extends AnyVal {
     def authConsumer(): Unit = {
       val tok = twitter.getOAuth2Token()
@@ -52,7 +52,7 @@ object TwitterUtil {
   }
 }
 
-class TwitterFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {    
+class TwitterFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
   val arity = 1
 
   def orcType() = {
@@ -83,7 +83,6 @@ class TwitterFactoryKeySecret extends PartialSite with SpecificArity with TypedS
     Some(i)
   }
 }
-
 
 class TwitterStreamFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
   val arity = 1
@@ -120,13 +119,13 @@ class TwitterStreamFactoryKeySecret extends PartialSite with SpecificArity with 
 // TODO: Implement channels so threads are not blocked. Should only be one thread per repeat(getter), so not too bad.
 private class EventGetterSite extends PartialSite with SpecificArity {
   val arity = 0
-  
+
   val channel = new scala.concurrent.Channel[AnyRef]()
-  
+
   def put(v: AnyRef) = {
     channel.write(v)
   }
-  
+
   def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
     val Array0() = args
     Some(channel.read)
@@ -146,20 +145,20 @@ class WrapTwitterStream extends TotalSite with SpecificArity with TypedSite {
     val Array(twitter: TwitterStream) = args
     object GetStreamListener extends TotalSite with SpecificArity {
       val arity = 0
-    
+
       def evaluate(args: Array[AnyRef]): AnyRef = {
         val status = new EventGetterSite()
         twitter.addListener(new StatusListener {
-          def onDeletionNotice(e: StatusDeletionNotice): Unit = ()   
+          def onDeletionNotice(e: StatusDeletionNotice): Unit = ()
           def onScrubGeo(a: Long, b: Long): Unit = ()
-          def onStallWarning(e: StallWarning): Unit = () 
-          def onStatus(s: Status): Unit = status.put(s)  
+          def onStallWarning(e: StallWarning): Unit = ()
+          def onStatus(s: Status): Unit = status.put(s)
           def onTrackLimitationNotice(e: Int): Unit = ()
           def onException(e: Exception): Unit = ()
         })
         new OrcRecord(
           "status" -> status)
-      }  
+      }
     }
     new OrcRecord(
       "getStatusListener" -> GetStreamListener)

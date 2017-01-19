@@ -26,12 +26,12 @@ import orc.error.OrcExceptionExtension._
 import orc.error.compiletime._
 import orc.values.{ Field, Signal }
 import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
-import orc.error.compiletime.{CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException, SiteResolutionException}
+import orc.error.compiletime.{ CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException, SiteResolutionException }
 import orc.lib.builtin
 import orc.values.sites.Site
 
- case class TranslatorContext(context: Map[String, Argument], typecontext: Map[String, Type],
-         boundDefs: Set[BoundVar], classcontext: Map[String, ClassInfo])
+case class TranslatorContext(context: Map[String, Argument], typecontext: Map[String, Type],
+  boundDefs: Set[BoundVar], classcontext: Map[String, ClassInfo])
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
   /** Translate an extended AST to a named OIL AST.
@@ -156,8 +156,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
       case ext.CallableGroup(defs, body) => {
         val (newdefs, dcontext) = convertDefs(defs)
-        val newbody = convert(body)(ctx.copy(context = context ++ dcontext, 
-            boundDefs = boundDefs ++ (newdefs map { _.name })))
+        val newbody = convert(body)(ctx.copy(context = context ++ dcontext,
+          boundDefs = boundDefs ++ (newdefs map { _.name })))
         DeclareCallables(newdefs, newbody)
       }
 
@@ -237,7 +237,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
          * This matches the type generated in Datatypes.scala.
          */
         val p = if (names.size == 1) ext.VariablePattern(names.head)
-            else ext.TuplePattern(names map { ext.VariablePattern(_) })
+        else ext.TuplePattern(names map { ext.VariablePattern(_) })
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)
 
@@ -294,8 +294,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     val namesMap: Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar(Some(name))))
     val recursiveContext = context ++ namesMap
     val newdefs = for ((n, d) <- defsMap) yield {
-      d ->> d.convert(namesMap(n), ctx.copy(context = recursiveContext, 
-          boundDefs = boundDefs ++ namesMap.values))
+      d ->> d.convert(namesMap(n), ctx.copy(context = recursiveContext,
+        boundDefs = boundDefs ++ namesMap.values))
     }
 
     (newdefs.toList, namesMap)
@@ -333,7 +333,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     *  A context mapping those names to those vars
     */
   def convertTypeFormals(typeformals: List[String], ast: orc.ast.AST): (List[BoundTypevar], Map[String, BoundTypevar]) = {
-  
+
     var newTypeFormals: List[BoundTypevar] = Nil
     var formalsMap = new HashMap[String, BoundTypevar]()
     for (name <- typeformals.reverse) {

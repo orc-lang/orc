@@ -205,6 +205,6 @@ case class ConflictingOrderWarning(leftOrder: Iterable[String], rightOrder: Iter
 
 /** A language feature used in the input program is not supported by the backend.
   */
-case class FeatureNotSupportedException(feature: String) 
-  extends CompilationException(s"$feature is unsupported") 
+case class FeatureNotSupportedException(feature: String)
+  extends CompilationException(s"$feature is unsupported")
   with SeverityFatal

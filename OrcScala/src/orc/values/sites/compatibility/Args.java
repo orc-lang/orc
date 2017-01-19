@@ -32,26 +32,26 @@ public class Args implements Serializable {
 
     Object[] values;
 
-  /**
-   * Constructs an object of class Args using given array.
-   * 
-   * Note that this class takes ownership of the array and assumes it is not changed further.
-   *
-   * @param values
-   */
-  public Args(@SuppressWarnings("hiding") final Object[] values) {
-    this.values = values;
-  }
+    /**
+     * Constructs an object of class Args using given array.
+     * 
+     * Note that this class takes ownership of the array and assumes it is not changed further.
+     *
+     * @param values
+     */
+    public Args(@SuppressWarnings("hiding") final Object[] values) {
+        this.values = values;
+    }
 
-  /**
-   * 
-   * Constructs an object of class Args using given arguments.
-   * 
-   * The arguments are internally copied into an array so the collection can be reused.
-   *
-   * @param values
-   */
-  public Args(@SuppressWarnings("hiding") final Collection<Object> values) {
+    /**
+     * 
+     * Constructs an object of class Args using given arguments.
+     * 
+     * The arguments are internally copied into an array so the collection can be reused.
+     *
+     * @param values
+     */
+    public Args(@SuppressWarnings("hiding") final Collection<Object> values) {
         this.values = new Object[values.size()];
         this.values = values.toArray(this.values);
     }

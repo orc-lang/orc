@@ -82,20 +82,20 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
         throw new IllegalArgumentException(s"Cound not parse option: $s")
     }
   }
-  
+
   private var optimizationLevelFlagsCache: scala.collection.immutable.Map[String, CompilerFlagValue] = null
-  
+
   def optimizationLevelFlags: scala.collection.immutable.Map[String, CompilerFlagValue] = {
     import java.io.InputStream
     import scala.io.Source
-    
-    if(optimizationLevelFlagsCache != null)
+
+    if (optimizationLevelFlagsCache != null)
       return optimizationLevelFlagsCache
-    
+
     def loadOptLevel(n: Int): InputStream = {
       val stream = classOf[orc.OrcRuntime].getResourceAsStream(s"optimizationLevel$n.opts")
       if (stream == null && n > 0)
-        loadOptLevel(n-1)
+        loadOptLevel(n - 1)
       else
         stream
     }
@@ -113,12 +113,12 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     optimizationLevelFlagsCache = flags
     flags
   }
-  
+
   def optimizationFlags = {
     val m = optimizationOptions.map(parseOptionLine).toMap
     (optimizationLevelFlags ++ m).withDefault(n => new CompilerFlagValue(n, None))
   }
-  
+
   // Execution options
   def classPath: java.util.List[String] = getStringList("orc.classPath", List())
   def classPath_=(newVal: java.util.List[String]) = putStringList("orc.classPath", newVal)

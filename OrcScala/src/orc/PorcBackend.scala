@@ -34,7 +34,7 @@ class PorcBackend extends Backend[PorcBackend.CompiledOrcProgram] {
   import PorcBackend.CompiledOrcProgram
 
   throw new NotImplementedError("The Orctimizer/Porc backend is totally broken in this build. Sorry you cannot even expreriment with it at the moment.")
-  
+
   lazy val compiler: Compiler[CompiledOrcProgram] = new PorcOrcCompiler() with Compiler[CompiledOrcProgram] {
     val javaCompiler = new JavaCompiler()
     def compile(source: OrcInputContext, options: OrcCompilationOptions,
@@ -54,14 +54,14 @@ class PorcBackend extends Backend[PorcBackend.CompiledOrcProgram] {
   def createRuntime(options: OrcExecutionOptions): Runtime[CompiledOrcProgram] = new StandardOrcRuntime("To Java via Porc") with Runtime[CompiledOrcProgram] {
     val tjruntime = new ToJavaRuntime(this)
     startScheduler(options)
-    
+
     private def start(cls: CompiledOrcProgram, k: orc.OrcEvent => Unit): Execution = {
       val prog = cls.newInstance()
-      
+
       // TODO: Remove this weird type hack.
       prog.run(tjruntime, k.asInstanceOf[OrcEvent => scala.runtime.BoxedUnit])
     }
-    
+
     def run(cls: CompiledOrcProgram, k: orc.OrcEvent => Unit): Unit = start(cls, k)
     def runSynchronous(cls: CompiledOrcProgram, k: orc.OrcEvent => Unit): Unit = start(cls, k).waitForHalt()
   }

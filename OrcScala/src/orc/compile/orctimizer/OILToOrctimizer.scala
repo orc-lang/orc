@@ -13,20 +13,20 @@
 package orc.compile.orctimizer
 
 import orc.ast.oil.named._
-import orc.ast.orctimizer.{named => orct}
+import orc.ast.orctimizer.{ named => orct }
 import scala.collection.mutable
 import orc.error.compiletime.FeatureNotSupportedException
 
 /** @author amp
   */
 // Conversions from named to nameless representations
-class OILToOrctimizer {  
+class OILToOrctimizer {
   private def isDef(b: BoundVar)(implicit ctx: Map[BoundVar, Expression]) = ctx.get(b) match {
     // TODO: How to handle sites?
     case Some(d: DeclareCallables) if d.defs.head.isInstanceOf[Def] => true
     case _ => false
   }
-  
+
   def apply(e: Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
     e -> {
       case Stop() => orct.Stop()
@@ -39,39 +39,38 @@ class OILToOrctimizer {
         val x = new orct.BoundVar()
         orct.Force(List(x), List(apply(a)), true, x)
       }
-      case Call(target, args, typeargs) => {        
+      case Call(target, args, typeargs) => {
         // TODO: Add special case for site constants and maybe known defs (if we have enough information for that)
-        
+
         val t = new orct.BoundVar(Some(s"f_$target"))
-        orct.Force(t, apply(target), false, 
-            orct.IfDef(t, {
-              orct.CallDef(t, args map apply, typeargs map { _ map apply })
-            }, {
-              val uniqueArgs = args.toSet.toList
-              val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(s"f_$a")))).toMap
-              val call = orct.CallSite(t, args map argVarsMap, typeargs map { _ map apply })
-              if (uniqueArgs.size > 0) {
-                orct.Force(uniqueArgs map argVarsMap, uniqueArgs map apply, true, call)
-              } else {
-                call
-              }
-            })
-            )
+        orct.Force(t, apply(target), false,
+          orct.IfDef(t, {
+            orct.CallDef(t, args map apply, typeargs map { _ map apply })
+          }, {
+            val uniqueArgs = args.toSet.toList
+            val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(s"f_$a")))).toMap
+            val call = orct.CallSite(t, args map argVarsMap, typeargs map { _ map apply })
+            if (uniqueArgs.size > 0) {
+              orct.Force(uniqueArgs map argVarsMap, uniqueArgs map apply, true, call)
+            } else {
+              call
+            }
+          }))
       }
       case left || right => orct.Parallel(apply(left), apply(right))
       case left > x > right => {
         val bctx = ctx + ((x, e))
-        orct.Branch(apply(left), apply(x), apply(right)(bctx)) 
+        orct.Branch(apply(left), apply(x), apply(right)(bctx))
       }
       case Graft(x, left, right) => {
         val bctx = ctx + ((x, e))
         orct.Future(apply(x), apply(right), apply(left)(bctx))
       }
       case Trim(f) => orct.Trim(apply(f))
-      case left ow right => 
+      case left ow right =>
         orct.Otherwise(apply(left), apply(right))
       case DeclareCallables(defs, body) => {
-        val bctx = ctx ++ (defs map { d => (d.name, e) })        
+        val bctx = ctx ++ (defs map { d => (d.name, e) })
         orct.DeclareCallables(defs map { apply(_)(bctx) }, apply(body)(bctx))
       }
       case DeclareType(x, t, body) => {
@@ -83,7 +82,7 @@ class OILToOrctimizer {
         val t = new orct.BoundVar(Some(s"f_$o"))
         orct.Force(List(t), List(apply(o)), true, orct.FieldAccess(t, f))
       }
-    }    
+    }
   }
 
   def apply(a: Argument): orct.Argument = {
@@ -96,7 +95,7 @@ class OILToOrctimizer {
   }
 
   val boundVarCache = mutable.HashMap[BoundVar, orct.BoundVar]()
-    
+
   def apply(a: BoundVar): orct.BoundVar = {
     a -> {
       case (x: BoundVar) => {
@@ -139,23 +138,23 @@ class OILToOrctimizer {
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Type, List[BoundTypeVar])")
     }
   }
-  
+
   def apply(t: BoundTypevar): orct.BoundTypevar = {
     t -> {
       case u: BoundTypevar => new orct.BoundTypevar()
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Type, List[BoundTypeVar])")
     }
   }
-  
+
   def apply(defn: Callable)(implicit ctx: Map[BoundVar, Expression]): orct.Callable = {
     defn -> {
       case Def(name, formals, body, typeformals, argtypes, returntype) => {
-        orct.Def(apply(name), formals map apply, apply(body), typeformals map apply, 
-            argtypes map { _ map apply }, returntype map apply)
+        orct.Def(apply(name), formals map apply, apply(body), typeformals map apply,
+          argtypes map { _ map apply }, returntype map apply)
       }
       case Site(name, formals, body, typeformals, argtypes, returntype) => {
-        orct.Site(apply(name), formals map apply, apply(body), typeformals map apply, 
-            argtypes map { _ map apply }, returntype map apply)
+        orct.Site(apply(name), formals map apply, apply(body), typeformals map apply,
+          argtypes map { _ map apply }, returntype map apply)
       }
     }
   }

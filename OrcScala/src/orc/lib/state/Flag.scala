@@ -40,10 +40,10 @@ final class Flag {
   def set(): Unit = {
     _value.set(true)
   }
-  
+
   @inline
   def get() = _value.get()
-  
+
   override def toString = s"<Flag: ${get()}>"
 }
 
@@ -77,7 +77,7 @@ object SetFlag extends TotalSite1 with TypedSite with TalkativeSite with NonBloc
   def orcType() = {
     SimpleFunctionType(JavaObjectType(classOf[Flag]), SignalType)
   }
-  
+
   override def effects = Effects.BeforePub
 }
 
@@ -85,7 +85,7 @@ object PublishIfNotSet extends PartialSite1 with TypedSite with NonBlockingSite 
   def eval(arg: AnyRef) = {
     arg match {
       case flag: Flag => {
-        if(flag.get())
+        if (flag.get())
           None
         else
           Some(Signal)

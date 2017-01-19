@@ -89,7 +89,7 @@ trait Compiler[+CompiledCode] {
     override def toURI = file.toURI
     override def toURL = toURI.toURL
   }
-  
+
   class ManyCompilationExceptions(exceptions: Seq[Throwable]) extends CompilationException("Multiple compiler errors") {
     exceptions.foreach(addSuppressed)
   }

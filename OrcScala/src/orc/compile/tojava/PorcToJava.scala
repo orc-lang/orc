@@ -5,17 +5,16 @@ import orc.values.Format
 import scala.collection.mutable
 import orc.values.Field
 
-
 // Add context to convertion to carry the closed variables of sites.
 
 /** @author amp
   */
 class PorcToJava {
   import Deindent._, PorcToJava._
-  
+
   // TODO: Because I am debugging this does a lot of code formatting and is is not very efficient. All the formatting should be 
   //   removed or optimized and perhaps this whole things should be reworked to generate into a single StringBuilder. 
-  
+
   def apply(prog: DefCPS): String = {
     assert(prog.arguments.isEmpty)
     implicit val ctx = ConversionContext(Map())
@@ -46,16 +45,17 @@ $code
     """
     var lineNo = 3 // TODO: This offset is a hack to handle the fact some lines are added elsewhere before compilation.
     source.map(_ match {
-      case '\n' => lineNo += 1; "\n"
+      case '\n' =>
+        lineNo += 1; "\n"
       case '\u00ff' => lineNo.toString
       case c => c.toString
     }).mkString("")
   }
-  
+
   val vars: mutable.Map[Var, String] = new mutable.HashMap()
   val usedNames: mutable.Set[String] = new mutable.HashSet()
   var varCounter: Int = 0
-  def newVarName(prefix: String = "_t"): String = { 
+  def newVarName(prefix: String = "_t"): String = {
     val p = escapeIdent(prefix)
     val name = if (usedNames contains p) {
       varCounter += 1
@@ -66,7 +66,7 @@ $code
   }
   def lookup(temp: Var) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
   // The function handling code directly modifies vars to make it point to an element of an array. See orcdef().
-  
+
   val constantPool: mutable.Map[(Class[_], AnyRef), ConstantPoolEntry] = new mutable.HashMap()
   var constantCounter: Int = 0
   def strip$(s: String): String = {
@@ -93,9 +93,9 @@ $code
       // FIXME:HACK: This should use the underlying binary representation to make sure there is no loss of precision.
       case i: BigInt => s"""BigInt$$.MODULE$$.apply("$i")"""
       case n @ (_: java.lang.Float | _: java.lang.Double) => s"""${n.getClass.getCanonicalName}.valueOf("$n")"""
-      case n : BigDecimal if n.isExactDouble => s"""BigDecimal$$.MODULE$$.apply(${n.toDouble})"""
+      case n: BigDecimal if n.isExactDouble => s"""BigDecimal$$.MODULE$$.apply(${n.toDouble})"""
       // FIXME:HACK: This should use the underlying binary representation to make sure there is no loss of precision.
-      case n : BigDecimal => s"""BigDecimal$$.MODULE$$.apply("$n")"""
+      case n: BigDecimal => s"""BigDecimal$$.MODULE$$.apply("$n")"""
       case b: java.lang.Boolean => b.toString()
       case s: String => stringAsJava(s)
       case scala.collection.immutable.Nil => "scala.collection.immutable.Nil$.MODULE$"
@@ -114,12 +114,11 @@ $code
   def lookup(v: OrcValue) = {
     constantPool.getOrElseUpdate((if (v.value != null) v.value.getClass else classOf[Null], v.value), newConstant(v.value))
   }
-  
+
   def buildConstantPool() = {
     val orderedEntries = constantPool.values.toSeq.sortBy(_.name)
     orderedEntries.map(e => s"private static final ${e.typ} ${e.name} = ${e.initializer};").mkString("\n")
   }
-
 
   implicit class Interpolator(private val sc: StringContext) {
     def j(args: Any*)(implicit ctx: ConversionContext): String = {
@@ -160,7 +159,7 @@ $code
         |${sitecalldirect(Some(x), target, args)}
         |${expression(b).deindentedAgressively}
         """
-        
+
       }
       case SiteCallDirect(target, args) => {
         assert(!isJavaExpression)
@@ -219,9 +218,9 @@ $code
         // TODO: This gets all free variables regardless of where they came from. Some may be known not to be futures. Getting access to analysis would allow us to use isNotFuture.
         val fvs = closedVars(defs.flatMap(d => d.body.freevars -- d.allArguments).toSet)
         // TODO: It might be better to build a special join object that represents all the values we are closing over. Then all closures can use it instead of building a resolver for each.
-        
+
         val newctx = ctx.copy(closedVars = ctx.closedVars ++ defs.map(d => (d.name, fvs)))
-            
+
         j"""
         |$decls
         |${defs.map(orcdef(_, fvs)(newctx)).mkString}
@@ -242,7 +241,7 @@ $code
       case Kill(t) => {
         j"""($coerceToTerminator${argument(t)}).kill();"""
       }
-      
+
       case NewCounter(c, h) => {
         j"""
         |new CounterNested($execution, $coerceToCounter(${argument(c)}), () -> {
@@ -254,7 +253,7 @@ $code
       }
 
       // ==================== FUTURE ===================
-      
+
       case SpawnFuture(c, t, pArg, cArg, e) => {
         j"""
         |$execution.spawnFuture($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(pArg)}, ${argument(cArg)}) -> {
@@ -278,7 +277,7 @@ $code
           |((Object[])${argument(v)})[$i]
           """
         else
-          ""      
+          ""
       }
       case GetField(p, c, t, o, f) => {
         j"""
@@ -320,52 +319,51 @@ $code
       }
 
       case Unit() => ""
-        
+
       case _ => ???
     }
-    
+
     ///*[\n${expr.prettyprint().withoutLeadingEmptyLines.indent(1)}\n]*/\n
     val cleanedcode = code.deindented
     val prefix = if (cleanedcode.count(_ == '\n') > 0) expr.number.map("// Porc Number " + _ + ", Java Line \u00ff\n").getOrElse("") else ""
     val r = (prefix + cleanedcode).indent(2)
     r
   }
-  
+
   def getIdent(x: Var): String = lookup(x)
 
-  
   def sitecalldirect(bindTo: Option[Var], target: Value, args: List[Value])(implicit ctx: ConversionContext): String = {
     lazy val Signal = argument(OrcValue(orc.values.Signal))
     lazy val throwHalt = "HaltException$.MODULE$.throwIt()"
     lazy val throwHaltStat = "throw HaltException$.MODULE$.SINGLETON()"
-    
+
     def maybeBind(v: String) = bindTo.map(x => j"${argument(x)} = $v;").getOrElse("")
-    
+
     (target, args) match {
-      case (OrcValue(orc.lib.state.NewFlag), List()) => 
+      case (OrcValue(orc.lib.state.NewFlag), List()) =>
         maybeBind(j"""
         |new orc.lib.state.Flag();
         """)
-      case (OrcValue(orc.lib.state.SetFlag), List(f)) if bindTo.isEmpty => 
+      case (OrcValue(orc.lib.state.SetFlag), List(f)) if bindTo.isEmpty =>
         j"""
         |((orc.lib.state.Flag)${argument(f)}).set();
         """
-      case (OrcValue(orc.lib.state.PublishIfNotSet), List(f)) => 
+      case (OrcValue(orc.lib.state.PublishIfNotSet), List(f)) =>
         j"""
         |if(((orc.lib.state.Flag)${argument(f)}).get()) $throwHaltStat;
         |${maybeBind(Signal)}
         """
-      case (OrcValue(orc.lib.builtin.Ift), List(b)) => 
+      case (OrcValue(orc.lib.builtin.Ift), List(b)) =>
         j"""
         |if(!(Boolean)${argument(b)}) $throwHaltStat;
         |${maybeBind(Signal)}
         """
-      case (OrcValue(orc.lib.builtin.Iff), List(b)) => 
+      case (OrcValue(orc.lib.builtin.Iff), List(b)) =>
         j"""
         |if((Boolean)${argument(b)}) $throwHaltStat;
         |${maybeBind(Signal)}
         """
-      case (OrcValue(v: orc.values.sites.DirectSite), _) => 
+      case (OrcValue(v: orc.values.sites.DirectSite), _) =>
         val temp = newVarName("temp")
         val e = newVarName("exc")
         j"""
@@ -387,15 +385,15 @@ $code
         """)
     }
   }
-  
+
   def argument(a: Value): String = {
     a match {
-      case c@OrcValue(v) => lookup(c).name
+      case c @ OrcValue(v) => lookup(c).name
       case (x: Var) => getIdent(x)
       case _ => ???
     }
   }
-  
+
   def orcdef(d: Def, closedVars: Set[Var])(implicit ctx: ConversionContext): String = {
     val args = newVarName("args")
     val rt = newVarName("rt")
@@ -418,11 +416,11 @@ $code
           |$renameargs
           |${expression(b)}
         |};
-        """.deindented        
+        """.deindented
       }
     }
   }
-  
+
   def closedVars(freeVars: Set[Var])(implicit ctx: ConversionContext): Set[Var] = {
     freeVars.flatMap { x => ctx.closedVars.get(x).getOrElse(Set(x)) }
   }
@@ -455,10 +453,10 @@ object PorcToJava {
   }
 
   def counterToString(i: Int) = java.lang.Integer.toString(i, 36)
-  
+
   def stringAsUTF8Array(s: String): String =
-    s"""new String(new byte[] { ${s.getBytes("UTF-8").map(c => "0x"+c.toHexString).mkString(",")} }, UTF8)"""
-  
+    s"""new String(new byte[] { ${s.getBytes("UTF-8").map(c => "0x" + c.toHexString).mkString(",")} }, UTF8)"""
+
   val safeChars = " \t._;:${}()[]-+/*,&^%#@!=?<>|~`"
   def escapeChar(c: Char): String = c match {
     case _ if (c.isLetterOrDigit || (safeChars contains c)) => c.toString
@@ -471,17 +469,17 @@ object PorcToJava {
     case '\\' => "\\\\"
     case _ => s"\\u${c.toInt.formatted("%04d")}"
   }
-  
+
   /** Convert a string to an executable Java expression that produces that string.
-   */
+    */
   def stringAsJava(s: String): String = {
     // We will generate an escaped string unless we have surrogates. It might work with escapes, but just going UTF8 seems better.
     if (s.forall(!_.isSurrogate))
-      "\""+s.map(escapeChar).mkString("")+"\""
+      "\"" + s.map(escapeChar).mkString("") + "\""
     else
       stringAsUTF8Array(s)
   }
-  
+
   case class ConversionContext(closedVars: Map[Var, Set[Var]])
 }
 
@@ -491,8 +489,8 @@ object Deindent {
   val EmptyLine = raw"""(\p{Blank}*\n)+""".r
   val EmptyLinesEnd = raw"""(\n\p{Blank}*)+\z""".r
   val NonBlank = raw"""[^\p{Blank}]""".r
-  
-  implicit final class DeindentString(private val s: String) { 
+
+  implicit final class DeindentString(private val s: String) {
     def deindentedAgressively = {
       val lines = s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.split('\n')
       val indentSize = lines.map(l => NonBlank.findFirstMatchIn(l).map(_.start).getOrElse(Int.MaxValue)).min
@@ -502,17 +500,17 @@ object Deindent {
         lines.map(_.substring(indentSize)).mkString("\n")
       }
     }
-    
+
     def deindented = {
       s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.stripMargin
     }
-    
+
     def indent(n: Int) = {
       val lines = s.split('\n')
       val p = " " * n
       lines.map(p + _).mkString("\n")
     }
-    
+
     def withoutLeadingEmptyLines = {
       EmptyLine.findPrefixMatchOf(s).map({ m =>
         s.substring(m.end)

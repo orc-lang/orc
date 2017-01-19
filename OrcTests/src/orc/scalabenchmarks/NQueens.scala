@@ -12,18 +12,19 @@ object NQueens extends BenchmarkApplication {
 
   def main(args: Array[String]) {
     val size: Int = args match {
-      case Array() => println("Defaulting to size 9"); 9
+      case Array() =>
+        println("Defaulting to size 9"); 9
       case Array(n) => n.toInt
     }
     def placeQueens(n: BigInt): Solutions = n match {
-      case _ if n == 0  => List(Nil)
+      case _ if n == 0 => List(Nil)
       case _ => for {
-          queens <- placeQueens(n -1)
-          y <- 1 to size
-          queen = (n, BigInt(y))
-          if (isSafe(queen, queens))
-        } yield queen :: queens
-      }
+        queens <- placeQueens(n - 1)
+        y <- 1 to size
+        queen = (n, BigInt(y))
+        if (isSafe(queen, queens))
+      } yield queen :: queens
+    }
     val solutions = Util.timeIt { placeQueens(size) }
     println(solutions.size + " solutions found")
     // print the board of the first solution
@@ -38,6 +39,6 @@ object NQueens extends BenchmarkApplication {
 
   def isAttacked(q1: Queen, q2: Queen) =
     q1._1 == q2._1 ||
-    q1._2 == q2._2 ||
-    (q2._1-q1._1).abs == (q2._2-q1._2).abs
+      q1._2 == q2._2 ||
+      (q2._1 - q1._1).abs == (q2._2 - q1._2).abs
 }

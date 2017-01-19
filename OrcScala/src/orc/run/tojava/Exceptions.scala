@@ -6,7 +6,7 @@ class HaltException() extends RuntimeException() {
 }
 
 /** Notify the enclosing code that this direct form Orc code has halted due to an expected exception in the Java code.
-	*/
+  */
 class ExceptionHaltException(e: Throwable) extends HaltException {
   initCause(e)
 }
@@ -19,7 +19,7 @@ object HaltException {
    * however it makes the stacks wrong. You can change this to a def 
    * to get the stacks right.
    */
-  
+
   final def throwIt() = throw SINGLETON
 }
 

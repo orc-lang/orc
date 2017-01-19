@@ -30,32 +30,33 @@ import scala.collection.immutable.List;
  * @author quark
  */
 public class Dictionary extends EvalSite {
-	protected static class DictionaryInstance implements HasMembers {
+    protected static class DictionaryInstance implements HasMembers {
         private final HashMap<String, RefInstance> map = new HashMap<String, RefInstance>();
 
-		@Override
-		public String toString() {
-			return map.toString();
-		}
+        @Override
+        public String toString() {
+            return map.toString();
+        }
 
         @Override
         synchronized public Binding getMember(Field f) {
-          final String field = f.field();
-                RefInstance out = map.get(field);
-                if (out == null) {
-                    out = new RefInstance();
-                    map.put(field, out);
-                }
-                return new BoundValue(out);
+            final String field = f.field();
+            RefInstance out = map.get(field);
+            if (out == null) {
+                out = new RefInstance();
+                map.put(field, out);
             }
+            return new BoundValue(out);
+        }
+
         @Override
         synchronized public boolean hasMember(Field f) {
-          return true;
+            return true;
         }
 
         @Override
         public String toOrcSyntax() {
-          return "DictionaryInstance";
+            return "DictionaryInstance";
         }
     }
 

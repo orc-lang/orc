@@ -62,8 +62,8 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers {
       case None => throw new NoSuchMemberException(this, "this record")
     }
   }
-  
+
   override def hasMember(field: Field): Boolean = {
-    entries.contains(field.field) 
+    entries.contains(field.field)
   }
 }

@@ -86,7 +86,7 @@ class MicrosoftTranslator(user: String, key: String) extends PartialSite with Sp
   var token = ""
 
   def getAccessToken() = {
-    if (token == "" || System.currentTimeMillis() >= tokenExpiration ) {
+    if (token == "" || System.currentTimeMillis() >= tokenExpiration) {
       val conn = authUrl.openConnection().asInstanceOf[HttpURLConnection]
       conn.setConnectTimeout(10000) // 10 seconds is reasonable
       conn.setReadTimeout(5000) // 5 seconds is reasonable
@@ -106,7 +106,7 @@ class MicrosoftTranslator(user: String, key: String) extends PartialSite with Sp
       if (o.has("error") && o.getBoolean("error")) {
         throw new RuntimeException(s"Error Authenticating with $authUrl: ${o.optString("error_description")}");
       }
-      
+
       tokenExpiration = (o.getLong("expires_in") - 10) * 1000 + System.currentTimeMillis()
       token = o.getString("access_token")
     }
@@ -125,12 +125,12 @@ class MicrosoftTranslator(user: String, key: String) extends PartialSite with Sp
     conn.setRequestProperty("accept", "*/*")
     conn.addRequestProperty("Authorization", "Bearer " + getAccessToken())
     conn.connect()
-    
+
     val resp = conn.getResponseCode()
 
     val src = Source.fromInputStream(conn.getInputStream())
     val s = src.mkString("", "", "")
-    
+
     if (resp == 200) {
       // Hack to parse bare JSON string. The stripPrefix is to remove the Unicode BOM.
       val o = new JSONArray(s"[${s.stripPrefix("\uFEFF")}]")

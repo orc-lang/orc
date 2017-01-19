@@ -108,11 +108,11 @@ case class Force(xs: List[BoundVar], vs: List[Argument], publishForce: Boolean, 
         throw new IllegalArgumentException(s"Unknown variable: $x")
     }
   }
-  
+
   def toMap = (xs zip vs).toMap
 }
 object Force {
-  def apply(x: BoundVar, v:Argument, publishForce: Boolean, expr: Expression): Force = 
+  def apply(x: BoundVar, v: Argument, publishForce: Boolean, expr: Expression): Force =
     Force(List(x), List(v), publishForce, expr)
   def asExpr(v: Argument, publishForce: Boolean = true) = {
     val x = new BoundVar()
@@ -148,7 +148,6 @@ case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 /** Read the value from a field.
   */
 case class FieldAccess(obj: Argument, field: values.Field) extends Expression
-
 
 sealed abstract class Argument extends Expression
 case class Constant(value: AnyRef) extends Argument
@@ -187,7 +186,7 @@ sealed abstract class Callable
 sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type])
   extends Callable {
   //TODO: Does Def need to have the closed variables listed here? Probably not unless we are type checking.
-  
+
   transferOptionalVariableName(name, this)
   //lazy val withoutNames: nameless.Def = namedToNameless(this, Nil, Nil)
 
@@ -219,8 +218,7 @@ sealed case class Site(name: BoundVar, formals: List[BoundVar], body: Expression
 sealed abstract class Type
   extends NamedAST
   //with hasFreeTypeVars
-  with Substitution[Type] 
-  {
+  with Substitution[Type] {
   //lazy val withoutNames: nameless.Type = namedToNameless(this, Nil)
 }
 case class Top() extends Type

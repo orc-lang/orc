@@ -6,7 +6,7 @@ import scala.concurrent.duration.Duration
 
 object Threads {
   import scala.concurrent.ExecutionContext.Implicits.global
-  
+
   /*
 	This program creates 2^20 (or about 1 million) threads
 	and waits for them to terminate.

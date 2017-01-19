@@ -28,40 +28,40 @@ import scala.runtime.BoxedUnit;
  * @author amp
  */
 abstract public class OrcProgram implements Callable {
-  /**
-   * Run this program using the given runtime.
-   */
-  public Execution run(final ToJavaRuntime tjruntime, Function1<OrcEvent, BoxedUnit> k) {
-    final Execution ctx = new Execution(tjruntime, k);
-    tjruntime.schedule(new CounterSchedulableRunnable(ctx.c(), new Runnable() {
-      @Override
-      public void run() {
-        try {
-          call(ctx, ctx.p(), ctx.c(), ctx.t(), new Object[] {});
-        } catch (KilledException e) {
-        }
-      }
-    }));
-    // Matched to: Initial count of Execution created above.
-    ctx.c().halt();
-    return ctx;
-  }
+    /**
+     * Run this program using the given runtime.
+     */
+    public Execution run(final ToJavaRuntime tjruntime, Function1<OrcEvent, BoxedUnit> k) {
+        final Execution ctx = new Execution(tjruntime, k);
+        tjruntime.schedule(new CounterSchedulableRunnable(ctx.c(), new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    call(ctx, ctx.p(), ctx.c(), ctx.t(), new Object[] {});
+                } catch (KilledException e) {
+                }
+            }
+        }));
+        // Matched to: Initial count of Execution created above.
+        ctx.c().halt();
+        return ctx;
+    }
 
-  /**
-   * Run the given program instance without a runtime.
-   * 
-   * @param args The command line arguments used to start this program.
-   * 
-   * @throws PrintVersionAndMessageException
-   */
-  public static void runProgram(final String[] args, final OrcProgram prog) throws PrintVersionAndMessageException {
-    final OrcCmdLineOptions options = new OrcCmdLineOptions();
-    options.parseRuntimeCmdLine(args);
-    Main.setupLogging(options);
-    final StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
-    runtime.startScheduler(options);
-    throw new NotImplementedError("Implement this");
-    //prog.run(runtime);
-  }
+    /**
+     * Run the given program instance without a runtime.
+     * 
+     * @param args The command line arguments used to start this program.
+     * 
+     * @throws PrintVersionAndMessageException
+     */
+    public static void runProgram(final String[] args, final OrcProgram prog) throws PrintVersionAndMessageException {
+        final OrcCmdLineOptions options = new OrcCmdLineOptions();
+        options.parseRuntimeCmdLine(args);
+        Main.setupLogging(options);
+        final StandardOrcRuntime runtime = new StandardOrcRuntime("ToJava");
+        runtime.startScheduler(options);
+        throw new NotImplementedError("Implement this");
+        //prog.run(runtime);
+    }
 
 }

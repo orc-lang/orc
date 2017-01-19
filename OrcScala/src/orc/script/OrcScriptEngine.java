@@ -80,14 +80,14 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
     }
 
     public class OrcCompiledScript extends CompiledScript {
-    final CompiledCode code;
+        final CompiledCode code;
 
         /**
          * Constructs an object of class OrcCompiledScript.
          *
          * @param oilAstRoot Root node of the OIL AST from the compilation
          */
-        /* default-access */OrcCompiledScript(final CompiledCode _code) {
+        /* default-access */ OrcCompiledScript(final CompiledCode _code) {
             this.code = _code;
         }
 
@@ -173,7 +173,7 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
                                                                           // by
                                                                           // JSR-223
                                                                           // §SCR.4.3.4.1.2
-            // TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
+                                                                          // TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
             try {
                 exec.runSynchronous(code, pubAct.asFunction());
             } catch (final InterruptedException e) {
@@ -227,8 +227,8 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
             throw e;
         } catch (final IOException e) {
             throw new ScriptException(e);
-    } catch (final CompilationException e) {
-      throw new ScriptException(e);
+        } catch (final CompilationException e) {
+            throw new ScriptException(e);
         }
     }
 
@@ -339,8 +339,8 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
      */
     @SuppressWarnings("unchecked")
     public OrcCompiledScript importLoaded(final CompiledScript script) throws LoadingException {
-        if(script instanceof OrcScriptEngine.OrcCompiledScript)
-            return new OrcCompiledScript(((OrcCompiledScript)script).code);
+        if (script instanceof OrcScriptEngine.OrcCompiledScript)
+            return new OrcCompiledScript(((OrcCompiledScript) script).code);
         else
             throw new IllegalArgumentException("Provided compiled script is not of the correct type.");
     }

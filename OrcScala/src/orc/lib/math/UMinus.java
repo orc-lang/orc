@@ -82,9 +82,17 @@ public class UMinus extends EvalSite implements TypedSite {
     }
 
     @Override
-    public boolean nonBlocking() { return true; }
+    public boolean nonBlocking() {
+        return true;
+    }
+
     @Override
-    public int maxPublications() { return 1; }
+    public int maxPublications() {
+        return 1;
+    }
+
     @Override
-    public boolean effectFree() { return true; }
+    public boolean effectFree() {
+        return true;
+    }
 }

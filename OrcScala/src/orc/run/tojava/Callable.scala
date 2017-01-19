@@ -70,7 +70,7 @@ trait ForcableCallableBase {
 }
 
 final class ForcableCallable(val closedValues: Array[AnyRef], impl: Callable) extends Callable with ForcableCallableBase {
-  def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]): Unit = 
+  def call(execution: Execution, p: Continuation, c: Counter, t: Terminator, args: Array[AnyRef]): Unit =
     impl.call(execution, p, c, t, args)
 }
 final class ForcableDirectCallable(val closedValues: Array[AnyRef], impl: DirectCallable) extends DirectCallable with ForcableCallableBase {
@@ -79,14 +79,13 @@ final class ForcableDirectCallable(val closedValues: Array[AnyRef], impl: Direct
 }
 
 /** A wrapper around ToJava runtime state which interacts correctly with the Orc site API.
- *  
- */
+  *
+  */
 final class PCTHandle(val execution: Execution, p: Continuation, c: Counter, t: Terminator) extends Handle with Terminatable {
   val halted = new AtomicBoolean(false)
-  
+
   t.addChild(this)
 
-  
   def publishNonterminal(v: AnyRef): Unit = {
     execution.stageOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
   }
@@ -106,7 +105,7 @@ final class PCTHandle(val execution: Execution, p: Continuation, c: Counter, t: 
   }
 
   def kill(): Unit = halt
-  
+
   def halt: Unit = {
     if (halted.compareAndSet(false, true)) {
       c.halt()
@@ -165,10 +164,10 @@ sealed class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapp
     try {
       execution.invoke(new PCTHandle(execution, p, c, t), site, args)
     } finally {
-      execution.flushStage()    
+      execution.flushStage()
     }
   }
-  
+
   override def toString: String = s"${getClass.getName}($underlying)"
 }
 
@@ -187,17 +186,17 @@ final class RuntimeDirectCallable(override val underlying: DirectSite) extends R
         try {
           site.calldirect(args)
         } finally {
-          execution.flushStage()    
+          execution.flushStage()
         }
       } catch {
-        case e: InterruptedException => 
+        case e: InterruptedException =>
           throw e
-        case e: ExceptionHaltException if e.getCause() != null => 
+        case e: ExceptionHaltException if e.getCause() != null =>
           execution.notifyOrc(CaughtEvent(e.getCause()))
           throw HaltException.SINGLETON
-        case e: HaltException => 
+        case e: HaltException =>
           throw e
-        case e: Exception => 
+        case e: Exception =>
           execution.notifyOrc(CaughtEvent(e))
           throw HaltException.SINGLETON
       }
@@ -230,7 +229,7 @@ object Callable {
       }
     case _ => s
   }
-  
+
   /** Resolve an Orc Site name to a Callable.
     */
   def resolveOrcSite(n: String): RuntimeCallable = {

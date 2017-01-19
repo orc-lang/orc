@@ -86,7 +86,7 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
 /** A mix-in that provides the phases used by the standard compiler. They are in a
   * mix-in so that they can be used in other compilers that do not use the same output
   * type as the standard orc compiler.
-  * 
+  *
   * @author jthywiss, amp
   */
 trait CoreOrcCompilerPhases {

@@ -56,18 +56,18 @@ case class JavaObjectType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_]
   def call(typeArgs: List[Type], argTypes: List[Type]): Type = {
     // TODO: I have no idea what I should be doing here.
     throw new UncallableTypeException(this);
-        }
-  
+  }
+
   def getField(f: FieldType): Type = {
     typeOfMember(f.f, false, javaContext)
-      }
- 
+  }
+
   def hasField(f: FieldType): Boolean = {
     try {
       typeOfMember(f.f, false, javaContext)
       true
     } catch {
-      case _ : NoSuchMemberException =>
+      case _: NoSuchMemberException =>
         false
     }
   }

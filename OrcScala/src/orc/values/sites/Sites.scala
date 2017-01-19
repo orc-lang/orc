@@ -44,9 +44,9 @@ trait Site extends OrcValue with SiteMetadata {
 
 trait DirectSite extends Site {
   override val isDirectCallable = true
-  
+
   def call(args: Array[AnyRef], h: Handle): Unit // This could be implemented here if it was useful
-  
+
   def calldirect(args: Array[AnyRef]): AnyRef
 }
 
@@ -78,12 +78,12 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
       case (e: OrcException) => h !! e
     }
   }
-  def calldirect(args: Array[AnyRef]): AnyRef =  {
+  def calldirect(args: Array[AnyRef]): AnyRef = {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
       evaluate(args)
     } catch {
-      case e: Exception => 
+      case e: Exception =>
         //throw HaltException.SINGLETON
         throw new ExceptionHaltException(e)
     }
@@ -103,12 +103,12 @@ trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
       case None => h.halt
     }
   }
-  def calldirect(args: Array[AnyRef]): AnyRef =  {
+  def calldirect(args: Array[AnyRef]): AnyRef = {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     (try {
-      evaluate(args) 
+      evaluate(args)
     } catch {
-      case e: Exception => 
+      case e: Exception =>
         //throw HaltException.SINGLETON
         throw new ExceptionHaltException(e)
     }) match {
@@ -118,7 +118,7 @@ trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
   }
 
   def evaluate(args: Array[AnyRef]): Option[AnyRef]
-  
+
   override def publications: Range = super.publications intersect Range(0, 1)
 }
 
@@ -286,9 +286,9 @@ class StructurePairSite(
   unapplySite: PartialSite1 with TypedSite) extends OrcRecord(
   "apply" -> applySite,
   "unapply" -> unapplySite) with TypedSite with PartialSite {
-  
+
   override def evaluate(args: Array[AnyRef]) = throw new UncallableValueException(this)
-  
+
   def orcType() = new RecordType(
     "apply" -> applySite.orcType(),
     "unapply" -> unapplySite.orcType())
