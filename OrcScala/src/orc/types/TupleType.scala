@@ -19,7 +19,7 @@ import orc.util.TypeListEnrichment._
   *
   * @author dkitchin
   */
-case class TupleType(elements: List[Type]) extends UnaryCallableType with StrictType {
+case class TupleType(elements: List[Type]) extends UnaryCallableType with StrictCallableType {
 
   assert(elements.size > 1)
 

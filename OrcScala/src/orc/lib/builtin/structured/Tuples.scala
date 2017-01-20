@@ -25,7 +25,7 @@ object TupleConstructor extends TotalSite with TypedSite with FunctionalSite wit
 
   override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(args.toArray))
 
-  def orcType() = new SimpleCallableType with StrictType {
+  def orcType() = new SimpleCallableType with StrictCallableType {
     def call(argTypes: List[Type]) = { TupleType(argTypes) }
   }
 }
@@ -54,7 +54,7 @@ object TupleArityChecker extends PartialSite2 with TypedSite with FunctionalSite
     case _ => None
   }
 
-  def orcType() = new BinaryCallableType with StrictType {
+  def orcType() = new BinaryCallableType with StrictCallableType {
     def call(r: Type, s: Type): Type = {
       (r, s) match {
         case (t @ TupleType(elements), IntegerConstantType(i)) => {

@@ -43,7 +43,7 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
     OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)
   }
 
-  def orcType() = new SimpleCallableType with StrictType {
+  def orcType() = new SimpleCallableType with StrictCallableType {
     def call(argTypes: List[Type]) = {
       val bindings =
         (argTypes.zipWithIndex) map {
@@ -72,7 +72,7 @@ object RecordMatcher extends PartialSite with TypedSite with FunctionalSite {
       case _ => throw new AssertionError("Record match internal failure (RecordMatcher.evaluate match error on args list)")
     }
 
-  def orcType() = new SimpleCallableType with StrictType {
+  def orcType() = new SimpleCallableType with StrictCallableType {
     def call(argTypes: List[Type]): Type = {
       argTypes match {
         case List(rt @ RecordType(entries), shape @ _*) => {

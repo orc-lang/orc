@@ -33,7 +33,7 @@ object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite {
     OrcValue.letLike(datasites)
   }
 
-  def orcType() = new CallableType with StrictType {
+  def orcType() = new CallableType with StrictCallableType {
 
     def call(typeArgs: List[Type], argTypes: List[Type]) = {
 

@@ -12,7 +12,7 @@
 //
 package orc.lib.time
 
-import orc.types.{ FunctionType, IntegerType, StrictType }
+import orc.types.{ FunctionType, IntegerType, StrictCallableType }
 import orc.values.sites.{ TotalSite2, TypedSite }
 
 /** @author dkitchin
@@ -26,6 +26,6 @@ object IntegerTimeOrder extends TotalSite2 with TypedSite {
     (i compare j).asInstanceOf[AnyRef]
   }
 
-  lazy val orcType = new FunctionType(Nil, List(IntegerType, IntegerType), IntegerType) with StrictType
+  lazy val orcType = new FunctionType(Nil, List(IntegerType, IntegerType), IntegerType) with StrictCallableType
 
 }

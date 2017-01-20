@@ -22,20 +22,16 @@ object EmptyRecordType extends RecordType(Map[String, Type]())
   *
   * @author dkitchin
   */
-case class RecordType(entries: Map[String, Type]) extends CallableType with StrictType with HasFieldsType {
+case class RecordType(entries: Map[String, Type]) extends HasMembersType {
 
   def this(entries: (String, Type)*) = {
     this(entries.toMap)
   }
 
-  override def call(typeArgs: List[Type], argTypes: List[Type]) = {
-    throw new UncallableTypeException(this)
-  }
-
-  override def getField(f: FieldType): Type = {
+  def getMember(f: FieldType): Type = {
     entries.getOrElse(f.f, throw new NoSuchMemberException(this, f.f))
   }
-  override def hasField(f: FieldType): Boolean = {
+  override def hasMember(f: FieldType): Boolean = {
     entries.contains(f.f)
   }
 

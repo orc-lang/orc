@@ -58,7 +58,7 @@ class UnboundTypeException(val typeName: String) extends TypeException("Type " +
 class UncallableTypeException(val t: Type) extends TypeException("Type " + t + " cannot be called as a site or function.") with SeverityError
 
 // TODO: Set SerialVersionUID
-class TypeHasNoFieldsException(val t: Type) extends TypeException("Type " + t + " does not have fields.") with SeverityError
+class TypeDoesNotHaveMembersException(val t: Type) extends TypeException("Type " + t + " does not have members.") with SeverityError
 
 @SerialVersionUID(215727835596029040L)
 class UnrepresentableTypeException(val t: Type) extends TypeException(t.toString() + " has no concrete representation.") with SeverityError

@@ -18,7 +18,7 @@ import orc.error.compiletime.typing.ArgumentTypecheckingException
   *
   * @author dkitchin
   */
-class RecordExtensorType extends BinaryCallableType with StrictType {
+class RecordExtensorType extends BinaryCallableType with StrictCallableType {
 
   def call(t: Type, u: Type) = {
     (t, u) match {

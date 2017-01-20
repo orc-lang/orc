@@ -163,7 +163,7 @@ object Typeloader extends SiteClassLoading {
                 val funReturnType = TypeInstance(dt, funTypeFormals)
                 FunctionType(funTypeFormals, funArgTypes, funReturnType)
               }
-              val unapplyType = new UnaryCallableType() with StrictType {
+              val unapplyType = new UnaryCallableType() with StrictCallableType {
                 def call(t: Type): Type = {
                   t match {
                     case TypeInstance(`dt`, typeActuals) => {

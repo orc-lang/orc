@@ -24,7 +24,7 @@ import orc.error.compiletime.typing.NoSuchMemberException
   *
   * @author dkitchin
   */
-case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType with StrictType with HasFieldsType {
+case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_], Type] = Nil.toMap) extends CallableType with JavaType with StrictCallableType with HasMembersType {
 
   override def toString = "(class " + Option(cl.getCanonicalName).getOrElse(cl.getName) + ")"
 
@@ -77,17 +77,7 @@ case class JavaClassType(val cl: Class[_], javaContext: Map[jvm.TypeVariable[_],
     }
   }
 
-  def getField(f: FieldType): Type = {
+  def getMember(f: FieldType): Type = {
     typeOfMember(f.f, true, javaContext)
-  }
-
-  def hasField(f: FieldType): Boolean = {
-    try {
-      typeOfMember(f.f, true, javaContext)
-      true
-    } catch {
-      case _: NoSuchMemberException =>
-        false
-    }
   }
 }

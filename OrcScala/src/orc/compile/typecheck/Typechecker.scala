@@ -27,6 +27,8 @@ import orc.types._
 import orc.util.OptionMapExtension.addOptionMapToList
 import orc.values._
 import orc.values.sites._
+import orc.error.compiletime.typing.TypeDoesNotHaveMembersException
+import orc.ast.oil.named.FoldedFieldAccess
 
 /** Typechecker for Orc expressions.
   *
@@ -76,8 +78,14 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           }
           case FieldAccess(target, f) => {
             val (newTarget, typeTarget) = typeSynthExpr(target)
-            // TODO: Add support for fields.
-            ???
+            val typeField = FieldType(f.field)
+            val tpe = typeTarget match {
+              case t: HasMembersType =>
+                t.getMember(typeField)
+              case t  =>
+                throw new TypeDoesNotHaveMembersException(t)
+            }
+            (FoldedFieldAccess(newTarget, f), tpe)
           }
           case New(linearization) => {
             // TODO: Add support for classes.
@@ -333,7 +341,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
       case Bot => {
         (syntacticTypeArgs, Bot)
       }
-      case _: StrictType if argTypes contains Bot => {
+      case _: StrictCallableType if argTypes contains Bot => {
         (syntacticTypeArgs, Bot)
       }
       case RecordType(entries) => {

@@ -69,7 +69,7 @@ object Let extends TotalSite with TypedSite with FunctionalSite {
   def orcType() = LetType
 }
 
-object LetType extends SimpleCallableType with StrictType {
+object LetType extends SimpleCallableType with StrictCallableType {
 
   def call(argTypes: List[Type]): Type = {
     argTypes match {

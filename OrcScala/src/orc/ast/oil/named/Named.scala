@@ -391,6 +391,17 @@ object FoldedCall {
 
 }
 
+/* A member access with target unfolding reversed.
+ *
+ */
+object FoldedFieldAccess {
+
+  def apply(targetExpression: Expression, f: values.Field): Expression = {
+    Conversions.unfold(List(targetExpression), { x => FieldAccess(x.head, f) })
+  }
+
+}
+
 /* An anonymous function with lambda translation reversed. */
 object FoldedLambda {
 
@@ -411,4 +422,3 @@ object FoldedLambda {
   }
 
 }
-

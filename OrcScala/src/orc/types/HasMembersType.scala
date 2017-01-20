@@ -18,15 +18,26 @@ import orc.error.compiletime.typing._
   *
   * @author amp
   */
-trait HasFieldsType extends Type {
+trait HasMembersType extends Type {
   /** Returns the type of the given field.
     *
     * If there is no such member it will throw.
     */
   @throws(classOf[NoSuchMemberException])
-  def getField(f: FieldType): Type
+  def getMember(f: FieldType): Type
 
   /** Return true if this type has the given field, otherwise false.
+    *
+    * The default implementation is very slow. Override with a non-exception using
+    * implementation if possible.
     */
-  def hasField(f: FieldType): Boolean
+  def hasMember(f: FieldType): Boolean = {
+    try {
+      getMember(f)
+      true
+    } catch {
+      case _: NoSuchMemberException =>
+        false
+    }
+  }
 }

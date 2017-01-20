@@ -13,13 +13,13 @@
 package orc.types
 
 import orc.error.compiletime.typing.UncallableTypeException
-import orc.error.compiletime.typing.TypeHasNoFieldsException
+import orc.error.compiletime.typing.TypeDoesNotHaveMembersException
 
 /** Type instances, type constructors, variances
   *
   * @author dkitchin
   */
-case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends CallableType with HasFieldsType {
+case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends CallableType with HasMembersType {
 
   override def toString = tycon.toString + args.mkString("[", ",", "]")
 
@@ -102,34 +102,35 @@ case class TypeInstance(tycon: TypeConstructor, args: List[Type]) extends Callab
     }
   }
 
-  def getField(f: FieldType): Type = {
+  def getMember(f: FieldType): Type = {
     tycon.instance(args) match {
       case u: TypeInstance => {
         /* Avoiding an infinte loop */
-        throw new TypeHasNoFieldsException(u)
+        throw new TypeDoesNotHaveMembersException(u)
       }
-      case ft: HasFieldsType => {
-        ft.getField(f)
+      case ft: HasMembersType => {
+        ft.getMember(f)
       }
       case u => {
         // FIXME: What exception should this be?
-        throw new TypeHasNoFieldsException(u)
+        throw new TypeDoesNotHaveMembersException(u)
       }
     }
   }
-  def hasField(f: FieldType): Boolean = {
+
+  override def hasMember(f: FieldType): Boolean = {
     tycon.instance(args) match {
       case u: TypeInstance => {
         /* Avoiding an infinte loop */
         // FIXME: What exception should this be?
-        throw new TypeHasNoFieldsException(u)
+        throw new TypeDoesNotHaveMembersException(u)
       }
-      case ft: HasFieldsType => {
-        ft.hasField(f)
+      case ft: HasMembersType => {
+        ft.hasMember(f)
       }
       case u => {
         // FIXME: What exception should this be?
-        throw new TypeHasNoFieldsException(u)
+        throw new TypeDoesNotHaveMembersException(u)
       }
     }
   }
