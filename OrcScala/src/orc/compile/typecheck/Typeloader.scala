@@ -34,10 +34,13 @@ import orc.lib.state.types.RefType
   * @author dkitchin
   */
 object Typeloader extends SiteClassLoading {
+  import Typechecker.Context
 
   /** Lift a syntactic type to a first-order semantic type.
     */
-  def lift(t: syntactic.Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Type = {
+  def lift(t: syntactic.Type)(implicit ctx: Context): Type = {
+    import ctx._
+
     t match {
       case u: syntactic.BoundTypevar => {
         (typeContext get u) match {
@@ -59,8 +62,8 @@ object Typeloader extends SiteClassLoading {
         val newTypeFormals = typeFormals map { u => new TypeVariable(u) }
         val typeBindings = typeFormals zip newTypeFormals
         val newTypeContext = typeContext ++ typeBindings
-        val newArgTypes = argTypes map { lift(_)(newTypeContext, typeOperatorContext) }
-        val newReturnType = lift(returnType)(newTypeContext, typeOperatorContext)
+        val newArgTypes = argTypes map { lift(_)(ctx.copy(typeContext=newTypeContext)) }
+        val newReturnType = lift(returnType)(ctx.copy(typeContext=newTypeContext))
         FunctionType(newTypeFormals, newArgTypes, newReturnType)
       }
       case syntactic.TypeApplication(t, typeactuals) => {
@@ -76,7 +79,7 @@ object Typeloader extends SiteClassLoading {
         val newTypeContext = typeContext + { (self, dt) }
         val constructorTypes =
           for ((name, variantArgs) <- variants) yield {
-            val argTypes = variantArgs map { lift(_)(newTypeContext, typeOperatorContext) }
+            val argTypes = variantArgs map { lift(_)(ctx.copy(typeContext=newTypeContext)) }
             new RecordType(
               "apply" -> SimpleFunctionType(argTypes, dt),
               "unapply" -> SimpleFunctionType(List(dt), argTypes.condense))
@@ -94,7 +97,9 @@ object Typeloader extends SiteClassLoading {
 
   /** Lift a syntactic type to a second-order semantic type.
     */
-  def liftToOperator(t: syntactic.Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): TypeOperator = {
+  def liftToOperator(t: syntactic.Type)(implicit ctx: Context): TypeOperator = {
+    import ctx._
+
     t match {
       case u: syntactic.BoundTypevar => {
         (typeOperatorContext get u) match {
@@ -121,7 +126,7 @@ object Typeloader extends SiteClassLoading {
           val newTypeOperatorContext = typeOperatorContext + { (self, dt) }
           val variantTypes =
             for ((name, variantArgs) <- variants) yield {
-              val constructorArgTypes = variantArgs map { lift(_)(newTypeContext, newTypeOperatorContext) }
+              val constructorArgTypes = variantArgs map { lift(_)(ctx.copy(typeContext=newTypeContext, typeOperatorContext=newTypeOperatorContext)) }
               constructorArgTypes
             }
           variantTypes.toList
@@ -187,7 +192,7 @@ object Typeloader extends SiteClassLoading {
         val newTypeFormals = typeformals map { u => new TypeVariable(u) }
         val typeBindings = typeformals zip newTypeFormals
         val newTypeContext = typeContext ++ typeBindings
-        val newT = lift(t)(newTypeContext, typeOperatorContext)
+        val newT = lift(t)(ctx.copy(typeContext=newTypeContext))
         new TypeOperator { def operate(ts: List[Type]) = newT.subst(ts, newTypeFormals) }
       }
       case syntactic.ImportedType(classname) => {
@@ -209,7 +214,9 @@ object Typeloader extends SiteClassLoading {
   /** Lift a syntactic type to either a first or second order type;
     * the kind is not known in advance.
     */
-  def liftEither(t: syntactic.Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Either[Type, TypeOperator] = {
+  def liftEither(t: syntactic.Type)(implicit ctx: Context): Either[Type, TypeOperator] = {
+    import ctx._
+
     try {
       Left(lift(t))
     } catch {
@@ -340,7 +347,9 @@ object Typeloader extends SiteClassLoading {
     *
     * @author dkitchin
     */
-  def reify(that: Type)(implicit typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Option[syntactic.Type] = {
+  def reify(that: Type)(implicit ctx: Context): Option[syntactic.Type] = {
+    import ctx._
+
     that match {
       case Top => Some(syntactic.Top())
       case Bot => Some(syntactic.Bot())
@@ -370,8 +379,8 @@ object Typeloader extends SiteClassLoading {
         val syntacticTypeFormals = typeFormals map { u => new syntactic.BoundTypevar(u.optionalVariableName) }
         val typeBindings = syntacticTypeFormals zip typeFormals
         val newTypeContext = typeContext ++ typeBindings // exploit reverse lookup to restore syntactic parameters
-        val newArgTypes = argTypes optionMap { reify(_)(newTypeContext, typeOperatorContext) }
-        val newReturnType = reify(returnType)(newTypeContext, typeOperatorContext)
+        val newArgTypes = argTypes optionMap { reify(_)(ctx.copy(typeContext=newTypeContext)) }
+        val newReturnType = reify(returnType)(ctx.copy(typeContext=newTypeContext))
         (newArgTypes, newReturnType) match {
           case (Some(syntacticArgTypes), Some(syntacticReturnType)) => {
             Some(syntactic.FunctionType(syntacticTypeFormals, syntacticArgTypes, syntacticReturnType))

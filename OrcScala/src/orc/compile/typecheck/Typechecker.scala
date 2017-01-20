@@ -50,28 +50,37 @@ import orc.ast.oil.named.FoldedFieldAccess
   */
 object Typechecker {
 
-  type Context = Map[syntactic.BoundVar, Type]
+  type VarContext = Map[syntactic.BoundVar, Type]
   type TypeContext = Map[syntactic.BoundTypevar, Type]
   type TypeOperatorContext = Map[syntactic.BoundTypevar, TypeOperator]
 
+  case class Context(varContext: VarContext, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext)
+
+  object Context {
+    def apply(): Context = {
+      Context(Map.empty, Map.empty, Map.empty)
+    }
+  }
 }
 
 class Typechecker(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
 
-  import orc.compile.typecheck.Typechecker._
+  import Typechecker.Context
 
   def typecheck(expr: Expression): (Expression, Type) = {
-    typeSynthExpr(expr)(Map.empty, Map.empty, Map.empty)
+    typeSynthExpr(expr)(Context())
   }
 
-  def typeSynthExpr(expr: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Expression, Type) = {
+  def typeSynthExpr(expr: Expression)(implicit ctx: Context): (Expression, Type) = {
+    import ctx._
+
     try {
       val (newExpr, exprType) =
         expr match {
           case Stop() => (expr, Bot)
           case Hole(_, _) => (expr, Bot)
           case Constant(value) => (expr, typeValue(value))
-          case x: syntactic.BoundVar => (x, context(x))
+          case x: syntactic.BoundVar => (x, varContext(x))
           case UnboundVar(name) => throw new UnboundVariableException(name)
           case FoldedCall(target, args, typeArgs) => {
             typeFoldedCall(target, args, typeArgs, None, expr)
@@ -82,7 +91,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             val tpe = typeTarget match {
               case t: HasMembersType =>
                 t.getMember(typeField)
-              case t  =>
+              case t =>
                 throw new TypeDoesNotHaveMembersException(t)
             }
             (FoldedFieldAccess(newTarget, f), tpe)
@@ -103,12 +112,12 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           }
           case Sequence(left, x, right) => {
             val (newLeft, typeLeft) = typeSynthExpr(left)
-            val (newRight, typeRight) = typeSynthExpr(right)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
+            val (newRight, typeRight) = typeSynthExpr(right)(ctx.copy(varContext = varContext + ((x, typeLeft))))
             (newLeft > x > newRight, typeRight)
           }
           case Graft(x, value, body) => {
             val (newValue, typeValue) = typeSynthExpr(value)
-            val (newBody, typeBody) = typeSynthExpr(body)(context + ((x, typeValue)), typeContext, typeOperatorContext)
+            val (newBody, typeBody) = typeSynthExpr(body)(ctx.copy(varContext = varContext + ((x, typeValue))))
             (Graft(x, newValue, newBody), typeBody)
           }
           case Trim(body) => {
@@ -117,7 +126,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           }
           case DeclareCallables(defs, body) => {
             val (newDefs, defBindings) = typeDefs(defs)
-            val (newBody, typeBody) = typeSynthExpr(body)(context ++ defBindings, typeContext, typeOperatorContext)
+            val (newBody, typeBody) = typeSynthExpr(body)(ctx.copy(varContext = varContext ++ defBindings))
             (DeclareCallables(newDefs, newBody), typeBody)
           }
           case DeclareClasses(defs, body) => {
@@ -143,7 +152,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
                 case Left(t) => (typeContext + ((u, t)), typeOperatorContext)
                 case Right(op) => (typeContext, typeOperatorContext + ((u, op)))
               }
-            val (newBody, typeBody) = typeSynthExpr(body)(context, newTypeContext, newTypeOperatorContext)
+            val (newBody, typeBody) = typeSynthExpr(body)(ctx.copy(typeContext = newTypeContext, typeOperatorContext = newTypeOperatorContext))
             (DeclareType(u, t, newBody), typeBody)
           }
         }
@@ -155,7 +164,9 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
     }
   }
 
-  def typeCheckExpr(expr: Expression, T: Type)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): Expression = {
+  def typeCheckExpr(expr: Expression, T: Type)(implicit ctx: Context): Expression = {
+    import ctx._
+
     try {
       expr -> {
         /* FoldedCall must be checked before graft, since it
@@ -177,12 +188,12 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
         }
         case Sequence(left, x, right) => {
           val (newLeft, typeLeft) = typeSynthExpr(left)
-          val newRight = typeCheckExpr(right, T)(context + ((x, typeLeft)), typeContext, typeOperatorContext)
+          val newRight = typeCheckExpr(right, T)(ctx.copy(varContext = varContext + ((x, typeLeft))))
           newLeft > x > newRight
         }
         case Graft(x, value, body) => {
           val (newValue, typeValue) = typeSynthExpr(value)
-          val newBody = typeCheckExpr(body, T)(context + ((x, typeValue)), typeContext, typeOperatorContext)
+          val newBody = typeCheckExpr(body, T)(ctx.copy(varContext = varContext + ((x, typeValue))))
           Graft(x, newValue, newBody)
         }
         case Trim(body) => {
@@ -194,8 +205,9 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             case FunctionType(liftedTypeFormals, liftedArgTypes, liftedReturnType) => {
               val argBindings = formals zip liftedArgTypes
               val typeBindings = typeFormals zip liftedTypeFormals
-              val newBody = typeCheckExpr(body, liftedReturnType)(context ++ argBindings, typeContext ++ typeBindings, typeOperatorContext)
-              val argTypes = liftedArgTypes optionMap { reify(_)(typeContext ++ typeBindings, typeOperatorContext) }
+              val newCtx = ctx.copy(varContext = varContext ++ argBindings, typeContext = typeContext ++ typeBindings)
+              val newBody = typeCheckExpr(body, liftedReturnType)(newCtx)
+              val argTypes = liftedArgTypes optionMap { reify(_)(newCtx) }
               val returnType = reify(liftedReturnType)
               FoldedLambda(formals, newBody, typeFormals, argTypes, returnType)
             }
@@ -204,7 +216,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
         }
         case DeclareCallables(defs, body) => {
           val (newDefs, defBindings) = typeDefs(defs)
-          val newBody = typeCheckExpr(body, T)(context ++ defBindings, typeContext, typeOperatorContext)
+          val newBody = typeCheckExpr(body, T)(ctx.copy(varContext = varContext ++ defBindings))
           DeclareCallables(newDefs, newBody)
         }
         case DeclareType(u, t, body) => {
@@ -214,7 +226,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
               case Left(t) => (typeContext + ((u, t)), typeOperatorContext)
               case Right(op) => (typeContext, typeOperatorContext + ((u, op)))
             }
-          val newBody = typeCheckExpr(body, T)(context, typeContext + ((u, lift(t))), typeOperatorContext)
+          val newBody = typeCheckExpr(body, T)(ctx.copy(typeContext = typeContext + ((u, lift(t)))))
           DeclareType(u, t, newBody)
         }
         case _ => {
@@ -230,7 +242,9 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
     }
   }
 
-  def typeDefs(defgroup: List[Callable])(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (List[Callable], List[(syntactic.BoundVar, Type)]) = {
+  def typeDefs(defgroup: List[Callable])(implicit ctx: Context): (List[Callable], List[(syntactic.BoundVar, Type)]) = {
+    import ctx._
+
     val defs =
       defgroup map {
         // If argument types are missing, and there are no formals, infer an empty arg type list
@@ -249,14 +263,16 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           val liftedTypeFormals = typeFormals map { u => new TypeVariable(u) }
           val typeBindings = typeFormals zip liftedTypeFormals
 
-          val liftedArgTypes = argTypes map { lift(_)(typeContext ++ typeBindings, typeOperatorContext) }
+          val liftedArgTypes = argTypes map { lift(_)(ctx.copy(typeContext = typeContext ++ typeBindings)) }
 
           val argBindings = formals zip liftedArgTypes
 
-          // Note that the function itself is not bound in the context, since we know it is not recursive.
-          val (newBody, liftedReturnType) = typeSynthExpr(body)(context ++ argBindings, typeContext ++ typeBindings, typeOperatorContext)
+          val newCtx = ctx.copy(varContext = varContext ++ argBindings, typeContext = typeContext ++ typeBindings)
 
-          val newDef = d.copy(body = newBody, returntype = reify(liftedReturnType)(typeContext ++ typeBindings, typeOperatorContext))
+          // Note that the function itself is not bound in the context, since we know it is not recursive.
+          val (newBody, liftedReturnType) = typeSynthExpr(body)(newCtx)
+
+          val newDef = d.copy(body = newBody, returntype = reify(liftedReturnType)(newCtx))
           val liftedDefType = FunctionType(liftedTypeFormals, liftedArgTypes, liftedReturnType)
 
           (List(newDef), List((name, liftedDefType)))
@@ -290,7 +306,8 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             val argBindings = d.formals zip liftedArgTypes
             val typeBindings = d.typeformals zip liftedTypeFormals
 
-            val newBody = typeCheckExpr(d.body, liftedReturnType)(context ++ defBindings ++ argBindings, typeContext ++ typeBindings, typeOperatorContext)
+            val newBody = typeCheckExpr(d.body, liftedReturnType)(
+              ctx.copy(varContext = varContext ++ defBindings ++ argBindings, typeContext = typeContext ++ typeBindings))
 
             d.copy(body = newBody)
           }
@@ -301,7 +318,9 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
     }
   }
 
-  def typeFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]], checkReturnType: Option[Type], callPoint: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Expression, Type) = {
+  def typeFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]], checkReturnType: Option[Type], callPoint: Expression)(implicit ctx: Context): (Expression, Type) = {
+    import ctx._
+
     val (newTarget, targetType) = typeSynthExpr(target)
     val (newArgs, argTypes) = {
       targetType match {
@@ -334,7 +353,8 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
     (FoldedCall(newTarget, newArgs, newTypeArgs), returnType)
   }
 
-  def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type], callPoint: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
+  def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type], callPoint: Expression)(implicit ctx: Context): (Option[List[syntactic.Type]], Type) = {
+    import ctx._
 
     // Special call cases
     targetType match {
@@ -393,7 +413,8 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
 
   }
 
-  def typeCoreCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type], callPoint: Expression)(implicit context: Context, typeContext: TypeContext, typeOperatorContext: TypeOperatorContext): (Option[List[syntactic.Type]], Type) = {
+  def typeCoreCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type], callPoint: Expression)(implicit ctx: Context): (Option[List[syntactic.Type]], Type) = {
+    import ctx._
 
     val (finalSyntacticTypeArgs, finalReturnType) =
       syntacticTypeArgs match {
