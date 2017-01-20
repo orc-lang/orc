@@ -23,9 +23,9 @@ trait Guarding {
 
   /* The context contains only those variables which would be
    * considered recursive call targets in the current context.
-   * 
-   * Calls unguardedRecursion if an instance of unguarded recursiion is found.
-   * 
+   *
+   * Calls unguardedRecursion if an instance of unguarded recursion is found.
+   *
    * Returns: True if the expression is "guarding", meaning that it will not always publish
    * and whether or not it publishes represents some choice or it will publish with some delay.
    */
@@ -36,7 +36,8 @@ trait Guarding {
       case a: Argument => false
       case Call(target, _, _) => {
         if (context contains target) {
-          unguardedRecursion(this); false
+          unguardedRecursion(this)
+          false
         } else {
           /* This is a liberal approximation and will generate false negatives.
            * Not all calls are truly guarding; only calls to sites or to guarded
@@ -69,20 +70,31 @@ trait Guarding {
         l || r
       }
       case Trim(body) => check(body)
-      case New(_) => false
-      // TODO: This is actually wrong, FieldAccess is not guarding, however without this we get a lot 
-      // of false positives because Graft handling does not detect the if the body uses the guarded future.
+      case New(target) => {
+        // This allows false negatives in cases where classes are mixed in which do not block recursion.
+        target match {
+          case List(c) if context contains c.name => {
+            unguardedRecursion(this)
+          }
+          case _ => {}
+        }
+        false
+      }
       case FieldAccess(o, f) => true
       case DeclareClasses(clss, body) => {
+        //val newcontext = clss.map(_.name) ::: context
         for (c <- clss; e <- c.bindings.values) {
-          // TODO: I am not using the current context because the code is not actually executing here. Correct?
-          e.checkGuarded(Nil, unguardedRecursion)
+          // TODO: This only checks for direct self recursion. Mutual will not be caught
+          // To catch mutual recursion we need to fracture classes like defs (into mutually recursive groups).
+          e.checkGuarded(c.name :: context, unguardedRecursion)
         }
         check(body)
       }
       case DeclareCallables(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
-        val _ = for (d <- defs) yield { d.body.checkGuarded(newcontext, unguardedRecursion) }
+        for (d <- defs) {
+          d.body.checkGuarded(newcontext, unguardedRecursion)
+        }
         check(body)
       }
       case DeclareType(_, _, body) => check(body)
