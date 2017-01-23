@@ -15,7 +15,7 @@ package orc.lib.comp
 
 import orc.error.runtime.ArityMismatchException
 import orc.values.sites._
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.Array2
 
 /** Not equals comparison -- delegates to Scala's ==
   */

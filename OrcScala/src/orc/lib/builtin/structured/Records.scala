@@ -23,7 +23,7 @@ import orc.error.compiletime.typing._
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types._
 import orc.util.OptionMapExtension._
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.ArrayN
 import orc.values._
 import orc.values.sites._
 

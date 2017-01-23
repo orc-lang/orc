@@ -9,12 +9,12 @@ import java.io.FileNotFoundException
 
 import orc.values.sites._
 import orc.types._
+import orc.util.ArrayExtensions.{ Array0, Array1, Array2 }
 import orc.values.sites.compatibility.{ Types, Args, DotSite }
 import orc.values.OrcRecord
 
 import TwitterUtil._
 import java.io.FileInputStream
-import orc.util.ArrayExtensions._
 
 object TwitterUtil {
   private def loadProperties(file: String): (String, String) = {
@@ -77,7 +77,7 @@ class TwitterFactoryKeySecret extends PartialSite with SpecificArity with TypedS
   }
 
   def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
-    val Array(key: String, secret: String) = args
+    val Array2(key: String, secret: String) = args
     val i = new TwitterFactory().getInstance()
     i.loadAuth(key, secret)
     Some(i)
@@ -93,7 +93,7 @@ class TwitterStreamFactoryPropertyFile extends PartialSite with SpecificArity wi
   }
 
   def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
-    val Array(file: String) = args
+    val Array1(file: String) = args
     val i = new TwitterStreamFactory().getInstance()
     i.loadAuth(file)
     Some(i)

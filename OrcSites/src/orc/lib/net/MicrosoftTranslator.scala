@@ -24,7 +24,7 @@ import java.util.Properties
 import java.io.FileNotFoundException
 import java.io.OutputStreamWriter
 import org.codehaus.jettison.json.JSONArray
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.{ Array1, Array2 }
 
 class MicrosoftTranslatorFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
   val arity = 1

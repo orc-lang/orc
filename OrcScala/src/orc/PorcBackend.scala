@@ -1,5 +1,5 @@
 //
-// StandardBackend.scala -- Scala class/trait/object StandardBackend
+// PorcBackend.scala -- Scala class PorcBackend
 // Project OrcScala
 //
 // Created by amp on Aug 28, 2013.

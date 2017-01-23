@@ -6,7 +6,7 @@ import javax.swing.UIManager
 import scala.collection.JavaConversions._
 import orc.values.Signal
 import ScalaSwingUtils._
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.Array1
 
 class SetSwingFontSize extends TotalSite with SpecificArity {
   val arity = 1

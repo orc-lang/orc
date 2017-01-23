@@ -18,7 +18,7 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.TupleIndexOutOfBoundsException
 import orc.values.sites.NonBlockingSite
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.Array1
 
 /** @author dkitchin
   */

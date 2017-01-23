@@ -22,7 +22,7 @@ import orc.error.runtime.{ SiteException, JavaException }
 import orc.values.sites.{ TotalSite, Site2, Site0 }
 import orc.values.OrcRecord
 import orc.Handle
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.{ Array1, Array2 }
 
 /** The HTTP site provides a simple mechanism to send GET and POST requests to a URL.
   *

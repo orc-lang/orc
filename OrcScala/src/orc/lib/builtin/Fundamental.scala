@@ -15,7 +15,7 @@ package orc.lib.builtin
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
 import orc.types._
 import orc.util.TypeListEnrichment._
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.{ Array1, Array2, Array0 }
 import orc.values._
 import orc.values.sites.{ FunctionalSite, PartialSite, TotalSite, TypedSite }
 

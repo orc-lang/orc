@@ -25,7 +25,7 @@ import java.io.FileNotFoundException
 import java.io.OutputStreamWriter
 import org.codehaus.jettison.json.JSONArray
 import orc.lib.web.OrcJSONParser
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.{ Array1, Array2 }
 
 class YandexTranslateFactory extends PartialSite with SpecificArity {
   val arity = 1

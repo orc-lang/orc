@@ -30,7 +30,7 @@ import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException
 import orc.run.core.Execution
 import orc.run.core.Token
 import orc.run.core.ExternalSiteCallHandle
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.Array1
 
 /** Update a running Orc program to the supplied OIL program. One argument is
   * expected, an OIL file name.

@@ -33,7 +33,7 @@ import java.lang.reflect.Modifier
 import orc.values.sites.OrcJavaCompatibility._
 import orc.compile.typecheck.Typeloader._
 import orc.error.runtime.NoSuchMemberException
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.{ Array1, Array0 }
 import orc.values.HasMembers
 import orc.run.core.BoundValue
 import orc.run.core.Binding
@@ -126,7 +126,7 @@ abstract class JavaProxy extends Site {
 
         val varargType = method.getParameterTypes().last.getComponentType()
         val convertedVarArgs = varArgs.map(orc2java(_, varargType))
-        // The vararg array needs to have the correct dynamic type so we create it using reflection. 
+        // The vararg array needs to have the correct dynamic type so we create it using reflection.
         val varArgArray = JavaArray.newInstance(varargType, varArgs.size).asInstanceOf[Array[Object]]
         convertedVarArgs.copyToArray(varArgArray)
 
@@ -233,7 +233,7 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
     }
   }
 
-  // FIXME: There is a bug where calls to null fields of java objects cause and NPE in the runtime. Not sure how to fix it. 
+  // FIXME: There is a bug where calls to null fields of java objects cause and NPE in the runtime. Not sure how to fix it.
   def getMember(f: OrcField): Binding = {
     val submemberName = f.field
 

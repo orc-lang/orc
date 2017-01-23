@@ -19,7 +19,7 @@ import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException
 import orc.types.{ SimpleFunctionType, StringType, Top, Type }
 import orc.values.{ OrcRecord, OrcTuple }
 import orc.values.sites.{ TotalSite, TypedSite }
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.Array1
 
 object Read extends TotalSite with TypedSite {
   def evaluate(args: Array[AnyRef]): AnyRef = {

@@ -1,5 +1,5 @@
 //
-// StandardBackend.scala -- Scala class/trait/object StandardBackend
+// DistributedBackend.scala -- Scala class DistributedBackend
 // Project OrcScala
 //
 // Created by jthywiss on Dec 20, 2016.

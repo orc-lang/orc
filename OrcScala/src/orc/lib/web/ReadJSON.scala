@@ -21,7 +21,7 @@ import orc.values.sites.{ TotalSite, UntypedSite }
 import orc.values.OrcRecord
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, SiteException }
 import orc.util.SynchronousThreadExec
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.Array1
 
 /** JSON reader, converting a JSON string to an Orc value.
   *
