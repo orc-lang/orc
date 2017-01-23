@@ -1,10 +1,10 @@
 //
-// ListDisplay.scala -- Scala class ListDisplay
+// TableDisplay.scala -- Scala class TableDisplay
 // Project OrcSites
 //
 // Created by amp on Oct 11, 2016.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -122,4 +122,3 @@ class TableDisplay(title: String) extends JFrame {
     }
   }
 }
-

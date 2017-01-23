@@ -1,3 +1,14 @@
+//
+// Context.scala -- Scala object Execution
+// Project OrcScala
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.run.tojava
 
 import java.util.{ Timer, TimerTask }
@@ -20,6 +31,8 @@ import orc.values.OrcValue
 import orc.Schedulable
 import orc.ExecutionRoot
 import orc.values.HasMembers
+
+// TODO: Rename this file and the Context object at the bottom.
 
 /** The root of the context tree. Analogous to Execution.
   *
@@ -292,4 +305,3 @@ object Context {
   // TODO: This needs to be configurable and ideally self tuning so things will at least always work.
   val callDepthLimit = 64
 }
-

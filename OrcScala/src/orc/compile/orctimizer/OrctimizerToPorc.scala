@@ -1,3 +1,14 @@
+//
+// OrctimizerToPorc.scala -- Scala class OrctimizerToPorc and related
+// Project OrcScala
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.compile.orctimizer
 
 import orc.ast.orctimizer.named._
@@ -48,7 +59,7 @@ class OrctimizerToPorc {
           case _: CallSite => porc.SiteCall
           case _: CallDef => porc.DefCall
         }
-        // TODO: Spawning on publication is a big issue since it results in O(n^2) spawns during stack 
+        // TODO: Spawning on publication is a big issue since it results in O(n^2) spawns during stack
         //       unrolling. Can we avoid the need for the spawn in P.
 
         // TODO: spawning for every call is overkill. Some will be optimized away. But it's still an issue.
@@ -186,4 +197,3 @@ class OrctimizerToPorc {
   }
 
 }
-

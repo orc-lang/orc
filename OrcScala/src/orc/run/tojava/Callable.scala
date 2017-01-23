@@ -1,3 +1,13 @@
+//
+// Callable.scala -- Scala trait Callable and related traits
+// Project OrcScala
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 package orc.run.tojava
 
 import java.util.concurrent.atomic.AtomicBoolean
@@ -99,7 +109,7 @@ final class PCTHandle(val execution: Execution, p: Continuation, c: Counter, t: 
       // TODO: It should be possible to pass the count we have on to the schedulable. It would save two atomic updates per pub.
       execution.stageOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
       c.halt()
-      // Matched to: Every invocation is required to be proceeded by a 
+      // Matched to: Every invocation is required to be proceeded by a
       //             prepareSpawn since it might spawn.
     }
   }
@@ -109,7 +119,7 @@ final class PCTHandle(val execution: Execution, p: Continuation, c: Counter, t: 
   def halt: Unit = {
     if (halted.compareAndSet(false, true)) {
       c.halt()
-      // Matched to: Every invocation is required to be proceeded by a 
+      // Matched to: Every invocation is required to be proceeded by a
       //             prepareSpawn since it might spawn.
     }
   }

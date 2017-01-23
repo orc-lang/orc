@@ -1,3 +1,14 @@
+//
+// Counter.scala -- Scala class Counter
+// Project OrcScala
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.run.tojava
 
 import java.util.concurrent.atomic.AtomicInteger
@@ -52,17 +63,17 @@ object Counter {
   */
 abstract class Counter {
   /*
-  @elidable(elidable.ASSERTION) 
+  @elidable(elidable.ASSERTION)
   val log = new LinkedBlockingDeque[Exception]()
 
   @elidable(elidable.ASSERTION)
   private def logChange(s: => String) = {
     if (Logger.julLogger.isLoggable(Level.FINE)) {
-      log.add(new Exception(s))    
+      log.add(new Exception(s))
     }
   }
   logChange(s"Init to 1")
-  
+
   Counter.addCounter(this)
   */
 

@@ -1,3 +1,14 @@
+//
+// PorcToJava.scala -- Scala class PorcToJava
+// Project OrcScala
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.compile.tojava
 
 import orc.ast.porc._
@@ -12,8 +23,8 @@ import orc.values.Field
 class PorcToJava {
   import Deindent._, PorcToJava._
 
-  // TODO: Because I am debugging this does a lot of code formatting and is is not very efficient. All the formatting should be 
-  //   removed or optimized and perhaps this whole things should be reworked to generate into a single StringBuilder. 
+  // TODO: Because I am debugging this does a lot of code formatting and is is not very efficient. All the formatting should be
+  //   removed or optimized and perhaps this whole things should be reworked to generate into a single StringBuilder.
 
   def apply(prog: DefCPS): String = {
     assert(prog.arguments.isEmpty)
@@ -229,7 +240,7 @@ $code
 
       case Spawn(c, t, b) => {
         j"""
-        |$execution.spawn($coerceToCounter${argument(c)}, $coerceToTerminator${argument(t)}, () -> { 
+        |$execution.spawn($coerceToCounter${argument(c)}, $coerceToTerminator${argument(t)}, () -> {
           |$b
         |});
         """
@@ -370,12 +381,12 @@ $code
         |Object $temp = null;
         |try {
         |  $temp = ${argument(target)}.site().calldirect(new Object[] {${args.map(argument(_)).mkString(", ")}});
-        |} catch(Exception $e) { 
+        |} catch(Exception $e) {
         |  Callable$$.MODULE$$.rethrowDirectCallException($execution, $e);
         |}
         |${maybeBind(temp)}
         """
-      /*case (OrcValue(v: orc.values.sites.DirectSite), _) => 
+      /*case (OrcValue(v: orc.values.sites.DirectSite), _) =>
         maybeBind(j"""
         |${argument(target)}.directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} })
         """)*/

@@ -1,3 +1,14 @@
+//
+// Join.scala -- Scala classes Join and Resolve
+// Project OrcScala
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.run.tojava
 
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
@@ -42,10 +53,10 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
       */
     def publish(v: AnyRef): Unit = if (bound.compareAndSet(false, true)) {
       Logger.finest(s"$join: Join joined to $v ($i)")
-      // Check if we are halted then bind. This is an optimization since 
+      // Check if we are halted then bind. This is an optimization since
       // nUnbound can never reach 0 if we halted.
       if (!join.halted.get()) {
-        // Bind the value (this is not synchronized because checkComplete 
+        // Bind the value (this is not synchronized because checkComplete
         // will cause the read of it, enforcing the needed ordering).
         values(i) = v
         // TODO: Does this write need to be volatile?
@@ -222,4 +233,3 @@ abstract class Resolve(inValues: Array[AnyRef]) {
     */
   def done(): Unit
 }
-
