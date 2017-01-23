@@ -212,10 +212,10 @@ trait CmdLineParser {
     def setValue(value: String) { setter(value) }
   }
 
-  case class StringListOpt(val getter: Function0[Seq[String]], val setter: (Seq[String] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class StringListOpt(val getter: Function0[Seq[String]], val setter: (Seq[String] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "STRING", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false, val separator: String = File.pathSeparator)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
-    def getValue: String = { getter().mkString(File.pathSeparator) }
-    def setValue(value: String) { setter(value.split(File.pathSeparator)) }
+    def getValue: String = { getter().mkString(separator) }
+    def setValue(value: String) { setter(value.split(separator)) }
   }
 
   case class FileOpt(val getter: Function0[File], val setter: (File => Unit), override val shortName: Char, override val longName: String, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)

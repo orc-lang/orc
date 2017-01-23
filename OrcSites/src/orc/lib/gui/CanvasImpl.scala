@@ -18,8 +18,7 @@ import java.awt.image.BufferedImage
 import java.awt.Color
 import java.awt.Dimension
 
-/**
-  * @author amp
+/** @author amp
   */
 class CanvasImpl(x: Int, y: Int) extends JPanel {
   val image = new BufferedImage(x, y, BufferedImage.TYPE_3BYTE_BGR)

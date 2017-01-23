@@ -77,7 +77,7 @@ public class ExpectedOutput {
                 permutable = false;
                 oneOutput = new StringBuilder();
             } else if (line.startsWith("BENCHMARK")) {
-              shouldBenchmark = true;
+                shouldBenchmark = true;
             }
         }
     }
@@ -96,7 +96,7 @@ public class ExpectedOutput {
     }
 
     public boolean shouldBenchmark() {
-      return shouldBenchmark;
+        return shouldBenchmark;
     }
 
     static class MaybePermutableOutput {

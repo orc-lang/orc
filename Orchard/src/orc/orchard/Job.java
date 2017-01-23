@@ -38,7 +38,8 @@ import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.run.StandardOrcRuntime;
-import orc.run.core.SiteCallHandle;
+import orc.run.core.ExternalSiteCallHandle;
+import orc.run.core.Execution;
 
 /**
  * Standard implementation of a JobService. Extenders should only need to
@@ -298,7 +299,7 @@ public final class Job implements JobMBean {
 
     public static Job getJobFromHandle(final Handle callHandle) throws UnsupportedOperationException {
         try {
-            return ((JobEngine) ((SiteCallHandle) callHandle).caller().runtime()).getJob();
+            return ((JobEngine) ((ExternalSiteCallHandle) callHandle).caller().runtime()).getJob();
         } catch (final ClassCastException e) {
             throw new UnsupportedOperationException("This site may be called only from an Orchard JobEngine", e);
         }
@@ -470,10 +471,10 @@ public final class Job implements JobMBean {
 
     @Override
     public int getTokenCount() {
-        if (engine.roots().size() != 1 || engine.roots().keys().nextElement().get().isEmpty()) {
+        if (engine.roots().size() != 1)
             return -1;
-        }
-        return engine.roots().keys().nextElement().get().get().tokenCount().get();
+        Execution soleRoot = (Execution)engine.roots().iterator().next();
+        return soleRoot.tokenCount().get();
     }
 
 }

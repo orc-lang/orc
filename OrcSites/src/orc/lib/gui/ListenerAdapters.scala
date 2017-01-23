@@ -13,7 +13,6 @@
 package orc.lib.gui
 
 import java.awt.event.ActionListener
-import orc.values.OrcObjectInterface
 import java.awt.event.ActionEvent
 import orc.run.extensions.SupportForCallsIntoOrc
 import orc.OrcRuntime
@@ -29,13 +28,14 @@ import java.awt.event.WindowStateListener
 import java.awt.event.WindowFocusListener
 import java.awt.event.MouseListener
 import java.awt.event.MouseEvent
+import orc.values.HasMembers
 
 abstract class ListenerAdapter {
-  val deligate: OrcObjectInterface
+  val deligate: HasMembers
   val execution: SupportForCallsIntoOrc
 
   def call(f: Field, arguments: List[AnyRef]): Unit = {
-    if (deligate contains f)
+    if (deligate hasMember f)
       execution.callOrcMethod(deligate, f, arguments)
   }
   def call(f: Field, arguments: AnyRef*): Unit = call(f, arguments.toList)
@@ -50,27 +50,27 @@ abstract class ListenerAdapterSite extends Site1 {
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
     val del = arg match {
-      case d: OrcObjectInterface => d
-      case a => throw new ArgumentTypeMismatchException(0, "OrcObject", if (a != null) a.getClass().toString() else "null")
+      case d: HasMembers => d
+      case a => throw new ArgumentTypeMismatchException(0, "<has members>", if (a != null) a.getClass().toString() else "null")
     }
     h.publish(buildAdapter(execution, del))
   }
 
-  def buildAdapter(execution: SupportForCallsIntoOrc, del: OrcObjectInterface): AnyRef
+  def buildAdapter(execution: SupportForCallsIntoOrc, del: HasMembers): AnyRef
 }
 
-class ActionListenerAdapter(val deligate: OrcObjectInterface, val execution: SupportForCallsIntoOrc) extends ListenerAdapter with ActionListener {
+class ActionListenerAdapter(val deligate: HasMembers, val execution: SupportForCallsIntoOrc) extends ListenerAdapter with ActionListener {
   def actionPerformed(e: ActionEvent) = {
     call(Field("actionPerformed"), List(e))
   }
 }
 object ActionListenerAdapter extends ListenerAdapterSite {
-  def buildAdapter(execution: SupportForCallsIntoOrc, del: OrcObjectInterface): AnyRef = {
+  def buildAdapter(execution: SupportForCallsIntoOrc, del: HasMembers): AnyRef = {
     new ActionListenerAdapter(del, execution)
   }
 }
 
-class WindowListenerAdapter(val deligate: OrcObjectInterface, val execution: SupportForCallsIntoOrc)
+class WindowListenerAdapter(val deligate: HasMembers, val execution: SupportForCallsIntoOrc)
   extends ListenerAdapter with WindowListener with WindowFocusListener with WindowStateListener {
   // Members declared in java.awt.event.WindowFocusListener   
   def windowGainedFocus(e: java.awt.event.WindowEvent): Unit = call(Field("windowGainedFocus"), List(e))
@@ -87,12 +87,12 @@ class WindowListenerAdapter(val deligate: OrcObjectInterface, val execution: Sup
   def windowStateChanged(e: java.awt.event.WindowEvent): Unit = call(Field("windowStateChanged"), List(e))
 }
 object WindowListenerAdapter extends ListenerAdapterSite {
-  def buildAdapter(runtime: SupportForCallsIntoOrc, del: OrcObjectInterface): AnyRef = {
+  def buildAdapter(runtime: SupportForCallsIntoOrc, del: HasMembers): AnyRef = {
     new WindowListenerAdapter(del, runtime)
   }
 }
 
-class MouseListenerAdapter(val deligate: OrcObjectInterface, val execution: SupportForCallsIntoOrc) extends ListenerAdapter with MouseListener {
+class MouseListenerAdapter(val deligate: HasMembers, val execution: SupportForCallsIntoOrc) extends ListenerAdapter with MouseListener {
   def mouseClicked(e: MouseEvent): Unit = call("mouseClicked", e)
   def mousePressed(e: MouseEvent): Unit = call("mousePressed", e)
   def mouseReleased(e: MouseEvent): Unit = call("mouseReleased", e)
@@ -100,7 +100,7 @@ class MouseListenerAdapter(val deligate: OrcObjectInterface, val execution: Supp
   def mouseExited(e: MouseEvent): Unit = call("mouseExited", e)
 }
 object MouseListenerAdapter extends ListenerAdapterSite {
-  def buildAdapter(runtime: SupportForCallsIntoOrc, del: OrcObjectInterface): AnyRef = {
+  def buildAdapter(runtime: SupportForCallsIntoOrc, del: HasMembers): AnyRef = {
     new MouseListenerAdapter(del, runtime)
   }
 }

@@ -72,7 +72,7 @@ class InsufficientArgsException(val missingArg: Int, val arityProvided: Int) ext
 /**
   */
 @SerialVersionUID(3541986342001858412L)
-class MalformedArrayAccessException(val args: List[AnyRef]) extends RuntimeTypeException("Array access requires a single Integer as an argument")
+class MalformedArrayAccessException(val args: Seq[AnyRef]) extends RuntimeTypeException(s"Array access requires a single Integer as an argument, got: ${args.mkString(", ")}")
 
 @SerialVersionUID(3367335446781496570L)
 class BadArrayElementTypeException(val badType: String) extends TokenException("Unrecognized array element type: " + badType)
@@ -90,7 +90,7 @@ class MethodTypeMismatchException(val methodName: String, val clazz: Class[_]) e
 /** Exception raised when an uncallable value occurs in call argPosition.
   */
 @SerialVersionUID(7171287004340017499L)
-class UncallableValueException(val uncallable: Any) extends RuntimeTypeException("Value not callable: \"" + uncallable.toString() + "\"")
+class UncallableValueException(val uncallable: Any) extends RuntimeTypeException("Value not callable: " + uncallable.toString())
 
 /** Attempted dot access at an unknown member.
   */

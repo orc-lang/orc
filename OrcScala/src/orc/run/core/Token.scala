@@ -479,8 +479,10 @@ class Token protected (
       case c: Closure => {
         functionCall(c.code, c.context, params)
       }
-      case o: OrcObjectInterface if (o contains Field("apply")) => {
-        resolve(o(Field("apply"))) { makeCall(_, params) }
+      // Check for HasMembers, but only on non-sites and OrcRecords
+      // TODO: This is a horrible list of special cases. We should remove this need by fully disentangling sites and values.
+      case o: HasMembers if (!o.isInstanceOf[orc.values.sites.Site] || o.isInstanceOf[orc.values.OrcRecord]) && o.hasMember(Field("apply")) => {
+        resolve(o.getMember(Field("apply"))) { makeCall(_, params) }
       }
       case s => {
         params match {
@@ -531,7 +533,7 @@ class Token protected (
         def ordering(x: AnyRef, y: AnyRef) = {
           // TODO: Add error handling, either here or in the scheduler.
           // A comparator error should kill the engine.
-          val i = orderingSite.evaluate(List(x, y)).asInstanceOf[Int]
+          val i = orderingSite.evaluate(Array(x, y)).asInstanceOf[Int]
           assert(i == -1 || i == 0 || i == 1, "Vclock time comparator " + orderingSite.name + " did not return -1/0/1")
           i
         }
@@ -690,12 +692,14 @@ class Token protected (
       case FieldAccess(o, f) => {
         resolve(lookup(o)) {
           _ match {
-            case o: OrcObjectInterface =>
+            case o: HasMembers =>
               //Logger.finer(s"resolving $o$f")
-              resolve(o(f)) { x =>
+              resolve(o.getMember(f)) { x =>
                 //Logger.finer(s"resolved $o$f = $x")
                 publish(Some(x))
               }
+            // Fallback on old call style fields
+            // TODO: Remove the need for this.
             case s: AnyRef =>
               siteCall(s, List(f))
             case null =>

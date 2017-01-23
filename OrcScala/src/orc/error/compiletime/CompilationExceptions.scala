@@ -203,3 +203,18 @@ case class ConflictingOrderWarning(leftOrder: Iterable[String], rightOrder: Iter
   extends ClassException(s"Classes are in different orders in linearizations of mix-ins. ${leftOrder.mkString(", ")} is different from ${rightOrder.mkString(", ")}")
   with SeverityWarning
 
+/** A language feature used in the input program is not supported by the backend.
+  */
+case class FeatureNotSupportedException(feature: String)
+  extends CompilationException(s"$feature is unsupported")
+  with SeverityFatal
+
+/** Many errors occured during compilation and we want to report them all.
+  *
+  * This exception will have all the other errors as suppressed exceptions.
+  */
+class ManyCompilationExceptions(exceptions: Seq[Throwable])
+  extends CompilationException("Multiple compiler errors")
+  with SeverityFatal {
+  exceptions.foreach(addSuppressed)
+}

@@ -24,28 +24,13 @@ import orc.values.sites.NonBlockingSite
 
 /** @author dkitchin
   */
-case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonBlockingSite with OrcObjectInterface {
+case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers {
 
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)
   }
 
   def this(entries: List[(String, AnyRef)]) = this(entries.toMap)
-
-  def apply(f: Field): BoundValue = {
-    entries.get(f.field) match {
-      case Some(v) => BoundValue(v)
-      case None => throw new NoSuchMemberException(this, name)
-    }
-  }
-  def contains(f: Field): Boolean = entries contains f.field
-
-  override def evaluate(args: List[AnyRef]) =
-    args match {
-      case List(f @ Field(_)) => Some(this(f).v)
-      case List(a) => throw new ArgumentTypeMismatchException(0, "Field", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
 
   override def toOrcSyntax() = {
     val formattedEntries =
@@ -71,4 +56,14 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends PartialSite with NonB
   /* Aliased for easier use in Java code */
   def extendWith(other: OrcRecord): OrcRecord = this + other
 
+  def getMember(field: Field) = {
+    entries.get(field.field) match {
+      case Some(v) => BoundValue(v)
+      case None => throw new NoSuchMemberException(this, "this record")
+    }
+  }
+
+  override def hasMember(field: Field): Boolean = {
+    entries.contains(field.field)
+  }
 }

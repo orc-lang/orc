@@ -12,30 +12,26 @@
 //
 package orc
 
-import orc.compile.parse.OrcInputContext
-import orc.error.compiletime.CompileLogger
-import orc.progress.ProgressMonitor
-import orc.error.loadtime.LoadingException
-import java.io.IOException
-import java.io.Writer
-import java.io.File
-import java.io.BufferedReader
-import orc.error.compiletime.PrintWriterCompileLogger
-import java.io.PrintWriter
-import orc.error.runtime.ExecutionException
-import orc.progress.NullProgressMonitor
+import java.io.{ BufferedReader, File, IOException, PrintWriter, Writer }
+
 import orc.ast.oil.nameless.Expression
+import orc.compile.parse.OrcInputContext
+import orc.error.compiletime.{ CompilationException, CompileLogger, ExceptionCollectingCompileLogger, ManyCompilationExceptions, PrintWriterCompileLogger }
+import orc.error.loadtime.LoadingException
+import orc.error.runtime.ExecutionException
+import orc.progress.{ NullProgressMonitor, ProgressMonitor }
 
 /** An enumeration over the supported backends.
   */
 sealed trait BackendType {
-  def newBackend(): Backend[Expression]
+  def newBackend(): Backend[_]
 }
 
 object BackendType {
   private val stringToBackendType = Map[String, BackendType](
     TokenInterpreterBackend.toString -> TokenInterpreterBackend,
-    DistributedBackendType.toString -> DistributedBackendType)
+    DistributedBackendType.toString -> DistributedBackendType,
+    PorcCompilerBackend.toString -> PorcCompilerBackend)
 
   def knownBackendNames = stringToBackendType.keys
 
@@ -59,6 +55,13 @@ case object DistributedBackendType extends BackendType {
   override def newBackend(): Backend[Expression] = new DistributedBackend()
 }
 
+/** The target based on the Orctimizer and Porc.
+  */
+case object PorcCompilerBackend extends BackendType {
+  override val toString = "porc"
+  override def newBackend(): Backend[PorcBackend.CompiledOrcProgram] = new PorcBackend()
+}
+
 /** This represents an abstract Orc compiler. It generates an opaque code object that can be
   * executed on a matching Runtime.
   *
@@ -72,6 +75,7 @@ trait Compiler[+CompiledCode] {
   @throws(classOf[IOException])
   def compile(source: OrcInputContext, options: OrcCompilationOptions,
     compileLogger: CompileLogger, progress: ProgressMonitor): CompiledCode
+  // TODO: Because compile does not throw on failure it should return options or have the null return documented like WOW.
 
   private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
     val file = new File(descr)
@@ -81,12 +85,35 @@ trait Compiler[+CompiledCode] {
   }
 
   /** Compile the code in the reader using the given options and produce error messages on the
-    * err writer. This is a simple wrapper around the other compile function.
+    * err writer and throwing an exception if any errors occurred.
+    *
+    * It is used by the testing framework to allow better errors.
+    */
+  @throws(classOf[IOException]) @throws(classOf[CompilationException])
+  def compileExceptionOnError(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): CompiledCode = {
+    val logger = new ExceptionCollectingCompileLogger(new PrintWriter(err, true))
+    val res = compile(new OrcReaderInputContext(source, options.filename), options,
+      logger, NullProgressMonitor)
+    logger.exceptions match {
+      case Seq() =>
+        res
+      case Seq(e: CompilationException) =>
+        throw e
+      case es =>
+        throw new ManyCompilationExceptions(es)
+    }
+  }
+
+  /** Compile the code in the reader using the given options and produce error messages on the
+    * err writer and throwing an exception if any errors occurred.
+    *
+    * It is used by the testing framework to allow better errors.
     */
   @throws(classOf[IOException])
-  def compile(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): CompiledCode = {
+  def compileLogOnError(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): CompiledCode = {
+    val logger = new PrintWriterCompileLogger(new PrintWriter(err, true))
     compile(new OrcReaderInputContext(source, options.filename), options,
-      new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
+      logger, NullProgressMonitor)
   }
 }
 

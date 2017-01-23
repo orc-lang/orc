@@ -29,20 +29,32 @@ import java.text.SimpleDateFormat
 import java.io.OutputStreamWriter
 import java.io.FileOutputStream
 import orc.util.SynchronousThreadExec
+import orc.PorcCompilerBackend
 import orc.TokenInterpreterBackend
 
 /** @author amp
   */
 object AllBenchmarkTests {
-  case class AllBenchmarkConfig(cpuCounts: Seq[Int], backends: Seq[BackendType], optLevels: Seq[Int],
+  case class AllBenchmarkConfig(
+    cpuCounts: Seq[Int],
+    backends: Seq[BackendType],
+    optLevels: Seq[Int],
     output: File,
-    timeout: Long = 180L, nRuns: Int = 5, nDroppedRuns: Int = 2, outputCompileTime: Boolean = false,
+    tests: Int = Int.MaxValue,
+    timeout: Long = 120L,
+    nRuns: Int = 5,
+    nDroppedRuns: Int = 2,
+    nDroppedWarmups: Int = 1,
+    outputCompileTime: Boolean = false,
+    outputStdDev: Boolean = true,
     jvmArguments: Seq[String] = Nil) {
     def configs = {
       val cs = for (cpuCount <- cpuCounts; optLevel <- optLevels; backend <- backends) yield {
-        BenchmarkConfig(0 until cpuCount, backend, optLevel, timeout = timeout, nRuns = nRuns,
-          nDroppedRuns = nDroppedRuns, outputCompileTime = outputCompileTime, output = output,
-          outputHeader = false)
+        BenchmarkConfig(OrcBenchmarkSet, 0 until cpuCount, backend, optLevel,
+          timeout = timeout, nRuns = nRuns, tests = tests,
+          nDroppedRuns = nDroppedRuns, nDroppedWarmups = nDroppedWarmups,
+          outputCompileTime = outputCompileTime, output = output,
+          outputHeader = false, outputStdDev = outputStdDev)
       }
 
       cs.head.copy(outputHeader = true) +: cs.tail
@@ -60,7 +72,7 @@ object AllBenchmarkTests {
     })
   }
 
-  val dateFormatter = new SimpleDateFormat("yyyy-MM-dd.HH-mm-ss")
+  val dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss")
 
   def main(args: Array[String]) {
     def processArgs(args: Seq[String], conf: AllBenchmarkConfig): AllBenchmarkConfig = args match {
@@ -70,14 +82,20 @@ object AllBenchmarkTests {
         processArgs(rest, conf.copy(backends = arg.split(",").map(BackendType.fromString)))
       case "-O" +: arg +: rest =>
         processArgs(rest, conf.copy(optLevels = parseRangeList(arg)))
+      case "-#" +: arg +: rest =>
+        processArgs(rest, conf.copy(tests = arg.toInt))
       case "-t" +: arg +: rest =>
         processArgs(rest, conf.copy(timeout = arg.toLong))
       case "-r" +: arg +: rest =>
         processArgs(rest, conf.copy(nRuns = arg.toInt))
+      case "-w" +: arg +: rest =>
+        processArgs(rest, conf.copy(nDroppedWarmups = arg.toInt))
       case "-d" +: arg +: rest =>
         processArgs(rest, conf.copy(nDroppedRuns = arg.toInt))
       case "-C" +: rest =>
         processArgs(rest, conf.copy(outputCompileTime = true))
+      case "-s" +: rest =>
+        processArgs(rest, conf.copy(outputStdDev = false))
       case "+J" +: rest if rest.contains("-J") =>
         val i = rest.indexOf("-J")
         processArgs(rest.drop(i), conf.copy(jvmArguments = rest.take(i - 1)))
@@ -87,29 +105,38 @@ object AllBenchmarkTests {
         conf
     }
 
-    val defaultOutputFile = new File(s"allbenchmarks-${dateFormatter.format(new Date())}.csv")
+    val defaultOutputFile = new File(s"allbenchmarks_${dateFormatter.format(new Date())}.csv")
     implicit val config = processArgs(args, AllBenchmarkConfig(
-      Seq(1, 2, 4, 8).reverse, Seq(TokenInterpreterBackend),
-      Seq(0, 1, 3).reverse, nRuns = 7, nDroppedRuns = 2, output = defaultOutputFile))
+      Seq(1, 2, 4, 8).reverse, Seq(PorcCompilerBackend),
+      Seq(2, 3).reverse, nRuns = 7, nDroppedRuns = 2, output = defaultOutputFile))
 
-    println("Running configs:\n" + config.configs.map(_.asArguments.mkString(" ")).mkString("\n"))
-      
+    println(s"Running configs: (${config.configs.size})\n${config.configs.map(_.asArguments.mkString(" ")).mkString("\n")}")
+
     for (conf <- config.configs) {
       import scala.sys.process._
-      val bootpath = if (System.getProperty("sun.boot.class.path") ne null)
+
+      val bootpath = if (System.getProperty("sun.boot.class.path") ne null) {
         System.getProperty("path.separator", ":") + System.getProperty("sun.boot.class.path")
-      else
+      } else {
         ""
-      val cmd = Seq("java", "-cp", System.getProperty("java.class.path") + bootpath) ++
-        Seq("-Xss3M") ++ config.jvmArguments ++ 
+      }
+
+      val jvm = if (System.getProperty("os.name").startsWith("Win")) {
+        System.getProperty("java.home") + File.separator + "bin" + File.separator + "java.exe";
+      } else {
+        System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+      }
+
+      val cmd = Seq(jvm, "-cp", System.getProperty("java.class.path") + bootpath) ++
+        config.jvmArguments ++
         Seq(BenchmarkTest.getClass().getCanonicalName().stripSuffix("$")) ++ conf.asArguments
       println(s"Running: ${cmd.mkString(" ")}")
-      def retry(n: Int): Unit = if(n > 0){
-          val result = cmd.!
-          if(result != 0) {
-            println(s"Retrying failed run: ${cmd.mkString(" ")}")
-            retry(n-1)
-          }
+      def retry(n: Int): Unit = if (n > 0) {
+        val result = cmd.!
+        if (result != 0) {
+          println(s"Retrying failed run: ${cmd.mkString(" ")}")
+          retry(n - 1)
+        }
       }
       retry(3)
     }

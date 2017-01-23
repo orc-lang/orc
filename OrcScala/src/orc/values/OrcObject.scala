@@ -20,12 +20,6 @@ import orc.run.core.Future
 import orc.run.core.Binding
 import orc.run.core.BoundReadable
 
-trait OrcObjectInterface extends OrcValue {
-  @throws(classOf[NoSuchMemberException])
-  def apply(f: Field): Binding
-  def contains(f: Field): Boolean
-}
-
 /** The runtime object representing Orc objects.
   *
   * Since they are recursive the entries need to be set after the object exists.
@@ -33,16 +27,16 @@ trait OrcObjectInterface extends OrcValue {
   *
   * @author amp
   */
-case class OrcObject(private var entries: Map[Field, Binding] = null) extends OrcObjectInterface {
+case class OrcObject(private var entries: Map[Field, Binding] = null) extends HasMembers {
   def setFields(_entries: Map[Field, Binding]) = {
     assert(entries eq null)
     entries = _entries
   }
 
-  def contains(f: Field) = entries contains f
+  override def hasMember(f: Field) = entries contains f
 
   @throws(classOf[NoSuchMemberException])
-  def apply(f: Field): Binding = {
+  def getMember(f: Field): Binding = {
     assert(entries ne null)
     entries.getOrElse(f, throw new NoSuchMemberException(this, f.field))
   }

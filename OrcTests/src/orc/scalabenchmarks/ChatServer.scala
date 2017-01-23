@@ -21,7 +21,7 @@ object ChatServer {
   val roomPageP4 = "'><input type='text' name='msg' autofocus /><input type='submit' value='Say' /></form></body></html>"
 
   val MAX_MESSAGES = 1000
-  
+
   class Room() {
     private val _messages = new ConcurrentLinkedQueue[String]()
     private var count = new AtomicInteger(0)
@@ -67,7 +67,7 @@ object ChatServer {
       val roomname = req.getPathInfo()
       val room = getRoom(roomname)
       val msg = req.getParameter("msg")
-      
+
       if (msg == null || msg == "") {
         val messages = room.messages
         resp.setContentType("text/html")

@@ -18,9 +18,11 @@ import scala.language.reflectiveCalls
 import orc.ast.ext
 import orc.ast.ext.ExtendedASTTransform
 import orc.ast.oil.named._
+import orc.ast.oil.named.Class
 import orc.error.OrcExceptionExtension._
 import orc.error.compiletime._
 import orc.values.Field
+import orc.ast.hasAutomaticVariableName
 
 trait ClassBasicInfo {
   val linearization: Class.Linearization
@@ -59,7 +61,7 @@ case class ClassForms(val translator: Translator) {
     * it to additionalClasses. If name is defined then give the class that name.
     *
     */
-  def linearize(e: ext.ClassExpression, additionalClasses: mutable.Buffer[ClassInfo], name: Option[BoundVar] = None)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: collection.Map[String, ClassInfo]): ClassBasicInfo = {
+  def linearize(e: ext.ClassExpression, additionalClasses: mutable.Buffer[ClassInfo], name: Option[BoundVar] = None)(implicit ctx: TranslatorContext): ClassBasicInfo = {
     e match {
       case lit: ext.ClassLiteral =>
         val info = makeClassInfo(name, lit, AnonymousClassInfo(Nil, Set(), Set()))
@@ -78,13 +80,13 @@ case class ClassForms(val translator: Translator) {
         additionalClasses += info
         info
       case ext.ClassVariable(v) =>
-        classcontext.getOrElse(v, {
+        ctx.classcontext.getOrElse(v, {
           throw (UnboundClassVariableException(v) at e)
         })
     }
   }
 
-  def checkForReorderings(a: ClassBasicInfo, b: ClassBasicInfo, e: ext.ClassExpression)(implicit classcontext: collection.Map[String, ClassInfo]): Unit = {
+  def checkForReorderings(a: ClassBasicInfo, b: ClassBasicInfo, e: ext.ClassExpression)(implicit ctx: TranslatorContext): Unit = {
     for ((c :: tail) <- a.linearization.tails) {
       val tailSet = tail.toSet
       // If c appears in the linearization of b
@@ -138,8 +140,8 @@ case class ClassForms(val translator: Translator) {
     *
     * This just does a few computations to extract the needed information build the ClassInfo.
     */
-  def makeClassInfo(name: Option[BoundVar], lit: ext.ClassLiteral, superClassInfo: ClassBasicInfo)(implicit context: Map[String, Argument], typecontext: Map[String, Type]): ClassInfo = {
-    val clsname = name getOrElse new BoundVar(Some(Var.getNextVariableName("synCls")))
+  def makeClassInfo(name: Option[BoundVar], lit: ext.ClassLiteral, superClassInfo: ClassBasicInfo)(implicit ctx: TranslatorContext): ClassInfo = {
+    val clsname = name getOrElse new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("synCls")))
     val linearization = Classvar(clsname) :: superClassInfo.linearization
     val (allmembers, concretemembers) = findFieldNames(lit)
     ClassInfo(clsname, linearization, superClassInfo.members ++ allmembers, superClassInfo.concreteMembers ++ concretemembers, lit)
@@ -149,7 +151,9 @@ case class ClassForms(val translator: Translator) {
     *
     * Return the BoundVar for this and the mapping of fields to expressions.
     */
-  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (BoundVar, BoundVar, Map[Field, Expression]) = {
+  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit ctx: TranslatorContext): (BoundVar, BoundVar, Map[Field, Expression]) = {
+    import ctx._
+
     val thisName = lit.thisname.getOrElse("this")
     val thisVar = new BoundVar(Some(thisName))
     val superVar = new BoundVar(Some("super"))
@@ -158,19 +162,20 @@ case class ClassForms(val translator: Translator) {
 
     // Remove field names from the context this makes fields shadow outside definitions
     val memberContext = (context -- fieldNames) ++ thisContext
+    val newCtx = ctx.copy(context = memberContext)
 
     def convertFields(d: Seq[ext.Declaration]): Seq[(Field, Option[Expression])] = d match {
       // NOTE: The first two cases are optimizations. The third case also covers them, but also introduces extra fields.
       case ext.Val(ext.VariablePattern(x), f) +: rest =>
-        (Field(x), Some(convert(f)(memberContext, implicitly, implicitly))) +: convertFields(rest)
+        (Field(x), Some(convert(f)(newCtx))) +: convertFields(rest)
       case ext.Val(ext.TypedPattern(ext.VariablePattern(x), t), f) +: rest =>
-        (Field(x), Some(HasType(convert(f)(memberContext, implicitly, implicitly), convertType(t)))) +: convertFields(rest)
+        (Field(x), Some(HasType(convert(f)(newCtx), convertType(t)))) +: convertFields(rest)
       case ext.Val(p, f) +: rest =>
         val tmpField = uniqueField("pattmp")
         // FIXME: Is it a problem if the same variable is bound in multiple subtrees?
         val x = new BoundVar()
-        val (source, dcontext, target) = convertPattern(p, x)(memberContext, implicitly)
-        val newf = convert(f)(memberContext, implicitly, implicitly)
+        val (source, dcontext, target) = convertPattern(p, x)(newCtx)
+        val newf = convert(f)(newCtx)
         val generatedFields = for ((name, code) <- dcontext.toSeq) yield (Field(name), Some(FieldAccess(thisVar, tmpField) > x > target(code)))
         (tmpField, Some(source(newf))) +: (generatedFields ++ convertFields(rest))
       case ext.ValSig(v, t) +: rest =>
@@ -188,7 +193,7 @@ case class ClassForms(val translator: Translator) {
           (field, None) +: convertFields(rest)
         } else {
           // Concrete
-          val newdef = agg ->> agg.convert(name, memberContext, implicitly, implicitly)
+          val newdef = agg ->> agg.convert(name, newCtx)
           (field, Some(DeclareCallables(List(newdef), name))) +: convertFields(rest)
         }
       case Seq() =>
@@ -216,7 +221,7 @@ case class ClassForms(val translator: Translator) {
 
   /** Convert a ClassInfo to a real class.
     */
-  def makeClassFromInfo(info: ClassInfo)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): Class = {
+  def makeClassFromInfo(info: ClassInfo)(implicit ctx: TranslatorContext): Class = {
     val (self, superVar, fields) = convertClassLiteral(info.literal, info.members)
     info.literal ->> Class(info.name, self, superVar, fields, info.linearization)
   }
@@ -225,7 +230,7 @@ case class ClassForms(val translator: Translator) {
     *
     * This will generate any needed synthetic classes as a DeclareClasses node wrapped around the New.
     */
-  def makeNew(newe: ext.Expression, e: ext.ClassExpression)(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo], translator: Translator): Expression = {
+  def makeNew(newe: ext.Expression, e: ext.ClassExpression)(implicit ctx: TranslatorContext, translator: Translator): Expression = {
     val additionalClasses = mutable.Buffer[ClassInfo]()
     val info = linearize(e, additionalClasses)
 
@@ -244,7 +249,7 @@ case class ClassForms(val translator: Translator) {
     *
     * This also returns a new class context to be used for subexpressions.
     */
-  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[Class], Seq[Callable], Map[String, Argument], Map[String, Type], Map[String, ClassInfo]) = {
+  def makeClassGroup(clss: Seq[ext.ClassDeclaration])(implicit ctx: TranslatorContext): (Seq[Class], Seq[Callable], Map[String, Argument], Map[String, Type], Map[String, ClassInfo]) = {
     // Check for duplicate names
     for (c :: cs <- clss.tails) {
       cs.find(_.name == c.name) match {
@@ -252,23 +257,21 @@ case class ClassForms(val translator: Translator) {
         case None => ()
       }
     }
-    
-    val clsNames = (for (cd @ ext.ClassDeclaration(constructor, _, _) <- clss) yield 
-                      (constructor.name -> new BoundVar(Some(constructor.name)))).toMap
+
+    val clsNames = (for (cd @ ext.ClassDeclaration(constructor, _, _) <- clss) yield (constructor.name -> new BoundVar(Some(constructor.name)))).toMap
 
     val (desugaredClss, constructorMakers) = desugarClasses(clss)
     assert(desugaredClss.forall(_.constructor.isInstanceOf[ext.ClassConstructor.None]))
 
     // Build class names and linearizations
     val additionalClasses = mutable.Buffer[ClassInfo]()
-    val incrementalClassContext = mutable.Map() ++ classcontext
+    val incrementalClassContext = mutable.Map() ++ ctx.classcontext
     for (ext.ClassDeclaration(ext.ClassConstructor.None(name, typeformals), superclass, body) <- desugaredClss) {
       val e = superclass match {
         case Some(s) => ext.ClassSubclassLiteral(s, body)
         case None => body
       }
-      implicit val classcontext = incrementalClassContext
-      val info = linearize(e, additionalClasses, Some(clsNames(name)))
+      val info = linearize(e, additionalClasses, Some(clsNames(name)))(ctx.copy(classcontext = incrementalClassContext.toMap))
       info match {
         case i: ClassInfo => {
           incrementalClassContext += name -> i.copy(concreteMembers = i.concreteMembers ++ constructorMakers.keys)
@@ -278,9 +281,9 @@ case class ClassForms(val translator: Translator) {
     }
 
     val recursiveClassContext = incrementalClassContext.toMap
-    val recursiveTypeContext = typecontext ++ additionalClasses.map(info => info.name.optionalVariableName.get -> ClassType(info.name.optionalVariableName.get))
+    val recursiveTypeContext = ctx.typecontext ++ additionalClasses.map(info => info.name.optionalVariableName.get -> ClassType(info.name.optionalVariableName.get))
     val newClss = for (info <- additionalClasses) yield {
-      val cls = makeClassFromInfo(info)(implicitly, recursiveTypeContext, recursiveClassContext)
+      val cls = makeClassFromInfo(info)(ctx.copy(typecontext = recursiveTypeContext, classcontext = recursiveClassContext))
       val additionalBindings = constructorMakers.map {
         case (n, b) =>
           val newdef = b(recursiveTypeContext, recursiveClassContext)
@@ -290,7 +293,7 @@ case class ClassForms(val translator: Translator) {
     }
 
     val constructors = constructorMakers.values.map(_(recursiveTypeContext, recursiveClassContext))
-    val newContext = context ++ constructors.map(d => d.name.optionalVariableName.get -> d.name)
+    val newContext = ctx.context ++ constructors.map(d => d.name.optionalVariableName.get -> d.name)
 
     (newClss, constructors.toList, newContext, recursiveTypeContext, recursiveClassContext)
   }
@@ -301,19 +304,19 @@ case class ClassForms(val translator: Translator) {
     * toRecursiveBind is a set of fields that should be bound to specific variables
     * (usually recursive functions). This can contain constrName and often will.
     */
-  private def makeClassConstructor(isSite: Boolean, clsName: String, constrName: BoundVar, toBind: Seq[Field], toRecursiveBind: Map[Field, BoundVar], argTypes: Option[Seq[Type]], returnType: Option[Type])(classcontext: Map[String, ClassInfo]): Callable = {
+  private def makeClassConstructor(isSite: Boolean, clsName: String, constrName: BoundVar, toBind: Seq[Field], toRecursiveBind: Map[Field, BoundVar], argTypes: Option[Seq[Type]], returnType: Option[Type])(ctx: TranslatorContext): Callable = {
     val formals = toBind.map(f => new BoundVar(Some(f.field))).toList
     val body = if (toBind.isEmpty && toRecursiveBind.isEmpty) {
-      New(classcontext(clsName).linearization)
+      New(ctx.classcontext(clsName).linearization)
     } else {
-      val synClsName = new BoundVar(Some(Var.getNextVariableName("synCls")))
+      val synClsName = new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("synCls")))
       val thisVar = new BoundVar(Some("this"))
       val superVar = new BoundVar(Some("super"))
       val bindings = for ((f, n) <- (toBind zip formals) ++ toRecursiveBind) yield f -> n
       val cls = Class(synClsName, thisVar, superVar, bindings.toMap, List(Classvar(synClsName)))
 
       DeclareClasses(List(cls), {
-        New(Classvar(synClsName) +: classcontext(clsName).linearization)
+        New(Classvar(synClsName) +: ctx.classcontext(clsName).linearization)
       })
     }
     val typeformals = Nil
@@ -334,7 +337,7 @@ case class ClassForms(val translator: Translator) {
     * The appoach is to first collect type and name information about all the constructors and then update
     * classes and build constructor maker closures using that information.
     */
-  private def desugarClasses(clss: Seq[ext.ClassDeclaration])(implicit context: Map[String, Argument], typecontext: Map[String, Type], classcontext: Map[String, ClassInfo]): (Seq[ext.ClassDeclaration], Map[String, (Map[String, Type], Map[String, ClassInfo]) => Callable]) = {
+  private def desugarClasses(clss: Seq[ext.ClassDeclaration])(implicit ctx: TranslatorContext): (Seq[ext.ClassDeclaration], Map[String, (Map[String, Type], Map[String, ClassInfo]) => Callable]) = {
     // Generate constructor names and ext types
     val constructorInfo = (for (ext.ClassDeclaration(constructor: ext.ClassCallableConstructor, _, _) <- clss) yield {
       val argOptTypes = constructor.formals map { p =>
@@ -371,10 +374,12 @@ case class ClassForms(val translator: Translator) {
           val newCls = ext.ClassDeclaration(ext.ClassConstructor.None(constructor.name, constructor.typeformals), superclass,
             body.copy(decls = body.decls ++ newDecls))
 
-          def constrMaker(tc: Map[String, Type], cc: Map[String, ClassInfo]) =
+          def constrMaker(tc: Map[String, Type], cc: Map[String, ClassInfo]) = {
+            val newCtx = ctx.copy(typecontext = tc, classcontext = cc)
             makeClassConstructor(constructor.isInstanceOf[ext.ClassConstructor.Site],
               constructor.name, constructorInfo(constructor.name)._1, newFields, Map(),
-              argTypesOpt.map(_.map(convertType(_)(tc))), constructor.returntype map { convertType(_)(tc) })(cc)
+              argTypesOpt.map(_.map(convertType(_)(newCtx))), constructor.returntype map { convertType(_)(newCtx) })(newCtx)
+          }
 
           (newCls, Some(constructor.name -> constrMaker _))
         }

@@ -69,6 +69,7 @@ sealed abstract class NamedDeclaration extends Declaration {
 
 sealed abstract class CallableDeclaration extends NamedDeclaration {
   def sameKindAs(decl: CallableDeclaration): Boolean
+  def arity: Int
 }
 
 sealed trait DefDeclaration extends CallableDeclaration {
@@ -87,6 +88,8 @@ sealed abstract class Callable extends CallableDeclaration {
   val body: Expression
 
   def copy(name: String, typeformals: Option[List[String]], formals: List[Pattern], returntype: Option[Type], guard: Option[Expression], body: Expression): Callable
+
+  def arity = formals.size
 }
 object Callable {
   def unapply(value: Callable) = {
@@ -101,6 +104,8 @@ sealed abstract class CallableSig extends CallableDeclaration {
   val returntype: Type
 
   def copy(name: String, typeformals: Option[List[String]], argtypes: List[Type], returntype: Type): CallableSig
+
+  def arity = argtypes.size
 }
 object CallableSig {
   def unapply(value: CallableSig) = {

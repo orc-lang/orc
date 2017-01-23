@@ -115,7 +115,7 @@ object OrcJavaCompatibility {
       case inv => inv
     }
   }
-  
+
   /** Given a method name and arg list, find the correct Method to call, per JLS §15.12.2's rules */
   def chooseMethodForInvocationSlow(targetClass: Class[_], memberName: String, argTypes: List[Class[_]]): Invocable = {
     Logger.finest(s"$memberName target=$targetClass argTypes=(${argTypes.mkString(", ")})")

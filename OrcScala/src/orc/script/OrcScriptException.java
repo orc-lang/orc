@@ -53,22 +53,22 @@ public class OrcScriptException extends ScriptException {
 
     @Override
     public int getLineNumber() {
-      final OrcSourceRange pos = orcE.getPosition();
-      if (pos != null) {
-          return pos.start().line();
-      } else {
-          return -1;
-      }
+        final OrcSourceRange pos = orcE.getPosition();
+        if (pos != null) {
+            return pos.start().line();
+        } else {
+            return -1;
+        }
     }
 
     @Override
     public int getColumnNumber() {
-      final OrcSourceRange pos = orcE.getPosition();
-      if (pos != null) {
-          return pos.start().column();
-      } else {
-          return -1;
-      }
+        final OrcSourceRange pos = orcE.getPosition();
+        if (pos != null) {
+            return pos.start().column();
+        } else {
+            return -1;
+        }
     }
 
     @Override

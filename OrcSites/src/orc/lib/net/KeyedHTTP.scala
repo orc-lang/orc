@@ -97,7 +97,7 @@ class KeyedHTTPInstance(domain: String, param: String, secret: String) extends T
     (x, y) match {
       case (s: String, query: OrcRecord) => {
         val queryWithSecret = query + OrcRecord(Map(param -> secret))
-        val httpWithSecret: OrcRecord = HTTP.evaluate(List(s, queryWithSecret)).asInstanceOf[OrcRecord]
+        val httpWithSecret: OrcRecord = HTTP.evaluate(Array(s, queryWithSecret)).asInstanceOf[OrcRecord]
         httpWithSecret + OrcRecord(Map("url" -> ""))
       }
       case (_: String, a) => throw new ArgumentTypeMismatchException(1, "Record", if (a != null) a.getClass().toString() else "null")

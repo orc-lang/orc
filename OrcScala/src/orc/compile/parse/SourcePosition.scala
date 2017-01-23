@@ -21,9 +21,8 @@ import orc.util.{ TextPosition, TextRange }
   * of the source code for the position, to be used in error messages.
   */
 class OrcSourcePosition(
-    override val resource: OrcInputContext,
-    override val offset: TextPosition[OrcInputContext]#CharacterNumber
-  ) extends TextPosition[OrcInputContext] {
+  override val resource: OrcInputContext,
+  override val offset: TextPosition[OrcInputContext]#CharacterNumber) extends TextPosition[OrcInputContext] {
   assert(resource != null, "resource must be non-null")
   assert(offset >= 0, "offset must be nonnegative")
 
@@ -74,8 +73,7 @@ object ToTextPosition {
   * messages.
   */
 class OrcSourceRange(
-    posns: (OrcSourcePosition, OrcSourcePosition)
-  ) extends TextRange[OrcSourcePosition, OrcInputContext] {
+  posns: (OrcSourcePosition, OrcSourcePosition)) extends TextRange[OrcSourcePosition, OrcInputContext] {
 
   override def start: OrcSourcePosition = posns._1
   override def end: OrcSourcePosition = posns._2

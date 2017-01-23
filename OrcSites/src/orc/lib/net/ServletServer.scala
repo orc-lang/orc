@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import orc.values.OrcTuple
 import javax.servlet.AsyncContext
 import org.eclipse.jetty.servlet.ServletMapping
+import orc.run.core.BoundValue
+import orc.values.HasMembers
 
 trait CastArgumentSupport {
   def castArgument[T <: AnyRef: ClassTag](i: Int, a: AnyRef, typeName: String = null): T = {
@@ -39,7 +41,7 @@ trait CastArgumentSupport {
   }
 }
 
-class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrapper) extends HttpServlet with Site {
+class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrapper) extends HttpServlet with Site with HasMembers {
   val requestQueue = new ConcurrentLinkedQueue[AsyncContext]()
   val getQueue = new ConcurrentLinkedQueue[orc.Handle]()
 
@@ -108,22 +110,20 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
     Field("join") -> JoinSite,
     Field("stop") -> StopSite)
 
-  def getField(f: Field): AnyRef = {
-    fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field))
+  def getMember(f: Field) = {
+    BoundValue(fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field)))
   }
 
-  def hasField(f: Field): Boolean = {
+  override def hasMember(f: Field): Boolean = {
     fields contains f
   }
 
-  def call(args: List[AnyRef], h: orc.Handle): Unit = {
-    //h !! new UncallableValueException("This site is not callable, but has fields.")
-    val List(f: Field) = args
-    h.publish(getField(f))
+  def call(args: Array[AnyRef], h: orc.Handle): Unit = {
+    h !! new UncallableValueException("This site is not callable, but has fields.")
   }
 }
 
-class ServletServerWrapper(val server: Server, val context: ServletContextHandler) extends Site {
+class ServletServerWrapper(val server: Server, val context: ServletContextHandler) extends Site with HasMembers {
   private[this] var nextId = 0
   private def genId() = synchronized {
     nextId += 1
@@ -201,25 +201,23 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
     Field("join") -> JoinSite,
     Field("stop") -> StopSite)
 
-  def getField(f: Field): AnyRef = {
-    fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field))
+  def getMember(f: Field) = {
+    BoundValue(fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field)))
   }
 
-  def hasField(f: Field): Boolean = {
+  override def hasMember(f: Field): Boolean = {
     fields contains f
   }
 
-  def call(args: List[AnyRef], h: orc.Handle): Unit = {
-    //h !! new UncallableValueException("This site is not callable, but has fields.")
-    val List(f: Field) = args
-    h.publish(getField(f))
+  def call(args: Array[AnyRef], h: orc.Handle): Unit = {
+    h !! new UncallableValueException("This site is not callable, but has fields.")
   }
 }
 
 object ServletServer extends TotalSite with CastArgumentSupport {
-  def evaluate(args: List[AnyRef]): AnyRef = {
+  def evaluate(args: Array[AnyRef]): AnyRef = {
     val port = args match {
-      case List(a) => {
+      case Array(a) => {
         val p = castArgument[Number](0, a)
         p.intValue()
       }
@@ -237,6 +235,7 @@ object ServletServer extends TotalSite with CastArgumentSupport {
     new ServletServerWrapper(server, context)
   }
 
+  /** Servlet for testing */
   private class EmbeddedAsyncServlet extends HttpServlet {
     import javax.servlet.http.HttpServletRequest
     import javax.servlet.http.HttpServletResponse
@@ -252,6 +251,7 @@ object ServletServer extends TotalSite with CastArgumentSupport {
     }
   }
 
+  /** Main for testing */
   def main(args: Array[String]): Unit = {
     val w = ServletServer(8080)
 

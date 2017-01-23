@@ -15,14 +15,15 @@ package orc.lib.comp
 
 import orc.error.runtime.ArityMismatchException
 import orc.values.sites._
+import orc.util.ArrayExtensions.Array2
 
 /** Not equals comparison -- delegates to Scala's ==
   */
 object Inequal extends TotalSite with UntypedSite {
   override def name = "Inequal"
-  def evaluate(args: List[AnyRef]) =
+  def evaluate(args: Array[AnyRef]) =
     args match {
-      case List(a, b) => new java.lang.Boolean(!(a == b))
+      case Array2(a, b) => new java.lang.Boolean(!(a == b))
       case _ => throw new ArityMismatchException(2, args.size)
     }
 }

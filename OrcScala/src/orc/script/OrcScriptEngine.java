@@ -37,6 +37,7 @@ import orc.OrcEvent;
 import orc.OrcEventAction;
 import orc.Runtime;
 import orc.error.OrcException;
+import orc.error.compiletime.CompilationException;
 import orc.error.loadtime.LoadingException;
 import orc.lib.str.PrintEvent;
 import orc.run.OrcDesktopEventAction;
@@ -79,14 +80,14 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
     }
 
     public class OrcCompiledScript extends CompiledScript {
-        private final CompiledCode code;
+        final CompiledCode code;
 
         /**
          * Constructs an object of class OrcCompiledScript.
          *
          * @param oilAstRoot Root node of the OIL AST from the compilation
          */
-        /* default-access */OrcCompiledScript(final CompiledCode _code) {
+        /* default-access */ OrcCompiledScript(final CompiledCode _code) {
             this.code = _code;
         }
 
@@ -172,7 +173,7 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
                                                                           // by
                                                                           // JSR-223
                                                                           // §SCR.4.3.4.1.2
-            // TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
+                                                                          // TODO: Make ENGINE_SCOPE bindings visible in Orc execution?
             try {
                 exec.runSynchronous(code, pubAct.asFunction());
             } catch (final InterruptedException e) {
@@ -215,7 +216,7 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
     public CompiledScript compile(final Reader script) throws ScriptException {
         Logger.julLogger().entering(getClass().getCanonicalName(), "compile", script);
         try {
-            final CompiledCode result = getCompiler().compile(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
+            final CompiledCode result = getCompiler().compileLogOnError(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
             if (result == null) {
                 throw new ScriptException("Compilation failed");
             } else {
@@ -331,12 +332,14 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
         return new OrcCompiledScript(getBackend().serializer().get().deserialize(in));
     }
 
-  /**
-   */
-  public OrcCompiledScript importLoaded(final CompiledScript script) throws LoadingException {
-    if(script instanceof OrcScriptEngine.OrcCompiledScript)
-      return new OrcCompiledScript(((OrcCompiledScript)script).code);
-    else
-      throw new IllegalArgumentException("Provided compiled script is not of the correct type.");
-  }
+    /**
+     * Import an existing compiled object into a new OrcCompiledScript.
+     */
+    @SuppressWarnings("unchecked")
+    public OrcCompiledScript importLoaded(final CompiledScript script) throws LoadingException {
+        if (script instanceof OrcScriptEngine.OrcCompiledScript)
+            return new OrcCompiledScript(((OrcCompiledScript) script).code);
+        else
+            throw new IllegalArgumentException("Provided compiled script is not of the correct type.");
+    }
 }

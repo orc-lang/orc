@@ -15,33 +15,32 @@ package orc.lib.gui
 import javax.swing.ListModel
 import javax.swing.DefaultListModel
 import orc.run.extensions.SupportForCallsIntoOrc
-import orc.values.OrcObjectInterface
 import orc.values.Field
 import orc.Handle
 import orc.values.sites.Site1
+import orc.values.HasMembers
 
-/**
-  * @author amp
+/** @author amp
   */
 class ListModelImpl extends DefaultListModel[AnyRef] {
   def elementsUpdated() = fireContentsChanged(this, 0, getSize())
-  
-  def setExtend(i : Int, e : AnyRef) = {
-    while(size() <= i) addElement("")
+
+  def setExtend(i: Int, e: AnyRef) = {
+    while (size() <= i) addElement("")
     set(i, e)
   }
 }
 
-class ToStringAdapter(val deligate: OrcObjectInterface, val execution: SupportForCallsIntoOrc) extends ListenerAdapter {
+class ToStringAdapter(val deligate: HasMembers, val execution: SupportForCallsIntoOrc) extends ListenerAdapter {
   val ToStringField = Field("toString")
   override def toString = {
-    if (deligate contains ToStringField)
+    if (deligate hasMember ToStringField)
       try {
         execution.callOrcMethod(deligate, ToStringField, List()).get.asInstanceOf[String]
       } catch {
-        case _ : ClassCastException | _ : NoSuchElementException => deligate.toOrcSyntax()
+        case _: ClassCastException | _: NoSuchElementException => deligate.toOrcSyntax()
       }
-    else 
+    else
       deligate.toOrcSyntax()
   }
 }
@@ -53,8 +52,8 @@ object ToStringAdapter extends Site1 {
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
     val del = arg match {
-      case d: OrcObjectInterface => h.publish(new ToStringAdapter(d, execution))
+      case d: HasMembers => h.publish(new ToStringAdapter(d, execution))
       case o => h.publish(o)
     }
   }
-} 
+}

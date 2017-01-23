@@ -12,9 +12,8 @@
 //
 package orc.error.compiletime.typing
 
-import orc.types.Type
-import orc.values.Field
-import orc.error.compiletime._
+import orc.error.compiletime.{ CompilationException, SeverityError, SeverityWarning }
+import orc.types._
 
 @SerialVersionUID(5465406067160056556L)
 class ArgumentArityException(val arityExpected: Int, val arityReceived: Int) extends TypeException("Expected " + arityExpected + " arguments to call, got " + arityReceived + " arguments instead.") with SeverityError
@@ -57,6 +56,9 @@ class UnboundTypeException(val typeName: String) extends TypeException("Type " +
 
 @SerialVersionUID(7405290287131577418L)
 class UncallableTypeException(val t: Type) extends TypeException("Type " + t + " cannot be called as a site or function.") with SeverityError
+
+// TODO: Set SerialVersionUID
+class TypeHasNoFieldsException(val t: Type) extends TypeException("Type " + t + " does not have fields.") with SeverityError
 
 @SerialVersionUID(215727835596029040L)
 class UnrepresentableTypeException(val t: Type) extends TypeException(t.toString() + " has no concrete representation.") with SeverityError

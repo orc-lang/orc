@@ -19,6 +19,9 @@ object OptionMapExtension {
 
   // Adds an optionMap method to lists
   class ListWithOptionMap[A](xs: List[A]) {
+    /** Map f over xs. If all f(x) return Some(y) then return Some(ys) where ys is a list. Otherwise return None.
+      *
+      */
     def optionMap[B](f: A => Option[B]): Option[List[B]] = {
       def helperFunction(xs: List[A], ys: List[B]): Option[List[B]] = {
         xs match {

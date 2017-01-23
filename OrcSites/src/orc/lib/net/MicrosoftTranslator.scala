@@ -24,6 +24,7 @@ import java.util.Properties
 import java.io.FileNotFoundException
 import java.io.OutputStreamWriter
 import org.codehaus.jettison.json.JSONArray
+import orc.util.ArrayExtensions.{ Array1, Array2 }
 
 class MicrosoftTranslatorFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
   val arity = 1
@@ -45,8 +46,8 @@ class MicrosoftTranslatorFactoryPropertyFile extends PartialSite with SpecificAr
       p.getProperty("orc.lib.net.bing.key"))
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(file: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array1(file: String) = args
     val (user, key) = loadProperties(file)
     Some(new MicrosoftTranslator(user, key))
   }
@@ -61,8 +62,8 @@ class MicrosoftTranslatorFactoryUsernameKey extends PartialSite with SpecificAri
       BingSearch.orcType)
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(user: String, key: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array2(user: String, key: String) = args
     Some(new MicrosoftTranslator(user, key))
   }
 }
@@ -85,7 +86,7 @@ class MicrosoftTranslator(user: String, key: String) extends PartialSite with Sp
   var token = ""
 
   def getAccessToken() = {
-    if (token == "" || System.currentTimeMillis() >= tokenExpiration ) {
+    if (token == "" || System.currentTimeMillis() >= tokenExpiration) {
       val conn = authUrl.openConnection().asInstanceOf[HttpURLConnection]
       conn.setConnectTimeout(10000) // 10 seconds is reasonable
       conn.setReadTimeout(5000) // 5 seconds is reasonable
@@ -105,7 +106,7 @@ class MicrosoftTranslator(user: String, key: String) extends PartialSite with Sp
       if (o.has("error") && o.getBoolean("error")) {
         throw new RuntimeException(s"Error Authenticating with $authUrl: ${o.optString("error_description")}");
       }
-      
+
       tokenExpiration = (o.getLong("expires_in") - 10) * 1000 + System.currentTimeMillis()
       token = o.getString("access_token")
     }
@@ -113,8 +114,8 @@ class MicrosoftTranslator(user: String, key: String) extends PartialSite with Sp
     token
   }
 
-  def evaluate(args: List[AnyRef]): Option[AnyRef] = {
-    val List(text: String, target: String) = args
+  def evaluate(args: Array[AnyRef]): Option[AnyRef] = {
+    val Array2(text: String, target: String) = args
     val params = s"text=${URLEncoder.encode(text, "UTF-8")}&to=${URLEncoder.encode(target, "UTF-8")}"
     val url = new URL(s"http://api.microsofttranslator.com/V2/AJAX.svc/Translate?$params")
 
@@ -124,12 +125,12 @@ class MicrosoftTranslator(user: String, key: String) extends PartialSite with Sp
     conn.setRequestProperty("accept", "*/*")
     conn.addRequestProperty("Authorization", "Bearer " + getAccessToken())
     conn.connect()
-    
+
     val resp = conn.getResponseCode()
 
     val src = Source.fromInputStream(conn.getInputStream())
     val s = src.mkString("", "", "")
-    
+
     if (resp == 200) {
       // Hack to parse bare JSON string. The stripPrefix is to remove the Unicode BOM.
       val o = new JSONArray(s"[${s.stripPrefix("\uFEFF")}]")

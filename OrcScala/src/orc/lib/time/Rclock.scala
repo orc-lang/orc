@@ -21,10 +21,13 @@ import orc.values.sites.{ TypedSite, TotalSite0, Site1 }
 import orc.values.OrcRecord
 import orc.values.sites.FunctionalSite
 import orc.values.sites.EffectFreeSite
+import orc.values.sites.TalkativeSite
+import orc.values.sites.SiteMetadata
+import orc.values.Field
 
 /**
   */
-object Rclock extends TotalSite0 with TypedSite with FunctionalSite {
+object Rclock extends TotalSite0 with TypedSite with FunctionalSite with TalkativeSite {
 
   def eval() = {
     new OrcRecord(
@@ -38,6 +41,13 @@ object Rclock extends TotalSite0 with TypedSite with FunctionalSite {
         "time" -> SimpleFunctionType(IntegerType),
         "wait" -> SimpleFunctionType(IntegerType, SignalType)))
 
+  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(new SiteMetadata {
+    override def fieldMetadata(f: Field): Option[SiteMetadata] = f match {
+      case Field("time") => Some(new Rtime(0))
+      case Field("wait") => Some(Rwait)
+      case _ => None
+    }
+  })
 }
 
 /**
