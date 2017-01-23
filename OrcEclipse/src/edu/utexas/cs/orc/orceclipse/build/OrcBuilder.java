@@ -491,6 +491,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
             final EclipseToOrcMessageAdapter compileLogger = new EclipseToOrcMessageAdapter(BUILDER_ID, false);
 
             try {
+                // TODO: This should use the backend system.
                 new StandardOrcCompiler().apply(ic, config, compileLogger, prgsLstnr);
                 // Disregard returned OIL, we just want the errors
             } catch (final IOException e) {

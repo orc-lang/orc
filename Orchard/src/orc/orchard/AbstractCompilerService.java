@@ -58,6 +58,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
             options.additionalIncludes_$eq(orchardAdditionalIncludes);
             final List<CompileMessage> compileMsgs = new LinkedList<CompileMessage>();
             final CompileLogger cl = new OrchardCompileLogger(compileMsgs);
+            // TODO: Update to use Backend system.
             final Expression result = (Expression) getCompiler().apply(new OrcStringInputContext(program), options, cl, NullProgressMonitor$.MODULE$);
             if (result == null || cl.getMaxSeverity().compareTo(Severity.WARNING) > 0) {
                 if (compileMsgs.isEmpty()) {
@@ -85,6 +86,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
     protected StandardOrcCompiler getCompiler() {
         synchronized (this) {
             if (compiler == null) {
+                // TODO: Update to use Backend system.
                 compiler = new StandardOrcCompiler();
             }
         }
