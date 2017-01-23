@@ -216,7 +216,7 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
     public CompiledScript compile(final Reader script) throws ScriptException {
         Logger.julLogger().entering(getClass().getCanonicalName(), "compile", script);
         try {
-            final CompiledCode result = getCompiler().compile(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
+            final CompiledCode result = getCompiler().compileLogOnError(script, asOrcBindings(getBindings(ScriptContext.ENGINE_SCOPE)), getContext().getErrorWriter());
             if (result == null) {
                 throw new ScriptException("Compilation failed");
             } else {
@@ -226,8 +226,6 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
         } catch (final ScriptException e) {
             throw e;
         } catch (final IOException e) {
-            throw new ScriptException(e);
-        } catch (final CompilationException e) {
             throw new ScriptException(e);
         }
     }

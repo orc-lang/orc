@@ -12,21 +12,14 @@
 //
 package orc
 
-import orc.compile.parse.OrcInputContext
-import orc.error.compiletime.CompileLogger
-import orc.progress.ProgressMonitor
-import orc.error.loadtime.LoadingException
-import java.io.IOException
-import java.io.Writer
-import java.io.File
-import java.io.BufferedReader
-import orc.error.compiletime.PrintWriterCompileLogger
-import java.io.PrintWriter
-import orc.error.runtime.ExecutionException
-import orc.progress.NullProgressMonitor
+import java.io.{ BufferedReader, File, IOException, PrintWriter, Writer }
+
 import orc.ast.oil.nameless.Expression
-import orc.error.compiletime.ExceptionCollectingCompileLogger
-import orc.error.compiletime.CompilationException
+import orc.compile.parse.OrcInputContext
+import orc.error.compiletime.{ CompilationException, CompileLogger, ExceptionCollectingCompileLogger, ManyCompilationExceptions, PrintWriterCompileLogger }
+import orc.error.loadtime.LoadingException
+import orc.error.runtime.ExecutionException
+import orc.progress.{ NullProgressMonitor, ProgressMonitor }
 
 /** An enumeration over the supported backends.
   */
@@ -82,6 +75,7 @@ trait Compiler[+CompiledCode] {
   @throws(classOf[IOException])
   def compile(source: OrcInputContext, options: OrcCompilationOptions,
     compileLogger: CompileLogger, progress: ProgressMonitor): CompiledCode
+  // TODO: Because compile does not throw on failure it should return options or have the null return documented like WOW.
 
   private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
     val file = new File(descr)
@@ -90,15 +84,13 @@ trait Compiler[+CompiledCode] {
     override def toURL = toURI.toURL
   }
 
-  class ManyCompilationExceptions(exceptions: Seq[Throwable]) extends CompilationException("Multiple compiler errors") {
-    exceptions.foreach(addSuppressed)
-  }
-
   /** Compile the code in the reader using the given options and produce error messages on the
-    * err writer. This is a simple wrapper around the other compile function.
+    * err writer and throwing an exception if any errors occurred.
+    *
+    * It is used by the testing framework to allow better errors.
     */
   @throws(classOf[IOException]) @throws(classOf[CompilationException])
-  def compile(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): CompiledCode = {
+  def compileExceptionOnError(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): CompiledCode = {
     val logger = new ExceptionCollectingCompileLogger(new PrintWriter(err, true))
     val res = compile(new OrcReaderInputContext(source, options.filename), options,
       logger, NullProgressMonitor)
@@ -110,6 +102,18 @@ trait Compiler[+CompiledCode] {
       case es =>
         throw new ManyCompilationExceptions(es)
     }
+  }
+
+  /** Compile the code in the reader using the given options and produce error messages on the
+    * err writer and throwing an exception if any errors occurred.
+    *
+    * It is used by the testing framework to allow better errors.
+    */
+  @throws(classOf[IOException])
+  def compileLogOnError(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): CompiledCode = {
+    val logger = new PrintWriterCompileLogger(new PrintWriter(err, true))
+    compile(new OrcReaderInputContext(source, options.filename), options,
+      logger, NullProgressMonitor)
   }
 }
 

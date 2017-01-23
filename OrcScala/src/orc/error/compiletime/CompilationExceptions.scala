@@ -208,3 +208,13 @@ case class ConflictingOrderWarning(leftOrder: Iterable[String], rightOrder: Iter
 case class FeatureNotSupportedException(feature: String)
   extends CompilationException(s"$feature is unsupported")
   with SeverityFatal
+
+/** Many errors occured during compilation and we want to report them all.
+  *
+  * This exception will have all the other errors as suppressed exceptions.
+  */
+class ManyCompilationExceptions(exceptions: Seq[Throwable])
+  extends CompilationException("Multiple compiler errors")
+  with SeverityFatal {
+  exceptions.foreach(addSuppressed)
+}
