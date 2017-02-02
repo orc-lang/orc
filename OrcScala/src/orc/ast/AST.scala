@@ -17,7 +17,7 @@ import scala.collection.mutable.{ ArrayBuffer, Buffer }
 
 import orc.compile.parse.OrcSourceRange
 
-trait AST {
+trait Positioned {
   /** The source position (range) of this AST node, initially set to undefined. */
   var sourceTextRange: Option[OrcSourceRange] = None
 
@@ -28,7 +28,9 @@ trait AST {
     if (!sourceTextRange.isDefined) sourceTextRange = newRange
     this
   }
+}
 
+trait AST extends Positioned {
   /** Metadata transfer.
     */
   def ->>[B <: AST](that: B): B = {

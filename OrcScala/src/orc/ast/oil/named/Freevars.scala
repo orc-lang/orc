@@ -33,12 +33,6 @@ trait hasFreeVars {
           x
         }
       }
-      override def onClassvar(context: List[BoundVar], typecontext: List[BoundTypevar]) = {
-        case c @ Classvar(x: BoundVar) => {
-          if (context contains x) {} else { varset += x }
-          c
-        }
-      }
     }
     collect(this)
     Set.empty ++ varset

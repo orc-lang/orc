@@ -32,14 +32,8 @@ trait NamedToNameless {
       case Graft(x, value, body) => nameless.Graft(toExp(value), namedToNameless(body, x :: context, typecontext))
       case Trim(f) => nameless.Trim(toExp(f))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
-      case New(os) => nameless.New(os.map(namedToNameless(_, context, typecontext)))
+      case New(self, st, bindings, t) => ??? // TODO: Update nameless.New(os.map(namedToNameless(_, context, typecontext)))
       case FieldAccess(obj, field) => nameless.FieldAccess(namedToNameless(obj, context), field)
-      case DeclareClasses(clss, body) => {
-        val (clscontext, bodycontext, openvars) = compactContext(clss, context)
-        val newclss = clss map { namedToNameless(_, clscontext, typecontext) }
-        val newbody = namedToNameless(body, bodycontext, typecontext)
-        nameless.DeclareClasses(openvars, newclss, newbody)
-      }
       case DeclareCallables(defs, body) => {
         val (defcontext, bodycontext, openvars) = compactContext(defs, context)
         val newdefs = defs map { namedToNameless(_, defcontext, typecontext) }
@@ -87,24 +81,6 @@ trait NamedToNameless {
       }
       case UnboundVar(s) => nameless.UnboundVariable(s)
       case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
-    }
-  }
-
-  def namedToNameless(a: Classvar, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Classvar = {
-    a -> {
-      case Classvar(v) => {
-        var i = context indexOf v
-        assert(i >= 0, s"Cannot find bound class variable $v ($i)")
-        nameless.Classvar(i)
-      }
-      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(ObjectStructure, ...)")
-    }
-  }
-
-  def namedToNameless(a: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): nameless.Class = {
-    a -> {
-      case Class(name, self, supr, bindings, linearization) =>
-        nameless.Class(Map() ++ bindings.mapValues(namedToNameless(_, supr :: self :: context, typecontext)))
     }
   }
 

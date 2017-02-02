@@ -17,7 +17,7 @@ import scala.language.reflectiveCalls
 import scala.math.{ BigDecimal, BigInt }
 
 import orc.ast.oil.{ named => syntactic }
-import orc.ast.oil.named.{ Callable, Constant, DeclareCallables, DeclareClasses, DeclareType, Expression, FieldAccess, FoldedCall, FoldedLambda, Graft, HasType, Hole, New, Otherwise, Parallel, Sequence, Stop, Trim, UnboundVar, VtimeZone }
+import orc.ast.oil.named.{ Callable, Constant, DeclareCallables, DeclareType, Expression, FieldAccess, FoldedCall, FoldedLambda, Graft, HasType, Hole, New, Otherwise, Parallel, Sequence, Stop, Trim, UnboundVar, VtimeZone }
 import orc.compile.typecheck.ConstraintSet.meetAll
 import orc.compile.typecheck.Typeloader.{ lift, liftEither, liftJavaType, reify }
 import orc.error.OrcExceptionExtension.extendOrcException
@@ -96,8 +96,8 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             }
             (FoldedFieldAccess(newTarget, f), tpe)
           }
-          case New(linearization) => {
-            // TODO: Add support for classes.
+          case New(self, st, bindings, t) => {
+            // TODO: Add support for objects.
             ???
           }
           case Parallel(left, right) => {
@@ -128,10 +128,6 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
             val (newDefs, defBindings) = typeDefs(defs)
             val (newBody, typeBody) = typeSynthExpr(body)(ctx.copy(varContext = varContext ++ defBindings))
             (DeclareCallables(newDefs, newBody), typeBody)
-          }
-          case DeclareClasses(defs, body) => {
-            // TODO: Add support for classes.
-            ???
           }
           case VtimeZone(order, body) => {
             val (newBody, typeBody) = typeSynthExpr(body)

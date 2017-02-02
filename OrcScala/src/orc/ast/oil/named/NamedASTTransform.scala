@@ -22,8 +22,6 @@ trait NamedASTFunction {
   def apply(e: Expression): Expression
   def apply(t: Type): Type
   def apply(d: Callable): Callable
-  def apply(d: Classvar): Classvar
-  def apply(d: Class): Class
 
   def apply(ast: NamedAST): NamedAST = {
     ast match {
@@ -31,8 +29,6 @@ trait NamedASTFunction {
       case e: Expression => this(e)
       case t: Type => this(t)
       case d: Callable => this(d)
-      case s: Classvar => this(s)
-      case c: Class => this(c)
     }
   }
 
@@ -43,8 +39,6 @@ trait NamedASTFunction {
       def apply(e: Expression): Expression = g(f(e))
       def apply(t: Type): Type = g(f(t))
       def apply(d: Callable): Callable = g(f(d))
-      def apply(d: Classvar): Classvar = g(f(d))
-      def apply(d: Class): Class = g(f(d))
     }
   }
 
@@ -60,8 +54,6 @@ trait NamedASTTransform extends NamedASTFunction {
   def apply(e: Expression): Expression = transform(e, Nil, Nil)
   def apply(t: Type): Type = transform(t, Nil)
   def apply(d: Callable): Callable = transform(d, Nil, Nil)
-  def apply(d: Classvar): Classvar = transform(d, Nil, Nil)
-  def apply(d: Class): Class = transform(d, Nil, Nil)
 
   def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = EmptyFunction
 
@@ -71,18 +63,12 @@ trait NamedASTTransform extends NamedASTFunction {
 
   def onCallable(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Callable, Callable] = EmptyFunction
 
-  def onClassvar(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Classvar, Classvar] = EmptyFunction
-
-  def onClass(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Class, Class] = EmptyFunction
-
   def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) =
     new NamedASTFunction {
       def apply(a: Argument) = transform(a, context)
       def apply(e: Expression) = transform(e, context, typecontext)
       def apply(t: Type) = transform(t, typecontext)
       def apply(d: Callable) = transform(d, context, typecontext)
-      def apply(d: Classvar) = transform(d, context, typecontext)
-      def apply(d: Class) = transform(d, context, typecontext)
     }
 
   def transform(a: Argument, context: List[BoundVar]): Argument = {
@@ -112,14 +98,8 @@ trait NamedASTTransform extends NamedASTFunction {
         case Graft(x, value, body) => Graft(x, recurse(value), transform(body, x :: context, typecontext))
         case Trim(f) => Trim(recurse(f))
         case left ow right => recurse(left) ow recurse(right)
-        case New(c) => New(c.map(transform(_, context, typecontext)))
+        case New(self, st, bindings, t) => New(self, st.map(transform(_, typecontext)), bindings.mapValues(transform(_, self :: context, typecontext)), t.map(transform(_, typecontext)))
         case FieldAccess(o, f) => FieldAccess(recurse(o), f)
-        case DeclareClasses(clss, body) => {
-          val clsnames = clss map { _.name }
-          val newclss = clss map { transform(_, clsnames ::: context, typecontext) }
-          val newbody = transform(body, clsnames ::: context, typecontext)
-          DeclareClasses(newclss, newbody)
-        }
         case DeclareCallables(defs, body) => {
           val defnames = defs map { _.name }
           val newdefs = defs map { transform(_, defnames ::: context, typecontext) }
@@ -176,6 +156,8 @@ trait NamedASTTransform extends NamedASTFunction {
             }
           VariantType(self, typeformals, newVariants)
         }
+        case IntersectionType(a, b) => IntersectionType(recurse(a), recurse(b))
+        case UnionType(a, b) => UnionType(recurse(a), recurse(b))
       }
     }
   }
@@ -197,31 +179,4 @@ trait NamedASTTransform extends NamedASTFunction {
       }
     }
   }
-
-  def transform(d: Classvar, context: List[BoundVar], typecontext: List[BoundTypevar]): Classvar = {
-    val pf = onClassvar(context, typecontext)
-    if (pf isDefinedAt d) {
-      d -> pf
-    } else {
-      d -> {
-        case Classvar(name) => Classvar(name)
-      }
-    }
-  }
-
-  def transform(d: Class, context: List[BoundVar], typecontext: List[BoundTypevar]): Class = {
-    val pf = onClass(context, typecontext)
-    if (pf isDefinedAt d) {
-      d -> pf
-    } else {
-      d -> {
-        case Class(name, self, supr, fields, linearization) => {
-          val newcontext = supr :: self :: context
-          val newfields = Map() ++ fields.mapValues(transform(_, newcontext, typecontext))
-          Class(name, self, supr, newfields, linearization.map(transform(_, newcontext, typecontext)))
-        }
-      }
-    }
-  }
-
 }

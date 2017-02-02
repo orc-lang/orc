@@ -181,8 +181,8 @@ abstract class ClassException(message: String) extends CompilationException(mess
 
 /** A new expression is instantiating a class with abstract members.
   */
-case class InstantiatingAbstractClassException(superclasses: Iterable[String], missingMembers: Iterable[String])
-  extends ClassException(s"Instantiating class with abstract members. You need to provide bindings for: ${missingMembers.mkString(", ")}. The superclasses are: ${superclasses.mkString(", ")}")
+case class InstantiatingAbstractClassException(missingMembers: Iterable[String])
+  extends ClassException(s"Instantiating class with abstract members. You need to provide bindings for: ${missingMembers.mkString(", ")}.")
   with SeverityError
 
 /** A constructor is missing types on one of it's arguments.
@@ -199,9 +199,15 @@ case class ConstructorReturnTypeMissingException(className: String)
 
 /** A with operation is changing the order of methods.
   */
-case class ConflictingOrderWarning(leftOrder: Iterable[String], rightOrder: Iterable[String])
-  extends ClassException(s"Classes are in different orders in linearizations of mix-ins. ${leftOrder.mkString(", ")} is different from ${rightOrder.mkString(", ")}")
-  with SeverityWarning
+case class ConflictingOrderException(orders: Iterable[Iterable[String]])
+  extends ClassException(s"Classes are in different orders in linearizations of mix-ins. The following orders disagree: ${orders.map(_.mkString("<", ", ", ">")).mkString("; ")}")
+  with SeverityError
+
+/** A with operation is changing the order of methods.
+  */
+case class CyclicInheritanceException(classes: Iterable[String])
+  extends ClassException(s"Classes have cyclic inheritance involving classes: ${classes.mkString(", ")}")
+  with SeverityError
 
 /** A language feature used in the input program is not supported by the backend.
   */

@@ -29,7 +29,7 @@ object OrcExceptionExtension {
 @SerialVersionUID(6248539475492745978L)
 case class ExtendedOrcException[E <: OrcException](e: E) {
 
-  def at(ast: orc.ast.AST): E = {
+  def at(ast: orc.ast.Positioned): E = {
     e.setPosition(ast.sourceTextRange.orNull);
     e
   }

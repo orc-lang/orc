@@ -183,6 +183,11 @@ sealed case class ClassImport(name: String, classname: String) extends NamedDecl
 
 sealed case class ClassDeclaration(constructor: ClassConstructor, superclass: Option[ClassExpression], body: ClassLiteral) extends NamedDeclaration {
   val name = constructor.name
+
+  def classExpression = superclass match {
+    case Some(sc) => this ->> ClassSubclassLiteral(sc, body)
+    case None => body
+  }
 }
 
 sealed abstract class ClassExpression extends AST {
@@ -202,6 +207,26 @@ case class ClassSubclassLiteral(superclass: ClassExpression, body: ClassLiteral)
 }
 case class ClassMixin(left: ClassExpression, right: ClassExpression) extends ClassExpression {
   def toInterfaceString = left.toInterfaceString + " with " + right.toInterfaceString
+}
+
+/** Match mixed classes.
+  *
+  * The resulting sequence is in linearization order. (A with B with C) return List(C, B, A).
+  */
+object ClassMixins {
+  def unapplySeq(e: ClassExpression): Option[List[ClassExpression]] = e match {
+    case ClassMixin(l, r) => {
+      Some(elements(r) ++ elements(l))
+    }
+    case e => None
+  }
+
+  private def elements(e: ClassExpression): List[ClassExpression] = e match {
+    case ClassMixin(l, r) => {
+      elements(r) ++ elements(l)
+    }
+    case e => List(e)
+  }
 }
 
 sealed abstract class ClassConstructor extends AST {

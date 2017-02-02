@@ -31,7 +31,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Graft(x, value, body) => List(x, value, body)
     case Trim(f) => List(f)
     case left ow right => List(left, right)
-    case New(c) => c
+    case New(self, stpe, ds, tpe) => stpe ++ ds.values.toList ++ tpe
     case FieldAccess(o, f) => List(o)
     case DeclareCallables(defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
@@ -40,9 +40,6 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Callable(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
-    case Class(cls, self, supr, fields, linearization) => cls +: self +: supr +: (fields.values.toSeq ++ linearization)
-    case Classvar(v) => List(v)
-    case DeclareClasses(clss, body) => clss :+ body
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(tycon, typeactuals) => tycon :: typeactuals
@@ -52,10 +49,12 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case VariantType(self, typeformals, variants) => {
       self :: typeformals ::: (for ((_, variant) <- variants; t <- variant) yield t)
     }
+    case IntersectionType(a, b) => List(a, b)
+    case UnionType(a, b) => List(a, b)
     case Constant(_) | UnboundVar(_) | Hole(_, _) | Stop() => Nil
     case Bot() | ClassType(_) | ImportedType(_) | Top() | UnboundTypevar(_) => Nil
     case _: BoundVar | _: BoundTypevar => Nil
-    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedAST.subtrees")
+    //case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedAST.subtrees")
   }
 
 }
@@ -90,68 +89,34 @@ sealed case class Graft(x: BoundVar, value: Expression, body: Expression) extend
   with hasOptionalVariableName { transferOptionalVariableName(x, this) }
 sealed case class Trim(expr: Expression) extends Expression
 sealed case class Otherwise(left: Expression, right: Expression) extends Expression
-// Callable should contain all Sites or all Defs and not a mix.
-sealed case class DeclareCallables(defs: List[Callable], body: Expression) extends Expression
+sealed case class DeclareCallables(defs: List[Callable], body: Expression) extends Expression {
+  // The callables should contain all Sites or all Defs and not a mix.
+}
 sealed case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 sealed case class HasType(body: Expression, expectedType: Type) extends Expression
+object HasType {
+  def optional(body: Expression, expectedType: Option[Type]): Expression =
+    expectedType match {
+      case Some(t) => HasType(body, t)
+      case None => body
+    }
+}
 sealed case class Hole(context: Map[String, Argument], typecontext: Map[String, Type]) extends Expression {
   def apply(e: Expression): Expression = e.subst(context, typecontext)
 }
 sealed case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
 
-/** A reference to a class.
+/** Construct a new object
   *
-  */
-sealed case class Classvar(name: Var) extends NamedAST
-  with hasFreeVars
-  with hasFreeTypeVars
-  with Substitution[Classvar]
-  with hasOptionalVariableName {
-  transferOptionalVariableName(name, this)
-
-  lazy val withoutNames: nameless.Classvar = namedToNameless(this, Nil, Nil)
-}
-
-/** A class representation
-  *
-  * Classes have a self variable and structure just as a structural type. See above.
+  * Objects have a self variable and structure. The provided type allows the association
+  * between the object and the classes to be visible to the type checker.
   *
   * The translator will already have generated the proper bindings including implementing
-  * inheritence and derivation correctly.
-  *
-  * The linearization begins with this class and ends with the most general class Object.
+  * inheritence correctly.
   */
-sealed case class Class(
-  val name: BoundVar,
-  val self: BoundVar,
-  val superVar: BoundVar,
-  val bindings: Map[values.Field, Expression],
-  val linearization: Class.Linearization)
-  extends NamedAST
-  with hasFreeVars
-  with hasFreeTypeVars
-  with hasOptionalVariableName
-  with Substitution[Class]
-  with NamedDeclaration {
-  def classvar = Classvar(name)
-}
-
-object Class {
-  type Linearization = List[Classvar]
-}
-
-/** Declare a group of mutually recursive classes.
-  *
-  * The class objects are not normal runtime values and should never be accessed in any way other than New.
-  */
-sealed case class DeclareClasses(defs: List[Class], body: Expression) extends Expression
-
-/** Construct a new class instance
-  *
-  * This node starts running an all the bindings in the class and returns self.
-  */
-sealed case class New(linearization: Class.Linearization) extends Expression
+sealed case class New(self: BoundVar, selfType: Option[Type], bindings: Map[values.Field, Expression], objType: Option[Type]) extends Expression
+// TODO: This could eventually include a self type annotation.
 
 /** Read the value from a field future.
   *
@@ -159,11 +124,11 @@ sealed case class New(linearization: Class.Linearization) extends Expression
   */
 sealed case class FieldAccess(obj: Argument, field: values.Field) extends Expression
 
-/* Match an expression with exactly one hole.
- * Matches as Module(f), where f is a function which takes
- * a hole-filling expression and returns this expression
- * with the hole filled.
- */
+/** Match an expression with exactly one hole.
+  * Matches as Module(f), where f is a function which takes
+  * a hole-filling expression and returns this expression
+  * with the hole filled.
+  */
 object Module {
   def unapply(e: Expression): Option[Expression => Expression] = {
     if (countHoles(e) == 1) {
@@ -244,7 +209,7 @@ case class Def(name: BoundVar, formals: List[BoundVar], body: Expression, typefo
     body: Expression = body,
     typeformals: List[BoundTypevar] = typeformals,
     argtypes: Option[List[Type]] = argtypes,
-    returntype: Option[Type] = returntype) = {
+    returntype: Option[Type] = returntype): Def = {
     this ->> Def(name, formals, body, typeformals, argtypes, returntype)
   }
 }
@@ -255,7 +220,7 @@ case class Site(name: BoundVar, formals: List[BoundVar], body: Expression, typef
     body: Expression = body,
     typeformals: List[BoundTypevar] = typeformals,
     argtypes: Option[List[Type]] = argtypes,
-    returntype: Option[Type] = returntype) = {
+    returntype: Option[Type] = returntype): Site = {
     this ->> Site(name, formals, body, typeformals, argtypes, returntype)
   }
 }
@@ -278,6 +243,9 @@ sealed case class ImportedType(classname: String) extends Type
 sealed case class ClassType(classname: String) extends Type
 sealed case class VariantType(self: BoundTypevar, typeformals: List[BoundTypevar], variants: List[(String, List[Type])]) extends Type
 
+sealed case class IntersectionType(a: Type, b: Type) extends Type
+sealed case class UnionType(a: Type, b: Type) extends Type
+
 sealed trait Typevar extends Type with hasOptionalVariableName
 sealed case class UnboundTypevar(name: String) extends Typevar {
   optionalVariableName = Some(name)
@@ -295,8 +263,8 @@ object Conversions {
   /** Given (e1, ... , en) and f, return:
     *
     * f(x1, ... , xn) <x1< e1
-    *             ...
-    *              <xn< en
+    *          ...
+    *           <xn< en
     *
     * As an optimization, if any e is already an argument, no << binder is generated for it.
     */

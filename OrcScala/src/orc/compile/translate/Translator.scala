@@ -31,7 +31,8 @@ import orc.lib.builtin
 import orc.values.sites.Site
 
 case class TranslatorContext(context: Map[String, Argument], typecontext: Map[String, Type],
-  boundDefs: Set[BoundVar], classcontext: Map[String, ClassInfo])
+  boundDefs: Set[BoundVar], classContext: Map[String, ClassBasicInfo]) {
+}
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
   /** Translate an extended AST to a named OIL AST.
@@ -113,7 +114,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Otherwise(l, r) => convert(l) ow convert(r)
       case ext.Trim(e) => Trim(convert(e))
       case n @ ext.New(e) => {
-        classForms.makeNew(n, e)
+        classForms.makeNew(e)
       }
 
       case ext.Section(body) => {
@@ -162,9 +163,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
 
       case ext.ClassGroup(clss, body) => {
-        val (newClss, constructors, newContext, newTypeCtx, newClassCtx) = classForms.makeClassGroup(clss)
-
-        DeclareClasses(newClss.toList, DeclareCallables(constructors.toList, convert(body)(ctx.copy(newContext, newTypeCtx, boundDefs, newClassCtx))))
+        val infos = classForms.makeClassInfos(clss)
+        classForms.makeClassDeclarations(infos)(convert(body)(_))
       }
 
       case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
@@ -278,9 +278,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   /** Convert a list of extended AST def declarations to:
     *
-    *     a list of named OIL definitions
+    *    a list of named OIL definitions
     * and
-    *     a mapping from their string names to their new bound names
+    *    a mapping from their string names to their new bound names
     */
   def convertDefs(defs: List[ext.CallableDeclaration])(implicit ctx: TranslatorContext): (List[Callable], Map[String, BoundVar]) = {
     import ctx._
@@ -328,9 +328,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   /** Convert a list of type formal names to:
     *
-    *  A list of bound type formal variables
+    * A list of bound type formal variables
     * and
-    *  A context mapping those names to those vars
+    * A context mapping those names to those vars
     */
   def convertTypeFormals(typeformals: List[String], ast: orc.ast.AST): (List[BoundTypevar], Map[String, BoundTypevar]) = {
 
@@ -353,10 +353,10 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
   /** Convert an extended AST pattern to:
     *
-    *     A filtering conversion for the source expression
+    *    A filtering conversion for the source expression
     * and
-    *     A binding conversion for the target expression,
-    *     parameterized on the variable carrying the result
+    *    A binding conversion for the target expression,
+    *    parameterized on the variable carrying the result
     */
   def convertPattern(pat: ext.Pattern, bridge: BoundVar)(implicit ctx: TranslatorContext): (Conversion, Map[String, Argument], Conversion) = {
     import ctx._

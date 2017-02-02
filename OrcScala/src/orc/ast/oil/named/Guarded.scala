@@ -70,26 +70,14 @@ trait Guarding {
         l || r
       }
       case Trim(body) => check(body)
-      case New(target) => {
-        // This allows false negatives in cases where classes are mixed in which do not block recursion.
-        target match {
-          case List(c) if context contains c.name => {
-            unguardedRecursion(this)
-          }
-          case _ => {}
+      case New(self, _, bindings, _) => {
+        val newcontext = self :: context
+        for ((_, body) <- bindings) {
+          body.checkGuarded(newcontext, unguardedRecursion)
         }
         false
       }
       case FieldAccess(o, f) => true
-      case DeclareClasses(clss, body) => {
-        //val newcontext = clss.map(_.name) ::: context
-        for (c <- clss; e <- c.bindings.values) {
-          // TODO: This only checks for direct self recursion. Mutual will not be caught
-          // To catch mutual recursion we need to fracture classes like defs (into mutually recursive groups).
-          e.checkGuarded(c.name :: context, unguardedRecursion)
-        }
-        check(body)
-      }
       case DeclareCallables(defs, body) => {
         val newcontext = (defs map { _.name }) ::: context
         for (d <- defs) {

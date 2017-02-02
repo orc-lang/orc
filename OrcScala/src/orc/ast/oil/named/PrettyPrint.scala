@@ -57,14 +57,14 @@ class PrettyPrint {
       case Graft(x, value, body) => "(val " + reduce(x) + " = " + reduce(value) + " # " + reduce(body) + ")"
       case Trim(f) => "{| " + reduce(f) + " |}"
       case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
-      case DeclareCallables(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
+      case DeclareCallables(defs, body) => "-- mutual\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case c @ Callable(f, formals, body, typeformals, argtypes, returntype) => {
         val prefix = c match {
           case _: Def => "def"
           case _: Site => "site"
         }
         val name = f.optionalVariableName.getOrElse(lookup(f))
-        prefix + " " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
+        s"$prefix " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
           (returntype match {
             case Some(t) => " :: " + reduce(t)
             case None => ""
@@ -73,18 +73,15 @@ class PrettyPrint {
           prefix + " " + name + paren(formals) + " = " + reduce(body) +
           "\n"
       }
-      case New(os) => "new " + os.map(reduce).mkString("(", ",", ")") + ""
-      case FieldAccess(obj, f) => s"${reduce(obj)}${f}"
-      case Classvar(name) => reduce(name)
-      case DeclareClasses(clss, body) => (clss map reduce).mkString("\n", "\n", "\n") + reduce(body)
-      case Class(name, self, supr, fields, linearization) => {
+      case New(self, st, bindings, t) => {
         def reduceField(f: (Field, Expression)) = {
           val (name, expr) = f
           s"${name} = ${reduce(expr)}"
         }
-        val superDesc = if (supr.optionalVariableName != Some("super")) s"${reduce(supr)} = super #" else ""
-        s"class $name (${linearization.map(reduce).mkString(",")}) { ${reduce(self)} # $superDesc ${fields.map(reduceField).mkString(" # ")} }"
+        s"new ${t.map(reduce).getOrElse("")} { ${reduce(self)} ${st.map(t => ": " + reduce(t)).getOrElse("")}" +
+        s"${if (bindings.nonEmpty) bindings.map(reduceField).mkString(" #\n", " #\n  ", "\n") else ""} }"
       }
+      case FieldAccess(obj, f) => s"${reduce(obj)}${f}"
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
       case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
@@ -111,6 +108,8 @@ class PrettyPrint {
           }
         brack(typeformals) + "(" + variantSeq.mkString(" | ") + ")"
       }
+      case IntersectionType(a, b) => reduce(a) + " & " + reduce(b)
+      case UnionType(a, b) => reduce(a) + " | " + reduce(b)
       case _ => "???"
     }
 

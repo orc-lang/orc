@@ -27,6 +27,13 @@ case class AggregateDef(clauses: List[Clause],
 
   import translator._
 
+  def tpe(implicit ctx: TranslatorContext): Option[named.Type] = {
+    // TODO: Make this type depend on if this is a def or a site.
+    for (tfs <- typeformals; ats <- argtypes; rt <- returntype) yield {
+      convertType(LambdaType(tfs, ats, rt))
+    }
+  }
+
   def unify[A](x: Option[A], y: Option[A], reportCollision: => Unit): Option[A] =
     (x, y) match {
       case (None, None) => None
