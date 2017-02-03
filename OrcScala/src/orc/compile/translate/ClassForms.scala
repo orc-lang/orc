@@ -378,8 +378,7 @@ case class ClassForms(val translator: Translator) {
   }
 
   def makePartialObject(self: BoundVar): New = {
-    // TODO: TYPECHECKER: Add empty structural type to this.
-    New(new BoundVar, None, Map(), None)
+    New(new BoundVar, Some(StructuralType(Map())), Map(), Some(StructuralType(Map())))
   }
 
   /** Generate the partial constructor for a class using the context.
@@ -508,19 +507,25 @@ case class ClassForms(val translator: Translator) {
   }
 
   def makeClassDeclarations(clss: Set[ClassBasicInfo])(bodyFunc: TranslatorContext => Expression)(implicit ctx: TranslatorContext): Expression = {
+    // This intermediate context is needed since isAbstract requires a context with all superclasses of the class we want to check.
     val tmpCtx = clss.foldLeft(ctx)((c, cls) => c.copy(classContext = c.classContext + (cls.name -> cls)))
     val newCtx = clss.foldLeft(ctx)((newCtx, cls) => {
+      val newClassContext = newCtx.classContext + (cls.name -> cls)
+      val newTypeContext = newCtx.typecontext + (cls.name -> cls.typeName)
       if (isAbstract(cls)(tmpCtx)) {
-        newCtx.copy(boundDefs = newCtx.boundDefs + cls.partialConstructorName, classContext = newCtx.classContext + (cls.name -> cls))
+        newCtx.copy(boundDefs = newCtx.boundDefs + cls.partialConstructorName, classContext = newClassContext, typecontext = newTypeContext)
       } else {
-        newCtx.copy(boundDefs = newCtx.boundDefs + cls.constructorName + cls.partialConstructorName, classContext = newCtx.classContext + (cls.name -> cls))
+        newCtx.copy(boundDefs = newCtx.boundDefs + cls.constructorName + cls.partialConstructorName, classContext = newClassContext, typecontext = newTypeContext)
       }
     })
 
     {
       implicit val ctx = newCtx
       val defs = clss.toList.flatMap(generateConstructor(_)) ++ clss.toList.map(generatePartialConstructor(_))
-      DeclareCallables(defs, bodyFunc(ctx))
+      val core: Expression = DeclareCallables(defs, bodyFunc(ctx))
+      clss.foldRight(core) { (cls, e) =>
+        DeclareType(cls.typeName, Top(), e)
+      }
     }
   }
 
@@ -530,7 +535,7 @@ case class ClassForms(val translator: Translator) {
     */
   def makeNew(e: ext.ClassExpression)(implicit ctx: TranslatorContext): Expression = {
     val (cls, clss) = makeClassInfo(e)
-    makeClassDeclarations(clss + cls) { ctx =>
+    makeClassDeclarations(clss ++ (if(ctx.classContext.contains(cls.name)) List() else List(cls))) { ctx =>
       if (ctx.boundDefs.contains(cls.constructorName)) {
         Call(cls.constructorName, List(), Some(List()))
       } else {

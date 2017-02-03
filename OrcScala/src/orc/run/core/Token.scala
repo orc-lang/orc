@@ -86,11 +86,11 @@ class Token protected (
 
   /*
    * On creation: Add a token to its group if it is not halted or killed.
-   * 
-   * All initialization that must occur before run() executes must happen 
-   * before this point, because once the token is added to a group it may 
+   *
+   * All initialization that must occur before run() executes must happen
+   * before this point, because once the token is added to a group it may
    * run at any time.
-   * 
+   *
    */
   state match {
     case Publishing(_) | Live | Blocked(_) | Suspending(_) | Suspended(_) => group.add(this)
@@ -318,30 +318,11 @@ class Token protected (
       case Constant(v) => BoundValue(v)
       case vr @ Variable(n) => {
         val v = env(n)
-        assert(v match {
-          case BoundValue(_: OrcClass) | BoundReadable(_: OrcClass) => false
-          case _ => true
-        }, s"Found class when looking up normal variable: $vr (${vr.sourceTextRange}) => $v:\n${envToString()}")
         v
       }
       case UnboundVariable(x) =>
         Logger.severe(s"Stopping token due to unbound variable $a at ${a.sourceTextRange}")
         BoundStop
-    }
-  }
-  protected def lookupClass(a: Classvar): OrcClass = {
-    a match {
-      case vr @ Classvar(i) =>
-        Logger.finer(s"Looking up class $i (${vr.optionalVariableName})")
-        env(i) match {
-          case BoundValue(c: OrcClass) =>
-            Logger.finer(s"Found resolved class ${vr.optionalVariableName} ${c}")
-            c
-          case BoundReadable(c: OrcClass) =>
-            Logger.finer(s"Found unresolved class ${vr.optionalVariableName} ${c}")
-            c
-          case v => throw new AssertionError(s"Found non-class when looking up class variable: $vr (${vr.sourceTextRange}) => $v:\n${envToString()}")
-        }
     }
   }
 
@@ -548,53 +529,41 @@ class Token protected (
     }
   }
 
-  def newObject(os: List[Classvar]) {
+  def newObject(bindings: Map[Field, Expression]) {
     val self = new OrcObject()
 
-    val classes = os.map(lookupClass)
+    Logger.fine(s"Instantiating class: ${bindings}")
+    val objenv = BoundValue(self) :: env
 
-    val selfFields = scala.collection.mutable.Map[Field, Binding]()
+    val fields = for ((name, expr) <- bindings) yield {
+      expr match {
+        // NOTE: The first two cases are optimizations to avoid creating a group and a token for simple fields.
+        case Constant(v) => {
+          (name, BoundValue(v))
+        }
+        case Variable(n) => {
+          (name, objenv(n))
+        }
 
-    // Build the initial super instance. This represents the empty Object instance.
-    var superObj = new OrcObject(Map())
-    // superObj is replaced at the end of the loop each time through to contain the members that have been collected so far.
+        case _ => {
+          // We use a GraftGroup since it is exactly what we need.
+          // The difference between this and graft is where the future goes.
+          val pg = new GraftGroup(group)
 
-    for (cls <- classes.reverse) {
-      Logger.fine(s"Instantiating class: ${cls.definition}")
-      val objenv = BoundValue(superObj) :: BoundValue(self) :: cls.context
+          // A binding frame is not needed since publishing will trigger the token to halt.
+          val t = new Token(expr,
+            env = objenv,
+            group = pg,
+            stack = GroupFrame(EmptyFrame),
+            clock = clock)
+          runtime.stage(t)
 
-      val fields = for ((name, expr) <- cls.definition.bindings) yield {
-        expr match {
-          // NOTE: The first two cases are optimizations to avoid creating a group and a token for simple fields.
-          case Constant(v) => {
-            (name, BoundValue(v))
-          }
-          case Variable(n) => {
-            (name, objenv(n))
-          }
-          case _ => {
-            // We use a GraftGroup since it is exactly what we need.
-            // The difference between this and graft is where the future goes.
-            val pg = new GraftGroup(group)
-
-            // A binding frame is not needed since publishing will trigger the token to halt.
-            val t = new Token(expr,
-              env = objenv,
-              group = pg,
-              stack = GroupFrame(EmptyFrame),
-              clock = clock)
-            runtime.stage(t)
-
-            (name, pg.binding)
-          }
+          (name, pg.binding)
         }
       }
-      Logger.fine(s"Setup binding for fields: $fields")
-      selfFields ++= fields
-      superObj = new OrcObject(selfFields.toMap)
     }
-
-    self.setFields(selfFields.toMap)
+    Logger.fine(s"Setup binding for fields: $fields")
+    self.setFields(fields.toMap)
 
     publish(Some(self))
   }
@@ -605,7 +574,7 @@ class Token protected (
 
   def run() {
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()
-    //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state) 
+    //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state)
     try {
       if (group.isKilled()) { kill() }
       state match {
@@ -685,8 +654,8 @@ class Token protected (
         runtime.stage(l)
       }
 
-      case New(os) => {
-        newObject(os)
+      case New(_, bindings, _) => {
+        newObject(bindings)
       }
 
       case FieldAccess(o, f) => {
@@ -710,22 +679,6 @@ class Token protected (
 
       case VtimeZone(timeOrdering, body) => {
         resolve(lookup(timeOrdering)) { newVclock(_, body) }
-      }
-
-      case DeclareClasses(openvars, clss, body) => {
-        /* Closure compaction: Bind only the free variables
-         * of the defs in this lexical context.
-         */
-        val lexicalContext = openvars map { i: Int => env(i) }
-
-        val classGroup = new ClassGroup(clss, lexicalContext, runtime)
-        runtime.stage(classGroup)
-
-        for (c <- classGroup.members) {
-          bind(BoundReadable(c))
-        }
-        move(body)
-        runtime.stage(this)
       }
 
       case decldefs @ DeclareCallables(openvars, decls, body) => {

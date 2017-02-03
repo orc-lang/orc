@@ -15,5 +15,5 @@ class Z extends K3 with K2 with K1 { val order = "Z" : super.order }
 
 {-
 OUTPUT:
-[Z, K1, K2, K3, D, A, B, C, E, O]
+["Z", "K1", "K2", "K3", "D", "A", "B", "C", "E", "O"]
 -}

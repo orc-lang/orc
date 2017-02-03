@@ -30,7 +30,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Sequence(left, x, right) => List(left, x, right)
     case Graft(x, value, body) => List(x, value, body)
     case Trim(f) => List(f)
-    case left ow right => List(left, right)
+    case Otherwise(left, right) => List(left, right)
     case New(self, stpe, ds, tpe) => stpe ++ ds.values.toList ++ tpe
     case FieldAccess(o, f) => List(o)
     case DeclareCallables(defs, body) => defs ::: List(body)
@@ -51,6 +51,8 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     }
     case IntersectionType(a, b) => List(a, b)
     case UnionType(a, b) => List(a, b)
+    case StructuralType(ms) => ms.values.toList
+    case NominalType(a) => List(a)
     case Constant(_) | UnboundVar(_) | Hole(_, _) | Stop() => Nil
     case Bot() | ClassType(_) | ImportedType(_) | Top() | UnboundTypevar(_) => Nil
     case _: BoundVar | _: BoundTypevar => Nil
@@ -92,6 +94,7 @@ sealed case class Otherwise(left: Expression, right: Expression) extends Express
 sealed case class DeclareCallables(defs: List[Callable], body: Expression) extends Expression {
   // The callables should contain all Sites or all Defs and not a mix.
 }
+// TODO: TYPECHECKER: Do we need mutually recursive types? Probably.
 sealed case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 sealed case class HasType(body: Expression, expectedType: Type) extends Expression
@@ -109,14 +112,27 @@ sealed case class VtimeZone(timeOrder: Argument, body: Expression) extends Expre
 
 /** Construct a new object
   *
-  * Objects have a self variable and structure. The provided type allows the association
-  * between the object and the classes to be visible to the type checker.
+  * Objects have a self variable and structure. objType allows the association
+  * between the object and the classes to be visible to the type checker. selfType
+  * provides a type for the self reference.
+  *
+  * The bindings must result in an object with a structural type that is a subtype of
+  * objType. The typechecker can enforce this.
   *
   * The translator will already have generated the proper bindings including implementing
   * inheritence correctly.
+  *
+  * Note with respect to DOT encoding:
+  *
+  * The objType parameter allows New to instantiate a nominal type. This is intentional.
+  * DOT only supports nominal types when viewing a module from the outside and the nominal
+  * hierarchy cannot be extended from outside a module. This mean standard OO open nominal
+  * heirarchies are impossible in DOT.
+  *
+  * A global encoding would be possible by lifting each new operation into a global module
+  * which also encodes the nominal types. See NominalType.
   */
 sealed case class New(self: BoundVar, selfType: Option[Type], bindings: Map[values.Field, Expression], objType: Option[Type]) extends Expression
-// TODO: This could eventually include a self type annotation.
 
 /** Read the value from a field future.
   *
@@ -246,6 +262,28 @@ sealed case class VariantType(self: BoundTypevar, typeformals: List[BoundTypevar
 sealed case class IntersectionType(a: Type, b: Type) extends Type
 sealed case class UnionType(a: Type, b: Type) extends Type
 
+/** An explicitly nominal type which is a subtype of another type.
+  *
+  * Each instance of "NominalType(T)" is a distinct type.
+  *
+  * Note with respect to DOT encoding:
+  *
+  * This does not have a local encoding into DOT, but a global encoding is
+  * possible. Each instance of nominal(T) in the program is lifted into a
+  * single module in which all the nominal relationships can be encoded.
+  * This single module is conceptually in scope for the entire program, but
+  * is never realized in this compiler.
+  *
+  * See New.
+  */
+sealed case class NominalType(supertype: Type) extends Type
+
+/** A structural object type
+  *
+  * This type is equivalent to an intersection of method member types in DOT.
+  */
+sealed case class StructuralType(members: Map[values.Field, Type]) extends Type
+
 sealed trait Typevar extends Type with hasOptionalVariableName
 sealed case class UnboundTypevar(name: String) extends Typevar {
   optionalVariableName = Some(name)
@@ -263,8 +301,8 @@ object Conversions {
   /** Given (e1, ... , en) and f, return:
     *
     * f(x1, ... , xn) <x1< e1
-    *          ...
-    *           <xn< en
+    *        ...
+    *         <xn< en
     *
     * As an optimization, if any e is already an argument, no << binder is generated for it.
     */

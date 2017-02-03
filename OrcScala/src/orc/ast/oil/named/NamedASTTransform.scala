@@ -93,11 +93,11 @@ trait NamedASTTransform extends NamedASTFunction {
           val newtypeargs = typeargs map { _ map { recurse(_) } }
           Call(newtarget, newargs, newtypeargs)
         }
-        case left || right => recurse(left) || recurse(right)
-        case left > x > right => recurse(left) > x > transform(right, x :: context, typecontext)
+        case Parallel(left, right) => recurse(left) || recurse(right)
+        case Sequence(left, x, right) => recurse(left) > x > transform(right, x :: context, typecontext)
         case Graft(x, value, body) => Graft(x, recurse(value), transform(body, x :: context, typecontext))
         case Trim(f) => Trim(recurse(f))
-        case left ow right => recurse(left) ow recurse(right)
+        case Otherwise(left, right) => recurse(left) ow recurse(right)
         case New(self, st, bindings, t) => New(self, st.map(transform(_, typecontext)), bindings.mapValues(transform(_, self :: context, typecontext)), t.map(transform(_, typecontext)))
         case FieldAccess(o, f) => FieldAccess(recurse(o), f)
         case DeclareCallables(defs, body) => {
@@ -158,6 +158,8 @@ trait NamedASTTransform extends NamedASTFunction {
         }
         case IntersectionType(a, b) => IntersectionType(recurse(a), recurse(b))
         case UnionType(a, b) => UnionType(recurse(a), recurse(b))
+        case StructuralType(members) => StructuralType(members.mapValues(recurse))
+        case NominalType(a) => NominalType(recurse(a))
       }
     }
   }

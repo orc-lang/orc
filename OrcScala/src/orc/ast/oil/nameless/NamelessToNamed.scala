@@ -41,7 +41,15 @@ trait NamelessToNamed {
         named.Graft(x, recurse(value), namelessToNamed(body, x :: context, typecontext))
       }
       case Trim(f) => named.Trim(recurse(f))
-      case left ow right => named.Otherwise(recurse(left), recurse(right))
+      case Otherwise(left, right) => named.Otherwise(recurse(left), recurse(right))
+      case New(st, bindings, t) => {
+        // FIXME: this probably looses the self name information.
+        val self = new BoundVar()
+        val defcontext = self :: context
+        val newbindings = bindings.mapValues(namelessToNamed(_, defcontext, typecontext))
+        named.New(self, st.map(namelessToNamed(_, typecontext)), newbindings, t.map(namelessToNamed(_, typecontext)))
+      }
+      case FieldAccess(obj, field) => named.FieldAccess(namelessToNamed(obj, context), field)
       case DeclareCallables(openvars, defs, body) => {
         val opennames = openvars map context
         val defnames = defs map { _ => new BoundVar() }
@@ -121,6 +129,10 @@ trait NamelessToNamed {
           }
         named.VariantType(self, typeformals, newVariants)
       }
+      case IntersectionType(a, b) => named.IntersectionType(toType(a), toType(b))
+      case UnionType(a, b) => named.UnionType(toType(a), toType(b))
+      case StructuralType(members) => named.StructuralType(members.mapValues(toType))
+      case NominalType(a) => named.NominalType(toType(a))
     }
   }
 

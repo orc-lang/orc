@@ -33,8 +33,8 @@ sealed abstract class NamelessAST extends AST {
     case Sequence(left, right) => List(left, right)
     case Graft(value, body) => List(value, body)
     case Trim(f) => List(f)
-    case left ow right => List(left, right)
-    case New(f) => f
+    case Otherwise(left, right) => List(left, right)
+    case New(st, bindings, t) => st.toList ++ bindings.values.toList ++ t
     case FieldAccess(o, f) => List(o)
     case DeclareCallables(_, defs, body) => defs ::: List(body)
     case VtimeZone(timeOrder, body) => List(timeOrder, body)
@@ -43,8 +43,6 @@ sealed abstract class NamelessAST extends AST {
     case Callable(_, _, body, argtypes, returntype) => {
       body :: (argtypes.toList.flatten ::: returntype.toList)
     }
-    case Class(bindings) => bindings.values
-    case DeclareClasses(_, clss, body) => clss :+ body
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
     case TypeApplication(_, typeactuals) => typeactuals
@@ -54,9 +52,13 @@ sealed abstract class NamelessAST extends AST {
     case VariantType(_, variants) => {
       for ((_, variant) <- variants; t <- variant) yield t
     }
-    case Constant(_) | UnboundVariable(_) | Variable(_) | Classvar(_) | Hole(_, _) | Stop() => Nil
+    case IntersectionType(a, b) => List(a, b)
+    case UnionType(a, b) => List(a, b)
+    case StructuralType(ms) => ms.values.toList
+    case NominalType(a) => List(a)
+    case Constant(_) | UnboundVariable(_) | Variable(_) | Hole(_, _) | Stop() => Nil
     case Bot() | ClassType(_) | ImportedType(_) | Top() | TypeVar(_) | UnboundTypeVariable(_) => Nil
-    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamelessAST.subtrees")
+    //case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamelessAST.subtrees")
   }
 }
 
@@ -74,15 +76,14 @@ sealed abstract class Expression extends NamelessAST
       case Stop() => Set.empty
       case Constant(_) => Set.empty
       case Variable(i) => Set(i)
-      case UnboundVariable(_) => Set.empty // freevars does not include UnboundVariables 
+      case UnboundVariable(_) => Set.empty // freevars does not include UnboundVariables
       case Call(target, args, typeArgs) => target.freevars ++ (args flatMap { _.freevars })
       case f || g => f.freevars ++ g.freevars
       case f >> g => f.freevars ++ shift(g.freevars, 1)
       case Graft(g, f) => shift(f.freevars, 1) ++ g.freevars
       case Trim(f) => f.freevars
       case f ow g => f.freevars ++ g.freevars
-      case New(s) => s.flatMap(_.freevars).toSet
-      case DeclareClasses(openvars, clss, body) => openvars.toSet ++ shift(body.freevars, clss.length)
+      case New(st, bindings, t) => bindings.values.flatMap(_.freevars).toSet
       case DeclareCallables(openvars, defs, body) => openvars.toSet ++ shift(body.freevars, defs.length)
       case HasType(body, _) => body.freevars
       case DeclareType(_, body) => body.freevars
@@ -154,9 +155,7 @@ sealed case class Graft(value: Expression, body: Expression) extends Expression 
 sealed case class Trim(f: Expression) extends Expression
 sealed case class Otherwise(left: Expression, right: Expression) extends Expression
 
-sealed case class New(linearization: Class.Linearization) extends Expression
-
-sealed case class DeclareClasses(unclosedVars: List[Int], defs: List[Class], body: Expression) extends Expression
+sealed case class New(selfType: Option[Type], bindings: Map[Field, Expression], objType: Option[Type]) extends Expression
 
 // Callable should contain all Sites or all Defs and not a mix.
 sealed case class DeclareCallables(unclosedVars: List[Int], defs: List[Callable], body: Expression) extends Expression
@@ -204,27 +203,11 @@ sealed case class UnboundTypeVariable(name: String) extends Type with hasOptiona
   optionalVariableName = Some(name)
 }
 
-sealed case class Classvar(index: Int)
-  extends NamelessAST
-  with hasFreeVars
-  with hasOptionalVariableName {
-  require(index >= 0)
-  lazy val freevars: Set[Int] = Set(index)
-}
+sealed case class IntersectionType(a: Type, b: Type) extends Type
+sealed case class UnionType(a: Type, b: Type) extends Type
 
-sealed case class Class(
-  val bindings: Map[Field, Expression])
-  extends NamelessAST
-  with hasFreeVars
-  with hasOptionalVariableName {
-  lazy val freevars: Set[Int] = {
-    shift(bindings.values.flatMap(_.freevars).toSet, 1)
-  }
-}
-
-object Class {
-  type Linearization = List[Classvar]
-}
+sealed case class NominalType(supertype: Type) extends Type
+sealed case class StructuralType(members: Map[Field, Type]) extends Type
 
 sealed abstract class Callable extends NamelessAST
   with hasFreeVars

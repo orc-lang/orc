@@ -32,7 +32,12 @@ trait NamedToNameless {
       case Graft(x, value, body) => nameless.Graft(toExp(value), namedToNameless(body, x :: context, typecontext))
       case Trim(f) => nameless.Trim(toExp(f))
       case left ow right => nameless.Otherwise(toExp(left), toExp(right))
-      case New(self, st, bindings, t) => ??? // TODO: Update nameless.New(os.map(namedToNameless(_, context, typecontext)))
+      case New(self, st, bindings, t) => {
+        // TODO: Consider compacting the context since we will.
+        val newContext = self :: context
+        val newBindings = bindings.mapValues(namedToNameless(_, newContext, typecontext))
+        nameless.New(st map toType, newBindings, t map toType)
+      }
       case FieldAccess(obj, field) => nameless.FieldAccess(namedToNameless(obj, context), field)
       case DeclareCallables(defs, body) => {
         val (defcontext, bodycontext, openvars) = compactContext(defs, context)
@@ -126,8 +131,12 @@ trait NamedToNameless {
           }
         nameless.VariantType(typeformals.size, newVariants)
       }
+      case IntersectionType(a, b) => nameless.IntersectionType(toType(a), toType(b))
+      case UnionType(a, b) => nameless.UnionType(toType(a), toType(b))
+      case StructuralType(members) => nameless.StructuralType(members.mapValues(toType))
+      case NominalType(a) => nameless.NominalType(toType(a))
       case UnboundTypevar(s) => nameless.UnboundTypeVariable(s)
-      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Type, List[BoundTypeVar])")
+      //case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Type, List[BoundTypeVar])")
     }
   }
 

@@ -23,7 +23,7 @@ import scala.xml.{ Text, UnprefixedAttribute, Utility, XML }
 import scala.xml.NodeSeq.seqToNodeSeq
 
 import orc.ast.hasOptionalVariableName
-import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, Callable, Class, ClassType, Classvar, Constant, DeclareCallables, DeclareClasses, DeclareType, Def, Expression, FieldAccess, FunctionType, Graft, HasType, Hole, ImportedType, NamelessAST, New, Otherwise, Parallel, RecordType, Sequence, Site, Stop, Top, Trim, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone }
+import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, Callable, ClassType, Constant, DeclareCallables, DeclareType, Def, Expression, FieldAccess, FunctionType, Graft, HasType, Hole, ImportedType, NamelessAST, New, Otherwise, Parallel, RecordType, Sequence, Site, Stop, Top, Trim, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone }
 import orc.compile.parse.{ OrcInputContext, OrcSourcePosition, OrcSourceRange }
 import orc.error.compiletime.SiteResolutionException
 import orc.error.loadtime.OilParsingException
@@ -217,23 +217,26 @@ object OrcXML {
         <fieldaccess name={ f.field }>
           <expr>{ toXML(o) }</expr>
         </fieldaccess>
-      case New(os) =>
+      case New(st, bindings, t) =>
         <new>
-          { os.map(toXML) }
-        </new>
-      case Classvar(i) => <classvar index={ i.toString }/>
-      case Class(bindings) =>
-        <class>
           {
-            for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
+            st match {
+              case Some(t) => <selftype>{ toXML(t) }</selftype>
+              case None => Nil
+            }
           }
-        </class>
-      case DeclareClasses(unclosedVars, clss, body: Expression) =>
-        <declareclasses>
-          <unclosedvars>{ unclosedVars mkString " " }</unclosedvars>
-          <classes>{ clss map toXML }</classes>
-          <body>{ toXML(body) }</body>
-        </declareclasses>
+          {
+            t match {
+              case Some(t) => <objtype>{ toXML(t) }</objtype>
+              case None => Nil
+            }
+          }
+          <bindings>
+            {
+              for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
+            }
+          </bindings>
+        </new>
       case DeclareCallables(unclosedVars, defs, body: Expression) =>
         <declaredefs>
           <unclosedvars>{ unclosedVars mkString " " }</unclosedvars>
@@ -446,19 +449,21 @@ object OrcXML {
         Otherwise(fromXML(left), fromXML(right))
       case <fieldaccess><expr>{ obj }</expr></fieldaccess> =>
         FieldAccess(argumentFromXML(obj), Field((xml \ "@name").text))
-      case <new>{ os @ _* }</new> =>
-        New(os.map(objectStructureFromXML).toList)
-      case <declareclasses><unclosedvars>{ uvars @ _* }</unclosedvars><classes>{ clss @ _* }</classes><body>{ body }</body></declareclasses> => {
-        val t1 = {
-          uvars.text.split(" ").toList match {
-            case List("") => Nil
-            case xs => xs map { _.toInt }
-          }
+      case <new><bindings>{ bindingsXml @ _* }</bindings>{ rest @ _* }</new> =>
+        val selfType = rest \ "selftype" match {
+          case <argtypes>{ st }</argtypes> => Some(typeFromXML(st))
+          case _ => None
         }
-        val t2 = for (d <- clss) yield classFromXML(d)
-        val t3 = fromXML(body)
-        DeclareClasses(t1, t2.toList, t3)
-      }
+        val objType = rest \ "objtype" match {
+          case <argtypes>{ st }</argtypes> => Some(typeFromXML(st))
+          case _ => None
+        }
+        val bindings = for (b <- bindingsXml) yield {
+          val <binding><expr>{e}</expr></binding> = b
+          val name = (b \ "@name").text
+          (Field(name), fromXML(e))
+        }
+        New(selfType, bindings.toMap, objType)
       case <declaredefs><unclosedvars>{ uvars @ _* }</unclosedvars><defs>{ defs @ _* }</defs><body>{ body }</body></declaredefs> => {
         val t1 = {
           uvars.text.split(" ").toList match {
@@ -511,27 +516,6 @@ object OrcXML {
       case <constant>{ c }</constant> => Constant(anyRefFromXML(c))
       case x @ <variable/> => Variable((x \ "@index").text.toInt)
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an Orc argument")
-    }
-  }
-
-  @throws(classOf[OilParsingException])
-  def objectStructureFromXML(xml: scala.xml.Node): Classvar = {
-    xml --> {
-      case <classvar/> => Classvar((xml \ "@index").text.toInt)
-      case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an ObjectStructure")
-    }
-  }
-
-  @throws(classOf[OilParsingException])
-  def classFromXML(xml: scala.xml.Node): Class = {
-    xml --> {
-      case <class>{ bindings @ _* }</class> => {
-        val bs = for (x @ <binding><expr>{ xmle }</expr></binding> <- bindings) yield {
-          (Field((x \ "@name").text), fromXML(xmle))
-        }
-        Class(bs.toMap)
-      }
-      case other => throw new OilParsingException("XML fragment " + other + " could not be converted to a Class")
     }
   }
 
