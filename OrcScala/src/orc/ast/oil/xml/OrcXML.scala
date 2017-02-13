@@ -437,18 +437,39 @@ object OrcXML {
     * PlaceholderPositions are assigned a synthetic (fake) offset for comparison purposes.
     * PlaceholderPositions do not have any line content.
     */
-  class PlaceholderPosition(filename: String, override val line: Int, override val column: Int) extends OrcSourcePosition(new PlaceholderResource(filename), (line - 1) * 4096 + (column - 1)) {
+  class PlaceholderPosition(filename: String, override val line: Int, override val column: Int) extends OrcSourcePosition(new PlaceholderResource(filename), (line - 1) * 4096 + (column - 1)) with Serializable {
     override protected def getLineCol() = (line, column)
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
+    
+    @throws(classOf[java.io.ObjectStreamException])
+    protected def writeReplace(): AnyRef = {
+        new PlaceholderPositionMarshalingReplacement(resource.descr, line, column)
+    }
+  }
+
+  protected case class PlaceholderPositionMarshalingReplacement(val filename: String, val line: Int, val column: Int) {
+    @throws(classOf[java.io.ObjectStreamException])
+    protected def readResolve(): AnyRef = new PlaceholderPosition(filename, line, column)
   }
 
   /** An OrcSourceRange made of two PlaceholderPositions. */
   class PlaceholderSourceRange(filenameStart: String, lineStart: Int, columnStart: Int, filenameEnd: String, lineEnd: Int, columnEnd: Int)
-    extends OrcSourceRange(
-      (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))) {
+      extends OrcSourceRange(
+        (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))
+      ) with Serializable {
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
+    
+    @throws(classOf[java.io.ObjectStreamException])
+    protected def writeReplace(): AnyRef = {
+        new PlaceholderSourceRangeMarshalingReplacement(start.resource.descr, start.line, start.column, end.resource.descr, end.line, end.column)
+    }
+  }
+
+  protected case class PlaceholderSourceRangeMarshalingReplacement(filenameStart: String, lineStart: Int, columnStart: Int, filenameEnd: String, lineEnd: Int, columnEnd: Int) {
+    @throws(classOf[java.io.ObjectStreamException])
+    protected def readResolve(): AnyRef = new PlaceholderSourceRange(filenameStart, lineStart, columnStart, filenameEnd, lineEnd, columnEnd)
   }
 
   @throws(classOf[OilParsingException])
