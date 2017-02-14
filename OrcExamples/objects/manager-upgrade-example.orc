@@ -15,19 +15,19 @@ class Proc extends Supervisable {
   val _ = Println("Starting up")
 }
 
-class def Proc1() :: Proc extends Proc {
+class Proc1 extends Proc {
   val _ = repeat({ Rwait(400) >> Ift(running?) >> Println("Ping") })
   val _ = shuttingDownSemaphore.acquire() >> seqMap(ignore({ Rwait(400) >> Println("Pong") }), [1, 2, 3])
 }
-class def Proc2() :: Proc extends Proc {
+class Proc2 extends Proc {
   val _ = repeat({ Rwait(400) >> Ift(running?) >> Println("Ping!") })
   val _ = shuttingDownSemaphore.acquire() >> seqMap(ignore({ Rwait(400) >> Println("Pong!") }), [1])
 }
 
-val m = ManagerUpgradable(Proc1)
+val m = ManagerUpgradable({ new Proc1 })
 m.start() >>
 Rwait(1000) >>
-m.upgrade(Proc2, 1000) >>
+m.upgrade({ new Proc2 }, 1000) >>
 Rwait(1000) >>
 m.shutdown(1000) >> stop
 --}

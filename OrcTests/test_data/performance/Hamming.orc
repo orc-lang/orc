@@ -23,7 +23,10 @@ def Trans[A, B](f :: lambda(A) :: B, in :: Getter[A], out :: Putter[B]) =
   repeat({ out(f(in())) }) >> stop
 
 -- TODO: Use actual type parameters when they work here.
-class def UniqueMerge[A](is :: List[Getter[Top]], o :: Putter[Top]) :: UniqueMerge { 
+class UniqueMerge { 
+  val is :: List[Getter[Top]]
+  val o :: Putter[Top]
+
   val tops = Array[Top](length(is))
   
   def fillTops() =
@@ -48,6 +51,9 @@ class def UniqueMerge[A](is :: List[Getter[Top]], o :: Putter[Top]) :: UniqueMer
     getMin() >x> o(x)
   })
 }
+
+def UniqueMerge[A](is_ :: List[Getter[Top]], o_ :: Putter[Top]) :: UniqueMerge = 
+  new UniqueMerge { val is = is_ # val o = o_ }
 
 def collectN[A](Integer, lambda() :: A) :: List[A]
 def collectN(n, f) = 

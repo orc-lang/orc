@@ -8,7 +8,11 @@ def rotateList(x : xs) = append(xs, [x])
 val chans = makeChannels[Integer](n)
 
 -- TODO: Give real types.
-class def Connector(x :: Top, y :: Top, n :: Integer) :: Connector {
+class Connector {
+  val x :: Top
+  val y :: Top
+  val n :: Integer
+  
   val counter = Counter(n)
   
   def wait() = counter.onZero()
@@ -17,6 +21,7 @@ class def Connector(x :: Top, y :: Top, n :: Integer) :: Connector {
   val _ = repeat(x.get) >v> y.put(v+1) >> counter.dec()
   val _ = counter.onZero() >> y.close() >> Println("Connector Done")
 }
+def Connector(x_ :: Top, y_ :: Top, n_ :: Integer) = new Connector { val x = x_ # val y = y_ # val n = n_ }
 
 timeIt({
   each(zip(chans, rotateList(chans))) >(x, y)> Connector(x, y, 2500) -->c> c.wait()

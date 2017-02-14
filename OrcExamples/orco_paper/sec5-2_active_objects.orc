@@ -4,7 +4,7 @@
  
 import class LinkedBlockingQueue = "java.util.concurrent.LinkedBlockingQueue"
 
-class def SequentialExecutor() {
+class SequentialExecutor {
   val queue = LinkedBlockingQueue()
   
   def schedule(f) = queue.put(f)
@@ -16,7 +16,7 @@ class def SequentialExecutor() {
 }
 
 class ActiveObjectBase {
-  val exec = SequentialExecutor()
+  val exec = new SequentialExecutor
 
   def scheduleMethod(f) =
     val c = Channel()
@@ -26,7 +26,7 @@ class ActiveObjectBase {
 }
 -- A variant of ActiveObjectBase with multiple executors would allow methods to be grouped based on conflicts.
 
-class def ActiveObject() extends ActiveObjectBase {
+class ActiveObject extends ActiveObjectBase {
   val v = Ref(0)
   def read() = v.read()
   def incr(x) = scheduleMethod({ v.write(v.read() + x) })
@@ -34,7 +34,7 @@ class def ActiveObject() extends ActiveObjectBase {
 
 
 {|
-val o = ActiveObject()
+val o = new ActiveObject
 val N = 100
 
 upto(N) >x> o.incr(x) >> stop |

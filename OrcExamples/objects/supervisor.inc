@@ -55,7 +55,7 @@ class MonitorLock {
 }
 
 import class JavaConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
-class def Map() :: Map {
+class Map {
   val impl = JavaConcurrentHashMap()
   site get(k) = impl.get(k) >v> Ift(v /= null) >> v
   val apply = get
@@ -67,7 +67,7 @@ class def Map() :: Map {
 
   
  
-class def Notifier() :: Notifier extends MonitorLock {
+class Notifier extends MonitorLock {
   -- A list of output ("listener") channels
   val listeners = Ref[List[Semaphore]]([])
   
@@ -97,7 +97,7 @@ class def Notifier() :: Notifier extends MonitorLock {
 }
 
 -- TODO: This is actually a clearable cell not a clearable ref.
-class def ClearableRef() :: ClearableRef {
+class ClearableRef {
   val ref = Ref(Cell())
   --val setNotifier = Notifier()
   val clearLock = Semaphore(1)
@@ -191,9 +191,9 @@ class Manager extends MonitorLock {
   def readD() :: T = current.readD()
   def isRunning() :: Boolean = readD() >> true ; false
   
-  val current = ClearableRef()
-  val haltedNotifier = Notifier()
-  val killSwitch = Notifier()
+  val current = new ClearableRef
+  val haltedNotifier = new Notifier
+  val killSwitch = new Notifier
   
   -- Return the currently running instance starting one if needed
   site start() :: T = synchronized({
@@ -221,9 +221,11 @@ class Manager extends MonitorLock {
   
   def halted() = current.clear() >> haltedNotifier.notify()
 }
-def Manager(c :: lambda() :: T) :: Manager = new Manager with {val constructor = c}
+def Manager(c :: lambda() :: T) :: Manager = new Manager {val constructor = c}
 
-class def ManagerUpgradable(initialConstructor :: lambda() :: T) :: ManagerUpgradable extends Manager {
+class ManagerUpgradable extends Manager {
+  val initialConstructor :: lambda() :: T
+
   val constructorRef = Ref(initialConstructor)
   
   def constructor() = constructorRef.read()()
@@ -232,6 +234,7 @@ class def ManagerUpgradable(initialConstructor :: lambda() :: T) :: ManagerUpgra
     synchronized({ constructorRef := newConstructor }) >>
     (shutdown(timeout) ; signal) >> start() >> signal
 }
+def ManagerUpgradable(c :: lambda() :: T) = new ManagerUpgradable { val initialConstructor = c }
 
 
 class Supervisor extends Supervisable {
@@ -265,7 +268,7 @@ class SupervisorBase extends Supervisor {
  
   site monitorUsefulness() = shutdownComplete.read() >> true
   
-  val managerMap = Map[ManagementInterface, Cell[Semaphore]]()
+  val managerMap = new Map -- TODO: TYPING: [ManagementInterface, Cell[Semaphore]]
   val managerChannel = Channel[ManagementInterface]()
   val managerMapLock = Semaphore(1)
   
@@ -315,11 +318,13 @@ class AllForOneSupervisor extends SupervisorBase {
 	m.haltedNotifier.newListener() >l> (signal |
 	repeat(l.acquire) >> restartNotifier.notify() >> stop)
   
-  val restartNotifier = Notifier()
+  val restartNotifier = new Notifier
   val _ = {| repeat({ restartNotifier.wait() >> shutdownAll() >> startAll() }) >> stop | finalShutdownSwitch.read() |}
 }
 
-class def FrequencyCounter(period :: Integer) :: FrequencyCounter {
+class FrequencyCounter {
+  val period :: Integer
+
   val times = Ref[List[Integer]]([])
   val lock = Semaphore(1)
   site mark() = withLock(lock, {
@@ -331,12 +336,13 @@ class def FrequencyCounter(period :: Integer) :: FrequencyCounter {
     length(times?)
   })
 }
+def FrequencyCounter(period_ :: Integer) = new FrequencyCounter { val period = period_ } 
 
 class LimitStarts extends Supervisor {
   val startsLimit :: Integer
   val timePeriod :: Integer
 
-  val startCounterMap = Map[ManagementInterface, FrequencyCounter]()
+  val startCounterMap = new Map -- TODO: TYPING: [ManagementInterface, FrequencyCounter]
   site add(m) = startCounterMap.put(m, FrequencyCounter(timePeriod)) >> super.add(m)
 
   def start(m) = 

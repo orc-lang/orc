@@ -12,7 +12,9 @@ from channel out. The manager process collects n signals from in, and
 then writes n signals on out.
 -}
 
-class def BarrierSync(n :: Integer) :: BarrierSync {
+class BarrierSync {
+  val n :: Integer
+
   val in =  Semaphore(0)
   val out = Semaphore(0)
 
@@ -28,6 +30,7 @@ class def BarrierSync(n :: Integer) :: BarrierSync {
 
   val _ = manager()
 }
+def BarrierSync(n_ :: Integer) = new BarrierSync { val n = n_ }
 
 val barrier = BarrierSync(3).go
 

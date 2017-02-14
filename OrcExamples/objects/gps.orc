@@ -14,11 +14,13 @@ class UI {
 	def updatePosition(s :: String) :: Signal = stop
 }
 
-class def Route(steps :: List[Top]) :: Route {
+class Route {
+	val steps :: List[Top]
+	
 	def nextManeuver(p) = (steps, p)
 }
 
-def computeRoute(s, d) = Rwait(250) >> Route([s, d])
+def computeRoute(s, d) = Rwait(250) >> new Route { val steps = [s, d] }
 
 class Navigation {
 	val gps :: GPS

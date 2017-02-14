@@ -5,7 +5,7 @@
 
 include "supervisor.inc"
 
-class def Proc() :: Proc extends Supervisable {
+class Proc extends Supervisable {
   val running = Ref(true)
   val shuttingDownSemaphore = Semaphore(0)
   def monitorUsefulness() = false
@@ -16,14 +16,14 @@ class def Proc() :: Proc extends Supervisable {
   val _ = shuttingDownSemaphore.acquire() >> seqMap(ignore({ Rwait(400) >> Println("Pong") }), [1, 2, 3])
 }
 
-val m = Manager(Proc)
+val m = Manager({ new Proc })
 m.start() >>
 Rwait(1000) >>
 (m.shutdown(1000) | Rwait(900) >> Println("Not halted yet") >> stop) >>
 Println("Test 1 done") >>
 m.start() >>
 Rwait(1000) >>
-(m.shutdown(3000) | Rwait(1300) >> Println("Just halted (If this is before 'Test 2 done' then shutdown is not publishing when shutdown is complete naturally)") >> stop) >>
+(m.shutdown(3000) | Rwait(1300) >> Println("Just halted (If this is before 'Test 2 done' then shutdown is not publishing when shutdown is completed naturally)") >> stop) >>
 Println("Test 2 done") >>
 m.start() >>
 Rwait(1000) >>
@@ -44,7 +44,7 @@ Pong
 Pong
 Pong
 Test 2 done
-Just halted (If this is before 'Test 2 done' then shutdown is not publishing when shutdown is complete naturally)
+Just halted (If this is before 'Test 2 done' then shutdown is not publishing when shutdown is completed naturally)
 Ping
 Ping
 Test 3 done

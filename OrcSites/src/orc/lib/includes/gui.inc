@@ -38,7 +38,7 @@ def runOnKill(callback :: lambda() :: Top) =
   site check() :: Top = Block()
   runOnKillHandler(check, callback)
   
-class def FanoutChannel() :: FanoutChannel {
+class FanoutChannel {
   -- A lock to protect internal data structure
   val lock = Semaphore(1)
   -- A list of output ("listener") channels
@@ -65,6 +65,7 @@ class def FanoutChannel() :: FanoutChannel {
     val c = newListener()
     repeat(c.get)
 }
+def FanoutChannel() = new FanoutChannel
   
 def onEDTProfile(f :: lambda() :: Top) = SwingUtilities.invokeLater(CallableToRunnable({ Rtime() >t> f() >> Println("onEDT for " + (Rtime() - t) + " with " + f) }))
 def onEDT(f :: lambda() :: Top) = SwingUtilities.invokeLater(CallableToRunnable(f))
@@ -85,7 +86,9 @@ class Component {
   })
 }
 
-class def Frame(children :: List[Component]) :: Frame extends Component {
+class Frame extends Component {
+  val children :: List[Component]
+
   val impl = onEDTBlock({ JFrame() })
   val listener = WindowListenerAdapter(this)
   val _ = children >> impl -- First block on the fields we need and then take the "EDT lock"
@@ -113,8 +116,11 @@ class def Frame(children :: List[Component]) :: Frame extends Component {
   
   site onClosing() = closingChannel.listen()
 }
+def Frame(children_ :: List[Component]) = new Frame { val children = children_ } 
 
-class def Button(text :: String) :: Button extends Component {
+class Button extends Component {
+  val text :: String
+
   val impl = onEDTBlock({ JButton() })
   val _ = setText(text)
   
@@ -129,8 +135,9 @@ class def Button(text :: String) :: Button extends Component {
   
   site onAction() = actionChannel.listen()
 }
+def Button(text_ :: String) = new Button { val text = text_ }
 
-class def TextField() :: TextField extends Component {
+class TextField extends Component {
   val impl = onEDTBlock({ JTextField() })
   
   site setText(s :: String) = impl >> onEDT({
@@ -147,8 +154,9 @@ class def TextField() :: TextField extends Component {
   
   site onAction() = actionChannel.listen()
 }
+def TextField() = new TextField
 
-class def ListComponent() :: ListComponent extends Component {
+class ListComponent extends Component {
   val (impl, model) = onEDTBlock({
     val model = ListModelImpl() #
     (JList(model), model)
@@ -170,8 +178,12 @@ class def ListComponent() :: ListComponent extends Component {
     model.elementsUpdated()
   })
 }
+def ListComponent() = new ListComponent
 
-class def Canvas(width :: Integer, height :: Integer) :: Canvas extends Component {
+class Canvas extends Component {
+  val width :: Integer
+  val height :: Integer
+
   val impl = onEDTBlock({ CanvasImpl(width, height) })
   val image = impl.image()
   
@@ -200,5 +212,6 @@ class def Canvas(width :: Integer, height :: Integer) :: Canvas extends Componen
   
   site onClicked() = mouseClickedChannel.listen()
 }
+def Canvas(width_ :: Integer, height_ :: Integer) = new Canvas { val width = width_ # val height = height_ } 
 
 -- def closeGUI() = each(arrayToList(Window.getWindows())) >w> Println("Disposing " + w) >> w.dispose()

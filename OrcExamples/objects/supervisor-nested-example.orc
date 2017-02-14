@@ -9,7 +9,9 @@ include "supervisor.inc"
 --def procName(name) = name
 def procName(name) = "Proc"
 
-class def Proc(name :: String) :: Proc extends Supervisable {
+class Proc extends Supervisable {
+  val name :: String
+
   val running = Ref(true)
 
   site monitorUsefulness() = {| repeat({ Rwait(100) >> running? }) >false> true |} 
@@ -26,12 +28,12 @@ class Group extends StaticSupervisor {
   val servers = Manager({ 
     new (StaticSupervisor with OneForOneSupervisor) {
       val killTime = 1000
-      def managerBuilder(i) = Manager({ Proc("server " + i) })
+      def managerBuilder(i) = Manager({ new Proc { val name = "server " + i } })
       val managers = map(managerBuilder, [1, 2])
       val [server1, server2] = managers
     }
   })
-  val db = Manager({ Proc("DB") })
+  val db = Manager({ new Proc { val name = "DB" } })
 }
 
 {|

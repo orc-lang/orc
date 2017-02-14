@@ -577,7 +577,7 @@ TODO: Write OrcDoc for ref manual entry
 
 @implementation
 --}
-class def ObservationSubject[E]() {
+class ObservationSubject {
   -- TODO: Add type parameter to channel [E]
   val observers = Channel[Channel]()
   val observersSem = Semaphore(1)
@@ -629,6 +629,7 @@ class def ObservationSubject[E]() {
     })
   def isClosed() :: Boolean = observers.isClosed()
 }
+def ObservationSubject() = new ObservationSubject
 
 
 {--

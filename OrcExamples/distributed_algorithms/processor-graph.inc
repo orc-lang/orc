@@ -23,7 +23,9 @@ class Sink {
 }
 
 -- Merge messages from many channels
-class def FaninChannel(cs :: List[Source]) :: FaninChannel extends Source {
+class FaninChannel extends Source {
+  val cs :: List[Source]
+
   -- Build an internal channel
   val c = Channel()
   
@@ -34,6 +36,8 @@ class def FaninChannel(cs :: List[Source]) :: FaninChannel extends Source {
   -- Allow users to get values from the output channel
   def get() = c.get()
 }
+
+def FaninChannel(cs_ :: List[Source]) = new FaninChannel { val cs = cs_ }
 
 --- An OO approach using deep mix-ins and the cake pattern for
 --- extensible pattern matching.

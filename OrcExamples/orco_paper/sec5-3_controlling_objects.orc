@@ -15,7 +15,7 @@ def runOnKill(callback :: lambda() :: Top) =
   runOnKillHandler(check, callback)
 
 -- Supervisor library
-class def ClearableRef() {
+class ClearableRef {
   val ref = Ref(Cell())
   val clearLock = Semaphore(1)
   
@@ -40,7 +40,7 @@ class SubordinateRef {
   val constructor
   
   val killSwitch = Semaphore(0)
-  val current = ClearableRef()
+  val current = new ClearableRef
   
   def get() = current.read()
 
@@ -73,7 +73,7 @@ class OneForOneSupervisor extends Supervisor {
 
 -- Simulators
 
-class def DB() {
+class DB {
   val _ = Println("DB Starting")
   val data = Ref[List[Top]]([1,2,3])
 
@@ -81,7 +81,9 @@ class def DB() {
   site get(i) = Println("Getting " + i) >> index(data?, i)
 }
 
-class def Server(db :: DB) {
+class Server {
+  val db :: DB
+
   val _ = Println("Server Starting")
 
   site request(n) = db.get(n)
@@ -94,11 +96,11 @@ class App extends AllForOneSupervisor {
   val webServers = SubordinateRef({
     new OneForOneSupervisor {
       val subordinates = [webSv1, webSv2]
-      val webSv1 = SubordinateRef({ Server(dbServer.get()) })
-      val webSv2 = SubordinateRef({ Server(dbServer.get()) })
+      val webSv1 = SubordinateRef({ new Server { val db = dbServer.get() } })
+      val webSv2 = SubordinateRef({ new Server { val db = dbServer.get() } })
     }
   })
-  val dbServer = SubordinateRef({ DB() })
+  val dbServer = SubordinateRef({ new DB })
 }
 
 {|

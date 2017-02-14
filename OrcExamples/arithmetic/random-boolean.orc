@@ -15,7 +15,7 @@
   It has just one method, main(). It handles one call at a time.
 -}
 
-class def RandomBool() :: RandomBool {
+class RandomBool {
   val s = Semaphore(1) -- to allow only one call to execute.
   def main(Number, Integer) :: (Integer, Boolean)
   def main(f,t) =
@@ -26,7 +26,7 @@ class def RandomBool() :: RandomBool {
     (w,v)
 }
 
-val rb = RandomBool().main
+val rb = (new RandomBool).main
 val (_,x) = rb(0.5,3000)
 val (_,y) = rb(1,3000)
 val z = Ift(x) >> true | Ift(y) >> true | x||y

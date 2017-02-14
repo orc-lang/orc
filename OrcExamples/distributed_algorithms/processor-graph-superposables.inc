@@ -60,7 +60,7 @@ class SnapshotSupport extends ProcessGraph {
   }
 }
 
-class def TimestampingSnapshottingRandomMessager() extends RandomMessager with TimestampSupport with SnapshotSupport with ChannelProcessorGraph {
+class TimestampingSnapshottingRandomMessager extends RandomMessager with TimestampSupport with SnapshotSupport with ChannelProcessorGraph {
   -- Make the types concrete classes that have all the bounds
   type Message = MessageBase
   type Processor = ProcessorBase

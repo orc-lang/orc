@@ -20,19 +20,16 @@ every semaphore that is deallocated must have value 0.
 
 -}
 
-type Pool[A] =
-  {.
-      allocate :: lambda() :: A,
-    deallocate :: lambda(A) :: Signal
-  .}
-
-def Pool[A](f :: (lambda() :: A)) :: Pool[A] =
-  class Pool {
-  val ch = Channel[A]()
+-- TODO: TYPING: Add type member for resource type.
+class Pool {
+  val f
+  
+  val ch = Channel()
   def allocate() = ch.getD() ; f()
-  def deallocate(x :: A) = ch.put(x)
-  }
-  new Pool
+  def deallocate(x) = ch.put(x)
+}
+def Pool[A](f_ :: (lambda() :: A)) :: Pool[A] =
+  new Pool { val f = f_ }
 
 val sempool = Pool[Semaphore]({ Semaphore(1) })
 

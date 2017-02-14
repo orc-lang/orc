@@ -5,7 +5,12 @@
 
 include "gui.inc"
 
-class def Complex(real :: Number, imag :: Number) :: Complex {
+class Complex {
+	val real :: Number
+	val imag :: Number
+	
+	def Complex(real_ :: Number, imag_ :: Number) :: Complex = new Complex { val real = real_ # val imag = imag_ } 
+	
 	def plus(other) = Complex(real + other.real, imag + other.imag)
 
 	def square() = Complex(real*real - imag*imag, imag*real*2)
@@ -15,6 +20,7 @@ class def Complex(real :: Number, imag :: Number) :: Complex {
 	
 	def toString() = real + "+" + imag + "i"
 }
+def Complex(real_ :: Number, imag_ :: Number) :: Complex = new Complex { val real = real_ # val imag = imag_ } 
 
 class RenderConfig {
 	val center :: Top

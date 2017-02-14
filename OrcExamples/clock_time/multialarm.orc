@@ -35,18 +35,18 @@ the cancel procedure of the associated instance of Alarm().
 
 import class Map = "java.util.HashMap"
 
-class def Alarm() :: Alarm {
+class Alarm {
     val run = Ref[Boolean](true)
 
     def set(t :: Integer) = Rwait(t) >> Ift(run?)
     def cancel() = run := false
 }
 
-class def Multialarm() :: Multialarm {
+class Multialarm {
   val alarmlist = Map[String, Alarm]()
 
   def set(String, Integer) :: Signal
-  def set(id,t) = val a = Alarm() # alarmlist.put(id,a) >> a.set(t)
+  def set(id,t) = val a = new Alarm # alarmlist.put(id,a) >> a.set(t)
 
   def cancel(String) :: Signal
   def cancel(id) =
@@ -54,7 +54,7 @@ class def Multialarm() :: Multialarm {
     if b = null then signal else b.cancel()
 }
 
-val m = Multialarm()
+val m = new Multialarm
 
   m.set("first", 500) >> "first alarm"
 | m.set("second", 100) >> "second alarm"

@@ -9,7 +9,9 @@ include "supervisor.inc"
 def procName(name) = name
 --def procName(name) = "Proc"
 
-class def Proc(name :: String) :: Proc extends Supervisable {
+class Proc extends Supervisable {
+  val name :: String
+
   val working = URandom() <: 0.1
   val running = Ref(true)
 
@@ -19,7 +21,10 @@ class def Proc(name :: String) :: Proc extends Supervisable {
   val _ = repeat({ Rwait(100) >> Ift(running?) })
 }
 
-class def Monitor(name :: String, p :: Manager) :: Monitor extends Supervisable {
+class Monitor extends Supervisable {
+  val name :: String
+  val p :: Manager
+
   site monitorUsefulness() = {| repeat({ Rwait(10) >> p().working }) >false> true |} 
   def shutdown() = signal
   val _ = Block()
@@ -34,8 +39,8 @@ class Group extends StaticSupervisor {
       val startsLimit = 5
       val timePeriod = 10000
       val managers = [monitor, server]
-	  val server = Manager({ Proc("Server") })
-	  val monitor = Manager({ Monitor("Mon", server) })
+	  val server = Manager({ new Proc { val name = "Server" } })
+	  val monitor = Manager({ new Monitor { val name = "Mon" # val p = server } })
     }
   })
 }

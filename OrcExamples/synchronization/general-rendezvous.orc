@@ -45,12 +45,15 @@ among the callback cells.
 -}
 
 -- TODO: Add [A] to List
-class def Rendezvous[A](n :: Integer, f :: lambda(List) :: List) {
+class Rendezvous {
+  val n :: Integer
+  val f :: lambda(List) :: List
+
   -- TODO: Add [(A, Cell[A])] to Channel
   val b = Table(n, ignore({ Channel() }))
 
   -- TODO: Add A type to v and Cell 
-  def go(i :: Integer, v) =
+  def apply(i :: Integer, v) =
     val c = Cell()
     b(i).put((v,c)) >> c.read()
 
@@ -98,14 +101,17 @@ from c(i).
 -}
 
 -- TODO: Add [A] to List
-class def Rendezvous2[A](n :: Integer, f :: lambda(List) :: List) {
+class Rendezvous2 {
+  val n :: Integer
+  val f :: lambda(List) :: List
+
   -- TODO: Add [A] to channels 
   val b = Table(n, ignore({ Channel() }))
   val c = Table(n, ignore({ Channel() }))
   val sem = Table(n, ignore({ Semaphore(1) }))
 
   -- TODO: Add :: A to v 
-  def go(i :: Integer, v) =
+  def apply(i :: Integer, v) =
     sem(i).acquire() >>
     b(i).put(v) >> c(i).get() >w>
     sem(i).release() >>
@@ -131,7 +137,10 @@ class def Rendezvous2[A](n :: Integer, f :: lambda(List) :: List) {
 
 {-
 def exch([a,b]) = [b,a]
-val rg = Rendezvous(2,exch).go
+val rg = new Rendezvous { 
+  val n = 2
+  val f = exch
+}
 
   rg(0,0) >x> ("0 gets " + x) |  rg(0,3) >x> ("0 gets " + x)
 | rg(1,2) >y> ("1 gets " + y)
@@ -142,7 +151,10 @@ def avg([a,b,c] :: List[Integer])  =
   val av = (a+b+c)/3
   [av,av,av]
 
-val rg3 = Rendezvous2(3,avg).go
+val rg3 = new Rendezvous2 { 
+  val n = 3
+  val f = avg
+}
 
   rg3(0,0) >x> ("0 gets " + x)
 | rg3(1,1) >x> ("1 gets " + x)
