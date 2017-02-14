@@ -260,7 +260,18 @@ sealed case class ClassType(classname: String) extends Type
 sealed case class VariantType(self: BoundTypevar, typeformals: List[BoundTypevar], variants: List[(String, List[Type])]) extends Type
 
 sealed case class IntersectionType(a: Type, b: Type) extends Type
+object IntersectionType {
+  def apply(as: Iterable[Type]): Type = {
+    as.reduce(IntersectionType(_, _))
+  }
+}
+
 sealed case class UnionType(a: Type, b: Type) extends Type
+object UnionType {
+  def apply(as: Iterable[Type]): Type = {
+    as.reduce(UnionType(_, _))
+  }
+}
 
 /** An explicitly nominal type which is a subtype of another type.
   *

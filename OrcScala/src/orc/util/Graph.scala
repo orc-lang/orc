@@ -78,4 +78,6 @@ class Node[T](val elem: T) {
   var finishTime: Option[Int] = None // End time of the DFS for this node
   var succs: List[Node[T]] = Nil
   var precs: List[Node[T]] = Nil
+  
+  override def toString(): String = s"Node($elem, $startTime, $finishTime)" 
 }

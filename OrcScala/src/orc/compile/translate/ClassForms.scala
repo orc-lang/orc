@@ -37,6 +37,8 @@ import orc.compile.Logger
   * can be computed from a set of ClassInfos for all the classes involved.
   */
 trait ClassBasicInfo extends Positioned {
+  this: Product =>
+
   /** The name of the class.
     *
     * This will be a generated name for synthetic classes.
@@ -87,6 +89,8 @@ trait ClassBasicInfo extends Positioned {
     "If classLiteral is not provided then there may not be any members")
 
   def copy(superclasses: List[String] = superclasses, abstractMembers: List[Field] = abstractMembers, concreteMembers: List[Field] = concreteMembers, classLiteral: Option[ext.ClassLiteral] = classLiteral): ClassBasicInfo
+
+  override def toString(): String = s"$productPrefix($name, $superclasses, ...)"
 }
 
 object ClassBasicInfo {
@@ -278,20 +282,41 @@ case class ClassForms(val translator: Translator) {
       if (allAbstractMembers.isEmpty) {
         val body = {
           def partialField(n: String) = Field(s"$$partial$$$n")
-          val self = new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("self")))
-          val partialObject = (partialField("Object"), makePartialObject(self): Expression)
-          val partials = lin.foldRight((List(partialObject))) { (cls, acc) =>
-            val (prev, _) +: _ = acc
-            val x = new BoundVar()
-            val partialConstructorCall =
-              Graft(x, FieldAccess(self, prev),
-                Call(cls.partialConstructorName, List(self, x), Some(List())))
-            (partialField(cls.name), partialConstructorCall) +: acc
-          }
-          val (finalPartial, _) +: _ = partials
-          val fields = allConcreteMembers.map(makeForwardingField(self, finalPartial, _))
 
-          New(self, Some(cls.typeName), ListMap() ++ partials.reverse ++ fields, Some(cls.typeName))
+          val self = new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("self")))
+
+          def generateForwardingObject(s: BoundVar, st: Option[Type], extraFields: Seq[(Field, Expression)], forwardings: Map[Field, Field], t: Option[Type]): Expression = {
+            val fields = forwardings.map {
+              case (f, src) =>
+                makeForwardingField(self, src, f)
+            }
+            New(s, st, ListMap() ++ extraFields ++ fields, t)
+          }
+
+          val partialObject = (partialField("Object"), makePartialObject(self): Expression)
+
+          case class ChainConstructionState(concreteFields: Map[Field, Field], partials: List[(Field, Expression)], types: Set[Type])
+
+          val finalState = lin.foldRight(ChainConstructionState(Map(), List(partialObject), Set(StructuralType(Map())))) { (cls, state) =>
+            import state._
+
+            val (prev, _) +: _ = partials
+            val x = new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("super")))
+            // TODO: In cases where the super type of the partial we are calling only needs values from one other type we could
+            //       optimize this to just be a field reference instead of a complete new object.
+            //       This optimization is tricky to get right. But for the empty super it's trivial.
+            val superRef = generateForwardingObject(new BoundVar(), None, Seq(), concreteFields, Some(IntersectionType(types)))
+            val partialConstructorCall =
+              Graft(x, superRef,
+                Call(cls.partialConstructorName, List(self, x), Some(List())))
+            val clsPartialField = partialField(cls.name)
+            state.copy(concreteFields = concreteFields ++ cls.concreteMembers.map(_ -> clsPartialField),
+              partials = (clsPartialField, partialConstructorCall) +: partials,
+              types = types + cls.typeName)
+          }
+          val ChainConstructionState(_, (finalPartial, _) +: _, _) = finalState
+
+          generateForwardingObject(self, Some(cls.typeName), finalState.partials.reverse, finalState.concreteFields, Some(cls.typeName))
         }
 
         val formals = List()
@@ -395,7 +420,7 @@ case class ClassForms(val translator: Translator) {
   def generatePartialConstructor(cls: ClassBasicInfo)(implicit ctx: TranslatorContext): Def = {
     val (allConcreteMembers, allAbstractMembers) = getMembers(cls)
     val literal = cls.classLiteral.getOrElse(ext.ClassLiteral(None, List()))
-    val (selfRef, superRef, fields) = convertClassLiteral(literal, (allConcreteMembers ++ allAbstractMembers).map(_.field))
+    val (selfRef, superRef, privateRef, fields) = convertClassLiteral(literal, (allConcreteMembers ++ allAbstractMembers).map(_.field))
     val forwardedFields = allConcreteMembers -- fields.keys
     val forwards = forwardedFields.map(f => (f, FieldAccess(superRef, f)))
 
@@ -405,11 +430,11 @@ case class ClassForms(val translator: Translator) {
 
     val body = {
       // TODO: TYPECHECKER: Introduce privateSelf and give it a type to support private members. This will require changes to convertClassLiteral.
-      New(new BoundVar, None, fields ++ forwards, Some(selfType))
+      New(privateRef, None, fields ++ forwards, Some(selfType))
     }
 
     // TODO: TYPECHECKER: Replace superType with Union supertype concrete member sets.
-    val superType = cls.superclasses.flatMap(c => ctx.classContext.get(c).map(_.typeName)).reduceOption(IntersectionType).getOrElse(Top())
+    val superType = cls.superclasses.flatMap(c => ctx.classContext.get(c).map(_.typeName: Type)).reduceOption(IntersectionType(_, _)).getOrElse(Top())
 
     val formals = List(selfRef, superRef)
     val typeformals = List()
@@ -424,12 +449,13 @@ case class ClassForms(val translator: Translator) {
     *
     * Return the BoundVar for this and the mapping of fields to expressions.
     */
-  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit ctx: TranslatorContext): (BoundVar, BoundVar, Map[Field, Expression]) = {
+  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit ctx: TranslatorContext): (BoundVar, BoundVar, BoundVar, Map[Field, Expression]) = {
     import ctx._
 
     val thisName = lit.thisname.getOrElse("this")
     val thisVar = new BoundVar(Some(thisName))
     val superVar = new BoundVar(Some("super"))
+    val privateVar = new BoundVar(Some("private"))
 
     val thisContext = List((thisName, thisVar), ("this", thisVar), ("super", superVar))
 
@@ -448,11 +474,11 @@ case class ClassForms(val translator: Translator) {
         // FIXME: Is it a problem if the same variable is bound in multiple subtrees? We can just call convertPattern with different bridges or modify
         // convertPattern to take an additional argument to the target closure it returns.
 
-        // TODO: If we modify convertPattern to save information from TypedPatterns we could type the below expressions.
+        // TODO: TYPECHECKER: If we modify convertPattern to save information from TypedPatterns we could type the below expressions.
         val x = new BoundVar()
         val (source, dcontext, target) = convertPattern(p, x)(newCtx)
         val newf = convert(f)(newCtx)
-        val generatedFields = for ((name, code) <- dcontext.toSeq) yield (Field(name), Some(FieldAccess(thisVar, tmpField) > x > target(code)))
+        val generatedFields = for ((name, code) <- dcontext.toSeq) yield (Field(name), Some(FieldAccess(privateVar, tmpField) > x > target(code)))
         (tmpField, Some(source(newf))) +: (generatedFields ++ convertFields(rest))
       case ext.ValSig(v, t) +: rest =>
         val field = Field(v)
@@ -492,7 +518,7 @@ case class ClassForms(val translator: Translator) {
     }
 
     val newbindings = convertFields(lit.decls).collect({ case (f, Some(e)) => (f, e) }).toMap.mapValues(desugarMembers.apply)
-    (thisVar, superVar, Map() ++ newbindings)
+    (thisVar, superVar, privateVar, Map() ++ newbindings)
   }
 
   private def arguments(e: Expression): Set[Argument] = e match {
@@ -521,10 +547,16 @@ case class ClassForms(val translator: Translator) {
 
     {
       implicit val ctx = newCtx
-      val defs = clss.toList.flatMap(generateConstructor(_)) ++ clss.toList.map(generatePartialConstructor(_))
+      val clssOrdered = orderBySubclassing(clss.toList).toList
+      val defs = clssOrdered.flatMap(generateConstructor(_)) ++ clssOrdered.map(generatePartialConstructor(_))
       val core: Expression = DeclareCallables(defs, bodyFunc(ctx))
-      clss.foldRight(core) { (cls, e) =>
-        DeclareType(cls.typeName, Top(), e)
+      clssOrdered.foldRight(core) { (cls, e) =>
+        val lin = generateLinearization(cls)
+        val superTypes = lin.tail.map(_.typeName)
+        // TODO: TYPECHECKER: This types all the members are not put in place here. They are not available in ClassInfo. They probably need to be.
+        val addedMembers = (cls.concreteMembers ++ cls.abstractMembers).map((_, Top())).toMap
+        val clsType = NominalType(IntersectionType(StructuralType(addedMembers) +: superTypes))
+        DeclareType(cls.typeName, clsType, e)
       }
     }
   }
@@ -535,7 +567,7 @@ case class ClassForms(val translator: Translator) {
     */
   def makeNew(e: ext.ClassExpression)(implicit ctx: TranslatorContext): Expression = {
     val (cls, clss) = makeClassInfo(e)
-    makeClassDeclarations(clss ++ (if(ctx.classContext.contains(cls.name)) List() else List(cls))) { ctx =>
+    makeClassDeclarations(clss ++ (if (ctx.classContext.contains(cls.name)) List() else List(cls))) { ctx =>
       if (ctx.boundDefs.contains(cls.constructorName)) {
         Call(cls.constructorName, List(), Some(List()))
       } else {
@@ -546,97 +578,38 @@ case class ClassForms(val translator: Translator) {
     }
   }
 
-  /*
-  /** Build a class constructor.
-    *
-    * toBind is a sequence of fields that should be bound from constructor arguments.
-    * toRecursiveBind is a set of fields that should be bound to specific variables
-    * (usually recursive functions). This can contain constrName and often will.
+  /** Sort a sequence of
     */
-  private def makeClassConstructor(isSite: Boolean, clsName: String, constrName: BoundVar, toBind: Seq[Field], toRecursiveBind: Map[Field, BoundVar], argTypes: Option[Seq[Type]], returnType: Option[Type])(ctx: TranslatorContext): Callable = {
-    val formals = toBind.map(f => new BoundVar(Some(f.field))).toList
-    val body = if (toBind.isEmpty && toRecursiveBind.isEmpty) {
-      New(ctx.classcontext(clsName).linearization)
-    } else {
-      val synClsName = new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("synCls")))
-      val thisVar = new BoundVar(Some("this"))
-      val superVar = new BoundVar(Some("super"))
-      val bindings = for ((f, n) <- (toBind zip formals) ++ toRecursiveBind) yield f -> n
-      val cls = Class(synClsName, thisVar, superVar, bindings.toMap, List(Classvar(synClsName)))
+  private def orderBySubclassing(clss: Seq[ClassBasicInfo]): Seq[ClassBasicInfo] = {
+    import orc.util.{ Graph, Node, Direction }
 
-      DeclareClasses(List(cls), {
-        New(Classvar(synClsName) +: ctx.classcontext(clsName).linearization)
-      })
+    if (clss.size == 1)
+      return clss
+
+    val nodes = for (cls <- clss) yield new Node(cls)
+    val g = new Graph(nodes.toList)
+
+    // Add edges in the graph.
+    for {
+      n1 <- g.nodes
+      n2 <- g.nodes
+      if (n1 != n2)
+    } {
+      val cls1 = n1.elem
+      val cls2 = n2.elem
+      if (cls1.superclasses contains cls2.name) {
+        // Add edge from each class to all it's superclasses.
+        g.addEdge(n1, n2)
+      }
     }
-    val typeformals = Nil
-    val argtypes = argTypes.map(_.toList)
 
-    if (isSite)
-      Site(constrName, formals, body, typeformals, argtypes, returnType)
-    else
-      Def(constrName, formals, body, typeformals, argtypes, returnType)
+    /* Do a DFS on the graph, ignoring the resulting forest*/
+    g.depthSearch(Direction.Backward)
+    /* Sort the elements of the graph in decreasing order
+     * of their finish times. */
+    g.sort
+
+    g.nodes.map(_.elem)
   }
 
-  /** Desugar class constructors.
-    * The returned classes can a None constructor but have additional fields (both concrete and abstract)
-    * that handle the constructor arguments. This also returns a sequence of functions that build the
-    * constructors themselves within a specific type context. This cannot return the constructors themselves
-    * since they need to be built in a context with the class types that will only exist later in the process.
-    *
-    * The appoach is to first collect type and name information about all the constructors and then update
-    * classes and build constructor maker closures using that information.
-    */
-  private def desugarClasses(clss: Seq[ext.ClassDeclaration])(implicit ctx: TranslatorContext): (Seq[ext.ClassDeclaration], Map[String, (Map[String, Type], Map[String, ClassInfo]) => Callable]) = {
-    // Generate constructor names and ext types
-    val constructorInfo = (for (ext.ClassDeclaration(constructor: ext.ClassCallableConstructor, _, _) <- clss) yield {
-      val argOptTypes = constructor.formals map { p =>
-        p match {
-          case ext.TypedPattern(_, t) => Some(t)
-          case _ => None
-        }
-      }
-      val argTypesOpt = if (argOptTypes.exists(_.isEmpty)) None else Some(argOptTypes.map(_.get))
-      val constrType = for (returnType <- constructor.returntype; argTypes <- argTypesOpt) yield ext.LambdaType(Nil, argTypes, returnType)
-      constructor.name -> (new BoundVar(Some(constructor.name)), argTypesOpt, constrType)
-    }).toMap
-
-    val toRecursiveBind = constructorInfo map { case (n, (v, _, _)) => Field(n) -> v }
-    val newConstructorDecls = constructorInfo.toList.map { case (n, (_, _, t)) => ext.ValSig(n, t) }
-
-    // Generate the desugared classes and constuctor maker functions
-    val results = for (cls @ ext.ClassDeclaration(constructor, superclass, body) <- clss) yield {
-      val (newCls, constrMakerMapping) = constructor match {
-        case _: ext.ClassConstructor.None => (cls, None)
-        case constructor: ext.ClassCallableConstructor => {
-          val newFields = constructor.formals.map(_ => uniqueField("arg"))
-
-          val (_, argTypesOpt, _) = constructorInfo(constructor.name)
-          val argOptTypes = argTypesOpt.map(_.map(Some(_))).getOrElse(constructor.formals.map(_ => None))
-
-          val newDecls = (newFields zip constructor.formals zip argOptTypes) flatMap { both =>
-            val ((tmpField, p), argType) = both
-            List(
-              ext.ValSig(tmpField.field, argType),
-              ext.Val(p, ext.Call(ext.Variable("this"), List(ext.FieldAccess(tmpField.field)))))
-          }
-
-          val newCls = ext.ClassDeclaration(ext.ClassConstructor.None(constructor.name, constructor.typeformals), superclass,
-            body.copy(decls = body.decls ++ newDecls))
-
-          def constrMaker(tc: Map[String, Type], cc: Map[String, ClassInfo]) = {
-            val newCtx = ctx.copy(typecontext = tc, classcontext = cc)
-            makeClassConstructor(constructor.isInstanceOf[ext.ClassConstructor.Site],
-              constructor.name, constructorInfo(constructor.name)._1, newFields, Map(),
-              argTypesOpt.map(_.map(convertType(_)(newCtx))), constructor.returntype map { convertType(_)(newCtx) })(newCtx)
-          }
-
-          (newCls, Some(constructor.name -> constrMaker _))
-        }
-      }
-      (newCls.copy(body = newCls.body.copy(decls = newCls.body.decls ++ newConstructorDecls)), constrMakerMapping)
-    }
-    val (newClss, constrs) = results.unzip
-    (newClss, constrs.flatten.toMap)
-  }
-  */
 }

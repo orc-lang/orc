@@ -4,11 +4,10 @@
  -}
 
 val o = new { val x = 1 }
-o | o.x
+o.x
 
 
 {-
 OUTPUT:PERMUTABLE:
-{ .x = BoundValue(1) }
 1
 -}

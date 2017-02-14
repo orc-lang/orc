@@ -14,6 +14,7 @@ class site D(a) {
 {| C(2).f().f().f().a |}
 
 {-
-OUTPUT:
+-- TODO: Reenable or remove based on decision on constructors.
+-- OUTPUT:
 2
 -}

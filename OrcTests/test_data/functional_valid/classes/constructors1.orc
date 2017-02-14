@@ -18,6 +18,7 @@ def C(a_) = new C with { val C = C # val a = a_ }
 C(2).f()
 
 {-
-OUTPUT:
+-- TODO: Reenable or remove based on decision on constructors.
+-- OUTPUT:
 2
 -}

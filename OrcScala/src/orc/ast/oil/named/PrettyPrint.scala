@@ -56,7 +56,7 @@ class PrettyPrint {
       case Sequence(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
       case Graft(x, value, body) => "(val " + reduce(x) + " = " + reduce(value) + " # " + reduce(body) + ")"
       case Trim(f) => "{| " + reduce(f) + " |}"
-      case left ow right => "(" + reduce(left) + " ; " + reduce(right) + ")"
+      case Otherwise(left, right) => "(" + reduce(left) + " ; " + reduce(right) + ")"
       case DeclareCallables(defs, body) => "-- mutual\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
       case c @ Callable(f, formals, body, typeformals, argtypes, returntype) => {
         val prefix = c match {
@@ -110,7 +110,9 @@ class PrettyPrint {
       }
       case IntersectionType(a, b) => reduce(a) + " & " + reduce(b)
       case UnionType(a, b) => reduce(a) + " | " + reduce(b)
-      case _ => "???"
+      case NominalType(t) => s"nominal[${reduce(t)}]"
+      case RecordType(mems) => s"{. ${mems.mapValues(reduce).map(p => p._1 + " :: " + p._2).mkString(" # ")} .}"
+      case StructuralType(mems) => s"{ ${mems.mapValues(reduce).map(p => p._1.field + " :: " + p._2).mkString(" # ")} }"
     }
 
 }
