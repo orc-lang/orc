@@ -343,63 +343,71 @@ case class ClassForms(val translator: Translator) {
     (f, extraction)
   }
 
-  /** A cache of linearizations which serves to break cycles.
-    *
-    * The values are None if the linearization is currently being computed
-    * and Some(L) (where L is the linearization) if the computation is complete.
-    *
-    * This may also improve performance, but that's not the goals.
-    */
-  val linearizationCache = new mutable.HashMap[ClassBasicInfo, Option[List[ClassBasicInfo]]]()
-  // TODO: Move this inside generateLinearization. In the current position it could theoretically confuse classes with the same name in different contexts.
-
   /** Generate the C3 linearization of cls based on ctx.
     *
     */
-  @throws[ConflictingOrderException]
-  @throws[CyclicInheritanceException]
   def generateLinearization(cls: ClassBasicInfo)(implicit ctx: TranslatorContext): List[ClassBasicInfo] = {
-    def merge(orders: List[List[ClassBasicInfo]]): List[ClassBasicInfo] = {
-      Logger.finest(s"Linearizing: (${cls.name}) Merging ${orders.map(_.map(_.name))}")
-      orders match {
-        case List() => List()
-        case l if l.find(_.isEmpty).isDefined => merge(orders.filterNot(_.isEmpty))
-        case orders => {
-          val heads = orders.map(_.head)
-          val tails = orders.flatMap(_.tail).toSet
-          def goodCandidate(c: ClassBasicInfo): Boolean = !tails.contains(c)
-          heads.find(goodCandidate) match {
-            case None =>
-              throw (ConflictingOrderException(orders.map(_.map(_.name))) at cls)
-            case Some(candidate) =>
-              Logger.finest(s"Linearizing: (${cls.name}) good candidate ${candidate.name}")
-              val tailsWOCandidate = orders.map(_.dropWhile(_ == candidate))
-              candidate +: merge(tailsWOCandidate)
+    // TODO: This has to totally recompute all linearizations ever time.
+
+    /** A cache of linearizations which serves to break cycles.
+      *
+      * The values are None if the linearization is currently being computed
+      * and Some(L) (where L is the linearization) if the computation is complete.
+      *
+      * This may also improve performance, but that's not the goals.
+      */
+    val linearizationCache = new mutable.HashMap[ClassBasicInfo, Option[List[ClassBasicInfo]]]()
+
+    /** Generate the C3 linearization of cls based on ctx.
+      *
+      */
+    @throws[ConflictingOrderException]
+    @throws[CyclicInheritanceException]
+    def genLin(cls: ClassBasicInfo)(implicit ctx: TranslatorContext): List[ClassBasicInfo] = {
+      def merge(orders: List[List[ClassBasicInfo]]): List[ClassBasicInfo] = {
+        Logger.finest(s"Linearizing: (${cls.name}) Merging ${orders.map(_.map(_.name))}")
+        orders match {
+          case List() => List()
+          case l if l.find(_.isEmpty).isDefined => merge(orders.filterNot(_.isEmpty))
+          case orders => {
+            val heads = orders.map(_.head)
+            val tails = orders.flatMap(_.tail).toSet
+            def goodCandidate(c: ClassBasicInfo): Boolean = !tails.contains(c)
+            heads.find(goodCandidate) match {
+              case None =>
+                throw (ConflictingOrderException(orders.map(_.map(_.name))) at cls)
+              case Some(candidate) =>
+                Logger.finest(s"Linearizing: (${cls.name}) good candidate ${candidate.name}")
+                val tailsWOCandidate = orders.map(_.dropWhile(_ == candidate))
+                candidate +: merge(tailsWOCandidate)
+            }
           }
         }
       }
+
+      linearizationCache.get(cls) match {
+        case None =>
+          // Mark this linearization and currently being computed.
+          linearizationCache += cls -> None
+          val supers = cls.superclasses.flatMap { n =>
+            ctx.classContext.get(n) orElse {
+              translator.reportProblem(UnboundClassVariableException(n) at cls)
+              None
+            }
+          }
+          val superLins = supers.toList.map(genLin(_))
+          val res = merge(superLins :+ (cls +: supers))
+          linearizationCache += cls -> Some(res)
+          res
+        case Some(None) =>
+          // This linearization is currently being computed. This means
+          // that the inheritance is cyclic which is not allowed.
+          throw (CyclicInheritanceException(List(cls.name)) at cls)
+        case Some(Some(l)) => l
+      }
     }
 
-    linearizationCache.get(cls) match {
-      case None =>
-        // Mark this linearization and currently being computed.
-        linearizationCache += cls -> None
-        val supers = cls.superclasses.flatMap { n =>
-          ctx.classContext.get(n) orElse {
-            translator.reportProblem(UnboundClassVariableException(n) at cls)
-            None
-          }
-        }
-        val superLins = supers.toList.map(generateLinearization(_))
-        val res = merge(superLins :+ (cls +: supers))
-        linearizationCache += cls -> Some(res)
-        res
-      case Some(None) =>
-        // This linearization is currently being computed. This means
-        // that the inheritance is cyclic which is not allowed.
-        throw (CyclicInheritanceException(List(cls.name)) at cls)
-      case Some(Some(l)) => l
-    }
+    genLin(cls)
   }
 
   def makePartialObject(self: BoundVar): New = {
