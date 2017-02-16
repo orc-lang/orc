@@ -23,7 +23,7 @@ import scala.xml.{ Text, UnprefixedAttribute, Utility, XML }
 import scala.xml.NodeSeq.seqToNodeSeq
 
 import orc.ast.hasOptionalVariableName
-import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, Callable, ClassType, Constant, DeclareCallables, DeclareType, Def, Expression, FieldAccess, FunctionType, Graft, HasType, Hole, ImportedType, NamelessAST, New, Otherwise, Parallel, RecordType, Sequence, Site, Stop, Top, Trim, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone }
+import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, Callable, ClassType, Constant, DeclareCallables, DeclareType, Def, Expression, FieldAccess, FunctionType, Graft, HasType, Hole, ImportedType, NamelessAST, New, Otherwise, Parallel, RecordType, Sequence, Site, Stop, Top, Trim, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, Variable, VariantType, VtimeZone, NominalType, IntersectionType, UnionType, StructuralType }
 import orc.compile.parse.{ OrcInputContext, OrcSourcePosition, OrcSourceRange }
 import orc.error.compiletime.SiteResolutionException
 import orc.error.loadtime.OilParsingException
@@ -231,11 +231,9 @@ object OrcXML {
               case None => Nil
             }
           }
-          <bindings>
-            {
-              for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
-            }
-          </bindings>
+          {
+            for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
+          }
         </new>
       case DeclareCallables(unclosedVars, defs, body: Expression) =>
         <declaredefs>
@@ -319,6 +317,26 @@ object OrcXML {
             for ((n, ts) <- variants) yield <variant name={ n }>{ ts map toXML }</variant>
           }
         </varianttype>
+      case IntersectionType(a, b) =>
+        <intersectiontype>
+          <left>{ toXML(a) }</left>
+          <right>{ toXML(b) }</right>
+        </intersectiontype>
+      case UnionType(a, b) =>
+        <uniontype>
+          <left>{ toXML(a) }</left>
+          <right>{ toXML(b) }</right>
+        </uniontype>
+      case NominalType(t) =>
+        <nominaltype>
+          <arg>{ toXML(t) }</arg>
+        </nominaltype>
+      case StructuralType(members) =>
+        <structuraltype>
+          {
+            for ((n, t) <- members) yield <entry name={ n.field }>{ toXML(t) }</entry>
+          }
+        </structuraltype>
       case Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes, returnType) =>
         <definition typearity={ typeFormalArity.toString } arity={ arity.toString }>
           <body>{ toXML(body) }</body>
@@ -448,19 +466,22 @@ object OrcXML {
       case <otherwise><left>{ left }</left><right>{ right }</right></otherwise> =>
         Otherwise(fromXML(left), fromXML(right))
       case <fieldaccess><expr>{ obj }</expr></fieldaccess> =>
-        FieldAccess(argumentFromXML(obj), Field((xml \ "@name").text))
-      case <new><bindings>{ bindingsXml @ _* }</bindings>{ rest @ _* }</new> =>
-        val selfType = rest \ "selftype" match {
-          case <argtypes>{ st }</argtypes> => Some(typeFromXML(st))
+        FieldAccess(argumentFromXML(obj), Field((xml \ "@name").text.trim))
+      case <new>{ rest @ _* }</new> =>
+        val sts = rest.filter(_.label == "selftype")
+        val ots = rest.filter(_.label == "objtype")
+        val bs = rest.filter(_.label == "binding")
+        val selfType = sts.headOption match {
+          case Some(<selftype>{ st }</selftype>) => Some(typeFromXML(st))
           case _ => None
         }
-        val objType = rest \ "objtype" match {
-          case <argtypes>{ st }</argtypes> => Some(typeFromXML(st))
+        val objType = ots.headOption match {
+          case Some(<objtype>{ st }</objtype>) => Some(typeFromXML(st))
           case _ => None
         }
-        val bindings = for (b <- bindingsXml) yield {
+        val bindings = for (b <- bs) yield {
           val <binding><expr>{e}</expr></binding> = b
-          val name = (b \ "@name").text
+          val name = (b \ "@name").text.trim
           (Field(name), fromXML(e))
         }
         New(selfType, bindings.toMap, objType)
@@ -587,6 +608,18 @@ object OrcXML {
             ((v \ "@name").text, params.toList map typeFromXML)
           }
         VariantType(typeFormalArity, newVariants.toList)
+      }
+      case <intersectiontype><left>{ e1 }</left><right>{ e2 }</right></intersectiontype> =>
+        IntersectionType(typeFromXML(e1), typeFromXML(e2))
+      case <uniontype><left>{ e1 }</left><right>{ e2 }</right></uniontype> =>
+        UnionType(typeFromXML(e1), typeFromXML(e2))
+      case <nominaltype><arg>{ element }</arg></nominaltype> =>
+        NominalType(typeFromXML(element))
+      case <structuraltype>{ entries @ _* }</structuraltype> => {
+        var t1: Map[Field, Type] = Map.empty
+        for (v @ <entry>{ t }</entry> <- entries)
+          t1 += Field((v \ "@name").text.trim) -> typeFromXML(t)
+        StructuralType(t1)
       }
       case other => throw new OilParsingException("XML fragment " + other + " could not be converted to an Orc type")
     }
