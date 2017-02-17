@@ -8,6 +8,17 @@ import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 
 def Set() = ConcurrentHashMap.newKeySet()
 
+-- Implement something similar to the onIdle combinator.
+-- This is not the same since it does not prevent f from restarting while
+-- g is running.
+def onIdle[A](f :: lambda() :: A, g :: lambda() :: A) :: A = 
+  {| 
+    Vclock(IntegerTimeOrder) >> (
+      Vawait(0) >> f() |
+      Vawait(1) >> g()
+    ) 
+  |}
+
 def seq(n) = 
   def h(i) if (i <: n) = i : h(i+1)
   def h(_) = []
@@ -62,6 +73,9 @@ class Grid {
       acc + foldl(lambda(acc, x) =
               acc + get(x, y).toString() + ", ", "", seq(n)) + "\n",
       "", seq(n)) + "]"
+  
+  def shallowForce() = 
+    upto(n) >x> upto(m) >y> get(x, y) >> stop ; signal
 }
 
 {- 
@@ -155,6 +169,17 @@ class SudokuCell {
   
   val number = value + 1
   def toString() = number.toString()
+  
+  def remainingIfUnknown() = stop
+}
+
+class UnknownSudokuCell extends SelectLastValue with SudokuCell {
+  val possibilities = collect(allNumbers)
+  
+  def force(x) =
+    Ift(remaining.contains(x)) >> valueCell.write(x)
+  
+  def remainingIfUnknown() = Ift(remaining.size() :> 1) >> iterableToList(remaining)
 }
 
 {-
@@ -164,7 +189,7 @@ the class will go quiescent, so onIdle could be used to detect this case and app
 guessing or heuristics.
 -}
 
-val solver = new Grid {
+class SudokuSolver extends Grid {
   val n = N
   val m = N
   
@@ -177,9 +202,7 @@ val solver = new Grid {
     else
       None()
   
-  def makeUnknown(myX, myY) = new (SelectLastValue with SudokuCell) {
-    val possibilities = collect(allNumbers)
-    
+  def makeUnknown(myX, myY) = new UnknownSudokuCell {
     val _ = {|
       (
         allNumbers() >x> (x, myY) |
@@ -203,9 +226,43 @@ val solver = new Grid {
     val v = getPuzzleCell(myX, myY)
     v >Some(n)> makeKnown(myX, myY, n) |
     v >None()> makeUnknown(myX, myY)
-}
+    
+  def copy() = 
+    val orig = this
+    val c = new Grid {
+      val n = N
+      val m = N
+      
+      def compute(x, y) = 
+        onIdle({
+          makeKnown(x, y, orig.get(x, y).value >x> x)
+        }, {
+          makeUnknown(x, y)
+        })
+    }
+    c.shallowForce() >>
+    c
+} 
 
-Println(solver.toString()) >> stop
+-- This is initial work on handling the case where the simple propogation of values fails.
+-- This is not completed.
+def solve(solver :: lambda() :: SudokuSolver) = 
+  val s = Cell()
+  onIdle({ s := solver() >> s?.toString() }, {
+    -- == Find a location with the smallest number of remaining possibilities
+    -- For now just pick an arbitrary location with multiple possibilities.
+    val (x, y, ps) = {| allNumbers() >x> allNumbers() >y> (x, y, s?.get(x, y).remainingIfUnknown()) |} 
+    val _ = Println((x, y, ps))
+    -- == Force that location to one value in each copy
+    --val s2 = s.copy()
+    --val s1 = s2.shallowForce() >> s
+    
+    -- == Recursively call this on the copies
+    -- == Publish the completed version
+    Error("Not Implemented")
+  })
+
+Println(new SudokuSolver.toString()) >> stop
 
 {-
 OUTPUT:
@@ -220,5 +277,4 @@ OUTPUT:
 2, 4, 8, 9, 5, 7, 1, 3, 6, 
 7, 6, 3, 4, 1, 8, 2, 5, 9, 
 ]
-signal
 -}
