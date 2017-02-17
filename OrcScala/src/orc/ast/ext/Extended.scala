@@ -192,21 +192,27 @@ sealed case class ClassDeclaration(constructor: ClassConstructor, superclass: Op
 
 sealed abstract class ClassExpression extends AST {
   def toInterfaceString: String
+  def containsLiteral: Boolean
 }
 case class ClassVariable(name: String) extends ClassExpression {
   def toInterfaceString = name
+  def containsLiteral = false
 }
 case class ClassLiteral(thisname: Option[String], decls: Seq[Declaration]) extends ClassExpression {
-  def toInterfaceString = decls.collect({
+  def toInterfaceString = "{ ... }"
+  def toDetailedInterfaceString = decls.collect({
     case v: Val => v.p.toOrcSyntax
     case d: NamedDeclaration => d.name
   }).mkString("{ ", ", ", " }")
+  def containsLiteral = true
 }
 case class ClassSubclassLiteral(superclass: ClassExpression, body: ClassLiteral) extends ClassExpression {
   def toInterfaceString = s"(${superclass.toInterfaceString}) ${body.toInterfaceString}"
+  def containsLiteral = true
 }
 case class ClassMixin(left: ClassExpression, right: ClassExpression) extends ClassExpression {
   def toInterfaceString = left.toInterfaceString + " with " + right.toInterfaceString
+  def containsLiteral = left.containsLiteral || right.containsLiteral
 }
 
 /** Match mixed classes.

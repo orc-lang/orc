@@ -30,11 +30,11 @@ import orc.ast.AST;
 import orc.ast.ext.CallableDeclaration;
 import orc.ast.ext.ClassDeclaration;
 import orc.ast.ext.ClassImport;
-import orc.ast.ext.DefDeclaration;
 import orc.ast.ext.Include;
-import orc.ast.ext.SiteDeclaration;
+import orc.ast.ext.New;
 import orc.ast.ext.TypeDeclaration;
 import orc.ast.ext.Val;
+import orc.ast.ext.ValSig;
 
 /**
  * Builds an Outline view tree that is a subset of the Orc extended AST
@@ -392,7 +392,11 @@ public class OrcContentProvider implements ITreeContentProvider {
              * Don't forget to update OrcLabelProvider.getImageFor and
              * getLabelFor to handle new node types in the outline view.
              */
-            return newSubtree instanceof ClassImport || newSubtree instanceof DefDeclaration || newSubtree instanceof Include && ((Include) newSubtree).origin() != null && ((Include) newSubtree).origin().length() > 0 || newSubtree instanceof SiteDeclaration || newSubtree instanceof TypeDeclaration || newSubtree instanceof Val;
+            return newSubtree instanceof ClassImport || 
+                    newSubtree instanceof Include && ((Include) newSubtree).origin() != null && ((Include) newSubtree).origin().length() > 0 || 
+                    newSubtree instanceof TypeDeclaration || 
+                    newSubtree instanceof ValSig ||
+                    createsNewOutlineLevel(newSubtree);
         }
 
         /**
@@ -400,7 +404,10 @@ public class OrcContentProvider implements ITreeContentProvider {
          * @return
          */
         protected static boolean createsNewOutlineLevel(final AST newSubtree) {
-            return newSubtree instanceof CallableDeclaration || newSubtree instanceof ClassDeclaration;
+            return newSubtree instanceof CallableDeclaration || 
+                     newSubtree instanceof ClassDeclaration ||
+                     newSubtree instanceof Val ||
+                     newSubtree instanceof New && ((New) newSubtree).cls().containsLiteral();
         }
     }
 

@@ -33,10 +33,10 @@ import orc.ast.ext.Callable;
 import orc.ast.ext.CallableSig;
 import orc.ast.ext.ClassDeclaration;
 import orc.ast.ext.ClassImport;
-import orc.ast.ext.ClassLiteral;
 import orc.ast.ext.Def;
 import orc.ast.ext.DefSig;
 import orc.ast.ext.Include;
+import orc.ast.ext.New;
 import orc.ast.ext.Site;
 import orc.ast.ext.SiteImport;
 import orc.ast.ext.SiteSig;
@@ -231,16 +231,27 @@ public class OrcLabelProvider extends BaseLabelProvider implements ILabelProvide
             return ((Val) n).p().toOrcSyntax();
         }
         if (n instanceof ValSig) {
-            return ((ValSig) n).name();
+            ValSig sig = (ValSig) n;
+            if (sig.t().isDefined()) {
+                return sig.name() + " :: " + sig.t().get().toOrcSyntax(); //$NON-NLS-1$
+            } else {
+                return sig.name();
+                
+            }
         }
         if (n instanceof TypeDeclaration) {
             return ((TypeDeclaration) n).name();
         }
         if (n instanceof ClassDeclaration) {
-            return ((ClassDeclaration) n).name();
+            ClassDeclaration decl = (ClassDeclaration) n;
+            if (decl.superclass().isDefined()) {
+                return decl.name() + " extends " + decl.superclass().get().toInterfaceString(); //$NON-NLS-1$
+            } else {
+                return decl.name();
+            }
         }
-        if (n instanceof ClassLiteral) {        
-            return ((ClassLiteral) n).toInterfaceString();
+        if (n instanceof New) {        
+            return "new " + ((New) n).cls().toInterfaceString(); //$NON-NLS-1$
         }
         // If we get here, someone forgot to add a case above....
         return "<" + n.getClass().getSimpleName() + ">"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -255,9 +266,21 @@ public class OrcLabelProvider extends BaseLabelProvider implements ILabelProvide
         final StringBuilder s = new StringBuilder();
 
         s.append(d.name());
+
+        if (d.typeformals() != null && d.typeformals().isDefined()) {
+            s.append('[');
+            s.append(listMkString(JavaConversions.asJavaIterable(d.typeformals().get()), ", ")); //$NON-NLS-1$
+            s.append(']');
+        }
+
         s.append('(');
         s.append(listMkString(JavaConversions.asJavaIterable(d.formals()), ", ")); //$NON-NLS-1$
         s.append(')');
+
+        if (d.returntype().isDefined()) {
+            s.append(" :: "); //$NON-NLS-1$
+            s.append(d.returntype().get().toOrcSyntax());
+        }
 
         return s.toString();
     }
