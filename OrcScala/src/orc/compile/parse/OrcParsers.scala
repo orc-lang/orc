@@ -404,8 +404,7 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
 
   val parseClassConstructor: Parser[ClassConstructor] = (
     ident ~ (ListOf(parseTypeVariable)?) -> ClassConstructor.None
-    | "def" ~> parseDefSigCoreNamed -> ClassConstructor.Def
-    | "site" ~> parseDefSigCoreNamed -> ClassConstructor.Site)
+  )
 
   val parseClassDeclaration = (
     (parseClassConstructor ~ ("extends" ~> parseClassExpression).? ~ parseClassBody) -> ClassDeclaration)
