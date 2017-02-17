@@ -725,7 +725,9 @@ class Token protected (
 
   def publish(v: Option[AnyRef]) {
     v foreach { vv =>
-      assert(!vv.isInstanceOf[Binding])
+      assert(!vv.isInstanceOf[Binding], s"Interpreter bug. Triggered at $this")
+      assert(!vv.isInstanceOf[java.math.BigInteger], s"Type coercion error at $this")
+      assert(!vv.isInstanceOf[java.math.BigDecimal], s"Type coercion error at $this")
     }
     state match {
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")

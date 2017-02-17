@@ -11,6 +11,7 @@
 
 package orc.lib.state;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import orc.Handle;
@@ -152,7 +153,11 @@ public class Channel extends EvalSite implements TypedSite {
                 @Override
                 public Object evaluate(final Args args) throws TokenException {
                     synchronized (ChannelInstance.this) {
-                        final Object out = scala.collection.JavaConversions.collectionAsScalaIterable(contents).toList();
+                        ArrayList<Object> convertedContents = new ArrayList<>(contents.size());
+                        for(Object o : contents) {
+                          convertedContents.add(object2value(o));
+                        }
+                        final Object out = scala.collection.JavaConversions.collectionAsScalaIterable(convertedContents).toList();
                         contents.clear();
                         if (closer != null) {
                             closer.publish(signal());
