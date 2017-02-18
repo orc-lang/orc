@@ -30,4 +30,4 @@ val engine = new (MyWriter with MyMapper with MyReducer with MapReduceSimpleImpl
   val itemLimit = 10000
 }
 
-engine()
+engine() >> stop
