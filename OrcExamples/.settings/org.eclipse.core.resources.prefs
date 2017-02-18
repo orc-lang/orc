@@ -1,6 +1,8 @@
 eclipse.preferences.version=1
 encoding//OrcSites/translate.orc=UTF-8
 encoding//OrcSites/twitter-access-token.inc=UTF-8
+encoding//applications/mapreduce/trivial_test.orc=UTF-8
+encoding//applications/mapreduce/webtext.inc=UTF-8
 encoding//distributed_algorithms/superposition-random.orc=UTF-8
 encoding//objects/active_objects.orc=UTF-8
 encoding//objects/sequential_objects.orc=UTF-8
