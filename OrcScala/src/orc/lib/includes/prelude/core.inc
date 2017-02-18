@@ -308,7 +308,7 @@ or equal to this number.
 import site Ceil = "orc.lib.math.Ceil"
 
 {--
-@def sqrt(Number) :: Integer
+@def sqrt(Number) :: Number
 Publish the square root of this number.
 If the number is negative, <link linkend="ref.concepts.states.halt">halt</link> <link linkend="ref.concepts.silent">silently</link>.
 
