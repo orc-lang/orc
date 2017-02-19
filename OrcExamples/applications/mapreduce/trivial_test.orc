@@ -13,7 +13,7 @@ def myMapper(v) =
 
 def myReducer(data) = 
   --Println("Reduce: " + data.key) >> stop |
-  (data.key, data.reduce({ _ + _ }))
+  (data.key, data.reduceAC({ _ + _ }))
 
 def myReader() =  
   val data = [
@@ -30,13 +30,13 @@ def myReader() =
 
 
 val task = new MapReduce {
-  val map = randomFailure(0.5, myMapper)
+  val map = myMapper --randomFailure(0.5, myMapper)
   val reduce = myReducer
   val read = myReader
   val openOutput = openPrintlnOutput
 } 
 
-executeSimple(task, 1000) >> stop
+executeSimple(task, 2000) >> stop
 
 {-
 OUTPUT:PERMUTABLE:

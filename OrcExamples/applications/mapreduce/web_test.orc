@@ -14,13 +14,13 @@ def myMapper(v) =
 
 def myReducer(data) = 
   --Println("Reduce: " + data.key) >> stop |
-  (data.key, data.reduce({ _ + _ }))
+  (data.key, data.reduceAC({ _ + _ }))
 
 val task = new MapReduce {
   val url = "http://www.singingwizard.org/stuff/pg24132.txt"  
   val itemLimit = 10000
   
-  val map = randomFailure(0.01, myMapper)
+  val map = myMapper
   val reduce = myReducer
   val read = limitedReader(itemLimit, webLineReader(url))
   val openOutput = openPrintlnOutput

@@ -41,6 +41,37 @@ class ReductionData {
     -- We must get the init value first because otherwise the item() call in h could take the 
     -- single value and make this item() call halt silently.
     item() >init> h(init)
+
+  {-
+  Apply a binary reduction operator to the entire dataset.
+  
+  The provided operator must be associative and commutative.
+  
+  This will consume the data by calling next() until it halts silently.
+  
+  Note: This method is effectively an implementation of cfold on top of 
+  ReductionData.
+  -}
+  def reduceAC(f :: lambda(ReductionItem, ReductionItem) :: ReductionItem) :: (ReductionKey, ReductionItem) =
+    -- TODO: This should be an unordered channel.
+    val chan = Channel()
+    -- TODO: Loads should be allowed to progress in parallel with processing.
+    def load(i) = 
+      val item1 = item()
+      val item2 = item1 >> item()
+      item1 >> item2 >> (chan.put(f(item1, item2)) >> stop | load(i + 1)) ;
+      item1 >> (chan.put(item1) >> stop | load(i + 1)) ; 
+      i
+    def process(i, completed) = 
+      if i <: 2 then
+        completed >> chan.get()
+      else
+        val thisCompleted = 
+          chan.get() >x>  -- Println("get 1 " + i) >>
+          chan.get() >y>  -- Println("get 2 " + i) >>
+          chan.put(f(x, y))        
+        process(i-1, thisCompleted >> completed) 
+    process(load(0), signal)
 }
 
 {-
@@ -95,6 +126,14 @@ def binaryReducer(lambda(ReductionKey, ReductionItem, ReductionItem) :: (Reducti
         :: lambda (ReductionData) :: (ReductionKey, ReductionItem)
 def binaryReducer(reducePair) =
   lambda(data :: ReductionData) = (data.key, data.reduce({ reducePair(data.key, _, _) }))
+
+{-
+Take an associative commutative binary reduction operator and convert it into a reducer appropriate for MapReduce.reduce.
+-}
+def binaryReducerAC(lambda(ReductionKey, ReductionItem, ReductionItem) :: (ReductionKey, ReductionItem)) 
+        :: lambda (ReductionData) :: (ReductionKey, ReductionItem)
+def binaryReducerAC(reducePair) =
+  lambda(data :: ReductionData) = (data.key, data.reduceAC({ reducePair(data.key, _, _) }))
 
 {-
 Writer which adds each output pair to the output map and sets outputCell to the map when

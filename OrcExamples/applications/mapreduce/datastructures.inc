@@ -45,4 +45,8 @@ class Bag {
   def takeD() = 
     val v = underlying.poll()
     Iff(v = null) >> v
+  
+  val size = underlying.size
+  
+  val iterator = underlying.iterator
 }

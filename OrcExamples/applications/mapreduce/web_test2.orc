@@ -15,8 +15,9 @@ def totalsMapper(computeValue :: lambda(Integer) :: Integer) = lambda(v) =
 
 def totalsReducer() = 
   def reducePair(_, (l1, n1), (l2, n2)) = 
+    -- Println("Pairs " + ((l1, n1), (l2, n2))) >> 
     (l1 + l2, n1 + n2)
-  binaryReducer(reducePair)
+  binaryReducerAC(reducePair)
 
 def meanFromMapWriter(mr :: SimpleMapWriter) = 
   val (total_letters, total_words) = mr.finalOutput.get(SingletonKey)

@@ -35,7 +35,6 @@ def executeDumb(mr :: MapReduce) =
     out.close()
   ) >> signal
 
-
 def timeoutAndRestart[T](timeout :: Integer, f :: lambda() :: T) = 
   -- TODO: This should be an unordered channel.
   val chan = Channel()
@@ -53,8 +52,42 @@ def timeoutAndRestart[T](timeout :: Integer, f :: lambda() :: T) =
   )
 
 {-
-A simple implementation of MapReduce with fault tolerence and parallel reduction on 
-each key.
+def parallelReduce(mr :: MapReduce, out :: ReductionOutput, k :: ReductionKey, data :: Bag, itemsPerTask :: Integer) =
+  def newDataBlock() =
+    val count = Counter(itemsPerTask)
+    val dataBlock = new Bag
+    repeat({ count.dec() >> data.takeD() }) >v> dataBlock.add(v) >> stop ;
+    Iff(dataBlock.isEmpty()) >> dataBlock
+  
+  def callReduce(data) = 
+    timeoutAndRestart(timeout, { mr.reduce(data) })
+  
+  def makeAllDataBlocks() =
+    val chan = Channel()
+    val _ = repeat(newDataBlock) >b> chan.put() >> stop ; chan.closeD() 
+    val first = chan.get()
+    val second = first >> chan.get()
+    -- If there are at least two blocks:
+    second >> (first | second | repeat(chan.get()))
+      callReduce(BlockReductionData(data)) >(k', v')> stop -- ???
+      ;
+    -- If there is one block:
+    first >> callReduce(BlockReductionData(data)) >(k', v')> out.write(k', v')
+-}
+
+def IteratorReductionData(k :: ReductionKey, data :: Bag) = new ReductionData {
+  val iter = data.iterator()
+  -- TODO: Implement better concurrency if needed.
+  val lock = Semaphore(1)
+  val key = k
+  def item() = withLock(lock, { Ift(iter.hasNext()) >> iter.next() })
+}
+
+
+{-
+A simple implementation of MapReduce with fault tolerence.
+
+The provided timeout (ms) is used for both mappers and reducers.
 -}
 def executeSimple(mr :: MapReduce, timeout :: Integer) =
   val intermediateData = new Map
@@ -70,13 +103,7 @@ def executeSimple(mr :: MapReduce, timeout :: Integer) =
     val out = mr.openOutput()
     -- TODO: Implement parallel reduction and fault tolerance on reduce calls.
     intermediateData.each() >(k, v)> (
-      val data = new ReductionData {
-        val key = k
-        def item() = v.takeD() 
-      }
-      mr.reduce(data) >(k', v')> out.write(k', v')
+      timeoutAndRestart(timeout, { mr.reduce(IteratorReductionData(k, v)) }) >(k', v')> out.write(k', v')
     ) >> stop ;
     out.close()
   ) >> signal
-
-
