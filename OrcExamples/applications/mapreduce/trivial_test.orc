@@ -4,20 +4,18 @@
  -}
 
 include "mapreduce.inc"
+include "engines.inc"
+include "testing.inc"
 
-class MyMapper extends MapReduce {
-  def map(v) =
-    --Println("Map: " + v) >> stop |
-    (v, 1)
-}
+def myMapper(v) =
+  --Println("Map: " + v) >> stop |
+  (v, 1)
 
-class MyReducer extends MapReduce {
-  def reduce(data) = 
-    --Println("Reduce: " + data.key) >> stop |
-    (data.key, data.reduce({ _ + _ }))
-}
+def myReducer(data) = 
+  --Println("Reduce: " + data.key) >> stop |
+  (data.key, data.reduce({ _ + _ }))
 
-class MyReader extends MapReduce {
+def myReader() =  
   val data = [
     "a",
     "a",
@@ -28,18 +26,17 @@ class MyReader extends MapReduce {
     "a",
     "a"
   ]
-  
-  def read() = each(data)
-}
+  each(data)
 
-class MyWriter extends MapReduce {
-  def openOutput() = new ReductionOutput {
-    def write(k, v) = Println("OUT: " + k + " -> " + v)
-    def close() = signal
-  }
-}
 
-(new MyWriter with MyReader with MyMapper with MyReducer with MapReduceSimpleImplementation)() >> stop
+val task = new MapReduce {
+  val map = randomFailure(0.5, myMapper)
+  val reduce = myReducer
+  val read = myReader
+  val openOutput = openPrintlnOutput
+} 
+
+executeSimple(task, 1000) >> stop
 
 {-
 OUTPUT:PERMUTABLE:

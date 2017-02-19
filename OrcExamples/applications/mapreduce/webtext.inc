@@ -32,8 +32,8 @@ def stopOnSentinal[T](f :: lambda() :: T, sentinal :: T) =
     )
   |} >> chan.closeD() >> stop |
   repeat(chan.get)
-
-class WebUtilities {
+  
+val WebUtilities = new {
   def openURL(url) =
     URL(url) >url>
     url.openConnection().getInputStream()
@@ -50,24 +50,13 @@ class WebUtilities {
     else skipto(reader, phrase)
 }
 
-class WebZippedLineReader extends WebUtilities {
-  val url :: String
-  
-  def read() = 
-    val reader = BufferedReader(InputStreamReader(unzipStream(openURL(url))))
-    repeat({ reader.readLine() })
-}
+def webZippedLineReader(url :: String) = lambda() =
+  val reader = BufferedReader(InputStreamReader(WebUtilities.unzipStream(WebUtilities.openURL(url))))
+  repeat({ reader.readLine() })
 
-class WebLineReader extends WebUtilities {
-  val url :: String
-  
-  def read() = 
-    val reader = BufferedReader(InputStreamReader(openURL(url)))
-    stopOnSentinal({ repeat({ reader.readLine() }) }, null)
-}
+def webLineReader(url :: String) = lambda() =
+  val reader = BufferedReader(InputStreamReader(WebUtilities.openURL(url)))
+  stopOnSentinal({ repeat({ reader.readLine() }) }, null)
 
-class LimitedReader {
-  val itemLimit :: Integer
-  def read() = 
-    stopAfterNPublications({ super.read() }, itemLimit)
-}
+def limitedReader(itemLimit :: Integer, reader :: lambda() :: InputItem) = lambda() =
+  stopAfterNPublications(reader, itemLimit)

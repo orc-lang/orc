@@ -88,38 +88,38 @@ class MapReduce {
   def openOutput() :: ReductionOutput
 }
 
-class BinaryReducer extends MapReduce {
-  def reducePair(ReductionKey, ReductionItem, ReductionItem) :: (ReductionKey, ReductionItem)
-  
-  def reduce(data) = 
-    (data.key, data.reduce({ reducePair(data.key, _, _) }))
-}
-
+{-
+Take a binary reduction operator and convert it into a reducer appropriate for MapReduce.reduce.
+-}
+def binaryReducer(lambda(ReductionKey, ReductionItem, ReductionItem) :: (ReductionKey, ReductionItem)) 
+        :: lambda (ReductionData) :: (ReductionKey, ReductionItem)
+def binaryReducer(reducePair) =
+  lambda(data :: ReductionData) = (data.key, data.reduce({ reducePair(data.key, _, _) }))
 
 {-
-A simple implementation of MapReduce using the above framework.
+Writer which adds each output pair to the output map and sets outputCell to the map when
+the mapreduce is complete.
 
-This implementation spawns all map calls concurrently and collects their results 
-into a Map. Once the maps all complete, this implementation runs all reducer
-concurrently and concurrently writes their output.
+outputCell may be stop if completion notification is not needed.
 -}
-class MapReduceSimpleImplementation extends MapReduce {
-  def apply() =
-    val intermediateData = new Map
-    -- Map phase
-    read() >d> map(d) >(k, v)> intermediateData.getOrUpdate(k, { new Bag }).add(v) >> stop ; (
-      -- Reduce phase
-      val out = openOutput()
-      intermediateData.each() >(k, v)> (
-        val data = new ReductionData {
-          val key = k
-          def item() = v.takeD() 
-        }
-        reduce(data) >(k', v')> out.write(k', v')
-      ) >> stop ;
-      out.close()
-    ) >> this
+def openMapWriter(output :: Map, outputCell :: Cell) = lambda() = new ReductionOutput {
+  def write(k, v) = output.put(k, v)
+  def close() = outputCell.write(output) ; signal
 }
 
+{-
+A mix-in providing simple usage of openMapWriter.
 
+This provides a finalOutput field which is bound to the output map when
+the processing is complete.
+-}
+class SimpleMapWriter extends MapReduce {
+  val finalOutput = outputCell.read()
+  
+  val output = new Map
+  val outputCell = Cell[Map]()
+  
+  val openOutput = openMapWriter(output, outputCell)
+}
 
+ 
