@@ -37,7 +37,7 @@ trait Group extends GroupMember {
 
   // These are of reduce visibility to make it harder for derived classes to violate the semantics of discorporation.
   // In general you should not mess with them. However they cannot be private because of debug code in Execution.
-  private[run] val members: mutable.Buffer[GroupMember] = new mutable.ArrayBuffer(2)
+  private[run] val members: mutable.Set[GroupMember] = new mutable.HashSet;
   private var hasDiscorporatedMembers: Boolean = false
 
   /** Find the root of this group tree. */
@@ -45,6 +45,9 @@ trait Group extends GroupMember {
   def runtime: OrcRuntime = execution.runtime
   def options: OrcExecutionOptions = execution.options
 
+  /* alive is volatile to allow reads to avoid locking.
+   */
+  @volatile
   private var alive = true
 
   /** An expensive walk-to-root check for alive state */
@@ -55,27 +58,36 @@ trait Group extends GroupMember {
   def onDiscorporate(): Unit
   def run(): Unit
 
-  def halt(t: Token) = synchronized { remove(t) }
+  def halt(t: Token) = remove(t)
 
-  def kill() = synchronized {
-    if (alive) {
-      alive = false
-      for (m <- members) {
-        runtime.stage(m)
-        /* Optimization: assume Tokens do not remove themselves from Groups */
-        if (options.maxTokens > 0 && m.isInstanceOf[Token]) execution.tokenCount.decrementAndGet()
+  def kill() = {
+    val mems = synchronized {
+      if (alive) {
+        alive = false
+        val m = members.toVector
+        // This is required to prevent persistent references to values from groups.
+        members.clear()
+        m
+      } else {
+        Seq()
       }
-      // This is required to prevent persistent references to values from groups.
-      members.clear()
+    }
+    for (m <- mems) {
+      runtime.stage(m)
+      /* Optimization: assume Tokens do not remove themselves from Groups */
+      if (options.maxTokens > 0 && m.isInstanceOf[Token]) execution.tokenCount.decrementAndGet()
     }
   }
 
   /*
-   * Note: This is a local live check.
-   * A global check requires a linear-time
+   * Note: This is a local live check. A global check requires a linear-time
    * ascension of the group tree.
+   *
+   * The live state of the token can change at any time. So this is only an
+   * instantaneous test, meaning that the token may be killed immediately
+   * after this function return false.
    */
-  def isKilled() = synchronized { !alive }
+  def isKilled() = !alive
 
   def suspend() = synchronized {
     for (m <- members) m.suspend()
@@ -91,7 +103,11 @@ trait Group extends GroupMember {
         m.kill()
         //println(s"Warning: adding $m to $this")
       } else {
-        assert(!members.contains(m), s"Double Group.add of $m")
+        /* This assert is useful, but since it's inside a hot-path synchronized block
+         * it should be kept commented when not needed. On token intensive workloads
+         * this and the other similarly marked assert can cost more than 10% on performance.
+         */
+        //assert(!members.contains(m), s"Double Group.add of $m")
         members += m
       }
     }
@@ -116,8 +132,11 @@ trait Group extends GroupMember {
       if (!alive) {
         //println(s"Warning: removing $m from $this")
       } else {
-        assert(members contains m, s"Group $this does not contain $m")
-        // TODO: This may be a performance issue. We are performing a linear remove. How large do groups get?
+        /* This assert is useful, but since it's inside a hot-path synchronized block
+         * it should be kept commented when not needed. On token intensive workloads
+         * this and the other similarly marked assert can cost more than 10% on performance.
+         */
+        //assert(members contains m, s"Group $this does not contain $m")
         members -= m
         if (members.isEmpty) {
           if (hasDiscorporatedMembers)
