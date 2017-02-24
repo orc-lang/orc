@@ -46,7 +46,7 @@ trait NamelessToNamed {
         // FIXME: this probably looses the self name information.
         val self = new BoundVar()
         val defcontext = self :: context
-        val newbindings = bindings.mapValues(namelessToNamed(_, defcontext, typecontext))
+        val newbindings = Map() ++ bindings.mapValues(namelessToNamed(_, defcontext, typecontext))
         named.New(self, st.map(namelessToNamed(_, typecontext)), newbindings, t.map(namelessToNamed(_, typecontext)))
       }
       case FieldAccess(obj, field) => named.FieldAccess(namelessToNamed(obj, context), field)

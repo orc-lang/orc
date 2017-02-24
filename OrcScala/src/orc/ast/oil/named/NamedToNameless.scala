@@ -35,7 +35,7 @@ trait NamedToNameless {
       case New(self, st, bindings, t) => {
         // TODO: Consider compacting the context since we will.
         val newContext = self :: context
-        val newBindings = bindings.mapValues(namedToNameless(_, newContext, typecontext))
+        val newBindings = Map() ++ bindings.mapValues(namedToNameless(_, newContext, typecontext))
         nameless.New(st map toType, newBindings, t map toType)
       }
       case FieldAccess(obj, field) => nameless.FieldAccess(namedToNameless(obj, context), field)
