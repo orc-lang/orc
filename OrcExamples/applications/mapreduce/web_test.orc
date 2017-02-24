@@ -4,8 +4,13 @@
 
 include "mapreduce.inc"
 include "engines.inc"
+include "timeIt.inc"
 include "webtext.inc"
 include "testing.inc"
+
+val url = "http://www.singingwizard.org/stuff/pg24132.txt"
+val reader = webLineReader(url)
+val data = collect(reader) 
 
 def myMapper(v) =
   val words = v.toLowerCase().replaceAll("[^a-z\\s]", "").trim().split("\\s+")
@@ -14,16 +19,24 @@ def myMapper(v) =
 
 def myReducer(data) = 
   --Println("Reduce: " + data.key) >> stop |
-  (data.key, data.reduceAC({ _ + _ }))
+  (data.key, data.reduce({ _ + _ }))
 
-val task = new MapReduce {
-  val url = "http://www.singingwizard.org/stuff/pg24132.txt"  
-  val itemLimit = 10000
-  
-  val map = myMapper
-  val reduce = myReducer
-  val read = limitedReader(itemLimit, webLineReader(url))
-  val openOutput = openPrintlnOutput
-}
+def uptoSeq(n :: Integer, f :: lambda(Integer) :: Signal) :: Signal =
+  def iter(Integer) :: Signal
+  def iter(i) if (i <: n) = f(i) >> iter(i+1)
+  def iter(_) = signal
+  iter(0)
 
-executeSimple(task, 3000) >> stop
+uptoSeq(10, lambda(_) =
+  val task = new (MapReduce with SimpleMapWriter) {  
+    val map = myMapper
+    val reduce = myReducer
+    def read() = each(data) 
+    -- val openOutput = openPrintlnOutput
+  }
+  val out = timeIt({
+    executeDumb(task)
+  })
+  Println(task.finalOutput.get("the"))
+)
+

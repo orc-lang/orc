@@ -20,19 +20,21 @@ def stopAfterNPublications[T](f :: lambda() :: T, n :: Integer) =
   |} >> chan.closeD() >> stop |
   repeat(chan.get)
 
+{-
 def stopOnSentinal[T](f :: lambda() :: T, sentinal :: T) =
   -- TODO: This should be an unordered channel.
   val chan = Channel()
   {| 
     f() >v> (
       if v = sentinal then
-        signal
+        chan.close()
       else
         chan.put(v) >> stop
     )
   |} >> chan.closeD() >> stop |
   repeat(chan.get)
-  
+-}
+
 val WebUtilities = new {
   def openURL(url) =
     URL(url) >url>
@@ -52,11 +54,11 @@ val WebUtilities = new {
 
 def webZippedLineReader(url :: String) = lambda() =
   val reader = BufferedReader(InputStreamReader(WebUtilities.unzipStream(WebUtilities.openURL(url))))
-  repeat({ reader.readLine() })
+  repeat({ reader.readLine() >x> Ift(x /= null) >> x })
 
 def webLineReader(url :: String) = lambda() =
   val reader = BufferedReader(InputStreamReader(WebUtilities.openURL(url)))
-  stopOnSentinal({ repeat({ reader.readLine() }) }, null)
+  repeat({ reader.readLine() >x> Ift(x /= null) >> x })
 
 def limitedReader(itemLimit :: Integer, reader :: lambda() :: InputItem) = lambda() =
   stopAfterNPublications(reader, itemLimit)
