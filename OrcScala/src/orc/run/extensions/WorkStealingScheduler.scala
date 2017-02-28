@@ -29,7 +29,8 @@ class SimpleWorkStealingScheduler(
   val maxWorkers = minWorkers + maxSiteThreads
   val maxStealWait = 20
   val goalUsableThreads = minWorkers + goalExtraThreads
-  val dumpInterval = 2000
+  val maxUsableThreads = goalUsableThreads * 2
+  val dumpInterval = -1 // 1000
   val itemsToEvictOnOverflow = workerQueueLength / 4
 
   require(maxSiteThreads >= 0)
@@ -43,6 +44,7 @@ class SimpleWorkStealingScheduler(
   private val workers = new Array[Worker](maxWorkers)
   @volatile
   private var nWorkers = 0
+  private var nextWorkerID = 0
 
   private def currentWorkers = workers.view(0, nWorkers)
 
@@ -58,12 +60,12 @@ class SimpleWorkStealingScheduler(
   }
 
   @volatile
-  var isShuttingDown = false
+  private var isSchedulerShuttingDown = false
 
-  final class Monitor extends Thread("Monitor") {
+  class Monitor extends Thread("Monitor") {
     override def run() = {
       var lastDumpTime = System.currentTimeMillis()
-      while (!isShuttingDown) {
+      while (!isSchedulerShuttingDown) {
         val ws = currentWorkers
         val nw = ws.size
 
@@ -75,8 +77,16 @@ class SimpleWorkStealingScheduler(
         val nUsableWorkers = nw - nBlocked
 
         if (nUsableWorkers < goalUsableThreads && nWorkers < maxWorkers) {
-          //Logger.warning(s"Starting new worker due to: nUsableWorkers=$nUsableWorkers goalUsableThreads=$goalUsableThreads nBlocked=$nBlocked")
+          Logger.warning(s"Starting new worker due to: nUsableWorkers=$nUsableWorkers goalUsableThreads=$goalUsableThreads nBlocked=$nBlocked")
           addWorker()
+        }
+        if (nUsableWorkers > maxUsableThreads && nWorkers > minWorkers) {
+          Logger.warning(s"Stopping worker due to: nUsableWorkers=$nUsableWorkers maxUsableThreads=$maxUsableThreads")
+          schedulerThis.synchronized {
+            val i = currentWorkers.indexWhere(_.atRemovalSafePoint)
+            if(i >= 0)
+              removeWorker(i)
+          }
         }
 
         if (dumpInterval > 0 && lastDumpTime + dumpInterval <= System.currentTimeMillis()) {
@@ -101,15 +111,19 @@ class SimpleWorkStealingScheduler(
     @volatile
     private[SimpleWorkStealingScheduler] var isPotentiallyBlocked = false
 
+    @volatile
+    private[SimpleWorkStealingScheduler] var isShuttingDown = false
+
     var steals = 0
     var stealFailures = 0
     var overflows = 0
+    var atRemovalSafePoint = false
 
     private[this] var seed: Int = workerID * 997
     private[this] var stealFailureRunLength = 0
 
     override def run() = {
-      while (!isShuttingDown) {
+      while (!isSchedulerShuttingDown && !isShuttingDown) {
         val t = next()
         if (t != null) {
           beforeExecute(this, t)
@@ -185,7 +199,9 @@ class SimpleWorkStealingScheduler(
         if (stealFailureRunLength > n * 2) {
           try {
             schedulerThis.synchronized {
+              atRemovalSafePoint = true
               schedulerThis.wait((stealFailureRunLength - n * 2) min maxStealWait)
+              atRemovalSafePoint = false
             }
           } catch {
             case _: InterruptedException => ()
@@ -200,17 +216,34 @@ class SimpleWorkStealingScheduler(
       var t = inputQueue.poll()
       if (t == null) {
         val index = ((i + workerID * 997 + seed) % nWorkers).abs
-        t = workers(index).workQueue.popTop()
+        val w = workers(index)
+        if (w != null) {
+          t = w.workQueue.popTop()
+        }
       }
       t
+    }
+
+    def shutdown(): Unit = {
+      isShuttingDown = true
     }
   }
 
   protected[SimpleWorkStealingScheduler] final def addWorker(): Unit = {
-    val w = new Worker(nWorkers)
+    val w = new Worker(nextWorkerID)
     workers(nWorkers) = w
     nWorkers += 1
+    nextWorkerID += 1
     w.start()
+  }
+
+  protected[SimpleWorkStealingScheduler] final def removeWorker(i: Int): Unit = schedulerThis.synchronized {
+    val w = workers(i)
+    assert(w.atRemovalSafePoint)
+    workers(i) = workers(nWorkers - 1)
+    workers(nWorkers - 1) = null
+    nWorkers -= 1
+    w.shutdown()
   }
 
   def dumpStats(): Unit = {
@@ -249,7 +282,7 @@ class SimpleWorkStealingScheduler(
   }
 
   final def stopScheduler(): Unit = {
-    isShuttingDown = true
+    isSchedulerShuttingDown = true
     monitor.join()
     for (w <- currentWorkers) {
       w.join()
@@ -261,9 +294,9 @@ class SimpleWorkStealingScheduler(
     if (w.isInstanceOf[Worker]) {
       w.asInstanceOf[Worker].scheduleLocal(t)
     } else {
+      inputQueue.add(t)
       schedulerThis.synchronized {
         inputTasks += 1
-        inputQueue.add(t)
         schedulerThis.notify()
       }
     }
