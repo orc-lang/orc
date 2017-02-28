@@ -27,7 +27,7 @@ class SimpleWorkStealingScheduler(
   val nCores = Runtime.getRuntime().availableProcessors()
   val minWorkers = math.max(4, nCores * 2)
   val maxWorkers = minWorkers + maxSiteThreads
-  val maxStealWait = 100
+  val maxStealWait = 20
   val goalUsableThreads = minWorkers + goalExtraThreads
   val dumpInterval = 2000
   val itemsToEvictOnOverflow = workerQueueLength / 4
@@ -110,22 +110,19 @@ class SimpleWorkStealingScheduler(
 
     override def run() = {
       while (!isShuttingDown) {
-        next() match {
-          case null => ()
-          case t => {
-            //println(s"$workerID: Working")
-            beforeExecute(this, t)
-            try {
-              if (t.nonblocking) {
-                t.run()
-              } else {
-                potentiallyBlocking(t.run())
-              }
-              afterExecute(this, t, null)
-            } catch {
-              case ex: Exception =>
-                afterExecute(this, t, ex)
+        val t = next()
+        if (t != null) {
+          beforeExecute(this, t)
+          try {
+            if (t.nonblocking) {
+              t.run()
+            } else {
+              potentiallyBlocking(t.run())
             }
+            afterExecute(this, t, null)
+          } catch {
+            case ex: Exception =>
+              afterExecute(this, t, ex)
           }
         }
       }
@@ -141,7 +138,7 @@ class SimpleWorkStealingScheduler(
       }
     }
 
-    @inline
+    //@inline
     def scheduleLocal(t: Schedulable): Unit = {
       val r = workQueue.pushBottom(t)
       //println(s"$workerID: Scheduled $r")
@@ -159,52 +156,53 @@ class SimpleWorkStealingScheduler(
         if (v != null)
           inputQueue.add(v)
 
+        schedulerThis.synchronized {
+          while (i > 0) {
+            schedulerThis.notify()
+            i -= 1
+          }
+        }
+
         scheduleLocal(t)
       }
     }
 
-    @inline
+    //@inline
     private[this] def next(): Schedulable = {
-      workQueue.popBottom() match {
-        case null =>
-          //println(s"$workerID: No next: stealing $stealFailureRunLength")
-          stealFromAnotherQueue(stealFailureRunLength) match {
-            case null =>
-              //println(s"$workerID: Steal failed $stealFailureRunLength")
-              stealFailures += 1
-              stealFailureRunLength += 1
-              val n = nWorkers
-              if (stealFailureRunLength > n) {
-                //Thread.`yield`()
-              } else if (stealFailureRunLength > n * 2) {
-                try {
-                  schedulerThis.synchronized {
-                    schedulerThis.wait((stealFailureRunLength - n * 2) min maxStealWait)
-                  }
-                } catch {
-                  case _: InterruptedException => ()
-                }
-              }
-              null
-            case t =>
-              steals += 1
-              stealFailureRunLength = 0
-              seed = seed * 997 + 449 + workerID
-              t
-          }
-        case t => t
+      var t = workQueue.popBottom()
+      if (t == null) {
+        t = stealFromAnotherQueue(stealFailureRunLength)
+        if (t != null) {
+          steals += 1
+          stealFailureRunLength = 0
+          seed = seed * 997 + 449 + workerID
+        }
       }
+      if (t == null) {
+        stealFailures += 1
+        stealFailureRunLength += 1
+        val n = nWorkers
+        if (stealFailureRunLength > n * 2) {
+          try {
+            schedulerThis.synchronized {
+              schedulerThis.wait((stealFailureRunLength - n * 2) min maxStealWait)
+            }
+          } catch {
+            case _: InterruptedException => ()
+          }
+        }
+      }
+      t
     }
 
     @inline
     private[this] def stealFromAnotherQueue(i: Int): Schedulable = {
-      val index = ((i + workerID * 997 + seed) % nWorkers).abs
-      inputQueue.poll() match {
-        case null => {
-          workers(index).workQueue.popTop()
-        }
-        case t => t
+      var t = inputQueue.poll()
+      if (t == null) {
+        val index = ((i + workerID * 997 + seed) % nWorkers).abs
+        t = workers(index).workQueue.popTop()
       }
+      t
     }
   }
 
@@ -259,15 +257,15 @@ class SimpleWorkStealingScheduler(
   }
 
   final def schedule(t: Schedulable): Unit = {
-    Thread.currentThread() match {
-      case w: Worker =>
-        w.scheduleLocal(t)
-      case _ =>
-        schedulerThis.synchronized {
-          inputTasks += 1
-          inputQueue.add(t)
-          schedulerThis.notify()
-        }
+    val w = Thread.currentThread()
+    if (w.isInstanceOf[Worker]) {
+      w.asInstanceOf[Worker].scheduleLocal(t)
+    } else {
+      schedulerThis.synchronized {
+        inputTasks += 1
+        inputQueue.add(t)
+        schedulerThis.notify()
+      }
     }
   }
 
@@ -292,10 +290,7 @@ trait OrcWithWorkStealingScheduler extends Orc {
       }
 
       override def afterExecute(w: Worker, r: Schedulable, t: Throwable): Unit = {
-        r match {
-          case s: Schedulable => s.onComplete()
-          case _ => {}
-        }
+        r.onComplete()
         val stage = OrcWithWorkStealingScheduler.stagedTasks.get
         stage.foreach(w.scheduleLocal)
         stage.clear()
