@@ -90,7 +90,7 @@ object Tracer {
       nextWriteIndex = (nextWriteIndex + 1) //% size
     }
 
-    def dump(a: Appendable) {
+    def dump(a: Appendable) = Tracer synchronized {
       a.append(f"Trace Buffer: begin: Java thread ID $javaThreadId%#x, ${nextWriteIndex.toString} entries\n")
       a.append(f"---Time-(ms)----  ---Time-(ns)----  -Token/Group-ID-  EvntType  ------From------  -------To-------\n")
 
@@ -108,7 +108,7 @@ object Tracer {
 
   private object TraceBufferDumpThread extends Thread("TraceBufferDumpThread") {
     private val buffers = scala.collection.mutable.Set[TraceBuffer]()
-    override def run {
+    override def run = synchronized {
       buffers.map { _.dump(System.out) }
     }
     def register(tb: TraceBuffer) = synchronized {
