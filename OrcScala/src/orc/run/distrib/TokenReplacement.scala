@@ -15,7 +15,7 @@ package orc.run.distrib
 
 import orc.ast.AST
 import orc.ast.oil.nameless.{ Def, Expression }
-import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, Future, FutureFrame, Group, GroupFrame, Live, Publishing, SequenceFrame, Token, TokenState, VirtualClock }
+import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundStop, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, Future, FutureFrame, Group, GroupFrame, Live, Publishing, SequenceFrame, Token, TokenState, VirtualClock }
 
 /** Replacement for a Token for use in serialization.
   *
@@ -76,6 +76,7 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
     }
     case BoundValue(ro: RemoteObjectRef) => {
       BoundRemoteReplacement(ro.remoteRefId)
+    }
     case BoundStop => {
       BoundStopReplacement
     }
@@ -88,7 +89,7 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
     case BoundValue(null) => {
       SerializableBoundValueReplacement(null)
     }
-    case BoundValue(bv: Serializable) => {
+    case BoundValue(bv: java.io.Serializable) => {
       val br = SerializableBoundValueReplacement(bv)
       b match {
         case BoundValue(mn: DOrcMarshallingNotifications) => mn.marshalled()
@@ -257,7 +258,7 @@ protected abstract sealed class BindingReplacement() {
   def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression): Binding
 }
 
-protected final case class SerializableBoundValueReplacement(boundValue: AnyRef with Serializable) extends BindingReplacement() {
+protected final case class SerializableBoundValueReplacement(boundValue: AnyRef with java.io.Serializable) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
     val b = BoundValue(boundValue)
     b match {
