@@ -113,6 +113,7 @@ class PrettyPrint {
       case NominalType(t) => s"nominal[${reduce(t)}]"
       case RecordType(mems) => s"{. ${mems.mapValues(reduce).map(p => p._1 + " :: " + p._2).mkString(" # ")} .}"
       case StructuralType(mems) => s"{ ${mems.mapValues(reduce).map(p => p._1.field + " :: " + p._2).mkString(" # ")} }"
+      case Hole(context, typecontext) => s"HOLE[${typecontext.mapValues(reduce).map(p => p._1 + " = " + p._2).mkString(" # ")}](${context.mapValues(reduce).map(p => p._1 + " = " + p._2).mkString(" # ")})"
     }
 
 }

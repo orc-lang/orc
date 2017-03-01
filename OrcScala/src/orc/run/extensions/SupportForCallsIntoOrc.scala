@@ -51,6 +51,8 @@ class OrcCallWrapperGroup(parent: Group) extends Subgroup(parent) {
         v
       case Completed =>
         throw new AssertionError("The state is Completed at end of OrcCallWrapperGroup.await(). Await must have been called more than once.")
+      case Unbound =>
+        throw new AssertionError("The state is Unbound at end of OrcCallWrapperGroup.await().")
     }
   }
 
