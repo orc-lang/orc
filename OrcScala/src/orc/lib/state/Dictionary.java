@@ -13,7 +13,6 @@ package orc.lib.state;
 
 import java.util.HashMap;
 
-import orc.Handle;
 import orc.error.runtime.TokenException;
 import orc.lib.state.Ref.RefInstance;
 import orc.run.core.Binding;
@@ -22,9 +21,6 @@ import orc.values.Field;
 import orc.values.HasMembers;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
-import scala.Option;
-import scala.Some;
-import scala.collection.immutable.List;
 
 /**
  * @author quark

@@ -37,7 +37,6 @@ import orc.OrcEvent;
 import orc.OrcEventAction;
 import orc.Runtime;
 import orc.error.OrcException;
-import orc.error.compiletime.CompilationException;
 import orc.error.loadtime.LoadingException;
 import orc.lib.str.PrintEvent;
 import orc.run.OrcDesktopEventAction;

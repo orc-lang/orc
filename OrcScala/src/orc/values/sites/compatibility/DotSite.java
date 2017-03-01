@@ -20,7 +20,6 @@ import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.values.Field;
 import orc.values.HasMembers;
-import orc.lib.state.Ref.RefInstance;
 import orc.run.core.Binding;
 import orc.run.core.BoundValue;
 
