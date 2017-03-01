@@ -23,10 +23,25 @@ import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundValue, Closure,
   */
 abstract class TokenReplacementBase(token: Token, astRoot: Expression, val tokenProxyId: DOrcExecution#GroupProxyId, destination: PeerLocation) extends Serializable {
 
-  override def toString = super.toString + s"(tokenProxyId=$tokenProxyId, astNodeIndex=${astNodeIndex.mkString(".")}, stackTop=${stack.headOption.getOrElse("")}, env=[${env.mkString("|")}])"
+  /* Token fields:
+   *   node: orc.ast.oil.nameless.Expression -- replaced by Seq[Int] indication position of AST node in tree
+   *   stack: orc.run.core.Frame -- replaced by Array[FrameReplacement]
+   *   env: scala.collection.immutable.List[orc.run.core.Binding] -- replaced by Array[BindingReplacement]
+   *   group: orc.run.core.Group -- Supplied during deserialization by remote group proxy mechanism
+   *   clock: scala.Option[orc.run.core.VirtualClock] -- TODO
+   *   state: orc.run.core.TokenState -- Either Live or Publishing, encoded in TokenReplacement subtype
+   *   debugId: Long -- Serializable
+   *   functionFramesPushed: Int -- TODO
+   *   nonblocking: Boolean -- Always true
+   *   toStringRecusionGuard: java.lang.ThreadLocal[java.lang.Object] -- Ignored -- Only used during execution of toString
+   */
+
+  override def toString = super.toString + f"(debugId=$debugId%#x,tokenProxyId=$tokenProxyId%#x, astNodeIndex=${astNodeIndex.mkString(".")}, stackTop=${stack.headOption.getOrElse("")}, env=[${env.mkString("|")}])"
 
   protected def valueCanBeMarshaled(execution: DOrcExecution, destination: PeerLocation)(v: AnyRef) = {
-    v == null || (v.isInstanceOf[java.io.Serializable] && execution.permittedLocations(v).contains(destination))
+    val result = v == null || (v.isInstanceOf[java.io.Serializable] && execution.permittedLocations(v).contains(destination))
+    Logger.finest(s"valueCanBeMarshaled($execution, $destination)($v)=$result")
+    result
   }
 
   protected def marshalPublishingValue(execution: DOrcExecution, destination: PeerLocation)(pv: Option[AnyRef]): PublishingValueReplacement = {
@@ -61,6 +76,8 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
     }
     case BoundValue(ro: RemoteObjectRef) => {
       BoundRemoteReplacement(ro.remoteRefId)
+    case BoundStop => {
+      BoundStopReplacement
     }
     //FIXME: Make copy versus reference decision here
     case BoundValue(v) if (!valueCanBeMarshaled(execution, destination)(v)) => {
@@ -68,9 +85,11 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
       val id = execution.remoteIdForObject(v)
       BoundRemoteReplacement(id)
     }
-    case b: Binding with Serializable => {
-      /* b is stop or a value that can be sent */
-      val br = SerializableBindingReplacement(b)
+    case BoundValue(null) => {
+      SerializableBoundValueReplacement(null)
+    }
+    case BoundValue(bv: Serializable) => {
+      val br = SerializableBoundValueReplacement(bv)
       b match {
         case BoundValue(mn: DOrcMarshallingNotifications) => mn.marshalled()
         case _ => { /* Nothing to do */ }
@@ -124,6 +143,7 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
   //val state: TokenState =
   //assert(t.state == Live)
 
+  val debugId: Long = token.debugId
 }
 
 @SerialVersionUID(-655352528693128511L)
@@ -134,7 +154,7 @@ class TokenReplacement(token: Token, astRoot: Expression, tokenProxyId: DOrcExec
     val _node = AstNodeIndexing.lookupNodeInTree(astRoot, astNodeIndex).asInstanceOf[Expression]
     val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.unmarshalFrame(dorcExecution, origin, stackTop, astRoot) }
 
-    new MigratedToken(_node, _stack, env.toList map { _.unmarshalBinding(dorcExecution, origin, astRoot) }, newGroup /*, clock, state*/ )
+    new MigratedToken(_node, _stack, env.toList map { _.unmarshalBinding(dorcExecution, origin, astRoot) }, newGroup, None /* clock */, Live, debugId)
   }
 
 }
@@ -153,7 +173,7 @@ class PublishingTokenReplacement(token: Token, astRoot: Expression, tokenProxyId
     val _v = pubValue.unmarshalValue(dorcExecution)
 
     //FIXME: Hack: push a GroupFrame to compensate for the one consumed incorrectly by publishing through the GroupProxy
-    new MigratedToken(_node, GroupFrame(_stack), env.toList map { _.unmarshalBinding(dorcExecution, origin, astRoot) }, newGroup, None /*clock*/ , Publishing(_v))
+    new MigratedToken(_node, GroupFrame(_stack), env.toList map { _.unmarshalBinding(dorcExecution, origin, astRoot) }, newGroup, None /*clock*/ , Publishing(_v), debugId)
   }
 
 }
@@ -169,9 +189,10 @@ class MigratedToken(
   _stack: Frame,
   _env: List[Binding],
   _group: Group,
-  _clock: Option[VirtualClock] = None,
-  _state: TokenState = Live)
-  extends Token(_node, _stack, _env, _group, _clock, _state) {
+  _clock: Option[VirtualClock],
+  _state: TokenState,
+  _debugId: Long)
+  extends Token(_node, _stack, _env, _group, _clock, _state, _debugId) {
 }
 
 /** Utility functions for node addresses in trees.
@@ -217,7 +238,7 @@ protected final case class PublishingRemoteValueReplacement(remoteRemoteRefId: R
     execution.localObjectForRemoteId(remoteRemoteRefId) match {
       case Some(v) => Some(v)
       case None =>
-        Logger.finest(s"Publishing placeholder for remote object $remoteRemoteRefId")
+        Logger.finest(f"Publishing placeholder for remote object $remoteRemoteRefId%#x")
         Some(new RemoteObjectRef(remoteRemoteRefId))
     }
 
@@ -236,8 +257,9 @@ protected abstract sealed class BindingReplacement() {
   def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression): Binding
 }
 
-protected final case class SerializableBindingReplacement(b: Binding with Serializable) extends BindingReplacement() {
+protected final case class SerializableBoundValueReplacement(boundValue: AnyRef with Serializable) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
+    val b = BoundValue(boundValue)
     b match {
       case BoundValue(mn: DOrcMarshallingNotifications) => mn.unmarshalled()
       case _ => { /* Nothing to do */ }
@@ -251,7 +273,7 @@ protected final case class BoundRemoteReplacement(remoteRemoteRefId: RemoteObjec
     execution.localObjectForRemoteId(remoteRemoteRefId) match {
       case Some(v) => BoundValue(v)
       case None =>
-        Logger.finest(s"Binding placeholder for remote object $remoteRemoteRefId")
+        Logger.finest(f"Binding placeholder for remote object $remoteRemoteRefId%#x")
         BoundValue(new RemoteObjectRef(remoteRemoteRefId))
     }
   }
@@ -267,6 +289,12 @@ protected final case class BoundClosureReplacement(index: Int, closureGroupRepla
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
     val cg = closureGroupReplacement.unmarshalClosureGroup(execution, origin, astRoot)
     BoundReadable(new Closure(index, cg))
+  }
+}
+
+protected final case object BoundStopReplacement extends BindingReplacement() {
+  override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
+    BoundStop
   }
 }
 
