@@ -15,6 +15,7 @@ package orc.run.core
 import orc.{ OrcRuntime, Schedulable }
 import orc.ast.oil.nameless.Def
 import orc.util.BlockableMapExtension
+import java.io.ObjectStreamException
 
 /** A closure that both resolves itself and represents the closure itself. This should
   * be scheduled when it is created.
@@ -24,10 +25,20 @@ import orc.util.BlockableMapExtension
 class Closure(
   private[run] val index: Int,
   val closureGroup: ClosureGroup)
-  extends ResolvableCollectionMember[Def](index, closureGroup) {
+  extends ResolvableCollectionMember[Def](index, closureGroup) with Serializable {
   def code: Def = definition
 
   override def toString = super.toString + (code.body.sourceTextRange, closureGroup, index)
+
+  @throws(classOf[ObjectStreamException])
+  protected def writeReplace(): AnyRef = {
+    new ClosureMarshalingReplacement(index, closureGroup)
+  }
+}
+
+protected case class ClosureMarshalingReplacement(index: Int, closureGroup: ClosureGroup) {
+  @throws(classOf[ObjectStreamException])
+  protected def readResolve(): AnyRef = new Closure(index, closureGroup)
 }
 
 class ClosureGroup(
