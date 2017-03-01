@@ -106,6 +106,7 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
       case FunctionFrame(callpoint, env, previous) => FunctionFrameReplacement(AstNodeIndexing.nodeIndexInTree(callpoint, ast).get, (env map marshalBinding(execution, ast, destination)).toArray)
       case FutureFrame(k, previous) => ??? //FIXME:Need to refactor FutureFrame to eliminate closures, but only if we are going to marshal non-site calls (i.e. non-strict calls)
       case GroupFrame(previous) => GroupFrameReplacement
+      case EmptyFrame => throw new AssertionError("EmptyFrame should not appear during stack iteration")
     }
   }
 
