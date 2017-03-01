@@ -90,12 +90,12 @@ class MethodTypeMismatchException(val methodName: String, val clazz: Class[_]) e
 /** Exception raised when an uncallable value occurs in call argPosition.
   */
 @SerialVersionUID(7171287004340017499L)
-class UncallableValueException(val uncallable: Any) extends RuntimeTypeException("Value not callable: " + uncallable.toString())
+class UncallableValueException(uncallable: Any) extends RuntimeTypeException("Value not callable: \"" + uncallable.toString() + "\"")
 
 /** Attempted dot access at an unknown member.
   */
 @SerialVersionUID(7027861135377746868L)
-class NoSuchMemberException(val v: AnyRef, val unknownMember: String) extends RuntimeTypeException("Value " + v + " does not have a '" + unknownMember + "' member")
+class NoSuchMemberException(v: AnyRef, val unknownMember: String) extends RuntimeTypeException("Value " + v + " does not have a '" + unknownMember + "' member")
 
 /** Attempted dot access to members on an object without members
   */
