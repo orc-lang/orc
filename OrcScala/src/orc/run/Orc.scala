@@ -45,4 +45,15 @@ abstract class Orc(val engineInstanceName: String) extends OrcRuntime {
     */
   def installHandlers(host: EventHandler) {}
 
+  /** A thread ID 32-bit integer that can be combined with a thread local
+    * counter to produce identifiers.
+    *
+    * WARNING: Uniqueness is attempted, but not guaranteed.  Indicative only,
+    * for non-critical uses, such as debugging log/trace.
+    *
+    * We use the least significant 32 bits of Java's thread ID by default.
+    * Some Runtimes will override this with a more detailed thread ID.
+    */
+  def runtimeDebugThreadId = Thread.currentThread().getId.toInt
+
 }

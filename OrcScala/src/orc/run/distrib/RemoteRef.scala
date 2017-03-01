@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jan 5, 2016.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -28,7 +28,7 @@ trait RemoteRef extends Blocker {
   val remoteRefId: RemoteRefId
   //  def get(): AnyRef
   //  def deallocRemote(): Unit
-  override def toString = super.toString + s"(remoteRefId=$remoteRefId)"
+  override def toString = super.toString + f"(remoteRefId=$remoteRefId%#x)"
 }
 
 /** A mix-in to manage remote reference IDs
@@ -37,13 +37,12 @@ trait RemoteRef extends Blocker {
   */
 trait RemoteRefIdManager { self: DOrcExecution =>
 
-  require(followerExecutionNum < 922337203)
-  private val remoteRefIdCounter = new AtomicLong(10000000000L * followerExecutionNum + 1L)
+  private val remoteRefIdCounter = new AtomicLong(followerExecutionNum.toLong << 32)
 
   protected def freshRemoteRefId() = remoteRefIdCounter.getAndIncrement()
 
   protected def homeLocationForRemoteRef(id: Long): PeerLocation = {
-    val followerNum = id / 10000000000L
+    val followerNum = id >> 32
     assert(followerNum <= Int.MaxValue && followerNum >= Int.MinValue)
     val home = locationForFollowerNum(followerNum.toInt)
     assert(home != null, s"homeLocationFor $id should not be null")
@@ -81,7 +80,7 @@ trait RemoteObjectManager { self: DOrcExecution =>
   protected val remotedObjectUpdateLock = new Object()
 
   def remoteIdForObject(obj: AnyRef): RemoteObjectRef#RemoteRefId = {
-    //Logger.entering(getClass.getName, "idForObject")
+    Logger.entering(getClass.getName, "idForObject", Seq(obj))
     obj match {
       case ro: RemoteObjectRef => ro.remoteRefId
       case _ => remotedObjectUpdateLock synchronized {

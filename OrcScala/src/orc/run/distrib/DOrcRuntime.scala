@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 29, 2015.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -38,5 +38,16 @@ abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceN
   def allLocations: Set[PeerLocation]
 
   val here: PeerLocation
+
+  /** A thread ID 32-bit integer that can be combined with a thread local
+    * counter to produce identifiers.
+    *
+    * WARNING: Uniqueness is attempted, but not guaranteed.  Indicative only,
+    * for non-critical uses, such as debugging log/trace.
+    *
+    * We use the least significant 8 bits of the runtime number and the
+    * least significant 24 bits of Java's thread ID.
+    */
+  override def runtimeDebugThreadId() = runtimeId<<24 | Thread.currentThread().getId.asInstanceOf[Int]
 
 }

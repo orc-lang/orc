@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 21, 2015.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -33,7 +33,7 @@ import orc.util.{ ConnectionInitiator, LatchingSignal, SocketObjectConnection }
   */
 class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
-  protected val runtimeLocationMap = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[Int, FollowerLocation]())
+  protected val runtimeLocationMap = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcRuntime#RuntimeId, FollowerLocation]())
 
   protected def followerLocations = runtimeLocationMap.values.filterNot({ _ == here }).asInstanceOf[Iterable[FollowerLocation]]
   protected def followerEntries = runtimeLocationMap.filterNot({ _._2 == here })
@@ -47,7 +47,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     val followers = Map(1 -> new InetSocketAddress("localhost", 36721), 2 -> new InetSocketAddress("localhost", 36722))
 
     runtimeLocationMap.put(0, here)
-    followers foreach { f => runtimeLocationMap.put(f._1, new FollowerLocation(ConnectionInitiator[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](f._2))) }
+    followers foreach { f => runtimeLocationMap.put(f._1, new FollowerLocation(f._1, ConnectionInitiator[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](f._2))) }
 
     followerEntries foreach { e => new ReceiveThread(e._1, e._2).start() }
     followerEntries foreach { e =>
@@ -181,13 +181,15 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   val here = Here
 
-  object Here extends FollowerLocation(null) {
+  object Here extends FollowerLocation(0, null) {
     override def send(message: OrcLeaderToFollowerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
   }
 
 }
 
-class FollowerLocation(val connection: SocketObjectConnection[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd]) extends Location[OrcLeaderToFollowerCmd] {
+class FollowerLocation(val runtimeId: DOrcRuntime#RuntimeId, val connection: SocketObjectConnection[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd]) extends Location[OrcLeaderToFollowerCmd] {
+  override def toString = f"${getClass.getName}(runtimeId=$runtimeId%#x)"
+
   override def send(message: OrcLeaderToFollowerCmd) = connection.send(message)
 }
 

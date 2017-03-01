@@ -21,8 +21,9 @@ import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException
 import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
 import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
-import orc.values._
-import orc.values.sites._
+import orc.values.{ Field, OrcRecord, Signal }
+import orc.values.sites.TotalSite
+import java.util.concurrent.atomic.AtomicInteger
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -47,13 +48,25 @@ import orc.values.sites._
   * @author dkitchin
   */
 class Token protected (
-  protected var node: Expression,
-  protected var stack: Frame = EmptyFrame,
-  protected var env: List[Binding] = Nil,
-  protected var group: Group,
-  protected var clock: Option[VirtualClock] = None,
-  protected var state: TokenState = Live)
+    protected var node: Expression,
+    protected var stack: Frame,
+    protected var env: List[Binding],
+    protected var group: Group,
+    protected var clock: Option[VirtualClock],
+    protected var state: TokenState,
+    val debugId: Long)
   extends GroupMember with Schedulable with Blockable with Resolver {
+  
+  /** Convenience constructor with defaults  */
+  protected def this(
+      node: Expression,
+      stack: Frame = EmptyFrame,
+      env: List[Binding] = Nil,
+      group: Group,
+      clock: Option[VirtualClock] = None,
+      state: TokenState = Live) = {
+    this(node, stack, env, group, clock, state, Token.getNextTokenDebugId(group.runtime))
+  }
 
   var functionFramesPushed: Int = 0
 
@@ -102,7 +115,7 @@ class Token protected (
     try {
       val recursing = toStringRecusionGuard.get
       toStringRecusionGuard.set(java.lang.Boolean.TRUE)
-      super.toString.stripPrefix("orc.run.core.") + (if (recursing eq null) s"(state=$state, stackTop=$stack, node=$node, node.sourceTextRange=${node.sourceTextRange}, group=$group, clock=$clock)" else "")
+      getClass.getName + (if (recursing eq null) f"(debugId=$debugId%#x,state=$state, stackTop=$stack, node=$node, node.sourceTextRange=${node.sourceTextRange}, group=$group, clock=$clock)" else "")
     } finally {
       toStringRecusionGuard.remove()
     }
@@ -413,6 +426,7 @@ class Token protected (
 
     group.execution match {
       case dOrcExecution: DOrcExecution => {
+        orc.run.distrib.Logger.entering(getClass.getName, "siteCall", Seq(s.getClass.getName, s, actuals))
         val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)) { _ & _ }
         if (!(intersectLocs contains dOrcExecution.runtime.here)) {
           orc.run.distrib.Logger.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
@@ -823,7 +837,23 @@ class Token protected (
   }
 }
 
-/**  */
+private class LongCounter(private var value: Long) {
+  def incrementAndGet() = {
+    value += 1L
+    value
+  }
+}
+
+object Token {
+  private val currentTokenDebugId = new ThreadLocal[LongCounter]() {
+    override def initialValue() = new LongCounter(0L)
+  }
+  def getNextTokenDebugId(runtime: OrcRuntime): Long =
+    /* FIXME:This adverse coupling to runtime should be removed */
+    currentTokenDebugId.get.incrementAndGet() | (runtime.asInstanceOf[orc.run.Orc].runtimeDebugThreadId.toLong << 32)
+}
+
+/** Supertype of TokenStates */
 sealed abstract class TokenState {
   val isLive: Boolean
 }
