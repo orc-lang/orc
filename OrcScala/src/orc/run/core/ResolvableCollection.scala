@@ -1,8 +1,8 @@
 //
-// Closure.scala -- Scala class ResolvableCollection
+// ResolvableCollection.scala -- Scala class ResolvableCollection
 // Project OrcScala
 //
-// Created by dkitchin on Aug 12, 2011.
+// Created by amp on Jan 15, 2015.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
