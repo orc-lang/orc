@@ -59,7 +59,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
 
   private def scheduleBlocked(): Unit = {
     for (j <- _blocked) {
-      runtime.stage(j)
+      runtime.schedule(j)
     }
     // We will never need the blocked list again, so clear it to allow the blackables to be collected
     _blocked = null
