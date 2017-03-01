@@ -21,7 +21,7 @@ import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException
 import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
 import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
-import orc.values.{ Field, OrcRecord, Signal }
+import orc.values.{ Field, HasMembers, OrcObject, OrcRecord, Signal }
 import orc.values.sites.TotalSite
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -83,6 +83,7 @@ class Token protected (
   /** Public constructor */
   def this(start: Expression, g: Group) = {
     this(node = start, group = g, stack = GroupFrame(EmptyFrame))
+    Tracer.traceTokenCreation(this, this.state)
   }
 
   /** Copy constructor with defaults */
@@ -94,7 +95,9 @@ class Token protected (
     clock: Option[VirtualClock] = clock,
     state: TokenState = state): Token = {
     //Logger.check(stack.forall(!_.isInstanceOf[FutureFrame]), "Stack being used in copy contains FutureFrames: " + stack)
-    new Token(node, stack, env, group, clock, state)
+    val newToken = new Token(node, stack, env, group, clock, state)
+    Tracer.traceTokenCreation(newToken, state)
+    newToken
   }
 
   /*
@@ -135,6 +138,7 @@ class Token protected (
      */
     if (state != Killed) {
       // Logger.finer(s"Changing state: $this to $newState")
+      Tracer.traceTokenStateTransition(this, state, newState)
       state = newState
       true
     } else {
