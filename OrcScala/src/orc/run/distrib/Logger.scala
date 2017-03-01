@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Nov 14, 2015.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -19,7 +19,7 @@ package orc.run.distrib
   */
 object Logger extends orc.util.Logger("orc.run.distrib") {
   Logger.julLogger.setUseParentHandlers(false)
-  Logger.julLogger.setLevel(java.util.logging.Level.FINE)
+  Logger.julLogger.setLevel(java.util.logging.Level.INFO)
   val ch = new java.util.logging.ConsoleHandler()
   ch.setLevel(java.util.logging.Level.ALL)
   ch.setFormatter(orc.util.SyslogishFormatter)
