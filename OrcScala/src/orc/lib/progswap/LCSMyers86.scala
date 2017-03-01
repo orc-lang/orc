@@ -1,5 +1,5 @@
 //
-// LCS.scala -- Scala trait LCS and object LCSMyers86
+// LCSMyers86.scala -- Scala trait LCS and object LCSMyers86
 // Project OrcScala
 //
 // Copyright (c) 2016 The University of Texas at Austin. All rights reserved.

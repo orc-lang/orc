@@ -1,8 +1,8 @@
 //
-// IterableToStream.scala -- Scala object IterableToStream
+// Block.scala -- Scala object Block
 // Project OrcScala
 //
-// Created by amp in Feb 5, 2015.
+// Created by amp on Feb 5, 2015.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //

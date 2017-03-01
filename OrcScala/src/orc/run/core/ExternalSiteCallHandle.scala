@@ -1,5 +1,5 @@
 //
-// SiteCallHandle.scala -- Scala class SiteCallHandle
+// ExternalSiteCallHandle.scala -- Scala class ExternalSiteCallHandle
 // Project OrcScala
 //
 // Created by dkitchin on Aug 12, 2011.

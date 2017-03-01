@@ -1,5 +1,5 @@
 //
-// OrcJSON.scala -- Scala class ReadJSON and objects OrcJSONLexical and OrcJSONParser
+// ReadJSON.scala -- Scala class ReadJSON and objects OrcJSONLexical and OrcJSONParser
 // Project OrcScala
 //
 // Created by dkitchin on Oct 25, 2010.

@@ -1,8 +1,8 @@
 //
-// TypeChecker.scala -- Scala object TypeChecker
+// Typechecker.scala -- Scala object TypeChecker
 // Project OrcScala
 //
-// Created by jthywiss on May 24, 2010.
+// Created by dkitchin on Nov 28, 2010.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //

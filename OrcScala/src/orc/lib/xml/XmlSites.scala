@@ -1,5 +1,5 @@
 //
-// XmlSite.scala -- Scala classes XmlElementSite and XmlTextSite
+// XmlSites.scala -- Scala classes XmlElementSite and XmlTextSite
 // Project OrcScala
 //
 // Created by dkitchin on Sep 29, 2010.

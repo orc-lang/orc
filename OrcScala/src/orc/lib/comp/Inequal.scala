@@ -1,5 +1,5 @@
 //
-// NotEq.scala -- Scala object Inequal
+// Inequal.scala -- Scala object Inequal
 // Project OrcScala
 //
 // Created by jthywiss on Jun 9, 2010.

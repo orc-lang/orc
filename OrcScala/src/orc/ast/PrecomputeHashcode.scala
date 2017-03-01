@@ -1,5 +1,5 @@
 //
-// PrecomputeHash.scala -- Scala class/trait/object PrecomputeHash
+// PrecomputeHashcode.scala-- Scala class/trait/object PrecomputeHash
 // Project OrcScala
 //
 // Created by amp on Jul 3, 2013.

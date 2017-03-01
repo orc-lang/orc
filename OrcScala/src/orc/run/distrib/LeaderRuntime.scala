@@ -1,5 +1,5 @@
 //
-// DOrcRuntime.scala -- Scala class LeaderRuntime
+// LeaderRuntime.scala -- Scala class LeaderRuntime
 // Project OrcScala
 //
 // Created by jthywiss on Dec 21, 2015.

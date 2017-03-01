@@ -1,5 +1,5 @@
 //
-// ExceptionCompileLogger.scala -- Scala class ExceptionCompileLogger
+// ExceptionCollectingCompileLogger.scala -- Scala class ExceptionCollectingCompileLogger
 // Project OrcScala
 //
 // Created by jthywiss on Jun 8, 2010.

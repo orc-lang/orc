@@ -1,8 +1,8 @@
 //
-// ThreadPoolScheduler.scala -- Scala traits OrcWithThreadPoolScheduler, OrcRunner, and OrcThreadPoolExecutor
+// WorkStealingScheduler.scala -- Scala trait OrcWithWorkStealingScheduler and class OrcWorkStealingExecutor
 // Project OrcScala
 //
-// Created by jthywiss on Mar 29, 2011.
+// Created by amp on Nov 4, 2015.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
@@ -20,9 +20,9 @@ import java.util.concurrent.ForkJoinWorkerThread
 import scala.collection.mutable
 
 /** An Orc runtime engine extension which
-  * schedules Orc Tokens to run in an OrcThreadPoolExecutor.
+  * schedules Orc Tokens to run in an ForkJoinTask.
   *
-  * @author jthywiss
+  * @author amp
   */
 trait OrcWithWorkStealingScheduler extends OrcWithThreadPoolScheduler {
   override def startScheduler(options: OrcExecutionOptions) {

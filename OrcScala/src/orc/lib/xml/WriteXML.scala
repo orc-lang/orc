@@ -1,5 +1,5 @@
 //
-// ReadXML.scala -- Scala class ReadXML
+// WriteXML.scala -- Scala class WriteXML
 // Project OrcScala
 //
 // Created by dkitchin on Nov 17, 2010.

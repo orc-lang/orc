@@ -1,5 +1,5 @@
 //
-// Transformation.scala -- Scala traits ExtendedASTFunction and ExtendedASTTransform and object EmptyFunction
+// ExtendedASTTransform.scala -- Scala traits ExtendedASTFunction and ExtendedASTTransform and object EmptyFunction
 // Project OrcScala
 //
 // Created by amp on Jan, 2015.

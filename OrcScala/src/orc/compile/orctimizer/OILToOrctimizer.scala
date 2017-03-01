@@ -1,8 +1,8 @@
 //
-// NamedToNameless.scala -- Scala trait NamedToNameless
+// OILToOrctimizer.scala -- Scala class OILToOrctimizer
 // Project OrcScala
 //
-// Created by dkitchin on Jul 10, 2010.
+// Created by amp on Sep 6, 2015.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //

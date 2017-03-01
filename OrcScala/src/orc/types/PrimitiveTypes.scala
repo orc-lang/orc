@@ -1,10 +1,10 @@
 //
-// Types.scala -- Scala package orc.types
+// PrimitiveTypes.scala -- Scala objects and classes for Orc primitive types
 // Project OrcScala
 //
-// Created by jthywiss on May 24, 2010.
+// Created by dkitchin on Nov 28, 2010.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at

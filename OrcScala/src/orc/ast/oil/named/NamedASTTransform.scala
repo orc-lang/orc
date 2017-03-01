@@ -1,5 +1,5 @@
 //
-// Transformation.scala -- Scala traits NamedASTFunction and NamedASTTransform and object EmptyFunction
+// NamedASTTransform.scala -- Scala traits NamedASTFunction and NamedASTTransform and object EmptyFunction
 // Project OrcScala
 //
 // Created by dkitchin on Jul 12, 2010.

@@ -1,5 +1,5 @@
 //
-// JvmObjectType.scala -- Scala class JvmObjectType
+// JavaObjectType.scala -- Scala class JavaObjectType
 // Project OrcScala
 //
 // Created by dkitchin on Nov 29, 2010.

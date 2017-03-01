@@ -1,8 +1,8 @@
 //
-// Accessors.scala -- Scala class/trait/object Accessors
+// Accessors.scala -- Scala objects GetField, GetElem, ProjectClosure, and ProjectUnapply
 // Project OrcScala
 //
-// Created by amp on Jul 4, 2013.
+// Created by amp on Feb 18, 2016.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.builtin
 
 /*

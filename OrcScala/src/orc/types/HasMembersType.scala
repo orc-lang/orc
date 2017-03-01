@@ -1,8 +1,8 @@
 //
-// HasFieldsType.scala -- Scala trait HasFieldsType
+// HasMembersType.scala -- Scala trait HasMembersType
 // Project OrcScala
 //
-// Created by dkitchin on Nov 26, 2010.
+// Created by amp on Feb 18, 2016.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //

@@ -1,8 +1,8 @@
 //
-// IterableToStream.scala -- Scala object IterableToStream
+// Flag.scala -- Scala class Flag
 // Project OrcScala
 //
-// Created by dkitchin on Apr 11, 2011.
+// Created by amp on Sep 8, 2015.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.state
 
 import orc.values.sites.Site

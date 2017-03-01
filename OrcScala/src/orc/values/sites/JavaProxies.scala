@@ -229,7 +229,12 @@ case class JavaMemberProxy(val theObject: Object, val memberName: String) extend
 
   def call(args: Array[AnyRef], h: Handle) {
     args match {
-      case _ => h.publish(invoke(theObject, memberName, args))
+      case _ => {
+        orc.run.core.Tracer.traceJavaCall(h)
+        val result = invoke(theObject, memberName, args)
+        orc.run.core.Tracer.traceJavaReturn(h)
+        h.publish(result)
+      }
     }
   }
 
