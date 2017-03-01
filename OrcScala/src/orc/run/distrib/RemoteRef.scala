@@ -18,17 +18,17 @@ import java.util.concurrent.atomic.AtomicLong
 import orc.OrcRuntime
 import orc.run.core.{ Blockable, Blocker }
 
-/** A reference to an object at another Location.
+/** A reference to a value or future at another Location.
   *
   * @author jthywiss
   */
 trait RemoteRef extends Blocker {
   type RemoteRefId = Long
-  //  val homeLocation: Location
   val remoteRefId: RemoteRefId
+  // Possible enhancements:
+  //  val homeLocation: Location
   //  def get(): AnyRef
   //  def deallocRemote(): Unit
-  override def toString = super.toString + f"(remoteRefId=$remoteRefId%#x)"
 }
 
 /** A mix-in to manage remote reference IDs
@@ -41,8 +41,8 @@ trait RemoteRefIdManager { self: DOrcExecution =>
 
   protected def freshRemoteRefId() = remoteRefIdCounter.getAndIncrement()
 
-  protected def homeLocationForRemoteRef(id: Long): PeerLocation = {
-    val followerNum = id >> 32
+  protected def homeLocationForRemoteRef(id: RemoteRef#RemoteRefId): PeerLocation = {
+    val followerNum = id.asInstanceOf[Long] >> 32
     assert(followerNum <= Int.MaxValue && followerNum >= Int.MinValue)
     val home = locationForFollowerNum(followerNum.toInt)
     assert(home != null, s"homeLocationFor $id should not be null")
@@ -65,6 +65,9 @@ trait RemoteRefIdManager { self: DOrcExecution =>
   */
 class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
   override type RemoteRefId = Long
+
+  override def toString = super.toString + f"(remoteRefId=$remoteRefId%#x)"
+
   override def check(t: Blockable): Unit = ???
 }
 

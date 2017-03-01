@@ -16,13 +16,14 @@ package orc.run.distrib
 import orc.error.OrcException
 import orc.run.core.{ Blockable, Blocker, Execution, Future, LocalFuture }
 
-/** A reference to an LateBindGroup value at another Location.
+/** A reference to an GraftGroup value at another Location.
   *
   * @author jthywiss
   */
 class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends LocalFuture(execution.runtime) with RemoteRef {
-  // TODO: Move to companion object unless there is a reason not to.
   override type RemoteRefId = Long
+
+  override def toString = super.toString + f"(remoteRefId=$remoteRefId%#x)"
 
   execution.sendReadFuture(remoteRefId)
 }
