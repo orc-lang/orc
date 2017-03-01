@@ -96,7 +96,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   }
 
   protected class ReceiveThread(followerRuntimeId: DOrcRuntime#RuntimeId, followerLocation: FollowerLocation)
-    extends Thread(s"dOrc leader receiver for $followerRuntimeId @ ${followerLocation.connection.socket}") {
+    extends Thread(f"dOrc leader receiver for $followerRuntimeId%#x @ ${followerLocation.connection.socket}") {
     override def run() {
       try {
         followerLocation.send(DOrcConnectionHeader(runtimeId, followerRuntimeId))

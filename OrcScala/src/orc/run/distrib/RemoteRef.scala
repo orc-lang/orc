@@ -63,7 +63,7 @@ trait RemoteRefIdManager { self: DOrcExecution =>
   *
   * @author jthywiss
   */
-class RemoteObjectRef(val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
+class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
   override type RemoteRefId = Long
   override def check(t: Blockable): Unit = ???
 }

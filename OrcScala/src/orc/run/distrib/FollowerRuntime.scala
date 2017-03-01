@@ -94,7 +94,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
             followLeader(leaderLocation)
           }
           case DOrcConnectionHeader(sid, rid) if (rid == runtimeId && (initiatingWithRuntimeId == None || initiatingWithRuntimeId.get == sid)) => {
-            setName(s"dOrc follower receiver for peer $sid @ ${connection.socket}")
+            setName(f"dOrc follower receiver for peer $sid%#x @ ${connection.socket}")
             /* Ugly: The ids in the connection header tell us the type of the subsequent commands */
             val newConnAsPeerConn = connection.asInstanceOf[SocketObjectConnection[OrcPeerCmd, OrcPeerCmd]]
             val newPeerLoc = new PeerLocationImpl(sid, newConnAsPeerConn)
@@ -107,7 +107,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
             }
             communicateWithPeer(sid, newPeerLoc)
           }
-          case DOrcConnectionHeader(sid, rid) => throw new AssertionError(s"Received DOrcConnectionHeader with wrong runtime ids: sender=$sid, receiver=$rid")
+          case DOrcConnectionHeader(sid, rid) => throw new AssertionError(f"Received DOrcConnectionHeader with wrong runtime ids: sender=$sid%#x, receiver=$rid%#x")
           case m => throw new AssertionError(s"Received message before DOrcConnectionHeader: $m")
         }
       } catch {
@@ -157,10 +157,12 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(leaderLocation, gmpid, t)
           case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
           case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
+          case DiscorporateGroupMemberProxyCmd(xid, gmpid) => programs(xid).discorporateGroupMemberProxy(gmpid)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
           case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)
           case UnloadProgramCmd(xid) => unloadProgram(xid)
           case EOF => done = true
+          case DOrcConnectionHeader(sid, rid) => throw new AssertionError(f"Received extraneous DOrcConnectionHeader: sender=$sid%#x, receiver=$rid%#x")
         }
       }
     } finally {
@@ -189,9 +191,11 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(peerLocation, gmpid, t)
           case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
           case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
+          case DiscorporateGroupMemberProxyCmd(xid, gmpid) => programs(xid).discorporateGroupMemberProxy(gmpid)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
           case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)
           case EOF => { Logger.fine(s"EOF, aborting peerLocation"); peerLocation.connection.abort() }
+          case DOrcConnectionHeader(sid, rid) => throw new AssertionError(f"Received extraneous DOrcConnectionHeader: sender=$sid%#x, receiver=$rid%#x")
         }
       }
     } finally {
