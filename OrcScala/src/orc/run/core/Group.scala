@@ -147,10 +147,10 @@ trait Group extends GroupMember {
         //assert(members contains m, s"Group $this does not contain $m")
         members -= m
         if (members.isEmpty) {
-          if (hasDiscorporatedMembers)
-            onDiscorporate()
-          else {
-            onHalt()
+          if (hasDiscorporatedMembers) {
+            runtime.stage(new GroupOnDiscorporate(this))
+          } else {
+            runtime.stage(new GroupOnHalt(this))
           }
         }
         true
@@ -168,7 +168,9 @@ trait Group extends GroupMember {
         assert(members contains m, s"Group $this does not contain $m")
         members -= m
         hasDiscorporatedMembers = true
-        if (members.isEmpty) { onDiscorporate() }
+        if (members.isEmpty) {
+          runtime.stage(new GroupOnDiscorporate(this))
+        }
       }
     }
     maybeDecTokenCount(m)

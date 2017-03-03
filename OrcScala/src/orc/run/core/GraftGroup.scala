@@ -55,6 +55,7 @@ class GraftGroup(parent: Group) extends {
         state = ValuePublished
         // There should be no situations in which v is None. Just let it crash if it's not.
         _future.bind(v.get)
+        // Clear the reference to the future so that it can be collected even if this group still exists.
         _future = null
       }
       case _ => {}
@@ -91,7 +92,7 @@ class GraftGroup(parent: Group) extends {
     }
   }
 
-  // This is not needed for Graft itself. However it doesn't hurt anything and it is needed for 
+  // This is not needed for Graft itself. However it doesn't hurt anything and it is needed for
   // object field futures to halt when the object is killed.
   override def kill() = {
     synchronized {
