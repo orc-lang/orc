@@ -43,13 +43,3 @@ trait MigrationDecision
 case object Copy extends MigrationDecision
 case object Move extends MigrationDecision
 case object Remote extends MigrationDecision
-
-/** Orc values implementing this trait will be notified of marshalling for
-  * serialization to another location.
-  *
-  * @author jthywiss
-  */
-trait DOrcMarshallingNotifications {
-  def marshalled() {}
-  def unmarshalled() {}
-}

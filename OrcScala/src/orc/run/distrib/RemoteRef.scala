@@ -68,7 +68,21 @@ class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) ext
 
   override def toString = super.toString + f"(remoteRefId=$remoteRefId%#x)"
 
+  def marshal(): RemoteObjectRefReplacement = {
+    RemoteObjectRefReplacement(remoteRefId)
+  }
+
   override def check(t: Blockable): Unit = ???
+}
+
+/** A serialization replacement for a RemoteObjectRef.
+  *
+  * @author jthywiss
+  */
+case class RemoteObjectRefReplacement(remoteRefId: RemoteObjectRef#RemoteRefId) {
+  def unmarshal(rmtObjMgr: RemoteObjectManager) = {
+    rmtObjMgr.localObjectForRemoteId(remoteRefId).getOrElse(new RemoteObjectRef(remoteRefId))
+  }
 }
 
 /** A mix-in to manage remote object references.

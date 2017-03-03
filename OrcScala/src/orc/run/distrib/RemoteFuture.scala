@@ -136,8 +136,11 @@ trait RemoteFutureManager { self: DOrcExecution =>
   }
 
   def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
-    //Logger.entering(getClass.getName, "sendFutureResult")
-    readers foreach { _.send(DeliverFutureResultCmd(executionId, futureId, value)) }
+    Logger.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x"+futureId.toHexString, value))
+    readers foreach { reader =>
+      val mv = value.map(self.marshalValue(reader)(_))
+      reader.send(DeliverFutureResultCmd(executionId, futureId, mv))
+    }
   }
 
   def deliverFutureResult(futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {

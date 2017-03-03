@@ -38,21 +38,8 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
 
   override def toString = super.toString + f"(debugId=$debugId%#x,tokenProxyId=$tokenProxyId%#x, astNodeIndex=${astNodeIndex.mkString(".")}, stackTop=${stack.headOption.getOrElse("")}, env=[${env.mkString("|")}])"
 
-  protected def valueCanBeMarshaled(execution: DOrcExecution, destination: PeerLocation)(v: AnyRef) = {
-    val result = v == null || (v.isInstanceOf[java.io.Serializable] && execution.permittedLocations(v).contains(destination))
-    Logger.finest(s"valueCanBeMarshaled($execution, $destination)($v)=$result")
-    result
-  }
-
-  protected def marshalPublishingValue(execution: DOrcExecution, destination: PeerLocation)(pv: Option[AnyRef]): PublishingValueReplacement = {
-    pv match {
-      case None => PublishingStopReplacement
-      case Some(v) if valueCanBeMarshaled(execution, destination)(v) => PublishingMarshaledValueReplacement(v)
-      case Some(v) => {
-        val id = execution.remoteIdForObject(v)
-        PublishingRemoteValueReplacement(id)
-      }
-    }
+  protected def marshalPublishingValue(execution: DOrcExecution, destination: PeerLocation)(pv: Option[AnyRef]): Option[AnyRef with java.io.Serializable] = {
+    pv.map(execution.marshalValue(destination)(_))
   }
 
   protected def marshalBinding(execution: DOrcExecution, ast: Expression, destination: PeerLocation)(b: Binding): BindingReplacement = b match {
@@ -74,28 +61,15 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
       val cgr = marshalClosureGroup(c.closureGroup, execution, ast, destination)
       BoundClosureReplacement(c.index, cgr)
     }
-    case BoundValue(ro: RemoteObjectRef) => {
-      BoundRemoteReplacement(ro.remoteRefId)
+    case BoundReadable(rb) => {
+      throw new AssertionError(s"Cannot marshal: BoundReadable bound to a unrecognized type: ${rb.getClass.getName}: ${rb}")
     }
     case BoundStop => {
       BoundStopReplacement
     }
-    //FIXME: Make copy versus reference decision here
-    case BoundValue(v) if (!valueCanBeMarshaled(execution, destination)(v)) => {
-      //FIXME: Walk all fields and apply same policies.  Graph traversal and performance problems will manifest.
-      val id = execution.remoteIdForObject(v)
-      BoundRemoteReplacement(id)
-    }
-    case BoundValue(null) => {
-      SerializableBoundValueReplacement(null)
-    }
-    case BoundValue(bv: java.io.Serializable) => {
-      val br = SerializableBoundValueReplacement(bv)
-      b match {
-        case BoundValue(mn: DOrcMarshallingNotifications) => mn.marshalled()
-        case _ => { /* Nothing to do */ }
-      }
-      br
+    //FIXME: Make MigrationDecision = Copy/Move/Remote choice here
+    case BoundValue(v) => {
+      BoundValueReplacement(execution.marshalValue(destination)(v))
     }
   }
 
@@ -166,13 +140,13 @@ class PublishingTokenReplacement(token: Token, astRoot: Expression, tokenProxyId
 
   override def toString = super.toString.stripSuffix(")") + s", pubValue=$pubValue)"
 
-  val pubValue: PublishingValueReplacement = marshalPublishingValue(token.getGroup.execution.asInstanceOf[DOrcExecution], destination)(publishingValue)
+  val pubValue = marshalPublishingValue(token.getGroup.execution.asInstanceOf[DOrcExecution], destination)(publishingValue)
 
   def asPublishingToken(origin: PeerLocation, astRoot: Expression, newGroup: Group) = {
     val dorcExecution = newGroup.execution.asInstanceOf[DOrcExecution]
     val _node = AstNodeIndexing.lookupNodeInTree(astRoot, astNodeIndex).asInstanceOf[Expression]
     val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.unmarshalFrame(dorcExecution, origin, stackTop, astRoot) }
-    val _v = pubValue.unmarshalValue(dorcExecution)
+    val _v = pubValue.map(dorcExecution.unmarshalValue(_))
 
     //FIXME: Hack: push a GroupFrame to compensate for the one consumed incorrectly by publishing through the GroupProxy
     new MigratedToken(_node, GroupFrame(_stack), env.toList map { _.unmarshalBinding(dorcExecution, origin, astRoot) }, newGroup, None /*clock*/ , Publishing(_v), debugId)
@@ -223,34 +197,6 @@ object AstNodeIndexing {
   }
 }
 
-/** Replacement for a published value for use in serialization.
-  *
-  * @author jthywiss
-  */
-protected abstract sealed class PublishingValueReplacement() {
-  def unmarshalValue(execution: DOrcExecution): Option[AnyRef]
-}
-
-protected final case class PublishingMarshaledValueReplacement(v: AnyRef) extends PublishingValueReplacement() {
-  override def unmarshalValue(execution: DOrcExecution) = Some(v)
-}
-
-protected final case class PublishingRemoteValueReplacement(remoteRemoteRefId: RemoteObjectRef#RemoteRefId) extends PublishingValueReplacement() {
-  override def unmarshalValue(execution: DOrcExecution) = {
-    execution.localObjectForRemoteId(remoteRemoteRefId) match {
-      case Some(v) => Some(v)
-      case None =>
-        Logger.finest(f"Publishing placeholder for remote object $remoteRemoteRefId%#x")
-        Some(new RemoteObjectRef(remoteRemoteRefId))
-    }
-
-  }
-}
-
-protected final case object PublishingStopReplacement extends PublishingValueReplacement() {
-  override def unmarshalValue(execution: DOrcExecution) = None
-}
-
 /** Replacement for a Binding for use in serialization.
   *
   * @author jthywiss
@@ -259,25 +205,9 @@ protected abstract sealed class BindingReplacement() {
   def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression): Binding
 }
 
-protected final case class SerializableBoundValueReplacement(boundValue: AnyRef with java.io.Serializable) extends BindingReplacement() {
+protected final case class BoundValueReplacement(boundValue: AnyRef with java.io.Serializable) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
-    val b = BoundValue(boundValue)
-    b match {
-      case BoundValue(mn: DOrcMarshallingNotifications) => mn.unmarshalled()
-      case _ => { /* Nothing to do */ }
-    }
-    b
-  }
-}
-
-protected final case class BoundRemoteReplacement(remoteRemoteRefId: RemoteObjectRef#RemoteRefId) extends BindingReplacement() {
-  override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
-    execution.localObjectForRemoteId(remoteRemoteRefId) match {
-      case Some(v) => BoundValue(v)
-      case None =>
-        Logger.finest(f"Binding placeholder for remote object $remoteRemoteRefId%#x")
-        BoundValue(new RemoteObjectRef(remoteRemoteRefId))
-    }
+    BoundValue(execution.unmarshalValue(boundValue))
   }
 }
 

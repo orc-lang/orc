@@ -41,6 +41,7 @@ abstract class DOrcExecution(
     override val runtime: DOrcRuntime)
   extends Execution(node, options, eventHandler, runtime)
   with ValueLocator
+  with ValueMarshaler
   with GroupProxyManager
   with RemoteFutureManager
   with RemoteObjectManager
