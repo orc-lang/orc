@@ -41,7 +41,7 @@ trait ValueMarshaler { self: DOrcExecution =>
       case mn: DOrcMarshalingNotifications => mn.marshaled()
       case _ => { /* Nothing to do */ }
     }
-    Logger.finest(s"marshalValue($execution, $destination)($value)=mv")
+    Logger.finest(s"marshalValue($destination)($value)=$mv")
     mv
   }
 
@@ -54,6 +54,7 @@ trait ValueMarshaler { self: DOrcExecution =>
       case mn: DOrcMarshalingNotifications => mn.unmarshaled()
       case _ => { /* Nothing to do */ }
     }
+    Logger.finest(s"unmarshalValue($value)=$v")
     v
   }
   

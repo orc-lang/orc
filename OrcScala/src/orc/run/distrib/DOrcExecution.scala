@@ -63,7 +63,7 @@ abstract class DOrcExecution(
       //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "add") => Set(locationForFollowerNum(1))
       case _ => hereSet
     }
-    // Logger.finer(s"currentLocations($v)=$cl")
+    // Logger.finer(s"currentLocations($v: ${v.getClass.getName})=$cl")
     cl
   }
   override def permittedLocations(v: Any): Set[PeerLocation] = {
@@ -78,7 +78,7 @@ abstract class DOrcExecution(
       //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "add") => Set(locationForFollowerNum(1))
       case _ => runtime.allLocations
     }
-    Logger.finest(s"permittedLocations($v)=$pl")
+    Logger.finest(s"permittedLocations($v: ${v.getClass.getName})=$pl")
     pl
   }
 
