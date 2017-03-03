@@ -14,6 +14,7 @@
 package orc.util;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import sun.misc.Unsafe;
 
@@ -139,10 +140,27 @@ public final class ABPWSDeque<T> {
     return (T) ABORT;
   }
 
+  /**
+   * Return current number of elements in the queue. This should only be called
+   * from the owner thread and the number may decrease (but not increase) at any
+   * time due to calls to popTop().
+   */
   public int size() {
     long oldAge = age;
     int localBot = bot;
     int oldTop = getTop(oldAge);
     return localBot - oldTop;
+  }
+
+  /**
+   * Clear all locations to null in an empty deque. This may only be called on
+   * an empty deque and may only be called form the owner thread.
+   */
+  public void wipe() {
+    if (size() > 0) {
+      throw new IllegalStateException("ABPWSDeque must be empty to be wiped");
+    }
+
+    Arrays.fill(deq, null);
   }
 }

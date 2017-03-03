@@ -196,7 +196,15 @@ class SimpleWorkStealingScheduler(
         stealFailures += 1
         stealFailureRunLength += 1
         val n = nWorkers
-        if (stealFailureRunLength > n * 2) {
+        val stealAttemptsBeforeBlocking = n * 2
+        if (stealFailureRunLength == stealAttemptsBeforeBlocking) {
+          // Wipe the queue when we are about to start blocking.
+          // This is required to prevent previously scheduled tokens or
+          // other schedulables from being held. Overwrite is not needed
+          // if the thread is active since it will be constantly
+          // overwriting previous tasks as the queue is used.
+          workQueue.wipe()
+        } else if (stealFailureRunLength > stealAttemptsBeforeBlocking) {
           try {
             schedulerThis.synchronized {
               atRemovalSafePoint = true
