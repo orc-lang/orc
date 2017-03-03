@@ -15,7 +15,7 @@ def distance((ar, ai)) = (ar**2 + ai**2) ** 0.5
 
 val threshold = 100
 val steps = 10
-val size = 24
+val size = 64
 val resolution = 3.0 / size
 val offset = size / 2.0
 

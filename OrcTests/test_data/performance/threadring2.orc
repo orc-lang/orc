@@ -31,8 +31,8 @@ def threadRingRunner(p) =
   upto(N) >i> ring(i).getAll() >> ring(i).closeD() >> stop ; 
   signal
 
-threadRingRunner(1000) >>
-threadRingRunner(10000) >> stop
+threadRingRunner(2000) >>
+threadRingRunner(20000) >> stop
 {-
 OUTPUT:
 498

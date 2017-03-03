@@ -5,7 +5,7 @@
 
 include "timeIt.inc"
 
-val n = 40000
+val n = 80000
 val c = Counter(n)
 
 timeIt({

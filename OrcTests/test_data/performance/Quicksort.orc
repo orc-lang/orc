@@ -28,7 +28,7 @@ def makeRandomArray(n) =
   a
 
 def runTest() =
-  timeIt({ makeRandomArray(1000) }) >a>
+  timeIt({ makeRandomArray(10000) }) >a>
   --Println(arrayToList(a)) >>
   timeIt({ quicksort(a) })
   --Println(arrayToList(a))

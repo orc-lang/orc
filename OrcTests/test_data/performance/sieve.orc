@@ -42,7 +42,7 @@ def primes(n) =
   joinMap(set.add, candidates(n)) >>
   sieve(n, set)
 
-primes(10000)
+primes(50000)
 
 {-
 BENCHMARK
