@@ -64,12 +64,12 @@ trait Group extends GroupMember {
     val mems = synchronized {
       if (alive) {
         alive = false
-        val m = members.toVector
+        val m = members.toArray[GroupMember]
         // This is required to prevent persistent references to values from groups.
         members.clear()
         m
       } else {
-        Seq()
+        Array[GroupMember]()
       }
     }
     for (m <- mems) {
@@ -97,7 +97,7 @@ trait Group extends GroupMember {
     for (m <- members) m.resume()
   }
 
-  def add(m: GroupMember) {
+  def add(m: GroupMember): Unit = {
     synchronized {
       if (!alive) {
         m.kill()
@@ -127,10 +127,18 @@ trait Group extends GroupMember {
     case _ => {}
   }
 
-  def remove(m: GroupMember) {
-    synchronized {
+  /** Remove a member from this group.
+    *
+    * Returns true if the member is allowed to leave and false if the member cannot leave because it is already being killed.
+    * If this returns, false then the member may be double scheduled.
+    */
+  def remove(m: GroupMember): Boolean = {
+    val res = synchronized {
       if (!alive) {
-        //println(s"Warning: removing $m from $this")
+        // Do not allow the member to escape if it has been killed.
+        // At this point the token will have been double scheduled so it
+        // cannot safely leave this group.
+        false
       } else {
         /* This assert is useful, but since it's inside a hot-path synchronized block
          * it should be kept commented when not needed. On token intensive workloads
@@ -145,9 +153,11 @@ trait Group extends GroupMember {
             onHalt()
           }
         }
+        true
       }
     }
     maybeDecTokenCount(m)
+    res
   }
 
   def discorporate(m: GroupMember) {

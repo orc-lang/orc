@@ -28,15 +28,24 @@ package orc.util
   * @author jthywiss
   */
 object Tracer {
-  
+
   //TODO: Rolling buffer alloc/swap/resize
+  //   AMP: I think the best approach would be a ring buffer in TraceBuffer and a thread which
+  //        removes data from the ring buffer now and then. Overflow would be detected and flagged
+  //        maybe simply by adding an event to the log.
+
+  //TODO: It structure of arrays really faster than array of structures (encoded manually as blocks of indices in the array)?
 
   //TODO: "Who wants to be a macro?" "Oooh, pick me, pick me!!"
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
   final val traceOn = false
 
-  private final val eventIdMapInitSize = 32 
+  final val onlyDumpSelectedLocations = false
+
+  private val selectedLocations: java.util.HashSet[Long] = new java.util.HashSet[Long]()
+
+  private final val eventIdMapInitSize = 32
   private val eventTypeNameMap = new scala.collection.mutable.LongMap[String](eventIdMapInitSize)
   private final val defaultPrettyprint = (_: Long) => (arg: Long) => f"${arg}%016x"
   private val eventPrettyprintFromArg = new scala.collection.mutable.LongMap[Long => String](defaultPrettyprint, eventIdMapInitSize)
@@ -92,18 +101,24 @@ object Tracer {
 
     def dump(a: Appendable) = Tracer synchronized {
       a.append(f"Trace Buffer: begin: Java thread ID $javaThreadId%#x, ${nextWriteIndex.toString} entries\n")
-      a.append(f"---Time-(ms)----  ---Time-(ns)----  -Token/Group-ID-  EvntType  ------From------  -------To-------\n")
+      a.append(f"---Time-(ms)----  ---Time-(ns)----  ThreadID  -Token/Group-ID-  EvntType  ------From------  -------To-------\n")
 
       for (i <- 0 to nextWriteIndex - 1) {
-        val eventTypeName = eventTypeNameMap(typeIds(i))
-        val prettyFromArg = eventPrettyprintFromArg(typeIds(i))(fromArgs(i))
-        val prettyToArg = eventPrettyprintToArg(typeIds(i))(toArgs(i))
-        a.append(f"${millitimes(i)}%016x  ${nanotimes(i)}%016x  ${locationIds(i)}%016x  ${eventTypeName}  ${prettyFromArg}%16s  ${prettyToArg}%16s\n")
+        if (!onlyDumpSelectedLocations || selectedLocations.contains(locationIds(i))) {
+          val eventTypeName = eventTypeNameMap(typeIds(i))
+          val prettyFromArg = eventPrettyprintFromArg(typeIds(i))(fromArgs(i))
+          val prettyToArg = eventPrettyprintToArg(typeIds(i))(toArgs(i))
+          a.append(f"${millitimes(i)}%016x  ${nanotimes(i)}%016x  $javaThreadId%8x  ${locationIds(i)}%016x  ${eventTypeName}  ${prettyFromArg}%16s  ${prettyToArg}%16s\n")
+        }
       }
       a.append(f"Trace Buffer: end: Java thread ID $javaThreadId%#x\n")
     }
-    
+
     TraceBufferDumpThread.register(this)
+  }
+
+  def selectLocation(locID: Long) = synchronized {
+    selectedLocations.add(locID)
   }
 
   private object TraceBufferDumpThread extends Thread("TraceBufferDumpThread") {
