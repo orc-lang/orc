@@ -1,5 +1,5 @@
 //
-// WorkStealingScheduler.scala --
+// WorkStealingScheduler.scala -- A work-stealing scheduler for Orc
 // Project OrcScala
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
@@ -18,6 +18,10 @@ import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
 import orc.util.ABPWSDeque
 
+/**
+ *
+ * @author amp
+ */
 class SimpleWorkStealingScheduler(
   maxSiteThreads: Int,
   val monitorInterval: Int = 10,
@@ -77,11 +81,11 @@ class SimpleWorkStealingScheduler(
         val nUsableWorkers = nw - nBlocked
 
         if (nUsableWorkers < goalUsableThreads && nWorkers < maxWorkers) {
-          Logger.warning(s"Starting new worker due to: nUsableWorkers=$nUsableWorkers goalUsableThreads=$goalUsableThreads nBlocked=$nBlocked")
+          Logger.fine(s"Starting new worker due to: nWorkers = $nw nUsableWorkers=$nUsableWorkers goalUsableThreads=$goalUsableThreads nBlocked=$nBlocked")
           addWorker()
         }
         if (nUsableWorkers > maxUsableThreads && nWorkers > minWorkers) {
-          Logger.warning(s"Stopping worker due to: nUsableWorkers=$nUsableWorkers maxUsableThreads=$maxUsableThreads")
+          Logger.fine(s"Stopping worker due to: nWorkers = $nw nUsableWorkers=$nUsableWorkers maxUsableThreads=$maxUsableThreads")
           schedulerThis.synchronized {
             val i = currentWorkers.indexWhere(_.atRemovalSafePoint)
             if(i >= 0)
