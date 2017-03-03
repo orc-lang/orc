@@ -147,7 +147,7 @@ trait RemoteFutureManager { self: DOrcExecution =>
     val reader = waitingReaders.get(futureId)
     if (reader != null) {
       value match {
-        case Some(v) => reader.bind(v)
+        case Some(v) => reader.bind(self.unmarshalValue(v))
         case None => reader.stop()
       }
     } else {
