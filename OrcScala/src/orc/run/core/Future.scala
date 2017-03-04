@@ -30,7 +30,7 @@ trait Future extends ReadableBlocker with OrcValue {
   * Note: This implementation is from the Porc implementation, so
   * it is slightly more optimized than most of the token interpreter.
   * Specifically the states are Ints to avoid the need for objects
-  * in the critial paths. The trade off is that Future contains an
+  * in the critical paths. The trade off is that Future contains an
   * extra couple of pointers.
   */
 class LocalFuture(val runtime: OrcRuntime) extends Future {
@@ -61,7 +61,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     for (j <- _blocked) {
       runtime.schedule(j)
     }
-    // We will never need the blocked list again, so clear it to allow the blackables to be collected
+    // We will never need the blocked list again, so clear it to allow the blockables to be collected
     _blocked = null
   }
 

@@ -152,8 +152,8 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
     // To avoid a negative transient of the activeCount of t (to zero being the problem)
     // we unset here and then set again to undo it after if it was not needed. This means that
     // blockables in waitlist can always be set without breaking things.
-    // t is guarenteed not to be quiescent (since it is calling read), so unsetting it again
-    // for a little while will not cause an extra step to 0. So we are intensionally creating
+    // t is guaranteed not to be quiescent (since it is calling read), so unsetting it again
+    // for a little while will not cause an extra step to 0. So we are intentionally creating
     // a positive transient to avoid a possible negative transient.
     t.unsetQuiescent()
 
