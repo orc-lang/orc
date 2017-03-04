@@ -152,7 +152,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     group.add(rmtProxy)
     group.remove(token)
 
-    Tracer.traceTokenSend(token)
+    Tracer.traceTokenSend(token, destination)
 
     destination.send(HostTokenCmd(executionId, new TokenReplacement(token, node, rmtProxy.thisProxyId, destination)))
   }
@@ -173,7 +173,7 @@ trait GroupProxyManager { self: DOrcExecution =>
       origin.send(HaltGroupMemberProxyCmd(executionId, movedToken.tokenProxyId))
     }
 
-    Tracer.traceTokenReceive(newToken)
+    Tracer.traceTokenReceive(newToken, origin)
 
     Logger.fine(s"scheduling $newToken")
     runtime.schedule(newToken)

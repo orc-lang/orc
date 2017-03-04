@@ -27,13 +27,21 @@ object Tracer {
   orc.util.Tracer.registerEventTypeId(TokenReceive, "TokRecv ")
 
   @inline
-  def traceTokenSend(token: orc.run.core.Token/*, destination: Location*/) {
-    orc.util.Tracer.trace(TokenSend, token.debugId, 0L, 0L)
+  def traceTokenSend(token: orc.run.core.Token, destination: Location[_]) {
+    val destRuntimeId = destination match {
+      case ll: LeaderLocation => ll.runtimeId
+      case fl: FollowerLocation => fl.runtimeId
+    }
+    orc.util.Tracer.trace(TokenSend, token.debugId, token.runtime.asInstanceOf[DOrcRuntime].runtimeId, destRuntimeId)
   }
 
   @inline
-  def traceTokenReceive(token: orc.run.core.Token/*, destination: Location*/) {
-    orc.util.Tracer.trace(TokenReceive, token.debugId, 0L, 0L)
+  def traceTokenReceive(token: orc.run.core.Token, origin: Location[_]) {
+    val originRuntimeId = origin match {
+      case ll: LeaderLocation => ll.runtimeId
+      case fl: FollowerLocation => fl.runtimeId
+    }
+    orc.util.Tracer.trace(TokenReceive, token.debugId, originRuntimeId, token.runtime.asInstanceOf[DOrcRuntime].runtimeId)
   }
 
 }
