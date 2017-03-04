@@ -92,6 +92,14 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     }
   }
 
+  def readIfResolved() = {
+    synchronized { _state } match {
+      case Unbound => None
+      case Bound => Some(Some(_value))
+      case Halt => Some(None)
+    }
+  }
+
   override def toOrcSyntax() = {
     synchronized { _state } match {
       case Bound => Format.formatValue(_value)

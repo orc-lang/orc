@@ -15,7 +15,7 @@ package orc.run.distrib
 
 import orc.ast.AST
 import orc.ast.oil.nameless.{ Def, Expression }
-import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundStop, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, Future, FutureFrame, Group, GroupFrame, Live, Publishing, SequenceFrame, Token, TokenState, VirtualClock }
+import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundStop, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, Future, FutureFrame, Group, GroupFrame, Live, LocalFuture, Publishing, SequenceFrame, Token, TokenState, VirtualClock }
 
 /** Replacement for a Token for use in serialization.
   *
@@ -42,34 +42,36 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
     pv.map(execution.marshalValue(destination)(_))
   }
 
-  protected def marshalBinding(execution: DOrcExecution, ast: Expression, destination: PeerLocation)(b: Binding): BindingReplacement = b match {
-    case BoundReadable(fut: Future) => {
-      val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(fut)
-      BoundFutureReplacement(id)
-      // TODO: Reinstate this optimization.
-      //      g.state match {
-      //        case RightSidePublished(None) => BoundStop
-      //        case RightSidePublished(Some(v)) => BoundValue(v)
-      //        case RightSideSilent => BoundStop
-      //        case RightSideUnknown(_) => {
-      //          val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(g)
-      //          BoundFutureReplacement(id)
-      //        }
-      //      }
-    }
-    case BoundReadable(c: Closure) => {
-      val cgr = marshalClosureGroup(c.closureGroup, execution, ast, destination)
-      BoundClosureReplacement(c.index, cgr)
-    }
-    case BoundReadable(rb) => {
-      throw new AssertionError(s"Cannot marshal: BoundReadable bound to a unrecognized type: ${rb.getClass.getName}: ${rb}")
-    }
-    case BoundStop => {
-      BoundStopReplacement
-    }
-    //FIXME: Make MigrationDecision = Copy/Move/Remote choice here
-    case BoundValue(v) => {
-      BoundValueReplacement(execution.marshalValue(destination)(v))
+  protected def marshalBinding(execution: DOrcExecution, ast: Expression, destination: PeerLocation)(b: Binding): BindingReplacement = {
+    (b match {
+      /* Optimization: Treat resolved local futures as just values */ 
+      case BoundReadable(lfut: LocalFuture) => {
+        lfut.readIfResolved() match {
+          case Some(None) => BoundStop
+          case Some(Some(v)) => BoundValue(v)
+          case None => b
+        }
+      }
+      case _ => b
+    }) match {
+      case BoundReadable(fut: Future) => {
+        val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(fut)
+        BoundFutureReplacement(id)
+      }
+      case BoundReadable(c: Closure) => {
+        val cgr = marshalClosureGroup(c.closureGroup, execution, ast, destination)
+        BoundClosureReplacement(c.index, cgr)
+      }
+      case BoundReadable(rb) => {
+        throw new AssertionError(s"Cannot marshal: BoundReadable bound to a unrecognized type: ${rb.getClass.getName}: ${rb}")
+      }
+      case BoundStop => {
+        BoundStopReplacement
+      }
+      //FIXME: Make MigrationDecision = Copy/Move/Remote choice here
+      case BoundValue(v) => {
+        BoundValueReplacement(execution.marshalValue(destination)(v))
+      }
     }
   }
 
