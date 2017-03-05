@@ -148,9 +148,15 @@ trait Group extends GroupMember {
         members -= m
         if (members.isEmpty) {
           if (hasDiscorporatedMembers) {
-            runtime.stage(new GroupOnDiscorporate(this))
+            // Possible technique for fixing Java stack overflow when walking up group tree.
+            // However this causes negative transients in vclocks since there is no way to hold
+            // onto the clock while this task is scheduled since we don't have a clock reference here.
+            //runtime.stage(new GroupOnDiscorporate(this))
+            onDiscorporate()
           } else {
-            runtime.stage(new GroupOnHalt(this))
+            // See above comment.
+            //runtime.stage(new GroupOnHalt(this))
+            onHalt()
           }
         }
         true
@@ -169,7 +175,11 @@ trait Group extends GroupMember {
         members -= m
         hasDiscorporatedMembers = true
         if (members.isEmpty) {
-          runtime.stage(new GroupOnDiscorporate(this))
+          // Possible technique for fixing Java stack overflow when walking up group tree.
+          // However this causes negative transients in vclocks since there is no way to hold
+          // onto the clock while this task is scheduled since we don't have a clock reference here.
+          //runtime.stage(new GroupOnDiscorporate(this))
+          onDiscorporate()
         }
       }
     }

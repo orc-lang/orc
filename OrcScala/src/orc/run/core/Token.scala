@@ -23,6 +23,7 @@ import orc.run.Logger
 import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
 import orc.values.{ Field, HasMembers, OrcObject, OrcRecord, Signal }
 import orc.values.sites.TotalSite
+import orc.error.runtime.JavaStackLimitReachedError
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -657,9 +658,20 @@ class Token protected (
         case Halted => throw new AssertionError("halted token scheduled")
       }
     } catch {
-      case e: OrcException => this !! e
-      case e: InterruptedException => { halt(); Thread.currentThread().interrupt() } //Thread interrupt causes halt without notify
-      case e: Throwable => { notifyOrc(CaughtEvent(e)); halt() }
+      case e: OrcException => {
+        this !! e
+      }
+      case e: InterruptedException => {
+        halt()
+        Thread.currentThread().interrupt()
+      } //Thread interrupt causes halt without notify
+      case e: StackOverflowError => {
+        this !! new JavaStackLimitReachedError(stack.count(_.isInstanceOf[FunctionFrame]))
+      }
+      case e: Throwable => {
+        notifyOrc(CaughtEvent(e))
+        halt()
+      }
     }
   }
 
@@ -867,8 +879,8 @@ class Token protected (
     e.setPosition(node.sourceTextRange.orNull)
     e match {
       case te: TokenException if (te.getBacktrace() == null || te.getBacktrace().length == 0) => {
-        val callPoints = stack.toList collect { case f: FunctionFrame => f.callpoint.sourceTextRange.orNull }
-        te.setBacktrace(callPoints.toArray)
+        val callPoints = stack collect { case f: FunctionFrame => f.callpoint.sourceTextRange.orNull }
+        te.setBacktrace(callPoints.take(2048).toArray)
       }
       case _ => {} // Not a TokenException; no need to collect backtrace
     }
