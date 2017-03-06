@@ -73,9 +73,9 @@ object ForceType {
     res.toMap
   }
   /*
-  def maxMaps[T](a: Map[T, ForceType], b: Map[T, ForceType]): Map[T, ForceType] = 
+  def maxMaps[T](a: Map[T, ForceType], b: Map[T, ForceType]): Map[T, ForceType] =
     intersectMap(_ max _, a, b)
-  def minMaps[T](a: Map[T, ForceType], b: Map[T, ForceType]): Map[T, ForceType] = 
+  def minMaps[T](a: Map[T, ForceType], b: Map[T, ForceType]): Map[T, ForceType] =
     intersectMap(_ min _, a, b)
   */
 }
@@ -103,8 +103,8 @@ sealed trait ValueKind {
 object ValueKind {
   case object Unknown extends ValueKind
   case object Blocking extends ValueKind
-  case object NonBlocking extends ValueKind 
-  
+  case object NonBlocking extends ValueKind
+
   def apply(d: Delay) = d match {
     case Delay.Blocking => Blocking
     case Delay.NonBlocking => NonBlocking
@@ -226,12 +226,12 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
   // TODO: Recursive functions could be handled by thinking of these functions as recursive relations on the analysis result.
   // These recursive relations could either be solve in place as we go or reified and then solved using any technique.
 
-  // TODO: The analysis I am doing is flow-sensative and outward-context-sensative in that functions are 
-  //       analyzed for each call site and that result used at that site. However no information flow 
-  //       inward from the call site to allow optimization inside the function body. A conscious decision 
+  // TODO: The analysis I am doing is flow-sensative and outward-context-sensative in that functions are
+  //       analyzed for each call site and that result used at that site. However no information flow
+  //       inward from the call site to allow optimization inside the function body. A conscious decision
   //       should be made as to what sensativities we want.
 
-  // TODO: All these analyses are really flow analyses of one form or another. This should use a consistant 
+  // TODO: All these analyses are really flow analyses of one form or another. This should use a consistant
   //       framework for them. However because we have no goto all flow control is through functions which
   //       means flow analyses MUST occur across function boundries.
 
@@ -303,8 +303,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         }
       case FieldAccess(_, _) in _ =>
         Delay.NonBlocking
-      case VtimeZone(_, e) in ctx =>
-        (e in ctx).timeToHalt
+      //case VtimeZone(_, e) in ctx =>
+      //  (e in ctx).timeToHalt
     }
   }
 
@@ -373,8 +373,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Delay.NonBlocking
       case FieldAccess(_, _) in _ =>
         Delay.NonBlocking
-      case VtimeZone(_, e) in ctx =>
-        (e in ctx).timeToPublish
+      //case VtimeZone(_, e) in ctx =>
+      //  (e in ctx).timeToPublish
     }
   }
 
@@ -452,8 +452,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           Range(1, 1)
         else
           Range(0, 1)
-      case VtimeZone(_, e) in ctx =>
-        (e in ctx).publications
+      //case VtimeZone(_, e) in ctx =>
+      //  (e in ctx).publications
     }
   }
 
@@ -523,7 +523,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             case _ => Map()
           }
         }
-         * 
+         *
          */
         vs.collect({ case (x: BoundVar) in _ => (x, ForceType.Immediately(true)) }).toMap ++ l.forceTypes
       // TODO: These may also wait on the content of closures which could be useful. (for functions returning functions for instance)
@@ -547,8 +547,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Map()
       case FieldAccess(_, _) in _ =>
         Map()
-      case VtimeZone(_, _) in _ =>
-        Map()
+      //case VtimeZone(_, _) in _ =>
+      //  Map()
     }
   }
 
@@ -598,8 +598,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Effects.None
       case FieldAccess(_, _) in _ =>
         Effects.None
-      case VtimeZone(_, e) in ctx =>
-        (e in ctx).effects
+      //case VtimeZone(_, e) in ctx =>
+      //  (e in ctx).effects
     }
   }
 
@@ -661,8 +661,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           val DeclareCallablesAt(_, dctx, _) = decls in ctx
           val DefAt(_, _, body, _, _, _, _) = d in dctx
           // Remove all arguments because they are not closed variables.
-          // Remove all recursive references. Because those will always 
-          // be available immediately when non-recursive references 
+          // Remove all recursive references. Because those will always
+          // be available immediately when non-recursive references
           // become available, so they can never increase the delay.
           val closedVars = body.freeVars -- d.formals -- decls.defs.map(_.name)
           val closedVarDelay = (for (x <- closedVars.iterator) yield {
@@ -688,8 +688,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         }
       case FieldAccess(_, _) in _ =>
         Delay.NonBlocking
-      case VtimeZone(_, _) in _ =>
-        Delay.Blocking
+      //case VtimeZone(_, _) in _ =>
+      //  Delay.Blocking
     }
   }
 

@@ -39,8 +39,8 @@ sealed abstract class PorcAST extends AST with Product with WithContextInfixComb
   protected[porc] def assignNumbersStartingAt(n: Int): Int = {
     /*if (Logger.isLoggable(Level.FINE)) {
       number match {
-        case Some(oldN) => 
-          if (n != oldN) 
+        case Some(oldN) =>
+          if (n != oldN)
             Logger.fine("Reassigning PorcAST instruction number to something different. This may be a problem or at least confusing.")
         case None => ()
       }
@@ -82,9 +82,9 @@ class Var(optionalName: Option[String] = None) extends Value with hasOptionalVar
   def this(s: String) = this(Some(Var.getNextVariableName(s)))
 
   override def productIterator = Nil.iterator
-  // Members declared in scala.Equals   
+  // Members declared in scala.Equals
   def canEqual(that: Any): Boolean = that.isInstanceOf[Var]
-  // Members declared in scala.Product   
+  // Members declared in scala.Product
   def productArity: Int = 0
   def productElement(n: Int): Any = ???
 
@@ -146,6 +146,8 @@ case class DefCall(target: Value, pArg: Value, cArg: Value, tArg: Value, argumen
 case class DefCallDirect(target: Value, arguments: List[Value]) extends Expr
 
 case class IfDef(argument: Value, left: Expr, right: Expr) extends Expr
+
+case class New(self: Var, bindings: Map[Field, Expr]) extends Expr
 
 // ==================== PROCESS ===================
 

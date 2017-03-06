@@ -33,7 +33,8 @@ import orc.run.tojava.OrcProgram
 class PorcBackend extends Backend[PorcBackend.CompiledOrcProgram] {
   import PorcBackend.CompiledOrcProgram
 
-  throw new NotImplementedError("The Orctimizer/Porc backend is totally broken in this build. Sorry you cannot even expreriment with it at the moment.")
+  if (System.getenv("NOREALLY") == null)
+    throw new NotImplementedError("The Orctimizer/Porc backend is totally broken in this build. Sorry you cannot even expreriment with it at the moment.")
 
   lazy val compiler: Compiler[CompiledOrcProgram] = new PorcOrcCompiler() with Compiler[CompiledOrcProgram] {
     val javaCompiler = new JavaCompiler()

@@ -15,6 +15,7 @@ package orc.ast.orctimizer.named
 import scala.collection.mutable._
 import orc.values.Format
 import orc.compile.orctimizer.ExpressionAnalysisProvider
+import orc.values.Field
 
 /** Nicer printing for named OIL syntax trees.
   *
@@ -60,7 +61,7 @@ class PrettyPrint {
           }) +
           paren(args)
       }
-      case left || right => "(" + reduce(left) + " | " + reduce(right) + ")"
+      case left Parallel right => "(" + reduce(left) + " | " + reduce(right) + ")"
       case Branch(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
       case Trim(f) => "{|" + reduce(f) + "|}"
       case Future(x, f, g) => "future " + reduce(x) + " = " + reduce(f) + " #\n" + reduce(g)
@@ -90,9 +91,19 @@ class PrettyPrint {
           "site " + name + paren(formals) + " = " + reduce(body) +
           "\n"
       }
+
+      case New(self, st, bindings, t) => {
+        def reduceField(f: (Field, Expression)) = {
+          val (name, expr) = f
+          s"${name} = ${reduce(expr)}"
+        }
+        s"new ${t.map(reduce).getOrElse("")} { ${reduce(self)} ${st.map(t => ": " + reduce(t)).getOrElse("")}" +
+          s"${if (bindings.nonEmpty) bindings.map(reduceField).mkString(" #\n", " #\n  ", "\n") else ""} }"
+      }
+
       case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
       case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
-      case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
+      //case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
       case FieldAccess(o, f) => reduce(o) + "." + f.field
       case Constant(v) => Format.formatValue(v)
       case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x))
@@ -117,7 +128,12 @@ class PrettyPrint {
           }
         brack(typeformals) + "(" + variantSeq.mkString(" | ") + ")"
       }
-      case _ => "???"
+      case IntersectionType(a, b) => reduce(a) + " & " + reduce(b)
+      case UnionType(a, b) => reduce(a) + " | " + reduce(b)
+      case NominalType(t) => s"nominal[${reduce(t)}]"
+      case RecordType(mems) => s"{. ${mems.mapValues(reduce).map(p => p._1 + " :: " + p._2).mkString(" # ")} .}"
+      case StructuralType(mems) => s"{ ${mems.mapValues(reduce).map(p => p._1.field + " :: " + p._2).mkString(" # ")} }"
+      //case _ => "???"
     }
     exprStr
   }

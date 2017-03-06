@@ -27,10 +27,21 @@ class OILToOrctimizer {
     case _ => false
   }
 
+  /*
+   * TODO:
+   *
+   * Determine encoding for orc sites into Orctimizer
+   * Add Orctimizer AST nodes for sites (as needed) and object instantiation.
+   * Implement translation from OIL to Orct.
+   * Check the results manually for a number of cases.
+   *
+   * Do not implement Vtime, but do insert comments about implementing onIdle.
+   */
+
   def apply(e: Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
     e -> {
       case Stop() => orct.Stop()
-      case (a: Argument) > x > e => {
+      case Sequence(a: Argument, x, e) => {
         // Special case to optimize the pattern where we are directly forcing something.
         val bctx = ctx + ((x, e))
         orct.Force(List(apply(x)), List(apply(a)), true, apply(e)(bctx))
@@ -57,8 +68,8 @@ class OILToOrctimizer {
             }
           }))
       }
-      case left || right => orct.Parallel(apply(left), apply(right))
-      case left > x > right => {
+      case Parallel(left, right) => orct.Parallel(apply(left), apply(right))
+      case Sequence(left, x, right) => {
         val bctx = ctx + ((x, e))
         orct.Branch(apply(left), apply(x), apply(right)(bctx))
       }
@@ -67,7 +78,7 @@ class OILToOrctimizer {
         orct.Future(apply(x), apply(right), apply(left)(bctx))
       }
       case Trim(f) => orct.Trim(apply(f))
-      case left ow right =>
+      case Otherwise(left, right) =>
         orct.Otherwise(apply(left), apply(right))
       case DeclareCallables(defs, body) => {
         val bctx = ctx ++ (defs map { d => (d.name, e) })
@@ -77,11 +88,20 @@ class OILToOrctimizer {
         orct.DeclareType(apply(x), apply(t), apply(body))
       }
       case HasType(body, expectedType) => orct.HasType(apply(body), apply(expectedType))
-      case VtimeZone(timeOrder, body) => orct.VtimeZone(apply(timeOrder), apply(body))
+      case VtimeZone(timeOrder, body) =>
+        //orct.VtimeZone(apply(timeOrder), apply(body))
+        // TODO: Implement onIdle in the Orctimizer
+        throw new FeatureNotSupportedException("Virtual time").setPosition(e.sourceTextRange.getOrElse(null))
       case FieldAccess(o, f) => {
         val t = new orct.BoundVar(Some(s"f_$o"))
         orct.Force(List(t), List(apply(o)), true, orct.FieldAccess(t, f))
       }
+      case New(self, selfT, members, objT) => {
+        val bctx = ctx + ((self, e))
+        orct.New(apply(self), selfT map apply, members.mapValues(apply(_)(bctx)).view.force, objT map apply)
+      }
+      case Hole(_, _) =>
+        throw new FeatureNotSupportedException("Hole").setPosition(e.sourceTextRange.getOrElse(null))
     }
   }
 
@@ -135,14 +155,16 @@ class OILToOrctimizer {
         orct.VariantType(apply(self), typeformals map apply, newVariants)
       }
       case UnboundTypevar(s) => orct.UnboundTypevar(s)
-      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Type, List[BoundTypeVar])")
+      case IntersectionType(a, b) => orct.IntersectionType(apply(a), apply(b))
+      case UnionType(a, b) => orct.UnionType(apply(a), apply(b))
+      case NominalType(a) => orct.NominalType(apply(a))
+      case StructuralType(members) => orct.StructuralType(members.mapValues(apply).view.force)
     }
   }
 
   def apply(t: BoundTypevar): orct.BoundTypevar = {
     t -> {
       case u: BoundTypevar => new orct.BoundTypevar()
-      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Type, List[BoundTypeVar])")
     }
   }
 

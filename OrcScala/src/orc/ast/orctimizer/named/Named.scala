@@ -33,19 +33,19 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
   override val subtrees: Iterable[NamedAST] = this match {
     case CallDef(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
     case CallSite(target, args, typeargs) => target :: (args ::: typeargs.toList.flatten)
-    case left || right => List(left, right)
-    case left > x > right => List(left, x, right)
+    case left Parallel right => List(left, right)
+    case Branch(left, x, right) => List(left, x, right)
     case Trim(f) => List(f)
     case Force(xs, vs, _, e) => xs ::: vs ::: List(e)
     case IfDef(v, l, r) => List(v, l, r)
     case Future(x, f, g) => List(f, g)
     case left Otherwise right => List(left, right)
     case DeclareCallables(defs, body) => defs ::: List(body)
-    case VtimeZone(timeOrder, body) => List(timeOrder, body)
     case FieldAccess(o, f) => List(o)
+    case New(self, st, members, ot) => st ++ ot ++ (self +: members.values.toList)
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
-    case Def(f, formals, body, typeformals, argtypes, returntype) => {
+    case Callable(f, formals, body, typeformals, argtypes, returntype) => {
       f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
     case TupleType(elements) => elements
@@ -54,13 +54,16 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
     case AssertedType(assertedType) => List(assertedType)
     case TypeAbstraction(typeformals, t) => typeformals ::: List(t)
     case RecordType(entries) => entries.values
+    case StructuralType(entries) => entries.values
+    case NominalType(t) => List(t)
+    case IntersectionType(a, b) => List(a, b)
+    case UnionType(a, b) => List(a, b)
     case VariantType(self, typeformals, variants) => {
       self :: typeformals ::: (for ((_, variant) <- variants; t <- variant) yield t)
     }
     case Constant(_) | UnboundVar(_) | Stop() => Nil
     case Bot() | ClassType(_) | ImportedType(_) | Top() | UnboundTypevar(_) => Nil
     case _: BoundVar | _: BoundTypevar => Nil
-    case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedAST.subtrees")
   }
 
 }
@@ -71,7 +74,7 @@ sealed abstract class Expression
   //with hasVars
   with Substitution[Expression]
   //with ContextualSubstitution
-  //with Guarding 
+  //with Guarding
   {
   //lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
 
@@ -143,7 +146,8 @@ case class DeclareCallables(defs: List[Callable], body: Expression) extends Expr
 case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Expression
   with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 case class HasType(body: Expression, expectedType: Type) extends Expression
-case class VtimeZone(timeOrder: Argument, body: Expression) extends Expression
+
+case class New(self: BoundVar, selfType: Option[Type], bindings: Map[values.Field, Expression], objType: Option[Type]) extends Expression
 
 /** Read the value from a field.
   */
@@ -181,6 +185,11 @@ sealed abstract class Callable
     typeformals: List[BoundTypevar] = typeformals,
     argtypes: Option[List[Type]] = argtypes,
     returntype: Option[Type] = returntype): Callable
+}
+object Callable {
+  def unapply(value: Callable) = {
+    Some((value.name, value.formals, value.body, value.typeformals, value.argtypes, value.returntype))
+  }
 }
 
 sealed case class Def(name: BoundVar, formals: List[BoundVar], body: Expression, typeformals: List[BoundTypevar], argtypes: Option[List[Type]], returntype: Option[Type])
@@ -233,6 +242,24 @@ case class ImportedType(classname: String) extends Type
 case class ClassType(classname: String) extends Type
 case class VariantType(self: BoundTypevar, typeformals: List[BoundTypevar], variants: List[(String, List[Type])]) extends Type
 
+sealed case class IntersectionType(a: Type, b: Type) extends Type
+object IntersectionType {
+  def apply(as: Iterable[Type]): Type = {
+    as.reduce(IntersectionType(_, _))
+  }
+}
+
+sealed case class UnionType(a: Type, b: Type) extends Type
+object UnionType {
+  def apply(as: Iterable[Type]): Type = {
+    as.reduce(UnionType(_, _))
+  }
+}
+
+sealed case class NominalType(supertype: Type) extends Type
+
+sealed case class StructuralType(members: Map[values.Field, Type]) extends Type
+
 sealed trait Typevar extends Type with hasOptionalVariableName
 case class UnboundTypevar(name: String) extends Typevar {
   optionalVariableName = Some(name)
@@ -240,7 +267,7 @@ case class UnboundTypevar(name: String) extends Typevar {
 class BoundTypevar(optionalName: Option[String] = None) extends Typevar with hasAutomaticVariableName {
 
   optionalVariableName = optionalName
-  autoName("t")
+  autoName("T")
 
   def productIterator = optionalVariableName.toList.iterator
 }

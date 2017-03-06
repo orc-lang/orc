@@ -13,9 +13,9 @@
 package orc.ast.porc
 
 import orc.values.Format
+import orc.values.Field
 
-/**
-  * @author amp
+/** @author amp
   */
 class PrettyPrint {
   def tag(ast: PorcAST, s: String): String = s"${ast.number.map(_ + ": ").getOrElse("")}$s"
@@ -93,9 +93,20 @@ class PrettyPrint {
 
         case GetField(p, c, t, o, f) => rd"getField $p $c $t $o$f"
 
-        case v if v.productArity == 0 => v.productPrefix
+        case New(self, bindings) => {
+          def reduceField(f: (Field, Expr)) = {
+            val (name, expr) = f
+            s"${name} = ${reduce(expr)}"
+          }
+          s"new { ${reduce(self)}" +
+            s"${if (bindings.nonEmpty) bindings.map(reduceField).mkString(s" #\n${indent(i + 2)}", s" #\n${indent(i + 2)}", "\n") else ""}$ind}"
+        }
 
-        case v => throw new NotImplementedError("Cannot convert: " + v.getClass.toString)
+        case Unit() => "()"
+
+        //case v if v.productArity == 0 => v.productPrefix
+
+        // case v => throw new NotImplementedError("Cannot convert: " + v.getClass.toString)
       })
   }
 }

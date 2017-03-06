@@ -118,7 +118,7 @@ trait NamedASTTransform extends NamedASTFunction {
           DeclareType(u, newt, newbody)
         }
         case HasType(body, expectedType) => HasType(recurse(body), recurse(expectedType))
-        case VtimeZone(timeOrder, body) => VtimeZone(recurse(timeOrder), recurse(body))
+        //case VtimeZone(timeOrder, body) => VtimeZone(recurse(timeOrder), recurse(body))
         case FieldAccess(o, f) => FieldAccess(recurse(o), f)
       }
     }
