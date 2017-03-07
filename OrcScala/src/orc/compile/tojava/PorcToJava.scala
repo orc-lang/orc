@@ -64,6 +64,7 @@ $code
   }
 
   val vars: mutable.Map[Var, String] = new mutable.HashMap()
+  val fields: mutable.Map[Field, String] = new mutable.HashMap()
   val usedNames: mutable.Set[String] = new mutable.HashSet()
   var varCounter: Int = 0
   def newVarName(prefix: String = "_t"): String = {
@@ -75,8 +76,10 @@ $code
     usedNames += name
     name
   }
-  def lookup(temp: Var) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
+  def lookup(temp: Var): String = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
   // The function handling code directly modifies vars to make it point to an element of an array. See orcdef().
+
+  def lookupField(temp: Field): String = fields.getOrElseUpdate(temp, escapeIdent(temp.field))
 
   val constantPool: mutable.Map[(Class[_], AnyRef), ConstantPoolEntry] = new mutable.HashMap()
   var constantCounter: Int = 0
@@ -153,6 +156,8 @@ $code
 
   def expression(expr: Expr, isJavaExpression: Boolean = false)(implicit ctx: ConversionContext): String = {
     val code = expr match {
+      case v: Value => argument(v)
+
       case Call(target, arg) => {
         j"""
         |($coerceToContinuation${argument(target)}).call(${argument(arg)});
@@ -263,11 +268,29 @@ $code
         j"""($coerceToCounter${argument(c)}).halt();"""
       }
 
+      case New(bindings) => {
+        def objectMember(p: (Field, Expr)) = {
+          val (f, e) = p
+          val field = lookupField(f)
+          val body = expression(e, true)
+          s"OrcValue $field = $body;"
+        }
+        j"""
+        |new OrcValue() {
+          |${bindings.map(objectMember).mkString("\n")}
+        |}"""
+      }
+
       // ==================== FUTURE ===================
 
-      case SpawnFuture(c, t, pArg, cArg, e) => {
+      case NewFuture() => {
         j"""
-        |$execution.spawnFuture($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(pArg)}, ${argument(cArg)}) -> {
+        |new orc.run.tojava.Future();
+        """
+      }
+      case SpawnBindFuture(f, c, t, pArg, cArg, e) => {
+        j"""
+        |$execution.spawnBindFuture($coerceToFuture(${argument(f)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(pArg)}, ${argument(cArg)}) -> {
           |$e
         |});
         """
@@ -331,7 +354,7 @@ $code
 
       case Unit() => ""
 
-      case _ => ???
+      //case _ => ???
     }
 
     ///*[\n${expr.prettyprint().withoutLeadingEmptyLines.indent(1)}\n]*/\n
@@ -401,8 +424,27 @@ $code
     a match {
       case c @ OrcValue(v) => lookup(c).name
       case (x: Var) => getIdent(x)
-      case _ => ???
+      case Unit() => {
+        // In statement positions Unit is like void. Otherwise who knows so assume we are in a statement position.
+        ""
+      }
+      //case _ => ???
     }
+  }
+
+  def objectMember(m: (Field, Expr))(implicit ctx: ConversionContext): String = {
+    objectMember(m._1, m._2)
+  }
+
+  def objectMember(f: Field, body: Expr)(implicit ctx: ConversionContext): (String, String) = {
+    val name = lookupField(f)
+    // TODO: This needs to capture a value not sure what value.
+    (j"""public OrcValue $name = new orc.run.tojava.Future();\n""",
+    j"""
+      |{
+        |${body}
+      |}
+    """.deindented)
   }
 
   def orcdef(d: Def, closedVars: Set[Var])(implicit ctx: ConversionContext): String = {
@@ -446,6 +488,7 @@ object PorcToJava {
   val coerceToSiteCallable = "Coercions$.MODULE$.coerceSiteToCallable"
   val coerceToSiteDirectCallable = "Coercions$.MODULE$.coerceSiteToDirectCallable"
   val coerceToCounter = "(Counter)"
+  val coerceToFuture = "(Future)"
   val coerceToTerminator = "(Terminator)"
 
   def escapeIdent(s: String) = {

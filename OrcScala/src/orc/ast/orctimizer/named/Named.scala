@@ -24,8 +24,6 @@ import orc.values
 // This issue with this is that while it's easy to detect field access (Field constants don't appear anywhere else)
 // it's hard to tell what is a tuple access.
 
-// TODO: Add support for New and Classes.
-
 sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
@@ -38,7 +36,7 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
     case Trim(f) => List(f)
     case Force(xs, vs, _, e) => xs ::: vs ::: List(e)
     case IfDef(v, l, r) => List(v, l, r)
-    case Future(x, f, g) => List(f, g)
+    case Future(f) => List(f)
     case left Otherwise right => List(left, right)
     case DeclareCallables(defs, body) => defs ::: List(body)
     case FieldAccess(o, f) => List(o)
@@ -64,6 +62,8 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
     case Constant(_) | UnboundVar(_) | Stop() => Nil
     case Bot() | ClassType(_) | ImportedType(_) | Top() | UnboundTypevar(_) => Nil
     case _: BoundVar | _: BoundTypevar => Nil
+    case FieldFuture(e) => List(e)
+    case FieldArgument(e) => List(e)
   }
 
 }
@@ -92,8 +92,8 @@ sealed abstract class Expression
 }
 
 case class Stop() extends Expression
-case class Future(x: BoundVar, left: Expression, right: Expression) extends Expression
-  with hasOptionalVariableName { transferOptionalVariableName(x, this) }
+case class Future(expr: Expression) extends Expression
+
 case class Force(xs: List[BoundVar], vs: List[Argument], publishForce: Boolean, expr: Expression) extends Expression {
   def varForArg(v: Argument) = {
     try {
@@ -147,7 +147,13 @@ case class DeclareType(name: BoundTypevar, t: Type, body: Expression) extends Ex
   with hasOptionalVariableName { transferOptionalVariableName(name, this) }
 case class HasType(body: Expression, expectedType: Type) extends Expression
 
-case class New(self: BoundVar, selfType: Option[Type], bindings: Map[values.Field, Expression], objType: Option[Type]) extends Expression
+case class New(self: BoundVar, selfType: Option[Type], bindings: Map[values.Field, FieldValue], objType: Option[Type]) extends Expression
+
+sealed abstract class FieldValue extends NamedAST {
+}
+
+case class FieldFuture(expr: Expression) extends FieldValue
+case class FieldArgument(expr: Argument) extends FieldValue
 
 /** Read the value from a field.
   */

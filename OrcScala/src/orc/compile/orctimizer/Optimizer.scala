@@ -15,7 +15,7 @@ package orc.compile.orctimizer
 import orc.compile.Logger
 import orc.values.OrcRecord
 import orc.ast.orctimizer.named._
-import Bindings.{ CallableBound, RecursiveCallableBound, SeqBound, FutureBound }
+import Bindings.{ CallableBound, RecursiveCallableBound, SeqBound }
 import orc.values.Field
 import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
@@ -158,9 +158,13 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
+
+  // TODO: Reinstate this optimization
+  /*
   val UnusedFutureElim = Opt("unused-future-elim") {
     case (FutureAt(x, f, g), a) if !(g.freeVars contains x) => g || (f >> Stop())
   }
+  */
 
   // TODO: Evaluate and port if needed.
   /*
@@ -541,7 +545,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     val trans = new ContextualTransform.Pre {
       override def onExpression(implicit ctx: TransformContext) = {
         case left > x > right => left > replaceVar(x) > right
-        case Future(x, left, right) => Future(replaceVar(x), left, right)
         case Force(xs, vs, b, e) => Force(xs.map(replaceVar), vs, b, e)
       }
 
@@ -671,7 +674,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
     SeqReassoc,
     DefSeqNorm, DefElim,
     LiftUnrelated, LiftForce,
-    FutureElimFlatten, UnusedFutureElim, FutureElim,
+    FutureElimFlatten, /*UnusedFutureElim,*/ FutureElim,
     /*FutureForceElim,*/ ForceElim, IfDefElim,
     TupleElim, AccessorElim,
     TrimCompChoice, TrimElim, ConstProp,
@@ -795,7 +798,7 @@ object Optimizer {
   object Futures {
     private def futsAt(p: WithContext[Expression]): (List[(WithContext[Expression], BoundVar)], WithContext[Expression]) = {
       p match {
-        case FutureAt(x, f, g) => {
+        case FutureAt(f) > x > g => {
           val (fss, fn) = futsAt(f) // f1 >x1> ... >xn-1> fn
           val (gss, gn) = futsAt(g) // g1 >y1> ... >yn-1> gn
           // TODO: Add an assert here to check that no variables are shadowed. This should never happen because of how variables are handled and allocated.
@@ -814,7 +817,7 @@ object Optimizer {
     def apply(ss: Seq[(Expression, BoundVar)], en: Expression): Expression = {
       ss match {
         case Nil => en
-        case (e, x) +: sst => Future(x, e, apply(sst, en))
+        case (e, x) +: sst => Future(e) > x > apply(sst, en)
       }
     }
   }

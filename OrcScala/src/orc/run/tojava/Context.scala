@@ -93,8 +93,16 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     * This is very similar to spawn().
     */
   def spawnFuture(c: Counter, t: Terminator, f: BiConsumer[Continuation, Counter]): Future = {
-    t.checkLive();
     val fut = new Future()
+    bindFuture(fut, c, t, f)
+  }
+
+  /** Spawn an execution and bind it's first publication to the given future.
+    *
+    * This is very similar to spawn().
+    */
+  def bindFuture(fut: Future, c: Counter, t: Terminator, f: BiConsumer[Continuation, Counter]): Future = {
+    t.checkLive();
     scheduleOrRun(new CounterSchedulableFunc(c, () => {
       val p = new Continuation {
         // This special context just binds the future on publication.

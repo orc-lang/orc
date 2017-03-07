@@ -94,9 +94,8 @@ object TrimAt {
 }
 object FutureAt {
   def unapply(e: WithContext[Expression]) = e match {
-    case (n @ Future(x, f, g)) in ctx => {
-      val newctx = ctx + Bindings.FutureBound(ctx, n)
-      Some(x, f in ctx, g in newctx)
+    case (n @ Future(f)) in ctx => {
+      Some(f in ctx)
     }
     case _ => None
   }

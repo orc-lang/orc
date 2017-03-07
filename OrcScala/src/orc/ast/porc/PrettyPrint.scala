@@ -86,19 +86,20 @@ class PrettyPrint {
         case NewTerminator(t) => rd"terminator $t"
         case Kill(t) => rd"kill $t"
 
-        case SpawnFuture(c, t, pArg, cArg, e) => rd"spawnFuture $c $t ($pArg, $cArg) {\n${indent(i + 2)}${reduce(e, i + 2)}\n$ind}"
+        case NewFuture() => rd"newFuture"
+        case SpawnBindFuture(f, c, t, pArg, cArg, e) => rd"spawnFuture $f $c $t ($pArg, $cArg) {\n${indent(i + 2)}${reduce(e, i + 2)}\n$ind}"
 
         case Force(p, c, t, b, vs) => rd"force[${if (b) "publish" else "call"}] $p $c $t (${vs.map(reduce(_, i)).mkString(", ")})"
         case TupleElem(v, i) => rd"elem($v, $i)"
 
         case GetField(p, c, t, o, f) => rd"getField $p $c $t $o$f"
 
-        case New(self, bindings) => {
+        case New(bindings) => {
           def reduceField(f: (Field, Expr)) = {
             val (name, expr) = f
             s"${name} = ${reduce(expr)}"
           }
-          s"new { ${reduce(self)}" +
+          s"new {" +
             s"${if (bindings.nonEmpty) bindings.map(reduceField).mkString(s" #\n${indent(i + 2)}", s" #\n${indent(i + 2)}", "\n") else ""}$ind}"
         }
 

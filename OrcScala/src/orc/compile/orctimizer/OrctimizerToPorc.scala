@@ -100,12 +100,13 @@ class OrctimizerToPorc {
             porc.TryOnKilled(expression(f)(ctx.copy(t = newT, p = newP)), porc.Unit())
           }
       }
-      case Future(x, f, g) => {
-        val fut = lookup(x)
+      case Future(f) => {
+        val fut = newVarName("v")
         val newP = newVarName("P")
         val newC = newVarName("C")
-        let((fut, porc.SpawnFuture(ctx.c, ctx.t, newP, newC, expression(f)(ctx.copy(p = newP, c = newC))))) {
-          expression(g)
+        let((fut, porc.NewFuture())) {
+          porc.SpawnBindFuture(fut, ctx.c, ctx.t, newP, newC, expression(f)(ctx.copy(p = newP, c = newC))) :::
+          ctx.p(fut)
         }
       }
       case Force(xs, vs, forceClosures, e) => {
@@ -149,7 +150,29 @@ class OrctimizerToPorc {
       }
 
       case New(self, _, bindings, _) => {
-        porc.New(lookup(self), bindings.mapValues(expression).view.force)
+        val selfV = lookup(self)
+
+        val fieldInfos = for((f, b) <- bindings) yield {
+          val varName = newVarName(f.field)
+          val (value, binder) = b match {
+            case FieldFuture(e) =>
+              val newP = newVarName("P")
+              val newC = newVarName("C")
+              val binder = porc.SpawnBindFuture(varName, ctx.c, ctx.t, newP, newC, expression(e)(ctx.copy(p = newP, c = newC)))
+              (porc.NewFuture(), Some(binder))
+            case FieldArgument(a) =>
+              (argument(a), None)
+          }
+          ((varName, value), (f, varName), binder)
+        }
+        val (fieldVars, fields, binders) = {
+          val (fvs, fs, bs) = fieldInfos.unzip3
+          (fvs.toSeq, fs.toMap, bs.flatten)
+        }
+
+        let(fieldVars :+ (selfV, porc.New(fields)) :_*) {
+          binders.fold(porc.Unit())(porc.Sequence(_, _))
+        }
       }
 
       // We do not handle types
@@ -171,7 +194,7 @@ class OrctimizerToPorc {
     a match {
       case c @ Constant(v) => porc.OrcValue(v)
       case (x: BoundVar) => lookup(x)
-      case _ => ???
+      //case _ => ???
     }
   }
 

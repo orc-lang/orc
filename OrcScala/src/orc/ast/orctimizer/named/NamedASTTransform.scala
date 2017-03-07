@@ -21,6 +21,7 @@ trait NamedASTFunction {
   def apply(e: Expression): Expression
   def apply(t: Type): Type
   def apply(d: Callable): Callable
+  def apply(d: FieldValue): FieldValue
 
   def apply(ast: NamedAST): NamedAST = {
     ast match {
@@ -28,6 +29,7 @@ trait NamedASTFunction {
       case e: Expression => this(e)
       case t: Type => this(t)
       case d: Callable => this(d)
+      case f: FieldValue => this(f)
     }
   }
 
@@ -38,6 +40,7 @@ trait NamedASTFunction {
       def apply(e: Expression): Expression = g(f(e))
       def apply(t: Type): Type = g(f(t))
       def apply(d: Callable): Callable = g(f(d))
+      def apply(d: FieldValue): FieldValue = g(f(d))
     }
   }
 
@@ -53,6 +56,7 @@ trait NamedASTTransform extends NamedASTFunction {
   def apply(e: Expression): Expression = transform(e, Nil, Nil)
   def apply(t: Type): Type = transform(t, Nil)
   def apply(d: Callable): Callable = transform(d, Nil, Nil)
+  def apply(d: FieldValue): FieldValue = transform(d, Nil, Nil)
 
   def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = EmptyFunction
 
@@ -62,12 +66,15 @@ trait NamedASTTransform extends NamedASTFunction {
 
   def onDef(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Callable, Callable] = EmptyFunction
 
+  def onFieldValue(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[FieldValue, FieldValue] = EmptyFunction
+
   def recurseWithContext(context: List[BoundVar], typecontext: List[BoundTypevar]) =
     new NamedASTFunction {
       def apply(a: Argument) = transform(a, context)
       def apply(e: Expression) = transform(e, context, typecontext)
       def apply(t: Type) = transform(t, typecontext)
       def apply(d: Callable) = transform(d, context, typecontext)
+      def apply(d: FieldValue) = transform(d, context, typecontext)
     }
 
   def transform(a: Argument, context: List[BoundVar]): Argument = {
@@ -103,7 +110,7 @@ trait NamedASTTransform extends NamedASTFunction {
           val newvs = vs map { recurse(_) }
           Force(xs, newvs, b, transform(e, xs ::: context, typecontext))
         }
-        case Future(x, f, g) => Future(x, recurse(f), transform(g, x :: context, typecontext))
+        case Future(f) => Future(recurse(f))
         case left Otherwise right => Otherwise(recurse(left), recurse(right))
         case IfDef(a, f, g) => IfDef(recurse(a), recurse(f), recurse(g))
         case DeclareCallables(defs, body) => {
@@ -188,6 +195,18 @@ trait NamedASTTransform extends NamedASTFunction {
           val newreturntype = returntype map { transform(_, newtypecontext) }
           d.copy(name, formals, newbody, typeformals, newargtypes, newreturntype)
         }
+      }
+    }
+  }
+
+  def transform(d: FieldValue, context: List[BoundVar], typecontext: List[BoundTypevar]): FieldValue = {
+    val pf = onFieldValue(context, typecontext)
+    if (pf isDefinedAt d) {
+      d -> pf
+    } else {
+      d -> {
+        case FieldFuture(e) => FieldFuture(transform(e, context, typecontext))
+        case FieldArgument(e) => FieldArgument(transform(e, context))
       }
     }
   }

@@ -46,6 +46,9 @@ class OILToOrctimizer {
         val bctx = ctx + ((x, e))
         orct.Force(List(apply(x)), List(apply(a)), true, apply(e)(bctx))
       }
+      case a: Constant => {
+        apply(a)
+      }
       case a: Argument => {
         val x = new orct.BoundVar()
         orct.Force(List(x), List(apply(a)), true, x)
@@ -75,7 +78,7 @@ class OILToOrctimizer {
       }
       case Graft(x, left, right) => {
         val bctx = ctx + ((x, e))
-        orct.Future(apply(x), apply(right), apply(left)(bctx))
+        orct.Branch(orct.Future(apply(right)), apply(x), apply(left)(bctx))
       }
       case Trim(f) => orct.Trim(apply(f))
       case Otherwise(left, right) =>
@@ -88,18 +91,31 @@ class OILToOrctimizer {
         orct.DeclareType(apply(x), apply(t), apply(body))
       }
       case HasType(body, expectedType) => orct.HasType(apply(body), apply(expectedType))
-      case VtimeZone(timeOrder, body) =>
-        //orct.VtimeZone(apply(timeOrder), apply(body))
-        // TODO: Implement onIdle in the Orctimizer
-        throw new FeatureNotSupportedException("Virtual time").setPosition(e.sourceTextRange.getOrElse(null))
       case FieldAccess(o, f) => {
         val t = new orct.BoundVar(Some(s"f_$o"))
-        orct.Force(List(t), List(apply(o)), true, orct.FieldAccess(t, f))
+        val fv1 = new orct.BoundVar(Some(s"f_${o}_${f.field}'"))
+        val fv2 = new orct.BoundVar(Some(s"f_${o}_${f.field}"))
+        orct.Force(List(t), List(apply(o)), true, {
+          orct.FieldAccess(t, f) > fv1 >
+          orct.Force(List(fv2), List(fv1), true, {
+            fv2
+          })
+        })
       }
       case New(self, selfT, members, objT) => {
         val bctx = ctx + ((self, e))
-        orct.New(apply(self), selfT map apply, members.mapValues(apply(_)(bctx)).view.force, objT map apply)
+        val newMembers = members.mapValues(e => e match {
+          case a: Argument =>
+            orct.FieldArgument(apply(a))
+          case _ =>
+            orct.FieldFuture(apply(e)(bctx))
+        }).view.force
+        orct.New(apply(self), selfT map apply, newMembers, objT map apply)
       }
+
+      case VtimeZone(timeOrder, body) =>
+        // TODO: Implement onIdle in the Orctimizer
+        throw new FeatureNotSupportedException("Virtual time").setPosition(e.sourceTextRange.getOrElse(null))
       case Hole(_, _) =>
         throw new FeatureNotSupportedException("Hole").setPosition(e.sourceTextRange.getOrElse(null))
     }
@@ -110,7 +126,7 @@ class OILToOrctimizer {
       case Constant(v) => orct.Constant(v)
       case (x: BoundVar) => apply(x)
       case UnboundVar(s) => orct.UnboundVar(s)
-      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in OILToOrctimizer")
+      //case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in OILToOrctimizer")
     }
   }
 
@@ -121,7 +137,7 @@ class OILToOrctimizer {
       case (x: BoundVar) => {
         boundVarCache.getOrElseUpdate(x, new orct.BoundVar())
       }
-      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in OILToOrctimizer")
+      //case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in OILToOrctimizer")
     }
   }
 

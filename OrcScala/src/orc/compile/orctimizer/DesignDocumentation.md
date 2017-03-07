@@ -3,10 +3,13 @@
 ## Futures
 
 Futures are explicit in Orctimizer so graft is replaced with future creation and forcing.
+Multiple force need to be done at the same time so force is a binding construct to avoid the need for return tuples in Orctimizer.
+However creating a future is an expressions since they appear in two kinds of bindings: let (for graft) and object members.
 
 ## Objects
 
-Since futures are explicit in Orctimizer, objects can be strict records with with fields that may or may not be futures. Field access in Orc will be encoded as an Orctimizer field access followed by an explicit force.
+Since futures are explicit in Orctimizer, objects can be strict records with with fields that may or may not be futures. 
+Field access in Orc will be encoded as an Orctimizer field access followed by an explicit force.
 
 ## Sites
 

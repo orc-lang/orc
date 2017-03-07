@@ -12,6 +12,8 @@
 //
 package orc.ast.porc
 
+import orc.values.Field
+
 /**
   * @author amp
   */
@@ -166,6 +168,15 @@ object TryFinallyIn {
   }
 }
 
+object NewIn {
+  type MatchResult = Option[(Map[Field, Expr], TransformContext)]
+  def unapply(e: WithContext[PorcAST]): MatchResult = e match {
+    case (s: New) in ctx =>
+      Some(s.bindings, ctx)
+    case _ => None
+  }
+}
+
 // ==================== PROCESS ===================
 
 object SpawnIn {
@@ -175,11 +186,11 @@ object SpawnIn {
   }
 }
 
-object SpawnFutureIn {
+object SpawnBindFutureIn {
   def unapply(e: WithContext[PorcAST]) = e match {
-    case (s @ SpawnFuture(c, t, pArg, cArg, e)) in ctx =>
-      val bodyCtx = ctx extendBindings List(SpawnFutureBound(ctx, s, pArg), SpawnFutureBound(ctx, s, cArg))
-      Some(c in ctx, t in ctx, pArg, cArg, e in bodyCtx)
+    case (s @ SpawnBindFuture(f, c, t, pArg, cArg, e)) in ctx =>
+      val bodyCtx = ctx extendBindings List(SpawnBindFutureBound(ctx, s, pArg), SpawnBindFutureBound(ctx, s, cArg))
+      Some(f in ctx, c in ctx, t in ctx, pArg, cArg, e in bodyCtx)
     case _ => None
   }
 }

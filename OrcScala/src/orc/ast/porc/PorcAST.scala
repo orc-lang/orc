@@ -52,7 +52,7 @@ sealed abstract class PorcAST extends AST with Product with WithContextInfixComb
   }
 }
 
-trait UnnumberedPorcAST extends PorcAST {
+sealed trait UnnumberedPorcAST extends PorcAST {
   override protected[porc] def assignNumbersStartingAt(n: Int): Int = {
     val children = subtrees.collect { case c: PorcAST => c }.toSeq
     children.reverse.foldRight(n)(_.assignNumbersStartingAt(_))
@@ -147,7 +147,7 @@ case class DefCallDirect(target: Value, arguments: List[Value]) extends Expr
 
 case class IfDef(argument: Value, left: Expr, right: Expr) extends Expr
 
-case class New(self: Var, bindings: Map[Field, Expr]) extends Expr
+case class New(bindings: Map[Field, Expr]) extends Expr
 
 // ==================== PROCESS ===================
 
@@ -166,12 +166,13 @@ case class TryFinally(body: Expr, handler: Expr) extends Expr
 
 // ==================== FUTURE ===================
 
-// TODO: The semantics of this have been changed to "spawn or run as the runtime prefers"
-case class SpawnFuture(c: Value, t: Value, pArg: Var, cArg: Var, expr: Expr) extends Expr
+case class NewFuture() extends Expr
 
-case class GetField(p: Value, c: Value, t: Value, future: Value, field: Field) extends Expr
+case class SpawnBindFuture(fut: Value, c: Value, t: Value, pArg: Var, cArg: Var, expr: Expr) extends Expr
 
 case class Force(p: Value, c: Value, t: Value, forceClosures: Boolean, futures: List[Value]) extends Expr
+
+case class GetField(p: Value, c: Value, t: Value, future: Value, field: Field) extends Expr
 
 case class TupleElem(v: Value, i: Int) extends Expr
 
