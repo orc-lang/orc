@@ -14,7 +14,7 @@ def totalsMapper(v) =
 
 val totalsReducer = 
   def reducePair(_, (l1, n1), (l2, n2)) = 
-    Println("Pairs " + ((l1, n1), (l2, n2))) >> 
+    --Println("Pairs " + ((l1, n1), (l2, n2))) >> 
     (l1 + l2, n1 + n2)
   binaryReducerAC(reducePair)
 

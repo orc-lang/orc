@@ -13,7 +13,7 @@
 
 package orc.run.core
 
-/** Tracer utility for orc.run.core package. 
+/** Tracer utility for orc.run.core package.
   *
   * @see orc.util.Tracer
   * @author jthywiss
@@ -25,6 +25,9 @@ object Tracer {
 
   final val TokenStateTransition = 2L
   orc.util.Tracer.registerEventTypeId(TokenStateTransition, "TokState", tokenStateNameMap(_), tokenStateNameMap(_))
+
+  final val TokenExecStateTransition = 3L
+  orc.util.Tracer.registerEventTypeId(TokenExecStateTransition, "TokExecS", tokenExecStateNameMap(_), tokenExecStateNameMap(_))
 
   final val JavaCall = 5L
   orc.util.Tracer.registerEventTypeId(JavaCall, "JavaCall")
@@ -40,6 +43,11 @@ object Tracer {
   @inline
   def traceTokenStateTransition(token: Token, oldState: TokenState, newState: TokenState) {
     orc.util.Tracer.trace(TokenStateTransition, token.debugId, tokenStateIdFor(oldState), tokenStateIdFor(newState))
+  }
+
+  @inline
+  def traceTokenExecStateTransition(token: Token, newState: TokenExecState) {
+    orc.util.Tracer.trace(TokenExecStateTransition, token.debugId, 0L, tokenExecStateIdFor(newState))
   }
 
   @inline
@@ -70,5 +78,19 @@ object Tracer {
       5L -> "Suspended",
       6L -> "Halted",
       7L -> "Killed")
+
+  private def tokenExecStateIdFor(ts: TokenExecState) = ts match {
+    case TokenExecState.Killed => 1L
+    case TokenExecState.Running => 2L
+    case TokenExecState.Scheduled => 3L
+    case TokenExecState.DoneRunning => 4L
+  }
+
+    private val tokenExecStateNameMap = Map(
+      0L -> "",
+      1L -> "Killed",
+      2L -> "Running",
+      3L -> "Scheduled",
+      4L -> "DoneRunning")
 
 }

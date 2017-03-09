@@ -36,6 +36,11 @@ class TokenLimitReachedError(val limit: Int) extends TokenError("Token limit (li
 
 /**
   */
+@SerialVersionUID(4878999138940046944L)
+class JavaStackLimitReachedError(val frames: Int) extends TokenError(s"Java stack limit reached (with $frames Orc frames; though many fewer may also cause the problem). Possible work-around: Increase the Java stack size.")
+
+/**
+  */
 @SerialVersionUID(-2970321937465541662L)
 class UncaughtException(message: String, cause: Throwable) extends TokenException(message, cause)
 

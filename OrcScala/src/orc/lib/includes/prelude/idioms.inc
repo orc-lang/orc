@@ -253,8 +253,13 @@ This function can be thought of as the following composition
 @implementation
 --}
 def joinMap[A](lambda (A) :: Top, List[A]) :: Signal
-def joinMap(f, []) = signal
-def joinMap(f, x:xs) = (f(x), joinMap(f, xs)) >> signal
+def joinMap(f, xs) = 
+  def loop(List[A], Signal) :: Signal
+  def loop([], done) = done
+  def loop(x:xs, done) =
+    val done' = f(x) >> done
+    loop(xs, done')
+  loop(xs, signal)
 
 {--
 @def alt[A](List[lambda () :: A]) :: A

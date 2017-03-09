@@ -80,6 +80,23 @@ def signals(Integer) :: Signal
 def signals(n) = if n :> 0 then (signal | signals(n-1)) else stop
 
 {--
+@def forBy(Integer, Integer, Integer) :: Integer
+<link linkend="ref.concepts.publish">Publish</link> all values in the given half-open range with are multiples of 
+<code>step</code> from <code>low</code>, simultaneously.
+
+Example:
+<programlisting language="orc-demo"><![CDATA[
+-- Publishes: 1 3 5
+forBy(1,6,2)]]></programlisting>
+
+@implementation
+--}
+def forBy(Integer, Integer, Integer) :: Integer
+def forBy(low, high, step) =
+  if low >= high then stop
+  else ( low | forBy(low+step, high, step) )
+
+{--
 @def for(Integer, Integer) :: Integer
 <link linkend="ref.concepts.publish">Publish</link> all values in the given half-open range, simultaneously.
 
@@ -91,9 +108,7 @@ for(1,6)]]></programlisting>
 @implementation
 --}
 def for(Integer, Integer) :: Integer
-def for(low, high) =
-  if low >= high then stop
-  else ( low | for(low+1, high) )
+def for(low, high) = forBy(low, high, 1)
 
 {--
 @def upto(Integer) :: Integer

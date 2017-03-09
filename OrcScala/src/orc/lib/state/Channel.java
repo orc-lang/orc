@@ -221,7 +221,9 @@ public class Channel extends EvalSite implements TypedSite {
 
         @Override
         public String toString() {
+          synchronized (ChannelInstance.this) {
             return super.toString() + contents.toString();
+          }
         }
 
     }

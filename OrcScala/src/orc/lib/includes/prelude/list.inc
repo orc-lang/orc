@@ -59,9 +59,13 @@ The filter is applied to all list elements in parallel.
 --}
 def filter[A](lambda (A) :: Boolean, List[A]) :: List[A]
 def filter(p,[]) = []
-def filter(p,x:xs) =
-  val fxs = filter(p, xs)
-  if p(x) then x:fxs else fxs
+def filter(p,xs) =
+  def loop(List[A], List[A]) :: List[A]
+  def loop([], acc) = acc
+  def loop(x:xs, acc) =
+    val acc' = if p(x) then x:acc else acc
+    loop(xs, acc')
+  reverse(loop(xs, []))
 
 {--
 @def head[A](List[A]) :: A
@@ -500,9 +504,15 @@ integer <code>i</code>), <code>n &gt;= low</code>, and <code>n &lt; high</code>.
 --}
 def rangeBy(Number, Number, Number) :: List[Number]
 def rangeBy(low, high, skip) =
-  if low <: high
-  then low:rangeBy(low+skip, high, skip)
-  else []
+  -- The loop starts at the top and works down
+  def loop(Number, List[Number]) :: List[Number]
+  def loop(high, acc) = 
+    if low <: high
+    then loop(high-skip, high : acc)
+    else acc
+  -- Compute the LAST value in the result to start from.
+  val mod = (high - low) % skip
+  low : loop(high - (if mod = 0 then skip else mod), [])
 
 {--
 @def range(Number, Number) :: List[Number]

@@ -15,6 +15,7 @@ package orc.run.core
 import scala.collection.immutable.Traversable
 
 import orc.ast.oil.nameless.Expression
+import scala.annotation.tailrec
 
 /** A stack frame.
   *
@@ -35,7 +36,7 @@ case object EmptyFrame extends Frame {
   def apply(t: Token, v: Option[AnyRef]) = {
     throw new AssertionError("Cannot publish through an empty frame")
   }
-  def foreach[U](f: Frame => U) = {}
+  def foreach[U](f: Frame => U): Unit = {}
 }
 
 /** A stack frame that has a predecessor.
@@ -45,7 +46,21 @@ case object EmptyFrame extends Frame {
   */
 sealed trait CompositeFrame extends Frame {
   val previous: Frame
-  final def foreach[U](f: Frame => U) = { f(this); previous.foreach(f) }
+  final def foreach[U](f: Frame => U): Unit = {
+    // Optimize the iteration do that we don't blow the stack while trying to display overly long Orc stacks.
+    @tailrec
+    def loop(frame: CompositeFrame): Unit = {
+      f(frame)
+      frame.previous match {
+        case fr: CompositeFrame =>
+          loop(fr)
+        case fr: Frame =>
+          fr.foreach(f)
+      }
+    }
+
+    loop(this)
+  }
   override def toString = stringPrefix + "(...)"
 }
 

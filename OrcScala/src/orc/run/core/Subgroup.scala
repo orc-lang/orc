@@ -17,7 +17,7 @@ import orc.{ CaughtEvent, OrcEvent }
 
 /** @author dkitchin
   */
-abstract class Subgroup(parent: Group) extends Group {
+abstract class Subgroup(val parent: Group) extends Group {
 
   override val runtime = parent.runtime
 

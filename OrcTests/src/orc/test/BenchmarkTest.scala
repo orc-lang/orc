@@ -32,6 +32,7 @@ import orc.util.SynchronousThreadExec
 import orc.TokenInterpreterBackend
 import java.util.Properties
 import java.io.FileInputStream
+import java.lang.management.ManagementFactory
 
 sealed trait BenchmarkSet
 case object ScalaBenchmarkSet extends BenchmarkSet
@@ -49,10 +50,15 @@ case class BenchmarkConfig(
   nDroppedRuns: Int = 4,
   outputCompileTime: Boolean = false,
   outputHeader: Boolean = true,
-  outputStdDev: Boolean = true,
+  outputStdDev: Boolean = false,
+  outputCpuTime: Boolean = true,
   nDroppedWarmups: Int = 1,
   timeoutLimit: Int = 2) {
+  assert(nDroppedRuns % 2 == 0, s"nDroppedRuns must be a multiple of two since the same number of elements must be removed from each end.")
+
   def name = s"$backend -O$optLevel on ${cpus.size} cpus"
+
+  def oneRun = copy(nRuns = 1, nDroppedRuns = 0, nDroppedWarmups = 0)
 
   def asArguments: Seq[String] = Seq[String](
     "-o", output.getAbsolutePath(),
@@ -74,17 +80,20 @@ case class BenchmarkConfig(
 object BenchmarkTest {
   object Logger extends orc.util.Logger("orc.test.benchmark")
 
-  case class TimeData(compTime: Double, compStddev: Double, runTime: Double, runStddev: Double) {
-    override def toString: String = {
-      productIterator.mkString(",")
-    }
-    def toString(compTime: Boolean, stdDev: Boolean): String = {
-      if (compTime)
-        toString
-      else if (stdDev)
-        s"$runTime,$runStddev"
-      else
-        s"$runTime"
+  case class TimeData(compTime: Double, compStddev: Double, runTime: Double, runStddev: Double, cpuTime: Double, cpuStddev: Double) {
+    def toString(showCompTime: Boolean, showStdDev: Boolean, showCpuTime: Boolean): String = {
+      val res = new StringBuilder()
+      if (showCompTime)
+        res ++= s"$compTime,$compStddev,"
+      res ++= s"$runTime,"
+      if (showStdDev)
+        res ++= s"$runStddev,"
+      if (showCpuTime) {
+        res ++= s"$cpuTime,"
+        if (showStdDev)
+          res ++= s"$cpuStddev,"
+      }
+      res.toString
     }
   }
 
@@ -150,7 +159,7 @@ object BenchmarkTest {
     }
 
     implicit val config = processArgs(args, BenchmarkConfig(OrcBenchmarkSet,
-      0 to 128, TokenInterpreterBackend, 0,
+      0 until osmxbean.getAvailableProcessors, TokenInterpreterBackend, 0,
       new File(s"benchmark-${dateFormatter.format(new Date())}.csv")))
 
     // generate a single row for the configuration.
@@ -209,6 +218,10 @@ object BenchmarkTest {
 
     config.benchmarkSet match {
       case OrcBenchmarkSet =>
+        println("Running each test once to warm up the VM")
+        for ((testname, file) <- orcTests) {
+          runTest(testname, file, makeBindings(config.optLevel, config.backend))(config.oneRun)
+        }
         if (config.outputHeader) {
           write("Config," + orcTests.map(c => {
             val cname = c._1
@@ -219,7 +232,7 @@ object BenchmarkTest {
         write(s"${config.name}")
         for ((testname, file) <- orcTests) {
           val result = runTest(testname, file, makeBindings(config.optLevel, config.backend))
-          write("," + result.toString(config.outputCompileTime, config.outputStdDev))
+          write("," + result.toString(config.outputCompileTime, config.outputStdDev, config.outputCpuTime))
         }
         {
           val bindings = makeBindings(config.optLevel, config.backend)
@@ -236,7 +249,7 @@ object BenchmarkTest {
         write(s"${config.name}")
         for ((testname, module) <- scalaTests) {
           val result = runTest(testname, module())
-          write("," + result.toString(config.outputCompileTime, config.outputStdDev))
+          write("," + result.toString(config.outputCompileTime, config.outputStdDev, config.outputCpuTime))
         }
     }
 
@@ -266,34 +279,36 @@ object BenchmarkTest {
           System.gc()
           if (timedout >= config.timeoutLimit) {
             println(s" run SKIPPING DUE TO TOO MANY TIMEOUTS")
-            config.timeout.toDouble
+            (config.timeout.toDouble, 0.0)
           } else {
-            val (runTime: Double, _) = time {
+            val (runTime: Double, cpuTime: Double, _) = time {
               app.main(Array())
             }
-            println(s" run $runTime")
-            runTime
+            println(s" run $runTime, cpu $cpuTime (${cpuTime / runTime} cores, ${cpuTime / runTime / osmxbean.getAvailableProcessors})")
+            (runTime, cpuTime)
           }
         })
       } catch {
         case _: TimeoutException =>
           timedout += 1
-          config.timeout
+          (config.timeout.toDouble, 0.0)
       }
     }
 
     // If we have enough drop the first (before sorting) to allow for JVM warm up.
-    val runTimes = {
-      val t = times.drop(config.nDroppedWarmups)
+    val (runTimes, cpuTimes) = {
+      val t = times.drop(config.nDroppedWarmups).unzip
       Logger.info(s"Dropping leading measurement: ${times.take(config.nDroppedWarmups)} ::: ${t}")
       t
     }
 
+    // TODO: This could allow cpuTime to be computed from different runs than the wall time
     val (avgRunTime, sdRunTime) = medianAverage(runTimes)
+    val (avgCpuTime, sdCpuTime) = medianAverage(cpuTimes)
 
     println(s">'$testname','native',,,,$avgRunTime,$sdRunTime,")
 
-    TimeData(0, 0, avgRunTime, sdRunTime);
+    TimeData(0, 0, avgRunTime, sdRunTime, avgCpuTime, sdCpuTime)
   }
 
   def runTest(testname: String, file: File, bindings: OrcBindings)(implicit config: BenchmarkConfig): TimeData = {
@@ -305,15 +320,15 @@ object BenchmarkTest {
         SynchronousThreadExec(s"Benchmark $testname $i", {
           print(s"$i:")
           System.gc()
-          val (compTime, code) = time {
+          val (compTime, _, code) = time {
             compileCode(file, bindings)
           }
           System.gc()
           if (timedout >= config.timeoutLimit) {
             println(s" compile $compTime, run SKIPPING DUE TO TOO MANY TIMEOUTS")
-            (compTime, config.timeout.toDouble)
+            (compTime, config.timeout.toDouble, 0.0)
           } else {
-            val (runTime: Double, _) = time {
+            val (runTime: Double, cpuTime, _) = time {
               try {
                 runCode(code)
               } catch {
@@ -321,28 +336,30 @@ object BenchmarkTest {
                   timedout += 1
               }
             }
-            println(s" compile $compTime, run $runTime")
-            (compTime, runTime)
+            println(s" compile $compTime, run $runTime, cpu $cpuTime (${cpuTime / runTime} cores, ${cpuTime / runTime / osmxbean.getAvailableProcessors})")
+            (compTime, runTime, cpuTime)
           }
         })
       }
 
       // If we have enough drop the first (before sorting) to allow for JVM warm up.
-      val (compTimes, runTimes) = {
-        val t = times.drop(config.nDroppedWarmups).unzip
+      val (compTimes, runTimes, cpuTimes) = {
+        val t = times.drop(config.nDroppedWarmups).unzip3
         Logger.info(s"Dropping leading 'warm-up' measurements: ${times.take(config.nDroppedWarmups).map(_._2)} ::: ${t._2}")
         t
       }
 
+      // TODO: This could allow cpuTime to be computed from different runs than the wall time
       val (avgCompTime, sdCompTime) = medianAverage(compTimes)
       val (avgRunTime, sdRunTime) = medianAverage(runTimes)
+      val (avgCpuTime, sdCpuTime) = medianAverage(cpuTimes)
 
       println(s">'$testname','${bindings.backend}',${bindings.optimizationLevel},$avgCompTime,$sdCompTime,$avgRunTime,$sdRunTime,'${bindings.optimizationFlags}'")
 
-      TimeData(avgCompTime, sdCompTime, avgRunTime, sdRunTime);
+      TimeData(avgCompTime, sdCompTime, avgRunTime, sdRunTime, avgCpuTime, sdCpuTime)
     } catch {
       case ce: CompilationException =>
-        throw new AssertionError(ce.getMessageAndDiagnostics());
+        throw new AssertionError(ce.getMessageAndDiagnostics())
     }
   }
 
@@ -376,11 +393,18 @@ object BenchmarkTest {
     }
   }
 
-  def time[A](f: => A): (Double, A) = {
+  val osmxbean = ManagementFactory.getOperatingSystemMXBean() match {
+    case v: com.sun.management.OperatingSystemMXBean => v
+    case _ => throw new AssertionError("Benchmarking requires com.sun.management.OperatingSystemMXBean")
+  }
+
+  def time[A](f: => A): (Double, Double, A) = {
     val start = System.nanoTime()
+    val startCpu = osmxbean.getProcessCpuTime
     val v = f;
     val stop = System.nanoTime()
-    ((stop - start) / 1000000000.0, v)
+    val stopCpu = osmxbean.getProcessCpuTime
+    ((stop - start) / 1000000000.0, (stopCpu - startCpu) / 1000000000.0, v)
   }
 
   def medianAverage(times: Seq[Double])(implicit config: BenchmarkConfig) = {

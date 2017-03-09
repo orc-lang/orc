@@ -23,7 +23,7 @@ import orc.run.Logger
 import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
 import orc.values.{ Field, HasMembers, OrcObject, OrcRecord, Signal }
 import orc.values.sites.TotalSite
-import java.util.concurrent.atomic.AtomicInteger
+import orc.error.runtime.JavaStackLimitReachedError
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -48,27 +48,35 @@ import java.util.concurrent.atomic.AtomicInteger
   * @author dkitchin
   */
 class Token protected (
-    protected var node: Expression,
-    protected var stack: Frame,
-    protected var env: List[Binding],
-    protected var group: Group,
-    protected var clock: Option[VirtualClock],
-    protected var state: TokenState,
-    val debugId: Long)
+  protected var node: Expression,
+  protected var stack: Frame,
+  protected var env: List[Binding],
+  protected var group: Group,
+  protected var clock: Option[VirtualClock],
+  protected var state: TokenState,
+  val debugId: Long)
   extends GroupMember with Schedulable with Blockable with Resolver {
-  
+
   /** Convenience constructor with defaults  */
   protected def this(
-      node: Expression,
-      stack: Frame = EmptyFrame,
-      env: List[Binding] = Nil,
-      group: Group,
-      clock: Option[VirtualClock] = None,
-      state: TokenState = Live) = {
+    node: Expression,
+    stack: Frame = EmptyFrame,
+    env: List[Binding] = Nil,
+    group: Group,
+    clock: Option[VirtualClock] = None,
+    state: TokenState = Live) = {
     this(node, stack, env, group, clock, state, Token.getNextTokenDebugId(group.runtime))
   }
 
   var functionFramesPushed: Int = 0
+
+  // These fields may be useful for debugging multiple scheduling or multiple run bugs.
+  // Uses of them are marked with "MULTI_SCHED_DEBUG"
+  /*
+  val isScheduled = new AtomicBoolean(false)
+  val isRunning = new AtomicBoolean(false)
+  val schedulingThread = new AtomicReference[Thread](null)
+  */
 
   def runtime: OrcRuntime = group.runtime
   def execution = group.execution
@@ -155,12 +163,33 @@ class Token protected (
 
   /* When a token is scheduled, notify its clock accordingly */
   override def onSchedule() {
+    Tracer.traceTokenExecStateTransition(this, TokenExecState.Scheduled)
+
+    // MULTI_SCHED_DEBUG
+    /*
+    val old = isScheduled.getAndSet(true)
+    if (!(old == false || group.isKilled())) {
+      Logger.check(false, s"""${System.nanoTime().toHexString}: Failed to set scheduled: ${this.debugId.toHexString}""")
+      orc.util.Tracer.dumpOnlyLocation(debugId)
+    }
+
+    val curr = Thread.currentThread()
+    val prev = schedulingThread.getAndSet(curr)
+    if(!(curr == prev || prev == null)) {
+      val trace = StackTrace.getStackTrace(3, 1)
+      println(s"${System.nanoTime().toHexString}: Scheduling from a new thread: Was ${prev.getId.toHexString}, now ${curr.getId.toHexString}. ${this.debugId.toHexString} ${trace.mkString("; ")}")
+    }*/
+
     unsetQuiescent()
   }
 
   /* When a token is finished running, notify its clock accordingly */
   override def onComplete() {
     setQuiescent()
+    // MULTI_SCHED_DEBUG
+    //Logger.check(isRunning.compareAndSet(true, false) || state == Killed || Token.isRunningAlreadyCleared.get, s"""${System.nanoTime().toHexString}: Failed to clear running: $this""")
+    //Token.isRunningAlreadyCleared.set(false)
+    Tracer.traceTokenExecStateTransition(this, TokenExecState.DoneRunning)
   }
 
   /** Pass an event to this token's enclosing group.
@@ -186,6 +215,7 @@ class Token protected (
         case Live | Publishing(_) | Blocked(_) | Halted | Killed => None
       }
     }
+    Tracer.traceTokenExecStateTransition(this, TokenExecState.Killed)
     synchronized {
       val handle = findHandle(state)
       if (setState(Killed)) {
@@ -300,12 +330,21 @@ class Token protected (
   def getEnv(): List[Binding] = { env }
   def getStack(): Frame = { stack }
   def getClock(): Option[VirtualClock] = { clock }
+  //def getState(): TokenState = { state }
 
   def migrate(newGroup: Group) = {
     require(newGroup != group)
     val oldGroup = group
-    newGroup.add(this); oldGroup.remove(this)
-    group = newGroup
+    newGroup.add(this)
+    val removeSucceeded = oldGroup.remove(this)
+    // If the remove failed we kill instead of switching groups.
+    // We also remove ourselves from the new group.
+    if(removeSucceeded) {
+      group = newGroup
+    } else {
+      newGroup.remove(this)
+      kill()
+    }
     this
   }
 
@@ -591,10 +630,24 @@ class Token protected (
   //    testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
 
   def run() {
+    Tracer.traceTokenExecStateTransition(this, TokenExecState.Running)
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()
     //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state)
+    // MULTI_SCHED_DEBUG
+    // Add this yeild to increase the odds of thread interleaving. Such as a kill happening while the token is running.
+    //Thread.`yield`()
+    // MULTI_SCHED_DEBUG
+    /*
+    val old = isScheduled.getAndSet(false)
+    if (!(old == true || state == Killed)) {
+      Logger.check(false, s"""${System.nanoTime().toHexString}: Failed to clear scheduled: ${this.debugId.toHexString}""")
+      orc.util.Tracer.dumpOnlyLocation(debugId)
+    }
+    */
     try {
       if (group.isKilled()) { kill() }
+      // MULTI_SCHED_DEBUG
+      //Logger.check(isRunning.compareAndSet(false, true) || state == Killed, s"${System.nanoTime().toHexString}: Failed to set running: $this")
       state match {
         case Live => eval(node)
         case Suspending(prevState) => setState(Suspended(prevState))
@@ -605,10 +658,28 @@ class Token protected (
         case Halted => throw new AssertionError("halted token scheduled")
       }
     } catch {
-      case e: OrcException => this !! e
-      case e: InterruptedException => { halt(); Thread.currentThread().interrupt() } //Thread interrupt causes halt without notify
-      case e: Throwable => { notifyOrc(CaughtEvent(e)); halt() }
+      case e: OrcException => {
+        this !! e
+      }
+      case e: InterruptedException => {
+        halt()
+        Thread.currentThread().interrupt()
+      } //Thread interrupt causes halt without notify
+      case e: StackOverflowError => {
+        this !! new JavaStackLimitReachedError(stack.count(_.isInstanceOf[FunctionFrame]))
+      }
+      case e: Throwable => {
+        notifyOrc(CaughtEvent(e))
+        halt()
+      }
     }
+  }
+
+  override def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit) = {
+    // MULTI_SCHED_DEBUG
+    //Token.isRunningAlreadyCleared.set(true)
+    //Logger.check(isRunning.compareAndSet(true, false) || state == Killed || Token.isRunningAlreadyCleared.get, s"${System.nanoTime().toHexString}: Failed to clear running: $this")
+    super.resolveOptional(b)(k)
   }
 
   protected def eval(node: orc.ast.oil.nameless.Expression) {
@@ -618,7 +689,9 @@ class Token protected (
 
       case Hole(_, _) => halt()
 
-      case (a: Argument) => resolve(lookup(a)) { v => publish(Some(v)) }
+      case (a: Argument) => {
+        resolve(lookup(a)) { v => publish(Some(v)) }
+      }
 
       case Call(target, args, _) => {
         val params = args map lookup
@@ -806,8 +879,8 @@ class Token protected (
     e.setPosition(node.sourceTextRange.orNull)
     e match {
       case te: TokenException if (te.getBacktrace() == null || te.getBacktrace().length == 0) => {
-        val callPoints = stack.toList collect { case f: FunctionFrame => f.callpoint.sourceTextRange.orNull }
-        te.setBacktrace(callPoints.toArray)
+        val callPoints = stack collect { case f: FunctionFrame => f.callpoint.sourceTextRange.orNull }
+        te.setBacktrace(callPoints.take(2048).toArray)
       }
       case _ => {} // Not a TokenException; no need to collect backtrace
     }
@@ -849,11 +922,18 @@ private class LongCounter(private var value: Long) {
 }
 
 object Token {
+  // MULTI_SCHED_DEBUG
+  /*
+  private val isRunningAlreadyCleared = new ThreadLocal[Boolean]() {
+    override def initialValue() = false
+  }
+  */
+
   private val currentTokenDebugId = new ThreadLocal[LongCounter]() {
     override def initialValue() = new LongCounter(0L)
   }
   def getNextTokenDebugId(runtime: OrcRuntime): Long =
-    /* FIXME:This adverse coupling to runtime should be removed */
+    /* FIXME:This adverse coupling to runtime should be removed. Why not add a runtimeThreadId to the Orc trait? */
     currentTokenDebugId.get.incrementAndGet() | (runtime.asInstanceOf[orc.run.Orc].runtimeDebugThreadId.toLong << 32)
 }
 
@@ -875,6 +955,7 @@ case class Publishing(v: Option[AnyRef]) extends TokenState {
 /** Token is waiting on another task */
 case class Blocked(blocker: Blocker) extends TokenState {
   val isLive = true
+  override def toString() = s"$productPrefix($blocker : ${blocker.getClass.getSimpleName})"
 }
 
 /** Token has been told to suspend, but it's still in the scheduler queue */
@@ -895,4 +976,27 @@ case object Halted extends TokenState {
 /** Token killed by engine */
 case object Killed extends TokenState {
   val isLive = false
+}
+
+/** Supertype of TokenExecStates.
+  *
+  * These are not actually used or stored other than for tracing.
+  */
+sealed abstract class TokenExecState
+
+object TokenExecState {
+  /** Token is executing on some thread */
+  case object Running extends TokenExecState
+
+  /** Token is scheduled to execute */
+  case object Scheduled extends TokenExecState
+
+  /** Token is waiting or blocked on some event.
+    *
+    * That event will trigger the token to be scheduled.
+    */
+  case object DoneRunning extends TokenExecState
+
+  /** Token has been killed */
+  case object Killed extends TokenExecState
 }

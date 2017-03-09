@@ -4,6 +4,7 @@
 
 include "mapreduce.inc"
 include "engines.inc"
+include "timeIt.inc"
 include "webtext.inc"
 include "testing.inc"
 
@@ -55,4 +56,6 @@ val variance = meanFromMapWriter(diffTotals)
 val _ = Println("Mean squared difference from mean length: " + variance)
 val _ = Println("Std.dev. length: " + sqrt(variance))
 
-stop
+timeIt({
+  (mean, sqrt(variance))
+})
