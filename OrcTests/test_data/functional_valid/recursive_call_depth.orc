@@ -11,7 +11,7 @@ def rangeBy(low, high, skip) =
 
 -- val N = 9921 -- OpenJDK succeeds (fails on 9922)
 -- val N = 9911 -- Oracle succeeds (fails on 9912)
-val N = 8000
+val N = 5000
 
 upto(100) >>
 rangeBy(0, N, 1) >> stop ;
