@@ -1,8 +1,9 @@
 //
-// ThreadPoolScheduler.scala -- Scala traits OrcWithThreadPoolScheduler, OrcRunner, and OrcThreadPoolExecutor
+// ForkJoinScheduler.scala -- Scala traits OrcWithForkJoinScheduler and OrcForkJoinExecutor
 // Project OrcScala
 //
 // Created by jthywiss on Mar 29, 2011.
+// Copied and modified by amp on 2014.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //

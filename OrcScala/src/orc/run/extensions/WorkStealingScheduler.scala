@@ -2,6 +2,8 @@
 // WorkStealingScheduler.scala -- A work-stealing scheduler for Orc
 // Project OrcScala
 //
+// Created by amp on Feb, 2017.
+//
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
