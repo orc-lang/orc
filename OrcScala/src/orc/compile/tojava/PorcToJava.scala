@@ -35,6 +35,8 @@ class PorcToJava {
     val source = j"""// GENERATED!!
 import orc.run.tojava.*;
 import orc.values.Field;
+import orc.values.OrcValue;
+import orc.values.OrcObjectBase;
 import orc.CaughtEvent;
 import scala.math.BigInt$$;
 import scala.math.BigDecimal$$;
@@ -64,10 +66,11 @@ $code
   }
 
   val vars: mutable.Map[Var, String] = new mutable.HashMap()
+  val fields: mutable.Map[Field, String] = new mutable.HashMap()
   val usedNames: mutable.Set[String] = new mutable.HashSet()
   var varCounter: Int = 0
   def newVarName(prefix: String = "_t"): String = {
-    val p = escapeIdent(prefix)
+    val p = escapeIdent(prefix, true)
     val name = if (usedNames contains p) {
       varCounter += 1
       p + "$c" + counterToString(varCounter)
@@ -75,8 +78,10 @@ $code
     usedNames += name
     name
   }
-  def lookup(temp: Var) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
+  def lookup(temp: Var): String = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
   // The function handling code directly modifies vars to make it point to an element of an array. See orcdef().
+
+  def lookupField(temp: Field): String = fields.getOrElseUpdate(temp, escapeIdent(temp.field, false))
 
   val constantPool: mutable.Map[(Class[_], AnyRef), ConstantPoolEntry] = new mutable.HashMap()
   var constantCounter: Int = 0
@@ -85,7 +90,7 @@ $code
   }
   def newConstant(v: AnyRef): ConstantPoolEntry = {
     constantCounter += 1
-    val name = escapeIdent(s"C_${Format.formatValue(v)}_${counterToString(constantCounter)}")
+    val name = escapeIdent(s"C_${Format.formatValue(v)}_${counterToString(constantCounter)}", false)
     val typ = v match {
       case _: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character
         | _: java.lang.Float | _: java.lang.Double | _: BigInt | _: BigDecimal => """Number"""
@@ -153,6 +158,8 @@ $code
 
   def expression(expr: Expr, isJavaExpression: Boolean = false)(implicit ctx: ConversionContext): String = {
     val code = expr match {
+      case v: Value => argument(v)
+
       case Call(target, arg) => {
         j"""
         |($coerceToContinuation${argument(target)}).call(${argument(arg)});
@@ -263,11 +270,42 @@ $code
         j"""($coerceToCounter${argument(c)}).halt();"""
       }
 
+      case New(bindings) => {
+        def objectMember(p: (Field, Expr)) = {
+          val (f, e) = p
+          val field = lookupField(f)
+          val body = expression(e, true)
+          s"  public final Object $field = $body;"
+        }
+        val memberFields =  bindings.map(p => lookup(p._1).name)
+        val memberCases = bindings.map(p => {
+          val n = stringAsJava(p._1.field)
+          val field = lookupField(p._1)
+          s"    case $n: return $field;"
+        })
+        j"""
+        |new OrcObjectBase() {
+        |  private final java.lang.Iterable<Field> MEMBERS = java.util.Arrays.asList(${memberFields.mkString(", ")});
+        |  public java.lang.Iterable<Field> getMembers() { return MEMBERS; }
+        |  public Object getMember(Field $$f$$) throws orc.error.runtime.NoSuchMemberException { switch($$f$$.field()) {
+            |${memberCases.mkString("\n")}
+        |    }
+        |    throw new orc.error.runtime.NoSuchMemberException(this, $$f$$.field());
+        |  }
+          |${bindings.map(objectMember).mkString("\n")}
+        |}"""
+      }
+
       // ==================== FUTURE ===================
 
-      case SpawnFuture(c, t, pArg, cArg, e) => {
+      case NewFuture() => {
         j"""
-        |$execution.spawnFuture($coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(pArg)}, ${argument(cArg)}) -> {
+        |new orc.run.tojava.Future();
+        """
+      }
+      case SpawnBindFuture(f, c, t, pArg, cArg, e) => {
+        j"""
+        |$execution.spawnBindFuture($coerceToFuture(${argument(f)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(pArg)}, ${argument(cArg)}) -> {
           |$e
         |});
         """
@@ -331,7 +369,7 @@ $code
 
       case Unit() => ""
 
-      case _ => ???
+      //case _ => ???
     }
 
     ///*[\n${expr.prettyprint().withoutLeadingEmptyLines.indent(1)}\n]*/\n
@@ -401,8 +439,27 @@ $code
     a match {
       case c @ OrcValue(v) => lookup(c).name
       case (x: Var) => getIdent(x)
-      case _ => ???
+      case Unit() => {
+        // In statement positions Unit is like void. Otherwise who knows so assume we are in a statement position.
+        ""
+      }
+      //case _ => ???
     }
+  }
+
+  def objectMember(m: (Field, Expr))(implicit ctx: ConversionContext): String = {
+    objectMember(m._1, m._2)
+  }
+
+  def objectMember(f: Field, body: Expr)(implicit ctx: ConversionContext): (String, String) = {
+    val name = lookupField(f)
+    // TODO: This needs to capture a value not sure what value.
+    (j"""public OrcValue $name = new orc.run.tojava.Future();\n""",
+    j"""
+      |{
+        |${body}
+      |}
+    """.deindented)
   }
 
   def orcdef(d: Def, closedVars: Set[Var])(implicit ctx: ConversionContext): String = {
@@ -446,21 +503,25 @@ object PorcToJava {
   val coerceToSiteCallable = "Coercions$.MODULE$.coerceSiteToCallable"
   val coerceToSiteDirectCallable = "Coercions$.MODULE$.coerceSiteToDirectCallable"
   val coerceToCounter = "(Counter)"
+  val coerceToFuture = "(Future)"
   val coerceToTerminator = "(Terminator)"
 
-  def escapeIdent(s: String) = {
+  def escapeIdent(s: String, includeStartMarker: Boolean) = {
     val q = s.map({ c =>
       c match {
-        case c if c.isLetterOrDigit || c == '_' => c.toString
         case '$' => "$$"
-        case '.' => "$_"
-        case '-' => "$m"
-        case ''' => "$p"
-        case '`' => "$t"
+        case c if Character.isJavaIdentifierPart(c) => c.toString
+        case '.' => "$dot"
+        case '-' => "$minus"
+        case ''' => "$quote"
+        case '`' => "$bquote"
         case c => "$" + c.toHexString
       }
     }).mkString
-    "$s" + q
+    if(includeStartMarker)
+      "$s" + q
+    else
+      q
   }
 
   def counterToString(i: Int) = java.lang.Integer.toString(i, 36)

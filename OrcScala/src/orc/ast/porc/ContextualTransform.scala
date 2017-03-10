@@ -90,9 +90,9 @@ trait ContextualTransform {
       case TryFinally(b, h) in ctx => TryFinally(transformExpr(b in ctx), transformExpr(h in ctx))
 
       case SpawnIn(c, t, e) => Spawn(transformValue(c), transformValue(t), transformExpr(e))
-      case SpawnFutureIn(c, t, pArg, cArg, e) => {
+      case SpawnBindFutureIn(f, c, t, pArg, cArg, e) => {
         // TODO: This is actually wrong. IT needs to make an intermediate node for the context of e. Like let does.
-        SpawnFuture(transformValue(c), transformValue(t), pArg, cArg, transformExpr(e))
+        SpawnBindFuture(transformValue(f), transformValue(c), transformValue(t), pArg, cArg, transformExpr(e))
       }
 
       case NewCounterIn(c, e) => NewCounter(transformValue(c), transformExpr(e))
@@ -104,7 +104,13 @@ trait ContextualTransform {
       case ForceIn(p, c, t, b, vs, ctx) => Force(transformValue(p), transformValue(c), transformValue(t), b, vs.map(v => transformValue(v in ctx)))
       case TupleElem(v, i) in ctx => TupleElem(transformValue(v in ctx), i)
 
+      case NewIn(bindings, ctx) => {
+        New(bindings.mapValues(b => transformExpr(b in ctx)))
+      }
+
       case GetField(p, c, t, o, f) in ctx => GetField(transformValue(p in ctx), transformValue(c in ctx), transformValue(t in ctx), transformValue(o in ctx), f)
+
+      case (v: Value) in ctx  => transformValue(v in ctx)
 
       case e in _ if e.productArity == 0 => e
     })(expr)

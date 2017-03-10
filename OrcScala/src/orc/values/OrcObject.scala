@@ -55,3 +55,26 @@ case class OrcObject(private var entries: Map[Field, Binding] = null) extends Ha
     "{ " + contents + " }"
   }
 }
+
+abstract class OrcObjectBase() extends OrcValue {
+  import scala.collection.JavaConverters._
+  def getMembers(): java.lang.Iterable[Field]
+
+  @throws[NoSuchMemberException]
+  def getMember(f: Field): AnyRef
+
+  override def toOrcSyntax() = {
+    val entries = getMembers().asScala.map(f => (f, getMember(f))).toMap
+
+    val formattedEntries =
+      for ((s, v) <- entries) yield {
+        s + " = " + Format.formatValue(v)
+      }
+    val contents =
+      formattedEntries.toList match {
+        case Nil => ""
+        case l => l reduceRight { _ + " # " + _ }
+      }
+    "{ " + contents + " }"
+  }
+}

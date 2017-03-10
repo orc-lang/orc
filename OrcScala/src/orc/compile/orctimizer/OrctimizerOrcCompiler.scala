@@ -25,6 +25,9 @@ import orc.compile.tojava.PorcToJava
 abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
   with StandardOrcCompilerEnvInterface[String]
   with CoreOrcCompilerPhases {
+
+  Logger.warning("You are using the Porc/Orctimizer back end. It is UNSTABLE!!")
+
   val toOrctimizer = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orctimizer.named.Expression] {
     val phaseName = "translate"
     override def apply(co: CompilerOptions) =
@@ -49,7 +52,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
               case _ => false
             }),
             "futures" -> Analysis.count(prog, {
-              case Future(_, _, _) => true
+              case Future(_) => true
               case _ => false
             }),
             "forces" -> Analysis.count(prog, {
@@ -211,6 +214,14 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     }
   }
 
+  def nullOutput[T] = new CompilerPhase[CompilerOptions, T, String] {
+    val phaseName = "toJava"
+    override def apply(co: CompilerOptions) =
+      { ast =>
+        ""
+      }
+  }
+
   ////////
   // Compose phases into a compiler
   ////////
@@ -221,23 +232,23 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       noUnboundVars.timePhase >>>
       fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
-      outputIR(1) >>>
+      //outputIR(1) >>>
       noUnguardedRecursion.timePhase >>>
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
       outputIR(2) >>>
       toOrctimizer >>>
       outputIR(3) >>>
-      optimize() >>>
-      outputIR(4) >>>
-      unroll >>>
-      outputIR(5, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
-      optimize(_.options.optimizationFlags("orct:unroll-def").asBool()) >>>
-      outputIR(6, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
+      //optimize() >>>
+      //outputIR(4) >>>
+      //unroll >>>
+      //outputIR(5, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
+      //optimize(_.options.optimizationFlags("orct:unroll-def").asBool()) >>>
+      //outputIR(6, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
       toPorc >>>
       outputIR(7) >>>
-      optimizePorc >>>
-      outputIR(8) >>>
+      //optimizePorc >>>
+      //outputIR(8) >>>
       porcToJava >>>
       outputIR(9)
 }

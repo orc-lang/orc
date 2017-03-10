@@ -14,6 +14,7 @@ package orc.run.tojava
 
 import orc.OrcRuntime
 import orc.values.{ Format, OrcValue }
+import orc.values.Field
 
 /** A future value that can be bound or unbound or halted.
   *
@@ -33,6 +34,7 @@ final class Future() extends OrcValue {
   /** Bind this to a value and call publish and halt on each blocked Blockable.
     */
   def bind(v: AnyRef) = {
+    assert(!v.isInstanceOf[Field])
     assert(!v.isInstanceOf[Future])
     val done = synchronized {
       if (_state == Unbound) {
@@ -44,7 +46,7 @@ final class Future() extends OrcValue {
         false
       }
     }
-    // We can access and clear _blocked without the lock because we are in a 
+    // We can access and clear _blocked without the lock because we are in a
     // state that cannot change again.
     if (done) {
       for (blocked <- _blocked) {
@@ -67,7 +69,7 @@ final class Future() extends OrcValue {
         false
       }
     }
-    // We can access and clear _blocked without the lock because we are in a 
+    // We can access and clear _blocked without the lock because we are in a
     // state that cannot change again.
     if (done) {
       for (blocked <- _blocked)

@@ -55,7 +55,7 @@ object TransformContext {
 
   val cache = new SingletonCache[TransformContext]()
 
-  // This is a very important optimization as contexts are constantly compared 
+  // This is a very important optimization as contexts are constantly compared
   // to each other and if that's a pointer compare than we win.
   private[TransformContext] def normalize(c: TransformContext) = {
     cache.normalize(c)
@@ -138,16 +138,13 @@ object Bindings {
 
   case class SeqBound(ctx: TransformContext, ast: Branch) extends Binding {
     val variable = ast.x
+    val value = ast.left
   }
 
   case class ForceBound(ctx: TransformContext, ast: Force, variable: BoundVar) extends Binding {
     assert(ast.xs.contains(variable))
 
     def publishForce = ast.publishForce
-  }
-
-  case class FutureBound(ctx: TransformContext, ast: Future) extends Binding {
-    val variable = ast.x
   }
 
   case class CallableBound(ctx: TransformContext, ast: DeclareCallables, d: Callable) extends Binding {
@@ -187,4 +184,3 @@ trait WithContextInfixCombinator {
 object in {
   def unapply[E <: NamedAST](c: WithContext[E]): Option[(E, TransformContext)] = Some((c.e, c.ctx))
 }
-

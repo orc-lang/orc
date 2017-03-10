@@ -15,7 +15,7 @@ package orc.compile.orctimizer
 import orc.compile.Logger
 import orc.values.OrcRecord
 import orc.ast.orctimizer.named._
-import Bindings.{ CallableBound, RecursiveCallableBound, SeqBound, FutureBound }
+import Bindings.{ CallableBound, RecursiveCallableBound, SeqBound }
 import orc.values.Field
 import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
@@ -55,13 +55,12 @@ case class OptFull(name: String)(f: (WithContext[Expression], ExpressionAnalysis
 // TODO: Implement compile time evaluation of select sites.
 
 /* Assumptions in the optimizer:
- * 
+ *
  * No call (def or site) can publish a future.
- * 
+ *
  */
 
-/**
-  * @author amp
+/** @author amp
   */
 abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   def opts: Seq[Optimization]
@@ -116,8 +115,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   val FutureElimFlatten = Opt("future-elim-flatten") {
     // TODO: This may not be legal. What about small expressions that could still block on something.
-    /*case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1) 
-            && Analysis.cost(g) <= flattenThreshold => 
+    /*case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1)
+            && Analysis.cost(g) <= flattenThreshold =>
               g > x > f
               */
     case (e, a) if false => e
@@ -159,16 +158,20 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
+
+  // TODO: Reinstate this optimization
+  /*
   val UnusedFutureElim = Opt("unused-future-elim") {
     case (FutureAt(x, f, g), a) if !(g.freeVars contains x) => g || (f >> Stop())
   }
+  */
 
   // TODO: Evaluate and port if needed.
   /*
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case FutureAt(x, ForceAt((y: BoundVar) in ctx, true), r) => 
+      case FutureAt(x, ForceAt((y: BoundVar) in ctx, true), r) =>
         def successRes = Some(r.subst(y, x))
         ctx(y) match {
           case Bindings.FutureBound(ctx, _) => successRes
@@ -185,7 +188,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     import a.ImplicitResults._
     val ctx = e.ctx
     e match {
-      /*case ForceAt(xs, vs, _, g) if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually(false) && g.effectFree => 
+      /*case ForceAt(xs, vs, _, g) if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually(false) && g.effectFree =>
         Some(g)*/
       //case ForceAt(xs, vs, _, g) if v.isFuture || v.isDef => Some(v)
       case fe @ ForceAt(xs, vs, forceClosures, e) => {
@@ -376,15 +379,15 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val SeqRHSInline= OptFull("seq-rhs-inline") { (e, a) =>
     import a.ImplicitResults._
     e match {
-      case f > x > g if g strictOn x => 
+      case f > x > g if g strictOn x =>
       case _ => None
     }
-  } 
+  }
   */
 
   val SeqExp = Opt("seq-expansion") {
     case (e @ (Pars(fs, ctx) > x > g), a) if fs.size > 1 && fs.exists(f => a(f in ctx).silent) => {
-      // This doesn't really eliminate any code and I cannot think of a case where 
+      // This doesn't really eliminate any code and I cannot think of a case where
       val (sil, nsil) = fs.partition(f => a(f in ctx).silent)
       (sil.isEmpty, nsil.isEmpty) match {
         case (false, false) => (Pars(nsil) > x > g) || Pars(sil)
@@ -472,7 +475,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             case x: BoundVar => isClosureBinding(ctx(x))
             case _ => false
           }
-          //if (cost > costThreshold) 
+          //if (cost > costThreshold)
           //  println(s"WARNING: Not inlining ${d.name} because of cost ${cost}")
           if (!recursive && hasDefArg && cost <= higherOrderInlineCostThreshold && ctxsCompat) {
             Some(buildInlineDef(d, args, targs, declsctx, a))
@@ -542,7 +545,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     val trans = new ContextualTransform.Pre {
       override def onExpression(implicit ctx: TransformContext) = {
         case left > x > right => left > replaceVar(x) > right
-        case Future(x, left, right) => Future(replaceVar(x), left, right)
         case Force(xs, vs, b, e) => Force(xs.map(replaceVar), vs, b, e)
       }
 
@@ -624,11 +626,11 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val AccessorElim = Opt("accessor-elim") {
     case (FieldAccess(Constant(r: OrcRecord), f) in ctx, a) if r.entries.contains(f.field) =>
       Constant(r.entries(f.field))
-    /*  case (CallAt(Constant(ProjectClosure) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("apply") => 
+    /*  case (CallAt(Constant(ProjectClosure) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("apply") =>
       Constant(r.getField(Field("apply")))
-    case (CallAt(Constant(ProjectClosure) in _, List(v : BoundVar), _, ctx), a) if isClosureBinding(ctx(v)) => 
+    case (CallAt(Constant(ProjectClosure) in _, List(v : BoundVar), _, ctx), a) if isClosureBinding(ctx(v)) =>
       v
-    case (CallAt(Constant(ProjectUnapply) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("unapply") => 
+    case (CallAt(Constant(ProjectUnapply) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("unapply") =>
       Constant(r.getField(Field("unapply")))
       */
   }
@@ -638,7 +640,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val TupleElim = OptFull("tuple-elim") { (e, a) =>
     import a.ImplicitResults._, Bindings._
     e match {
-      //case FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx 
+      //case FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx
       case CallSiteAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _) if (v in ctx).nonBlockingPublish =>
         val i = bi.toInt
         ctx(v) match {
@@ -646,7 +648,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             Some(Force.asExpr(args(i), true))
           case _ => None
         }
-      //case (FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx) > x > e 
+      //case (FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx) > x > e
       case CallSiteAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _) > x > e if (v in ctx).nonBlockingPublish && !e.freeVars.contains(x) =>
         val i = bi.toInt
         ctx(v) match {
@@ -660,7 +662,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           case _ => None
         }
       // TODO: I may need a special case for removing tuple constructors.
-      //case CallAt(Constant(TupleConstructor) in _, args, _, ctx) > x > e 
+      //case CallAt(Constant(TupleConstructor) in _, args, _, ctx) > x > e
       //        if args.size > 0 && args.forall(_.isInstanceOf[BoundVar]) && !e.freeVars.contains(x) =>
       case _ => None
     }
@@ -672,7 +674,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
     SeqReassoc,
     DefSeqNorm, DefElim,
     LiftUnrelated, LiftForce,
-    FutureElimFlatten, UnusedFutureElim, FutureElim,
+    FutureElimFlatten, /*UnusedFutureElim,*/ FutureElim,
     /*FutureForceElim,*/ ForceElim, IfDefElim,
     TupleElim, AccessorElim,
     TrimCompChoice, TrimElim, ConstProp,
@@ -729,7 +731,7 @@ object Optimizer {
       p match {
         case f > x > g => {
           val (fss, fn) = seqsAt(f) // f1 >x1> ... >xn-1> fn
-          val (gss, gn) = seqsAt(g) // g1 >y1> ... >yn-1> gn 
+          val (gss, gn) = seqsAt(g) // g1 >y1> ... >yn-1> gn
           // TODO: Add an assert here to check that no variables are shadowed. This should never happen because of how variables are handled and allocated.
           // f1 >x1> ... >xn-1> fn >x> g1 >y1> ... >yn-1> gn
           (fss ::: (fn, x) :: gss, gn)
@@ -788,7 +790,7 @@ object Optimizer {
   }
 
   /* This uses the identity:
-   * future x = future y = e # f # g 
+   * future x = future y = e # f # g
    * ===
    * future y = e # future x = f # g
    */
@@ -796,9 +798,9 @@ object Optimizer {
   object Futures {
     private def futsAt(p: WithContext[Expression]): (List[(WithContext[Expression], BoundVar)], WithContext[Expression]) = {
       p match {
-        case FutureAt(x, f, g) => {
+        case FutureAt(f) > x > g => {
           val (fss, fn) = futsAt(f) // f1 >x1> ... >xn-1> fn
-          val (gss, gn) = futsAt(g) // g1 >y1> ... >yn-1> gn 
+          val (gss, gn) = futsAt(g) // g1 >y1> ... >yn-1> gn
           // TODO: Add an assert here to check that no variables are shadowed. This should never happen because of how variables are handled and allocated.
           // f1 >x1> ... >xn-1> fn >x> g1 >y1> ... >yn-1> gn
           (fss ::: (fn, x) :: gss, gn)
@@ -815,7 +817,7 @@ object Optimizer {
     def apply(ss: Seq[(Expression, BoundVar)], en: Expression): Expression = {
       ss match {
         case Nil => en
-        case (e, x) +: sst => Future(x, e, apply(sst, en))
+        case (e, x) +: sst => Future(e) > x > apply(sst, en)
       }
     }
   }
@@ -858,4 +860,3 @@ object Optimizer {
     }
   }
 }
-

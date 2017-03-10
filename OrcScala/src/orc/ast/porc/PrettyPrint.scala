@@ -13,9 +13,9 @@
 package orc.ast.porc
 
 import orc.values.Format
+import orc.values.Field
 
-/**
-  * @author amp
+/** @author amp
   */
 class PrettyPrint {
   def tag(ast: PorcAST, s: String): String = s"${ast.number.map(_ + ": ").getOrElse("")}$s"
@@ -86,16 +86,28 @@ class PrettyPrint {
         case NewTerminator(t) => rd"terminator $t"
         case Kill(t) => rd"kill $t"
 
-        case SpawnFuture(c, t, pArg, cArg, e) => rd"spawnFuture $c $t ($pArg, $cArg) {\n${indent(i + 2)}${reduce(e, i + 2)}\n$ind}"
+        case NewFuture() => rd"newFuture"
+        case SpawnBindFuture(f, c, t, pArg, cArg, e) => rd"spawnFuture $f $c $t ($pArg, $cArg) {\n${indent(i + 2)}${reduce(e, i + 2)}\n$ind}"
 
         case Force(p, c, t, b, vs) => rd"force[${if (b) "publish" else "call"}] $p $c $t (${vs.map(reduce(_, i)).mkString(", ")})"
         case TupleElem(v, i) => rd"elem($v, $i)"
 
         case GetField(p, c, t, o, f) => rd"getField $p $c $t $o$f"
 
-        case v if v.productArity == 0 => v.productPrefix
+        case New(bindings) => {
+          def reduceField(f: (Field, Expr)) = {
+            val (name, expr) = f
+            s"${name} = ${reduce(expr)}"
+          }
+          s"new {" +
+            s"${if (bindings.nonEmpty) bindings.map(reduceField).mkString(s" #\n${indent(i + 2)}", s" #\n${indent(i + 2)}", "\n") else ""}$ind}"
+        }
 
-        case v => throw new NotImplementedError("Cannot convert: " + v.getClass.toString)
+        case Unit() => "()"
+
+        //case v if v.productArity == 0 => v.productPrefix
+
+        // case v => throw new NotImplementedError("Cannot convert: " + v.getClass.toString)
       })
   }
 }

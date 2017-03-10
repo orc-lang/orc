@@ -79,7 +79,7 @@ class OrctimizerToPorc {
           }
         }
       }
-      case left || right => {
+      case left Parallel right => {
         // TODO: While it sound to never add a spawn here it might be good to add them sometimes.
         expression(left) :::
           expression(right)
@@ -100,12 +100,13 @@ class OrctimizerToPorc {
             porc.TryOnKilled(expression(f)(ctx.copy(t = newT, p = newP)), porc.Unit())
           }
       }
-      case Future(x, f, g) => {
-        val fut = lookup(x)
+      case Future(f) => {
+        val fut = newVarName("v")
         val newP = newVarName("P")
         val newC = newVarName("C")
-        let((fut, porc.SpawnFuture(ctx.c, ctx.t, newP, newC, expression(f)(ctx.copy(p = newP, c = newC))))) {
-          expression(g)
+        let((fut, porc.NewFuture())) {
+          porc.SpawnBindFuture(fut, ctx.c, ctx.t, newP, newC, expression(f)(ctx.copy(p = newP, c = newC))) :::
+          ctx.p(fut)
         }
       }
       case Force(xs, vs, forceClosures, e) => {
@@ -145,17 +146,38 @@ class OrctimizerToPorc {
         porc.IfDef(argument(a), expression(f), expression(g))
       }
       case DeclareCallables(defs, body) => {
-        ???
-        // TODO: Reinstate support after adding sites to Porc.
-        // porc.DefDeclaration(defs.map(orcdef(defs.map(_.name), _)), expression(body))
+        porc.DefDeclaration(defs.map(callable(defs.map(_.name), _)), expression(body))
+      }
+
+      case New(self, _, bindings, _) => {
+        val selfV = lookup(self)
+
+        val fieldInfos = for((f, b) <- bindings) yield {
+          val varName = newVarName(f.field)
+          val (value, binder) = b match {
+            case FieldFuture(e) =>
+              val newP = newVarName("P")
+              val newC = newVarName("C")
+              val binder = porc.SpawnBindFuture(varName, ctx.c, ctx.t, newP, newC, expression(e)(ctx.copy(p = newP, c = newC)))
+              (porc.NewFuture(), Some(binder))
+            case FieldArgument(a) =>
+              (argument(a), None)
+          }
+          ((varName, value), (f, varName), binder)
+        }
+        val (fieldVars, fields, binders) = {
+          val (fvs, fs, bs) = fieldInfos.unzip3
+          (fvs.toSeq, fs.toMap, bs.flatten)
+        }
+
+        let(fieldVars :+ (selfV, porc.New(fields)) :_*) {
+          binders.foldRight(ctx.p(selfV) : porc.Expr)(porc.Sequence(_, _))
+        }
       }
 
       // We do not handle types
       case HasType(body, expectedType) => expression(body)
       case DeclareType(u, t, body) => expression(body)
-
-      case VtimeZone(timeOrder, body) =>
-        throw new FeatureNotSupportedException("Virtual time").setPosition(expr.sourceTextRange.getOrElse(null))
 
       case FieldAccess(o, f) => {
         porc.GetField(ctx.p, ctx.c, ctx.t, argument(o), f)
@@ -163,7 +185,7 @@ class OrctimizerToPorc {
       case a: Argument => {
         ctx.p(argument(a))
       }
-      case e => throw new NotImplementedError("orctimizerToPorc is not implemented for: " + e)
+      // case e => throw new NotImplementedError("orctimizerToPorc is not implemented for: " + e)
     }
     code
   }
@@ -172,18 +194,25 @@ class OrctimizerToPorc {
     a match {
       case c @ Constant(v) => porc.OrcValue(v)
       case (x: BoundVar) => lookup(x)
-      case _ => ???
+      //case _ => ???
     }
   }
 
-  def orcdef(recursiveGroup: Seq[BoundVar], d: Def)(implicit ctx: ConversionContext): porc.Def = {
-    val Def(f, formals, body, typeformals, argtypes, returntype) = d
+  def callable(recursiveGroup: Seq[BoundVar], d: Callable)(implicit ctx: ConversionContext): porc.Def = {
     val newP = newVarName("P")
     val newC = newVarName("C")
     val newT = newVarName("T")
+    val Callable(f, formals, body, _, _, _) = d
     val args = formals.map(lookup)
     val name = lookup(f)
-    porc.DefCPS(name, newP, newC, newT, args, expression(body)(ctx.copy(p = newP, c = newC, t = newT, recursives = ctx.recursives ++ recursiveGroup)))
+    val bodyT = d match {
+      case Def(_, _, body, typeformals, argtypes, returntype) =>
+        newT
+      case Site(_, _, body, typeformals, argtypes, returntype) =>
+        ctx.t
+    }
+    porc.DefCPS(name, newP, newC, newT, args,
+      expression(body)(ctx.copy(p = newP, c = newC, t = bodyT, recursives = ctx.recursives ++ recursiveGroup)))
   }
 
   private def newFlag(): SiteCallDirect = {

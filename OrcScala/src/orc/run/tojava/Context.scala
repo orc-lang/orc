@@ -31,6 +31,11 @@ import orc.values.OrcValue
 import orc.Schedulable
 import orc.ExecutionRoot
 import orc.values.HasMembers
+import orc.values.OrcObjectBase
+import orc.values.HasMembers
+import orc.run.core.BoundValue
+import orc.run.core.BoundStop
+import orc.run.core.BoundReadable
 
 // TODO: Rename this file and the Context object at the bottom.
 
@@ -93,18 +98,29 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     * This is very similar to spawn().
     */
   def spawnFuture(c: Counter, t: Terminator, f: BiConsumer[Continuation, Counter]): Future = {
-    t.checkLive();
     val fut = new Future()
+    spawnBindFuture(fut, c, t, f)
+  }
+
+  /** Spawn an execution and bind it's first publication to the given future.
+    *
+    * This is very similar to spawn().
+    */
+  def spawnBindFuture(fut: Future, c: Counter, t: Terminator, f: BiConsumer[Continuation, Counter]): Future = {
+    //Logger.fine(s"Starting future binder $fut")
+    t.checkLive();
     scheduleOrRun(new CounterSchedulableFunc(c, () => {
       val p = new Continuation {
         // This special context just binds the future on publication.
         override def call(v: AnyRef): Unit = {
+          //Logger.fine(s"Bound future $fut = $v")
           fut.bind(v)
         }
       }
       val newC = new CounterNestedBase(c) {
         // Initial count matches: halt() in finally below.
         override def onContextHalted(): Unit = {
+          //Logger.fine(s"Bound future $fut = stop")
           fut.stop()
           super.onContextHalted()
         }
@@ -219,9 +235,24 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     //       That would make for fewer megamorphic call sites.
     Wrapper.unwrap(v) match {
       case r: HasMembers if r.hasMember(f) => {
-        val binding = r.getMember(f)
-        // TODO: Handle bindings here somehow.
-        p.call(???)
+        r.getMember(f) match {
+          case BoundValue(v) =>
+            p.call(v)
+          case BoundStop =>
+            ()
+          case BoundReadable(_) =>
+            throw new Error("Cannot handle interpreter blockable in field. Should never exist since objects are implemented seperately in ToJava.")
+        }
+      }
+      case r: OrcObjectBase => {
+        try {
+          val v = r.getMember(f)
+          //Logger.fine(s"Got field: $r$f = $v")
+          p.call(v)
+        } catch {
+          case e: NoSuchMemberException =>
+            notifyOrc(CaughtEvent(e))
+        }
       }
       case _: OrcValue => {
         // OrcValues must HasFields to have fields accessed.

@@ -139,12 +139,12 @@ class Analyzer extends AnalysisProvider[PorcAST] {
 
       /*
       case CallIn((t: Var) in ctx, _, _) => ctx(t) match {
-        case LetBound(dctx, l) => 
+        case LetBound(dctx, l) =>
           val LetIn(_, LambdaIn(_, _, b), _) = l in dctx
           b.doesNotThrowHalt
         case _ => false
       }
-      
+
       case IfIn(p, t, e) => t.doesNotThrowHalt && e.doesNotThrowHalt
       case TryOnHaltedIn(b, h) => h.doesNotThrowHalt
       case TryOnKilledIn(b, h) => b.doesNotThrowHalt && h.doesNotThrowHalt
@@ -194,7 +194,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
                 b.fastTerminating
               case _ => false
             }
-          case SpawnFutureBound(_, _, _) =>
+          case SpawnBindFutureBound(_, _, _) =>
             true
           case DefArgumentBound(_, _, _) =>
             false
@@ -208,7 +208,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       case SequenceIn(l, ctx) => l forall (e => (e in ctx).fastTerminating)
       case NewCounterIn(_, b) => b.fastTerminating
       case NewTerminatorIn(b) => b.fastTerminating
-      case (_: Continuation | _: Spawn | _: SpawnFuture | _: Force | _: Unit | _: Kill) in _ => {
+      case (_: Continuation | _: Spawn | _: NewFuture | _: SpawnBindFuture | _: Force | _: Unit | _: Kill) in _ => {
         true
       }
       case _ => false

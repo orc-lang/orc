@@ -59,18 +59,22 @@ class JavaCompiler {
     val task = compiler.getTask(null, null, null, options, null, compilationUnits)
     task.call()
 
-    if (Logger.julLogger.isLoggable(Level.INFO)) {
+    if (Logger.julLogger.isLoggable(Level.FINE)) {
       // Write out code file next to bytecode
       val javaFile = tempDir.resolve(s"$pkgName/$className.java")
       Files.write(javaFile, code.getBytes(StandardCharsets.UTF_8))
+      Logger.fine(s"Storing java source and class files to $tempDir")
     }
 
-    // Setup a hook to delete the class and source (if written)
-    Runtime.getRuntime.addShutdownHook(new Thread() {
-      override def run(): Unit = {
-        deleteDirectoryRecursive(tempDir)
-      }
-    })
+    // If FINE is not logged then delete the files when we are done.
+    if (!Logger.julLogger.isLoggable(Level.FINE)) {
+      // Setup a hook to delete the class and source (if written)
+      Runtime.getRuntime.addShutdownHook(new Thread() {
+        override def run(): Unit = {
+          deleteDirectoryRecursive(tempDir)
+        }
+      })
+    }
 
     val cl = new URLClassLoader(Array(tempDir.toUri().toURL()))
     cl.loadClass(s"$pkgName.$className").asSubclass(classOf[OrcProgram])
