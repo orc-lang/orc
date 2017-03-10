@@ -52,12 +52,13 @@ object Tracer {
 
   @inline
   def traceJavaCall(h: orc.Handle) {
-    orc.util.Tracer.trace(JavaCall, h.asInstanceOf[ExternalSiteCallHandle].caller.debugId, 0L, 0L)
+    // TODO: Remove the need for cast so these don't crash when called from ToJava code.
+    //orc.util.Tracer.trace(JavaCall, h.asInstanceOf[ExternalSiteCallHandle].caller.debugId, 0L, 0L)
   }
 
   @inline
   def traceJavaReturn(h: orc.Handle) {
-    orc.util.Tracer.trace(JavaReturn, h.asInstanceOf[ExternalSiteCallHandle].caller.debugId, 0L, 0L)
+    //orc.util.Tracer.trace(JavaReturn, h.asInstanceOf[ExternalSiteCallHandle].caller.debugId, 0L, 0L)
   }
 
   private def tokenStateIdFor(ts: TokenState) = ts match {

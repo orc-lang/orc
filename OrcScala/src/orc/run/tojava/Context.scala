@@ -276,61 +276,33 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   }
 
   def scheduleOrRun(s: Schedulable) = {
-    val depth = Context.callDepthEst.get()
-    if (depth >= Context.callDepthLimit) {
+    val tctx = Context.threadContext.get()
+    if (tctx.callDepthEst >= Context.callDepthLimit) {
       // If we are too deep them trampoline through the scheduler.
       runtime.schedule(s)
     } else {
-      Context.callDepthEst.set(depth + 1)
+      tctx.callDepthEst += 1
       try {
         s.run()
       } catch {
         case e: StackOverflowError =>
-          val nStackFrames = e.getStackTrace().size
-          Logger.severe(s"Stack overflowed at depth (in arbitrary units) ${Context.callDepthEst.get()} with $nStackFrames real stack frames")
+          //val nStackFrames = e.getStackTrace().size
+          Logger.severe(s"Stack overflowed at depth (in arbitrary units) ${tctx.callDepthEst}")
           throw new Error(e)
       } finally {
-        Context.callDepthEst.set(depth)
+        tctx.callDepthEst -= 1
       }
-    }
-  }
-
-  /** Setup the stage and begin staging any tasks that can be staged.
-    */
-  def setStage() = {
-    assert(Context.stagedTasks.get() == null)
-    Context.stagedTasks.set(Nil)
-  }
-
-  /** Stage a task if possible for scheduling or running. If it cannot be staged, just schedule or run it directly.
-    */
-  def stageOrRun(s: Schedulable) = {
-    val ts = Context.stagedTasks.get()
-    if (ts != null) {
-      s.onSchedule()
-      Context.stagedTasks.set(s :: ts)
-    } else
-      scheduleOrRun(s)
-  }
-
-  /** Empty the staged tasks by scheduling or running them.
-    */
-  def flushStage() = {
-    assert(Context.stagedTasks.get() != null)
-    val ts = Context.stagedTasks.get()
-    Context.stagedTasks.set(null)
-    ts.foreach { s =>
-      scheduleOrRun(s)
-      s.onComplete()
     }
   }
 }
 
 object Context {
-  val stagedTasks: ThreadLocal[List[Schedulable]] = new ThreadLocal[List[Schedulable]]()
+  final class ThreadContext {
+    var callDepthEst = 0
+  }
 
-  val callDepthEst = new ThreadLocal[Int]() {
-    override protected def initialValue(): Int = 0
+  val threadContext = new ThreadLocal[ThreadContext]() {
+    override protected def initialValue(): ThreadContext = new ThreadContext()
   }
 
   // TODO: This needs to be configurable and ideally self tuning so things will at least always work.

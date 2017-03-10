@@ -97,7 +97,7 @@ final class PCTHandle(val execution: Execution, p: Continuation, c: Counter, t: 
   t.addChild(this)
 
   def publishNonterminal(v: AnyRef): Unit = {
-    execution.stageOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
+    execution.scheduleOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
   }
 
   /** Handle a site call publication.
@@ -107,7 +107,7 @@ final class PCTHandle(val execution: Execution, p: Continuation, c: Counter, t: 
   override def publish(v: AnyRef) = {
     if (halted.compareAndSet(false, true)) {
       // TODO: It should be possible to pass the count we have on to the schedulable. It would save two atomic updates per pub.
-      execution.stageOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
+      execution.scheduleOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
       c.halt()
       // Matched to: Every invocation is required to be proceeded by a
       //             prepareSpawn since it might spawn.
@@ -170,12 +170,7 @@ sealed class RuntimeCallable(val underlying: AnyRef) extends Callable with Wrapp
     // Prepare to spawn because the invoked site might do that.
     c.prepareSpawn()
     // Matched to: halt in PCTHandle.
-    execution.setStage()
-    try {
-      execution.invoke(new PCTHandle(execution, p, c, t), site, args)
-    } finally {
-      execution.flushStage()
-    }
+    execution.invoke(new PCTHandle(execution, p, c, t), site, args)
   }
 
   override def toString: String = s"${getClass.getName}($underlying)"
@@ -192,12 +187,7 @@ final class RuntimeDirectCallable(override val underlying: DirectSite) extends R
     Logger.fine(s"Direct calling: $underlying(${args.mkString(", ")})")
     try {
       val v = try {
-        execution.setStage()
-        try {
-          site.calldirect(args)
-        } finally {
-          execution.flushStage()
-        }
+        site.calldirect(args)
       } catch {
         case e: InterruptedException =>
           throw e

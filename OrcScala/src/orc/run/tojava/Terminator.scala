@@ -15,8 +15,13 @@ package orc.run.tojava
 
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import scala.collection.JavaConverters._
 
 trait Terminatable {
+  /** Kill this terminatable.
+   *
+   *  This method must be idempotent to multiple concurrent calls.
+   */
   def kill(): Unit
 }
 
@@ -26,7 +31,7 @@ trait Terminatable {
   */
 class Terminator extends Terminatable {
   // TODO: children can theoretically grow without bound. We need to actually remove the children when they are gone.
-  private[this] val children: AtomicReference[List[Terminatable]] = new AtomicReference(Nil)
+  private[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
 
   def addChild(child: Terminatable): Unit = {
     val orig = children.get()
@@ -34,11 +39,14 @@ class Terminator extends Terminatable {
       child.kill()
       throw KilledException.SINGLETON
     }
-
-    val n = child :: orig
-    if (!children.compareAndSet(orig, n)) {
-      // Retry on failure to set
-      addChild(child)
+    orig.add(child)
+    // Check for kill again.
+    // The .add and .get here race against .getAndSet and iteration in kill().
+    // However, this .get here will always return null if iteration will not observe the .add.
+    // TODO: Someone please check this.
+    if (children.get() == null) {
+      child.kill()
+      throw KilledException.SINGLETON
     }
   }
 
@@ -62,23 +70,22 @@ class Terminator extends Terminatable {
     * This will throw KilledException if the terminator has already been killed otherwise it will just return to allow handling.
     */
   def kill(): Unit = {
-    val cs = children.get()
-    if (cs != null && children.compareAndSet(cs, null)) {
+    // First, swap in null as the children set.
+    val cs = children.getAndSet(null)
+    // Next, process cs if needed.
+    // See description of ordering in addChild().
+    if (cs != null) {
       // If we were the first to kill and it succeeded
-      for (c <- cs) {
+      for (c <- cs.asScala) {
         try {
           c.kill()
         } catch {
           case _: KilledException => {}
         }
       }
-    } else if (cs == null) {
+    } else {
       // If it was already killed
       throw KilledException.SINGLETON
-    } else {
-      // If the kill attempt failed.
-      // Retry
-      kill()
     }
   }
 }

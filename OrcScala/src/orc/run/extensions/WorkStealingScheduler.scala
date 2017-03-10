@@ -316,6 +316,10 @@ class SimpleWorkStealingScheduler(
     }
   }
 
+  final def isOnSchedulerThread = {
+    Thread.currentThread().isInstanceOf[Worker]
+  }
+
   def beforeExecute(w: Worker, r: Schedulable): Unit = {}
 
   def afterExecute(w: Worker, r: Schedulable, t: Throwable): Unit = {}
@@ -349,6 +353,7 @@ trait OrcWithWorkStealingScheduler extends Orc {
 
   def stage(ts: List[Schedulable]): Unit = {
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.
+    assert(scheduler.isOnSchedulerThread)
     val stage = OrcWithWorkStealingScheduler.stagedTasks.get
     ts.foreach(_.onSchedule())
     stage ++= ts
@@ -356,12 +361,14 @@ trait OrcWithWorkStealingScheduler extends Orc {
 
   override def stage(t: Schedulable): Unit = {
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.
+    assert(scheduler.isOnSchedulerThread)
     val stage = OrcWithWorkStealingScheduler.stagedTasks.get
     t.onSchedule()
     stage += t
   }
   override def stage(a: Schedulable, b: Schedulable): Unit = {
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.
+    assert(scheduler.isOnSchedulerThread)
     val stage = OrcWithWorkStealingScheduler.stagedTasks.get
     a.onSchedule()
     b.onSchedule()
