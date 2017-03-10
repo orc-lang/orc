@@ -35,6 +35,8 @@ class PorcToJava {
     val source = j"""// GENERATED!!
 import orc.run.tojava.*;
 import orc.values.Field;
+import orc.values.OrcValue;
+import orc.values.OrcObjectBase;
 import orc.CaughtEvent;
 import scala.math.BigInt$$;
 import scala.math.BigDecimal$$;
@@ -68,7 +70,7 @@ $code
   val usedNames: mutable.Set[String] = new mutable.HashSet()
   var varCounter: Int = 0
   def newVarName(prefix: String = "_t"): String = {
-    val p = escapeIdent(prefix)
+    val p = escapeIdent(prefix, true)
     val name = if (usedNames contains p) {
       varCounter += 1
       p + "$c" + counterToString(varCounter)
@@ -79,7 +81,7 @@ $code
   def lookup(temp: Var): String = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
   // The function handling code directly modifies vars to make it point to an element of an array. See orcdef().
 
-  def lookupField(temp: Field): String = fields.getOrElseUpdate(temp, escapeIdent(temp.field))
+  def lookupField(temp: Field): String = fields.getOrElseUpdate(temp, escapeIdent(temp.field, false))
 
   val constantPool: mutable.Map[(Class[_], AnyRef), ConstantPoolEntry] = new mutable.HashMap()
   var constantCounter: Int = 0
@@ -88,7 +90,7 @@ $code
   }
   def newConstant(v: AnyRef): ConstantPoolEntry = {
     constantCounter += 1
-    val name = escapeIdent(s"C_${Format.formatValue(v)}_${counterToString(constantCounter)}")
+    val name = escapeIdent(s"C_${Format.formatValue(v)}_${counterToString(constantCounter)}", false)
     val typ = v match {
       case _: Integer | _: java.lang.Short | _: java.lang.Long | _: java.lang.Character
         | _: java.lang.Float | _: java.lang.Double | _: BigInt | _: BigDecimal => """Number"""
@@ -273,10 +275,23 @@ $code
           val (f, e) = p
           val field = lookupField(f)
           val body = expression(e, true)
-          s"OrcValue $field = $body;"
+          s"  public final Object $field = $body;"
         }
+        val memberFields =  bindings.map(p => lookup(p._1).name)
+        val memberCases = bindings.map(p => {
+          val n = stringAsJava(p._1.field)
+          val field = lookupField(p._1)
+          s"    case $n: return $field;"
+        })
         j"""
-        |new OrcValue() {
+        |new OrcObjectBase() {
+        |  private final java.lang.Iterable<Field> MEMBERS = java.util.Arrays.asList(${memberFields.mkString(", ")});
+        |  public java.lang.Iterable<Field> getMembers() { return MEMBERS; }
+        |  public Object getMember(Field $$f$$) throws orc.error.runtime.NoSuchMemberException { switch($$f$$.field()) {
+            |${memberCases.mkString("\n")}
+        |    }
+        |    throw new orc.error.runtime.NoSuchMemberException(this, $$f$$.field());
+        |  }
           |${bindings.map(objectMember).mkString("\n")}
         |}"""
       }
@@ -491,19 +506,22 @@ object PorcToJava {
   val coerceToFuture = "(Future)"
   val coerceToTerminator = "(Terminator)"
 
-  def escapeIdent(s: String) = {
+  def escapeIdent(s: String, includeStartMarker: Boolean) = {
     val q = s.map({ c =>
       c match {
-        case c if c.isLetterOrDigit || c == '_' => c.toString
         case '$' => "$$"
-        case '.' => "$_"
-        case '-' => "$m"
-        case ''' => "$p"
-        case '`' => "$t"
+        case c if Character.isJavaIdentifierPart(c) => c.toString
+        case '.' => "$dot"
+        case '-' => "$minus"
+        case ''' => "$quote"
+        case '`' => "$bquote"
         case c => "$" + c.toHexString
       }
     }).mkString
-    "$s" + q
+    if(includeStartMarker)
+      "$s" + q
+    else
+      q
   }
 
   def counterToString(i: Int) = java.lang.Integer.toString(i, 36)

@@ -25,6 +25,9 @@ import orc.compile.tojava.PorcToJava
 abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
   with StandardOrcCompilerEnvInterface[String]
   with CoreOrcCompilerPhases {
+
+  Logger.warning("You are using the Porc/Orctimizer back end. It is UNSTABLE!!")
+
   val toOrctimizer = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orctimizer.named.Expression] {
     val phaseName = "translate"
     override def apply(co: CompilerOptions) =
@@ -247,6 +250,5 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       //optimizePorc >>>
       //outputIR(8) >>>
       porcToJava >>>
-      outputIR(9) >>>
-      nullOutput
+      outputIR(9)
 }

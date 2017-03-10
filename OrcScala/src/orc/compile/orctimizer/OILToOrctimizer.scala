@@ -78,7 +78,7 @@ class OILToOrctimizer {
       }
       case Graft(x, left, right) => {
         val bctx = ctx + ((x, e))
-        orct.Branch(orct.Future(apply(right)), apply(x), apply(left)(bctx))
+        orct.Branch(orct.Future(apply(left)), apply(x), apply(right)(bctx))
       }
       case Trim(f) => orct.Trim(apply(f))
       case Otherwise(left, right) =>

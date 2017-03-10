@@ -67,6 +67,7 @@ abstract class Counter {
   val log = new LinkedBlockingDeque[Exception]()
 
   @elidable(elidable.ASSERTION)
+  @inline
   private def logChange(s: => String) = {
     if (Logger.julLogger.isLoggable(Level.FINE)) {
       log.add(new Exception(s))

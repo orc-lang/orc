@@ -171,7 +171,7 @@ class OrctimizerToPorc {
         }
 
         let(fieldVars :+ (selfV, porc.New(fields)) :_*) {
-          binders.fold(porc.Unit())(porc.Sequence(_, _))
+          binders.foldRight(ctx.p(selfV) : porc.Expr)(porc.Sequence(_, _))
         }
       }
 
