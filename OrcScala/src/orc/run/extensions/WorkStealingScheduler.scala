@@ -297,10 +297,10 @@ class SimpleWorkStealingScheduler(
 
   final def stopScheduler(): Unit = {
     isSchedulerShuttingDown = true
-    monitor.join()
+    /*monitor.join()
     for (w <- currentWorkers) {
       w.join()
-    }
+    }*/
   }
 
   final def schedule(t: Schedulable): Unit = {

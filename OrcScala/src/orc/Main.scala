@@ -217,4 +217,6 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   StringListOpt(() => optimizationOptions, optimizationOptions = _, ' ', "opt-opt", separator = ",",
     usage = "Provide option for use by the optimizers separated by commas. Options in the form '[optimizer-name]' and '-[optimizer-name]=off' enable and disable optimizers. Other options are arbitrary key-value pairs used by the optimizer (the value defaults to 'true').")
+
+  IntOpt(() => optimizationLevel, optimizationLevel = _, 'O', "optimize", usage = "Set a general optimization level. This selects a set of default optimization options. --opt-opt may be used to override these default.")
 }

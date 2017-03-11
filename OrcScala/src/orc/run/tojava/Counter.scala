@@ -76,12 +76,13 @@ abstract class Counter {
   logChange(s"Init to 1")
 
   Counter.addCounter(this)
-  */
+  // */
 
   val log: LinkedBlockingDeque[Exception] = null
   @inline
   private def logChange(s: => String) = {
   }
+  // */
 
   /** The number of executions that are either running or pending.
     *

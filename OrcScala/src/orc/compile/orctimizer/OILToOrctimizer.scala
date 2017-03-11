@@ -16,15 +16,59 @@ import orc.ast.oil.named._
 import orc.ast.orctimizer.{ named => orct }
 import scala.collection.mutable
 import orc.error.compiletime.FeatureNotSupportedException
+import orc.compile.Logger
 
 /** @author amp
   */
 // Conversions from named to nameless representations
 class OILToOrctimizer {
-  private def isDef(b: BoundVar)(implicit ctx: Map[BoundVar, Expression]) = ctx.get(b) match {
-    // TODO: How to handle sites?
-    case Some(d: DeclareCallables) if d.defs.head.isInstanceOf[Def] => true
+  private def isDef(a: Argument)(implicit ctx: Map[BoundVar, Expression]) = a match {
+    case b: BoundVar =>
+      ctx.get(b) match {
+        case Some(d: DeclareCallables) if d.defs.head.isInstanceOf[Def] => true
+        case _ => false
+      }
     case _ => false
+  }
+  private def isSite(a: Argument)(implicit ctx: Map[BoundVar, Expression]) = a match {
+    case b: BoundVar =>
+      ctx.get(b) match {
+        case Some(d: DeclareCallables) if d.defs.head.isInstanceOf[Site] => true
+        case _ => false
+      }
+    case _ => false
+  }
+
+  private def mayBeFuture(a: Argument)(implicit ctx: Map[BoundVar, Expression]) = a match {
+    case b: BoundVar =>
+      ctx.get(b) match {
+        case Some(_: DeclareCallables) => false
+        case Some(_: New) => false
+        case Some(_: Sequence) => false
+        case _ => true
+      }
+    case _: Constant => false
+    case _ => true
+  }
+
+  private def maybeForce(xs: List[orct.BoundVar], vs: List[Argument], publishForce: Boolean, expr: orct.Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
+    val m = (xs zip vs).toMap
+    val (needForce, noForce) = m.partition(p => mayBeFuture(p._2))
+    val (newXs, newVs) = needForce.toList.unzip
+    val force = if (needForce.isEmpty) {
+      expr
+    } else {
+      orct.Force(newXs, newVs.map(a => apply(a)), publishForce, expr)
+    }
+    Logger.fine(s"Not forcing ${noForce}, but still forcing ${needForce}")
+    noForce.foldLeft(force: orct.Expression) { (core, p) =>
+      val (x, v) = p
+      orct.Branch(apply(v), x, core)
+    }
+  }
+
+  private def maybeForce(x: orct.BoundVar, v: Argument, publishForce: Boolean, expr: orct.Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
+    maybeForce(List(x), List(v), publishForce, expr)
   }
 
   /*
@@ -44,7 +88,7 @@ class OILToOrctimizer {
       case Sequence(a: Argument, x, e) => {
         // Special case to optimize the pattern where we are directly forcing something.
         val bctx = ctx + ((x, e))
-        orct.Force(List(apply(x)), List(apply(a)), true, apply(e)(bctx))
+        maybeForce(apply(x), a, true, apply(e)(bctx))
       }
       case a: Constant => {
         apply(a)
@@ -54,22 +98,26 @@ class OILToOrctimizer {
         orct.Force(List(x), List(apply(a)), true, x)
       }
       case Call(target, args, typeargs) => {
-        // TODO: Add special case for site constants and maybe known defs (if we have enough information for that)
-
         val t = new orct.BoundVar(Some(s"f_$target"))
-        orct.Force(t, apply(target), false,
-          orct.IfDef(t, {
-            orct.CallDef(t, args map apply, typeargs map { _ map apply })
-          }, {
-            val uniqueArgs = args.toSet.toList
-            val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(s"f_$a")))).toMap
-            val call = orct.CallSite(t, args map argVarsMap, typeargs map { _ map apply })
-            if (uniqueArgs.size > 0) {
-              orct.Force(uniqueArgs map argVarsMap, uniqueArgs map apply, true, call)
-            } else {
-              call
-            }
-          }))
+        def siteCall = {
+          val uniqueArgs = args.toSet.toList
+          val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(s"f_$a")))).toMap
+          val call = orct.CallSite(t, args map argVarsMap, typeargs map { _ map apply })
+          if (uniqueArgs.size > 0) {
+            orct.Force(uniqueArgs map argVarsMap, uniqueArgs map apply, true, call)
+          } else {
+            call
+          }
+        }
+        def defCall = orct.CallDef(t, args map apply, typeargs map { _ map apply })
+        val call = if (isDef(target)) {
+          defCall
+        } else if (isSite(target)) {
+          siteCall
+        } else {
+          orct.IfDef(t, defCall, siteCall)
+        }
+        maybeForce(t, target, false, call)
       }
       case Parallel(left, right) => orct.Parallel(apply(left), apply(right))
       case Sequence(left, x, right) => {
@@ -85,7 +133,8 @@ class OILToOrctimizer {
         orct.Otherwise(apply(left), apply(right))
       case DeclareCallables(defs, body) => {
         val bctx = ctx ++ (defs map { d => (d.name, e) })
-        orct.DeclareCallables(defs map { apply(_)(bctx) }, apply(body)(bctx))
+        // Do not include the callables in their own scope. They don't force normally in that scope.
+        orct.DeclareCallables(defs map { apply(_)(ctx) }, apply(body)(bctx))
       }
       case DeclareType(x, t, body) => {
         orct.DeclareType(apply(x), apply(t), apply(body))
@@ -95,11 +144,11 @@ class OILToOrctimizer {
         val t = new orct.BoundVar(Some(s"f_$o"))
         val fv1 = new orct.BoundVar(Some(s"f_${o}_${f.field}'"))
         val fv2 = new orct.BoundVar(Some(s"f_${o}_${f.field}"))
-        orct.Force(List(t), List(apply(o)), true, {
+        maybeForce(t, o, true, {
           orct.FieldAccess(t, f) > fv1 >
-          orct.Force(List(fv2), List(fv1), true, {
-            fv2
-          })
+            orct.Force(fv2, fv1, false, {
+              fv2
+            })
         })
       }
       case New(self, selfT, members, objT) => {

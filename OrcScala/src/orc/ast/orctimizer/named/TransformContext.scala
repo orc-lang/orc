@@ -136,6 +136,10 @@ object Bindings {
     def nonRecursive: Binding = this
   }
 
+  case class SelfBound(ctx: TransformContext, ast: New) extends Binding {
+    val variable = ast.self
+  }
+
   case class SeqBound(ctx: TransformContext, ast: Branch) extends Binding {
     val variable = ast.x
     val value = ast.left

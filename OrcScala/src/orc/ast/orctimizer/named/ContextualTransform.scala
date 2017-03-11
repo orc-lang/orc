@@ -73,13 +73,21 @@ trait ContextualTransform extends NamedASTFunction {
         CallSite(newtarget, newargs, newtypeargs)
       }
       case left Parallel right => recurse(left) || recurse(right)
-      case e @ Branch(left, x, right) => recurse(left) > x > transform(right)(ctx + SeqBound(ctx, e.asInstanceOf[Branch]))
+      case e @ Branch(left, x, right) => recurse(left) > x > transform(right)(ctx + SeqBound(ctx, e))
       case Trim(f) => Trim(recurse(f))
       case expr @ Force(xs, vs, b, e) => {
         val newvs = vs map { recurse(_) }
         Force(xs, newvs, b, transform(e)(ctx extendBindings (xs.map(x => ForceBound(ctx, expr, x)))))
       }
       case e @ Future(f) => Future(recurse(f))
+      case e @ New(self, selfT, bindings, objT) => {
+        val selfCtx = ctx + SelfBound(ctx, e)
+        val newBindings = bindings.mapValues({
+          case FieldFuture(e) => FieldFuture(e)
+          case FieldArgument(a) => FieldArgument(transform(a)(selfCtx))
+        }).view.force
+        New(self, selfT.map(transform(_: Type)(ctx)), newBindings, objT.map(transform(_: Type)(ctx)))
+      }
       case left Otherwise right => Otherwise(recurse(left), recurse(right))
       case IfDef(a, f, g) => IfDef(recurse(a), recurse(f), recurse(g))
       case e @ DeclareCallables(defs, body) => {
