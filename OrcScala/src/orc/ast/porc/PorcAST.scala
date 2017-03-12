@@ -19,14 +19,43 @@ import orc.ast.PrecomputeHashcode
 import java.util.logging.Level
 import orc.values.Field
 
-/**
-  * @author amp
+/** @author amp
   */
 sealed abstract class PorcAST extends AST with Product with WithContextInfixCombinator {
   def prettyprint() = (new PrettyPrint()).reduce(this)
   override def toString() = prettyprint()
 
   var number: Option[Int] = None
+
+  override def subtrees: Iterable[AST] = this match {
+    case Call(a, b) => List(a, b)
+    case Let(a, b, c) => List(a, b, c)
+    case Sequence(l) => l
+    case Continuation(x, e) => List(x, e)
+    case DefDeclaration(ds, e) => e +: ds
+    case DefCPS(a, b, c, d, e, f) => a +: b +: c +: d +: f +: e
+    case DefDirect(a, b, c) => a +: c +: b
+    case SiteCall(a, b, c, d, e) => a +: c +: b +: d +: e
+    case SiteCallDirect(a, b) => a +: b
+    case DefCall(a, b, c, d, e) => a +: c +: b +: d +: e
+    case DefCallDirect(a, b) => a +: b
+    case IfDef(a, b, c) => List(a, b, c)
+    case New(b) => b.values.toList
+    case Spawn(a, b, c) => List(a, b, c)
+    case NewTerminator(a) => List(a)
+    case Kill(a) => List(a)
+    case TryOnKilled(a, b) => List(a, b)
+    case NewCounter(a, b) => List(a, b)
+    case Halt(a) => List(a)
+    case TryOnHalted(a, b) => List(a, b)
+    case TryFinally(a, b) => List(a, b)
+    case NewFuture() => List()
+    case SpawnBindFuture(a, b, c, d, e, f) => List(a, b, c, d, e, f)
+    case Force(a, b, c, _, e) => a +: b +: c +: e
+    case GetField(a, b, c, d, _) => List(a, b, c, d)
+    case TupleElem(a, _) => List(a)
+    case _ => List()
+  }
 
   /** Assign numbers in depth first order stating at 0.
     */
@@ -62,7 +91,7 @@ sealed trait UnnumberedPorcAST extends PorcAST {
 // ==================== CORE ===================
 sealed abstract class Expr extends PorcAST with FreeVariables with Substitution[Expr] with Product with PrecomputeHashcode with PorcInfixExpr
 
-sealed abstract class Value extends Expr with PorcInfixValue with UnnumberedPorcAST //with Substitution[Value]
+sealed abstract class Value extends Expr with PorcInfixValue with UnnumberedPorcAST with PrecomputeHashcode //with Substitution[Value]
 case class OrcValue(value: AnyRef) extends Value
 /*case class Tuple(values: List[Value]) extends Value
 object Tuple {

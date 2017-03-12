@@ -154,7 +154,9 @@ object ContextualTransform {
         case Some(e1) => e1
         case None => descend(e)
       }
-      transferMetadata(e, e1)
+      e1
+      // TODO: Reenable somehow later. It's too expensive, but we will need it eventually.
+      //transferMetadata(e, e1)
     }
   }
   trait Pre extends ContextualTransform {
@@ -163,7 +165,9 @@ object ContextualTransform {
         case Some(e1) => descend(e1 in e.ctx)
         case None => descend(e)
       }
-      transferMetadata(e, e1)
+      e1
+      // TODO: Reenable somehow later. It's too expensive, but we will need it eventually.
+      //transferMetadata(e, e1)
     }
   }
   trait Post extends ContextualTransform {
@@ -173,7 +177,9 @@ object ContextualTransform {
         case Some(e1) => e1
         case None => e0.e
       }
-      transferMetadata(e, e1)
+      e1
+      // TODO: Reenable somehow later. It's too expensive, but we will need it eventually.
+      //transferMetadata(e, e1)
     }
   }
 }

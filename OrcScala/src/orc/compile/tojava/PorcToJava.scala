@@ -506,6 +506,26 @@ object PorcToJava {
   val coerceToFuture = "(Future)"
   val coerceToTerminator = "(Terminator)"
 
+  val javaKeywords = Set(
+    "abstract", "continue", "for", "new", "switch",
+    "assert", "default", "goto", "package", "synchronized",
+    "boolean", "do", "if", "private", "this",
+    "break", "double", "implements", "protected", "throw",
+    "byte", "else", "import", "public", "throws",
+    "case", "enum", "instanceof", "return", "transient",
+    "catch", "extends", "int", "short", "try",
+    "char", "final", "interface", "static", "void",
+    "class", "finally", "long", "strictfp", "volatile",
+    "const", "float", "native", "super", "while")
+
+  private def escapeJavaKeywords(s: String) = {
+    if(javaKeywords contains s) {
+      s + "_"
+    } else {
+      s
+    }
+  }
+
   def escapeIdent(s: String, includeStartMarker: Boolean) = {
     val q = s.map({ c =>
       c match {
@@ -521,7 +541,7 @@ object PorcToJava {
     if(includeStartMarker)
       "$s" + q
     else
-      q
+      escapeJavaKeywords(q)
   }
 
   def counterToString(i: Int) = java.lang.Integer.toString(i, 36)
@@ -562,6 +582,23 @@ object Deindent {
   val EmptyLinesEnd = raw"""(\n\p{Blank}*)+\z""".r
   val NonBlank = raw"""[^\p{Blank}]""".r
 
+  // TODO: Implement a system for generating indented output that is not too expensive.
+  // I think a string interpolator might actually be able to convert nested patterns into a string buffer in some cases.
+
+  implicit final class DeindentString(private val s: String) {
+    def deindentedAgressively = {
+      s
+    }
+
+    def deindented = {
+      s.stripMargin
+    }
+
+    def indent(n: Int) = {
+      s
+    }
+  }
+  /*
   implicit final class DeindentString(private val s: String) {
     def deindentedAgressively = {
       val lines = s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.split('\n')
@@ -594,4 +631,5 @@ object Deindent {
       }).getOrElse(s)
     }
   }
+  */
 }
