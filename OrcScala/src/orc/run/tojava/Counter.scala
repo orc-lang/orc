@@ -90,6 +90,12 @@ abstract class Counter {
     * reaches 0.
     */
   val count = new AtomicInteger(1)
+  var isDiscorporated = false
+
+  def discorporate() = {
+    isDiscorporated = true
+    halt()
+  }
 
   /** Decrement the count and check for overall halting.
     *
@@ -134,7 +140,10 @@ abstract class CounterNestedBase(parent: Counter) extends Counter {
     */
   def onContextHalted(): Unit = {
     // Matched against: constructor call to prepareSpawn
-    parent.halt()
+    if (isDiscorporated)
+      parent.discorporate()
+    else
+      parent.halt()
   }
 }
 
@@ -144,7 +153,9 @@ final class CounterNested(execution: Execution, parent: Counter, haltContinuatio
   /** Called when this whole context has halted.
     */
   override def onContextHalted(): Unit = {
-    execution.scheduleOrRun(new CounterSchedulableRunnable(parent, haltContinuation))
+    if (!isDiscorporated) {
+      execution.scheduleOrRun(new CounterSchedulableRunnable(parent, haltContinuation))
+    }
     super.onContextHalted()
   }
 }

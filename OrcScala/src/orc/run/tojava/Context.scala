@@ -60,6 +60,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     /** When we halt stop the scheduler and notify anyone who cares.
       */
     def onContextHalted(): Unit = {
+      // Runs regardless of discorporation.
       Logger.fine("Top level context complete.")
       runtime.removeExecution(root)
       root.synchronized {
@@ -121,7 +122,9 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
         // Initial count matches: halt() in finally below.
         override def onContextHalted(): Unit = {
           //Logger.fine(s"Bound future $fut = stop")
-          fut.stop()
+          if (!isDiscorporated) {
+            fut.stop()
+          }
           super.onContextHalted()
         }
       }
