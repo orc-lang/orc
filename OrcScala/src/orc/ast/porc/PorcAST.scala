@@ -22,7 +22,7 @@ import orc.values.Field
 /** @author amp
   */
 sealed abstract class PorcAST extends AST with Product with WithContextInfixCombinator {
-  def prettyprint() = (new PrettyPrint()).reduce(this)
+  def prettyprint() = (new PrettyPrint()).reduce(this).toString()
   override def toString() = prettyprint()
 
   var number: Option[Int] = None
@@ -119,6 +119,7 @@ class Var(optionalName: Option[String] = None) extends Value with hasOptionalVar
 
   override val hashCode = System.identityHashCode(this)
 }
+
 object Var {
   private var nextVar: Int = 0
   def getNextVariableName(): String = getNextVariableName("pv")
@@ -189,6 +190,7 @@ case class TryOnKilled(body: Expr, handler: Expr) extends Expr
 
 case class NewCounter(parent: Value, haltCont: Expr) extends Expr
 case class Halt(c: Value) extends Expr
+case class SetDiscorporate(c: Value) extends Expr
 case class TryOnHalted(body: Expr, handler: Expr) extends Expr
 
 case class TryFinally(body: Expr, handler: Expr) extends Expr

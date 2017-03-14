@@ -14,96 +14,79 @@ package orc.ast.porc
 
 import orc.values.Format
 import orc.values.Field
+import orc.util.PrettyPrintInterpolator
+import orc.util.FragmentAppender
 
 /** @author amp
   */
 class PrettyPrint {
-  def tag(ast: PorcAST, s: String): String = s"${ast.number.map(_ + ": ").getOrElse("")}$s"
-
-  def indent(i: Int, n: Option[Int] = None) = {
-    n match {
-      case None => " " * i
-      case Some(n) =>
-        val sn = n.toString
-        sn + ": " + (" " * (i - sn.size - 2))
-    }
-  }
-
-  def reduce(ast: PorcAST, i: Int = 0): String = {
-    implicit class RecursiveReduce(val sc: StringContext) {
-      import StringContext._
-      import sc._
-
-      def rd(args: Any*): String = {
-        checkLengths(args)
-        val pi = parts.iterator
-        val ai = args.iterator
-        val bldr = new java.lang.StringBuilder(treatEscapes(pi.next()))
-        while (ai.hasNext) {
-          val a = ai.next
-          a match {
-            case a: PorcAST => bldr append reduce(a, i)
-            case _ => bldr append a
-          }
-          bldr append treatEscapes(pi.next())
-        }
-        bldr.toString
+  class MyPrettyPrintInterpolator extends PrettyPrintInterpolator {
+    implicit def implicitInterpolator(sc: StringContext) = new MyInterpolator(sc)
+    class MyInterpolator(sc: StringContext) extends Interpolator(sc) {
+      override val processValue: PartialFunction[Any, FragmentAppender] = {
+        case a: Expr =>
+          reduce(a)
       }
     }
+  }
+  val interpolator = new MyPrettyPrintInterpolator
+  import interpolator._
 
-    val ind = indent(i)
+  def tag(ast: PorcAST, s: FragmentAppender): FragmentAppender = s // pp"${ast.number.map(_ + ": ").getOrElse("")}$s"
+
+  def reduce(ast: PorcAST): FragmentAppender = {
     tag(ast,
       ast match {
-        case OrcValue(v) => Format.formatValue(v)
-        //case Tuple(l) => l.map(reduce(_, i+1)).mkString("(",", ",")")
-        case v: Var => v.optionalVariableName.getOrElse(v.toString)
+        case OrcValue(v) => FragmentAppender(Format.formatValue(v))
+        case v: Var => FragmentAppender(v.optionalVariableName.getOrElse(v.toString))
 
-        case Let(x, v, b) => rd"let $x = ${reduce(v, i + 3)} in\n$ind$b"
-        case DefDeclaration(l, b) => rd"def ${l.map(reduce(_, i + 3)).mkString(";\n" + indent(i + 2))}\n${indent(i + 2)} in\n$ind${reduce(b, i)}"
-        case DefCPS(name, p, c, t, args, body) => rd"$name ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"
-        case DefDirect(name, args, body) => rd"direct $name (${args.map(reduce(_, i)).mkString(", ")}) =\n$ind$body"
+        case Let(x, v, b) => pp"let $x = $StartIndent$v$EndIndent in\n$b"
+        case DefDeclaration(l, b) => pp"def $StartIndent$StartIndent${FragmentAppender.mkString(l.map(reduce), ";\n")}$EndIndent in\n$b$StartIndent"
+        case DefCPS(name, p, c, t, args, body) => pp"$name ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
+        case DefDirect(name, args, body) => pp"direct $name (${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
 
-        case Continuation(arg, b) => rd"\u03BB($arg).\n$ind$b"
+        case Continuation(arg, b) => pp"\u03BB($arg).$StartIndent\n$b$EndIndent"
 
-        case Call(t, a) => rd"$t ($a)"
-        case SiteCall(target, p, c, t, args) => rd"sitecall $target ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")})"
-        case SiteCallDirect(target, args) => rd"sitecall direct $target (${args.map(reduce(_, i)).mkString(", ")})"
-        case DefCall(target, p, c, t, args) => rd"defcall $target ($p, $c, $t)(${args.map(reduce(_, i)).mkString(", ")})"
-        case DefCallDirect(target, args) => rd"defcall direct $target (${args.map(reduce(_, i)).mkString(", ")})"
-        case IfDef(arg, f, g) => rd"ifdef $arg then\n${indent(i + 2)}${reduce(f, i + 2)}\n${ind}else\n${indent(i + 2)}${reduce(g, i + 2)}"
+        case Call(t, a) => pp"$t ($a)"
+        case SiteCall(target, p, c, t, args) => pp"sitecall $target ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")})"
+        case SiteCallDirect(target, args) => pp"sitecall direct $target (${args.map(reduce(_)).mkString(", ")})"
+        case DefCall(target, p, c, t, args) => pp"defcall $target ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")})"
+        case DefCallDirect(target, args) => pp"defcall direct $target (${args.map(reduce(_)).mkString(", ")})"
+        case IfDef(arg, f, g) => pp"ifdef $arg then$StartIndent\n$f$EndIndent\nelse$StartIndent\n$g$EndIndent"
 
-        case Sequence(es) => es.map(reduce(_, i)).mkString(s";\n$ind")
+        case Sequence(es) => FragmentAppender.mkString(es.map(reduce(_)), ";\n")
 
-        case TryOnKilled(b, h) => rd"try\n${indent(i + 2)}${reduce(b, i + 2)}\n${ind}onKilled\n${indent(i + 2)}${reduce(h, i + 2)}"
-        case TryOnHalted(b, h) => rd"try\n${indent(i + 2)}${reduce(b, i + 2)}\n${ind}onHalted\n${indent(i + 2)}${reduce(h, i + 2)}"
-        case TryFinally(b, h) => rd"try\n${indent(i + 2)}${reduce(b, i + 2)}\n${ind}finally\n${indent(i + 2)}${reduce(h, i + 2)}"
+        case TryOnKilled(b, h) => pp"try$StartIndent\n$b$EndIndent\nonKilled$StartIndent\n$h$EndIndent"
+        case TryOnHalted(b, h) => pp"try$StartIndent\n$b$EndIndent\nonHalted$StartIndent\n$h$EndIndent"
+        case TryFinally(b, h) => pp"try$StartIndent\n$b$EndIndent\nfinally$StartIndent\n$h$EndIndent"
 
-        case Spawn(c, t, e) => rd"spawn $c $t {\n${indent(i + 2)}${reduce(e, i + 2)}\n$ind}"
+        case Spawn(c, t, e) => pp"spawn $c $t {$StartIndent\n$e$EndIndent\n}"
 
-        case NewCounter(c, h) => rd"counter $c { $h }"
-        case Halt(c) => rd"halt $c"
+        case NewCounter(c, h) => pp"counter $c { $StartIndent$h$EndIndent }"
+        case Halt(c) => pp"halt $c"
+        case SetDiscorporate(c) => pp"setDiscorporate $c"
 
-        case NewTerminator(t) => rd"terminator $t"
-        case Kill(t) => rd"kill $t"
+        case NewTerminator(t) => pp"terminator $t"
+        case Kill(t) => pp"kill $t"
 
-        case NewFuture() => rd"newFuture"
-        case SpawnBindFuture(f, c, t, pArg, cArg, e) => rd"spawnFuture $f $c $t ($pArg, $cArg) {\n${indent(i + 2)}${reduce(e, i + 2)}\n$ind}"
+        case NewFuture() => pp"newFuture"
+        case SpawnBindFuture(f, c, t, pArg, cArg, e) => pp"spawnBindFuture $f $c $t ($pArg, $cArg) {$StartIndent\n$e$EndIndent\n}"
 
-        case Force(p, c, t, b, vs) => rd"force[${if (b) "publish" else "call"}] $p $c $t (${vs.map(reduce(_, i)).mkString(", ")})"
-        case TupleElem(v, i) => rd"elem($v, $i)"
+        case Force(p, c, t, b, vs) => pp"force[${if (b) "publish" else "call"}] $p $c $t (${vs.map(reduce(_)).mkString(", ")})"
+        case TupleElem(v, i) => pp"elem($v, $i)"
 
-        case GetField(p, c, t, o, f) => rd"getField $p $c $t $o$f"
+        case GetField(p, c, t, o, f) => pp"getField $p $c $t $o$f"
 
         case New(bindings) => {
           def reduceField(f: (Field, Expr)) = {
             val (name, expr) = f
-            s"${name} = ${reduce(expr)}"
+            pp"${name} = ${reduce(expr)}"
           }
-          s"new {" +
-            s"${if (bindings.nonEmpty) bindings.map(reduceField).mkString(s" #\n${indent(i + 2)}", s" #\n${indent(i + 2)}", "\n") else ""}$ind}"
+          def fields = pp" #$StartIndent\n${FragmentAppender.mkString(bindings.map(reduceField), " #\n")}$EndIndent\n"
+          pp"new { ${if (bindings.nonEmpty) fields else ""} }"
         }
 
-        case Unit() => "()"
+        case Unit() => FragmentAppender("unit")
 
         //case v if v.productArity == 0 => v.productPrefix
 

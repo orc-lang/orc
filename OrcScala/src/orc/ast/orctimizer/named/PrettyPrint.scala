@@ -16,12 +16,25 @@ import scala.collection.mutable._
 import orc.values.Format
 import orc.compile.orctimizer.ExpressionAnalysisProvider
 import orc.values.Field
+import orc.util.PrettyPrintInterpolator
+import orc.util.FragmentAppender
 
 /** Nicer printing for named OIL syntax trees.
   *
   * @author dkitchin, amp
   */
 class PrettyPrint {
+  class MyPrettyPrintInterpolator extends PrettyPrintInterpolator {
+    implicit def implicitInterpolator(sc: StringContext) = new MyInterpolator(sc)
+    class MyInterpolator(sc: StringContext) extends Interpolator(sc) {
+      override val processValue: PartialFunction[Any, FragmentAppender] = {
+        case a: NamedAST =>
+          reduce(a)
+      }
+    }
+  }
+  val interpolator = new MyPrettyPrintInterpolator
+  import interpolator._
 
   val vars: Map[BoundVar, String] = new HashMap()
   var varCounter: Int = 0
@@ -33,108 +46,104 @@ class PrettyPrint {
   def newTypevarName(): String = { typevarCounter += 1; "`T" + typevarCounter }
   def lookup(temp: BoundTypevar) = typevars.getOrElseUpdate(temp, newVarName())
 
-  def commasep(l: List[NamedAST]): String = l match {
-    case Nil => ""
-    case x :: Nil => reduce(x)
-    case x :: y => y.foldLeft(reduce(x))({ _ + ", " + reduce(_) })
+  def commasep(l: List[NamedAST]): FragmentAppender = {
+    FragmentAppender.mkString(l.map(reduce), ", ")
   }
 
-  def brack(l: List[NamedAST]): String = "[" + commasep(l) + "]"
-  def paren(l: List[NamedAST]): String = "(" + commasep(l) + ")"
-
-  def reduce(ast: NamedAST): String = {
-    val exprStr = ast match {
-      case Stop() => "stop"
+  def reduce(ast: NamedAST): FragmentAppender = {
+    val exprStr: FragmentAppender = ast match {
+      case Stop() => pp"stop"
       case CallDef(target, args, typeargs) => {
-        "defcall " + reduce(target) +
-          (typeargs match {
-            case Some(ts) => brack(ts)
+        val typePar = typeargs match {
+            case Some(ts) => pp"[${commasep(ts)}"
             case None => ""
-          }) +
-          paren(args)
+          }
+        pp"defcall $target$typePar(${commasep(args)})"
       }
       case CallSite(target, args, typeargs) => {
-        "sitecall " + reduce(target) +
-          (typeargs match {
-            case Some(ts) => brack(ts)
+        val typePar = typeargs match {
+            case Some(ts) => pp"[${commasep(ts)}"
             case None => ""
-          }) +
-          paren(args)
+          }
+        pp"sitecall $target$typePar(${commasep(args)})"
       }
-      case left Parallel right => "(" + reduce(left) + " | " + reduce(right) + ")"
-      case Branch(left, x, right) => "(" + reduce(left) + " >" + reduce(x) + "> " + reduce(right) + ")"
-      case Trim(f) => "{|" + reduce(f) + "|}"
-      case Future(f) => s"future{ ${reduce(f)} }"
-      case Force(xs, vs, b, e) => s"force_${if (b) "p" else "c"} ${commasep(xs)} = ${commasep(vs)} #\n${reduce(e)}"
-      case left Otherwise right => "(" + reduce(left) + " ; " + reduce(right) + ")"
-      case IfDef(a, l, r) => s"ifdef ${reduce(a)} then\n  ${reduce(l)}\nelse\n  ${reduce(r)}"
-      case DeclareCallables(defs, body) => "\n" + (defs map reduce).foldLeft("")({ _ + _ }) + reduce(body)
+      case left Parallel right => pp"($left | $right)"
+      case Branch(left, x, right) => pp"$left >$x>\n$right"
+      case Trim(f) => pp"{| $f |}"
+      case Future(f) => pp"future { $StartIndent$f$EndIndent }"
+      case Force(xs, vs, b, e) => pp"force_${if (b) "p" else "c"} ${commasep(xs)} = ${commasep(vs)} #\n$e"
+      case left Otherwise right => pp"($left ; $right)"
+      case IfDef(a, l, r) => pp"ifdef $a then$StartIndent\n$l$EndIndent\nelse$StartIndent\n$r$EndIndent"
+      case DeclareCallables(defs, body) => pp"${FragmentAppender.mkString(defs.map(reduce))}\n$body"
       case Def(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))
-        "def " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
-          (returntype match {
-            case Some(t) => " :: " + reduce(t)
+        val retT = returntype match {
+            case Some(t) => pp" :: t"
             case None => ""
-          }) +
-          "\n" +
-          "def " + name + paren(formals) + " = " + reduce(body) +
-          "\n"
+          }
+        pp"""\ndef $name[${commasep(typeformals)}(${commasep(argtypes.getOrElse(Nil))})$retT
+            "def $name(${commasep(formals)}) = $StartIndent$body$EndIndent
+          |"""
       }
       case Site(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))
-        "site " + name + brack(typeformals) + paren(argtypes.getOrElse(Nil)) +
-          (returntype match {
-            case Some(t) => " :: " + reduce(t)
+        val retT = returntype match {
+            case Some(t) => pp" :: t"
             case None => ""
-          }) +
-          "\n" +
-          "site " + name + paren(formals) + " = " + reduce(body) +
-          "\n"
+          }
+        pp"""\nsite $name[${commasep(typeformals)}(${commasep(argtypes.getOrElse(Nil))})$retT
+            "site $name(${commasep(formals)}) = $StartIndent$body$EndIndent
+          |"""
       }
-
       case New(self, st, bindings, t) => {
         def reduceField(f: (Field, FieldValue)) = {
           val (name, expr) = f
-          s"${name} = ${reduce(expr)}"
+          pp"$name = $expr"
         }
-        s"new ${t.map(reduce).getOrElse("")} { ${reduce(self)} ${st.map(t => ": " + reduce(t)).getOrElse("")}" +
-          s"${if (bindings.nonEmpty) bindings.map(reduceField).mkString(" #\n", " #\n  ", "\n") else ""} }"
+        def fields = pp" #$StartIndent\n${FragmentAppender.mkString(bindings.map(reduceField), " #\n")}$EndIndent\n"
+        pp"new ${t.map(reduce).getOrElse("")} { $self ${st.map(t => pp": $t").getOrElse("")} ${if (bindings.nonEmpty) fields else ""} }"
       }
-      case FieldFuture(e) => s"future{ ${reduce(e)} }"
+      case FieldFuture(e) => pp"future{ $StartIndent$e$EndIndent }"
       case FieldArgument(e) => reduce(e)
 
-      case HasType(body, expectedType) => "(" + reduce(body) + " :: " + reduce(expectedType) + ")"
-      case DeclareType(u, t, body) => "type " + reduce(u) + " = " + reduce(t) + "\n" + reduce(body)
-      //case VtimeZone(timeOrder, body) => "VtimeZone(" + reduce(timeOrder) + ", " + reduce(body) + ")"
-      case FieldAccess(o, f) => reduce(o) + "." + f.field
-      case Constant(v) => Format.formatValue(v)
-      case (x: BoundVar) => x.optionalVariableName.getOrElse(lookup(x))
-      case UnboundVar(s) => "?" + s
-      case u: BoundTypevar => u.optionalVariableName.getOrElse(lookup(u))
-      case UnboundTypevar(s) => "?" + s
-      case Top() => "Top"
-      case Bot() => "Bot"
+      case HasType(body, expectedType) => pp"($body :: $expectedType)"
+      case DeclareType(u, t, body) => pp"type $u = $t\n$body"
+      //case VtimeZone(timeOrder, body) => "VtimeZone($timeOrder, $body)"
+      case FieldAccess(o, f) => pp"$o.${f.field}"
+      case Constant(v) => FragmentAppender(Format.formatValue(v))
+      case (x: BoundVar) => FragmentAppender(x.optionalVariableName.getOrElse(lookup(x)))
+      case UnboundVar(s) => pp"?$s"
+      case u: BoundTypevar => FragmentAppender(u.optionalVariableName.getOrElse(lookup(u)))
+      case UnboundTypevar(s) => pp"?$s"
+      case Top() => pp"Top"
+      case Bot() => pp"Bot"
       case FunctionType(typeformals, argtypes, returntype) => {
-        "lambda" + brack(typeformals) + paren(argtypes) + " :: " + reduce(returntype)
+        pp"lambda[${commasep(typeformals)}](${commasep(argtypes)}) :: $returntype"
       }
-      case TupleType(elements) => paren(elements)
-      case TypeApplication(tycon, typeactuals) => reduce(tycon) + brack(typeactuals)
-      case AssertedType(assertedType) => reduce(assertedType) + "!"
-      case TypeAbstraction(typeformals, t) => brack(typeformals) + "(" + reduce(t) + ")"
-      case ImportedType(classname) => classname
-      case ClassType(classname) => classname
+      case TupleType(elements) => pp"(${commasep(elements)})"
+      case TypeApplication(tycon, typeactuals) => pp"$tycon[${commasep(typeactuals)}]"
+      case AssertedType(assertedType) => pp"$assertedType!"
+      case TypeAbstraction(typeformals, t) => pp"[${commasep(typeformals)}]($t)"
+      case ImportedType(classname) => FragmentAppender(classname)
+      case ClassType(classname) => FragmentAppender(classname)
       case VariantType(_, typeformals, variants) => {
         val variantSeq =
           for ((name, variant) <- variants) yield {
-            name + "(" + (variant map reduce).mkString(",") + ")"
+            pp"$name(${commasep(variant)})"
           }
-        brack(typeformals) + "(" + variantSeq.mkString(" | ") + ")"
+        pp"[${commasep(typeformals)}](${FragmentAppender.mkString(variantSeq, " | ")})"
       }
-      case IntersectionType(a, b) => reduce(a) + " & " + reduce(b)
-      case UnionType(a, b) => reduce(a) + " | " + reduce(b)
-      case NominalType(t) => s"nominal[${reduce(t)}]"
-      case RecordType(mems) => s"{. ${mems.mapValues(reduce).map(p => p._1 + " :: " + p._2).mkString(" # ")} .}"
-      case StructuralType(mems) => s"{ ${mems.mapValues(reduce).map(p => p._1.field + " :: " + p._2).mkString(" # ")} }"
+      case IntersectionType(a, b) => pp"$a & $b"
+      case UnionType(a, b) => pp"$a | $b"
+      case NominalType(t) => pp"nominal[$t]"
+      case RecordType(mems) => {
+        val m = FragmentAppender.mkString(mems.mapValues(reduce).map(p => pp"${p._1} :: ${p._2}"), " # ")
+        pp"{. $m .}"
+      }
+      case StructuralType(mems) => {
+        val m = FragmentAppender.mkString(mems.mapValues(reduce).map(p => pp"${p._1} :: ${p._2}"), " # ")
+        pp"{ $m }"
+      }
       //case _ => "???"
     }
     exprStr

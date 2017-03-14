@@ -15,13 +15,28 @@ import orc.ast.porc._
 import orc.values.Format
 import scala.collection.mutable
 import orc.values.Field
+import orc.util.PrettyPrintInterpolator
+import orc.util.FragmentAppender
 
 // Add context to convertion to carry the closed variables of sites.
 
 /** @author amp
   */
 class PorcToJava {
-  import Deindent._, PorcToJava._
+  import PorcToJava._
+
+  class MyPrettyPrintInterpolator extends PrettyPrintInterpolator {
+    override val lineNoOffset = 3
+    implicit def implicitInterpolator(sc: StringContext)(implicit ctx: ConversionContext) = new MyInterpolator(sc)
+    class MyInterpolator(sc: StringContext)(implicit ctx: ConversionContext) extends Interpolator(sc) {
+      override val processValue: PartialFunction[Any, FragmentAppender] = {
+        case a: Expr =>
+          expression(a)
+      }
+    }
+  }
+  val interpolator = new MyPrettyPrintInterpolator
+  import interpolator._
 
   // TODO: Because I am debugging this does a lot of code formatting and is is not very efficient. All the formatting should be
   //   removed or optimized and perhaps this whole things should be reworked to generate into a single StringBuilder.
@@ -29,10 +44,9 @@ class PorcToJava {
   def apply(prog: DefCPS): String = {
     assert(prog.arguments.isEmpty)
     implicit val ctx = ConversionContext(Map())
-    val code = expression(prog.body).indent(2)
+    val code = expression(prog.body)
     val name = "Prog"
-    val constants = buildConstantPool().indent(2)
-    val source = j"""// GENERATED!!
+    val source = pp"""// GENERATED!!
 import orc.run.tojava.*;
 import orc.values.Field;
 import orc.values.OrcValue;
@@ -41,28 +55,21 @@ import orc.CaughtEvent;
 import scala.math.BigInt$$;
 import scala.math.BigDecimal$$;
 
-public class $name extends OrcProgram {
-  private static final java.nio.charset.Charset UTF8 = java.nio.charset.Charset.forName("UTF-8");
-$constants
-
-  @Override
-  public void call(Execution $execution, Continuation ${argument(prog.pArg)}, Counter ${argument(prog.cArg)}, Terminator ${argument(prog.tArg)}, Object[] __args) {
-    // Name: ${prog.name.optionalVariableName.getOrElse("")}
-$code
-  }
-
-  public static void main(String[] args) throws Exception {
-    runProgram(args, new $name());
-  }
+public class $name extends OrcProgram {$StartIndent
+  |private static final java.nio.charset.Charset UTF8 = java.nio.charset.Charset.forName("UTF-8");
+  |@Override
+  |public void call(Execution $execution, Continuation ${argument(prog.pArg)}, Counter ${argument(prog.cArg)}, Terminator ${argument(prog.tArg)}, Object[] __args) {$StartIndent
+    |// Name: ${prog.name.optionalVariableName.getOrElse("")}
+    |$code$EndIndent
+  |}
+  |
+  |public static void main(String[] args) throws Exception {
+  |  runProgram(args, new $name());
+  |}
+  |${buildConstantPool()}$EndIndent
 }
     """
-    var lineNo = 3 // TODO: This offset is a hack to handle the fact some lines are added elsewhere before compilation.
-    source.map(_ match {
-      case '\n' =>
-        lineNo += 1; "\n"
-      case '\u00ff' => lineNo.toString
-      case c => c.toString
-    }).mkString("")
+    source.toString()
   }
 
   val vars: mutable.Map[Var, String] = new mutable.HashMap()
@@ -133,49 +140,26 @@ $code
 
   def buildConstantPool() = {
     val orderedEntries = constantPool.values.toSeq.sortBy(_.name)
-    orderedEntries.map(e => s"private static final ${e.typ} ${e.name} = ${e.initializer};").mkString("\n")
+    FragmentAppender.mkString(orderedEntries.map(e => FragmentAppender(s"private static final ${e.typ} ${e.name} = ${e.initializer};")),
+        "\n")
   }
 
-  implicit class Interpolator(private val sc: StringContext) {
-    def j(args: Any*)(implicit ctx: ConversionContext): String = {
-      sc.checkLengths(args)
-      val sb = new StringBuilder
-      import sb.append
-      for ((p, a) <- sc.parts.init zip args) {
-        a match {
-          case a: Expr =>
-            append(p)
-            append(expression(a))
-          case v =>
-            append(p)
-            append(v.toString)
-        }
-      }
-      append(sc.parts.last)
-      sb.mkString
-    }
-  }
-
-  def expression(expr: Expr, isJavaExpression: Boolean = false)(implicit ctx: ConversionContext): String = {
-    val code = expr match {
-      case v: Value => argument(v)
+  def expression(expr: Expr, isJavaExpression: Boolean = false)(implicit ctx: ConversionContext): FragmentAppender = {
+    val code: FragmentAppender = expr match {
+      case v: Value => FragmentAppender(argument(v))
 
       case Call(target, arg) => {
-        j"""
-        |($coerceToContinuation${argument(target)}).call(${argument(arg)});
-        """
+        pp"""($coerceToContinuation${argument(target)}).call(${argument(arg)});"""
       }
       case SiteCall(target, p, c, t, args) => {
-        j"""
-        |$coerceToSiteCallable(${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
-        """
+        pp"""$coerceToSiteCallable(${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });"""
       }
       case Let(x, SiteCallDirect(target, args), b) => {
         assert(!isJavaExpression)
-        j"""
+        pp"""$DNL
         |Object ${argument(x)};
         |${sitecalldirect(Some(x), target, args)}
-        |${expression(b).deindentedAgressively}
+        |${expression(b)}
         """
 
       }
@@ -184,90 +168,85 @@ $code
         sitecalldirect(None, target, args)
       }
       case DefCall(target, p, c, t, args) => {
-        j"""
-        |($coerceToDefCallable${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });
-        """
+        pp"""($coerceToDefCallable${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });"""
       }
       case DefCallDirect(target, args) => {
-        j"""
-        |($coerceToDefDirectCallable${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} });
-        """
+        pp"""($coerceToDefDirectCallable${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} });"""
       }
       case IfDef(arg, left, right) => {
-        j"""
-        |if($isInstanceOfDef(${argument(arg)})) {
-          |$left
-        |} else {
-          |$right
+        pp"""$DNL
+        |if($isInstanceOfDef(${argument(arg)})) {$StartIndent
+          |$left$EndIndent
+        |} else {$StartIndent
+          |$right$EndIndent
         |}
         """
       }
       case Let(x, v, b) => {
         assert(!isJavaExpression)
-        j"""
-        |Object ${argument(x)} = ${expression(v, true)};
-        |${expression(b).deindentedAgressively}
+        pp"""$DNL
+        |Object ${argument(x)} = $StartIndent${expression(v, true)}$EndIndent;
+        |${expression(b)}
         """
       }
       case Sequence(es) => {
         assert(!isJavaExpression)
-        es.map(expression(_)).mkString("\n").deindentedAgressively
+        FragmentAppender.mkString(es.map(expression(_)), "\n")
       }
       case Continuation(arg, b) => {
-        j"""
-        |(Continuation)((${argument(arg)}) -> {
-          |$b
-        |})
-        """
+        pp"""(Continuation)((${argument(arg)}) -> { // Line#$LineNumber$StartIndent
+          |$b$EndIndent
+        |})"""
       }
       case DefDeclaration(defs, body) => {
         assert(!isJavaExpression)
-        val decls = (for (d <- defs) yield {
+        val decls = FragmentAppender.mkString((for (d <- defs) yield {
           val wrapper = newVarName(d.name.optionalVariableName.getOrElse("_f"))
           vars(d.name) = wrapper + "[0]"
           // FIXME:HACK: This uses an array to allow recursive lambdas. A custom invoke dynamic with recursive binding should be possible.
           d match {
             case _: DefCPS =>
-              j"""final Callable[] $wrapper = new Callable[1];"""
+              pp"""final Callable[] $wrapper = new Callable[1];"""
             case _: DefDirect =>
-              j"""final DirectCallable[] $wrapper = new DirectCallable[1];"""
+              pp"""final DirectCallable[] $wrapper = new DirectCallable[1];"""
           }
-        }).mkString("\n")
+        }), "\n")
         // TODO: This gets all free variables regardless of where they came from. Some may be known not to be futures. Getting access to analysis would allow us to use isNotFuture.
         val fvs = closedVars(defs.flatMap(d => d.body.freevars -- d.allArguments).toSet)
         // TODO: It might be better to build a special join object that represents all the values we are closing over. Then all closures can use it instead of building a resolver for each.
 
         val newctx = ctx.copy(closedVars = ctx.closedVars ++ defs.map(d => (d.name, fvs)))
 
-        j"""
+        pp"""
         |$decls
-        |${defs.map(orcdef(_, fvs)(newctx)).mkString}
-        |${expression(body)(newctx).deindentedAgressively}"""
+        |${FragmentAppender.mkString(defs.map(orcdef(_, fvs)(newctx)))}
+        |${expression(body)(newctx)}"""
       }
 
       case Spawn(c, t, b) => {
-        j"""
-        |$execution.spawn($coerceToCounter${argument(c)}, $coerceToTerminator${argument(t)}, () -> {
-          |$b
-        |});
+        pp"""$DNL
+        |$execution.spawn($coerceToCounter${argument(c)}, $coerceToTerminator${argument(t)}, () -> {$StartIndent $b $EndIndent});
         """
       }
 
       case NewTerminator(t) => {
-        j"""new TerminatorNested($coerceToTerminator(${argument(t)}))"""
+        pp"""new TerminatorNested($coerceToTerminator(${argument(t)}))"""
       }
       case Kill(t) => {
-        j"""($coerceToTerminator${argument(t)}).kill();"""
+        pp"""($coerceToTerminator${argument(t)}).kill();"""
       }
 
       case NewCounter(c, h) => {
-        j"""
-        |new CounterNested($execution, $coerceToCounter(${argument(c)}), () -> {
-          |$h
+        pp"""$DNL
+        |new CounterNested($execution, $coerceToCounter(${argument(c)}), () -> { // Line#$LineNumber$StartIndent
+          |$h$EndIndent
         |})"""
       }
       case Halt(c) => {
-        j"""($coerceToCounter${argument(c)}).halt();"""
+        pp"""($coerceToCounter${argument(c)}).halt();"""
+      }
+      case SetDiscorporate(c) => {
+        pp"""($coerceToCounter${argument(c)}).setDiscorporate();"""
       }
 
       case New(bindings) => {
@@ -277,145 +256,125 @@ $code
           val body = expression(e, true)
           s"  public final Object $field = $body;"
         }
-        val memberFields =  bindings.map(p => lookup(p._1).name)
+        val memberFields = bindings.map(p => lookup(p._1).name)
         val memberCases = bindings.map(p => {
           val n = stringAsJava(p._1.field)
           val field = lookupField(p._1)
           s"    case $n: return $field;"
         })
-        j"""
-        |new OrcObjectBase() {
-        |  private final java.lang.Iterable<Field> MEMBERS = java.util.Arrays.asList(${memberFields.mkString(", ")});
-        |  public java.lang.Iterable<Field> getMembers() { return MEMBERS; }
-        |  public Object getMember(Field $$f$$) throws orc.error.runtime.NoSuchMemberException { switch($$f$$.field()) {
-            |${memberCases.mkString("\n")}
-        |    }
-        |    throw new orc.error.runtime.NoSuchMemberException(this, $$f$$.field());
-        |  }
-          |${bindings.map(objectMember).mkString("\n")}
+        pp"""$DNL
+        |new OrcObjectBase() {$StartIndent
+          |private final java.lang.Iterable<Field> MEMBERS = java.util.Arrays.asList(${memberFields.mkString(", ")});
+          |public java.lang.Iterable<Field> getMembers() { return MEMBERS; }
+          |public Object getMember(Field $$f$$) throws orc.error.runtime.NoSuchMemberException {$StartIndent switch($$f$$.field()) {$StartIndent
+            |${memberCases.mkString("\n")}$EndIndent
+            |}
+            |throw new orc.error.runtime.NoSuchMemberException(this, $$f$$.field());
+          |}
+          |${bindings.map(objectMember).mkString("\n")}$EndIndent
         |}"""
       }
 
       // ==================== FUTURE ===================
 
       case NewFuture() => {
-        j"""
-        |new orc.run.tojava.Future();
-        """
+        pp"""new orc.run.tojava.Future();"""
       }
       case SpawnBindFuture(f, c, t, pArg, cArg, e) => {
-        j"""
-        |$execution.spawnBindFuture($coerceToFuture(${argument(f)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(pArg)}, ${argument(cArg)}) -> {
-          |$e
+        pp"""$execution.spawnBindFuture($coerceToFuture(${argument(f)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), (${argument(pArg)}, ${argument(cArg)}) -> {$StartIndent
+          |$e$EndIndent
         |});
         """
       }
       case Force(p, c, t, true, vs) => {
-        j"""
-        |$execution.force($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${vs.map(argument(_)).mkString(",")} });
-        """
+        pp"""$execution.force($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${vs.map(argument(_)).mkString(",")} });"""
       }
       case Force(p, c, t, false, vs) => {
-        j"""
-        |$execution.forceForCall($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${vs.map(argument(_)).mkString(",")} });
-        """
+        pp"""$execution.forceForCall($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${vs.map(argument(_)).mkString(",")} });"""
       }
       case TupleElem(v, i) => {
-        if (isJavaExpression)
-          j"""
-          |((Object[])${argument(v)})[$i]
-          """
-        else
-          ""
+        assert (isJavaExpression)
+        pp"""((Object[])${argument(v)})[$i]"""
       }
       case GetField(p, c, t, o, f) => {
-        j"""
-        |$execution.getField($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), ${argument(o)}, ${lookup(f).name});
-        """
+        pp"""$execution.getField($coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), ${argument(o)}, ${lookup(f).name});"""
       }
 
       case TryFinally(b, h) => {
         assert(!isJavaExpression)
-        j"""
-        |try {
-          |$b
-        |} finally {
-          |$h
+        pp"""$DNL
+        |try {$StartIndent
+          |$b$EndIndent
+        |} finally {$StartIndent
+          |$h$EndIndent
         |}
         """
       }
       case TryOnKilled(b, h) => {
         assert(!isJavaExpression)
-        j"""
-        |try {
-          |$b
-        |} catch(KilledException __e) {
-          |$h
+        pp"""$DNL
+        |try {$StartIndent
+          |$b$EndIndent
+        |} catch(KilledException __e) {$StartIndent
+          |$h$EndIndent
         |}
         """
       }
       case TryOnHalted(b, h) => {
         assert(!isJavaExpression)
         val e = newVarName("e")
-        j"""
-        |try {
-          |$b
-        |} catch(HaltException $e) {
-        |  assert $e.getCause() == null;
-          |$h
+        pp"""$DNL
+        |try {$StartIndent
+          |$b$EndIndent
+        |} catch(HaltException $e) {$StartIndent
+          |assert $e.getCause() == null;
+          |$h$EndIndent
         |}
         """
       }
 
-      case Unit() => ""
+      case Unit() => FragmentAppender("")
 
       //case _ => ???
     }
-
-    ///*[\n${expr.prettyprint().withoutLeadingEmptyLines.indent(1)}\n]*/\n
-    val cleanedcode = code.deindented
-    val prefix = if (cleanedcode.count(_ == '\n') > 0) expr.number.map("// Porc Number " + _ + ", Java Line \u00ff\n").getOrElse("") else ""
-    val r = (prefix + cleanedcode).indent(2)
-    r
+    code
   }
 
   def getIdent(x: Var): String = lookup(x)
 
-  def sitecalldirect(bindTo: Option[Var], target: Value, args: List[Value])(implicit ctx: ConversionContext): String = {
-    lazy val Signal = argument(OrcValue(orc.values.Signal))
+  def sitecalldirect(bindTo: Option[Var], target: Value, args: List[Value])(implicit ctx: ConversionContext): FragmentAppender = {
+    lazy val Signal = FragmentAppender(argument(OrcValue(orc.values.Signal)))
     lazy val throwHalt = "HaltException$.MODULE$.throwIt()"
     lazy val throwHaltStat = "throw HaltException$.MODULE$.SINGLETON()"
 
-    def maybeBind(v: String) = bindTo.map(x => j"${argument(x)} = $v;").getOrElse("")
+    def maybeBind(v: FragmentAppender) = bindTo.map(x => pp"${argument(x)} = $v;").getOrElse(pp"")
 
     (target, args) match {
       case (OrcValue(orc.lib.state.NewFlag), List()) =>
-        maybeBind(j"""
-        |new orc.lib.state.Flag();
-        """)
+        maybeBind(pp"""new orc.lib.state.Flag();""")
       case (OrcValue(orc.lib.state.SetFlag), List(f)) if bindTo.isEmpty =>
-        j"""
+        pp"""$DNL
         |((orc.lib.state.Flag)${argument(f)}).set();
         """
       case (OrcValue(orc.lib.state.PublishIfNotSet), List(f)) =>
-        j"""
+        pp"""$DNL
         |if(((orc.lib.state.Flag)${argument(f)}).get()) $throwHaltStat;
         |${maybeBind(Signal)}
         """
       case (OrcValue(orc.lib.builtin.Ift), List(b)) =>
-        j"""
+        pp"""$DNL
         |if(!(Boolean)${argument(b)}) $throwHaltStat;
         |${maybeBind(Signal)}
         """
       case (OrcValue(orc.lib.builtin.Iff), List(b)) =>
-        j"""
+        pp"""$DNL
         |if((Boolean)${argument(b)}) $throwHaltStat;
         |${maybeBind(Signal)}
         """
       case (OrcValue(v: orc.values.sites.DirectSite), _) =>
-        val temp = newVarName("temp")
+        val temp = FragmentAppender(newVarName("temp"))
         val e = newVarName("exc")
-        j"""
+        pp"""$DNL
         |Object $temp = null;
         |try {
         |  $temp = ${argument(target)}.site().calldirect(new Object[] {${args.map(argument(_)).mkString(", ")}});
@@ -429,9 +388,7 @@ $code
         |${argument(target)}.directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} })
         """)*/
       case _ =>
-        maybeBind(j"""
-        |$coerceToSiteDirectCallable(${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} })
-        """)
+        maybeBind(pp"""$coerceToSiteDirectCallable(${argument(target)}).directcall($execution, new Object[] { ${args.map(argument(_)).mkString(",")} })""")
     }
   }
 
@@ -451,40 +408,40 @@ $code
     objectMember(m._1, m._2)
   }
 
-  def objectMember(f: Field, body: Expr)(implicit ctx: ConversionContext): (String, String) = {
+  def objectMember(f: Field, body: Expr)(implicit ctx: ConversionContext): (FragmentAppender, FragmentAppender) = {
     val name = lookupField(f)
     // TODO: This needs to capture a value not sure what value.
-    (j"""public OrcValue $name = new orc.run.tojava.Future();\n""",
-    j"""
-      |{
-        |${body}
+    (pp"""public OrcValue $name = new orc.run.tojava.Future();\n""",
+      pp"""$DNL
+      |{ // Line#$LineNumber$StartIndent
+        |${body}$EndIndent
       |}
-    """.deindented)
+    """)
   }
 
-  def orcdef(d: Def, closedVars: Set[Var])(implicit ctx: ConversionContext): String = {
+  def orcdef(d: Def, closedVars: Set[Var])(implicit ctx: ConversionContext): FragmentAppender = {
     val args = newVarName("args")
     val rt = newVarName("rt")
-    val freevarsStr = j"new Object[] { ${closedVars.map(argument).mkString(", ")} }"
-    val renameargs = d.arguments.zipWithIndex.map(p => j"Object ${argument(p._1)} = $args[${p._2}];").mkString("\n").indent(2)
+    val freevarsStr = pp"new Object[] { ${closedVars.map(argument).mkString(", ")} }"
+    val renameargs = FragmentAppender.mkString(d.arguments.zipWithIndex.map(p => pp"Object ${argument(p._1)} = $args[${p._2}];"), "\n")
     // We assume that previous generated code has defined a mutable variable named by vars(name)
     // This will set it to close the recursion.
     d match {
       case DefCPS(name, p, c, t, formals, b) => {
-        j"""
-        |${vars(name)} = new ForcableCallable($freevarsStr, ($rt, ${argument(p)}, ${argument(c)}, ${argument(t)}, $args) -> {
+        pp"""
+        |${vars(name)} = new ForcableCallable($freevarsStr, ($rt, ${argument(p)}, ${argument(c)}, ${argument(t)}, $args) -> { // Line#$LineNumber$StartIndent
           |$renameargs
-          |${expression(b)}
+          |${expression(b)}$EndIndent
         |});
-        """.deindented
+        """
       }
       case DefDirect(name, formals, b) => {
-        j"""
-        |${vars(name)} = new ForcableDirectCallable($freevarsStr, ($rt, $args) -> {
+        pp"""
+        |${vars(name)} = new ForcableDirectCallable($freevarsStr, ($rt, $args) -> { // Line#$LineNumber$StartIndent
           |$renameargs
-          |${expression(b)}
+          |${expression(b)}$EndIndent
         |};
-        """.deindented
+        """
       }
     }
   }
@@ -519,7 +476,7 @@ object PorcToJava {
     "const", "float", "native", "super", "while")
 
   private def escapeJavaKeywords(s: String) = {
-    if(javaKeywords contains s) {
+    if (javaKeywords contains s) {
       s + "_"
     } else {
       s
@@ -538,7 +495,7 @@ object PorcToJava {
         case c => "$" + c.toHexString
       }
     }).mkString
-    if(includeStartMarker)
+    if (includeStartMarker)
       "$s" + q
     else
       escapeJavaKeywords(q)
@@ -576,60 +533,3 @@ object PorcToJava {
 }
 
 case class ConstantPoolEntry(value: AnyRef, typ: String, name: String, initializer: String)
-
-object Deindent {
-  val EmptyLine = raw"""(\p{Blank}*\n)+""".r
-  val EmptyLinesEnd = raw"""(\n\p{Blank}*)+\z""".r
-  val NonBlank = raw"""[^\p{Blank}]""".r
-
-  // TODO: Implement a system for generating indented output that is not too expensive.
-  // I think a string interpolator might actually be able to convert nested patterns into a string buffer in some cases.
-
-  implicit final class DeindentString(private val s: String) {
-    def deindentedAgressively = {
-      s
-    }
-
-    def deindented = {
-      s.stripMargin
-    }
-
-    def indent(n: Int) = {
-      s
-    }
-  }
-  /*
-  implicit final class DeindentString(private val s: String) {
-    def deindentedAgressively = {
-      val lines = s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.split('\n')
-      val indentSize = lines.map(l => NonBlank.findFirstMatchIn(l).map(_.start).getOrElse(Int.MaxValue)).min
-      if (indentSize == Int.MaxValue) {
-        lines.mkString("\n")
-      } else {
-        lines.map(_.substring(indentSize)).mkString("\n")
-      }
-    }
-
-    def deindented = {
-      s.withoutLeadingEmptyLines.withoutTrailingEmptyLines.stripMargin
-    }
-
-    def indent(n: Int) = {
-      val lines = s.split('\n')
-      val p = " " * n
-      lines.map(p + _).mkString("\n")
-    }
-
-    def withoutLeadingEmptyLines = {
-      EmptyLine.findPrefixMatchOf(s).map({ m =>
-        s.substring(m.end)
-      }).getOrElse(s)
-    }
-    def withoutTrailingEmptyLines = {
-      EmptyLinesEnd.findFirstMatchIn(s).map({ m =>
-        s.substring(0, m.start)
-      }).getOrElse(s)
-    }
-  }
-  */
-}

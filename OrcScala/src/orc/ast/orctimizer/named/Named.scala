@@ -25,7 +25,7 @@ import orc.values
 // it's hard to tell what is a tuple access.
 
 sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
-  def prettyprint() = (new PrettyPrint()).reduce(this)
+  def prettyprint() = (new PrettyPrint()).reduce(this).toString()
   override def toString() = prettyprint()
 
   override val subtrees: Iterable[NamedAST] = this match {
