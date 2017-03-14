@@ -17,6 +17,7 @@ import orc.values.sites.{ Site => OrcSite }
 import orc.compile.CompilerOptions
 import orc.compile.OptimizerStatistics
 import orc.compile.NamedOptimization
+import scala.collection.mutable
 
 trait Optimization extends ((WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) with NamedOptimization {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
@@ -62,6 +63,25 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   // FIXME: Some inlining is occuring that makes code execute in the wrong terminator.
 
+  def renameVariables(e: Expr): Expr = {
+    // FIXME: This is a hack and really needs to be a deeper smarter process.
+    val cache = mutable.Map[Var, Var]()
+    val trans = new ContextualTransform.Pre {
+      override def onExpr = {
+        case LetIn(x, v, b) =>
+          val x1 = new Var(x.optionalVariableName.map(_ + "i"))
+          Logger.fine(s"Rebinding let var $x to $x1")
+          cache += ((x, x1))
+          Let(x1, v, b)
+      }
+      override def onVar = {
+        case (v: Var) in ctx =>
+          cache.getOrElse(v, v)
+      }
+    }
+    trans(e)
+  }
+
   val letInlineThreshold = co.options.optimizationFlags("porc:let-inline-threshold").asInt(30)
   val letInlineCodeExpansionThreshold = co.options.optimizationFlags("porc:let-inline-expansion-threshold").asInt(30)
   val referenceThreshold = co.options.optimizationFlags("porc:let-inline-ref-threshold").asInt(5)
@@ -106,19 +126,23 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         val codeExpansion = compatReferences * size - compatCallsCost -
           (if (noncompatReferences == 0) size else 0)
 
-        val doInline = new ContextualTransform.NonDescending {
+        def doInline(rename: Boolean) = new ContextualTransform.NonDescending {
           override def onExpr = {
             case Call(`x`, arg) in usectx if usectx.compatibleFor(impl)(expr.ctx) =>
-              impl.substAll(Map((formal, arg)))
+              val res = impl.substAll(Map((formal, arg)))
+              if (rename)
+                renameVariables(res)
+              else
+                res
           }
         }
 
         //Logger.finer(s"Attempting inline: $x: $compatReferences $noncompatReferences $compatCallsCost $size; $codeExpansion")
         if (compatReferences > 0 && codeExpansion <= letInlineCodeExpansionThreshold) {
           if (noncompatReferences > 0)
-            Some(Let(x, lam, doInline(scope)))
+            Some(Let(x, lam, doInline(true)(scope)))
           else
-            Some(doInline(scope))
+            Some(doInline(compatReferences != 1)(scope))
         } else {
           None
         }
@@ -145,11 +169,11 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   /*
   This may not be needed because site inlining is already done in Orc5C
-  
+
   val siteInlineThreshold = 50
   val siteInlineCodeExpansionThreshold = 50
   val siteInlineTinySize = 12
-   
+
   val InlineSite = OptFull("inline-site") { (e, a) =>
     import a.ImplicitResults._
     e match {
@@ -236,10 +260,12 @@ object Optimizer {
   }
 
   val EtaReduce = Opt("eta-reduce") {
-    case (ContinuationIn(formal, _, CallIn(t, arg, _)), a) if arg == formal => t
+    case (ContinuationIn(formal, _, CallIn(t, arg, _)), a) if arg == formal =>
+      t
   }
   val EtaSpawnReduce = Opt("eta-spawn-reduce") {
-    case (ContinuationIn(formal, _, SpawnIn(_, _, CallIn((t: Var) in ctx, arg, _))), a) if arg == formal && ctx(t).isInstanceOf[DefArgumentBound] => t
+    case (ContinuationIn(formal, _, SpawnIn(_, _, CallIn((t: Var) in ctx, arg, _))), a) if arg == formal && ctx(t).isInstanceOf[DefArgumentBound] =>
+      t
   }
 
   val LetElim = Opt("let-elim") {

@@ -116,9 +116,9 @@ final class Future() extends OrcValue {
 
   override def toOrcSyntax() = {
     synchronized { _state } match {
-      case Bound => Format.formatValue(_value)
-      case Halt => "$stop$"
-      case Unbound => "$unbound$"
+      case Bound => s"<${Format.formatValue(_value)}>"
+      case Halt => "<$stop$>"
+      case Unbound => "<$unbound$>"
     }
   }
 }

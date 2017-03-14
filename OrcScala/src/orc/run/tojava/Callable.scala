@@ -97,7 +97,7 @@ final class PCTHandle(val execution: Execution, p: Continuation, c: Counter, t: 
   t.addChild(this)
 
   def publishNonterminal(v: AnyRef): Unit = {
-    execution.scheduleOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
+    execution.scheduleOrCall(c, () => p.call(v))
   }
 
   /** Handle a site call publication.
@@ -107,7 +107,7 @@ final class PCTHandle(val execution: Execution, p: Continuation, c: Counter, t: 
   override def publish(v: AnyRef) = {
     if (halted.compareAndSet(false, true)) {
       // TODO: It should be possible to pass the count we have on to the schedulable. It would save two atomic updates per pub. Only do if profiling shows this is an issue.
-      execution.scheduleOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
+      execution.scheduleOrCall(c, () => p.call(v))
       c.halt()
       // Matched to: Every invocation is required to be proceeded by a
       //             prepareSpawn since it might spawn.

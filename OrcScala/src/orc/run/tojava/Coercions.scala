@@ -14,10 +14,19 @@ package orc.run.tojava
 import orc.values.sites.DirectSite
 import orc.run.Logger
 import orc.values.sites.Site
+import orc.values.HasMembers
+import orc.values.OrcObjectBase
+import orc.run.core.BoundValue
+import orc.run.core.BoundStop
+import orc.run.core.BoundReadable
+import orc.values.Field
+import scala.collection.JavaConverters._
 
 /** @author amp
   */
 object Coercions {
+  val applyField = new Field("apply")
+
   /** Coerce any value to a Callable.
     *
     * If it is a Callable, just use that. Otherwise assume it is a Java object

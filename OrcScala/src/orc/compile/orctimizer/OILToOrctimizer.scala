@@ -39,26 +39,26 @@ class OILToOrctimizer {
     case _ => false
   }
 
-  private def mayBeFuture(a: Argument)(implicit ctx: Map[BoundVar, Expression]) = a match {
+  private def mayNeedPublishForce(a: Argument)(implicit ctx: Map[BoundVar, Expression]): Boolean = a match {
     case b: BoundVar =>
       ctx.get(b) match {
-        case Some(_: DeclareCallables) => false
+        case Some(d: DeclareCallables) if d.defs.head.isInstanceOf[Site] => false
         case Some(_: New) => false
-        case Some(_: Sequence) => false
+        //case Some(Sequence(l: Argument, _, _)) => mayNeedPublishForce(l)
         case _ => true
       }
     case _: Constant => false
     case _ => true
   }
 
-  private def maybeForce(xs: List[orct.BoundVar], vs: List[Argument], publishForce: Boolean, expr: orct.Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
+  private def maybePublishForce(xs: List[orct.BoundVar], vs: List[Argument], expr: orct.Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
     val m = (xs zip vs).toMap
-    val (needForce, noForce) = m.partition(p => mayBeFuture(p._2))
+    val (needForce, noForce) = m.partition(p => mayNeedPublishForce(p._2))
     val (newXs, newVs) = needForce.toList.unzip
     val force = if (needForce.isEmpty) {
       expr
     } else {
-      orct.Force(newXs, newVs.map(a => apply(a)), publishForce, expr)
+      orct.Force(newXs, newVs.map(a => apply(a)), true, expr)
     }
     Logger.fine(s"Not forcing ${noForce}, but still forcing ${needForce}")
     noForce.foldLeft(force: orct.Expression) { (core, p) =>
@@ -67,8 +67,8 @@ class OILToOrctimizer {
     }
   }
 
-  private def maybeForce(x: orct.BoundVar, v: Argument, publishForce: Boolean, expr: orct.Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
-    maybeForce(List(x), List(v), publishForce, expr)
+  private def maybePublishForce(x: orct.BoundVar, v: Argument, expr: orct.Expression)(implicit ctx: Map[BoundVar, Expression]): orct.Expression = {
+    maybePublishForce(List(x), List(v), expr)
   }
 
   /*
@@ -88,14 +88,14 @@ class OILToOrctimizer {
       case Sequence(a: Argument, x, e) => {
         // Special case to optimize the pattern where we are directly forcing something.
         val bctx = ctx + ((x, e))
-        maybeForce(apply(x), a, true, apply(e)(bctx))
+        maybePublishForce(apply(x), a, apply(e)(bctx))
       }
       case a: Constant => {
         apply(a)
       }
       case a: Argument => {
         val x = new orct.BoundVar()
-        orct.Force(List(x), List(apply(a)), true, x)
+        maybePublishForce(x, a, x)
       }
       case Call(target, args, typeargs) => {
         val t = new orct.BoundVar(Some(s"f_$target"))
@@ -104,7 +104,7 @@ class OILToOrctimizer {
           val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(s"f_$a")))).toMap
           val call = orct.CallSite(t, args map argVarsMap, typeargs map { _ map apply })
           if (uniqueArgs.size > 0) {
-            orct.Force(uniqueArgs map argVarsMap, uniqueArgs map apply, true, call)
+            maybePublishForce(uniqueArgs map argVarsMap, uniqueArgs, call)
           } else {
             call
           }
@@ -117,7 +117,7 @@ class OILToOrctimizer {
         } else {
           orct.IfDef(t, defCall, siteCall)
         }
-        maybeForce(t, target, false, call)
+        orct.Force(t, apply(target), false, call)
       }
       case Parallel(left, right) => orct.Parallel(apply(left), apply(right))
       case Sequence(left, x, right) => {
@@ -144,9 +144,9 @@ class OILToOrctimizer {
         val t = new orct.BoundVar(Some(s"f_$o"))
         val fv1 = new orct.BoundVar(Some(s"f_${o}_${f.field}'"))
         val fv2 = new orct.BoundVar(Some(s"f_${o}_${f.field}"))
-        maybeForce(t, o, true, {
+        maybePublishForce(t, o, {
           orct.FieldAccess(t, f) > fv1 >
-            orct.Force(fv2, fv1, false, {
+            orct.Force(fv2, fv1, true, {
               fv2
             })
         })

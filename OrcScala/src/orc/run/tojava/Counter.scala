@@ -92,8 +92,13 @@ abstract class Counter {
   val count = new AtomicInteger(1)
   var isDiscorporated = false
 
-  def discorporate() = {
+  def setDiscorporate() = {
+    assert(count.get() > 0)
     isDiscorporated = true
+  }
+
+  def discorporate() = {
+    setDiscorporate()
     halt()
   }
 
@@ -154,7 +159,7 @@ final class CounterNested(execution: Execution, parent: Counter, haltContinuatio
     */
   override def onContextHalted(): Unit = {
     if (!isDiscorporated) {
-      execution.scheduleOrRun(new CounterSchedulableRunnable(parent, haltContinuation))
+      execution.scheduleOrCall(parent, haltContinuation.run)
     }
     super.onContextHalted()
   }

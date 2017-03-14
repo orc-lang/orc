@@ -97,6 +97,7 @@ trait ContextualTransform {
 
       case NewCounterIn(c, e) => NewCounter(transformValue(c), transformExpr(e))
       case Halt(c) in ctx => Halt(transformValue(c in ctx))
+      case SetDiscorporate(c) in ctx => SetDiscorporate(transformValue(c in ctx))
 
       case NewTerminatorIn(t) => NewTerminator(transformValue(t))
       case KillIn(t) => Kill(transformValue(t))

@@ -90,7 +90,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     t.checkLive()
     // Schedule the work. prepareSpawn and halt are called by
     // ContextSchedulableFunc.
-    scheduleOrRun(new CounterSchedulableRunnable(c, f))
+    scheduleOrCall(c, f.run)
     // PERF: Allowing run here is a critical optimization. Even with a small depth limit (32) this can give a factor of 6.
   }
 
@@ -110,7 +110,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
   def spawnBindFuture(fut: Future, c: Counter, t: Terminator, f: BiConsumer[Continuation, Counter]): Future = {
     //Logger.fine(s"Starting future binder $fut")
     t.checkLive();
-    scheduleOrRun(new CounterSchedulableFunc(c, () => {
+    scheduleOrCall(c, () => {
       val p = new Continuation {
         // This special context just binds the future on publication.
         override def call(v: AnyRef): Unit = {
@@ -134,21 +134,21 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
         // Matches: the starting count of newC
         newC.halt()
       }
-    }))
+    })
     fut
   }
 
   private final def schedulePublishAndHalt(p: Continuation, c: Counter, v: AnyRef) = {
-    scheduleOrRun(new CounterSchedulableFunc(c, () =>
+    scheduleOrCall(c, () =>
       try {
         p.call(v)
       } finally {
         // Matches: Call to prepareSpawn in constructor
         c.halt()
-      }))
+      })
   }
   private final def schedulePublish(p: Continuation, c: Counter, v: AnyRef) = {
-    scheduleOrRun(new CounterSchedulableFunc(c, () => p.call(v)))
+    scheduleOrCall(c, () => p.call(v))
   }
 
   private final class PCJoin(p: Continuation, c: Counter, vs: Array[AnyRef], forceClosures: Boolean) extends Join(vs, forceClosures) {
@@ -164,7 +164,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     }
   }
 
-  def forceSingle(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef], forceClosures: Boolean): Unit = {
+  def forceSingle(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
     assert(vs.length == 1)
     val v = vs(0)
     v match {
@@ -177,7 +177,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
           def prepareSpawn(): Unit = c.prepareSpawn()
         })
       }
-      case clos: ForcableCallableBase if forceClosures && clos.closedValues.size > 0 => {
+      case clos: ForcableCallableBase if clos.closedValues.size > 0 => {
         // Matches: halt in done() below
         c.prepareSpawn()
         new Resolve(clos.closedValues) {
@@ -191,6 +191,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
       }
     }
   }
+
   /** Force a list of values: forcing futures and resolving closures.
     *
     * If vs contains a ForcableCallableBase it must have a correct and complete closedValues.
@@ -199,7 +200,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     assert(vs.length > 0)
     vs.length match {
       case 1 => {
-        forceSingle(p, c, t, vs, true)
+        forceSingle(p, c, t, vs)
       }
       case _ => {
         // Matches: call to halt in done and halt in PCJoin
@@ -210,15 +211,57 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     }
   }
 
+  val applyField = new Field("apply")
+
+  def forceSingleForCall(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
+    import scala.collection.JavaConverters._
+
+    assert(vs.length == 1)
+    val v = vs(0)
+    v match {
+      case _: Callable => {
+        schedulePublish(p, c, vs)
+      }
+      case f: Future => {
+        f.forceIn(new Blockable() {
+          def publish(v: AnyRef): Unit = {
+            forceSingleForCall(p, c, t, Array(v))
+          }
+          def halt(): Unit = c.halt()
+          def prepareSpawn(): Unit = c.prepareSpawn()
+        })
+      }
+      case r: HasMembers if r.hasMember(applyField) => {
+        r.getMember(applyField) match {
+          case BoundValue(v) =>
+            forceSingleForCall(p, c, t, Array(v))
+          case BoundStop =>
+            c.halt()
+          case BoundReadable(_) =>
+            throw new Error("Cannot handle interpreter blockable in field. Should never exist since objects are implemented seperately in ToJava.")
+        }
+      }
+      case r: OrcObjectBase if r.getMembers().asScala.find(_ == applyField).isDefined => {
+        val v = r.getMember(applyField)
+        forceSingleForCall(p, c, t, Array(v))
+      }
+      case _ => {
+        schedulePublish(p, c, vs)
+      }
+    }
+  }
+
   /** Force a list of values: forcing futures and ignoring closures.
     */
   def forceForCall(p: Continuation, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
     assert(vs.length > 0)
     vs.length match {
       case 1 => {
-        forceSingle(p, c, t, vs, false)
+        forceSingleForCall(p, c, t, vs)
       }
       case _ => {
+        ???
+
         // Matches: call to halt in done and halt in PCJoin
         // This is here because done and halt can be called from the superclass initializer. Damn initialation order.
         c.prepareSpawn()
@@ -278,16 +321,18 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     runtime.schedule(s)
   }
 
-  def scheduleOrRun(s: Schedulable) = {
+  def scheduleOrCall(c: Counter, f: () => Unit) = {
     val tctx = Context.threadContext.get()
     if (tctx.callDepthEst >= Context.callDepthLimit) {
       // If we are too deep them trampoline through the scheduler.
-      runtime.schedule(s)
+      runtime.schedule(new CounterSchedulableFunc(c, f))
     } else {
       tctx.callDepthEst += 1
       try {
-        s.run()
+        f()
       } catch {
+      case _: KilledException =>
+        ()
         case e: StackOverflowError =>
           //val nStackFrames = e.getStackTrace().size
           Logger.severe(s"Stack overflowed at depth (in arbitrary units) ${tctx.callDepthEst}")

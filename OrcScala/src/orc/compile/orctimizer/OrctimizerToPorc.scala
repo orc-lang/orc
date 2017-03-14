@@ -22,6 +22,7 @@ import orc.ast.porc.SiteCallDirect
 import orc.lib.state.NewFlag
 import orc.lib.state.PublishIfNotSet
 import orc.lib.state.SetFlag
+import orc.ast.porc.SetDiscorporate
 
 case class ConversionContext(p: porc.Var, c: porc.Var, t: porc.Var, recursives: Set[BoundVar]) {
 }
@@ -106,7 +107,7 @@ class OrctimizerToPorc {
         val newC = newVarName("C")
         let((fut, porc.NewFuture())) {
           porc.SpawnBindFuture(fut, ctx.c, ctx.t, newP, newC, expression(f)(ctx.copy(p = newP, c = newC))) :::
-          ctx.p(fut)
+            ctx.p(fut)
         }
       }
       case Force(xs, vs, forceClosures, e) => {
@@ -146,13 +147,17 @@ class OrctimizerToPorc {
         porc.IfDef(argument(a), expression(f), expression(g))
       }
       case DeclareCallables(defs, body) => {
-        porc.DefDeclaration(defs.map(callable(defs.map(_.name), _)), expression(body))
+        val b = if (defs.exists(_.isInstanceOf[Site]))
+          SetDiscorporate(ctx.c) ::: expression(body)
+        else
+          expression(body)
+        porc.DefDeclaration(defs.map(callable(defs.map(_.name), _)), b)
       }
 
       case New(self, _, bindings, _) => {
         val selfV = lookup(self)
 
-        val fieldInfos = for((f, b) <- bindings) yield {
+        val fieldInfos = for ((f, b) <- bindings) yield {
           val varName = newVarName(f.field)
           val (value, binder) = b match {
             case FieldFuture(e) =>
@@ -170,8 +175,8 @@ class OrctimizerToPorc {
           (fvs.toSeq, fs.toMap, bs.flatten)
         }
 
-        let(fieldVars :+ (selfV, porc.New(fields)) :_*) {
-          binders.foldRight(ctx.p(selfV) : porc.Expr)(porc.Sequence(_, _))
+        let(fieldVars :+ (selfV, porc.New(fields)): _*) {
+          binders.foldRight(ctx.p(selfV): porc.Expr)(porc.Sequence(_, _))
         }
       }
 
