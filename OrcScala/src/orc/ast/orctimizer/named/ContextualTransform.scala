@@ -122,10 +122,17 @@ trait ContextualTransform extends NamedASTFunction {
         val newEntries = entries map { case (s, t) => (s, recurse(t)) }
         RecordType(newEntries)
       }
+      case StructuralType(entries) => {
+        val newEntries = entries map { case (s, t) => (s, recurse(t)) }
+        StructuralType(newEntries)
+      }
       case TypeApplication(tycon, typeactuals) => {
         TypeApplication(recurse(tycon), typeactuals map recurse)
       }
       case AssertedType(assertedType) => AssertedType(recurse(assertedType))
+      case NominalType(t) => NominalType(recurse(t))
+      case IntersectionType(a, b) => IntersectionType(recurse(a), recurse(b))
+      case UnionType(a, b) => UnionType(recurse(a), recurse(b))
       case FunctionType(typeformals, argtypes, returntype) => {
         val newtypecontext = ctx.extendTypeBindings(typeformals map { TypeBinding(ctx, _) })
         val newargtypes = argtypes map { transform(_)(newtypecontext) }
