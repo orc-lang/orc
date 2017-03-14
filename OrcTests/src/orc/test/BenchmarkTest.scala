@@ -296,15 +296,16 @@ object BenchmarkTest {
     }
 
     // If we have enough drop the first (before sorting) to allow for JVM warm up.
-    val (runTimes, cpuTimes) = {
-      val t = times.drop(config.nDroppedWarmups).unzip
+    val measurements = {
+      val t = times.drop(config.nDroppedWarmups)
       Logger.info(s"Dropping leading measurement: ${times.take(config.nDroppedWarmups)} ::: ${t}")
       t
     }
 
-    // TODO: This could allow cpuTime to be computed from different runs than the wall time
-    val (avgRunTime, sdRunTime) = medianAverage(runTimes)
-    val (avgCpuTime, sdCpuTime) = medianAverage(cpuTimes)
+    val (runTimes, cpuTimes) = medians[(Double, Double)](measurements, _._1).unzip
+
+    val (avgRunTime, sdRunTime) = average(runTimes)
+    val (avgCpuTime, sdCpuTime) = average(cpuTimes)
 
     println(s">'$testname','native',,,,$avgRunTime,$sdRunTime,")
 
@@ -343,16 +344,17 @@ object BenchmarkTest {
       }
 
       // If we have enough drop the first (before sorting) to allow for JVM warm up.
-      val (compTimes, runTimes, cpuTimes) = {
-        val t = times.drop(config.nDroppedWarmups).unzip3
-        Logger.info(s"Dropping leading 'warm-up' measurements: ${times.take(config.nDroppedWarmups).map(_._2)} ::: ${t._2}")
+      val measurements = {
+        val t = times.drop(config.nDroppedWarmups)
+        Logger.info(s"Dropping leading 'warm-up' measurements: ${times.take(config.nDroppedWarmups)} ::: ${t}")
         t
       }
 
-      // TODO: This could allow cpuTime to be computed from different runs than the wall time
-      val (avgCompTime, sdCompTime) = medianAverage(compTimes)
-      val (avgRunTime, sdRunTime) = medianAverage(runTimes)
-      val (avgCpuTime, sdCpuTime) = medianAverage(cpuTimes)
+      val (compTimes, runTimes, cpuTimes) = medians[(Double, Double, Double)](measurements, _._1).unzip3
+
+      val (avgCompTime, sdCompTime) = average(compTimes)
+      val (avgRunTime, sdRunTime) = average(runTimes)
+      val (avgCpuTime, sdCpuTime) = average(cpuTimes)
 
       println(s">'$testname','${bindings.backend}',${bindings.optimizationLevel},$avgCompTime,$sdCompTime,$avgRunTime,$sdRunTime,'${bindings.optimizationFlags}'")
 
@@ -407,21 +409,24 @@ object BenchmarkTest {
     ((stop - start) / 1000000000.0, (stopCpu - startCpu) / 1000000000.0, v)
   }
 
-  def medianAverage(times: Seq[Double])(implicit config: BenchmarkConfig) = {
-    assert(config.nDroppedRuns % 2 == 0)
+  def medians[T](times: Seq[T], valueF: T => Double)(implicit config: BenchmarkConfig) = {
+        assert(config.nDroppedRuns % 2 == 0)
     val toDrop = config.nDroppedRuns / 2
     val medians = if (times.size > config.nDroppedRuns) {
-      val s = times.sorted
+      val s = times.sorted(Ordering.by(valueF))
       val core = s.drop(toDrop).dropRight(toDrop)
       Logger.info(s"Dropping low and high measurement: ${s.take(toDrop)} ::: ${core} ::: ${s.takeRight(toDrop)}")
       core
     } else {
       times
     }
+    medians
+  }
 
-    val avg = medians.sum / medians.size
-    val stddev = medians.map(x => (x - avg).abs).sum / medians.size
-    Logger.fine(s"Averaging $medians: avg $avg, stddev $stddev")
+  def average(times: Seq[Double])(implicit config: BenchmarkConfig) = {
+    val avg = times.sum / times.size
+    val stddev = times.map(x => (x - avg).abs).sum / times.size
+    Logger.fine(s"Averaging $times: avg $avg, stddev $stddev")
     (avg, stddev)
   }
 }
