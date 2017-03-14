@@ -254,6 +254,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         f.timeToHalt
       case f > x > g =>
         f.timeToHalt max g.timeToHalt
+      case New(_, _, bindings, _) in _ =>
+        Delay.Blocking
       case FutureAt(f) =>
         f.timeToHalt
       case f OtherwiseAt g =>
@@ -303,6 +305,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         }
       case FieldAccess(_, _) in _ =>
         Delay.NonBlocking
+      case _ =>
+        Delay.Blocking
       //case VtimeZone(_, e) in ctx =>
       //  (e in ctx).timeToHalt
     }
@@ -373,6 +377,7 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Delay.NonBlocking
       //case VtimeZone(_, e) in ctx =>
       //  (e in ctx).timeToPublish
+      case _ => Delay.Blocking
     }
   }
 
@@ -452,6 +457,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
           Range(1, 1)
         else
           Range(0, 1)
+      case _ => {
+        Range(0, None)
+      }
       //case VtimeZone(_, e) in ctx =>
       //  (e in ctx).publications
     }
@@ -544,6 +552,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Map()
       case FieldAccess(_, _) in _ =>
         Map()
+      case _ =>
+        Map()
       //case VtimeZone(_, _) in _ =>
       //  Map()
     }
@@ -595,6 +605,8 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         Effects.None
       case FieldAccess(_, _) in _ =>
         Effects.None
+      case _ =>
+        Effects.Anytime
       //case VtimeZone(_, e) in ctx =>
       //  (e in ctx).effects
     }
@@ -669,8 +681,6 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
         }
 
         ctx(x) match {
-          case Bindings.SeqBound(sctx, s) =>
-            Delay.NonBlocking
           case Bindings.CallableBound(ctx, decls, d: Def) =>
             handleDef(decls, ctx, d)
           case Bindings.RecursiveCallableBound(ctx, decls, d: Def) =>
@@ -679,7 +689,9 @@ class ExpressionAnalyzer extends ExpressionAnalysisProvider[Expression] {
             Delay.Blocking
         }
       case FieldAccess(_, _) in _ =>
-        Delay.NonBlocking
+        Delay.Blocking
+      case _ =>
+        Delay.Blocking
       //case VtimeZone(_, _) in _ =>
       //  Delay.Blocking
     }

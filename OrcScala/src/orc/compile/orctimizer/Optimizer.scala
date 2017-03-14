@@ -197,7 +197,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           case x: BoundVar =>
             ctx(x) match {
               case Bindings.SeqBound(_, from > _ > _) =>
-                true
+                false // TODO: Update when we have real analysis for this.
               // TODO: Correctly handle defs and sites
               //case _: Bindings.CallableBound | _: Bindings.RecursiveCallableBound if !forceClosures =>
               //  true

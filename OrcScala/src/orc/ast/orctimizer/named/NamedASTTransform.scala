@@ -103,12 +103,16 @@ trait NamedASTTransform extends NamedASTFunction {
           val newtypeargs = typeargs map { _ map { recurse(_) } }
           CallSite(newtarget, newargs, newtypeargs)
         }
-        case left || right => recurse(left) || recurse(right)
-        case left > x > right => recurse(left) > x > transform(right, x :: context, typecontext)
+        case left Parallel right => recurse(left) || recurse(right)
+        case Branch(left, x, right) => recurse(left) > x > transform(right, x :: context, typecontext)
         case Trim(f) => Trim(recurse(f))
         case Force(xs, vs, b, e) => {
           val newvs = vs map { recurse(_) }
           Force(xs, newvs, b, transform(e, xs ::: context, typecontext))
+        }
+        case New(self, selfT, bindings, objT) => {
+          val newBindings = bindings.mapValues(transform(_, self :: context, typecontext)).view.force
+          New(self, selfT map { transform(_, typecontext) }, newBindings, objT map { transform(_, typecontext) })
         }
         case Future(f) => Future(recurse(f))
         case left Otherwise right => Otherwise(recurse(left), recurse(right))
@@ -148,10 +152,17 @@ trait NamedASTTransform extends NamedASTFunction {
           val newEntries = entries map { case (s, t) => (s, recurse(t)) }
           RecordType(newEntries)
         }
+        case StructuralType(entries) => {
+          val newEntries = entries map { case (s, t) => (s, recurse(t)) }
+          StructuralType(newEntries)
+        }
         case TypeApplication(tycon, typeactuals) => {
           TypeApplication(recurse(tycon), typeactuals map recurse)
         }
         case AssertedType(assertedType) => AssertedType(recurse(assertedType))
+        case NominalType(t) => NominalType(recurse(t))
+        case IntersectionType(a, b) => IntersectionType(recurse(a), recurse(b))
+        case UnionType(a, b) => UnionType(recurse(a), recurse(b))
         case FunctionType(typeformals, argtypes, returntype) => {
           val newtypecontext = typeformals ::: typecontext
           val newargtypes = argtypes map { transform(_, newtypecontext) }

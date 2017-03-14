@@ -204,7 +204,8 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val allOpts = List(
     VarLetElim, SpecializeSiteCall, InlineSpawn,
     InlineLet, LetElim, DefElim, OnHaltedElim,
-    EtaReduce)
+    EtaReduce, EtaSpawnReduce)
+  // TODO: When can EtaSpawnReduce be used safely?
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()

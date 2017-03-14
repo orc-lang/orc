@@ -81,7 +81,7 @@ class PrettyPrint {
             case Some(t) => pp" :: t"
             case None => ""
           }
-        pp"""\ndef $name[${commasep(typeformals)}(${commasep(argtypes.getOrElse(Nil))})$retT
+        pp"""def $name[${commasep(typeformals)}](${commasep(argtypes.getOrElse(Nil))})$retT
             "def $name(${commasep(formals)}) = $StartIndent$body$EndIndent
           |"""
       }
@@ -91,7 +91,7 @@ class PrettyPrint {
             case Some(t) => pp" :: t"
             case None => ""
           }
-        pp"""\nsite $name[${commasep(typeformals)}(${commasep(argtypes.getOrElse(Nil))})$retT
+        pp"""site $name[${commasep(typeformals)}](${commasep(argtypes.getOrElse(Nil))})$retT
             "site $name(${commasep(formals)}) = $StartIndent$body$EndIndent
           |"""
       }

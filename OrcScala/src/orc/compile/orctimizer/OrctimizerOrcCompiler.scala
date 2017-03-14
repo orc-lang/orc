@@ -239,8 +239,8 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       outputIR(2) >>>
       toOrctimizer >>>
       outputIR(3) >>>
-      //optimize() >>>
-      //outputIR(4) >>>
+      optimize() >>>
+      outputIR(4) >>>
       //unroll >>>
       //outputIR(5, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
       //optimize(_.options.optimizationFlags("orct:unroll-def").asBool()) >>>
