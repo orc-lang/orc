@@ -13,12 +13,12 @@
 
 package orc.util
 
-/** Rudimentary token event tracing facility.
+/** Rudimentary event tracing facility.
   *
   * Each thread writes events to a thread-local event trace buffer.  At JVM
   * shutdown, the trace buffers are dumped to stdout.
   *
-  * Events record the time, token debug ID, event type, and two event
+  * Events record the time, a location ID, event type, and two event
   * arguments (suggestively named "from" and "to").  Times are recorded as
   * Java's system millisecond clock (UTC-ish time), and as Java's nanoTime
   * (higher resolution, but with undefined epoch).
@@ -30,11 +30,6 @@ package orc.util
 object Tracer {
 
   //TODO: Rolling buffer alloc/swap/resize
-  //   AMP: I think the best approach would be a ring buffer in TraceBuffer and a thread which
-  //        removes data from the ring buffer now and then. Overflow would be detected and flagged
-  //        maybe simply by adding an event to the log.
-
-  //TODO: It structure of arrays really faster than array of structures (encoded manually as blocks of indices in the array)?
 
   //TODO: "Who wants to be a macro?" "Oooh, pick me, pick me!!"
 

@@ -35,30 +35,37 @@ object Tracer {
   final val JavaReturn = 6L
   orc.util.Tracer.registerEventTypeId(JavaReturn, "JavaRetn")
 
+  /* Because of aggressive inlining, changing this flag requires a clean rebuild */
+  final val traceTokenState = true
+
+  /* Because of aggressive inlining, changing this flag requires a clean rebuild */
+  final val traceJavaCall = true
+
   @inline
   def traceTokenCreation(token: Token, newState: TokenState) {
-    orc.util.Tracer.trace(TokenCreation, token.debugId, 0L, tokenStateIdFor(newState))
+    if (traceTokenState) orc.util.Tracer.trace(TokenCreation, token.debugId, 0L, tokenStateIdFor(newState))
   }
 
   @inline
   def traceTokenStateTransition(token: Token, oldState: TokenState, newState: TokenState) {
-    orc.util.Tracer.trace(TokenStateTransition, token.debugId, tokenStateIdFor(oldState), tokenStateIdFor(newState))
+    if (traceTokenState) orc.util.Tracer.trace(TokenStateTransition, token.debugId, tokenStateIdFor(oldState), tokenStateIdFor(newState))
   }
 
   @inline
   def traceTokenExecStateTransition(token: Token, newState: TokenExecState) {
-    orc.util.Tracer.trace(TokenExecStateTransition, token.debugId, 0L, tokenExecStateIdFor(newState))
+    if (traceTokenState) orc.util.Tracer.trace(TokenExecStateTransition, token.debugId, 0L, tokenExecStateIdFor(newState))
   }
 
   @inline
   def traceJavaCall(h: orc.Handle) {
-    // TODO: Remove the need for cast so these don't crash when called from ToJava code.
-    //orc.util.Tracer.trace(JavaCall, h.asInstanceOf[ExternalSiteCallHandle].caller.debugId, 0L, 0L)
+    // FIXME: Remove the need for cast so these don't crash on runtimes that don't use ExternalSiteCallHandle.
+    if (traceJavaCall) orc.util.Tracer.trace(JavaCall, h.asInstanceOf[ExternalSiteCallHandle].caller.debugId, 0L, 0L)
   }
 
   @inline
   def traceJavaReturn(h: orc.Handle) {
-    //orc.util.Tracer.trace(JavaReturn, h.asInstanceOf[ExternalSiteCallHandle].caller.debugId, 0L, 0L)
+    // FIXME: Remove the need for cast so these don't crash on runtimes that don't use ExternalSiteCallHandle.
+    if (traceJavaCall) orc.util.Tracer.trace(JavaReturn, h.asInstanceOf[ExternalSiteCallHandle].caller.debugId, 0L, 0L)
   }
 
   private def tokenStateIdFor(ts: TokenState) = ts match {

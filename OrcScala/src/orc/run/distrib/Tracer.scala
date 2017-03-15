@@ -26,22 +26,29 @@ object Tracer {
   final val TokenReceive = 12L
   orc.util.Tracer.registerEventTypeId(TokenReceive, "TokRecv ")
 
+  /* Because of aggressive inlining, changing this flag requires a clean rebuild */
+  final val traceTokenMigration = true
+
   @inline
   def traceTokenSend(token: orc.run.core.Token, destination: Location[_]) {
-    val destRuntimeId = destination match {
-      case ll: LeaderLocation => ll.runtimeId
-      case fl: FollowerLocation => fl.runtimeId
+    if (traceTokenMigration) {
+      val destRuntimeId = destination match {
+        case ll: LeaderLocation => ll.runtimeId
+        case fl: FollowerLocation => fl.runtimeId
+      }
+      orc.util.Tracer.trace(TokenSend, token.debugId, token.runtime.asInstanceOf[DOrcRuntime].runtimeId, destRuntimeId)
     }
-    orc.util.Tracer.trace(TokenSend, token.debugId, token.runtime.asInstanceOf[DOrcRuntime].runtimeId, destRuntimeId)
   }
 
   @inline
   def traceTokenReceive(token: orc.run.core.Token, origin: Location[_]) {
-    val originRuntimeId = origin match {
-      case ll: LeaderLocation => ll.runtimeId
-      case fl: FollowerLocation => fl.runtimeId
+    if (traceTokenMigration) {
+      val originRuntimeId = origin match {
+        case ll: LeaderLocation => ll.runtimeId
+        case fl: FollowerLocation => fl.runtimeId
+      }
+      orc.util.Tracer.trace(TokenReceive, token.debugId, originRuntimeId, token.runtime.asInstanceOf[DOrcRuntime].runtimeId)
     }
-    orc.util.Tracer.trace(TokenReceive, token.debugId, originRuntimeId, token.runtime.asInstanceOf[DOrcRuntime].runtimeId)
   }
 
 }
