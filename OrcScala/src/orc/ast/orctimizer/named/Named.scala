@@ -19,6 +19,7 @@ import orc.ast.AST
 import orc.ast.hasOptionalVariableName
 import orc.ast.hasAutomaticVariableName
 import orc.values
+import orc.ast.PrecomputeHashcode
 
 // TODO: Consider porting Porc Tuple access sites. Or should it be a varient of FieldAccess (_1, _2, ...)?
 // This issue with this is that while it's easy to detect field access (Field constants don't appear anywhere else)
@@ -44,7 +45,7 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
     case HasType(body, expectedType) => List(body, expectedType)
     case DeclareType(u, t, body) => List(u, t, body)
     case Callable(f, formals, body, typeformals, argtypes, returntype) => {
-      f :: (formals ::: (List(body) ::: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
+      f :: (formals ::: (body :: typeformals ::: argtypes.toList.flatten ::: returntype.toList))
     }
     case TupleType(elements) => elements
     case FunctionType(_, argTypes, returnType) => argTypes :+ returnType
@@ -75,7 +76,9 @@ sealed abstract class Expression
   with Substitution[Expression]
   //with ContextualSubstitution
   //with Guarding
+  with PrecomputeHashcode
   {
+  this: Product =>
   //lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
 
   /* Note: As is evident from the type, UnboundVars are not included in this set */
@@ -126,6 +129,7 @@ object Force {
 case class IfDef(v: Argument, left: Expression, right: Expression) extends Expression
 
 sealed trait Call extends Expression {
+  this: Product =>
   val target: Argument
   val args: List[Argument]
   val typeargs: Option[List[Type]]
@@ -159,24 +163,34 @@ case class FieldArgument(expr: Argument) extends FieldValue
   */
 case class FieldAccess(obj: Argument, field: values.Field) extends Expression
 
-sealed abstract class Argument extends Expression
+sealed abstract class Argument extends Expression {
+  this: Product =>
+}
 case class Constant(value: AnyRef) extends Argument
-sealed trait Var extends Argument with hasOptionalVariableName
+sealed trait Var extends Argument with hasOptionalVariableName {
+  this: Product =>
+}
 case class UnboundVar(name: String) extends Var {
   optionalVariableName = Some(name)
 }
-class BoundVar(optionalName: Option[String] = None) extends Var with hasAutomaticVariableName {
+class BoundVar(optionalName: Option[String] = None) extends Var with hasAutomaticVariableName with Product {
+  // Members declared in scala.Equals
+  def canEqual(that: Any): Boolean = that.isInstanceOf[BoundVar]
+
+  // Members declared in scala.Product
+  def productArity: Int = 1
+  def productElement(n: Int): Any = optionalName
 
   optionalVariableName = optionalName
   autoName("ov")
-
-  def productIterator = optionalVariableName.toList.iterator
 }
 
 sealed abstract class Callable
   extends NamedAST
   with hasOptionalVariableName
-  with Substitution[Callable] {
+  with Substitution[Callable]
+  with PrecomputeHashcode {
+  this: Product =>
 
   val name: BoundVar
   val formals: List[BoundVar]

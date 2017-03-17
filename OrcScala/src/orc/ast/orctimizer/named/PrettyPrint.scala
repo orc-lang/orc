@@ -74,7 +74,7 @@ class PrettyPrint {
       case Force(xs, vs, b, e) => pp"force_${if (b) "p" else "c"} ${commasep(xs)} = ${commasep(vs)} #\n$e"
       case left Otherwise right => pp"($left ; $right)"
       case IfDef(a, l, r) => pp"ifdef $a then$StartIndent\n$l$EndIndent\nelse$StartIndent\n$r$EndIndent"
-      case DeclareCallables(defs, body) => pp"${FragmentAppender.mkString(defs.map(reduce))}\n$body"
+      case DeclareCallables(defs, body) => pp"-- mutual\n${FragmentAppender.mkString(defs.map(reduce))}\n$body"
       case Def(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))
         val retT = returntype match {

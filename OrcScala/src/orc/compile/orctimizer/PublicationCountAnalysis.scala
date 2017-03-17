@@ -136,7 +136,7 @@ class PublicationCountAnalysis(root: Expression) extends ForwardOrctimizerAnalyz
   }
 
   def transfer(node: NodeT, old: StateT, inputStates: collection.Map[NodeT, StateT]): StateT = {
-    val computed = node match {
+    val computed = ??? /*node match {
       case Stop() => FiniteRange(0, 0)
       case CallSite(target, args, _) => {
         FiniteRange(0, None)
@@ -161,7 +161,7 @@ class PublicationCountAnalysis(root: Expression) extends ForwardOrctimizerAnalyz
         FiniteRange(1, 1)
       case IfDef(a, f, g) =>
         // TODO: Define an analysis to give Def/Unknown/Site
-        inputStates(g) union inputStates(g)
+        inputStates(f) union inputStates(g)
       case DeclareCallables(defs, body) => {
         inputStates(body)
       }
@@ -173,7 +173,7 @@ class PublicationCountAnalysis(root: Expression) extends ForwardOrctimizerAnalyz
       case (v: BoundVar) => FiniteRange(1, 1)
       case FieldAccess(target, f) =>
           FiniteRange(0, 1)
-    }
+    }*/
 
     computed
   }
