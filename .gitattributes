@@ -8,7 +8,7 @@
 
 # Common file types in Orc repos
 
-*.xml   text 
+*.xml   text
 *.html  text diff=html linguist-language=HTML
 *.shtml text diff=html linguist-language=HTML
 *.xhtml text diff=html linguist-language=HTML
@@ -18,17 +18,28 @@
 *.scala text
 *.png   binary
 *.gif   binary
+*.class binary
 *.jar   binary
+*.war   binary
+*.zip   binary
+*.gz    binary
 *.txt   text
 *.svg   text
 *.js    text
 *.inc   text linguist-language=Orc
 *.prefs text
 *.pdf   binary
-*.css   text
+*.css   text diff=css
 *.properties  text
 *.bib   text diff=bibtex
 *.BAT   text eol=crlf
+*.eps   text
+*.ini   text
+*.sh    text
+*.sql   text linguist-language=SQL
+*.xsd   text
+*.yml   text
+
 
 # Third-party files
 
