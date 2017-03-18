@@ -1,13 +1,28 @@
+//
+// FlowGraph.scala -- Scala class FlowGraph
+// Project OrcScala
+//
+// Created by amp on Mar 17, 2017.
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.compile.orctimizer
 
-import orc.ast.orctimizer.named._
-import scala.reflect.ClassTag
-import orc.compile.Logger
-import orc.ast.PrecomputeHashcode
-import orc.values.Field
 import scala.collection.mutable
+import scala.reflect.ClassTag
+
+import orc.ast.PrecomputeHashcode
+import orc.ast.orctimizer.named._
+import orc.compile.Logger
+import orc.values.Field
 
 import FlowGraph._
+import javafx.geometry.Pos
 
 /** A control flow graph for an Orc program which represents the flow of tokens through the program.
   *
@@ -15,106 +30,89 @@ import FlowGraph._
   * flow due to halting since no token flows from the LHS of otherwise to the RHS.
   *
   */
-class FlowGraph(val root: Expression, location: Option[SpecificAST[Callable]] = None) {
+class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]] = None) {
+  outer =>
 
-  val nodes = mutable.HashSet[Node]()
-  val edges = mutable.HashSet[Edge]()
+  protected[this] val nodeSet = mutable.HashSet[Node]()
+  protected[this] val edgeSet = mutable.HashSet[Edge]()
 
-  val subflowgraphs = mutable.HashSet[FlowGraph]()
+  lazy val computed = {
+    compute()
+    assert(nodeSet contains entry)
+    assert(nodeSet contains exit)
+    true
+  }
+
+  def nodes: collection.Set[Node] = { computed; nodeSet }
+  def edges: collection.Set[Edge] = { computed; edgeSet }
+
+  protected[this] lazy val edgeFromIndex: collection.Map[Node, Set[Edge]] = {
+    val m = mutable.HashMap[Node, Set[Edge]]()
+    for(e <- edges) {
+      m += (e.from -> (m.getOrElse(e.from, Set[Edge]()) + e))
+    }
+    m
+  }
+  protected[this] lazy val edgeToIndex: collection.Map[Node, Set[Edge]] = {
+    val m = mutable.HashMap[Node, Set[Edge]]()
+    for(e <- edges) {
+      m += (e.to -> (m.getOrElse(e.to, Set[Edge]()) + e))
+    }
+    m
+  }
+
+  def nodesOf[T <: Node: ClassTag] = {
+    val TType = implicitly[ClassTag[T]]
+    nodes.collect { case TType(e) => e }.toSet
+  }
+
+  def nodesBy[U](f: PartialFunction[Node, U]) = {
+    nodes.collect { case e if f.isDefinedAt(e) => f(e) }.toSet
+  }
+
+  def subflowgraphs = nodes.collect({ case CallableNode(_, g) => g }).toSet
+  def allflowgraphs: Set[FlowGraph] = nodes.collect({ case CallableNode(_, g) => g.allflowgraphs }).flatten.toSet + this
+  def combinedGraph: FlowGraph = new FlowGraph(root, location) {
+    override def compute() = {
+      for (g <- outer.allflowgraphs) {
+        this.nodeSet ++= g.nodes
+        this.edgeSet ++= g.edges
+      }
+    }
+  }
+
+  protected[this] def addEdges(es: Edge*): Unit = {
+    for (e <- es) {
+      edgeSet += e
+      nodeSet += e.to
+      nodeSet += e.from
+    }
+  }
 
   implicit class NodeAdds(n: Node) {
-    def outEdges = edges.filter(_.from == n).toSet
-    def inEdges = edges.filter(_.to == n).toSet
+    // TODO: Indexes would help with these. If any of these end up as hot-spots (as they probably will) we should add an index
+    //       by (from, type) and (to, type). As long as the set of types is known we could also use this index for in/out without
+    //       type check.
+    def outEdges = edgeFromIndex.getOrElse(n, Set())
+    def inEdges = edgeToIndex.getOrElse(n, Set())
     def outEdgesOf[T <: Edge: ClassTag] = {
       val TType = implicitly[ClassTag[T]]
-      edges.collect { case TType(e) if e.from == n => e }.toSet
+      edgeFromIndex.getOrElse(n, Set()).collect { case TType(e) => e }
     }
     def inEdgesOf[T <: Edge: ClassTag] = {
       val TType = implicitly[ClassTag[T]]
-      // TODO: Indexes would help with this.
-      edges.collect { case TType(e) if e.to == n => e }.toSet
+      edgeToIndex.getOrElse(n, Set()).collect { case TType(e) => e }
     }
-
-    /*
-    def traceValue[T](sel: PartialFunction[Node, T]): Option[Set[T]] = {
-      sel.lift(n) match {
-        case Some(v) =>
-          //Logger.fine(s"found value: $v")
-          Some(Set(v))
-        case None =>
-          val ins = n.inEdgesOf[ValueFlowEdge].map(_.from)
-          // TODO: This needs to handle FieldEdges specially.
-          n match {
-            case _: EntryNode =>
-              throw new AssertionError("Should never get here")
-            case _ if ins.isEmpty =>
-              // We have hit a dead end: What kind is it?
-              n match {
-                case CallableNode(_) | ValueNode(_: Constant) =>
-                  // If the dead end is a concrete value, then we know it's not something interesting because sel didn't match it.
-                  Some(Set())
-                case _ =>
-                  // Otherwise, we know nothing since this could be a variable or expression which is not bound fully yet.
-                  None
-              }
-            case n =>
-              //Logger.fine(s"tracing back though: $n")
-              //Logger.fine(s"Found ins: $ins")
-              val traces = ins.map(_.traceValue(sel))
-              if (traces contains None) {
-                None
-              } else {
-                Some(traces.flatten.flatten)
-              }
-          }
-      }
-    }
-    */
   }
 
-  val entry = EntryNode(SpecificAST(root, Nil))
-  val exit = ExitNode(SpecificAST(root, Nil))
+  val entry = EntryNode(SpecificAST(root, location.subtreePath))
+  val exit = ExitNode(SpecificAST(root, location.subtreePath))
 
-  def compute(): Unit = {
-    /*
-    case class OnAll[T](sel: PartialFunction[Node, T])(proc: T => Unit) {
-      def apply(): Unit = {
-        /*
-        val ns = Set(
-            CallableNode(SpecificAST(Site(new BoundVar(Some("All Sites")), List(), Stop(), List(), None, None), Nil)),
-            CallableNode(SpecificAST(Def(new BoundVar(Some("All Defs")), List(), Stop(), List(), None, None), Nil))
-            )
+  def arguments: List[VariableNode] = {
+    location.map(l => l.ast.formals.map(VariableNode(_, l.ast :: l.path))).getOrElse(List())
+  }
 
-        val Some(n) = ns.find(sel.isDefinedAt(_))
-        val CallableNode(callable@SpecificAST(Callable(_, _, body, _, _, _), _)) = n
-        val bodyEntry = EntryNode(SpecificAST(body, callable :: callable.path))
-        val bodyExit = ExitNode(SpecificAST(body, callable :: callable.path))
-        nodes ++= Seq(bodyEntry, bodyExit)
-        edges ++= Seq(TransitionEdge(bodyEntry, "Anything", bodyExit))
-        val v = ns.collect(sel).head
-        proc(v)
-        */
-        nodes.collect(sel) foreach proc
-      }
-    }
-
-    val onAllList = mutable.Set[OnAll[_]]()
-    */
-
-    /*
-    def connectCall(entry: Node, exit: Node, args: Seq[Argument], callable: SpecificAST[Callable], addReturnValueEdge: Boolean) = {
-      val Callable(n, formals, body, _, _, _) = callable.ast
-      val bodyEntry = EntryNode(SpecificAST(body, callable :: callable.path))
-      val bodyExit = ExitNode(SpecificAST(body, callable :: callable.path))
-      edges ++= (formals zip args).map { case (formal, arg) => ValueEdge(ValueNode(arg), ValueNode(formal)) }
-      edges ++= Seq(
-        TransitionEdge(entry, "Call", bodyEntry),
-        TransitionEdge(bodyExit, "Return", exit))
-      if (addReturnValueEdge)
-        edges += ValueEdge(bodyExit, exit)
-    }
-    */
-
+  protected[this] def compute(): Unit = {
     def process(e: Expression, path: List[NamedAST]): Unit = {
       val potentialPath = e :: path
       def recurse(e1: Expression) = process(e1, potentialPath)
@@ -130,223 +128,188 @@ class FlowGraph(val root: Expression, location: Option[SpecificAST[Callable]] = 
         }
       }
 
-      def touchArgument(a: Argument) = {
-        nodes += ValueNode(a)
-      }
       def declareVariable(e: Node, a: BoundVar) = {
-        touchArgument(a)
-        edges += DefEdge(e, ValueNode(a))
+        //addEdges(DefEdge(e, ValueNode(a)))
       }
 
       val entry = EntryNode(astInScope(e))
       val exit = ExitNode(astInScope(e))
 
-      nodes ++= Set(entry, exit)
+      // Add nodes that we process even if they don't have edges
+      nodeSet ++= Set(entry, exit)
 
       e match {
         case Stop() =>
           ()
         case FieldAccess(a, f) =>
-          edges ++= Seq(
-            AccessFieldEdge(ValueNode(a), f, exit),
+          addEdges(
+            ValueEdge(ValueNode(a, potentialPath), exit),
             TransitionEdge(entry, "FieldAccess", exit))
-        case New(self, selfT, bindings, objT) =>
+        case nw@New(self, selfT, bindings, objT) =>
           declareVariable(entry, self)
-          edges ++= Seq(
-            ValueEdge(exit, ValueNode(self)))
-          edges ++= Seq(
+          addEdges(
+            ValueEdge(exit, VariableNode(self, potentialPath)))
+          addEdges(
             TransitionEdge(entry, "New-Obj", exit))
           for ((f, b) <- bindings) {
             b match {
               case FieldFuture(e) =>
-                Logger.fine(s"Processing field $b with $potentialPath")
+                //Logger.fine(s"Processing field $b with $potentialPath")
                 val se = SpecificAST(e, b :: potentialPath)
-                edges += TransitionEdge(entry, "New-Spawn", EntryNode(se))
-                val tmp = ValueNode(new BoundVar())
-                nodes += tmp
-                edges += FutureEdge(ExitNode(se), tmp)
-                edges += ProvideFieldEdge(tmp, f, exit)
+                val tmp = FutureFieldNode(astInScope(nw), f)
+                addEdges(
+                  TransitionEdge(entry, "New-Spawn", EntryNode(se)),
+                  ValueEdge(ExitNode(se), tmp),
+                  ValueEdge(tmp, exit))
                 process(e, b :: potentialPath)
               case FieldArgument(v) =>
-                touchArgument(v)
-                edges += UseEdge(ValueNode(v), entry)
-                edges += ProvideFieldEdge(ValueNode(v), f, exit)
+                val tmp = ArgumentFieldNode(astInScope(nw), f)
+                addEdges(
+                  ValueEdge(ValueNode(v, potentialPath), tmp),
+                  ValueEdge(tmp, exit))
             }
           }
         case Branch(f, x, g) =>
           declareVariable(entry, x)
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "Bra-Enter", EntryNode(astInScope(f))),
             TransitionEdge(ExitNode(astInScope(f)), "Bra-PubL", EntryNode(astInScope(g))),
             TransitionEdge(ExitNode(astInScope(g)), "Bra-PubR", exit))
-          edges ++= Seq(
-            ValueEdge(ExitNode(astInScope(f)), ValueNode(x)),
+          addEdges(
+            ValueEdge(ExitNode(astInScope(f)), VariableNode(x, exit.location)),
             ValueEdge(ExitNode(astInScope(g)), exit))
           recurse(f)
           recurse(g)
         case Otherwise(f, g) =>
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "Otw-Entry", EntryNode(astInScope(f))),
             AfterHaltEdge(entry, "Otw-Halt", EntryNode(astInScope(g))),
             TransitionEdge(ExitNode(astInScope(f)), "Otw-PubL", exit),
             TransitionEdge(ExitNode(astInScope(g)), "Otw-PubR", exit))
-          edges ++= Seq(
+          addEdges(
             ValueEdge(ExitNode(astInScope(f)), exit),
             ValueEdge(ExitNode(astInScope(g)), exit))
           recurse(f)
           recurse(g)
         case Parallel(f, g) =>
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "Par-Enter", EntryNode(astInScope(f))),
             TransitionEdge(entry, "Par-Enter", EntryNode(astInScope(g))),
             TransitionEdge(ExitNode(astInScope(f)), "Par-PubL", exit),
             TransitionEdge(ExitNode(astInScope(g)), "Par-PubR", exit))
-          edges ++= Seq(
+          addEdges(
             ValueEdge(ExitNode(astInScope(f)), exit),
             ValueEdge(ExitNode(astInScope(g)), exit))
           recurse(f)
           recurse(g)
         case Future(f) =>
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "Future-Spawn", EntryNode(astInScope(f))),
             TransitionEdge(entry, "Future-Future", exit))
-          edges ++= Seq(
-            FutureEdge(ExitNode(astInScope(f)), exit))
+          addEdges(
+            ValueEdge(ExitNode(astInScope(f)), exit))
           recurse(f)
         case Trim(f) =>
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "Trim-Enter", EntryNode(astInScope(f))),
             TransitionEdge(ExitNode(astInScope(f)), "Trim-Exit", exit))
-          edges ++= Seq(
+          addEdges(
             ValueEdge(ExitNode(astInScope(f)), exit))
           recurse(f)
         case Force(xs, vs, b, f) =>
           xs foreach { declareVariable(entry, _) }
-          vs foreach { touchArgument(_) }
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "Force-Enter", EntryNode(astInScope(f))),
             TransitionEdge(ExitNode(astInScope(f)), "Force-Exit", exit))
-          edges ++= (xs zip vs) map { case (x, v) => ForceEdge(ValueNode(v), b, ValueNode(x)) }
-          edges ++= vs.map(e => UseEdge(ValueNode(e), entry)) :+
-            ValueEdge(ExitNode(astInScope(f)), exit)
+          addEdges((xs zip vs) map { case (x, v) =>
+            val tmp = VariableNode(x, exit.location)
+            ValueEdge(ValueNode(v, potentialPath), tmp)
+            }: _*)
+          addEdges(vs.map(e => UseEdge(ValueNode(e, potentialPath), entry)): _*)
+          addEdges(ValueEdge(ExitNode(astInScope(f)), exit))
           recurse(f)
         case IfDef(b, f, g) =>
-          touchArgument(b)
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "IfDef-Def", EntryNode(astInScope(f))),
             TransitionEdge(entry, "IfDef-Not", EntryNode(astInScope(g))),
             TransitionEdge(ExitNode(astInScope(f)), "IfDef-L", exit),
             TransitionEdge(ExitNode(astInScope(g)), "IfDef-R", exit))
-          edges ++= Seq(
-            UseEdge(ValueNode(b), entry),
+          addEdges(
+            UseEdge(ValueNode(b, potentialPath), entry),
             ValueEdge(ExitNode(astInScope(f)), exit),
             ValueEdge(ExitNode(astInScope(g)), exit))
           recurse(f)
           recurse(g)
         case Call(target, args, _) =>
-          touchArgument(target)
-          args foreach touchArgument
-          /*
-          ValueNode(target).traceValue({
-            case CallableNode(d @ SpecificAST(_: Site, _)) => d
-            case ValueNode(v @ Constant(_)) => v
-          }) match {
-            case Some(s) =>
-              //Logger.fine(s"Found that callsite calls one of: ${s.mkString("\n")}")
-              if (s.forall(_.isInstanceOf[Site])) {
-                for (d @ Site(_, _, _, _, _, _) <- s) {
-                  connectCall(entry, exit, args, astInScope(d), true)
-                }
-              } else {
-                for (d @ Site(_, _, _, _, _, _) <- s) {
-                  connectCall(entry, exit, args, astInScope(d), false)
-                }
-                edges ++= Seq(AfterHaltEdge(entry, "CallSite", exit))
-              }
-            case None =>
-              //Logger.fine(s"May call any site or anything else.")
-              edges ++= Seq(AfterHaltEdge(entry, "CallSite", exit))
-              onAllList += OnAll({ case CallableNode(d @ SpecificAST(_: Site, _)) => d })(d => connectCall(entry, exit, args, d, false))
-          }
-          */
-          val trans = e match {
+          val trans = (e: @unchecked) match {
             case _: CallDef => "CallDef"
             case _: CallSite => "CallSite"
           }
-          edges ++= Seq(AfterEdge(entry, trans, exit))
-          edges ++= args.map(e => UseEdge(ValueNode(e), entry)) :+
-            UseEdge(ValueNode(target), entry)
-        /*
-        case CallDef(target, args, _) =>
-          touchArgument(target)
-          args foreach touchArgument
-          ValueNode(target).traceValue({ case CallableNode(d @ SpecificAST(_: Def, _)) => d }) match {
-            case Some(s) =>
-              //Logger.fine(s"Found that calldef calls one of: ${s.mkString("\n")}")
-              for (d <- s) {
-                connectCall(entry, exit, args, astInScope(d), true)
-              }
-            case None =>
-              //Logger.fine(s"May call any def or anything else.")
-              onAllList += OnAll({ case CallableNode(d @ SpecificAST(_: Def, _)) => d })(d => connectCall(entry, exit, args, d, true))
-          }
-          edges ++= args.map(e => UseEdge(ValueNode(e), entry)) :+
-            UseEdge(ValueNode(target), entry)
-            */
+          addEdges(AfterEdge(entry, trans, exit))
+          addEdges(args.map(e => UseEdge(ValueNode(e, potentialPath), entry)): _*)
+          addEdges(UseEdge(ValueNode(target, potentialPath), entry))
         case DeclareCallables(callables, body) =>
           callables.map(_.name) foreach { declareVariable(entry, _) }
 
           for (callable <- callables) {
             val loc = SpecificAST(callable, potentialPath)
             val graph = new FlowGraph(callable.body, Some(loc))
-            subflowgraphs += graph
-            //callable.formals foreach { declareVariable(entry, _) }
             val me = CallableNode(loc, graph)
-            nodes += me
-            edges += ValueEdge(me, ValueNode(callable.name))
-            //process(callable.body, callable :: potentialPath)
+            addEdges(ValueEdge(me, VariableNode(callable.name, potentialPath)))
           }
 
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "Declare-Enter", EntryNode(astInScope(body))),
             TransitionEdge(ExitNode(astInScope(body)), "Declare-Exit", exit))
-          edges += ValueEdge(ExitNode(astInScope(body)), exit)
+          addEdges(ValueEdge(ExitNode(astInScope(body)), exit))
           recurse(body)
         case e @ Constant(c) =>
-          touchArgument(e)
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "Const", exit))
-          edges ++= Seq(
+          addEdges(
             ValueEdge(ValueNode(e), exit))
         case v: BoundVar =>
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "Var", exit))
-          edges ++= Seq(
-            ValueEdge(ValueNode(v), exit))
+          addEdges(
+            ValueEdge(ValueNode(v, potentialPath), exit))
         case DeclareType(_, _, body) =>
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "", EntryNode(astInScope(body))),
             TransitionEdge(ExitNode(astInScope(body)), "", exit))
-          edges += ValueEdge(ExitNode(astInScope(body)), exit)
+          addEdges(ValueEdge(ExitNode(astInScope(body)), exit))
           recurse(body)
         case HasType(body, _) =>
-          edges ++= Seq(
+          addEdges(
             TransitionEdge(entry, "", EntryNode(astInScope(body))),
             TransitionEdge(ExitNode(astInScope(body)), "", exit))
-          edges += ValueEdge(ExitNode(astInScope(body)), exit)
+          addEdges(ValueEdge(ExitNode(astInScope(body)), exit))
           recurse(body)
+        case UnboundVar(s) =>
+          addEdges(
+            AfterEdge(entry, "UnboundVar", exit))
       }
     }
 
-    process(root, List())
-    //onAllList foreach { _() }
+    // Always include arguments to this function.
+    nodeSet ++= arguments
+
+    process(root, location.subtreePath)
   }
 
-  compute()
+  override def hashCode() = root.hashCode ^ (location.hashCode * 37)
+
+  override def equals(o: Any) = o match {
+    case f: FlowGraph => root == f.root && location == f.location
+    case _ => false
+  }
+
+  override def toString() = {
+    s"FlowGraph(${shortString(root)}, ${location})"
+  }
 
   def toDot(declarationType: String = "digraph", idMap: mutable.HashMap[AnyRef, String] = mutable.HashMap[AnyRef, String]()): String = {
-    import scala.collection.mutable
-    def idFor(s: String, o: AnyRef) = idMap.getOrElseUpdate((this, o), {
+    def idFor(s: String, o: AnyRef) = idMap.getOrElseUpdate(o, {
       val nextID = idMap.size
       s"$s$nextID"
     })
@@ -357,7 +320,12 @@ class FlowGraph(val root: Expression, location: Option[SpecificAST[Callable]] = 
           def dotAttributes = {
             n.dotAttributes ++
               (if (n == entry) Seq("color" -> "green", "peripheries" -> "2") else Seq()) ++
-              (if (n == exit) Seq("color" -> "red", "peripheries" -> "2") else Seq())
+              (if (n == exit) Seq("color" -> "red", "peripheries" -> "2") else Seq()) ++
+              (n match {
+                case v @ ValueNode(_) if arguments contains v =>
+                  Seq("color" -> "green", "peripheries" -> "2")
+                case _ => Seq()
+              })
           }
         }
 
@@ -365,7 +333,7 @@ class FlowGraph(val root: Expression, location: Option[SpecificAST[Callable]] = 
       }.mkString("\n")
     }
     s"""
-${declarationType} ${idFor("cluster", root)} {
+${declarationType} ${idFor("cluster", this)} {
 compound=true;
 label="${quote(shortString(location.map(_.ast).getOrElse("")))}";
 ${subflowgraphs.map(_.toDot("subgraph", idMap)).mkString("\n\n")}
@@ -395,12 +363,11 @@ ${
   }
 
   def debugShow(): Unit = {
+    import java.io.File
+    import java.nio.charset.StandardCharsets
     import java.nio.file.Files
     import java.nio.file.Paths
-    import java.io.File
     import scala.sys.process._
-    import java.io.ByteArrayInputStream
-    import java.nio.charset.StandardCharsets
     val tmpDot = File.createTempFile("orcprog", ".gv");
     val outformat = "svg"
     val tmpPdf = File.createTempFile("orcprog", s".$outformat");
@@ -416,7 +383,7 @@ ${
 
 object FlowGraph {
   def shortString(o: AnyRef) = s"'${o.toString().replace('\n', ' ').take(30)}'"
-  def quote(s: String) = s.replace('"', '\'')
+  private def quote(s: String) = s.replace('"', '\'')
 
   trait DotAttributes {
     def dotAttributes: Map[String, String]
@@ -426,23 +393,7 @@ object FlowGraph {
     }
   }
 
-  case class SpecificAST[+T <: NamedAST](ast: T, path: List[NamedAST]) extends PrecomputeHashcode {
-    (ast :: path).tails foreach {
-      case b :: a :: _ =>
-        assert(a.subtrees.toSet contains b, s"Path ${path.map(shortString).mkString("[", ", ", "]")} does not contain a parent of $ast.\n$b === is not a subtree of ===\n$a\n${a.subtrees}")
-      case Seq(_) => true
-      case Seq() => true
-    }
-
-    override def toString() = {
-      s"$productPrefix($ast, ${path.map(shortString).mkString("[", ", ", "]")})"
-    }
-  }
-
-  object SpecificAST {
-    import scala.language.implicitConversions
-    implicit def SpecificAST2AST[T <: NamedAST](l: SpecificAST[T]): T = l.ast
-  }
+  /////// Nodes
 
   sealed abstract class Node extends DotAttributes with PrecomputeHashcode {
     this: Product =>
@@ -459,7 +410,7 @@ object FlowGraph {
       "color" -> color)
   }
 
-  trait WithSpecificAST extends Node {
+  sealed trait WithSpecificAST extends Node {
     this: Product =>
     val location: SpecificAST[NamedAST]
     val ast = location.ast
@@ -474,23 +425,60 @@ object FlowGraph {
     }
   }
 
-  trait TokenFlowNode extends Node with WithSpecificAST {
+  sealed trait TokenFlowNode extends Node with WithSpecificAST {
     this: Product =>
     val location: SpecificAST[Expression]
-    override def label = s"${shortString(ast)}"
+    override def label = location.ast match {
+      case Future(_) => s"◊"
+      case _ => s"${shortString(ast)}"
+    }
   }
 
-  trait ValueFlowNode extends Node {
+  sealed trait ValueFlowNode extends Node {
     this: Product =>
     override def shape = "box"
     override def label = s"${shortString(ast)}"
     override def group: AnyRef = this
   }
 
+  // FIXME: I think this may not be needed, however it's not clear where to store the nested flowgraph if callables are just VariableNodes.
   case class CallableNode(location: SpecificAST[Callable], flowgraph: FlowGraph) extends Node with ValueFlowNode with WithSpecificAST {
   }
-  case class ValueNode(ast: Argument) extends Node with ValueFlowNode {
+
+  case class ValueNode(ast: Constant) extends Node with ValueFlowNode {
     override def label = ast.toString()
+  }
+  object ValueNode {
+    def apply(ast: Argument, path: List[NamedAST]): ValueFlowNode = ast match {
+      case a: Constant =>
+        ValueNode(a)
+      case a: UnboundVar =>
+        throw new IllegalArgumentException(s"Congrats!!! You just volunteered to implement unbound variables in this analysis if you think we really need them.")
+      case v: BoundVar =>
+        VariableNode(v, path)
+    }
+  }
+
+  case class VariableNode(ast: BoundVar, binder: NamedAST) extends Node with ValueFlowNode {
+    require(binder.boundVars contains ast)
+
+    override def label = binder match {
+      case Force(_, _, publishForce, _) => s"♭${if (publishForce) "p" else "c"} $ast"
+      case _ => s"$ast from ${shortString(binder)}"
+    }
+  }
+  object VariableNode {
+    def apply(ast: BoundVar, path: List[NamedAST]): VariableNode = {
+      VariableNode(ast, path.find(_.boundVars contains ast).getOrElse(
+        throw new IllegalArgumentException(s"$ast should be a variable bound on the path:\n$path")))
+    }
+  }
+
+  case class FutureFieldNode(location: SpecificAST[New], field: Field) extends Node with ValueFlowNode with WithSpecificAST {
+    override def label = s"◊ $field"
+  }
+  case class ArgumentFieldNode(location: SpecificAST[New], field: Field) extends Node with ValueFlowNode with WithSpecificAST {
+    override def label = s"$field"
   }
 
   case class EntryNode(location: SpecificAST[Expression]) extends Node with TokenFlowNode {
@@ -500,6 +488,8 @@ object FlowGraph {
   case class ExitNode(location: SpecificAST[Expression]) extends Node with TokenFlowNode {
     override def label = s"↧ ${super.label}"
   }
+
+  /////// Edges
 
   sealed abstract class Edge extends DotAttributes with PrecomputeHashcode {
     this: Product =>
@@ -516,11 +506,11 @@ object FlowGraph {
   }
 
   // Control flow edges
-  trait HappensBeforeEdge extends Edge {
+  sealed trait HappensBeforeEdge extends Edge {
     this: Product =>
 
   }
-  trait TokenFlowEdge extends HappensBeforeEdge {
+  sealed trait TokenFlowEdge extends HappensBeforeEdge {
     this: Product =>
   }
 
@@ -540,21 +530,18 @@ object FlowGraph {
   }
 
   // Def/use chains
-  trait DefUseEdge extends Edge {
+  sealed trait DefUseEdge extends Edge {
     this: Product =>
     override def style: String = "dotted"
     override def color: String = "grey"
   }
 
-  case class UseEdge(from: ValueNode, to: Node) extends Edge with DefUseEdge {
+  case class UseEdge(from: ValueFlowNode, to: Node) extends Edge with DefUseEdge {
     override def label = "" // ‣
-  }
-  case class DefEdge(from: Node, to: ValueNode) extends Edge with DefUseEdge {
-    override def label = "" // ≜
   }
 
   // Value flow edges
-  trait ValueFlowEdge extends Edge {
+  sealed trait ValueFlowEdge extends Edge {
     this: Product =>
     override def style: String = "dashed"
   }
@@ -562,6 +549,8 @@ object FlowGraph {
   case class ValueEdge(from: Node, to: Node) extends Edge with ValueFlowEdge {
     override def label = ""
   }
+
+  /*
   case class ProvideFieldEdge(from: Node, field: Field, to: Node) extends Edge with ValueFlowEdge {
     override def color: String = "green"
     override def label = field.toString()
@@ -578,5 +567,6 @@ object FlowGraph {
     override def color: String = "red"
     override def label = "♭" + (if (publishForce) "p" else "c")
   }
+  */
 
 }

@@ -11,8 +11,7 @@ import collection.Set
 //}
 
 //trait AnalysisValue[T <: AnalysisValue[T]] {
-//  def meet(v: T): T
-//  def join(v: T): T
+//  def combine(v: T): T
 //}
 
 abstract class Analyzer {
@@ -28,11 +27,14 @@ abstract class Analyzer {
     def process(work: Queue[NodeT], states: StateMap): StateMap = {
       work.dequeueOption match {
         case Some((node, rest)) => {
-          val oldStates = states.withDefaultValue(initialState)
-          val oldState = oldStates(node)
-          val newState = transfer(node, oldState, oldStates)
-          val (newStates, newWork) = if(oldState == newState) (states, rest) else {
-            (states + (node -> newState), outputs(node).foldLeft(rest)(_.enqueue(_)))
+          val inState = inputs(node).map(states.getOrElse(_, initialState)).fold(initialState)(combine)
+          val oldState = states.getOrElse(node, initialState)
+          val (newState, newNodes) = transfer(node, oldState, inState, states)
+          val retroactiveWork = newNodes.filter(n => inputs(n).exists(states.contains(_)))
+          val (newStates, newWork) = if(states.contains(node) && oldState == newState) {
+            (states, retroactiveWork.foldLeft(rest)(_.enqueue(_)))
+          } else {
+            (states + (node -> newState), (outputs(node) ++ retroactiveWork).foldLeft(rest)(_.enqueue(_)))
           }
           process(newWork, newStates)
         }
@@ -45,7 +47,8 @@ abstract class Analyzer {
   def outputs(node: NodeT): Set[NodeT]
   def inputs(node: NodeT): Set[NodeT]
 
-  def transfer(node: NodeT, old: StateT, inputStates: collection.Map[NodeT, StateT]): StateT
+  def transfer(node: NodeT, old: StateT, inState: StateT, states: StateMap): (StateT, Set[NodeT])
+  def combine(a: StateT, b: StateT): StateT
 }
 
 trait AnalyzerWithAutoOutputs extends Analyzer {

@@ -67,6 +67,15 @@ sealed abstract class NamedAST extends AST with WithContextInfixCombinator {
     case FieldArgument(e) => List(e)
   }
 
+  val boundVars: Set[BoundVar] = this match {
+    case Branch(left, x, right) => Set(x)
+    case Force(xs, vs, _, e) => xs.toSet
+    case DeclareCallables(defs, body) => defs.map(_.name).toSet
+    case New(self, st, members, ot) => Set(self)
+    case Callable(f, formals, body, typeformals, argtypes, returntype) => formals.toSet
+    case _ => Set()
+  }
+
 }
 
 sealed abstract class Expression
