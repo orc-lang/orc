@@ -5,6 +5,9 @@ import scala.reflect.ClassTag
 import orc.compile.Logger
 import orc.ast.PrecomputeHashcode
 import orc.values.Field
+import scala.collection.mutable
+
+import FlowGraph._
 
 /** A control flow graph for an Orc program which represents the flow of tokens through the program.
   *
@@ -12,14 +15,68 @@ import orc.values.Field
   * flow due to halting since no token flows from the LHS of otherwise to the RHS.
   *
   */
-class FlowGraph(val root: Expression) {
-  import FlowGraph._
+class FlowGraph(val root: Expression, location: Option[SpecificAST[Callable]] = None) {
 
-  def compute(): (Set[Node], Set[Edge]) = {
-    import scala.collection.mutable
-    val nodes = mutable.HashSet[Node]()
-    val edges = mutable.HashSet[Edge]()
+  val nodes = mutable.HashSet[Node]()
+  val edges = mutable.HashSet[Edge]()
 
+  val subflowgraphs = mutable.HashSet[FlowGraph]()
+
+  implicit class NodeAdds(n: Node) {
+    def outEdges = edges.filter(_.from == n).toSet
+    def inEdges = edges.filter(_.to == n).toSet
+    def outEdgesOf[T <: Edge: ClassTag] = {
+      val TType = implicitly[ClassTag[T]]
+      edges.collect { case TType(e) if e.from == n => e }.toSet
+    }
+    def inEdgesOf[T <: Edge: ClassTag] = {
+      val TType = implicitly[ClassTag[T]]
+      // TODO: Indexes would help with this.
+      edges.collect { case TType(e) if e.to == n => e }.toSet
+    }
+
+    /*
+    def traceValue[T](sel: PartialFunction[Node, T]): Option[Set[T]] = {
+      sel.lift(n) match {
+        case Some(v) =>
+          //Logger.fine(s"found value: $v")
+          Some(Set(v))
+        case None =>
+          val ins = n.inEdgesOf[ValueFlowEdge].map(_.from)
+          // TODO: This needs to handle FieldEdges specially.
+          n match {
+            case _: EntryNode =>
+              throw new AssertionError("Should never get here")
+            case _ if ins.isEmpty =>
+              // We have hit a dead end: What kind is it?
+              n match {
+                case CallableNode(_) | ValueNode(_: Constant) =>
+                  // If the dead end is a concrete value, then we know it's not something interesting because sel didn't match it.
+                  Some(Set())
+                case _ =>
+                  // Otherwise, we know nothing since this could be a variable or expression which is not bound fully yet.
+                  None
+              }
+            case n =>
+              //Logger.fine(s"tracing back though: $n")
+              //Logger.fine(s"Found ins: $ins")
+              val traces = ins.map(_.traceValue(sel))
+              if (traces contains None) {
+                None
+              } else {
+                Some(traces.flatten.flatten)
+              }
+          }
+      }
+    }
+    */
+  }
+
+  val entry = EntryNode(SpecificAST(root, Nil))
+  val exit = ExitNode(SpecificAST(root, Nil))
+
+  def compute(): Unit = {
+    /*
     case class OnAll[T](sel: PartialFunction[Node, T])(proc: T => Unit) {
       def apply(): Unit = {
         /*
@@ -42,55 +99,9 @@ class FlowGraph(val root: Expression) {
     }
 
     val onAllList = mutable.Set[OnAll[_]]()
+    */
 
-    implicit class NodeAdds(n: Node) {
-      def outEdges = edges.filter(_.from == n).toSet
-      def inEdges = edges.filter(_.to == n).toSet
-      def outEdgesOf[T <: Edge: ClassTag] = {
-        val TType = implicitly[ClassTag[T]]
-        edges.collect { case TType(e) if e.from == n => e }.toSet
-      }
-      def inEdgesOf[T <: Edge: ClassTag] = {
-        val TType = implicitly[ClassTag[T]]
-        // TODO: Indexes would help with this.
-        edges.collect { case TType(e) if e.to == n => e }.toSet
-      }
-
-      def traceValue[T](sel: PartialFunction[Node, T]): Option[Set[T]] = {
-        sel.lift(n) match {
-          case Some(v) =>
-            //Logger.fine(s"found value: $v")
-            Some(Set(v))
-          case None =>
-            val ins = n.inEdgesOf[ValueFlowEdge].map(_.from)
-            // TODO: This needs to handle FieldEdges specially.
-            n match {
-              case _: EntryNode =>
-                throw new AssertionError("Should never get here")
-              case _ if ins.isEmpty =>
-                // We have hit a dead end: What kind is it?
-                n match {
-                  case CallableNode(_) | ValueNode(_: Constant) =>
-                    // If the dead end is a concrete value, then we know it's not something interesting because sel didn't match it.
-                    Some(Set())
-                  case _ =>
-                    // Otherwise, we know nothing since this could be a variable or expression which is not bound fully yet.
-                    None
-                }
-              case n =>
-                //Logger.fine(s"tracing back though: $n")
-                //Logger.fine(s"Found ins: $ins")
-                val traces = ins.map(_.traceValue(sel))
-                if (traces contains None) {
-                  None
-                } else {
-                  Some(traces.flatten.flatten)
-                }
-            }
-        }
-      }
-    }
-
+    /*
     def connectCall(entry: Node, exit: Node, args: Seq[Argument], callable: SpecificAST[Callable], addReturnValueEdge: Boolean) = {
       val Callable(n, formals, body, _, _, _) = callable.ast
       val bodyEntry = EntryNode(SpecificAST(body, callable :: callable.path))
@@ -102,6 +113,7 @@ class FlowGraph(val root: Expression) {
       if (addReturnValueEdge)
         edges += ValueEdge(bodyExit, exit)
     }
+    */
 
     def process(e: Expression, path: List[NamedAST]): Unit = {
       val potentialPath = e :: path
@@ -136,8 +148,8 @@ class FlowGraph(val root: Expression) {
           ()
         case FieldAccess(a, f) =>
           edges ++= Seq(
-              AccessFieldEdge(ValueNode(a), f, exit),
-              TransitionEdge(entry, "FieldAccess", exit))
+            AccessFieldEdge(ValueNode(a), f, exit),
+            TransitionEdge(entry, "FieldAccess", exit))
         case New(self, selfT, bindings, objT) =>
           declareVariable(entry, self)
           edges ++= Seq(
@@ -231,12 +243,13 @@ class FlowGraph(val root: Expression) {
             ValueEdge(ExitNode(astInScope(g)), exit))
           recurse(f)
           recurse(g)
-        case CallSite(target, args, _) =>
+        case Call(target, args, _) =>
           touchArgument(target)
           args foreach touchArgument
+          /*
           ValueNode(target).traceValue({
-            case CallableNode(d@SpecificAST(_: Site, _)) => d
-            case ValueNode(v@Constant(_)) => v
+            case CallableNode(d @ SpecificAST(_: Site, _)) => d
+            case ValueNode(v @ Constant(_)) => v
           }) match {
             case Some(s) =>
               //Logger.fine(s"Found that callsite calls one of: ${s.mkString("\n")}")
@@ -253,14 +266,21 @@ class FlowGraph(val root: Expression) {
             case None =>
               //Logger.fine(s"May call any site or anything else.")
               edges ++= Seq(AfterHaltEdge(entry, "CallSite", exit))
-              onAllList += OnAll({ case CallableNode(d@SpecificAST(_: Site, _)) => d })(d => connectCall(entry, exit, args, d, false))
+              onAllList += OnAll({ case CallableNode(d @ SpecificAST(_: Site, _)) => d })(d => connectCall(entry, exit, args, d, false))
           }
+          */
+          val trans = e match {
+            case _: CallDef => "CallDef"
+            case _: CallSite => "CallSite"
+          }
+          edges ++= Seq(AfterEdge(entry, trans, exit))
           edges ++= args.map(e => UseEdge(ValueNode(e), entry)) :+
             UseEdge(ValueNode(target), entry)
+        /*
         case CallDef(target, args, _) =>
           touchArgument(target)
           args foreach touchArgument
-          ValueNode(target).traceValue({ case CallableNode(d@SpecificAST(_: Def, _)) => d }) match {
+          ValueNode(target).traceValue({ case CallableNode(d @ SpecificAST(_: Def, _)) => d }) match {
             case Some(s) =>
               //Logger.fine(s"Found that calldef calls one of: ${s.mkString("\n")}")
               for (d <- s) {
@@ -268,19 +288,23 @@ class FlowGraph(val root: Expression) {
               }
             case None =>
               //Logger.fine(s"May call any def or anything else.")
-              onAllList += OnAll({ case CallableNode(d@SpecificAST(_: Def, _)) => d })(d => connectCall(entry, exit, args, d, true))
+              onAllList += OnAll({ case CallableNode(d @ SpecificAST(_: Def, _)) => d })(d => connectCall(entry, exit, args, d, true))
           }
           edges ++= args.map(e => UseEdge(ValueNode(e), entry)) :+
             UseEdge(ValueNode(target), entry)
+            */
         case DeclareCallables(callables, body) =>
           callables.map(_.name) foreach { declareVariable(entry, _) }
 
           for (callable <- callables) {
-            callable.formals foreach { declareVariable(entry, _) }
-            val me = CallableNode(SpecificAST(callable, potentialPath))
+            val loc = SpecificAST(callable, potentialPath)
+            val graph = new FlowGraph(callable.body, Some(loc))
+            subflowgraphs += graph
+            //callable.formals foreach { declareVariable(entry, _) }
+            val me = CallableNode(loc, graph)
             nodes += me
             edges += ValueEdge(me, ValueNode(callable.name))
-            process(callable.body, callable :: potentialPath)
+            //process(callable.body, callable :: potentialPath)
           }
 
           edges ++= Seq(
@@ -315,37 +339,57 @@ class FlowGraph(val root: Expression) {
     }
 
     process(root, List())
-    onAllList foreach { _() }
-
-    (nodes.toSet, edges.toSet)
+    //onAllList foreach { _() }
   }
 
-  val (nodes, edges) = compute()
+  compute()
 
-  def toDot(): String = {
+  def toDot(declarationType: String = "digraph", idMap: mutable.HashMap[AnyRef, String] = mutable.HashMap[AnyRef, String]()): String = {
     import scala.collection.mutable
-    val idMap = mutable.HashMap[AnyRef, String]()
-    var prevID = 0
-    def idFor(s: String, o: AnyRef) = idMap.getOrElseUpdate(o, {
-      prevID += 1
-      s"$s$prevID"
+    def idFor(s: String, o: AnyRef) = idMap.getOrElseUpdate((this, o), {
+      val nextID = idMap.size
+      s"$s$nextID"
     })
+
     val nodesStr = {
-      nodes.groupBy(_.group).map {
-        case (e, ns) if ns.size == 1 =>
-          val n = ns.head
-          s"""${idFor("n", n)} ${n.dotAttributeString};"""
-        case (e, ns) =>
-          s"""subgraph ${idFor("nocluster", e)} {
-label="${quote(shortString(e))}";
-${ns.map(n => s"""${idFor("n", n)} ${n.dotAttributeString};""").mkString("\n")}
-}"""
+      nodes.map { n =>
+        val additionalAttr = new DotAttributes {
+          def dotAttributes = {
+            n.dotAttributes ++
+              (if (n == entry) Seq("color" -> "green", "peripheries" -> "2") else Seq()) ++
+              (if (n == exit) Seq("color" -> "red", "peripheries" -> "2") else Seq())
+          }
+        }
+
+        s"""${idFor("n", n)} ${additionalAttr.dotAttributeString};"""
       }.mkString("\n")
     }
     s"""
-digraph {
+${declarationType} ${idFor("cluster", root)} {
+compound=true;
+label="${quote(shortString(location.map(_.ast).getOrElse("")))}";
+${subflowgraphs.map(_.toDot("subgraph", idMap)).mkString("\n\n")}
 $nodesStr
-${edges.filter(_.isInstanceOf[ValueFlowEdge]).map(e => s"""${idFor("n", e.from)} -> ${idFor("n", e.to)} ${e.dotAttributeString};""").mkString("\n")}
+${
+      edges.map(e => {
+        val additionalAttr = new DotAttributes {
+          def dotAttributes = {
+            e.dotAttributes /*++
+              (e.to match {
+                case CallableNode(_, g) =>
+                  Seq("lhead" -> idFor("cluster", g.root))
+                case _ => Seq()
+              }) ++
+              (e.from match {
+                case CallableNode(_, g) =>
+                  Seq("ltail" -> idFor("cluster", g.root))
+                case _ => Seq()
+              })*/
+          }
+        }
+        s"""${idFor("n", e.from)} -> ${idFor("n", e.to)} ${additionalAttr.dotAttributeString};"""
+      }).mkString("\n")
+    }
 }
 """
   }
@@ -364,7 +408,7 @@ ${edges.filter(_.isInstanceOf[ValueFlowEdge]).map(e => s"""${idFor("n", e.from)}
     Logger.info(s"Wrote gz to $tmpDot")
     Logger.info(s"Wrote rendered to $tmpPdf")
 
-    Files.write(Paths.get(tmpDot.toURI), toDot.getBytes(StandardCharsets.UTF_8))
+    Files.write(Paths.get(tmpDot.toURI), toDot().getBytes(StandardCharsets.UTF_8))
     Seq("dot", s"-T$outformat", tmpDot.getAbsolutePath, s"-o${tmpPdf.getAbsolutePath}").!
     Seq("chromium-browser", tmpPdf.getAbsolutePath).!
   }
@@ -433,26 +477,28 @@ object FlowGraph {
   trait TokenFlowNode extends Node with WithSpecificAST {
     this: Product =>
     val location: SpecificAST[Expression]
+    override def label = s"${shortString(ast)}"
   }
 
   trait ValueFlowNode extends Node {
     this: Product =>
     override def shape = "box"
-    override def label = ast.toString()
+    override def label = s"${shortString(ast)}"
     override def group: AnyRef = this
   }
 
-  case class CallableNode(location: SpecificAST[Callable]) extends Node with ValueFlowNode with WithSpecificAST {
+  case class CallableNode(location: SpecificAST[Callable], flowgraph: FlowGraph) extends Node with ValueFlowNode with WithSpecificAST {
   }
   case class ValueNode(ast: Argument) extends Node with ValueFlowNode {
+    override def label = ast.toString()
   }
 
   case class EntryNode(location: SpecificAST[Expression]) extends Node with TokenFlowNode {
-    override def label = s"⤓ ${shortString(ast)}"
+    override def label = s"⤓ ${super.label}"
   }
 
   case class ExitNode(location: SpecificAST[Expression]) extends Node with TokenFlowNode {
-    override def label = s"↧ ${shortString(ast)}"
+    override def label = s"↧ ${super.label}"
   }
 
   sealed abstract class Edge extends DotAttributes with PrecomputeHashcode {
@@ -487,6 +533,11 @@ object FlowGraph {
     override def color: String = "grey"
     override def label = trans
   }
+  case class AfterEdge(from: Node, trans: String, to: Node) extends Edge with HappensBeforeEdge {
+    override def style: String = "solid"
+    override def color: String = "grey"
+    override def label = trans
+  }
 
   // Def/use chains
   trait DefUseEdge extends Edge {
@@ -496,10 +547,10 @@ object FlowGraph {
   }
 
   case class UseEdge(from: ValueNode, to: Node) extends Edge with DefUseEdge {
-    override def label = "‣"
+    override def label = "" // ‣
   }
   case class DefEdge(from: Node, to: ValueNode) extends Edge with DefUseEdge {
-    override def label = "≜"
+    override def label = "" // ≜
   }
 
   // Value flow edges
