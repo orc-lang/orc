@@ -34,6 +34,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def filename_=(newVal: String) = putString("javax.script.filename", newVal)
   def logLevel: String = getString("orc.logLevel", "INFO")
   def logLevel_=(newVal: String) = putString("orc.logLevel", newVal)
+  def xmlLogFile: String = getString("orc.xmlLogFile", "")
+  def xmlLogFile_=(newVal: String) = putString("orc.xmlLogFile", newVal)
 
   // Compile options
   def usePrelude: Boolean = getBoolean("orc.usePrelude", true)

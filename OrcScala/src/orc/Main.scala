@@ -32,6 +32,7 @@ import java.io.PrintWriter
 import java.util.logging.SimpleFormatter
 import java.util.logging.Formatter
 import orc.error.compiletime.CompilationException
+import java.util.logging.FileHandler
 
 /** A command-line tool invocation of the Orc compiler and runtime engine
   *
@@ -125,14 +126,24 @@ object Main {
     }
     if (!willLog(orcLogger, testOrcLogRecord)) {
       /* Only add handler if no existing handler (here or in parents) is at our logging level */
+      val oldLoggers = orcLogger.getHandlers()
       val logHandler = new java.util.logging.ConsoleHandler()
       logHandler.setLevel(logLevel)
       orcLogger.addHandler(logHandler)
-      orcLogger.warning("No log handler found for 'orc' " + logLevel + " log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
+      orcLogger.warning(s"No log handler found for 'orc' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records. The old handlers are: ${oldLoggers.toSeq}")
     }
     orcLogger.config(orcImplName + " " + orcVersion)
     orcLogger.config("Orc logging level: " + logLevel)
     //TODO: orcLogger.config(options.printAllTheOptions...)
+
+    if(options.xmlLogFile.nonEmpty) {
+      // Use two 64MiB files. This might need to be configurable, but probably not for a long time.
+      val handler = new FileHandler(options.xmlLogFile, 64*1024*1024, 2)
+      handler.setLevel(java.util.logging.Level.ALL)
+      orcLogger.setLevel(java.util.logging.Level.ALL)
+      orcLogger.addHandler(handler)
+      orcLogger.config(s"Orc logging ALL to: ${options.xmlLogFile} (with a numeric suffix for log rotation)")
+    }
 
     val includeStackTracesWithEveryLogMessage = false
     if (includeStackTracesWithEveryLogMessage) {
@@ -176,6 +187,8 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
   StringOprd(() => filename, filename = _, position = 0, argName = "file", required = true, usage = "Path to script to execute.")
 
   StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL")
+
+  StringOpt(() => xmlLogFile, xmlLogFile = _, ' ', "xmllogfile", usage = "Specify a file that will receive ALL log messages as java.util.logging XML. This can have some performance overhead. Default is no XML output.")
 
   UnitOpt(() => (!usePrelude), () => usePrelude = false, ' ', "noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
 
