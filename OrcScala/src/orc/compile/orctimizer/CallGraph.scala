@@ -27,12 +27,15 @@ import orc.values.sites.{ Site => ExtSite }
 import orc.compile.Logger
 import orc.ast.PrecomputeHashcode
 import scala.reflect.ClassTag
+import orc.compile.flowanalysis.GraphDataProvider
+import orc.util.DotUtils.shortString
+import orc.compile.flowanalysis.DebuggableGraphDataProvider
+import orc.util.DotUtils.DotAttributes
 
 /** Compute and store a call graph for the program stored in flowgraph.
   *
   */
-class CallGraph(rootgraph: FlowGraph) {
-  import FlowGraph.shortString
+class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, Edge] {
   import CallGraph._
   import BoundedSet._
 
@@ -63,185 +66,25 @@ class CallGraph(rootgraph: FlowGraph) {
 
   val graph: FlowGraph = rootgraph.combinedGraph
 
+  val subgraphs = Set()
+
   val callLocations: Set[CallLocation] = {
     graph.nodesBy({
       case EntryNode(v @ SpecificAST(_: Call, _)) => v.asInstanceOf[SpecificAST[Call]]
     })
   }
 
-  //val targets = mutable.HashMap[AnalysisLocation[Call], CallableSet]().withDefaultValue(ConcreteCallableSet(Set()))
-  //val valuesReaching = mutable.HashMap[AnalysisLocation[NamedAST], CallableSet]().withDefaultValue(ConcreteCallableSet(Set()))
+  val (additionalEdges, results) = {
+    val vrs = new CallGraphAnalyzer(graph)
+    val r = vrs().filterNot(_._2.isInstanceOf[MaximumBoundedSet[_]])
+    (vrs.additionalEdges ++ vrs.additionalEdgesNonValueFlow, r)
+  }
 
-  val results = {
-    val vrs = new Analyzer {
-      import graph._
-
-      type NodeT = Node
-      type StateT = State
-
-      def initialNodes: collection.Set[Node] = {
-        graph.nodesBy {
-          case n @ CallableNode(_, _) => n
-          //case n @ ExitNode(SpecificAST(Call(_, _, _), _)) => n
-          case n @ ExitNode(SpecificAST(New(_, _, _, _), _)) if valueInputs(n).isEmpty => n
-          case n @ ValueNode(Constant(_)) => n
-        }
-      }
-      def initialState: BoundedSet[FlowValue] = ConcreteBoundedSet(Set[FlowValue]())
-
-      val additionalEdges = mutable.HashSet[ValueFlowEdge]()
-
-      def addEdge(e: ValueFlowEdge): Boolean = {
-        if (additionalEdges.contains(e) || edges.contains(e)) {
-          false
-        } else {
-          // Logger.fine(s"Adding edge $e")
-          additionalEdges += e
-          true
-        }
-      }
-
-      def valueInputs(node: Node): Set[ValueFlowEdge] = {
-        node.inEdgesOf[ValueFlowEdge] ++ additionalEdges.filter(_.to == node)
-      }
-
-      def valueOutputs(node: Node): Set[ValueFlowEdge] = {
-        node.outEdgesOf[ValueFlowEdge] ++ additionalEdges.filter(_.from == node)
-      }
-
-      def inputs(node: Node): collection.Set[Node] = {
-        valueInputs(node).map(_.from) ++ node.inEdgesOf[UseEdge].map(_.from).filter(_.ast.isInstanceOf[Call])
-      }
-
-      def outputs(node: Node): collection.Set[Node] = {
-        valueOutputs(node).map(_.to) ++ node.outEdgesOf[UseEdge].map(_.to).filter(_.ast.isInstanceOf[Call])
-      }
-
-      def transfer(node: Node, old: State, inState: State, states: StateMap): (State, Set[Node]) = {
-        def buildSingleFieldObject(nw: SpecificAST[New], field: Field)(fieldValue: mutable.Map[Node, ObjectStruture] => BoundedSet[FieldContent]): State = {
-          val nwn = ExitNode(nw)
-          val additionalStructures = mutable.Map[Node, ObjectStruture]()
-          val fv = fieldValue(additionalStructures)
-          val structs = additionalStructures + (nwn -> Map[Field, BoundedSet[FieldContent]](field -> fv))
-          // Logger.fine(s"Building SFO for: $nw ;;; $field = $fv ;;; Structs = $structs")
-          BoundedSet(ObjectValue(nwn, structs.toMap))
-        }
-
-        // Logger.fine(s"Processing node: ${shortString(node)}    $inState ${inputs(node)}")
-        val state: State = node match {
-          case ValueNode(Constant(v: ExtSite)) => inState + ExternalSiteValue(v)
-          case ValueNode(Constant(v)) => inState + DataValue(v)
-          case CallableNode(c, g) => inState + CallableValue(c, g)
-          case FutureFieldNode(nw, field) =>
-            buildSingleFieldObject(nw, field) { additionalStructures =>
-              val vs = inState.collect({
-                case e: ObjectRefValue =>
-                  throw new AssertionError(s"This is not expected: $e")
-                case ObjectValue(nw, structs) =>
-                  additionalStructures ++= structs
-                  ObjectRefValue(nw)
-                case e: FieldFutureContent => e
-                case f: FutureValue =>
-                  throw new AssertionError("Futures should never be inside futures")
-              })
-              BoundedSet[FieldContent](FieldFutureValue(vs))
-            }
-          case ArgumentFieldNode(nw, field) =>
-            buildSingleFieldObject(nw, field) { additionalStructures =>
-              inState.collect({
-                case e: FieldFutureValue =>
-                  throw new AssertionError(s"This is not expected: $e")
-                case ObjectValue(nw, structs) =>
-                  additionalStructures ++= structs
-                  ObjectRefValue(nw)
-                case e: FieldContent => e
-              })
-            }
-          case VariableNode(v, f: Force) =>
-            // FIXME: This needs to correctly handle the two kinds of force. Including messing with objects and values that may have apply.
-            inState flatMap {
-              case FutureValue(s) => s.map(x => x: FlowValue)
-              case v => BoundedSet(v)
-            }
-          case VariableNode(v, _) if valueInputs(node).nonEmpty =>
-            inState
-          case ExitNode(SpecificAST(Future(_), _)) =>
-            BoundedSet(FutureValue(inState.collect({
-              case e: FutureContent => e
-              case f: FutureValue => throw new AssertionError("Futures should never be inside futures")
-            })))
-          case ExitNode(SpecificAST(FieldAccess(_, f), _)) =>
-            //Logger.fine(s"Processing FieldAccess: $node ($inState)")
-            inState flatMap { s =>
-              s match {
-                case o: ObjectValue => o(f)
-                case _ => MaximumBoundedSet()
-              }
-            }
-          case node @ ExitNode(SpecificAST(_: New, _)) =>
-            inState modify { s =>
-              val bss = s.collect({
-                case o@ObjectValue(nw1, bs) if node == nw1 => o
-                case ObjectValue(nw1, bs) =>
-                  throw new AssertionError(s"A 'New' node received the incorrent object input during analysis: $nw1 Expected: $node")
-                case v =>
-                  throw new AssertionError(s"A 'New' node received an non-object input during analysis: $v")
-              })
-
-              Set(bss.fold(ObjectValue(node, Map(node -> Map())))(_ ++ _))
-            }
-          case ExitNode(_) if valueInputs(node).nonEmpty =>
-            // Passthrough on publications
-            inState
-          case EntryNode(SpecificAST(Call(target, args, _), path)) =>
-            // We don't really need this result so this value shouldn't matter. We only process these
-            // entries because we need to add nodes for them.
-            MaximumBoundedSet()
-          case _ =>
-            // Logger.warning(s"Unknown node given worst case result: $node")
-            MaximumBoundedSet()
-        }
-
-        val nodes: Set[Node] = node match {
-          case EntryNode(n @ SpecificAST(Call(target, args, _), path)) =>
-            val exit = ExitNode(n)
-            states.get(ValueNode(target, path)) match {
-              case Some(targets) =>
-                // Select all callables with the correct arity.
-                val callables = targets.collect({ case c: CallableValue if c.callable.formals.size == args.size => c })
-                // Build edges for arguments of this call site to all targets
-                val argEdges = for {
-                  cs <- callables.values.toSet[Set[CallableValue]]
-                  c <- cs
-                  (formal, actual) <- (c.graph.arguments zip args)
-                } yield {
-                  ValueEdge(ValueNode(actual, path), formal)
-                }
-                // Build edges for return value of this call site from all targets
-                val retEdges = for {
-                  cs <- callables.values.toSet[Set[CallableValue]]
-                  c <- cs
-                } yield {
-                  ValueEdge(c.graph.exit, exit)
-                }
-                // The filter has a side effects. I feel appropriately bad about myself.
-                val newEdges = (argEdges ++ retEdges) filter addEdge
-                newEdges.map(_.to)
-              case None =>
-                Set()
-            }
-          case _ =>
-            Set()
-        }
-
-        // Logger.fine(s"Processed node: ${shortString(node)} ;;; $state ;;; $nodes")
-
-        (state, nodes)
-      }
-
-      def combine(a: State, b: State) = a ++ b
-    }
-    vrs().filterNot(_._2.isInstanceOf[MaximumBoundedSet[_]])
+  val edges: collection.Set[Edge] = {
+    additionalEdges ++ graph.edges
+  }
+  lazy val nodes: collection.Set[Node] = {
+    edges.flatMap(e => Seq(e.from, e.to))
   }
 
   def callTargets(c: Call): BoundedSet[CallTarget] = {
@@ -267,6 +110,31 @@ class CallGraph(rootgraph: FlowGraph) {
         Logger.fine(s"The expression $e does not appear in the analysis results. Using top.")
         MaximumBoundedSet()
     }
+  }
+
+  override def graphLabel: String = "Call Graph"
+
+  /*
+  override def renderedNodes = {
+    for {
+      n @ (ExitNode(_) | EntryNode(_)) <- nodes
+    } yield {
+      n
+    }
+  }
+  override def renderedEdges = {
+    for {
+      e @ TransitionEdge(a: TokenFlowNode, trans, b: TokenFlowNode) <- edges
+      //if a.location != b.location
+    } yield {
+      e
+    }
+  }
+  */
+
+  override def computedNodeDotAttributes(n: Node): DotAttributes = {
+    (if (n == graph.entry) Map("color" -> "green", "peripheries" -> "2") else Map()) ++
+      (if (n == graph.exit) Map("color" -> "red", "peripheries" -> "2") else Map())
   }
 }
 
@@ -388,4 +256,197 @@ object CallGraph {
   }
 
   val contextLimit = 1
+
+  class CallGraphAnalyzer(graph: GraphDataProvider[Node, Edge]) extends Analyzer {
+    import graph._
+    import FlowGraph._
+
+    type NodeT = Node
+    type StateT = State
+
+    def initialNodes: collection.Set[Node] = {
+      graph.nodesBy {
+        case n @ CallableNode(_, _) => n
+        //case n @ ExitNode(SpecificAST(Call(_, _, _), _)) => n
+        case n @ ExitNode(SpecificAST(New(_, _, _, _), _)) if valueInputs(n).isEmpty => n
+        case n @ ValueNode(Constant(_)) => n
+      }
+    }
+    def initialState: BoundedSet[FlowValue] = ConcreteBoundedSet(Set[FlowValue]())
+
+    val additionalEdges = mutable.HashSet[ValueFlowEdge]()
+    val additionalEdgesNonValueFlow = mutable.HashSet[Edge]()
+
+    def addEdge(e: ValueFlowEdge): Boolean = {
+      if (additionalEdges.contains(e) || edges.contains(e)) {
+        false
+      } else {
+        // Logger.fine(s"Adding edge $e")
+        additionalEdges += e
+        true
+      }
+    }
+
+    def addEdge(e: Edge): Boolean = {
+      if (additionalEdgesNonValueFlow.contains(e) || edges.contains(e)) {
+        false
+      } else {
+        // Logger.fine(s"Adding edge $e")
+        additionalEdgesNonValueFlow += e
+        true
+      }
+    }
+
+    def valueInputs(node: Node): Set[ValueFlowEdge] = {
+      node.inEdgesOf[ValueFlowEdge] ++ additionalEdges.filter(_.to == node)
+    }
+
+    def valueOutputs(node: Node): Set[ValueFlowEdge] = {
+      node.outEdgesOf[ValueFlowEdge] ++ additionalEdges.filter(_.from == node)
+    }
+
+    def inputs(node: Node): collection.Set[Node] = {
+      valueInputs(node).map(_.from) ++ node.inEdgesOf[UseEdge].map(_.from).filter(_.ast.isInstanceOf[Call])
+    }
+
+    def outputs(node: Node): collection.Set[Node] = {
+      valueOutputs(node).map(_.to) ++ node.outEdgesOf[UseEdge].map(_.to).filter(_.ast.isInstanceOf[Call])
+    }
+
+    def transfer(node: Node, old: State, inState: State, states: StateMap): (State, Set[Node]) = {
+      def buildSingleFieldObject(nw: SpecificAST[New], field: Field)(fieldValue: mutable.Map[Node, ObjectStruture] => BoundedSet[FieldContent]): State = {
+        val nwn = ExitNode(nw)
+        val additionalStructures = mutable.Map[Node, ObjectStruture]()
+        val fv = fieldValue(additionalStructures)
+        val structs = additionalStructures + (nwn -> Map[Field, BoundedSet[FieldContent]](field -> fv))
+        // Logger.fine(s"Building SFO for: $nw ;;; $field = $fv ;;; Structs = $structs")
+        BoundedSet(ObjectValue(nwn, structs.toMap))
+      }
+
+      // Logger.fine(s"Processing node: ${shortString(node)}    $inState ${inputs(node)}")
+      val state: State = node match {
+        case ValueNode(Constant(v: ExtSite)) => inState + ExternalSiteValue(v)
+        case ValueNode(Constant(v)) => inState + DataValue(v)
+        case CallableNode(c, g) => inState + CallableValue(c, g)
+        case FutureFieldNode(nw, field) =>
+          buildSingleFieldObject(nw, field) { additionalStructures =>
+            val vs = inState.collect({
+              case e: ObjectRefValue =>
+                throw new AssertionError(s"This is not expected: $e")
+              case ObjectValue(nw, structs) =>
+                additionalStructures ++= structs
+                ObjectRefValue(nw)
+              case e: FieldFutureContent => e
+              case f: FutureValue =>
+                throw new AssertionError("Futures should never be inside futures")
+            })
+            BoundedSet[FieldContent](FieldFutureValue(vs))
+          }
+        case ArgumentFieldNode(nw, field) =>
+          buildSingleFieldObject(nw, field) { additionalStructures =>
+            inState.collect({
+              case e: FieldFutureValue =>
+                throw new AssertionError(s"This is not expected: $e")
+              case ObjectValue(nw, structs) =>
+                additionalStructures ++= structs
+                ObjectRefValue(nw)
+              case e: FieldContent => e
+            })
+          }
+        case VariableNode(v, f: Force) =>
+          // FIXME: This needs to correctly handle the two kinds of force. Including messing with objects and values that may have apply.
+          inState flatMap {
+            case FutureValue(s) => s.map(x => x: FlowValue)
+            case v => BoundedSet(v)
+          }
+        case VariableNode(v, _) if valueInputs(node).nonEmpty =>
+          inState
+        case ExitNode(SpecificAST(Future(_), _)) =>
+          BoundedSet(FutureValue(inState.collect({
+            case e: FutureContent => e
+            case f: FutureValue => throw new AssertionError("Futures should never be inside futures")
+          })))
+        case ExitNode(SpecificAST(FieldAccess(_, f), _)) =>
+          //Logger.fine(s"Processing FieldAccess: $node ($inState)")
+          inState flatMap { s =>
+            s match {
+              case o: ObjectValue => o(f)
+              case _ => MaximumBoundedSet()
+            }
+          }
+        case node @ ExitNode(SpecificAST(_: New, _)) =>
+          inState modify { s =>
+            val bss = s.collect({
+              case o@ObjectValue(nw1, bs) if node == nw1 => o
+              case ObjectValue(nw1, bs) =>
+                throw new AssertionError(s"A 'New' node received the incorrent object input during analysis: $nw1 Expected: $node")
+              case v =>
+                throw new AssertionError(s"A 'New' node received an non-object input during analysis: $v")
+            })
+
+            Set(bss.fold(ObjectValue(node, Map(node -> Map())))(_ ++ _))
+          }
+        case ExitNode(_) if valueInputs(node).nonEmpty =>
+          // Passthrough on publications
+          inState
+        case EntryNode(SpecificAST(Call(target, args, _), path)) =>
+          // We don't really need this result so this value shouldn't matter. We only process these
+          // entries because we need to add nodes for them.
+          MaximumBoundedSet()
+        case _ =>
+          // Logger.warning(s"Unknown node given worst case result: $node")
+          MaximumBoundedSet()
+      }
+
+      val nodes: Set[Node] = node match {
+        case entry @ EntryNode(n @ SpecificAST(Call(target, args, _), path)) =>
+          val exit = ExitNode(n)
+          states.get(ValueNode(target, path)) match {
+            case Some(targets) =>
+              // TODO: Make sure this properly handles totally unknown calls. MaximumBoundedSet()
+
+              // Select all callables with the correct arity.
+              val callables = targets.collect({ case c: CallableValue if c.callable.formals.size == args.size => c })
+              // Build edges for arguments of this call site to all targets
+              val argEdges = for {
+                cs <- callables.values.toSet[Set[CallableValue]]
+                c <- cs
+                (formal, actual) <- (c.graph.arguments zip args)
+              } yield {
+                ValueEdge(ValueNode(actual, path), formal)
+              }
+              // Build edges for return value of this call site from all targets
+              val retEdges = for {
+                cs <- callables.values.toSet[Set[CallableValue]]
+                c <- cs
+              } yield {
+                ValueEdge(c.graph.exit, exit)
+              }
+              // The filter has a side effects. I feel appropriately bad about myself.
+              val newEdges = (argEdges ++ retEdges) filter addEdge
+
+              // Add transitions into and out of the function body based on target results.
+              for {
+                cs <- callables.values.toSet[Set[CallableValue]]
+                c <- cs
+              } yield {
+                 addEdge(TransitionEdge(entry, "Call-Inf", c.graph.entry))
+                 addEdge(TransitionEdge(c.graph.exit, "Return-Inf", exit))
+              }
+
+              newEdges.map(_.to)
+            case None =>
+              Set()
+          }
+        case _ =>
+          Set()
+      }
+
+      // Logger.fine(s"Processed node: ${shortString(node)} ;;; $state ;;; $nodes")
+
+      (state, nodes)
+    }
+
+    def combine(a: State, b: State) = a ++ b
+  }
 }

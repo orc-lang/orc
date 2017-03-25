@@ -22,7 +22,10 @@ import orc.compile.Logger
 import orc.values.Field
 
 import FlowGraph._
-import javafx.geometry.Pos
+import orc.compile.flowanalysis.GraphDataProvider
+import orc.compile.flowanalysis.EdgeBase
+import orc.util.DotUtils._
+import orc.compile.flowanalysis.DebuggableGraphDataProvider
 
 /** A control flow graph for an Orc program which represents the flow of tokens through the program.
   *
@@ -30,13 +33,13 @@ import javafx.geometry.Pos
   * flow due to halting since no token flows from the LHS of otherwise to the RHS.
   *
   */
-class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]] = None) {
+class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]] = None) extends DebuggableGraphDataProvider[Node, Edge] {
   outer =>
 
   protected[this] val nodeSet = mutable.HashSet[Node]()
   protected[this] val edgeSet = mutable.HashSet[Edge]()
 
-  lazy val computed = {
+  protected[this] lazy val computed = {
     compute()
     assert(nodeSet contains entry)
     assert(nodeSet contains exit)
@@ -46,32 +49,10 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
   def nodes: collection.Set[Node] = { computed; nodeSet }
   def edges: collection.Set[Edge] = { computed; edgeSet }
 
-  protected[this] lazy val edgeFromIndex: collection.Map[Node, Set[Edge]] = {
-    val m = mutable.HashMap[Node, Set[Edge]]()
-    for(e <- edges) {
-      m += (e.from -> (m.getOrElse(e.from, Set[Edge]()) + e))
-    }
-    m
-  }
-  protected[this] lazy val edgeToIndex: collection.Map[Node, Set[Edge]] = {
-    val m = mutable.HashMap[Node, Set[Edge]]()
-    for(e <- edges) {
-      m += (e.to -> (m.getOrElse(e.to, Set[Edge]()) + e))
-    }
-    m
-  }
-
-  def nodesOf[T <: Node: ClassTag] = {
-    val TType = implicitly[ClassTag[T]]
-    nodes.collect { case TType(e) => e }.toSet
-  }
-
-  def nodesBy[U](f: PartialFunction[Node, U]) = {
-    nodes.collect { case e if f.isDefinedAt(e) => f(e) }.toSet
-  }
-
   def subflowgraphs = nodes.collect({ case CallableNode(_, g) => g }).toSet
+  def subgraphs = subflowgraphs
   def allflowgraphs: Set[FlowGraph] = nodes.collect({ case CallableNode(_, g) => g.allflowgraphs }).flatten.toSet + this
+
   def combinedGraph: FlowGraph = new FlowGraph(root, location) {
     override def compute() = {
       for (g <- outer.allflowgraphs) {
@@ -86,22 +67,6 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
       edgeSet += e
       nodeSet += e.to
       nodeSet += e.from
-    }
-  }
-
-  implicit class NodeAdds(n: Node) {
-    // TODO: Indexes would help with these. If any of these end up as hot-spots (as they probably will) we should add an index
-    //       by (from, type) and (to, type). As long as the set of types is known we could also use this index for in/out without
-    //       type check.
-    def outEdges = edgeFromIndex.getOrElse(n, Set())
-    def inEdges = edgeToIndex.getOrElse(n, Set())
-    def outEdgesOf[T <: Edge: ClassTag] = {
-      val TType = implicitly[ClassTag[T]]
-      edgeFromIndex.getOrElse(n, Set()).collect { case TType(e) => e }
-    }
-    def inEdgesOf[T <: Edge: ClassTag] = {
-      val TType = implicitly[ClassTag[T]]
-      edgeToIndex.getOrElse(n, Set()).collect { case TType(e) => e }
     }
   }
 
@@ -145,7 +110,7 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
           addEdges(
             ValueEdge(ValueNode(a, potentialPath), exit),
             TransitionEdge(entry, "FieldAccess", exit))
-        case nw@New(self, selfT, bindings, objT) =>
+        case nw @ New(self, selfT, bindings, objT) =>
           declareVariable(entry, self)
           addEdges(
             ValueEdge(exit, VariableNode(self, potentialPath)))
@@ -221,10 +186,11 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
           addEdges(
             TransitionEdge(entry, "Force-Enter", EntryNode(astInScope(f))),
             TransitionEdge(ExitNode(astInScope(f)), "Force-Exit", exit))
-          addEdges((xs zip vs) map { case (x, v) =>
-            val tmp = VariableNode(x, exit.location)
-            ValueEdge(ValueNode(v, potentialPath), tmp)
-            }: _*)
+          addEdges((xs zip vs) map {
+            case (x, v) =>
+              val tmp = VariableNode(x, exit.location)
+              ValueEdge(ValueNode(v, potentialPath), tmp)
+          }: _*)
           addEdges(vs.map(e => UseEdge(ValueNode(e, potentialPath), entry)): _*)
           addEdges(ValueEdge(ExitNode(astInScope(f)), exit))
           recurse(f)
@@ -308,94 +274,37 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
     s"FlowGraph(${shortString(root)}, ${location})"
   }
 
-  def toDot(declarationType: String = "digraph", idMap: mutable.HashMap[AnyRef, String] = mutable.HashMap[AnyRef, String]()): String = {
-    def idFor(s: String, o: AnyRef) = idMap.getOrElseUpdate(o, {
-      val nextID = idMap.size
-      s"$s$nextID"
-    })
+  override def graphLabel: String = shortString(location.map(_.ast).getOrElse(""))
 
-    val nodesStr = {
-      nodes.map { n =>
-        val additionalAttr = new DotAttributes {
-          def dotAttributes = {
-            n.dotAttributes ++
-              (if (n == entry) Seq("color" -> "green", "peripheries" -> "2") else Seq()) ++
-              (if (n == exit) Seq("color" -> "red", "peripheries" -> "2") else Seq()) ++
-              (n match {
-                case v @ ValueNode(_) if arguments contains v =>
-                  Seq("color" -> "green", "peripheries" -> "2")
-                case _ => Seq()
-              })
-          }
-        }
-
-        s"""${idFor("n", n)} ${additionalAttr.dotAttributeString};"""
-      }.mkString("\n")
-    }
-    s"""
-${declarationType} ${idFor("cluster", this)} {
-compound=true;
-label="${quote(shortString(location.map(_.ast).getOrElse("")))}";
-${subflowgraphs.map(_.toDot("subgraph", idMap)).mkString("\n\n")}
-$nodesStr
-${
-      edges.map(e => {
-        val additionalAttr = new DotAttributes {
-          def dotAttributes = {
-            e.dotAttributes /*++
-              (e.to match {
-                case CallableNode(_, g) =>
-                  Seq("lhead" -> idFor("cluster", g.root))
-                case _ => Seq()
-              }) ++
-              (e.from match {
-                case CallableNode(_, g) =>
-                  Seq("ltail" -> idFor("cluster", g.root))
-                case _ => Seq()
-              })*/
-          }
-        }
-        s"""${idFor("n", e.from)} -> ${idFor("n", e.to)} ${additionalAttr.dotAttributeString};"""
-      }).mkString("\n")
-    }
-}
-"""
+  override def computedNodeDotAttributes(n: Node): DotAttributes = {
+    (if (n == entry) Map("color" -> "green", "peripheries" -> "2") else Map()) ++
+      (if (n == exit) Map("color" -> "red", "peripheries" -> "2") else Map()) ++
+      (n match {
+        case v @ ValueNode(_) if arguments contains v =>
+          Map("color" -> "green", "peripheries" -> "2")
+        case _ => Map()
+      })
   }
-
-  def debugShow(): Unit = {
-    import java.io.File
-    import java.nio.charset.StandardCharsets
-    import java.nio.file.Files
-    import java.nio.file.Paths
-    import scala.sys.process._
-    val tmpDot = File.createTempFile("orcprog", ".gv");
-    val outformat = "svg"
-    val tmpPdf = File.createTempFile("orcprog", s".$outformat");
-    //tmp.deleteOnExit();
-    Logger.info(s"Wrote gz to $tmpDot")
-    Logger.info(s"Wrote rendered to $tmpPdf")
-
-    Files.write(Paths.get(tmpDot.toURI), toDot().getBytes(StandardCharsets.UTF_8))
-    Seq("dot", s"-T$outformat", tmpDot.getAbsolutePath, s"-o${tmpPdf.getAbsolutePath}").!
-    Seq("chromium-browser", tmpPdf.getAbsolutePath).!
+  override def computedEdgeDotAttributes(n: Edge): DotAttributes = {
+    /*
+      (e.to match {
+        case CallableNode(_, g) =>
+          Seq("lhead" -> idFor("cluster", g.root))
+        case _ => Seq()
+      }) ++
+      (e.from match {
+        case CallableNode(_, g) =>
+          Seq("ltail" -> idFor("cluster", g.root))
+        case _ => Seq()
+      })*/
+    Map()
   }
 }
 
 object FlowGraph {
-  def shortString(o: AnyRef) = s"'${o.toString().replace('\n', ' ').take(30)}'"
-  private def quote(s: String) = s.replace('"', '\'')
-
-  trait DotAttributes {
-    def dotAttributes: Map[String, String]
-
-    def dotAttributeString = {
-      s"[${dotAttributes.map(p => s"${p._1}=${'"'}${quote(p._2)}${'"'}").mkString(",")}]"
-    }
-  }
-
   /////// Nodes
 
-  sealed abstract class Node extends DotAttributes with PrecomputeHashcode {
+  sealed abstract class Node extends WithDotAttributes with PrecomputeHashcode {
     this: Product =>
     val ast: NamedAST
     override def toString() = s"$productPrefix(${shortString(ast)})"
@@ -491,7 +400,7 @@ object FlowGraph {
 
   /////// Edges
 
-  sealed abstract class Edge extends DotAttributes with PrecomputeHashcode {
+  sealed abstract class Edge extends WithDotAttributes with PrecomputeHashcode with EdgeBase[Node] {
     this: Product =>
     val from: Node
     val to: Node
