@@ -254,6 +254,8 @@ object CallGraph {
   case class AnalysisLocation[T <: NamedAST](stack: List[CallLocation], node: Node) {
     def limit(n: Int) = AnalysisLocation(stack.take(n), node)
   }
+  
+  // TODO: Implement context sensative analysis. 
 
   val contextLimit = 1
 

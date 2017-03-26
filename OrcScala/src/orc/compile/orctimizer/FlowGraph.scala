@@ -458,24 +458,4 @@ object FlowGraph {
   case class ValueEdge(from: Node, to: Node) extends Edge with ValueFlowEdge {
     override def label = ""
   }
-
-  /*
-  case class ProvideFieldEdge(from: Node, field: Field, to: Node) extends Edge with ValueFlowEdge {
-    override def color: String = "green"
-    override def label = field.toString()
-  }
-  case class AccessFieldEdge(from: Node, field: Field, to: Node) extends Edge with ValueFlowEdge {
-    override def color: String = "red"
-    override def label = field.toString()
-  }
-  case class FutureEdge(from: Node, to: Node) extends Edge with ValueFlowEdge {
-    override def color: String = "green"
-    override def label = "◊"
-  }
-  case class ForceEdge(from: ValueNode, publishForce: Boolean, to: ValueNode) extends Edge with ValueFlowEdge {
-    override def color: String = "red"
-    override def label = "♭" + (if (publishForce) "p" else "c")
-  }
-  */
-
 }
