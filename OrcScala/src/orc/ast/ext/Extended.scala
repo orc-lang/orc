@@ -261,21 +261,25 @@ object ClassConstructor {
 
 sealed case class New(cls: ClassExpression) extends Expression
 
-object ClassGroup {
-  def unapply(e: Expression): Option[(List[ClassDeclaration], Expression)] = {
+object ClassDefGroup {
+  def unapply(e: Expression): Option[(List[ClassDeclaration], List[DefDeclaration], Expression)] = {
     partition(e) match {
-      case (Nil, _) => None
-      case (ds, f) => Some((ds, f))
+      case (Nil, Nil, _) => None
+      case (cs, ds, f) => Some((cs, ds, f))
     }
   }
 
-  private def partition(e: Expression): (List[ClassDeclaration], Expression) = {
+  private def partition(e: Expression): (List[ClassDeclaration], List[DefDeclaration], Expression) = {
     e match {
       case Declare(d: ClassDeclaration, f) => {
-        val (ds, g) = partition(f)
-        (d :: ds, g)
+        val (cs, ds,  g) = partition(f)
+        (d :: cs, ds, g)
       }
-      case _ => (Nil, e)
+      case Declare(d: DefDeclaration, f)  => {
+        val (cs, ds, g) = partition(f)
+        (cs, d :: ds, g)
+      }
+      case _ => (Nil, Nil, e)
     }
   }
 

@@ -540,7 +540,10 @@ case class ClassForms(val translator: Translator) {
     case v: UnboundVar => v
   }
 
-  def makeClassDeclarations(clss: Set[ClassBasicInfo])(bodyFunc: TranslatorContext => Expression)(implicit ctx: TranslatorContext): Expression = {
+  /** Extend the provided context with class information.
+   *
+   */
+  def makeClassContext(clss: Set[ClassBasicInfo])(implicit ctx: TranslatorContext): TranslatorContext = {
     // This intermediate context is needed since isAbstract requires a context with all superclasses of the class we want to check.
     val tmpCtx = clss.foldLeft(ctx)((c, cls) => c.copy(classContext = c.classContext + (cls.name -> cls)))
     val newCtx = clss.foldLeft(ctx)((newCtx, cls) => {
@@ -552,20 +555,36 @@ case class ClassForms(val translator: Translator) {
         newCtx.copy(boundDefs = newCtx.boundDefs + cls.constructorName + cls.partialConstructorName, classContext = newClassContext, typecontext = newTypeContext)
       }
     })
+    newCtx
+  }
 
-    {
-      implicit val ctx = newCtx
-      val clssOrdered = orderBySubclassing(clss.toList).toList
-      val defs = clssOrdered.flatMap(generateConstructor(_)) ++ clssOrdered.map(generatePartialConstructor(_))
-      val core: Expression = DeclareCallables(defs, bodyFunc(ctx))
-      clssOrdered.foldRight(core) { (cls, e) =>
-        val lin = generateLinearization(cls)
-        val superTypes = lin.tail.map(_.typeName)
-        // TODO: TYPECHECKER: This types all the members are not put in place here. They are not available in ClassInfo. They probably need to be.
-        val addedMembers = (cls.concreteMembers ++ cls.abstractMembers).map((_, Top())).toMap
-        val clsType = NominalType(IntersectionType(StructuralType(addedMembers) +: superTypes))
-        DeclareType(cls.typeName, clsType, e)
-      }
+  /** Create the class declarations and return them in order.
+   *
+   *  The provided context must already have the classes in clss (See makeClassContext).
+   */
+  def makeClassDeclarations(clss: Set[ClassBasicInfo])(implicit ctx: TranslatorContext): (List[Callable], List[(BoundTypevar, Type)]) = {
+    val clssOrdered = orderBySubclassing(clss.toList).toList
+    val defs = clssOrdered.flatMap(generateConstructor(_)) ++ clssOrdered.map(generatePartialConstructor(_))
+    //val core: Expression = DeclareCallables(defs, bodyFunc(ctx))
+    val types = clssOrdered map { (cls) =>
+      val lin = generateLinearization(cls)
+      val superTypes = lin.tail.map(_.typeName)
+      // TODO: TYPECHECKER: This types all the members are not put in place here. They are not available in ClassInfo. They probably need to be.
+      val addedMembers = (cls.concreteMembers ++ cls.abstractMembers).map((_, Top())).toMap
+      val clsType = NominalType(IntersectionType(StructuralType(addedMembers) +: superTypes))
+      (cls.typeName, clsType)
+    }
+    (defs, types)
+  }
+
+  def makeClassDeclarationExpression(clss: Set[ClassBasicInfo])(bodyFunc: TranslatorContext => Expression)(implicit ctx: TranslatorContext): Expression = {
+    val newCtx = classForms.makeClassContext(clss)(ctx)
+    val (newDefs, newTypes) = classForms.makeClassDeclarations(clss)(newCtx)
+
+    val core = DeclareCallables(newDefs, bodyFunc(newCtx))
+    newTypes.foldRight(core : Expression) { (p, acc) =>
+      val (tv, t) = p
+      DeclareType(tv, t, acc)
     }
   }
 
@@ -575,7 +594,7 @@ case class ClassForms(val translator: Translator) {
     */
   def makeNew(e: ext.ClassExpression)(implicit ctx: TranslatorContext): Expression = {
     val (cls, clss) = makeClassInfo(e)
-    makeClassDeclarations(clss ++ (if (ctx.classContext.contains(cls.name)) List() else List(cls))) { ctx =>
+    makeClassDeclarationExpression(clss ++ (if (ctx.classContext.contains(cls.name)) List() else List(cls))) { ctx =>
       if (ctx.boundDefs.contains(cls.constructorName)) {
         Call(cls.constructorName, List(), Some(List()))
       } else {

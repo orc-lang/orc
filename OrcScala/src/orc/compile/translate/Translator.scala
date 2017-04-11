@@ -29,6 +29,7 @@ import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
 import orc.error.compiletime.{ CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException, SiteResolutionException }
 import orc.lib.builtin
 import orc.values.sites.Site
+import orc.compile.Logger
 
 case class TranslatorContext(context: Map[String, Argument], typecontext: Map[String, Type],
   boundDefs: Set[BoundVar], classContext: Map[String, ClassBasicInfo]) {
@@ -155,16 +156,35 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Conditional(ifE, thenE, elseE) => {
         makeConditional(convert(ifE), convert(thenE), convert(elseE))
       }
-      case ext.CallableGroup(defs, body) => {
-        val (newdefs, dcontext) = convertDefs(defs)
-        val newbody = convert(body)(ctx.copy(context = context ++ dcontext,
-          boundDefs = boundDefs ++ (newdefs map { _.name })))
-        DeclareCallables(newdefs, newbody)
+
+      case ext.ClassDefGroup(clss, defs, body) => {
+        val infos = classForms.makeClassInfos(clss)
+        val clsContext = classForms.makeClassContext(infos)(ctx)
+        val (newContext, defsIntermediate, defNames) = makeCallablesContext(defs)(clsContext)
+        //Logger.info(s"Processing ${clss.map(_.name)} and ${defs.map(_.name)}:\n$newContext")
+        val (newClsDefs, newTypes) = classForms.makeClassDeclarations(infos)(newContext)
+        val newDefDefs = makeCallables(defsIntermediate, defNames)(newContext)
+        val newDefs = newClsDefs ++ newDefDefs
+        //Logger.info(s"Processing ${clss.map(_.name)} and ${defs.map(_.name)}:\n${newDefs.map(_.name)}")
+        val newBody = convert(body)(newContext)
+        val core = DeclareCallables(newDefs, newBody)
+        newTypes.foldRight(core : Expression) { (p, acc) =>
+          val (tv, t) = p
+          DeclareType(tv, t, acc)
+        }
       }
 
-      case ext.ClassGroup(clss, body) => {
-        val infos = classForms.makeClassInfos(clss)
-        classForms.makeClassDeclarations(infos)(convert(body)(_))
+      // TODO: Add recursion of sites with defs/classes
+
+      case ext.CallableGroup(defs, body) => {
+        // Defs should already have been handled above.
+        assert(defs.head.isInstanceOf[ext.SiteDeclaration])
+
+        val (newContext, defsIntermediate, defNames) = makeCallablesContext(defs)(ctx)
+        val newDefs = makeCallables(defsIntermediate, defNames)(newContext)
+        val newbody = convert(body)(newContext)
+
+        DeclareCallables(newDefs, newbody)
       }
 
       case ext.Declare(si @ ext.SiteImport(name, sitename), body) => {
@@ -276,13 +296,10 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     }
   }
 
-  /** Convert a list of extended AST def declarations to:
+  /** Convert a list of extended AST callable declarations to a new context (for the bodies of the defs) and a map
     *
-    *    a list of named OIL definitions
-    * and
-    *    a mapping from their string names to their new bound names
     */
-  def convertDefs(defs: List[ext.CallableDeclaration])(implicit ctx: TranslatorContext): (List[Callable], Map[String, BoundVar]) = {
+  def makeCallablesContext(defs: List[ext.CallableDeclaration])(implicit ctx: TranslatorContext): (TranslatorContext, Map[String, AggregateDef], Map[String, BoundVar]) = {
     import ctx._
 
     var defsMap: Map[String, AggregateDef] = HashMap.empty.withDefaultValue(AggregateDef.empty(this))
@@ -293,12 +310,19 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     // we generate these names beforehand since defs can be bound recursively in their own bodies
     val namesMap: Map[String, BoundVar] = Map.empty ++ (for (name <- defsMap.keys) yield (name, new BoundVar(Some(name))))
     val recursiveContext = context ++ namesMap
+    val newCtx = ctx.copy(context = recursiveContext, boundDefs = boundDefs ++ namesMap.values)
+
+    (newCtx, defsMap, namesMap)
+  }
+
+  /** Convert a list of extended AST def declarations to a list of named OIL definitions.
+    */
+  def makeCallables(defsMap: Map[String, AggregateDef], namesMap: Map[String, BoundVar])(implicit ctx: TranslatorContext): List[Callable] = {
     val newdefs = for ((n, d) <- defsMap) yield {
-      d ->> d.convert(namesMap(n), ctx.copy(context = recursiveContext,
-        boundDefs = boundDefs ++ namesMap.values))
+      d ->> d.convert(namesMap(n), ctx)
     }
 
-    (newdefs.toList, namesMap)
+    newdefs.toList
   }
 
   /** Convert an extended AST type to a named OIL type.
