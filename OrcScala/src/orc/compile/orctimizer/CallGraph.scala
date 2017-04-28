@@ -17,7 +17,6 @@ import scala.collection.mutable
 
 import orc.ast.orctimizer.named._
 import orc.compile.orctimizer.FlowGraph._
-import CallGraph._
 import scala.annotation.tailrec
 import scala.collection.mutable.Queue
 import orc.compile.flowanalysis.Analyzer
@@ -31,6 +30,9 @@ import orc.compile.flowanalysis.GraphDataProvider
 import orc.util.DotUtils.shortString
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import orc.util.DotUtils.DotAttributes
+import orc.compile.AnalysisCache
+import orc.compile.AnalysisRunner
+import orc.compile.AnalysisRunner
 
 /** Compute and store a call graph for the program stored in flowgraph.
   *
@@ -138,7 +140,11 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
   }
 }
 
-object CallGraph {
+object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), CallGraph] {
+  def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): CallGraph = {
+    val fg = cache.get(FlowGraph)(params)
+    new CallGraph(fg)
+  }
 
   val BoundedSet: BoundedSetModule {
     type TU = Value
@@ -254,8 +260,8 @@ object CallGraph {
   case class AnalysisLocation[T <: NamedAST](stack: List[CallLocation], node: Node) {
     def limit(n: Int) = AnalysisLocation(stack.take(n), node)
   }
-  
-  // TODO: Implement context sensative analysis. 
+
+  // TODO: Implement context sensative analysis.
 
   val contextLimit = 1
 

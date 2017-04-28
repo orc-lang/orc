@@ -21,20 +21,20 @@ import orc.ast.orctimizer.named._
 import orc.compile.Logger
 import orc.values.Field
 
-import FlowGraph._
 import orc.compile.flowanalysis.GraphDataProvider
 import orc.compile.flowanalysis.EdgeBase
 import orc.util.DotUtils._
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
+import orc.compile.AnalysisRunner
+import orc.compile.AnalysisCache
 
 /** A control flow graph for an Orc program which represents the flow of tokens through the program.
   *
-  * By extension this also represents the flow of publications. This graph does not represent
-  * flow due to halting since no token flows from the LHS of otherwise to the RHS.
-  *
   */
-class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]] = None) extends DebuggableGraphDataProvider[Node, Edge] {
+class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]] = None) extends DebuggableGraphDataProvider[FlowGraph.Node, FlowGraph.Edge] {
   outer =>
+
+  import FlowGraph._
 
   protected[this] val nodeSet = mutable.HashSet[Node]()
   protected[this] val edgeSet = mutable.HashSet[Edge]()
@@ -220,6 +220,7 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
           for (callable <- callables) {
             val loc = SpecificAST(callable, potentialPath)
             val graph = new FlowGraph(callable.body, Some(loc))
+            // TODO: Consider computing the subgraph only as needed using the AnalysisCache
             val me = CallableNode(loc, graph)
             addEdges(ValueEdge(me, VariableNode(callable.name, potentialPath)))
           }
@@ -301,7 +302,11 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
   }
 }
 
-object FlowGraph {
+object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), FlowGraph] {
+  def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): FlowGraph = {
+    new FlowGraph(params._1, params._2)
+  }
+
   /////// Nodes
 
   sealed abstract class Node extends WithDotAttributes with PrecomputeHashcode {
