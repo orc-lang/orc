@@ -98,7 +98,7 @@ class PrettyPrint {
       case New(self, st, bindings, t) => {
         def reduceField(f: (Field, FieldValue)) = {
           val (name, expr) = f
-          pp"$name = $expr"
+          pp"$name = $StartIndent$expr$EndIndent"
         }
         def fields = pp" #$StartIndent\n${FragmentAppender.mkString(bindings.map(reduceField), " #\n")}$EndIndent\n"
         pp"new ${t.map(reduce).getOrElse("")} { $self ${() => st.map(t => pp": $t").getOrElse(pp"")} ${() => if (bindings.nonEmpty) fields else pp""} }"

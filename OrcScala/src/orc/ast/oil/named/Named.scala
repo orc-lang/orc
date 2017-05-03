@@ -21,7 +21,7 @@ import orc.values
 import orc.ast.hasAutomaticVariableName
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
-  def prettyprint() = (new PrettyPrint()).reduce(this)
+  def prettyprint() = (new PrettyPrint()).reduce(this).toString()
   override def toString() = prettyprint()
 
   override val subtrees: Iterable[NamedAST] = this match {
