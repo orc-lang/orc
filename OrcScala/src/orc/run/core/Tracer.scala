@@ -39,6 +39,9 @@ object Tracer {
   final val traceTokenState = true
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
+  final val traceTokenScheduling = false
+
+  /* Because of aggressive inlining, changing this flag requires a clean rebuild */
   final val traceJavaCall = true
 
   @inline
@@ -53,7 +56,7 @@ object Tracer {
 
   @inline
   def traceTokenExecStateTransition(token: Token, newState: TokenExecState) {
-    if (traceTokenState) orc.util.Tracer.trace(TokenExecStateTransition, token.debugId, 0L, tokenExecStateIdFor(newState))
+    if (traceTokenScheduling) orc.util.Tracer.trace(TokenExecStateTransition, token.debugId, 0L, tokenExecStateIdFor(newState))
   }
 
   @inline
