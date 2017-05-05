@@ -33,11 +33,14 @@ abstract class Subgroup(val parent: Group) extends Group {
   def notifyOrc(event: OrcEvent) = execution.notifyOrc(event)
 
   def run() {
+    val beginProfInterval = orc.util.Profiler.beginInterval(0L, 'Subgroup_run)
     try {
       if (parent.isKilled()) { kill() }
     } catch {
       case e: InterruptedException => Thread.currentThread().interrupt()
       case e: Throwable => { notifyOrc(CaughtEvent(e)) }
+    } finally {
+      orc.util.Profiler.endInterval(0L, 'Token_run, beginProfInterval)
     }
   }
 

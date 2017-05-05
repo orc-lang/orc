@@ -19,7 +19,7 @@ package orc.run.distrib
   */
 object Logger extends orc.util.Logger("orc.run.distrib") {
   Logger.julLogger.setUseParentHandlers(false)
-  Logger.julLogger.setLevel(java.util.logging.Level.INFO)
+  Logger.julLogger.setLevel(java.util.logging.Level.FINEST)
   val ch = new java.util.logging.ConsoleHandler()
   ch.setLevel(java.util.logging.Level.ALL)
   ch.setFormatter(orc.util.SyslogishFormatter)

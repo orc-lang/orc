@@ -84,7 +84,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     }
   }
 
-  override def check(blockable: Blockable): Unit = {
+  override def check(blockable: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'LocalFuture_check) {
     synchronized { _state } match {
       case Unbound => throw new AssertionError("Spurious call to Future.check.")
       case Bound => blockable.awakeTerminalValue(_value)

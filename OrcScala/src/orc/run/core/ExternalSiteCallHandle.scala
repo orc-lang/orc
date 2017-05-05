@@ -31,6 +31,7 @@ class ExternalSiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[An
   var invocationThread: Option[Thread] = None
 
   def run() {
+    val beginProfInterval = orc.util.Profiler.beginInterval(0L, 'ExternalSiteCallHandle_run)
     try {
       if (synchronized {
         if (isLive) {
@@ -48,6 +49,7 @@ class ExternalSiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[An
       synchronized {
         invocationThread = None
       }
+      orc.util.Profiler.endInterval(0L, 'ExternalSiteCallHandle_run, beginProfInterval)
     }
   }
 

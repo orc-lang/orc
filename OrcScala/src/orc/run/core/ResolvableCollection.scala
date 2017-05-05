@@ -116,7 +116,7 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
 
   /** Execute the resolution process of this Closure. This should be called by the scheduler.
     */
-  override def run() = {
+  override def run(): Unit = orc.util.Profiler.measureInterval(0L, 'ResolvableCollection_run) {
     // This synchronized may not be needed since we only change state from within this method which is 
     // only called when this is scheduled which can only happen once (from the join).
     synchronized { state } match {
@@ -140,7 +140,7 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
 
   //// Blocker Implementation
 
-  def check(t: Blockable, i: Int) = {
+  def check(t: Blockable, i: Int): Unit = orc.util.Profiler.measureInterval(0L, 'ResolvableCollection_check) {
     synchronized { state } match {
       case Resolved =>
         t.awakeTerminalValue(members(i))

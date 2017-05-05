@@ -469,7 +469,7 @@ class Token protected (
 
     group.execution match {
       case dOrcExecution: DOrcExecution => {
-        orc.run.distrib.Logger.entering(getClass.getName, "siteCall", Seq(s.getClass.getName, s, actuals))
+        //orc.run.distrib.Logger.entering(getClass.getName, "siteCall", Seq(s.getClass.getName, s, actuals))
         val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)) { _ & _ }
         if (!(intersectLocs contains dOrcExecution.runtime.here)) {
           orc.run.distrib.Logger.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
@@ -630,6 +630,7 @@ class Token protected (
   //    testStack(1 + offset).getMethodName() == "eval" && testStack(2 + offset).getMethodName() == "run" && stackOK(testStack, offset + 2)
 
   def run() {
+    val beginProfInterval = orc.util.Profiler.beginInterval(debugId, 'Token_run)
     Tracer.traceTokenExecStateTransition(this, TokenExecState.Running)
     //val ourStack = new Throwable("Entering Token.run").getStackTrace()
     //assert(stackOK(ourStack, 0), "Token run not in ThreadPoolExecutor.Worker! sl="+ourStack.length+", m1="+ourStack(1).getMethodName()+", state="+state)
@@ -641,7 +642,7 @@ class Token protected (
     val old = isScheduled.getAndSet(false)
     if (!(old == true || state == Killed)) {
       Logger.check(false, s"""${System.nanoTime().toHexString}: Failed to clear scheduled: ${this.debugId.toHexString}""")
-      orc.util.Tracer.dumpOnlyLocation(debugId)
+      orc.util.Tracer.selectLocation(debugId)
     }
     */
     try {
@@ -651,9 +652,9 @@ class Token protected (
       state match {
         case Live => eval(node)
         case Suspending(prevState) => setState(Suspended(prevState))
-        case Blocked(b) => b.check(this)
-        case Publishing(v) => if (setState(Live)) { stack(this, v) }
-        case Killed => {} // This token was killed while it was on the schedule queue; ignore it
+        case Blocked(b) => orc.util.Profiler.measureInterval(debugId, 'Token_Blocked) { b.check(this) }
+        case Publishing(v) => if (setState(Live)) orc.util.Profiler.measureInterval(debugId, 'Token_Publishing) { stack(this, v) }
+        case Killed => orc.util.Profiler.measureInterval(debugId, 'Token_Killed) {} // This token was killed while it was on the schedule queue; ignore it
         case Suspended(_) => throw new AssertionError("suspended token scheduled")
         case Halted => throw new AssertionError("halted token scheduled")
       }
@@ -672,6 +673,8 @@ class Token protected (
         notifyOrc(CaughtEvent(e))
         halt()
       }
+    } finally {
+      orc.util.Profiler.endInterval(debugId, 'Token_run, beginProfInterval)
     }
   }
 
@@ -682,7 +685,7 @@ class Token protected (
     super.resolveOptional(b)(k)
   }
 
-  protected def eval(node: orc.ast.oil.nameless.Expression) {
+  protected def eval(node: orc.ast.oil.nameless.Expression): Unit = orc.util.Profiler.measureInterval(debugId, 'Token_eval) {
     //Logger.finest(s"Evaluating: $node")
     node match {
       case Stop() => halt()

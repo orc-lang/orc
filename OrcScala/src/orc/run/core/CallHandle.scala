@@ -141,7 +141,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     setState(CallWasKilled)
   }
 
-  def check(t: Blockable) = {
+  def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'CallHandle_check) {
     val st = synchronized {
       val st = state
       holdSchedule()

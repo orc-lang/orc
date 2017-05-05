@@ -13,7 +13,7 @@ package orc.run.core
 import orc.Schedulable
 
 class GroupOnHalt(group: Group) extends Schedulable {
-  def run(): Unit = {
+  def run(): Unit = orc.util.Profiler.measureInterval(0L, 'Group_onHalt) {
     group.onHalt()
   }
 
@@ -21,7 +21,7 @@ class GroupOnHalt(group: Group) extends Schedulable {
 }
 
 class GroupOnDiscorporate(group: Group) extends Schedulable {
-  def run(): Unit = {
+  def run(): Unit = orc.util.Profiler.measureInterval(0L, 'Group_onDiscorporate) {
     group.onDiscorporate()
   }
 

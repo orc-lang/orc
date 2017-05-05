@@ -132,17 +132,26 @@ class SimpleWorkStealingScheduler(
       while (!isSchedulerShuttingDown && !isShuttingDown) {
         val t = next()
         if (t != null) {
-          beforeExecute(this, t)
+          orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_beforeExecute) {
+            beforeExecute(this, t)
+          }
           try {
-            if (t.nonblocking) {
-              t.run()
-            } else {
-              potentiallyBlocking(t.run())
+            val tClassName = t.getClass.getSimpleName
+            orc.util.Profiler.measureInterval(0L, Symbol(tClassName+"_run *")) {
+              if (t.nonblocking) {
+                t.run()
+              } else {
+                potentiallyBlocking(t.run())
+              }
             }
-            afterExecute(this, t, null)
+            orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) {
+              afterExecute(this, t, null)
+            }
           } catch {
             case ex: Exception =>
-              afterExecute(this, t, ex)
+              orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) {
+                afterExecute(this, t, ex)
+              }
           }
         }
       }

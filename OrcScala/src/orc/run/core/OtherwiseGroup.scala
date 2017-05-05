@@ -61,7 +61,7 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
     parent.discorporate(this)
   }
 
-  override def check(t: Blockable) {
+  override def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'OtherwiseGroup_check) {
     synchronized {
       state match {
         case LeftSidePublished => { t.halt() }

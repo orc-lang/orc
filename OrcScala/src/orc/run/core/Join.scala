@@ -95,7 +95,7 @@ class Join(val params: List[Binding], val waiter: Blockable, val runtime: OrcRun
     }
   }
 
-  def check(t: Blockable) = {
+  def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'Join_check) {
     synchronized { state } match {
       case JoinInProgress(_) => throw new AssertionError(s"Spurious check on Join: $this")
       case JoinHalted => t.awakeStop()
@@ -109,7 +109,7 @@ class Join(val params: List[Binding], val waiter: Blockable, val runtime: OrcRun
 class NonhaltingJoin(val params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime) extends JoinBase {
   def halt(index: Int) = set(index, BoundStop)
 
-  def check(t: Blockable) = {
+  def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'NonhaltingJoin_check) {
     synchronized { state } match {
       case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
       case JoinHalted => throw new AssertionError("NonhaltingJoin halted")
@@ -137,7 +137,7 @@ class JoinItem(source: JoinBase, index: Int) extends Blockable {
     setQuiescent()
   }
 
-  def run() { obstacle foreach { _.check(this) } }
+  def run(): Unit = orc.util.Profiler.measureInterval(0L, 'JoinItem_run) { obstacle foreach { _.check(this) } }
 
   override def unsetQuiescent() {
     source.waiter.unsetQuiescent()
