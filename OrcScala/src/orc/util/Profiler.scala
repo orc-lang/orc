@@ -24,6 +24,11 @@ package orc.util
   *
   * (Location ID Longs are taken as arguments, but not currently used.)
   *
+  * Differentiating usage of Logger, Tracer, and Profiler: Logging is intended
+  * for abnormal or significant events.  Tracing is intended for recording
+  * routine events on an object for debugging.  Profiling is intended for
+  * performance measurement.
+  *
   * @author jthywiss
   */
 object Profiler {

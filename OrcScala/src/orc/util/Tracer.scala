@@ -25,6 +25,11 @@ package orc.util
   *
   * At Orc startup, event-publishing subsystems register event type IDs/names.
   *
+  * Differentiating usage of Logger, Tracer, and Profiler: Logging is intended
+  * for abnormal or significant events.  Tracing is intended for recording
+  * routine events on an object for debugging.  Profiling is intended for
+  * performance measurement.
+  *
   * @author jthywiss
   */
 object Tracer {

@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 10, 2010.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -50,6 +50,11 @@ import scala.annotation.elidable
   * </li><li>
   * <strong>FINEST</strong> indicates a highly detailed tracing message.
   * </li></ul>
+  * <p>
+  * Differentiating usage of Logger, Tracer, and Profiler: Logging is intended
+  * for abnormal or significant events.  Tracing is intended for recording
+  * routine events on an object for debugging.  Profiling is intended for
+  * performance measurement.
   *
   * @author jthywiss
   */
