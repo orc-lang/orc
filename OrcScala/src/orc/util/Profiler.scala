@@ -28,7 +28,7 @@ package orc.util
   */
 object Profiler {
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
-  final val profilerOn = true
+  final val profilerOn = false
 
   private final val profilingAccumulatorsTL = if (profilerOn) new ThreadLocal[ProfilingAccumulators]() {
     override protected def initialValue = new ProfilingAccumulators(Thread.currentThread().getId)
