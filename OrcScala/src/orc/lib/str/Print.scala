@@ -14,6 +14,7 @@ package orc.lib.str
 
 import orc.values.sites.Site1
 import orc.values.sites.TypedSite
+import orc.values.sites.Range
 import orc.types.SimpleFunctionType
 import orc.types.SignalType
 import orc.types.Top
@@ -37,6 +38,7 @@ abstract class PrintSite extends Site1 with TypedSite {
 
   def orcType = SimpleFunctionType(Top, SignalType)
 
+  override def publications: Range = super.publications intersect Range(1, 1)
 }
 
 object Print extends PrintSite {

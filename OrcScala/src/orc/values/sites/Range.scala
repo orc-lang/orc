@@ -102,6 +102,8 @@ case class Range(mini: Int, maxi: Option[Int]) {
   def mayHalt = {
     Range(0, maxi)
   }
+
+  override def toString() = s"<$mini-${maxi.getOrElse("ω")}>"
 }
 
 object Range {

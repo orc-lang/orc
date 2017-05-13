@@ -29,7 +29,7 @@ abstract class Analyzer {
         case Some((node, rest)) => {
           val inState = inputs(node).map(states.getOrElse(_, initialState)).fold(initialState)(combine)
           val oldState = states.getOrElse(node, initialState)
-          val (newState, newNodes) = transfer(node, oldState, inState, states)
+          val (newState, newNodes) = transfer(node, oldState, inState, states.withDefaultValue(initialState))
           val retroactiveWork = newNodes.filter(n => inputs(n).exists(states.contains(_)))
           val (newStates, newWork) = if(states.contains(node) && oldState == newState) {
             (states, retroactiveWork.foldLeft(rest)(_.enqueue(_)))

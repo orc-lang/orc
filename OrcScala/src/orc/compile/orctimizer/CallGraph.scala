@@ -67,6 +67,9 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
    */
 
   val graph: FlowGraph = rootgraph.combinedGraph
+  
+  val entry = graph.entry
+  val exit = graph.exit
 
   val subgraphs = Set()
 
@@ -101,7 +104,13 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
 
   def valuesOf[C <: FlowValue : ClassTag](c: Node): BoundedSet[C] = {
     val CType = implicitly[ClassTag[C]]
-    results(c).collect({ case CType(t) => t})
+    results.get(c) match {
+      case Some(r) =>
+        r.collect({ case CType(t) => t})
+      case None =>
+        Logger.fine(s"The node $c does not appear in the analysis results. Using top.")
+        MaximumBoundedSet()
+    }
   }
 
   def valuesOf(e: Expression): BoundedSet[FlowValue] = {
@@ -407,14 +416,19 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
       }
 
       val nodes: Set[Node] = node match {
-        case entry @ EntryNode(n @ SpecificAST(Call(target, args, _), path)) =>
+        case entry @ EntryNode(n @ SpecificAST(call@Call(target, args, _), path)) =>
           val exit = ExitNode(n)
           states.get(ValueNode(target, path)) match {
             case Some(targets) =>
               // TODO: Make sure this properly handles totally unknown calls. MaximumBoundedSet()
 
-              // Select all callables with the correct arity.
-              val callables = targets.collect({ case c: CallableValue if c.callable.formals.size == args.size => c })
+              // Select all callables with the correct arity and correct kind.
+              val callables = targets.collect({ 
+                case c@CallableValue(callable: Def, _) if callable.formals.size == args.size && call.isInstanceOf[CallDef] => 
+                  c 
+                case c@CallableValue(callable: Site, _) if callable.formals.size == args.size && call.isInstanceOf[CallSite] => 
+                  c 
+                })
               // Build edges for arguments of this call site to all targets
               val argEdges = for {
                 cs <- callables.values.toSet[Set[CallableValue]]

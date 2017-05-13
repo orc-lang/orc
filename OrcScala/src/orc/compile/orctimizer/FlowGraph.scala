@@ -355,7 +355,7 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     override def group: AnyRef = this
   }
 
-  // FIXME: I think this may not be needed, however it's not clear where to store the nested flowgraph if callables are just VariableNodes.
+  // TODO: I think this may not be needed, however it's not clear where to store the nested flowgraph if callables are just VariableNodes.
   case class CallableNode(location: SpecificAST[Callable], flowgraph: FlowGraph) extends Node with ValueFlowNode with WithSpecificAST {
   }
 
@@ -451,7 +451,7 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
   }
 
   case class UseEdge(from: ValueFlowNode, to: Node) extends Edge with DefUseEdge {
-    override def label = "" // ‣
+    override def label = "‣"
   }
 
   // Value flow edges
@@ -461,6 +461,6 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
   }
 
   case class ValueEdge(from: Node, to: Node) extends Edge with ValueFlowEdge {
-    override def label = ""
+    override def label = "▾"
   }
 }
