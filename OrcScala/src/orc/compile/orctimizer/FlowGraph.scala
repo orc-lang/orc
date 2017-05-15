@@ -121,17 +121,14 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
               case FieldFuture(e) =>
                 //Logger.fine(s"Processing field $b with $potentialPath")
                 val se = SpecificAST(e, b :: potentialPath)
-                val tmp = FutureFieldNode(astInScope(nw), f)
+                //val tmp = FutureFieldNode(astInScope(nw), f)
                 addEdges(
                   TransitionEdge(entry, "New-Spawn", EntryNode(se)),
-                  ValueEdge(ExitNode(se), tmp),
-                  ValueEdge(tmp, exit))
+                  UseEdge(ExitNode(se), exit))
                 process(e, b :: potentialPath)
               case FieldArgument(v) =>
-                val tmp = ArgumentFieldNode(astInScope(nw), f)
                 addEdges(
-                  ValueEdge(ValueNode(v, potentialPath), tmp),
-                  ValueEdge(tmp, exit))
+                  UseEdge(ValueNode(v, potentialPath), exit))
             }
           }
         case Branch(f, x, g) =>
@@ -191,7 +188,8 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
               val tmp = VariableNode(x, exit.location)
               ValueEdge(ValueNode(v, potentialPath), tmp)
           }: _*)
-          addEdges(vs.map(e => UseEdge(ValueNode(e, potentialPath), entry)): _*)
+          addEdges(vs.flatMap(e => Seq(UseEdge(ValueNode(e, potentialPath), entry),
+              UseEdge(ValueNode(e, potentialPath), exit))): _*)
           addEdges(ValueEdge(ExitNode(astInScope(f)), exit))
           recurse(f)
         case IfDef(b, f, g) =>
@@ -392,12 +390,14 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     }
   }
 
+  /*
   case class FutureFieldNode(location: SpecificAST[New], field: Field) extends Node with ValueFlowNode with WithSpecificAST {
     override def label = s"◊ $field"
   }
   case class ArgumentFieldNode(location: SpecificAST[New], field: Field) extends Node with ValueFlowNode with WithSpecificAST {
     override def label = s"$field"
   }
+  */
 
   case class EntryNode(location: SpecificAST[Expression]) extends Node with TokenFlowNode {
     override def label = s"⤓ ${super.label}"
@@ -454,7 +454,7 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     override def color: String = "grey"
   }
 
-  case class UseEdge(from: ValueFlowNode, to: Node) extends Edge with DefUseEdge {
+  case class UseEdge(from: Node, to: Node) extends Edge with DefUseEdge {
     override def label = "‣"
   }
 

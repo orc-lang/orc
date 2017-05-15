@@ -79,7 +79,7 @@ abstract class Analyzer {
             (states + (node -> newState), (outputs(node).map(_.node) ++ retroactiveWork).foldLeft(rest)(_.enqueue(_)))
           }
           //Logger.fine(s"Processed $node:    Queue: $rest => $newWork")
-          assert(moreCompleteOrEqual(newState, oldState), s"The new state $newState > $oldState at $node")
+          assert(moreCompleteOrEqual(newState, oldState), s"The new state (at $node)\n$newState\n is not a refinement of the old state \n$oldState")
           process(newWork, newStates)
         }
         case None => states
