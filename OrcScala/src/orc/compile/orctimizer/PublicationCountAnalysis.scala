@@ -63,7 +63,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     assert(futureValues.forall(_ <= 1))
 
     def combine(o: PublicationInfo) =
-      PublicationInfo(applyOrOverride(publications, o.publications)(_ + _), applyOrOverride(futureValues, o.futureValues)(_ union _))
+      PublicationInfo(applyOrNone(publications, o.publications)(_ + _), applyOrNone(futureValues, o.futureValues)(_ union _))
 
     override def equals(o: Any) = o match {
       case PublicationInfo(p, f) if p == publications && f == futureValues =>
@@ -72,20 +72,32 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
         false
     }
 
-    override def hashCode() = publications.hashCode() + futureValues.hashCode()*37
-    
+    override def hashCode() = publications.hashCode() + futureValues.hashCode() * 37
+
     override def toString() = s"PublicationInfo($publications, $futureValues)"
+
+    private def optRangeLessThanOrEqual(a: Option[Range], b: Option[Range]): Boolean = {
+      (a, b) match {
+        case (_, None) => true
+        case (Some(r), Some(l)) => r supersetOf l
+        case _ => false
+      }
+    }
+
+    def moreCompleteOrEqual(o: PublicationInfo): Boolean = {
+      optRangeLessThanOrEqual(publications, o.publications) && optRangeLessThanOrEqual(futureValues, o.futureValues)
+    }
   }
   object PublicationInfo {
     val maxPublications = 5
 
     def apply(publications: Option[Range], futureValues: Option[Range]) =
       new PublicationInfo(publications.map { r =>
-        val rUpperBounded = if(r.maxi.exists(_ > maxPublications))
+        val rUpperBounded = if (r.maxi.exists(_ > maxPublications))
           Range(r.mini, None)
         else
           r
-        if(rUpperBounded.mini > maxPublications)
+        if (rUpperBounded.mini > maxPublications)
           Range(maxPublications, rUpperBounded.maxi)
         else
           rUpperBounded
@@ -99,6 +111,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     import FlowGraph._
 
     type NodeT = Node
+    type EdgeT = Edge
     type StateT = PublicationInfo
 
     def initialNodes: collection.Set[Node] = {
@@ -108,62 +121,55 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     }
     val initialState: PublicationInfo = PublicationInfo(None, None)
 
-    def inputs(node: Node): collection.Set[Node] = {
-      node.inEdges.map(_.from)
+    def inputs(node: Node): collection.Set[ConnectedNode] = {
+      node.inEdges.map(e => ConnectedNode(e, e.from))
     }
 
-    def outputs(node: Node): collection.Set[Node] = {
-      node.outEdges.map(_.to)
+    def outputs(node: Node): collection.Set[ConnectedNode] = {
+      node.outEdges.map(e => ConnectedNode(e, e.to))
     }
 
-    def transfer(node: Node, old: PublicationInfo, messedup_inState: PublicationInfo, states: StateMap): (PublicationInfo, Set[Node]) = {
-      // Compute the inState manually since it requires knowing the in edge types.
-      def inStateOf[T <: Edge: ClassTag](n: Node) = {
-        val ins = n.inEdgesOf[T].toSeq.map(_.from)
-        val inVals = ins.map(n => states(n))
-        val in = inVals.fold(initialState)(_ combine _)
-        //Logger.fine(s"Processing $n in state of ${implicitly[ClassTag[T]].runtimeClass.getSimpleName}: ins = $ins; vals = $inVals\n    ===>  $in")
-        in
-      }
-      def tokenOneOfOf[T <: Edge: ClassTag](n: Node) = {
-        val ins = node.inEdgesOf[T].toSeq.map(_.from)
-        val inVals = ins.map(n => Some(states(n).publications.getOrElse(Range(0, None))))
-        val in = inVals.fold(None)(applyOrOverride(_, _)(_ union _))
-        //Logger.fine(s"Processing $n tokenOneOf of ${implicitly[ClassTag[T]].runtimeClass.getSimpleName}: ins = $ins; vals = $inVals\n    ===>  $in")
-        in
+    def transfer(node: Node, old: PublicationInfo, states: States): (PublicationInfo, Set[Node]) = {
+      lazy val inStateValue = states.inState[ValueEdge]()
+      lazy val inStateTokenOneOf = states.inStateProcessed[TokenFlowEdge, Option[Range]](
+        None, _.publications,
+        applyOrNone(_, _)(_ union _))
+
+      lazy val inStateFlow = node match {
+        case EntryNode(SpecificAST(ast, Otherwise(l, r) :: _)) if ast == r =>
+          // If we are on the right of an Otherwise then we need to transfer the pub count by the HappensBefore edge
+          states.inState[HappensBeforeEdge]()
+        case EntryNode(SpecificAST(ast, Callable(_, _, body, _, _, _) :: _)) if ast == body =>
+          // If we are the body of a call. We need to union the publication inputs.
+          PublicationInfo(inStateTokenOneOf, None)
+        case _ =>
+          states.inState[TokenFlowEdge]()
       }
 
-      lazy val inStateValue = inStateOf[ValueEdge](node)
-      lazy val inStateToken = inStateOf[TokenFlowEdge](node)
-      lazy val inStateTokenOneOf = tokenOneOfOf[TokenFlowEdge](node)
-      lazy val inStateUse = inStateOf[UseEdge](node)
-      lazy val defaultFlowInState = PublicationInfo(inStateToken.publications, inStateValue.futureValues)
+      lazy val inStateUse = states.inState[UseEdge]()
+      lazy val defaultFlowInState = PublicationInfo(inStateFlow.publications, inStateValue.futureValues)
+
+      Logger.fine(s"Processing $node: inState: value = $inStateValue, flow = $inStateFlow, use = $inStateUse\ninputs: ${inputs(node)}")
 
       val MaximumBoundedSet = CallGraph.BoundedSet.MaximumBoundedSet[CallGraph.FlowValue]
 
       val outState = node match {
-        case EntryNode(SpecificAST(ast, Otherwise(l, r) :: _)) if ast == r =>
-          // If we are on the right of an Otherwise then we need to transfer the pub count by the HappensBefore edge
-          inStateOf[HappensBeforeEdge](node)
-        case EntryNode(SpecificAST(ast, Callable(_, _, body, _, _, _) :: _)) if ast == body =>
-          // If we are the body of a call. We need to union the publication inputs.
-          PublicationInfo(inStateTokenOneOf, None)
         case EntryNode(SpecificAST(ast, _)) =>
           ast match {
             case n if node == graph.entry =>
               PublicationInfo(Some(Range(1, 1)), None)
             case Force(_, _, b, _) =>
-              PublicationInfo(applyOrNone(inStateToken.publications, inStateUse.futureValues)(_ * _), inStateValue.futureValues)
+              PublicationInfo(applyOrNone(inStateFlow.publications, inStateUse.futureValues)(_ * _), inStateValue.futureValues)
             case _: BoundVar | Branch(_, _, _) | Parallel(_, _) | Future(_) | Constant(_) |
-                 Call(_, _, _) | IfDef(_, _, _) | Trim(_) | DeclareCallables(_, _) | Otherwise(_, _) =>
+              Call(_, _, _) | IfDef(_, _, _) | Trim(_) | DeclareCallables(_, _) | Otherwise(_, _) =>
               defaultFlowInState
           }
-        case ExitNode(spAst@SpecificAST(ast, _)) =>
+        case ExitNode(spAst @ SpecificAST(ast, _)) =>
           ast match {
             case Future(_) =>
-              PublicationInfo(inStateToken.publications, inStateValue.publications.map(_.limitTo(1)))
+              PublicationInfo(inStateFlow.publications, inStateValue.publications.map(_.limitTo(1)))
             case CallSite(target, _, _) => {
-              lazy val entryInStateHappensBefore = inStateOf[HappensBeforeEdge](EntryNode(spAst))
+              lazy val inStateHappensBefore = states.inState[HappensBeforeEdge]()
               import CallGraph._
               val possibleV = graph.valuesOf[FlowValue](ValueNode(target, spAst.subtreePath))
               val extPubs = possibleV match {
@@ -172,7 +178,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
                     case ExternalSiteValue(site) =>
                       site.publications
                   }
-                  entryInStateHappensBefore.publications.map(_ * pubss.reduce(_ union _))
+                  inStateHappensBefore.publications.map(_ * pubss.reduce(_ union _))
                 case _ =>
                   None
               }
@@ -194,7 +200,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
               PublicationInfo(p, Some(Range(1, 1)))
             }
             case CallDef(target, _, _) =>
-              PublicationInfo(inStateTokenOneOf.orElse(Some(Range(0, None))), Some(Range(1, 1)))
+              PublicationInfo(inStateTokenOneOf, Some(Range(1, 1)))
             case IfDef(v, l, r) => {
               // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
               import CallGraph._
@@ -229,7 +235,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
               realizableIn
             }
             case Trim(_) =>
-              PublicationInfo(inStateToken.publications.map(_.limitTo(1)), inStateValue.futureValues)
+              PublicationInfo(inStateFlow.publications.map(_.limitTo(1)), inStateValue.futureValues)
             case Otherwise(l, r) =>
               val lState = states(ExitNode(SpecificAST(l, spAst.subtreePath)))
               val rState = states(ExitNode(SpecificAST(r, spAst.subtreePath)))
@@ -240,7 +246,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
               } else {
                 PublicationInfo(applyOrNone(lState.publications.map(_ intersect Range(1, None)), rState.publications)(_ union _), inStateValue.futureValues)
               }
-            case _: BoundVar | Branch(_, _, _) | Force(_, _, _, _) | Parallel(_, _) | Constant(_) | DeclareCallables(_,_) =>
+            case _: BoundVar | Branch(_, _, _) | Force(_, _, _, _) | Parallel(_, _) | Constant(_) | DeclareCallables(_, _) =>
               defaultFlowInState
           }
         case VariableNode(x, ast) =>
@@ -260,12 +266,18 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
         case ArgumentFieldNode(_, _) =>
           inState*/
       }
-      Logger.fine(s"Processing $node:  old=$old    out=$outState")
+      Logger.fine(s"Processed $node:  old=$old    out=$outState")
 
       (outState, Set())
     }
 
-    def combine(a: PublicationInfo, b: PublicationInfo) = a combine b
+    def combine(a: PublicationInfo, b: PublicationInfo) = {
+      a combine b
+    }
+
+    def moreCompleteOrEqual(a: PublicationInfo, b: PublicationInfo): Boolean = {
+      a moreCompleteOrEqual b
+    }
   }
 
 }

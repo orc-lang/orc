@@ -202,6 +202,7 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
             TransitionEdge(ExitNode(astInScope(g)), "IfDef-R", exit))
           addEdges(
             UseEdge(ValueNode(b, potentialPath), entry),
+            UseEdge(ValueNode(b, potentialPath), exit),
             ValueEdge(ExitNode(astInScope(f)), exit),
             ValueEdge(ExitNode(astInScope(g)), exit))
           recurse(f)
@@ -213,7 +214,10 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
           }
           addEdges(AfterEdge(entry, trans, exit))
           addEdges(args.map(e => UseEdge(ValueNode(e, potentialPath), entry)): _*)
-          addEdges(UseEdge(ValueNode(target, potentialPath), entry))
+          addEdges(args.map(e => UseEdge(ValueNode(e, potentialPath), exit)): _*)
+          addEdges(
+              UseEdge(ValueNode(target, potentialPath), entry),
+              UseEdge(ValueNode(target, potentialPath), exit))
         case DeclareCallables(callables, body) =>
           callables.map(_.name) foreach { declareVariable(entry, _) }
 

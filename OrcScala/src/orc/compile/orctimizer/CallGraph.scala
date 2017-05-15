@@ -67,7 +67,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
    */
 
   val graph: FlowGraph = rootgraph.combinedGraph
-  
+
   val entry = graph.entry
   val exit = graph.exit
 
@@ -81,7 +81,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
 
   val (additionalEdges, results) = {
     val vrs = new CallGraphAnalyzer(graph)
-    val r = vrs().filterNot(_._2.isInstanceOf[MaximumBoundedSet[_]])
+    val r = vrs()
     (vrs.additionalEdges ++ vrs.additionalEdgesNonValueFlow, r)
   }
 
@@ -145,7 +145,12 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
 
   override def computedNodeDotAttributes(n: Node): DotAttributes = {
     (if (n == graph.entry) Map("color" -> "green", "peripheries" -> "2") else Map()) ++
-      (if (n == graph.exit) Map("color" -> "red", "peripheries" -> "2") else Map())
+      (if (n == graph.exit) Map("color" -> "red", "peripheries" -> "2") else Map()) ++
+      (results.get(n) match {
+        case Some(r) =>
+          Map("label" -> s"${n.label}\n${r.values.map(_.mkString("{",",","}")).getOrElse("Universe")}")
+        case None => Map()
+      })
   }
 }
 
@@ -279,6 +284,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     import FlowGraph._
 
     type NodeT = Node
+    type EdgeT = Edge
     type StateT = State
 
     def initialNodes: collection.Set[Node] = {
@@ -289,7 +295,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
         case n @ ValueNode(Constant(_)) => n
       }
     }
-    def initialState: BoundedSet[FlowValue] = ConcreteBoundedSet(Set[FlowValue]())
+    val initialState: BoundedSet[FlowValue] = ConcreteBoundedSet(Set[FlowValue]())
 
     val additionalEdges = mutable.HashSet[ValueFlowEdge]()
     val additionalEdgesNonValueFlow = mutable.HashSet[Edge]()
@@ -322,15 +328,17 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
       node.outEdgesOf[ValueFlowEdge] ++ additionalEdges.filter(_.from == node)
     }
 
-    def inputs(node: Node): collection.Set[Node] = {
-      valueInputs(node).map(_.from) ++ node.inEdgesOf[UseEdge].map(_.from).filter(_.ast.isInstanceOf[Call])
+    def inputs(node: Node): collection.Set[ConnectedNode] = {
+      valueInputs(node).map(e => ConnectedNode(e, e.from)) ++ node.inEdgesOf[UseEdge].filter(_.to.ast.isInstanceOf[Call]).map(e => ConnectedNode(e, e.from))
     }
 
-    def outputs(node: Node): collection.Set[Node] = {
-      valueOutputs(node).map(_.to) ++ node.outEdgesOf[UseEdge].map(_.to).filter(_.ast.isInstanceOf[Call])
+    def outputs(node: Node): collection.Set[ConnectedNode] = {
+      valueOutputs(node).map(e => ConnectedNode(e, e.to)) ++ node.outEdgesOf[UseEdge].filter(_.to.ast.isInstanceOf[Call]).map(e => ConnectedNode(e, e.to))
     }
 
-    def transfer(node: Node, old: State, inState: State, states: StateMap): (State, Set[Node]) = {
+    def transfer(node: Node, old: State, states: States): (State, Set[Node]) = {
+      def inState = states.inState[ValueFlowEdge]()
+
       def buildSingleFieldObject(nw: SpecificAST[New], field: Field)(fieldValue: mutable.Map[Node, ObjectStruture] => BoundedSet[FieldContent]): State = {
         val nwn = ExitNode(nw)
         val additionalStructures = mutable.Map[Node, ObjectStruture]()
@@ -340,7 +348,58 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
         BoundedSet(ObjectValue(nwn, structs.toMap))
       }
 
-      // Logger.fine(s"Processing node: ${shortString(node)}    $inState ${inputs(node)}")
+      //Logger.fine(s"Processing node: ${shortString(node)}    $inState $old ${inputs(node)}")
+
+      // Nodes must be computed before the state because the computation adds the additional edges to the list.
+      val nodes: Set[Node] = node match {
+        case entry @ EntryNode(n @ SpecificAST(call@Call(target, args, _), path)) =>
+          val exit = ExitNode(n)
+          states.get(ValueNode(target, path)) match {
+            case Some(targets) =>
+              // TODO: Make sure this properly handles totally unknown calls. MaximumBoundedSet()
+
+              // Select all callables with the correct arity and correct kind.
+              val callables = targets.collect({
+                case c@CallableValue(callable: Def, _) if callable.formals.size == args.size && call.isInstanceOf[CallDef] =>
+                  c
+                case c@CallableValue(callable: Site, _) if callable.formals.size == args.size && call.isInstanceOf[CallSite] =>
+                  c
+                })
+              // Build edges for arguments of this call site to all targets
+              val argEdges = for {
+                cs <- callables.values.toSet[Set[CallableValue]]
+                c <- cs
+                (formal, actual) <- (c.graph.arguments zip args)
+              } yield {
+                ValueEdge(ValueNode(actual, path), formal)
+              }
+              // Build edges for return value of this call site from all targets
+              val retEdges = for {
+                cs <- callables.values.toSet[Set[CallableValue]]
+                c <- cs
+              } yield {
+                ValueEdge(c.graph.exit, exit)
+              }
+              // The filter has a side effects. I feel appropriately bad about myself.
+              val newEdges = (argEdges ++ retEdges) filter addEdge
+
+              // Add transitions into and out of the function body based on target results.
+              for {
+                cs <- callables.values.toSet[Set[CallableValue]]
+                c <- cs
+              } yield {
+                 addEdge(TransitionEdge(entry, "Call-Inf", c.graph.entry))
+                 addEdge(TransitionEdge(c.graph.exit, "Return-Inf", exit))
+              }
+
+              newEdges.map(_.to)
+            case None =>
+              Set()
+          }
+        case _ =>
+          Set()
+      }
+
       val state: State = node match {
         case ValueNode(Constant(v: ExtSite)) => inState + ExternalSiteValue(v)
         case ValueNode(Constant(v)) => inState + DataValue(v)
@@ -403,72 +462,36 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
             Set(bss.fold(ObjectValue(node, Map(node -> Map())))(_ ++ _))
           }
+        case ExitNode(SpecificAST(Call(target, args, _), path)) =>
+          states.get(ValueNode(target, path)) match {
+            case Some(targets) if targets.exists(v => !v.isInstanceOf[CallableValue]) =>
+              MaximumBoundedSet()
+            case _ =>
+              inState
+          }
         case ExitNode(_) if valueInputs(node).nonEmpty =>
-          // Passthrough on publications
+          // Pass through publications
           inState
         case EntryNode(SpecificAST(Call(target, args, _), path)) =>
           // We don't really need this result so this value shouldn't matter. We only process these
           // entries because we need to add nodes for them.
-          MaximumBoundedSet()
+          inState
         case _ =>
-          // Logger.warning(s"Unknown node given worst case result: $node")
+          Logger.warning(s"Unknown node given worst case result: $node")
           MaximumBoundedSet()
       }
 
-      val nodes: Set[Node] = node match {
-        case entry @ EntryNode(n @ SpecificAST(call@Call(target, args, _), path)) =>
-          val exit = ExitNode(n)
-          states.get(ValueNode(target, path)) match {
-            case Some(targets) =>
-              // TODO: Make sure this properly handles totally unknown calls. MaximumBoundedSet()
-
-              // Select all callables with the correct arity and correct kind.
-              val callables = targets.collect({ 
-                case c@CallableValue(callable: Def, _) if callable.formals.size == args.size && call.isInstanceOf[CallDef] => 
-                  c 
-                case c@CallableValue(callable: Site, _) if callable.formals.size == args.size && call.isInstanceOf[CallSite] => 
-                  c 
-                })
-              // Build edges for arguments of this call site to all targets
-              val argEdges = for {
-                cs <- callables.values.toSet[Set[CallableValue]]
-                c <- cs
-                (formal, actual) <- (c.graph.arguments zip args)
-              } yield {
-                ValueEdge(ValueNode(actual, path), formal)
-              }
-              // Build edges for return value of this call site from all targets
-              val retEdges = for {
-                cs <- callables.values.toSet[Set[CallableValue]]
-                c <- cs
-              } yield {
-                ValueEdge(c.graph.exit, exit)
-              }
-              // The filter has a side effects. I feel appropriately bad about myself.
-              val newEdges = (argEdges ++ retEdges) filter addEdge
-
-              // Add transitions into and out of the function body based on target results.
-              for {
-                cs <- callables.values.toSet[Set[CallableValue]]
-                c <- cs
-              } yield {
-                 addEdge(TransitionEdge(entry, "Call-Inf", c.graph.entry))
-                 addEdge(TransitionEdge(c.graph.exit, "Return-Inf", exit))
-              }
-
-              newEdges.map(_.to)
-            case None =>
-              Set()
-          }
-        case _ =>
-          Set()
-      }
-
-      // Logger.fine(s"Processed node: ${shortString(node)} ;;; $state ;;; $nodes")
+      //Logger.fine(s"Processed node: ${shortString(node)} ;;; $state ;;; $nodes")
 
       (state, nodes)
     }
 
     def combine(a: State, b: State) = a ++ b
+
+    def moreCompleteOrEqual(a: BoundedSet[FlowValue], b: BoundedSet[FlowValue]): Boolean = {
+      // TODO: Needs to handle Flow values that are actually sets correctly
+      
+      a supersetOf b
+    }
   }
 }

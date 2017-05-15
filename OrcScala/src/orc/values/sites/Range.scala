@@ -87,6 +87,22 @@ case class Range(mini: Int, maxi: Option[Int]) {
     })
   }
 
+  /**
+    */
+  def supersetOf(r: Range) = {
+    mini <= r.mini && ((maxi, r.maxi) match {
+      case (Some(n), Some(m)) => n >= m
+      case (None, _) => true
+      case _ => false
+    })
+  }
+
+  /**
+    */
+  def subsetOf(r: Range) = {
+    r supersetOf this
+  }
+
   /** Return a range similar to this but that upper bounded by lim. Unlike intersection,
     * if lim is less than the lower bound of this return Range(lim, lim).
     */

@@ -46,6 +46,11 @@ abstract class BoundedSetModule {
 
     def modify[U >: TL <: TU](f: Set[T] => Set[U]): BoundedSet[U]
     def flatModify[U >: TL <: TU](f: Set[T] => BoundedSet[U]): BoundedSet[U]
+    
+    def subsetOf(o: BoundedSet[T]): Boolean
+    def supersetOf(o: BoundedSet[T]): Boolean = o.subsetOf(this)
+    
+    def exists(f: (T) => Boolean): Boolean
 
     override def hashCode() = values.hashCode()
     override def equals(o: Any) = o match {
@@ -80,6 +85,13 @@ abstract class BoundedSetModule {
     def flatModify[U >: TL <: TU](f: Set[T] => BoundedSet[U]): BoundedSet[U] = f(s)
 
     override def toString() = s"ConcreteBoundedSet(${s.mkString(", ")})"
+
+    def subsetOf(o: BoundedSet[T]): Boolean = o match {
+      case ConcreteBoundedSet(s1) => s subsetOf s1
+      case _ => true
+    }
+
+    def exists(f: (T) => Boolean): Boolean = s.exists(f)
   }
 
   class ConcreteBoundedSetObject {
@@ -98,5 +110,13 @@ abstract class BoundedSetModule {
     def flatModify[U >: TL <: TU](f: Set[T] => BoundedSet[U]): BoundedSet[U] = MaximumBoundedSet()
 
     def values = None
+
+    def subsetOf(o: BoundedSet[T]): Boolean = o match {
+      case MaximumBoundedSet() => true
+      case _ => false
+    }
+    
+    // TODO: This is not actually strictly correct. f could always be false.
+    def exists(f: (T) => Boolean): Boolean = true
   }
 }
