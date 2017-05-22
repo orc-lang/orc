@@ -28,7 +28,7 @@ case class SpecificAST[+T <: NamedAST](ast: T, path: List[NamedAST]) extends Pre
   def subtreePath = ast :: path
 
   override def toString() = {
-    s"$productPrefix($ast, ${path.map(SpecificAST.shortString).mkString("[", ", ", "]")})"
+    s"$productPrefix($ast, ${path.take(4).map(SpecificAST.shortString).mkString("[", ", ", ", ...]")})"
   }
 }
 

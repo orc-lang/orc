@@ -134,17 +134,17 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
       get(f) map { flatten }
     }
 
-    def combineStored(a: PublicationInfo, b: PublicationInfo): PublicationInfo = {
+    /*def combineStored(a: PublicationInfo, b: PublicationInfo): PublicationInfo = {
       a combine b
-    }
+    }*/
 
     def copyObject(root: FlowGraph.Node, structs: Map[FlowGraph.Node, Map[Field, PublicationInfo]]): ObjectValue = {
       ObjectValue(root, structs)
     }
 
-    def subsetOfStored(a: PublicationInfo, b: PublicationInfo): Boolean = {
+    /*def subsetOfStored(a: PublicationInfo, b: PublicationInfo): Boolean = {
       b moreCompleteOrEqual a
-    }
+    }*/
   }
 
   object ObjectValue extends ObjectHandlingCompanion {
@@ -153,13 +153,13 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     type Instance = ObjectValue
   }
 
-  class PublicationInfo(val publications: Option[Range], val futureValues: Option[Range], val fields: BoundedSet[ObjectInfo]) {
+  class PublicationInfo(val publications: Option[Range], val futureValues: Option[Range], val fields: BoundedSet[ObjectInfo]) extends LatticeValue[PublicationInfo] {
     assert(futureValues.forall(_ <= 1))
 
     def combine(o: PublicationInfo) = {
       PublicationInfo(
           applyOrOverride(publications, o.publications)(_ + _),
-          applyOrNone(futureValues, o.futureValues)(_ union _),
+          applyOrOverride(futureValues, o.futureValues)(_ union _),
           fields ++ o.fields)
     }
 
@@ -185,6 +185,8 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
         case _ => false
       }
     }
+    
+    def lessThan(o: PublicationInfo) = o moreCompleteOrEqual this
 
     def moreCompleteOrEqual(o: PublicationInfo): Boolean = {
       val fieldsMoreComplete = {
@@ -244,16 +246,33 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     def initialNodes: collection.Set[Node] = {
       graph.nodesBy {
         case n @ (ValueNode(_) | VariableNode(_, _)) => n
+        case n @ ExitNode(SpecificAST(Stop(), _)) => n
       } + graph.entry
     }
     val initialState: PublicationInfo = PublicationInfo(None, None, BoundedSet())
 
     def inputs(node: Node): collection.Set[ConnectedNode] = {
-      node.inEdges.map(e => ConnectedNode(e, e.from))
+      node.inEdges.map(e => ConnectedNode(e, e.from)) ++ {
+        node match {
+          case ExitNode(b@SpecificAST(Branch(l, _, _), _)) =>
+            val n = ExitNode(SpecificAST(l, b.subtreePath))
+            Set(ConnectedNode(UseEdge(n, node), n))
+          case _ =>
+            Set()
+        }
+      }
     }
 
     def outputs(node: Node): collection.Set[ConnectedNode] = {
-      node.outEdges.map(e => ConnectedNode(e, e.to))
+      node.outEdges.map(e => ConnectedNode(e, e.to)) ++ {
+        node match {
+          case ExitNode(spAst @ SpecificAST(ast, Branch(l, _, _) :: _)) if ast == l =>
+            val n = ExitNode(SpecificAST(spAst.path.head.asInstanceOf[Branch], spAst.path.tail))
+            Set(ConnectedNode(UseEdge(node, n), n))
+          case _ =>
+            Set()
+        }
+      }
     }
 
     def transfer(node: Node, old: PublicationInfo, states: States): (PublicationInfo, Set[Node]) = {
@@ -290,7 +309,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
             case n if node == graph.entry =>
               PublicationInfo(Some(Range(1, 1)), None, BoundedSet())
             case Force(_, _, b, _) =>
-              PublicationInfo(applyOrNone(inStateFlow.publications, inStateUse.futureValues)(_ * _), None, BoundedSet())
+              PublicationInfo(inStateUse.futureValues, None, BoundedSet())
             case _: BoundVar | Branch(_, _, _) | Parallel(_, _) | Future(_) | Constant(_) |
               Call(_, _, _) | IfDef(_, _, _) | Trim(_) | DeclareCallables(_, _) | Otherwise(_, _) |
               New(_, _, _, _) | FieldAccess(_, _) | DeclareType(_, _, _) | HasType(_, _) | Stop() =>
@@ -395,18 +414,30 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
             case Otherwise(l, r) =>
               val lState = states(ExitNode(SpecificAST(l, spAst.subtreePath)))
               val rState = states(ExitNode(SpecificAST(r, spAst.subtreePath)))
+              // TODO: Unioning in old basically just forces monotonicity at the cost of precision. Once the TODO below is fixed this should go away too.
+              PublicationInfo(applyOrOverride(applyOrOverride(lState.publications, rState.publications)(_ union _), old.publications)(_ union _), inStateValue.futureValues, inStateValue.fields)
+              // TODO: Ideally this would handle useful special cases (as below). However because changes need to be monotonic they cannot since it could trigger jumping from lstate to rstate.
+              //    Part of the issue is that I am allowing the number of publications to increase in some cases not just the range to widen. 
+              //    I think I need to figure out how to delay range computation a bit so that it will never need increase the number of publications only widen the range. I have no idea how to make that work with cycles though.
+              /*
               if (lState.publications.exists(_ > 0)) {
                 lState
               } else if (lState.publications.exists(_ only 0)) {
                 rState
-              } else {
+              } else if (lState.publications.isDefined) {
                 PublicationInfo(applyOrOverride(lState.publications.map(_ intersect Range(1, None)), rState.publications)(_ union _), inStateValue.futureValues, inStateValue.fields)
+              } else {
+                initialState
               }
+              */
             case Stop() =>
               PublicationInfo(Some(Range(0, 0)), None, BoundedSet())
             case Force(_, _, b, _) =>
               PublicationInfo(applyOrNone(inStateFlow.publications, inStateUse.futureValues)(_ * _), inStateValue.futureValues, inStateValue.fields)
-            case _: BoundVar | Branch(_, _, _) | Parallel(_, _) | Constant(_) |
+            case Branch(_, _, _) =>
+              // TODO: Check and make sure all the exit counts are the number of exits from that node if one entered as designed.
+              PublicationInfo(applyOrNone(inStateFlow.publications, inStateUse.publications)(_ * _), inStateValue.futureValues, inStateValue.fields)
+            case _: BoundVar | Parallel(_, _) | Constant(_) |
                 DeclareCallables(_, _) | DeclareType(_, _, _) | HasType(_, _) =>
               defaultFlowInState
           }

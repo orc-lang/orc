@@ -9,6 +9,8 @@ import orc.ast.orctimizer.named.FieldFuture
 import orc.ast.orctimizer.named.FieldArgument
 import orc.ast.orctimizer.named.FieldValue
 import orc.compile.orctimizer.FlowGraph.ValueNode
+import orc.compile.Logger
+import orc.compile.flowanalysis.LatticeValue
 
 trait ObjectHandling {
   self =>
@@ -18,7 +20,7 @@ trait ObjectHandling {
     type StoredValueT = self.StoredValueT
   }
   type NodeT
-  type StoredValueT
+  type StoredValueT <: LatticeValue[StoredValueT]
   type ObjectStructure = Map[Field, StoredValueT]
 
   val root: NodeT
@@ -26,8 +28,8 @@ trait ObjectHandling {
 
   require(structures contains root, s"Root $root is not available in $structures")
 
-  protected def combineStored(a: StoredValueT, b: StoredValueT): StoredValueT
-  protected def subsetOfStored(a: StoredValueT, b: StoredValueT): Boolean
+  //protected def combineStored(a: StoredValueT, b: StoredValueT): StoredValueT
+  //protected def subsetOfStored(a: StoredValueT, b: StoredValueT): Boolean
   protected def copyObject(root: NodeT, structs: Map[NodeT, ObjectStructure]): This
 
   //override def toString() = s"ObjectValue($root, ${structures(root)}, ${structures.keySet})"
@@ -50,22 +52,36 @@ trait ObjectHandling {
   def ++(o: This): This = {
     require(root == o.root, s"Both objects must have the same root. $root != ${o.root}")
     val newStruct = mergeMaps(structures, o.structures) { (s1, s2) =>
-      mergeMaps(s1, s2) { combineStored(_, _) }
+      mergeMaps(s1, s2) { _ combine _ }
     }
     copyObject(root, newStruct)
+  }
+  
+  private def structureSubsetOf(a: ObjectStructure, b: ObjectStructure) = {
+    b forall {
+      case (f, ov) =>
+        a.get(f) match {
+          case Some(tv) =>
+            val b = tv lessThan ov
+            if (!b) {
+              Logger.severe(s"Field failed subset check: $f\n${tv}\n${ov}") 
+            }
+            b
+          case None =>
+            false
+        }
+    }
   }
 
   def subsetOf(o: This): Boolean = o match {
     case o: This if this.getClass().isAssignableFrom(o.getClass()) =>
       this.root == o.root &&
-        (o.structure forall {
-          case (f, ov) =>
-            this.structure.get(f) match {
-              case Some(tv) =>
-                subsetOfStored(tv, ov)
-              case None =>
-                false
-            }
+        ((o.structures.keySet intersect structures.keySet) forall { r =>
+          val b = structureSubsetOf(structures(r), o.structures(r))
+          if (!b) {
+            Logger.severe(s"Substructure failed subset check: $r\n${structures.get(r)}\n${o.structures.get(r)}") 
+          }
+          b
         })
     case _ => false
   }
@@ -74,7 +90,7 @@ trait ObjectHandling {
 trait ObjectHandlingCompanion {
   self =>
   type NodeT >: Node
-  type StoredValueT
+  type StoredValueT <: LatticeValue[StoredValueT]
   type ObjectStructure = Map[Field, StoredValueT]
 
   type Instance <: ObjectHandling {
@@ -86,9 +102,27 @@ trait ObjectHandlingCompanion {
   def buildStructures(node: ExitNode)(processField: (FieldValue, Node, (Instance) => Unit) => StoredValueT): Map[NodeT, ObjectStructure] = {
     val ExitNode(spAst @ SpecificAST(New(self, _, bindings, _), _)) = node
 
-    val additionalStructures = mutable.Map[Node, Map[Field, StoredValueT]]()
-    def addObject(o: Instance) =
-      additionalStructures ++= o.structures.asInstanceOf[Map[Node, Map[Field, StoredValueT]]]
+    val additionalStructures = mutable.Map[NodeT, Map[Field, StoredValueT]]()
+    
+    def addStructure(root: NodeT, struct: ObjectStructure) = {
+      val existing = additionalStructures.get(root)
+      val newStruct = existing match {
+        case Some(existing) =>
+          for ((field, value) <- struct) yield {
+            (field, existing(field) combine value)
+          }
+        case None =>
+          struct
+      }
+      additionalStructures += root -> newStruct
+    }
+    
+    def addObject(o: Instance) = {
+      //additionalStructures ++= o.structures.asInstanceOf[Map[NodeT, Map[Field, StoredValueT]]]
+      for ((root, struct) <- o.structures) {
+        addStructure(root, struct)
+      }
+    }
 
     val struct: Map[Field, StoredValueT] = (for ((field, content) <- bindings) yield {
       val contentRepr = content match {
@@ -101,9 +135,10 @@ trait ObjectHandlingCompanion {
       }
       (field -> contentRepr)
     }).toMap
-
-    val structs = additionalStructures + (node -> struct)
-    // Logger.fine(s"Building SFO for: $nw ;;; $field = $fv ;;; Structs = $structs")
-    structs.toMap
+    
+    addStructure(node, struct)
+    
+    // Logger.fine(s"Building SFO for: $nw ;;; $field = $fv ;;; Structs = $additionalStructures")
+    additionalStructures.toMap
   }
 }

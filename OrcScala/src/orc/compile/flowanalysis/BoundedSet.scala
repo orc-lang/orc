@@ -32,7 +32,7 @@ abstract class BoundedSetModule {
     apply(ss.toSet)
   }
 
-  sealed abstract class BoundedSet[T >: TL <: TU] {
+  sealed abstract class BoundedSet[T >: TL <: TU] extends LatticeValue[BoundedSet[T]] {
     def union(o: BoundedSet[T]): BoundedSet[T]
     def ++(o: BoundedSet[T]): BoundedSet[T] = union(o)
     def +(o: T): BoundedSet[T] = union(BoundedSetModule.this.apply(o))
@@ -57,6 +57,9 @@ abstract class BoundedSetModule {
       case o: BoundedSet[T] => values == o.values
       case _ => false
     }
+
+    def lessThan(o: BoundedSet[T]): Boolean = subsetOf(o)
+    def combine(o: BoundedSet[T]): BoundedSet[T] = union(o)
   }
 
   class ConcreteBoundedSet[T >: TL <: TU](s: Set[T]) extends BoundedSet[T] {

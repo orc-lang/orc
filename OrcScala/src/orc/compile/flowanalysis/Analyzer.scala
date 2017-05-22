@@ -1,11 +1,18 @@
 package orc.compile.flowanalysis
 
 import scala.collection.immutable.Queue
+import scala.collection.mutable
 import scala.annotation.tailrec
 import scala.collection.immutable.HashMap
 import collection.Set
 import scala.reflect.ClassTag
 import orc.compile.Logger
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.io.File
+import java.util.logging.Level
+import java.io.FileWriter
+import orc.compile.orctimizer.FlowGraph
 
 //trait Node[T <: Node[T]] {
 //  def outputs: Set[T]
@@ -64,28 +71,85 @@ abstract class Analyzer {
   }
 
   def apply(): StateMap = {
-    @tailrec
-    def process(work: Queue[NodeT], states: StateMap): StateMap = {
-      work.dequeueOption match {
-        case Some((node, rest)) => {
-          //val ins = inputs(node)
-          //val inState = ins.map(states.getOrElse(_, initialState)).fold(initialState)(combine)
-          val oldState = states.getOrElse(node, initialState)
-          val (newState, newNodes) = transfer(node, oldState, new States(node, states))
-          val retroactiveWork = newNodes.filter(n => inputs(n).map(_.node).exists(states.contains(_)))
-          val (newStates, newWork) = if (states.contains(node) && oldState == newState) {
-            (states, retroactiveWork.foldLeft(rest)(_.enqueue(_)))
-          } else {
-            (states + (node -> newState), (outputs(node).map(_.node) ++ retroactiveWork).foldLeft(rest)(_.enqueue(_)))
-          }
-          //Logger.fine(s"Processed $node:    Queue: $rest => $newWork")
-          assert(moreCompleteOrEqual(newState, oldState), s"The new state (at $node)\n$newState\n is not a refinement of the old state \n$oldState")
-          process(newWork, newStates)
+    var id = 0
+    val traversal = mutable.Buffer[(Int, NodeT, Set[EdgeT], StateT)]()
+    var avoidedEnqueues = 0 
+
+    try {
+      val queue = mutable.Queue[NodeT]()
+      val queueContent = mutable.Set[NodeT]()
+      def smartEnqueue(n: NodeT): Unit = {
+        if (! queueContent.contains(n)) {
+          queueContent += n
+          queue.enqueue(n)
+        } else {
+          avoidedEnqueues += 1
         }
-        case None => states
+      }
+      def smartDequeue(): Option[NodeT] = {
+        try {
+          val n = queue.dequeue()
+          queueContent -= n
+          Some(n)
+        } catch {
+          case _: NoSuchElementException => 
+            None
+        }
+      }
+      
+      @tailrec
+      def process(states: StateMap): StateMap = {
+        smartDequeue() match {
+          case Some(node) => {
+            val oldState = states.getOrElse(node, initialState)
+            val (newState, newNodes) = transfer(node, oldState, new States(node, states))
+            val retroactiveWork = newNodes.filter(n => inputs(n).map(_.node).exists(states.contains(_)))
+            val newStates = if (states.contains(node) && oldState == newState) {
+              retroactiveWork.foreach(smartEnqueue)
+              states
+            } else {
+              outputs(node).map(_.node).foreach(smartEnqueue)
+              retroactiveWork.foreach(smartEnqueue)
+              states + (node -> newState)
+            }
+
+            id += 1
+            traversal += ((id, node, inputs(node).map(_.edge), newState))
+
+            assert(moreCompleteOrEqual(newState, oldState), s"The new state (at $node)\n$newState\n is not a refinement of the old state \n$oldState")
+            process(newStates)
+          }
+          case None => states
+        }
+      }
+      
+      initialNodes.foreach(smartEnqueue)
+      process(HashMap())
+    } finally {
+      def entryToString(t: (Int, NodeT, Set[EdgeT], StateT)): String = {
+        val (id, n, ins, s) = t
+        f"$id% 4d: $s%s\n    ins=[${ins.mkString(",\n         ")}%s]"
+      }
+      def traversalTable = traversal.groupBy(_._2).par.map({
+        case (n, b) =>
+          val nn = n match { 
+            case n: FlowGraph.WithSpecificAST => n.location
+            case n: FlowGraph.Node => n.ast
+            case _ => ""
+          }
+          (b, s"========= Node $n @\n$nn\n=====\n${b.map(entryToString).mkString("\n")}")
+      }).seq.toSeq.sortBy(_._1.map(_._1).max).map(_._2)
+      lazy val traceFile = File.createTempFile("analysis", ".txt");
+      Logger.fine(s"Traversal: ${traversal.map(_._2).toSet.size} nodes, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
+      if(Logger.julLogger.isLoggable(Level.FINE)) {
+        val out = new FileWriter(traceFile)
+        for(l <- traversalTable) {
+          out.write(l)
+          out.write("\n")
+        }
+        out.close()
       }
     }
-    process(initialNodes.to[Queue], HashMap())
   }
 
   def outputs(node: NodeT): Set[ConnectedNode]
