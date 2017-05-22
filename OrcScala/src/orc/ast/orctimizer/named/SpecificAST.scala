@@ -18,12 +18,20 @@ import orc.ast.PrecomputeHashcode
 // FIXME: This cannot distinguish identical subexpressions. For instance, in 1 | 1 the two "1"s are not different.
 //        This is a pretty major problem since 1|1 publishes twice while 1 publishes once.
 case class SpecificAST[+T <: NamedAST](ast: T, path: List[NamedAST]) extends PrecomputeHashcode {
+  // Just check that ast is a member of the first element of path.
+  (ast :: path) match {
+    case b :: a :: _ =>
+      assert(a.subtrees.toSet contains b, s"Path ${path.map(SpecificAST.shortString).mkString("[", ", ", "]")} does not contain a parent of $ast.\n$b === is not a subtree of ===\n$a\n${a.subtrees}")
+    case Seq(_) => true
+  }
+  /* This complete check turns out to be a major performance cost
   (ast :: path).tails foreach {
     case b :: a :: _ =>
       assert(a.subtrees.toSet contains b, s"Path ${path.map(SpecificAST.shortString).mkString("[", ", ", "]")} does not contain a parent of $ast.\n$b === is not a subtree of ===\n$a\n${a.subtrees}")
     case Seq(_) => true
     case Seq() => true
   }
+  */
 
   def subtreePath = ast :: path
 
