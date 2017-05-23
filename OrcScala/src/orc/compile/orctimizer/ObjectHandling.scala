@@ -64,7 +64,7 @@ trait ObjectHandling {
           case Some(va) =>
             val b = va lessThan vb
             if (!b) {
-              Logger.severe(s"Field failed subset check: $f\n${va}\n${vb}") 
+              //Logger.severe(s"Field failed subset check: $f\n${va}\n${vb}") 
             }
             b
           case None =>
@@ -75,11 +75,12 @@ trait ObjectHandling {
 
   def subsetOf(o: This): Boolean = o match {
     case o: This if this.getClass().isAssignableFrom(o.getClass()) =>
+      val sharedStructs = structures.keySet intersect o.structures.keySet
       this.root == o.root &&
-        ((o.structures.keySet intersect structures.keySet) forall { r =>
+        (sharedStructs forall { r =>
           val b = structureSubsetOf(structures(r), o.structures(r))
           if (!b) {
-            Logger.severe(s"Substructure failed subset check: $r\n${structures.get(r)}\n${o.structures.get(r)}") 
+            //Logger.severe(s"Substructure failed subset check: $r\n${structures.get(r)}\n${o.structures.get(r)}") 
           }
           b
         })

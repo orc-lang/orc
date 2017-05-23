@@ -14,16 +14,13 @@ import java.util.logging.Level
 import java.io.FileWriter
 import orc.compile.orctimizer.FlowGraph
 
-//trait Node[T <: Node[T]] {
-//  def outputs: Set[T]
-//  def inputs: Set[T]
-//}
-
-//trait AnalysisValue[T <: AnalysisValue[T]] {
-//  def combine(v: T): T
-//}
+object Analyzer {
+  val checkAnalysis = false  
+}
 
 abstract class Analyzer {
+  import Analyzer.checkAnalysis
+  
   type NodeT
   type EdgeT
   type StateT
@@ -33,29 +30,28 @@ abstract class Analyzer {
 
   /** The set of nodes to initially process.
     */
-  def initialNodes: Set[NodeT]
+  def initialNodes: Seq[NodeT]
   /** The starting state of all the nodes and the default input state if there are no inputs selected.
-    *
-    * This value does not need to be an identity of combine.
     */
   val initialState: StateT
 
   class States(node: NodeT, states: StateMap) {
-    private def ins: Set[ConnectedNode] = inputs(node)
+    private def ins: Seq[ConnectedNode] = inputs(node)
+    
+    private def checkNode(n: NodeT): Unit = {
+      if (checkAnalysis)
+        require(ins.exists(_.node == n), s"Analysis requested state for non-input node. At $node, requested state of $n (inputs are $ins).")
+    }
 
     def apply(n: NodeT): StateT = {
-      require(ins.exists(_.node == n), s"Analysis requested state for non-input node. At $node, requested state of $n (inputs are $ins).")
+      checkNode(n)
       states.getOrElse(n, initialState)
     }
 
     def get(n: NodeT): Option[StateT] = {
-      require(ins.exists(_.node == n), s"Analysis requested state for non-input node. At $node, requested state of $n (inputs are $ins).")
+      checkNode(n)
       states.get(n)
     }
-
-    /*def inState[T <: EdgeT: ClassTag](): StateT = {
-      inStateReduced[T](combine _)
-    }*/
 
     def inStateReduced[T <: EdgeT: ClassTag](f: (StateT, StateT) => StateT): StateT = {
       inStateProcessed[T, StateT](initialState, s => s, f)
@@ -64,7 +60,7 @@ abstract class Analyzer {
     def inStateProcessed[T <: EdgeT: ClassTag, R](initial: R, extract: StateT => R, f: (R, R) => R): R = {
       val TType = implicitly[ClassTag[T]]
       val insT = ins.collect { case cn @ ConnectedNode(TType(_), _) => cn }
-      val inVals = insT.toSeq.map(cn => states.get(cn.node).map(extract).getOrElse(initial))
+      val inVals = insT.map(cn => states.get(cn.node).map(extract).getOrElse(initial))
       val in = inVals.reduceOption(f).getOrElse(initial)
       in
     }
@@ -72,8 +68,8 @@ abstract class Analyzer {
 
   def apply(): StateMap = {
     var id = 0
-    val traversal = mutable.Buffer[(Int, NodeT, Set[EdgeT], StateT)]()
-    var avoidedEnqueues = 0 
+    val traversal = mutable.Buffer[(Int, NodeT, Seq[EdgeT], StateT, Boolean)]()
+    var avoidedEnqueues = 0
 
     try {
       val queue = mutable.Queue[NodeT]()
@@ -92,11 +88,11 @@ abstract class Analyzer {
           queueContent -= n
           Some(n)
         } catch {
-          case _: NoSuchElementException => 
+          case _: NoSuchElementException =>
             None
         }
       }
-      
+
       @tailrec
       def process(states: StateMap): StateMap = {
         smartDequeue() match {
@@ -114,34 +110,43 @@ abstract class Analyzer {
             }
 
             id += 1
-            traversal += ((id, node, inputs(node).map(_.edge), newState))
+            traversal += ((id, node, inputs(node).map(_.edge), newState, oldState == newState))
 
-            assert(moreCompleteOrEqual(newState, oldState), s"The new state (at $node)\n$newState\n is not a refinement of the old state \n$oldState")
+            if (checkAnalysis) {
+              assert(moreCompleteOrEqual(newState, oldState), 
+                  s"The new state (at $node)\n$newState\n is not a refinement of the old state \n$oldState")
+              assert(!(moreCompleteOrEqual(newState, oldState) && moreCompleteOrEqual(oldState, newState) && oldState != newState), 
+                  s"The states below are mutually more complete, but not equal\n$newState\n====\n$oldState")
+            }
+            
             process(newStates)
           }
           case None => states
         }
       }
-      
+
       initialNodes.foreach(smartEnqueue)
       process(HashMap())
     } finally {
-      def entryToString(t: (Int, NodeT, Set[EdgeT], StateT)): String = {
-        val (id, n, ins, s) = t
-        f"$id% 4d: $s%s\n    ins=[${ins.mkString(",\n         ")}%s]"
-      }
-      def traversalTable = traversal.groupBy(_._2).par.map({
-        case (n, b) =>
-          val nn = n match { 
-            case n: FlowGraph.WithSpecificAST => n.location
-            case n: FlowGraph.Node => n.ast
-            case _ => ""
-          }
-          (b, s"========= Node $n @\n$nn\n=====\n${b.map(entryToString).mkString("\n")}")
-      }).seq.toSeq.sortBy(_._1.map(_._1).max).map(_._2)
-      lazy val traceFile = File.createTempFile("analysis", ".txt");
-      Logger.fine(s"Traversal: ${traversal.map(_._2).toSet.size} nodes, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
-      if(Logger.julLogger.isLoggable(Level.FINE)) {
+      val level = if (checkAnalysis) Level.INFO else Level.FINER
+      if(Logger.julLogger.isLoggable(level)) {
+        def entryToString(t: (Int, NodeT, Seq[EdgeT], StateT, Boolean)): String = {
+          val (id, n, ins, s, b) = t
+          f"$id% 4d: ${if (b) "==" else "!="} $s%s\n    ins=[${ins.mkString(",\n         ")}%s]"
+        }
+        def traversalTable = traversal.groupBy(_._2).par.map({
+          case (n, b) =>
+            val nn = n match {
+              case n: FlowGraph.WithSpecificAST => n.location
+              case n: FlowGraph.Node => n.ast
+              case _ => ""
+            }
+            (b, s"========= Node $n @\n$nn\n=====\n${b.map(entryToString).mkString("\n")}")
+        }).seq.toSeq.sortBy(_._1.map(_._1).max).map(_._2)
+        val traceFile = File.createTempFile("analysis", ".txt")
+        
+        Logger.log(level, s"Traversal: ${traversal.map(_._2).toSet.size} nodes, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
+        
         val out = new FileWriter(traceFile)
         for(l <- traversalTable) {
           out.write(l)
@@ -152,10 +157,9 @@ abstract class Analyzer {
     }
   }
 
-  def outputs(node: NodeT): Set[ConnectedNode]
-  def inputs(node: NodeT): Set[ConnectedNode]
+  def outputs(node: NodeT): Seq[ConnectedNode]
+  def inputs(node: NodeT): Seq[ConnectedNode]
 
-  def transfer(node: NodeT, old: StateT, states: States): (StateT, Set[NodeT])
-  def combine(a: StateT, b: StateT): StateT
+  def transfer(node: NodeT, old: StateT, states: States): (StateT, Seq[NodeT])
   def moreCompleteOrEqual(a: StateT, b: StateT): Boolean
 }

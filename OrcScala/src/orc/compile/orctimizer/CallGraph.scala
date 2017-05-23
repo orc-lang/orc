@@ -159,8 +159,8 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     val fg = cache.get(FlowGraph)(params)
     new CallGraph(fg)
   }
-  
-  @inline 
+
+  @inline
   def ifDebugNode(n: Node)(f: => Unit): Unit = {
 //    val s = n.toString()
 //    if(s.contains("new SimpleMapWriter { private") || s.contains("new `syncls2052 { `self2053")) {
@@ -192,17 +192,21 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
           // Due to non-reified types I have casts here, but I sware it's safe.
           // T must be a superclass of Future if s contains any Futures. So it's safe
           // to cast Future to T iff there were Futures in the input.
+          // Same for FieldFutureValue.
           val futures = ss.collect({ case f: FutureValue => f })
           val combinedFuture = if (futures.isEmpty) Set[Future]() else Set(FutureValue(futures.map(_.contents).reduce(_ union _)))
-          mod((ss -- futures.asInstanceOf[Set[T]]) ++ combinedFuture.asInstanceOf[Set[T]])
+          val ffutures = ss.collect({ case f: FieldFutureValue => f })
+          val combinedFFuture = if (ffutures.isEmpty) Set[FieldFutureValue]() else Set(FieldFutureValue(ffutures.map(_.contents).reduce(_ union _)))
+          mod((ss -- futures.asInstanceOf[Set[T]] -- ffutures.asInstanceOf[Set[T]]) ++ 
+               combinedFuture.asInstanceOf[Set[T]] ++ combinedFFuture.asInstanceOf[Set[T]])
         case MaximumBoundedSet() =>
           MaximumBoundedSet()
       }
       override def subsetOf(o: BoundedSet[T]): Boolean = o match {
-        case ConcreteBoundedSet(s1) =>
-          s forall { va =>
-            s1 exists { vb =>
-              va subsetOf vb
+        case ConcreteBoundedSet(so) =>
+          s forall { vt =>
+            so exists { vo =>
+              vt subsetOf vo
             }
           }
 
@@ -313,7 +317,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     type NodeT = Node
     type StoredValueT = BoundedSet[FieldContent]
     type This = ObjectValue
-    
+
     private def structureToString(t: (Node, ObjectStructure), prefix: String): String = {
       val (n, struct) = t
       def pf(t: (Field, StoredValueT)) = {
@@ -327,9 +331,9 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
     def apply(f: Field): BoundedSet[FlowValue] = {
       def flatten(s: BoundedSet[FieldContent]): BoundedSet[FlowValue] = s flatMap[FlowValue] {
-        case v: FlowValue => 
+        case v: FlowValue =>
           BoundedSet(v)
-        case FieldFutureValue(v) => 
+        case FieldFutureValue(v) =>
           flatten(v.map(x=>x))
         case ObjectRefValue(i) =>
           BoundedSet(lookupObject(i))
@@ -337,13 +341,6 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
       get(f) map { flatten } getOrElse { BoundedSet() }
     }
-
-    /*def combineStored(a: BoundedSet[FieldContent], b: BoundedSet[FieldContent]): BoundedSet[FieldContent] = {
-      a union b
-    }
-    def subsetOfStored(a: BoundedSet[FieldContent], b: BoundedSet[FieldContent]): Boolean = {
-     a valueSubsetOf b
-    }*/
 
     def copyObject(root: FlowGraph.Node, structs: Map[FlowGraph.Node, Map[Field, BoundedSet[FieldContent]]]): ObjectValue = {
       ObjectValue(root, structs)
@@ -381,14 +378,14 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     type EdgeT = Edge
     type StateT = State
 
-    def initialNodes: collection.Set[Node] = {
-      graph.nodesBy {
+    def initialNodes: collection.Seq[Node] = {
+      (graph.nodesBy {
         case n @ CallableNode(_, _) => n
         //case n @ ExitNode(SpecificAST(Call(_, _, _), _)) => n
         case n @ ExitNode(SpecificAST(New(_, _, _, _), _)) if valueInputs(n).isEmpty => n
         case n @ ExitNode(SpecificAST(Stop(), _)) => n
         case n @ ValueNode(Constant(_)) => n
-      }
+      }).toSeq
     }
     val initialState: BoundedSet[FlowValue] = ConcreteBoundedSet(Set[FlowValue]())
 
@@ -415,29 +412,29 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
       }
     }
 
-    def valueInputs(node: Node): Set[Edge] = {
-      node.inEdgesOf[ValueFlowEdge] ++ additionalEdges.filter(_.to == node)
+    def valueInputs(node: Node): Seq[Edge] = {
+      node.inEdgesOf[ValueFlowEdge].toSeq ++ additionalEdges.filter(_.to == node)
     }
 
-    def valueOutputs(node: Node): Set[Edge] = {
-      node.outEdgesOf[ValueFlowEdge] ++ additionalEdges.filter(_.from == node)
+    def valueOutputs(node: Node): Seq[Edge] = {
+      node.outEdgesOf[ValueFlowEdge].toSeq ++ additionalEdges.filter(_.from == node)
     }
 
-    def inputs(node: Node): collection.Set[ConnectedNode] = {
+    def inputs(node: Node): collection.Seq[ConnectedNode] = {
       valueInputs(node).map(e => ConnectedNode(e, e.from)) ++ node.inEdgesOf[UseEdge].map(e => ConnectedNode(e, e.from))
     }
 
-    def outputs(node: Node): collection.Set[ConnectedNode] = {
+    def outputs(node: Node): collection.Seq[ConnectedNode] = {
       valueOutputs(node).map(e => ConnectedNode(e, e.to)) ++ node.outEdgesOf[UseEdge].map(e => ConnectedNode(e, e.to))
     }
-    
+
     var timestamp = 0
 
-    def transfer(node: Node, old: State, states: States): (State, Set[Node]) = {
+    def transfer(node: Node, old: State, states: States): (State, Seq[Node]) = {
       def inState = states.inStateReduced[ValueFlowEdge](combine _)
-      
+
       timestamp += 1
-      
+
       /*
       The bug appears to be that an old version of a value is stored in the structures of another Object and then reappears. It's not clear how it reappears however.
       The reappearance appears to be a real problem. But it's also not clear now to keep the version of "structures" up to date. Maybe I need to move to a global object table.
@@ -449,7 +446,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
       }
 
       // Nodes must be computed before the state because the computation adds the additional edges to the list.
-      val nodes: Set[Node] = node match {
+      val nodes: Seq[Node] = node match {
         case entry @ EntryNode(n @ SpecificAST(call@Call(target, args, _), path)) =>
           val exit = ExitNode(n)
           states.get(ValueNode(target, path)) match {
@@ -490,12 +487,12 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
                  addEdge(TransitionEdge(c.graph.exit, "Return-Inf", exit))
               }
 
-              newEdges.map(_.to)
+              newEdges.map(_.to).toSeq
             case None =>
-              Set()
+              Nil
           }
         case _ =>
-          Set()
+          Nil
       }
 
       val state: State = node match {

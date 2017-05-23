@@ -16,7 +16,6 @@ package orc.ast.orctimizer.named
 import orc.ast.PrecomputeHashcode
 
 // FIXME: This cannot distinguish identical subexpressions. For instance, in 1 | 1 the two "1"s are not different.
-//        This is a pretty major problem since 1|1 publishes twice while 1 publishes once.
 case class SpecificAST[+T <: NamedAST](ast: T, path: List[NamedAST]) extends PrecomputeHashcode {
   // Just check that ast is a member of the first element of path.
   (ast :: path) match {

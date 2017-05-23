@@ -231,16 +231,16 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     type EdgeT = Edge
     type StateT = PublicationInfo
 
-    def initialNodes: collection.Set[Node] = {
-      graph.nodesBy {
+    def initialNodes: collection.Seq[Node] = {
+      (graph.nodesBy {
         case n @ (ValueNode(_) | VariableNode(_, _)) => n
         case n @ ExitNode(SpecificAST(Stop(), _)) => n
-      } + graph.entry
+      }).toSeq :+ graph.entry
     }
     val initialState: PublicationInfo = PublicationInfo(Range(0, None), Range(0, 1), BoundedSet())
 
-    def inputs(node: Node): collection.Set[ConnectedNode] = {
-      node.inEdges.map(e => ConnectedNode(e, e.from)) ++ {
+    def inputs(node: Node): collection.Seq[ConnectedNode] = {
+      node.inEdges.map(e => ConnectedNode(e, e.from)).toSeq ++ {
         node match {
           case ExitNode(b@SpecificAST(Branch(l, _, _), _)) =>
             val n = ExitNode(SpecificAST(l, b.subtreePath))
@@ -251,8 +251,8 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
       }
     }
 
-    def outputs(node: Node): collection.Set[ConnectedNode] = {
-      node.outEdges.map(e => ConnectedNode(e, e.to)) ++ {
+    def outputs(node: Node): collection.Seq[ConnectedNode] = {
+      node.outEdges.map(e => ConnectedNode(e, e.to)).toSeq ++ {
         node match {
           case ExitNode(spAst @ SpecificAST(ast, Branch(l, _, _) :: _)) if ast == l =>
             val n = ExitNode(SpecificAST(spAst.path.head.asInstanceOf[Branch], spAst.path.tail))
@@ -263,7 +263,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
       }
     }
 
-    def transfer(node: Node, old: PublicationInfo, states: States): (PublicationInfo, Set[Node]) = {
+    def transfer(node: Node, old: PublicationInfo, states: States): (PublicationInfo, Seq[Node]) = {
       // TODO: Check and make sure all the exit counts are the number of exits from that node if one entered as designed.
 
       //Logger.fine(s"Processing $node: inputs:\n${inputs(node).map(cn => s"$cn -> ${states(cn.node)}").mkString("\n")}")
@@ -441,7 +441,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
       }
       //Logger.fine(s"Processed $node:  old=$old    out=$outState")
 
-      (outState, Set())
+      (outState, Nil)
     }
 
     def combine(a: PublicationInfo, b: PublicationInfo) = {
