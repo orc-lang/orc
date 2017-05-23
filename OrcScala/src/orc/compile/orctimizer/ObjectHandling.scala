@@ -59,12 +59,12 @@ trait ObjectHandling {
   
   private def structureSubsetOf(a: ObjectStructure, b: ObjectStructure) = {
     b forall {
-      case (f, ov) =>
+      case (f, vb) =>
         a.get(f) match {
-          case Some(tv) =>
-            val b = tv lessThan ov
+          case Some(va) =>
+            val b = va lessThan vb
             if (!b) {
-              Logger.severe(s"Field failed subset check: $f\n${tv}\n${ov}") 
+              Logger.severe(s"Field failed subset check: $f\n${va}\n${vb}") 
             }
             b
           case None =>

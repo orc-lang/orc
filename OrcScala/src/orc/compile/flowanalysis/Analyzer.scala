@@ -53,9 +53,9 @@ abstract class Analyzer {
       states.get(n)
     }
 
-    def inState[T <: EdgeT: ClassTag](): StateT = {
+    /*def inState[T <: EdgeT: ClassTag](): StateT = {
       inStateReduced[T](combine _)
-    }
+    }*/
 
     def inStateReduced[T <: EdgeT: ClassTag](f: (StateT, StateT) => StateT): StateT = {
       inStateProcessed[T, StateT](initialState, s => s, f)

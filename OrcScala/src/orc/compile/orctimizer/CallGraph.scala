@@ -434,7 +434,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     var timestamp = 0
 
     def transfer(node: Node, old: State, states: States): (State, Set[Node]) = {
-      def inState = states.inState[ValueFlowEdge]()
+      def inState = states.inStateReduced[ValueFlowEdge](combine _)
       
       timestamp += 1
       
