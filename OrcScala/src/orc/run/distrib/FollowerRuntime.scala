@@ -55,7 +55,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
       }
     } finally {
-      runtimeLocationMap foreach {
+      runtimeLocationMap.valuesIterator.foreach {
         _ match {
           case a: ClosableConnection => a.abort()
           case _ => /* Ignore */
@@ -264,7 +264,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   def removePeer(peerRuntimeId: DOrcRuntime#RuntimeId) {
     Logger.entering(getClass.getName, "removePeer", Seq(peerRuntimeId.toString))
     if (peerRuntimeId == runtimeId) {
-      runtimeLocationMap foreach {
+      runtimeLocationMap.valuesIterator.foreach {
         _ match {
           case a: ClosableConnection => a.close()
           case _ => /* Ignore */
