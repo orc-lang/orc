@@ -91,7 +91,7 @@ final class Execution(val runtime: ToJavaRuntime, protected var eventHandler: Or
     t.checkLive()
     // Schedule the work. prepareSpawn and halt are called by
     // ContextSchedulableFunc.
-    scheduleOrCall(c, f.run)
+    scheduleOrCall(c, () => f.run())
     // PERF: Allowing run here is a critical optimization. Even with a small depth limit (32) this can give a factor of 6.
   }
 

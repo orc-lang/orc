@@ -132,7 +132,7 @@ public class PublicationEvent extends JobEvent {
             final orc.run.core.Closure closure = (orc.run.core.Closure) value;
             return new UnknownValueMarshalProxy(value.getClass().getCanonicalName(), value.hashCode(), "{- " + closure.closureGroup().definitions().size() + " defs closed over " + closure.lexicalContext().size() + " bindings -}");
         } else if (value instanceof scala.Some) {
-            return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "Some(" + Format.formatValueR(((scala.Some) value).x()) + ")");
+            return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "Some(" + Format.formatValueR(((scala.Some) value).value()) + ")");
         } else if (value instanceof scala.None) {
             return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "None()");
         } else if (value instanceof scala.collection.immutable.List) {

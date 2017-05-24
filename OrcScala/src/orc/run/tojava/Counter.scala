@@ -159,7 +159,7 @@ final class CounterNested(execution: Execution, parent: Counter, haltContinuatio
     */
   override def onContextHalted(): Unit = {
     if (!isDiscorporated) {
-      execution.scheduleOrCall(parent, haltContinuation.run)
+      execution.scheduleOrCall(parent, () => haltContinuation.run())
     }
     super.onContextHalted()
   }

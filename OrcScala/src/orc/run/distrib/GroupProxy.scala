@@ -146,7 +146,7 @@ trait GroupProxyManager { self: DOrcExecution =>
       case rgp: RemoteGroupProxy => rgp.remoteProxyId
       case _ => freshGroupProxyId()
     }
-    val rmtProxy = new RemoteGroupMembersProxy(group, sendKill(destination, proxyId), proxyId)
+    val rmtProxy = new RemoteGroupMembersProxy(group, () => sendKill(destination, proxyId)(), proxyId)
     proxiedGroupMembers.put(proxyId, rmtProxy)
 
     group.add(rmtProxy)
@@ -161,7 +161,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     val lookedUpProxyGroupMember = proxiedGroupMembers.get(movedToken.tokenProxyId)
     val newTokenGroup = lookedUpProxyGroupMember match {
       case null => { /* Not a token we've seen before */
-        val rgp = new RemoteGroupProxy(this, movedToken.tokenProxyId, sendPublish(origin, movedToken.tokenProxyId), sendHalt(origin, movedToken.tokenProxyId), sendDiscorporate(origin, movedToken.tokenProxyId))
+        val rgp = new RemoteGroupProxy(this, movedToken.tokenProxyId, sendPublish(origin, movedToken.tokenProxyId), () => sendHalt(origin, movedToken.tokenProxyId)(), () => sendDiscorporate(origin, movedToken.tokenProxyId)())
         proxiedGroups.put(movedToken.tokenProxyId, rgp)
         rgp
       }
