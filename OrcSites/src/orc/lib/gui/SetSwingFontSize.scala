@@ -14,7 +14,7 @@ package orc.lib.gui
 import orc.values.sites.TotalSite
 import orc.values.sites.SpecificArity
 import javax.swing.UIManager
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import orc.values.Signal
 import ScalaSwingUtils._
 import orc.util.ArrayExtensions.Array1
@@ -27,7 +27,7 @@ class SetSwingFontSize extends TotalSite with SpecificArity {
     val size = sizeN.intValue()
 
     onEDTNow {
-      val keySet = UIManager.getLookAndFeelDefaults().keySet().toSeq
+      val keySet = UIManager.getLookAndFeelDefaults().keySet().asScala
 
       for (key <- keySet if key != null) {
         val font = UIManager.getDefaults().getFont(key);

@@ -16,6 +16,7 @@ package orc.run.tojava
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import scala.collection.JavaConverters._
+import scala.collection.convert.ImplicitConversions._
 
 trait Terminatable {
   /** Kill this terminatable.

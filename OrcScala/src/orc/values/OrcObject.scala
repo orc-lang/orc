@@ -15,6 +15,7 @@ package orc.values
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ArityMismatchException
 import orc.error.runtime.NoSuchMemberException
+import scala.collection.JavaConverters._
 import scala.collection.immutable.Map
 import orc.run.core.Future
 import orc.run.core.Binding

@@ -11,28 +11,24 @@
 
 package orc.compile.tojava
 
-import javax.tools.ToolProvider
-import orc.run.tojava.OrcProgram
-import java.nio.file.Files
-import java.io.File
-import javax.tools.SimpleJavaFileObject
-import java.net.URI
-import javax.tools.JavaFileObject.Kind
-import java.net.URLClassLoader
-import java.nio.charset.StandardCharsets
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.Path
-import java.nio.file.FileVisitResult
-import java.nio.file.attribute.BasicFileAttributes
 import java.io.IOException
+import java.net.{ URI, URLClassLoader }
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ FileVisitResult, Files, Path, SimpleFileVisitor }
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.logging.Level
+
+import javax.tools.{ SimpleJavaFileObject, ToolProvider }
+import javax.tools.JavaFileObject.Kind
+
+import scala.collection.JavaConverters._
+
 import orc.compile.Logger
+import orc.run.tojava.OrcProgram
 
 /** @author amp
   */
 class JavaCompiler {
-  import scala.collection.JavaConversions._
-
   val pkgName = "orctojavaoutput"
   val className = "Prog"
 
@@ -56,7 +52,7 @@ class JavaCompiler {
     val tempDir = Files.createTempDirectory("orc")
     val options = Seq("-d", tempDir.toAbsolutePath.toString())
     val compilationUnits = Seq(InMemoryJavaFileObject(className, code))
-    val task = compiler.getTask(null, null, null, options, null, compilationUnits)
+    val task = compiler.getTask(null, null, null, options.asJava, null, compilationUnits.asJava)
     task.call()
 
     if (Logger.julLogger.isLoggable(Level.FINE)) {

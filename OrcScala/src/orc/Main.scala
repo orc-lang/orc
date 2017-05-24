@@ -15,7 +15,7 @@ package orc
 import javax.script.{ ScriptException, Compilable, ScriptEngine, ScriptEngineManager }
 import javax.script.ScriptContext.ENGINE_SCOPE
 import java.io.{ PrintStream, FileNotFoundException, InputStreamReader, FileInputStream, File }
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import orc.error.OrcException
 import orc.error.runtime.JavaException
 import orc.script.{ OrcBindings, OrcScriptEngine }
@@ -192,11 +192,11 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   UnitOpt(() => (!usePrelude), () => usePrelude = false, ' ', "noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
 
-  StringListOpt(() => includePath, includePath = _, 'I', "include-path", usage = "Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")
+  StringListOpt(() => includePath.asScala, ip => includePath = ip.asJava, 'I', "include-path", usage = "Set the include path for Orc includes (same syntax as CLASSPATH). Default is \".\", the current directory. Prelude files are always available for include regardless of this setting.")
 
-  StringListOpt(() => additionalIncludes, additionalIncludes = _, ' ', "additional-includes", usage = "Include these files as if the program had include statements for them (same syntax as CLASSPATH). Default is none.")
+  StringListOpt(() => additionalIncludes.asScala, ais => additionalIncludes = ais.asJava, ' ', "additional-includes", usage = "Include these files as if the program had include statements for them (same syntax as CLASSPATH). Default is none.")
 
-  StringListOpt(() => classPath, classPath = _, ' ', "cp", usage = "Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
+  StringListOpt(() => classPath.asScala, cp => classPath = cp.asJava, ' ', "cp", usage = "Set the class path for Orc sites (same syntax as CLASSPATH). This is only used for classes not found in the Java VM classpath.")
 
   UnitOpt(() => typecheck, () => typecheck = true, ' ', "typecheck", usage = "Enable typechecking, which is disabled by default.")
 
@@ -228,7 +228,7 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
       case None => throw new UnrecognizedCmdLineOptArgException(s"""Backend "${arg}" does not exist or is not supported.""", "backend", arg, this)
     }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed values: " + BackendType.knownBackendNames.mkString(", ") + ". Default is \"token\".")
 
-  StringListOpt(() => optimizationOptions, optimizationOptions = _, ' ', "opt-opt", separator = ",",
+  StringListOpt(() => optimizationOptions.asScala, oo => optimizationOptions = oo.asJava, ' ', "opt-opt", separator = ",",
     usage = "Provide option for use by the optimizers separated by commas. Options in the form '[optimizer-name]' and '-[optimizer-name]=off' enable and disable optimizers. Other options are arbitrary key-value pairs used by the optimizer (the value defaults to 'true').")
 
   IntOpt(() => optimizationLevel, optimizationLevel = _, 'O', "optimize", usage = "Set a general optimization level. This selects a set of default optimization options. --opt-opt may be used to override these default.")

@@ -27,7 +27,7 @@ Floor(sqrt(n))
 package orc.scalabenchmarks
 
 import java.util.{ HashSet, Set }
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import java.util.Collections
 import orc.test.BenchmarkApplication
 
@@ -41,7 +41,7 @@ object Sieve extends BenchmarkApplication {
         def remove(p: BigInt) = ((p * p) until (n + 1) by p).foreach(set.remove)
         val ps = sieve(BigInt(math.floor(math.pow(n.toDouble, 0.5)).toLong), set)
         ps.foreach(remove)
-        BigInt(2) :: set.toList
+        BigInt(2) :: set.asScala.toList
     }
     val set = Collections.synchronizedSet[BigInt](new HashSet[BigInt]())
     candidates(n).foreach(set.add)

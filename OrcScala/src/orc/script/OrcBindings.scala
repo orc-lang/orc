@@ -26,7 +26,7 @@ import orc.compile.CompilerFlagValue
   * @author jthywiss
   */
 class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOptions {
-  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
 
   def this() = this(new java.util.HashMap[String, Object])
 
@@ -40,9 +40,9 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   // Compile options
   def usePrelude: Boolean = getBoolean("orc.usePrelude", true)
   def usePrelude_=(newVal: Boolean) = putBoolean("orc.usePrelude", newVal)
-  def includePath: java.util.List[String] = getStringList("orc.includePath", List("."))
+  def includePath: java.util.List[String] = getStringList("orc.includePath", List(".").asJava)
   def includePath_=(newVal: java.util.List[String]) = putStringList("orc.includePath", newVal)
-  def additionalIncludes: java.util.List[String] = getStringList("orc.additionalIncludes", List())
+  def additionalIncludes: java.util.List[String] = getStringList("orc.additionalIncludes", List().asJava)
   def additionalIncludes_=(newVal: java.util.List[String]) = putStringList("orc.additionalIncludes", newVal)
   def typecheck: Boolean = getBoolean("orc.typecheck", false)
   def typecheck_=(newVal: Boolean) = putBoolean("orc.typecheck", newVal)
@@ -71,7 +71,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     putInt("orc.optimizationLevel", newVal)
     optimizationLevelFlagsCache = null
   }
-  def optimizationOptions: java.util.List[String] = getStringList("orc.optimizationOptions", List(), ",")
+  def optimizationOptions: java.util.List[String] = getStringList("orc.optimizationOptions", List().asJava, ",")
   def optimizationOptions_=(v: java.util.List[String]) = putStringList("orc.optimizationOptions", v, ",")
 
   def parseOptionLine(s: String) = {
@@ -117,12 +117,12 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   }
 
   def optimizationFlags = {
-    val m = optimizationOptions.map(parseOptionLine).toMap
+    val m = optimizationOptions.asScala.map(parseOptionLine).toMap
     (optimizationLevelFlags ++ m).withDefault(n => new CompilerFlagValue(n, None))
   }
 
   // Execution options
-  def classPath: java.util.List[String] = getStringList("orc.classPath", List())
+  def classPath: java.util.List[String] = getStringList("orc.classPath", List().asJava)
   def classPath_=(newVal: java.util.List[String]) = putStringList("orc.classPath", newVal)
   def showJavaStackTrace: Boolean = getBoolean("orc.showJavaStackTrace", false)
   def showJavaStackTrace_=(newVal: Boolean) = putBoolean("orc.showJavaStackTrace", newVal)
@@ -276,8 +276,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     * @param value
     */
   def putStringList(key: String, value: java.util.List[String], separator: String = File.pathSeparator) {
-    if (value.length > 0) {
-      put(key, value.mkString(separator))
+    if (value.size > 0) {
+      put(key, value.asScala.mkString(separator))
     } else {
       put(key, "")
     }
@@ -287,7 +287,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     val value = get(key)
     value match {
       case s: String if (s.length == 0) => new java.util.ArrayList[String](0)
-      case s: String => s.split(separator).toList
+      case s: String => java.util.Arrays.asList(s.split(separator): _*)
       case _ => default
     }
   }

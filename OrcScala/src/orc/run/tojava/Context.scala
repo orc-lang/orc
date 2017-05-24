@@ -15,6 +15,7 @@ import java.util.{ Timer, TimerTask }
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
 import java.util.function.{ BiConsumer, Consumer }
 import java.util.logging.Level
+import scala.collection.JavaConverters._
 import scala.util.parsing.input.Position
 import orc.OrcRuntime
 import orc.run.Logger

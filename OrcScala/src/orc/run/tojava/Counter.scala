@@ -31,13 +31,13 @@ object Counter {
 
   def report() = {
     if (Logger.julLogger.isLoggable(Level.FINE)) {
-      import scala.collection.JavaConversions._
+      import scala.collection.JavaConverters._
       Logger.fine(s"Live Counter Report: ${liveCounters.size}")
-      for (c <- liveCounters) {
+      for (c <- liveCounters.asScala) {
         Logger.fine(s"$c: log size = ${c.log.size}, count = ${c.count.get}")
       }
-      for (c <- liveCounters) {
-        Logger.fine(s"$c:\n${c.log.map(exceptionString).mkString("----\n")}")
+      for (c <- liveCounters.asScala) {
+        Logger.fine(s"$c:\n${c.log.asScala.map(exceptionString(_)).mkString("----\n")}")
       }
     } else {
       Logger.warning(s"Cannot report Counter information if FINE is not loggable in ${Logger.julLogger.getName}")

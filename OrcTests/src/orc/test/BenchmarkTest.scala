@@ -23,7 +23,7 @@ import java.io.File
 import orc.BackendType
 import java.util.LinkedList
 import java.util.Date
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.io.OutputStreamWriter
@@ -181,7 +181,7 @@ object BenchmarkTest {
       val path = new File("test_data/performance")
       val files = new LinkedList[File]()
       TestUtils.findOrcFiles(path, files);
-      val alltests = for (file <- files.toSeq.reverse if isFileBenchmarked(file)) yield {
+      val alltests = for (file <- files.asScala.toSeq.reverse if isFileBenchmarked(file)) yield {
         val testname = if (file.toString().startsWith(path.getPath() + File.separator))
           file.toString().substring(path.getPath().length() + 1)
         else file.toString()
@@ -195,7 +195,7 @@ object BenchmarkTest {
       val scalabenchmarksConfigFile = new File("test_data/performance/scalabenchmarks.properties")
       val scalabenchmarksConfig = new Properties()
       scalabenchmarksConfig.load(new FileInputStream(scalabenchmarksConfigFile))
-      val alltests = scalabenchmarksConfig.entrySet().map(e => {
+      val alltests = scalabenchmarksConfig.entrySet().asScala.map(e => {
         val clsName = e.getValue().asInstanceOf[String]
         val cls = Class.forName(clsName + "$")
         val moduleField = cls.getField("MODULE$")

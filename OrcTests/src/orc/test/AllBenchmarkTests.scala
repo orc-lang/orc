@@ -23,7 +23,7 @@ import java.io.File
 import orc.BackendType
 import java.util.ArrayList
 import java.util.Date
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.io.OutputStreamWriter

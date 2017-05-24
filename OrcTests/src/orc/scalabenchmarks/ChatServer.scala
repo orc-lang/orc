@@ -2,7 +2,7 @@ package orc.scalabenchmarks
 
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import java.util.concurrent.atomic.AtomicInteger
 import javax.servlet.http.HttpServlet
 import orc.lib.net.ServletServer
@@ -28,7 +28,7 @@ object ChatServer {
 
     def messages: Seq[String] = {
       Thread.sleep(5)
-      _messages.toSeq
+      _messages.asScala.toSeq
     }
 
     def addMessage(msg: String): Unit = {
