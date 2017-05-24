@@ -47,7 +47,7 @@ abstract class SiteAdaptor extends Site {
 }
 
 object SiteAdaptor {
-  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
 
   def object2value(o: java.lang.Object): AnyRef = o match {
     case s: Site => s
@@ -64,7 +64,7 @@ object SiteAdaptor {
 
   def makeListFromArray(array: AnyRef) = array.asInstanceOf[Array[_]].toList
 
-  def makeList(javaIterable: java.lang.Iterable[_]) = javaIterable.toList
+  def makeList(javaIterable: java.lang.Iterable[_]) = javaIterable.asScala.toList
 
   def nilList[T](): List[T] = Nil
 

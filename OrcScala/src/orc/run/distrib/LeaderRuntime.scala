@@ -16,7 +16,7 @@ package orc.run.distrib
 import java.io.EOFException
 import java.net.InetSocketAddress
 
-import scala.collection.JavaConversions.mapAsScalaConcurrentMap
+import scala.collection.JavaConverters._
 import scala.ref.WeakReference
 import scala.util.control.NonFatal
 

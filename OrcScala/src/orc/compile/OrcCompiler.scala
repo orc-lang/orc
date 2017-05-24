@@ -16,7 +16,7 @@ package orc.compile
 import java.io.{ BufferedReader, File, FileNotFoundException, FileOutputStream, IOException }
 import java.net.{ MalformedURLException, URI, URISyntaxException }
 
-import scala.collection.JavaConversions.{ asScalaBuffer, seqAsJavaList }
+import scala.collection.JavaConverters._
 import scala.compat.Platform.currentTime
 
 import orc.{ OrcCompilationOptions, OrcCompiler, OrcCompilerRequires }
@@ -100,7 +100,7 @@ trait CoreOrcCompilerPhases {
     @throws(classOf[IOException])
     override def apply(co: CompilerOptions) = { source =>
       val topLevelSourceStartPos = source.reader.pos.orcSourcePosition
-      var includeFileNames = co.options.additionalIncludes
+      var includeFileNames = co.options.additionalIncludes.asScala.toList
       if (co.options.usePrelude) {
         includeFileNames = "prelude.inc" :: (includeFileNames).toList
       }
@@ -368,7 +368,7 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
     }
 
     // Try filename under the include path list
-    for (incPath <- scala.collection.JavaConversions.collectionAsScalaIterable(options.includePath)) {
+    for (incPath <- options.includePath.asScala) {
       try {
         //FIXME: Security implications of including local files:
         // For Orchard's sake, OrcJava disallowed relative file names

@@ -17,7 +17,7 @@ import java.io.{ EOFException, IOException }
 import java.net.{ InetSocketAddress, SocketException }
 import java.util.logging.Level
 
-import scala.collection.JavaConversions.mapAsScalaConcurrentMap
+import scala.collection.JavaConverters._
 import scala.ref.WeakReference
 import scala.util.control.NonFatal
 import scala.xml.XML

@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 26, 2010.
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,7 +12,7 @@
 //
 package orc.values.sites
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 import java.io.File
 import java.net.URL
@@ -57,7 +57,7 @@ object SiteClassLoading {
 
   private var initted = false
 
-  def initWithClassPathStrings(classPath: java.util.List[String]) { initWithClassPathStrings(classPath.map(identity).toArray) }
+  def initWithClassPathStrings(classPath: java.util.List[String]) { initWithClassPathStrings(classPath.asScala.map(identity).toArray) }
 
   def initWithClassPathStrings(classPath: Array[String]) { initWithClassPathUrls(classPath.map(path2URL(_)).toArray) }
 

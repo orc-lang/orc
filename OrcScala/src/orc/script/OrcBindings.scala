@@ -25,7 +25,7 @@ import orc.BackendType
   * @author jthywiss
   */
 class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOptions {
-  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
 
   def this() = this(new java.util.HashMap[String, Object])
 
@@ -64,8 +64,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def backend_=(newVal: BackendType) = putString("orc.backend", newVal.toString)
 
   // Execution options
-  def classPath: java.util.List[String] = getPathList("orc.classPath", List())
-  def classPath_=(newVal: java.util.List[String]) = putPathList("orc.classPath", newVal)
+  def classPath: java.util.List[String] = getStringList("orc.classPath", List().asJava)
+  def classPath_=(newVal: java.util.List[String]) = putStringList("orc.classPath", newVal)
   def showJavaStackTrace: Boolean = getBoolean("orc.showJavaStackTrace", false)
   def showJavaStackTrace_=(newVal: Boolean) = putBoolean("orc.showJavaStackTrace", newVal)
   def disableTailCallOpt: Boolean = getBoolean("orc.disableTailCallOpt", false)
@@ -217,9 +217,9 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   /** @param key
     * @param value
     */
-  def putPathList(key: String, value: java.util.List[String]) {
-    if (value.length > 0) {
-      put(key, value.mkString(File.pathSeparator))
+  def putStringList(key: String, value: java.util.List[String], separator: String = File.pathSeparator) {
+    if (value.size > 0) {
+      put(key, value.asScala.mkString(separator))
     } else {
       put(key, "")
     }
@@ -229,7 +229,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     val value = get(key)
     value match {
       case s: String if (s.length == 0) => new java.util.ArrayList[String](0)
-      case s: String => s.split(File.pathSeparator).toList
+      case s: String => java.util.Arrays.asList(s.split(separator): _*)
       case _ => default
     }
   }
