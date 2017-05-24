@@ -6,11 +6,6 @@
 	<classpathentry kind="lib" path="/OrcScala/lib/scala-xml_2.11-1.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/axis-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/axis-jaxrpc-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-base-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-calendar-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-calendar-meta-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-client-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/gdata-core-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/htmlparser.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/javax.mail-1.5.5.jar"/>
 	<classpathentry kind="lib" path="lib/mimepull-1.9.6.jar"/>
