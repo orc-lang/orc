@@ -2,7 +2,7 @@
 <!-- build.xml - Ant buildfile (tasks for project build)
 	 Project OrcDocs
 
-	 Copyright (c) 2015 The University of Texas at Austin. All rights reserved.
+	 Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 
 	 Use and redistribution of this file is governed by the license terms in
 	 the LICENSE file found in the project's top-level directory and also found at
@@ -93,8 +93,8 @@
 			<arg value="${orc.orcdoc-out.dir}"/>
 			<classpath>
 				<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
-				<pathelement location="${orc.location.OrcScala}/lib/scala-xml_2.11-1.0.4.jar"/>
-				<pathelement location="${orc.location.OrcScala}/lib/scala-parser-combinators_2.11-1.0.4.jar"/>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-parser-combinators_2.12-1.0.5.jar"/>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-xml_2.12-1.0.6.jar"/>
 				<pathelement location="${orc.location.OrcDocgen}/build"/>
 			</classpath>
 		</java>

@@ -6,7 +6,7 @@
 	<classpathentry kind="lib" path="lib/orc-2.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/scala-library.jar"/>
 	<classpathentry kind="lib" path="lib/scala-reflect.jar"/>
-	<classpathentry kind="lib" path="lib/scala-xml_2.11-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/scala-parser-combinators_2.11-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/scala-parser-combinators_2.12-1.0.5.jar"/>
+	<classpathentry kind="lib" path="lib/scala-xml_2.12-1.0.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
