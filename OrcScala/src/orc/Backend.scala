@@ -34,8 +34,7 @@ sealed trait BackendType {
 
 object BackendType {
   private val stringToBackendType = Map[String, BackendType](
-    TokenInterpreterBackend.toString -> TokenInterpreterBackend,
-    DistributedBackendType.toString -> DistributedBackendType)
+    TokenInterpreterBackend.toString -> TokenInterpreterBackend)
 
   def knownBackendNames = stringToBackendType.keys
 
@@ -51,12 +50,6 @@ object BackendType {
 case object TokenInterpreterBackend extends BackendType {
   override val toString = "token"
   override def newBackend(): Backend[Expression] = new StandardBackend()
-}
-
-/** The Distributed Orc BackendType. */
-case object DistributedBackendType extends BackendType {
-  override val toString = "distrib"
-  override def newBackend(): Backend[Expression] = new DistributedBackend()
 }
 
 /** This represents an abstract Orc compiler. It generates an opaque code object that can be

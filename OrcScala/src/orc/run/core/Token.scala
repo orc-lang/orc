@@ -18,7 +18,6 @@ import orc.ast.oil.nameless.{ Argument, Call, Constant, DeclareDefs, DeclareType
 import orc.error.OrcException
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
-import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
 import orc.values.{ Field, OrcRecord, Signal }
 import orc.values.sites.TotalSite
 
@@ -364,37 +363,6 @@ class Token protected (
   }
 
   protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
-    //FIXME:Refactor: Place in correct classes, not all here
-    /* Maybe there's an extension mechanism we need to add to Orc here.
-     * 'Twould be nice to also move the Vclock hook below to this mechanism. */
-    def pickLocation(ls: Set[PeerLocation]) = ls.head
-
-    group.execution match {
-      case dOrcExecution: DOrcExecution => {
-        val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)) { _ & _ }
-        if (!(intersectLocs contains dOrcExecution.runtime.here)) {
-          orc.run.distrib.Logger.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
-          val candidateDestinations = {
-            if (intersectLocs.nonEmpty) {
-              intersectLocs
-            } else {
-              val intersectPermittedLocs = (actuals map dOrcExecution.permittedLocations).fold(dOrcExecution.permittedLocations(s)) { _ & _ }
-              if (intersectPermittedLocs.nonEmpty) {
-                intersectPermittedLocs
-              } else {
-                throw new NoLocationAvailable(s +: actuals)
-              }
-            }
-          }
-          orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
-          val destination = pickLocation(candidateDestinations)
-          dOrcExecution.sendToken(this, destination)
-          return
-        }
-      }
-      case _ => /* Not a distributed execution */
-    }
-    //End of code needing refactoring
     s match {
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
