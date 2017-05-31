@@ -37,10 +37,10 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   // Compile options
   def usePrelude: Boolean = getBoolean("orc.usePrelude", true)
   def usePrelude_=(newVal: Boolean) = putBoolean("orc.usePrelude", newVal)
-  def includePath: java.util.List[String] = getPathList("orc.includePath", List("."))
-  def includePath_=(newVal: java.util.List[String]) = putPathList("orc.includePath", newVal)
-  def additionalIncludes: java.util.List[String] = getPathList("orc.additionalIncludes", List())
-  def additionalIncludes_=(newVal: java.util.List[String]) = putPathList("orc.additionalIncludes", newVal)
+  def includePath: java.util.List[String] = getStringList("orc.includePath", List(".").asJava)
+  def includePath_=(newVal: java.util.List[String]) = putStringList("orc.includePath", newVal)
+  def additionalIncludes: java.util.List[String] = getStringList("orc.additionalIncludes", List().asJava)
+  def additionalIncludes_=(newVal: java.util.List[String]) = putStringList("orc.additionalIncludes", newVal)
   def typecheck: Boolean = getBoolean("orc.typecheck", false)
   def typecheck_=(newVal: Boolean) = putBoolean("orc.typecheck", newVal)
   def disableRecursionCheck: Boolean = getBoolean("orc.disableRecursionCheck", false)
@@ -225,7 +225,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     }
   }
 
-  def getPathList(key: String, default: java.util.List[String]): java.util.List[String] = {
+  def getStringList(key: String, default: java.util.List[String], separator: String = File.pathSeparator): java.util.List[String] = {
     val value = get(key)
     value match {
       case s: String if (s.length == 0) => new java.util.ArrayList[String](0)
