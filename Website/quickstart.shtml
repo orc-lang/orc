@@ -4,37 +4,34 @@
 
 <h2>Install Prerequisites</h2>
 <ol>
-<li><a href="http://java.sun.com/javase/6/webnotes/install/">Java</a> 1.6 or later.</li>
+<li><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java SE</a> 1.8 or later.</li>
 <!--<li><a href="https://ant.apache.org/">Ant</a> 1.7.1 or later. (Older versions may also work)</li>-->
-<li><a href="https://www.eclipse.org/downloads/">Eclipse</a> 3.7 or later. These
-instructions assume version 3.7.2, but other versions should behave similarly.
-"Eclipse Classic" is sufficient, but any Eclipse package with the JDT can be used.</li>
-<li><a href="https://www.eclipse.org/subversive/">Subversive</a>. You may also use
-	<a href="http://subclipse.tigris.org">Subclipse</a>, or
-	<a href="https://code.google.com/p/orc/source/checkout">check out the
-	project manually</a> with the client of your choice.
-</li>
-<li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.10.1.
+<li><a href="https://www.eclipse.org/downloads/">Eclipse</a> 4.6 or later. These
+instructions assume version 4.6, but other versions should behave similarly.
+"Eclipse Standard" (formerly called "Eclipse Standard") is sufficient, but any
+Eclipse package with the JDT can be used.</li>
+<li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.12.2.
 Note that the Scala Eclipse plug in <a href="https://www.assembla.com/spaces/scala-ide/wiki/Setup">works better with a modified eclipse.ini</a>.</li>
-<li>A Subversion distribution that includes the <code>svnversion</code> command.  Most UNIX systems (including macOS),
+<li>A Git distribution that includes the <code>git describe</code> command.  Most UNIX systems (including macOS),
 Linux distributions, BSD variants, and other OSes include this as part of their base platform.  A few OSes, notably Windows,
-require one to install a <a href="https://subversion.apache.org/packages.html">Subversion client</a>.</li>
+require one to install a <a href="https://git-scm.com/downloads">Git client</a>.</li>
 </ol>
 
 <h2>Check out Orc</h2>
 
 <p>Use the method of your choice to check out
-<tt>https://orc.googlecode.com/svn/trunk/OrcScala</tt> and import it into the
+<tt>https://github.com/orc-lang/orc</tt> and import it into the
 Eclipse project <tt>OrcScala</tt>. Here is how to accomplish this using Subversive:</p>
 <ol>
 <li>Launch Eclipse</li>
-<li>Go to <b>File -&gt; New -&gt; Project ...</b></li>
-<li>Open <b>SVN</b>, choose <b>Checkout Projects from SVN</b>, and click <b>Next&nbsp;&gt;</b></li>
-<li>Choose <b>Create a new repository location</b> and click <b>Next&nbsp;&gt;</b></li>
-<li>Enter for the <b>URL</b>: <tt>https://orc.googlecode.com/svn</tt></li>
-<li>Select <b>trunk -> OrcScala</b> and click <b>Finish</b>.</li>
-<li><i>Warning: Do not change the project name (from <tt>OrcScala</tt>) or
-the project will not build correctly.</i></li>
+<li>Go to <b>File -&gt; Import...</b></li>
+<li>Open <b>Git</b>, choose <b>Projects from Git</b>, and press <b>Next&nbsp;&gt;</b></li>
+<li>Choose <b>Clone URI</b> and click <b>Next&nbsp;&gt;</b></li>
+<li>Enter for the <b>URL</b>: <tt>https://github.com/orc-lang/orc</tt>, and press <b>Next&nbsp;&gt;</b>.</li>
+<li>Press <b>Next&nbsp;&gt;</b> on the <i>Branch Selection</i> page.</li>
+<li>Choose a destination folder for the Orc git repository, and press <b>Next&nbsp;&gt;</b>.</li>
+<li>Press <b>Next&nbsp;&gt;</b> on the <i>Select a wizard...</i> page.</li>
+<li>Finally, press <b>Finish</b> on the <i>Import Projects</i> page.</li>
 </ol>
 
 <h2>Running Orc Programs: Alternative 1</h2>

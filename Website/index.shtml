@@ -9,7 +9,7 @@ concurrency primitives, the programmer <span class="highlight">orchestrates</spa
 invocation of sites to achieve a goal, while managing timeouts, priorities, and
 failures.</p>
 
-<p>Orc 2.1.0 is available for <a href="download.shtml">download</a> (<a href="https://orc.csres.utexas.edu/wiki/Wiki.jsp?page=Orc%202.1%20Release%20Notes">release notes</a>)</p>
+<p>Orc 2.1.2 is available for <a href="download.shtml">download</a> (<a href="https://github.com/orc-lang/orc/releases/tag/v2.1.2">release notes</a>)</p>
 
 <h2>What can I use Orc for?</h2>
 
