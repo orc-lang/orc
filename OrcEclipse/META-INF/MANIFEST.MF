@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Orc Eclipse plug-in
 Bundle-SymbolicName: edu.utexas.cs.orc.orceclipse;singleton:=true
-Bundle-Version: 2.1.1.qualifier
+Bundle-Version: 2.1.2.qualifier
 Bundle-Activator: edu.utexas.cs.orc.orceclipse.OrcPlugin
 Bundle-Vendor: The University of Texas at Austin
 Require-Bundle: org.eclipse.osgi;bundle-version="3.10",
@@ -32,7 +32,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Eclipse-LazyStart: true
 Bundle-ClassPath: .,
- lib/orc-2.1.1.jar,
+ lib/orc-2.1.2.jar,
  lib/scala-library.jar,
  lib/scala-reflect.jar,
  lib/scala-parser-combinators_2.12-1.0.5.jar,
