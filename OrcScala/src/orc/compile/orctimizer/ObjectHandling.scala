@@ -28,8 +28,6 @@ trait ObjectHandling {
 
   require(structures contains root, s"Root $root is not available in $structures")
 
-  //protected def combineStored(a: StoredValueT, b: StoredValueT): StoredValueT
-  //protected def subsetOfStored(a: StoredValueT, b: StoredValueT): Boolean
   protected def copyObject(root: NodeT, structs: Map[NodeT, ObjectStructure]): This
 
   //override def toString() = s"ObjectValue($root, ${structures(root)}, ${structures.keySet})"
@@ -119,7 +117,6 @@ trait ObjectHandlingCompanion {
     }
     
     def addObject(o: Instance) = {
-      //additionalStructures ++= o.structures.asInstanceOf[Map[NodeT, Map[Field, StoredValueT]]]
       for ((root, struct) <- o.structures) {
         addStructure(root, struct)
       }

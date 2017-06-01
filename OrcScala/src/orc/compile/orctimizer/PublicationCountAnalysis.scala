@@ -1,3 +1,16 @@
+//
+// PublicationCountAnalysis.scala -- Scala object and class PublicationCountAnalysis
+// Project OrcScala
+//
+// Created by amp on May 2017.
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.compile.orctimizer
 
 import orc.compile.AnalysisRunner
@@ -13,13 +26,25 @@ import orc.values.Field
 import orc.ast.orctimizer.named.FieldAccess
 
 class PublicationCountAnalysis(
-  val publications: Map[SpecificAST[Expression], Range],
   results: Map[Node, PublicationCountAnalysis.PublicationInfo],
   graph: GraphDataProvider[Node, Edge])
   extends DebuggableGraphDataProvider[Node, Edge] {
   def edges = graph.edges
   def nodes = graph.nodes
   def subgraphs = Set()
+
+  val expressions = results collect {
+    case (ExitNode(l), p) => (l, p)
+  }
+  val values = results collect {
+    case (n@ (_: ValueFlowNode), p) => (n, p)
+  }
+  
+  def publicationsOf(e: SpecificAST[Expression]) = 
+    expressions.get(e).getOrElse(PublicationCountAnalysis.defaultResult).publications
+    
+  def stopabilityOf(e: ValueFlowNode) = 
+    values.get(e).getOrElse(PublicationCountAnalysis.defaultResult).futureValues
 
   override def computedNodeDotAttributes(n: Node): DotAttributes = {
     results.get(n) match {
@@ -39,22 +64,6 @@ class PublicationCountAnalysis(
   *
   */
 object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), PublicationCountAnalysis] {
-  /*
-   * The analysis is starts with the least specific bounds and reduces them until they cannot be reduced any more.
-   * The initial bounds are 0-ω and are reduced toward singleton ranges. There is no empty range.
-   */
-
-  def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): PublicationCountAnalysis = {
-    val cg = cache.get(CallGraph)(params)
-    val a = new PublicationCountAnalyzer(cg)
-    val res = a()
-    val r = res collect {
-      case (ExitNode(l), PublicationInfo(p, _, _)) => (l, p)
-    }
-
-    new PublicationCountAnalysis(r.toSeq.toMap, res, cg)
-  }
-
   val BoundedSet: BoundedSetModule {
     type TU = ObjectInfo
     type TL = Nothing
@@ -84,6 +93,21 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     }
   }
 
+  /*
+   * The analysis is starts with the least specific bounds and reduces them until they cannot be reduced any more.
+   * The initial bounds are 0-ω and are reduced toward singleton ranges. There is no empty range.
+   */
+
+  val defaultResult: PublicationInfo = PublicationInfo(Range(0, None), Range(0, 1), BoundedSet())
+
+  def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): PublicationCountAnalysis = {
+    val cg = cache.get(CallGraph)(params)
+    val a = new PublicationCountAnalyzer(cg)
+    val res = a()
+  
+    new PublicationCountAnalysis(res, cg)
+  }
+
   import BoundedSet._
 
   def applyOrOverride[T](a: Option[T], b: Option[T])(f: (T, T) => T): Option[T] =
@@ -99,6 +123,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
   }
   */
 
+  
   sealed abstract class ObjectInfo {
     val root: Node
     def apply(f: Field): Option[PublicationInfo]

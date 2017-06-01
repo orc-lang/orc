@@ -14,7 +14,6 @@ package orc.ast.orctimizer.named
 
 import scala.collection.mutable._
 import orc.values.Format
-import orc.compile.orctimizer.ExpressionAnalysisProvider
 import orc.values.Field
 import orc.util.PrettyPrintInterpolator
 import orc.util.FragmentAppender

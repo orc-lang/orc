@@ -34,22 +34,47 @@ import scala.collection.mutable
 import orc.ast.orctimizer.named.Bindings.SeqBound
 import orc.compile.OptimizerStatistics
 import orc.compile.NamedOptimization
+import orc.compile.AnalysisCache
+import orc.compile.orctimizer.FlowGraph.{ValueNode, ValueFlowNode}
+import orc.compile.orctimizer.CallGraph.FlowValue
+import orc.compile.orctimizer.CallGraph.CallableValue
 
-trait Optimization extends ((WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) with NamedOptimization {
+class AnalysisResults(val callgraph: CallGraph, val publications: PublicationCountAnalysis) {
+  private val exprMapping = mutable.HashMap[SpecificAST[Expression], SpecificAST[Expression]]()
+  private val varMapping = mutable.HashMap[ValueFlowNode, ValueFlowNode]()
+
+  def addMapping(req: Argument, real: Argument, p: List[NamedAST]): Unit = {
+    varMapping += ((ValueNode(req, p), remap(ValueNode(real, p))))
+  }
+  def addMapping(req: SpecificAST[Expression], real: SpecificAST[Expression]): Unit = {
+    exprMapping += req -> remap(real)
+  }
+
+  private def remap(req: ValueFlowNode) = varMapping.get(req).getOrElse(req)
+  private def remap(req: SpecificAST[Expression]) = exprMapping.get(req).getOrElse(req)
+
+  def valuesOf(e: Argument, p: List[NamedAST]) = callgraph.valuesOf[FlowValue](remap(ValueNode(e, p)))
+  def valuesOf(e: SpecificAST[Expression]) = callgraph.valuesOf(remap(e))
+
+  def stopabilityOf(e: Argument, p: List[NamedAST]) = publications.stopabilityOf(remap(ValueNode(e, p)))
+  def publicationsOf(e: SpecificAST[Expression]) = publications.publicationsOf(remap(e))
+}
+
+trait Optimization extends ((SpecificAST[Expression], AnalysisResults) => Option[Expression]) with NamedOptimization {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
   val name: String
 
   override def toString = name
 }
 
-case class Opt(name: String)(f: PartialFunction[(WithContext[Expression], ExpressionAnalysisProvider[Expression]), Expression]) extends Optimization {
-  def apply(e: WithContext[Expression], analysis: ExpressionAnalysisProvider[Expression]): Option[Expression] = f.lift((e, analysis))
+case class Opt(name: String)(f: PartialFunction[(SpecificAST[Expression], AnalysisResults), Expression]) extends Optimization {
+  def apply(e: SpecificAST[Expression], cache: AnalysisResults): Option[Expression] = f.lift((e, cache))
 }
-case class OptSimple(name: String)(f: PartialFunction[WithContext[Expression], Expression]) extends Optimization {
-  def apply(e: WithContext[Expression], analysis: ExpressionAnalysisProvider[Expression]): Option[Expression] = f.lift(e)
+case class OptSimple(name: String)(f: PartialFunction[SpecificAST[Expression], Expression]) extends Optimization {
+  def apply(e: SpecificAST[Expression], cache: AnalysisResults): Option[Expression] = f.lift(e)
 }
-case class OptFull(name: String)(f: (WithContext[Expression], ExpressionAnalysisProvider[Expression]) => Option[Expression]) extends Optimization {
-  def apply(e: WithContext[Expression], analysis: ExpressionAnalysisProvider[Expression]): Option[Expression] = f(e, analysis)
+case class OptFull(name: String)(f: (SpecificAST[Expression], AnalysisResults) => Option[Expression]) extends Optimization {
+  def apply(e: SpecificAST[Expression], cache: AnalysisResults): Option[Expression] = f(e, cache)
 }
 
 // TODO: Implement compile time evaluation of select sites.
@@ -65,52 +90,63 @@ case class OptFull(name: String)(f: (WithContext[Expression], ExpressionAnalysis
 abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   def opts: Seq[Optimization]
 
-  def transformFrom(f: PartialFunction[WithContext[Expression], Expression]): ContextualTransform
+  private def traverse(e: SpecificAST[Expression])(f: (SpecificAST[Expression]) => Expression) = {
+    e.subtrees
+  }
 
-  def apply(e: Expression, analysis: ExpressionAnalysisProvider[Expression]): Expression = {
-    val trans = transformFrom {
-      case (e: WithContext[Expression]) => {
-        val e1 = opts.foldLeft(e)((e, opt) => {
-          opt(e, analysis) match {
-            case None => e
-            case Some(e2) =>
-              if (e.e != e2) {
-                import orc.util.StringExtension._
-                Logger.fine(s"${opt.name}: ${e.e.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
-                countOptimization(opt)
-                e2 in e.ctx
-              } else
-                e
-          }
-        })
-        e1.e
+  def apply(e: Expression, cache: AnalysisCache): Expression = {
+    val results = new AnalysisResults(cache.get(CallGraph)((e, None)), cache.get(PublicationCountAnalysis)((e, None)))
+
+    val trans = new SpecificASTTransform {
+      override val onExpression = {
+        case (e: SpecificAST[Expression]) => {
+          val e1 = opts.foldLeft(e)((e, opt) => {
+            import orc.util.StringExtension._
+            //Logger.fine(s"${opt.name}: invoking on ${e.ast.toString.truncateTo(60)}")
+            opt(e, results) match {
+              case None => e
+              case Some(e2) =>
+                val e3 = if (e.ast != e2) {
+                  Logger.fine(s"${opt.name}: ${e.ast.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
+                  countOptimization(opt)
+                  SpecificAST(e2, e.path)
+                } else {
+                  e
+                }
+                results.addMapping(e3, e)
+                e3
+            }
+          })
+          e1.ast
+        }
       }
     }
 
     val r = trans(e)
 
-    val check = transformFrom {
-      case (e: Expression) in ctx => {
-        for (v <- e.freeVars) {
-          try {
-            ctx(v)
-          } catch {
-            case exc: UnboundVariableException => {
-              throw new AssertionError(s"Variable $v not bound in expression:\n$e\n=== in context: $ctx\n=== in overall program:\n$r", exc)
-            }
-          }
-        }
-        e
-      }
-    }
-
-    check(r)
+//    val check = transformFrom {
+//      case SpecificAST(e: Expression, path) => {
+//        for (v <- e.freeVars) {
+//          try {
+//            ctx(v)
+//          } catch {
+//            case exc: UnboundVariableException => {
+//              throw new AssertionError(s"Variable $v not bound in expression:\n$e\n=== in context: $ctx\n=== in overall program:\n$r", exc)
+//            }
+//          }
+//        }
+//        e
+//      }
+//    }
+//
+//    check(r)
 
     r
   }
 
   import Optimizer._
 
+  /*
   val flattenThreshold = co.options.optimizationFlags("orct:future-flatten-threshold").asInt(5)
 
   val FutureElimFlatten = Opt("future-elim-flatten") {
@@ -121,8 +157,19 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               */
     case (e, a) if false => e
   }
+  */
+
+  /*
+  Analysis needed:
+
+  Information about forcing of expressions. What it forces, and if it halts with it. What is forces may also need to be categorized into before and after first side-effect/publication.
+
+  Time information: Real-time delay before publication and halt.
+
+  */
+
+  /*
   val FutureElim = OptFull("future-elim") { (e, a) =>
-    import a.ImplicitResults._
     (e, a) match {
       case IndependentFutures(futs, core) => {
         // futs is a seq of (f, x)
@@ -158,15 +205,14 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
+  */
 
-  // TODO: Reinstate this optimization
   /*
   val UnusedFutureElim = Opt("unused-future-elim") {
     case (FutureAt(x, f, g), a) if !(g.freeVars contains x) => g || (f >> Stop())
   }
   */
 
-  // TODO: Evaluate and port if needed.
   /*
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
     import a.ImplicitResults._
@@ -185,85 +231,109 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   */
 
   val ForceElim = OptFull("force-elim") { (e, a) =>
-    import a.ImplicitResults._
-    val ctx = e.ctx
+    import orc.compile.orctimizer.CallGraph._
     e match {
-      /*case ForceAt(xs, vs, _, g) if !g.freeVars.contains(x) && g.forces(v) <= ForceType.Eventually(false) && g.effectFree =>
-        Some(g)*/
-      //case ForceAt(xs, vs, _, g) if v.isFuture || v.isDef => Some(v)
-      case fe @ ForceAt(xs, vs, forceClosures, e) => {
-        // Determine which of vs cannot be futures/closures (with checking of forceClosures)
-        def cannotBeFuture(a: Argument) = a match {
-          case x: BoundVar =>
-            ctx(x) match {
-              case Bindings.SeqBound(_, from > _ > _) =>
-                false // TODO: Update when we have real analysis for this.
-              // TODO: Correctly handle defs and sites
-              //case _: Bindings.CallableBound | _: Bindings.RecursiveCallableBound if !forceClosures =>
-              //  true
-              case Bindings.ForceBound(_, _, _) => true
-              case _ => false
-            }
-          case _: Constant => true
+      case SpecificAST(Force(xs, vs, b, body), _) => {
+        def isForcable(e: FlowValue) = e match {
+          case _: FutureValue => true
+          case _: CallableValue => true
           case _ => false
         }
-
-        // Search for elements in vs that have already been forced in the context (with the same or better forceClosures)
-        def forceInContext(a: Argument): Option[Argument] = a match {
-          case x: BoundVar =>
-            // Search the context for a ForceBound of x which has at least as strong a force type
-            val bindOpt = ctx.bindings find {
-              case Bindings.ForceBound(_, Force(xs, vs, fc, _), `x`) if !forceClosures || fc => true
-              case _ => false
-            }
-
-            bindOpt map {
-              case Bindings.ForceBound(_, fe @ Force(_, _, _, _), _) => {
-                //Logger.finer(s"Found preforced: $a from $fe")
-                // Just replace this force with y that was already bound to the force.
-                x
-              }
-            }
-          case _ => None
+        val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2, e.subtreePath).exists(isForcable))
+        def addAnalysis(p: (BoundVar, Argument)) = {
+          val (x, v) = p
+          (x, v, a.valuesOf(v, e.subtreePath))
         }
-
-        //Logger.fine(s"Checking force: ${(xs zip vs.map(_.e))} ${forceClosures}")
-
-        // Right replaces in e, Left leaves force
-        val forceChanges = for ((x, v) <- fe.e.asInstanceOf[Force].toMap) yield {
-          //Logger.fine(s"$x = $v")
-          //Logger.fine(s"${cannotBeFuture(v)} ${forceInContext(v)}")
-          if (cannotBeFuture(v)) {
-            (x, Right(v))
-          } else {
-            forceInContext(v) match {
-              case Some(r) =>
-                (x, Right(r))
-              case None =>
-                (x, Left(v))
-            }
-          }
-        }
-
-        // Replace xs in e and rebuild
-        val (newXs, newVs) = forceChanges.collect({
-          case (x, Left(v)) => (x, v)
-        }).unzip
-
-        val newE = forceChanges.foldLeft(e.e)((e, p) => p match {
-          case (x, Right(v)) => e.subst(v, x: Argument)
-          case _ => e
-        })
-
-        if (newXs.size > 0)
-          Some(Force(newXs.toList, newVs.toList, forceClosures, newE))
+        //Logger.fine(s"nfs = ${nfs.map(addAnalysis)}\nfs = ${fs.map(addAnalysis)}")
+        val (newXs, newVs) = fs.unzip
+        val newBody = body.substAll(nfs.toMap[Argument, Argument])
+        if (fs.nonEmpty)
+          Some(Force(newXs, newVs,  b, newBody))
         else
-          Some(newE)
+          Some(newBody)
       }
       case _ => None
     }
   }
 
+  val IfDefElim = OptFull("ifdef-elim") { (e, a) =>
+    import orc.compile.orctimizer.CallGraph._
+    e.ast match {
+      case IfDef(v, f, g) =>
+        val vs = a.valuesOf(v, e.subtreePath)
+        vs.values match {
+          case Some(s) =>
+            val (ds, nds) = s.partition(_ match {
+              case CallableValue(_: Def, _) => true
+              case _ => false
+            })
+            if(ds.nonEmpty && nds.nonEmpty) {
+              None
+            } else if (ds.nonEmpty && nds.isEmpty) {
+              Some(f)
+            } else if (ds.isEmpty && nds.nonEmpty) {
+              Some(g)
+            } else {
+              // This probably shouldn't be reached.
+              None
+            }
+          case _ =>
+            None
+        }
+      case _ => None
+    }
+  }
+
+  val SeqElimArg = OptFull("seq-elim-arg") { (e, a) =>
+    e.ast match {
+      case Branch(f, x, y) if x == y =>
+        Some(f)
+      case Branch(y: Constant, x, f) =>
+        Some(f.subst(y, x))
+      case Branch(y: Argument, x, f) =>
+        Some(f.subst(y, x))
+      case _ => None
+    }
+  }
+
+  val StopElim = OptSimple("stop-elim") {
+    case SpecificAST(Parallel(Stop(), g), _) => g
+    case SpecificAST(Parallel(f, Stop()), _) => f
+    case SpecificAST(Otherwise(Stop(), g), _) => g
+    case SpecificAST(Otherwise(f, Stop()), _) => f
+  }
+
+  /*
+  This is invalid. Once I have side-effect and delay information it can be made correct
+
+  val SeqElimConstant = OptFull("seq-elim-const") { (e, a) =>
+    e.ast match {
+      case Branch(c, x, y) =>
+        val vs = a.valuesOf(e.subtree(c))
+        need to also check for delay and side-effects
+        vs.values match {
+          case Some(s) if s.size == 1 =>
+            val v = s.head
+            import CallGraph._
+            v match {
+              case DataValue(v) =>
+                Some(y.subst(Constant(v), x))
+              case ExternalSiteValue(v) =>
+                Some(y.subst(Constant(v), x))
+              case CallableValue(Callable(name, _, _, _, _, _), _) =>
+                Some(y.subst(name, x))
+              case _ =>
+                None
+            }
+          case _ =>
+            None
+        }
+      case _ => None
+    }
+  }
+  */
+
+  /*
   val LiftForce = OptFull("lift-force") { (e, a) =>
     import a.ImplicitResults._
     val freevars = e.freeVars
@@ -319,33 +389,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  val IfDefElim = OptFull("ifdef-elim") { (e, a) =>
-    import a.ImplicitResults._
-    val ctx = e.ctx
-    e match {
-      case IfDefAt(a, f, g) =>
-        a.e match {
-          case _ if a.siteMetadata.isDefined =>
-            // Sites are never defs and non-sites never get site metadata
-            Some(g)
-          case x: BoundVar =>
-            ctx(x) match {
-              case Bindings.SeqBound(_, from > _ > _) => None
-              // TODO: Need to distinguish def and site properly here!
-              case _: Bindings.CallableBound | _: Bindings.RecursiveCallableBound =>
-                ??? // Some(f)
-              case Bindings.ForceBound(_, _, _) => None
-              case _ => None
-            }
-          case c: Constant =>
-            // Constants are never defs
-            Some(g)
-          case _ => None
-        }
-      case _ => None
-    }
-  }
-
   val StopEquiv = Opt("stop-equiv") {
     case (f, a) if f != Stop() &&
       (a(f).publications only 0) &&
@@ -362,15 +405,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case f > x > g =>
         //Logger.finest(s"Failed to elimate >>: ${f.effectFree} && ${f.nonBlockingPublish} && ${f.publications} only 1 && ${f.timeToHalt} && ${!g.freeVars.contains(x)} : ${e.e}")
         None
-      case _ => None
-    }
-  }
-  val SeqElimVar = OptFull("seq-elim-var") { (e, a) =>
-    import a.ImplicitResults._
-    e match {
-      case f > x > y if x == y.e => Some(f)
-      case ((x: Var) in _) > y > f if f.forces(y) == ForceType.Immediately(true) => Some(f.subst(x, y))
-      //case ForceAt((x: Var) in _) > y > f if f.forces(x) == ForceType.Immediately(true) && !(a(f).freeVars contains y) => Some(f)
       case _ => None
     }
   }
@@ -415,13 +449,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     case (DeclareCallablesAt(defs, ctx, b) > x > e, a) if (e.freeVars & defs.map(_.name).toSet).isEmpty => {
       DeclareCallables(defs, b > x > e)
     }
-  }
-
-  val StopElim = OptSimple("stop-elim") {
-    case (Stop() in _) || g => g.e
-    case f || (Stop() in _) => f.e
-    case (Stop() in _) OtherwiseAt g => g.e
-    case f OtherwiseAt (Stop() in _) => f.e
   }
 
   val ConstProp = Opt("constant-propogation") {
@@ -667,9 +694,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
+  */
 }
 
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
+  val allOpts = List(IfDefElim, ForceElim, SeqElimArg, StopElim)
+  /*
   val allOpts = List(
     SeqReassoc,
     DefSeqNorm, DefElim,
@@ -681,6 +711,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
     StopEquiv, StopElim,
     SeqExp, SeqElim, SeqElimVar,
     InlineDef, TypeElim)
+    */
 
   val opts = allOpts.filter { o =>
     val b = co.options.optimizationFlags(s"orct:${o.name}").asBool()
@@ -692,7 +723,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
     override def onExpressionCtx = f
   }
 }
-
+/*
 case class UnrollOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
     UnrollDef)
@@ -703,6 +734,7 @@ case class UnrollOptimizer(co: CompilerOptions) extends Optimizer(co) {
     override def onExpressionCtx = f
   }
 }
+*/
 
 object Optimizer {
   import WithContext._
@@ -753,6 +785,7 @@ object Optimizer {
     }
   }
 
+  /*
   object IndependentSeqs {
     private def independent(p: WithContext[Expression], a: ExpressionAnalysisProvider[Expression]): (Seq[(Expression, BoundVar)], WithContext[Expression]) = {
       import a.ImplicitResults._
@@ -788,6 +821,9 @@ object Optimizer {
       }
     }
   }
+  */
+
+  /*
 
   /* This uses the identity:
    * future x = future y = e # f # g
@@ -859,4 +895,5 @@ object Optimizer {
       }
     }
   }
+  */
 }

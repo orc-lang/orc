@@ -43,7 +43,22 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
     override def apply(co: CompilerOptions) = { ast =>
       //println(co.options.optimizationFlags)
       val maxPasses = co.options.optimizationFlags("orct:max-passes").asInt(8)
+      val cache = new AnalysisCache()
+      val optimizer = StandardOptimizer(co)
 
+      def opt(prog: Expression, pass: Int): Expression = {
+        val prog1 = optimizer(prog, cache)
+
+        def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Optimizer pass $pass/$maxPasses: $optimizationCountsStr")
+
+        if ((prog1 == prog && pass > 1) || pass > maxPasses)
+          prog1
+        else {
+          opt(prog1, pass + 1)
+        }
+      }
+      /*
       def opt(prog: Expression, pass: Int): Expression = {
         def logAnalysis() = {
           val stats = Map(
@@ -88,11 +103,11 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, logAnalysis())
 
         val analyzer = new ExpressionAnalyzer
-        val optimizer = StandardOptimizer(co)
-        val prog1 = optimizer(prog, analyzer)
+        //val optimizer = StandardOptimizer(co)
+        val prog1 = ??? // optimizer(prog, analyzer)
 
-        def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
-        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Optimizer pass $pass/$maxPasses: $optimizationCountsStr")
+        //def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        //co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Optimizer pass $pass/$maxPasses: $optimizationCountsStr")
 
         if ((prog1 == prog && pass > 1) || pass > maxPasses)
           prog1
@@ -100,13 +115,43 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
           opt(prog1, pass + 1)
         }
       }
+      */
+
+      def shortString(o: AnyRef) = s"'${o.toString().replace('\n', ' ').take(30)}'"
+
+      {
+        //val g = new FlowGraph(ast)
+        /*println("=============== Nodes ---")
+        println(g.nodes.mkString("\n"))
+        println("=============== Edges ---")
+        println(g.edges.mkString("\n"))
+        */
+        //println(g.toDot)
+        //g.debugShow()
+
+        lazy val fg = cache.get(FlowGraph)(ast, None)
+        //fg.debugShow()
+
+        lazy val cg = cache.get(CallGraph)(ast, None)
+
+        //println("=============== results ---")
+        //println(cg.results.filter(p => p._1.ast.isInstanceOf[Var]).map(p => s"${shortString(p._1)}\t----> ${p._2}").mkString("\n"))
+
+        //cg.debugShow()
+
+        lazy val pubs = cache.get(PublicationCountAnalysis)(ast, None)
+
+        //println("=============== publication results ---")
+        //println(pubs.expressions.par.map(p => s"${shortString(p._1.ast)}\t----=========--> ${p._2}").seq.mkString("\n"))
+        //pubs.debugShow()
+
+        //System.exit(0)
+      }
 
       val e = if (co.options.optimizationFlags("orct").asBool() && pred(co))
         opt(ast, 1)
       else
         ast
-
-      TransformContext.clear()
 
       e
     }
@@ -118,6 +163,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
       //println(co.options.optimizationFlags)
       val maxPasses = co.options.optimizationFlags("orct:unroll-repeats").asInt(2)
 
+      /*
       def opt(prog: Expression, pass: Int): Expression = {
         val analyzer = new ExpressionAnalyzer
         val optimizer = UnrollOptimizer(co)
@@ -138,10 +184,11 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
         opt(ast, 1)
       else
         ast
+        */
 
       TransformContext.clear()
 
-      e
+      ast
     }
   }
 }

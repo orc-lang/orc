@@ -70,6 +70,10 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
     }
   }
 
+  implicit class OptionSpecificASTAdds[T <: NamedAST](l: Option[SpecificAST[T]]) {
+    def subtreePath = l.map(_.subtreePath).getOrElse(Nil)
+  }
+
   val entry = EntryNode(SpecificAST(root, location.subtreePath))
   val exit = ExitNode(SpecificAST(root, location.subtreePath))
 

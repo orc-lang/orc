@@ -1,5 +1,5 @@
 //
-// CallGraph.scala -- Scala class CallGraph
+// CallGraph.scala -- Scala object and class CallGraph
 // Project OrcScala
 //
 // Created by amp on Mar 17, 2017.
@@ -92,6 +92,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
     edges.flatMap(e => Seq(e.from, e.to))
   }
 
+  /*
   def callTargets(c: Call): BoundedSet[CallTarget] = {
     results.keys.find(_.ast == c.target) match {
       case Some(n) =>
@@ -101,9 +102,11 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
         MaximumBoundedSet()
     }
   }
+  */
 
   def valuesOf[C <: FlowValue : ClassTag](c: Node): BoundedSet[C] = {
     val CType = implicitly[ClassTag[C]]
+    assert(CType != implicitly[ClassTag[Nothing]])
     results.get(c) match {
       case Some(r) =>
         r.collect({ case CType(t) => t})
@@ -113,14 +116,18 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
     }
   }
 
-  def valuesOf(e: Expression): BoundedSet[FlowValue] = {
-    results.keys.find(_.ast == e) match {
+  def valuesOf(e: BoundVar): BoundedSet[FlowValue] = {
+    results.keys.find(n => n.ast == e && n.isInstanceOf[VariableNode]) match {
       case Some(n) =>
         valuesOf[FlowValue](n)
       case None =>
         Logger.fine(s"The expression $e does not appear in the analysis results. Using top.")
         MaximumBoundedSet()
     }
+  }
+
+  def valuesOf(e: SpecificAST[Expression]): BoundedSet[FlowValue] = {
+    valuesOf[FlowValue](ExitNode(e))
   }
 
   override def graphLabel: String = "Call Graph"
