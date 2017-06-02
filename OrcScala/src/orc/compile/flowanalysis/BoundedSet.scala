@@ -34,8 +34,10 @@ abstract class BoundedSetModule {
 
   sealed abstract class BoundedSet[T >: TL <: TU] extends LatticeValue[BoundedSet[T]] {
     def union(o: BoundedSet[T]): BoundedSet[T]
-    def ++(o: BoundedSet[T]): BoundedSet[T] = union(o)
-    def +(o: T): BoundedSet[T] = union(BoundedSetModule.this.apply(o))
+    def ++(o: BoundedSet[T]): BoundedSet[T] = 
+      union(o)
+    def +(o: T): BoundedSet[T] = 
+      union(BoundedSetModule.this.apply(o))
 
     def collect[U >: TL <: TU](pf: PartialFunction[T, U]): BoundedSet[U]
 
@@ -63,7 +65,7 @@ abstract class BoundedSetModule {
   }
 
   class ConcreteBoundedSet[T >: TL <: TU](s: Set[T]) extends BoundedSet[T] {
-    assert(s.size <= sizeLimit)
+    require(s.size <= sizeLimit)
 
     def union(o: BoundedSet[T]): BoundedSet[T] = o match {
       case ConcreteBoundedSet(s1) => BoundedSetModule.this(s ++ s1)
@@ -97,12 +99,12 @@ abstract class BoundedSetModule {
     def exists(f: (T) => Boolean): Boolean = s.exists(f)
   }
 
-  class ConcreteBoundedSetObject {
+  class ConcreteBoundedSetCompanion {
     def apply[T >: TL <: TU](s: Set[T]) = new ConcreteBoundedSet(s)
     def unapply[T >: TL <: TU](o: ConcreteBoundedSet[T]): Option[Set[T]] = o.values
   }
-  val ConcreteBoundedSet = new ConcreteBoundedSetObject()
-
+  val ConcreteBoundedSet: ConcreteBoundedSetCompanion
+  
   case class MaximumBoundedSet[T >: TL <: TU]() extends BoundedSet[T] {
     def union(o: BoundedSet[T]): BoundedSet[T] = MaximumBoundedSet()
     def collect[U >: TL <: TU](pf: PartialFunction[T, U]): BoundedSet[U] = MaximumBoundedSet()

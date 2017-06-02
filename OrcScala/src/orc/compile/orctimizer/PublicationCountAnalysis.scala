@@ -24,6 +24,7 @@ import orc.compile.Logger
 import scala.reflect.ClassTag
 import orc.values.Field
 import orc.ast.orctimizer.named.FieldAccess
+import orc.compile.orctimizer.CallGraph.CallableValue
 
 class PublicationCountAnalysis(
   results: Map[Node, PublicationCountAnalysis.PublicationInfo],
@@ -39,11 +40,11 @@ class PublicationCountAnalysis(
   val values = results collect {
     case (n@ (_: ValueFlowNode), p) => (n, p)
   }
-  
-  def publicationsOf(e: SpecificAST[Expression]) = 
+
+  def publicationsOf(e: SpecificAST[Expression]) =
     expressions.get(e).getOrElse(PublicationCountAnalysis.defaultResult).publications
-    
-  def stopabilityOf(e: ValueFlowNode) = 
+
+  def stopabilityOf(e: ValueFlowNode) =
     values.get(e).getOrElse(PublicationCountAnalysis.defaultResult).futureValues
 
   override def computedNodeDotAttributes(n: Node): DotAttributes = {
@@ -64,13 +65,9 @@ class PublicationCountAnalysis(
   *
   */
 object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), PublicationCountAnalysis] {
-  val BoundedSet: BoundedSetModule {
+  object BoundedSetInstance extends BoundedSetModule {
     type TU = ObjectInfo
-    type TL = Nothing
-  } = new BoundedSetModule {
-    mod =>
-    type TU = ObjectInfo
-    type TL = Nothing
+    type TL = ObjectInfo
     val sizeLimit = 8
 
     class ConcreteBoundedSet[T >: TL <: TU](s: Set[T]) extends super.ConcreteBoundedSet[T](s) {
@@ -82,16 +79,24 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
           val combinedObjs = objs.groupBy(_.root).map { case (_, os) =>
             os.reduce(_ ++ _)
           }
-          mod((ss -- objs.asInstanceOf[Set[T]]) ++ combinedObjs.asInstanceOf[Iterable[T]])
+          BoundedSetInstance((ss -- objs.asInstanceOf[Set[T]]) ++ combinedObjs.asInstanceOf[Iterable[T]])
         case MaximumBoundedSet() =>
           MaximumBoundedSet()
       }
     }
 
-    override object ConcreteBoundedSet extends ConcreteBoundedSetObject {
+    // For some reason this cannot be an object. It triggers an uninitialized field error.
+    val ConcreteBoundedSet = new ConcreteBoundedSetCompanion {
       override def apply[T >: TL <: TU](s: Set[T]) = new ConcreteBoundedSet(s)
     }
   }
+
+  type BoundedSet[T >: ObjectInfo <: ObjectInfo] = BoundedSetInstance.BoundedSet[T]
+  val BoundedSet: BoundedSetInstance.type = BoundedSetInstance
+  type ConcreteBoundedSet[T >: ObjectInfo <: ObjectInfo] = BoundedSetInstance.ConcreteBoundedSet[T]
+  val ConcreteBoundedSet = BoundedSetInstance.ConcreteBoundedSet
+  type MaximumBoundedSet[T >: ObjectInfo <: ObjectInfo] = BoundedSetInstance.MaximumBoundedSet[T]
+  val MaximumBoundedSet = BoundedSetInstance.MaximumBoundedSet()
 
   /*
    * The analysis is starts with the least specific bounds and reduces them until they cannot be reduced any more.
@@ -104,11 +109,9 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     val cg = cache.get(CallGraph)(params)
     val a = new PublicationCountAnalyzer(cg)
     val res = a()
-  
+
     new PublicationCountAnalysis(res, cg)
   }
-
-  import BoundedSet._
 
   def applyOrOverride[T](a: Option[T], b: Option[T])(f: (T, T) => T): Option[T] =
     (a, b) match {
@@ -117,65 +120,37 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
       case (Some(a), None) => Some(a)
       case (None, None) => None
     }
-  /*
-  def applyOrNone[T](a: Option[T], b: Option[T])(f: (T, T) => T): Option[T] = {
-    a.flatMap(a => b.map(b => f(a, b)))
-  }
-  */
 
-  
-  sealed abstract class ObjectInfo {
-    val root: Node
-    def apply(f: Field): Option[PublicationInfo]
-    def ++(o: ObjectValue): ObjectValue
-    def ++(o: ObjectInfo): ObjectValue = o match {
-      case o: ObjectValue => this ++ o
-    }
-    def subsetOf(o: ObjectValue): Boolean
-    def subsetOf(o: ObjectInfo): Boolean = o match {
-      case o: ObjectValue => this subsetOf o
-      case o if root == o.root => true
-      case _ => false
-    }
-  }
-
-  case class ObjectRef(root: Node) extends ObjectInfo {
-    def apply(f: Field): Option[PublicationInfo] = throw new AssertionError("Should never be called")
-    def ++(o: ObjectValue): ObjectValue = throw new AssertionError("Should never be called")
-    def subsetOf(o: ObjectValue): Boolean = root == o.root
-  }
-
-  case class ObjectValue(root: Node, structures: Map[Node, Map[Field, PublicationInfo]]) extends ObjectInfo with ObjectHandling {
+  object ObjectHandlingInstance extends ObjectHandling {
     type NodeT = Node
     type StoredValueT = PublicationInfo
-    type This = ObjectValue
+    type ResultValueT = PublicationInfo
 
-    override def toString() = s"ObjectValue($root, ${structures(root)})"
+    val ObjectValueReified = implicitly[ClassTag[ObjectValue]]
+    val ObjectRefReified = implicitly[ClassTag[ObjectRef]]
 
-    def apply(f: Field): Option[PublicationInfo] = {
-      def flatten(i: PublicationInfo): PublicationInfo = {
-        val fields = i.fields map[ObjectInfo] {
-          case ObjectRef(i) =>
-            lookupObject(i)
-          case v =>
-            v
-        }
+    case class ObjectRef(root: NodeT) extends ObjectRefBase
+    object ObjectRef extends ObjectRefCompanion
+
+    case class ObjectValue(root: NodeT, structures: Map[NodeT, ObjectStructure]) extends ObjectValueBase {
+      def derefStoredValue(i: StoredValueT): ResultValueT = {
+        val fields = i.fields map[ObjectInfo] derefObject
         i.copy(fields = fields)
       }
 
-      get(f) map { flatten }
+      def copy(root: NodeT, structs: Map[NodeT, ObjectStructure]): ObjectValue = {
+        ObjectValue(root, structs)
+      }
     }
 
-    def copyObject(root: FlowGraph.Node, structs: Map[FlowGraph.Node, Map[Field, PublicationInfo]]): ObjectValue = {
-      ObjectValue(root, structs)
-    }
+    object ObjectValue extends ObjectValueCompanion
   }
 
-  object ObjectValue extends ObjectHandlingCompanion {
-    type NodeT = Node
-    type StoredValueT = PublicationInfo
-    type Instance = ObjectValue
-  }
+  type ObjectInfo = ObjectHandlingInstance.ObjectInfo
+  type ObjectValue = ObjectHandlingInstance.ObjectValue
+  val ObjectValue = ObjectHandlingInstance.ObjectValue
+  type ObjectRef = ObjectHandlingInstance.ObjectRef
+  val ObjectRef = ObjectHandlingInstance.ObjectRef
 
   class PublicationInfo(val publications: Range, val futureValues: Range, val fields: BoundedSet[ObjectInfo]) extends LatticeValue[PublicationInfo] {
     assert(futureValues <= 1)
@@ -206,7 +181,6 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
 
     def moreCompleteOrEqual(o: PublicationInfo): Boolean = {
       val fieldsMoreComplete = {
-        val MaximumBoundedSet = BoundedSet.MaximumBoundedSet[ObjectInfo]()
         (o.fields, fields) match {
           case (ConcreteBoundedSet(so), ConcreteBoundedSet(st)) =>
             so forall { vo =>
@@ -340,7 +314,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
               PublicationInfo(inStateFlow.publications, inStateValue.publications.limitTo(1), inStateValue.fields)
             case CallSite(target, _, _) => {
               lazy val inStateHappensBefore = states.inStateReduced[HappensBeforeEdge](mergeInputs)
-              import CallGraph._
+              import CallGraph.{FlowValue, ExternalSiteValue, CallableValue}
               val possibleV = graph.valuesOf[FlowValue](ValueNode(target, spAst.subtreePath))
               val extPubs = possibleV match {
                 case CallGraph.BoundedSet.ConcreteBoundedSet(s) if s.exists(v => v.isInstanceOf[ExternalSiteValue]) =>
@@ -373,12 +347,12 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
               PublicationInfo(inStateTokenOneOf, Range(1, 1), inStateValue.fields)
             case IfDef(v, l, r) => {
               // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
-              import CallGraph._
-              val possibleV = graph.valuesOf[FlowValue](ValueNode(v, spAst.subtreePath))
+              import CallGraph.{FlowValue, ExternalSiteValue, CallableValue}
+              val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v, spAst.subtreePath))
               val isDef = possibleV match {
                 case MaximumBoundedSet =>
                   None
-                case CallGraph.BoundedSet.ConcreteBoundedSet(s) =>
+                case CallGraph.ConcreteBoundedSet(s) =>
                   val (ds, nds) = s.partition {
                     case CallableValue(callable: Def, _) =>
                       true
@@ -407,14 +381,9 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
             case Trim(_) =>
               PublicationInfo(inStateFlow.publications.limitTo(1), inStateValue.futureValues, inStateValue.fields)
             case New(_, _, bindings, _) =>
-              val structs = ObjectValue.buildStructures(node) { (content, inNode, addObject) =>
+              val obj = ObjectValue.buildStructures(node) { (content, inNode, refObject) =>
                 val st = states(inNode)
-                val fields = st.fields map {
-                  case o @ ObjectValue(root, _) =>
-                    addObject(o)
-                    ObjectRef(root)
-                  case v => v
-                }
+                val fields = st.fields map refObject
                 content match {
                   case f @ FieldFuture(expr) =>
                     PublicationInfo(Range(1, 1), st.publications.limitTo(1), fields)
@@ -422,11 +391,11 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
                     PublicationInfo(Range(1, 1), st.futureValues, fields)
                 }
               }
-              PublicationInfo(inStateFlow.publications, Range(1, 1), BoundedSet(ObjectValue(node, structs)))
+              PublicationInfo(inStateFlow.publications, Range(1, 1), BoundedSet(obj))
             case FieldAccess(_, f) =>
               inStateValue.fields.values match {
                 case Some(s) =>
-                  s.map(_(f)).fold(None)(applyOrOverride(_, _)(_ combine _)).getOrElse(initialState)
+                  s.map(_.get(f)).fold(None)(applyOrOverride(_, _)(_ combine _)).getOrElse(initialState)
                 case None =>
                   PublicationInfo(Range(0, None), Range(0, None), PublicationCountAnalysis.BoundedSet.MaximumBoundedSet())
               }

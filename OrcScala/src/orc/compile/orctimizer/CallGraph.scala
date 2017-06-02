@@ -39,7 +39,6 @@ import orc.compile.AnalysisRunner
   */
 class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, Edge] {
   import CallGraph._
-  import BoundedSet._
 
   /*
 
@@ -91,18 +90,6 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
   lazy val nodes: collection.Set[Node] = {
     edges.flatMap(e => Seq(e.from, e.to))
   }
-
-  /*
-  def callTargets(c: Call): BoundedSet[CallTarget] = {
-    results.keys.find(_.ast == c.target) match {
-      case Some(n) =>
-        valuesOf[CallTarget](n)
-      case None =>
-        Logger.fine(s"The call $c does not appear in the analysis results. Using top.")
-        MaximumBoundedSet()
-    }
-  }
-  */
 
   def valuesOf[C <: FlowValue : ClassTag](c: Node): BoundedSet[C] = {
     val CType = implicitly[ClassTag[C]]
@@ -163,6 +150,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
 
 object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), CallGraph] {
   def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): CallGraph = {
+    println(BoundedSetInstance.ConcreteBoundedSet)
     val fg = cache.get(FlowGraph)(params)
     new CallGraph(fg)
   }
@@ -175,22 +163,11 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 //    }
   }
 
-  val BoundedSet: BoundedSetModule {
-    type TU = Value
-    type TL = Nothing
-  } = new BoundedSetModule {
+  object BoundedSetInstance extends BoundedSetModule {
     mod =>
     type TU = Value
     type TL = Nothing
     val sizeLimit = 8
-
-    override def apply[T >: TL <: TU](s: Set[T]): BoundedSet[T] = {
-      if (s.size > sizeLimit) {
-        MaximumBoundedSet()
-      } else {
-        ConcreteBoundedSet(s)
-      }
-    }
 
     class ConcreteBoundedSet[T >: TL <: TU](s: Set[T]) extends super.ConcreteBoundedSet[T](s) {
       override def union(o: BoundedSet[T]): BoundedSet[T] = o match {
@@ -204,7 +181,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
           val combinedFuture = if (futures.isEmpty) Set[Future]() else Set(FutureValue(futures.map(_.contents).reduce(_ union _)))
           val ffutures = ss.collect({ case f: FieldFutureValue => f })
           val combinedFFuture = if (ffutures.isEmpty) Set[FieldFutureValue]() else Set(FieldFutureValue(ffutures.map(_.contents).reduce(_ union _)))
-          mod((ss -- futures.asInstanceOf[Set[T]] -- ffutures.asInstanceOf[Set[T]]) ++ 
+          mod((ss -- futures.asInstanceOf[Set[T]] -- ffutures.asInstanceOf[Set[T]]) ++
                combinedFuture.asInstanceOf[Set[T]] ++ combinedFFuture.asInstanceOf[Set[T]])
         case MaximumBoundedSet() =>
           MaximumBoundedSet()
@@ -221,34 +198,18 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
       }
     }
 
-    override object ConcreteBoundedSet extends ConcreteBoundedSetObject {
+    // For some reason this cannot be an object. It triggers an uninitialized field error.
+    val ConcreteBoundedSet = new ConcreteBoundedSetCompanion {
       override def apply[T >: TL <: TU](s: Set[T]) = new ConcreteBoundedSet(s)
     }
   }
 
-  import BoundedSet._
-
-  /*
-  implicit class ValueBoundedSet[T <: Value](val a: BoundedSet.BoundedSet[T]) {
-    def valueSubsetOf[U <: Value](b: BoundedSet.BoundedSet[U]) = {
-      val MaximumBoundedSet = BoundedSet.MaximumBoundedSet[FlowValue]()
-      (a, b) match {
-        case (ConcreteBoundedSet(sa), ConcreteBoundedSet(sb)) =>
-          sa forall { va =>
-            sb exists { vb =>
-              va subsetOf vb
-            }
-          }
-        case (ConcreteBoundedSet(sa), MaximumBoundedSet) =>
-          true
-        case (MaximumBoundedSet, ConcreteBoundedSet(sb)) =>
-          false
-        case (MaximumBoundedSet, MaximumBoundedSet) =>
-          true
-      }
-    }
-  }
-  */
+  type BoundedSet[T >: Nothing <: Value] = BoundedSetInstance.BoundedSet[T]
+  val BoundedSet: BoundedSetInstance.type = BoundedSetInstance
+  type ConcreteBoundedSet[T >: Nothing <: Value] = BoundedSetInstance.ConcreteBoundedSet[T]
+  val ConcreteBoundedSet = BoundedSetInstance.ConcreteBoundedSet
+  type MaximumBoundedSet[T >: Nothing <: Value] = BoundedSetInstance.MaximumBoundedSet[T]
+  val MaximumBoundedSet = BoundedSetInstance.MaximumBoundedSet
 
   sealed abstract class Value extends PrecomputeHashcode with Product {
     def subsetOf(o: Value): Boolean
@@ -310,60 +271,62 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     }
   }
 
-  case class ObjectRefValue(instantiation: Node) extends FieldFutureContent {
-    override def toString() = s"ObjectRefValue(${shortString(instantiation.ast)})"
-
-    def subsetOf(o: Value): Boolean = o match {
-      case ObjectRefValue(`instantiation`) => true
-      case _ => false
-    }
-  }
-
-  case class ObjectValue(root: Node, structures: Map[Node, ObjectValue.ObjectStructure]) extends
-      FlowValue with FutureContent with SetValue with ObjectHandling {
+  object ObjectHandlingInstance extends ObjectHandling {
     type NodeT = Node
     type StoredValueT = BoundedSet[FieldContent]
-    type This = ObjectValue
+    type ResultValueT = BoundedSet[FlowValue]
 
-    private def structureToString(t: (Node, ObjectStructure), prefix: String): String = {
-      val (n, struct) = t
-      def pf(t: (Field, StoredValueT)) = {
-        val (f, v) = t
-        s"$prefix |   $f -> $v"
+    val ObjectValueReified = implicitly[ClassTag[ObjectValue]]
+    val ObjectRefReified = implicitly[ClassTag[ObjectRef]]
+
+    case class ObjectRef(root: NodeT) extends FieldFutureContent with ObjectRefBase {
+      def subsetOf(o: Value): Boolean = o match {
+        case ObjectRefValue(`root`) => true
+        case _ => false
       }
-      s"$prefix$n ==>${if (struct.nonEmpty) "\n" else ""}${struct.map(pf).mkString("\n")}"
     }
+    object ObjectRef extends ObjectRefCompanion
 
-    override def toString() = s"ObjectValue($root,\n${structures.map(structureToString(_, "      ")).mkString("\n  ")})"
+    case class ObjectValue(root: Node, structures: Map[Node, ObjectStructure]) extends
+      FlowValue with FutureContent with SetValue with super.ObjectValueBase {
 
-    def apply(f: Field): BoundedSet[FlowValue] = {
-      def flatten(s: BoundedSet[FieldContent]): BoundedSet[FlowValue] = s flatMap[FlowValue] {
+      private def structureToString(t: (Node, ObjectStructure), prefix: String): String = {
+        val (n, struct) = t
+        def pf(t: (Field, StoredValueT)) = {
+          val (f, v) = t
+          s"$prefix |   $f -> $v"
+        }
+        s"$prefix$n ==>${if (struct.nonEmpty) "\n" else ""}${struct.map(pf).mkString("\n")}"
+      }
+
+      override def toString() = s"ObjectValue($root,\n${structures.map(structureToString(_, "      ")).mkString("\n  ")})"
+
+      def derefStoredValue(s: BoundedSet[FieldContent]): BoundedSet[FlowValue] = s flatMap[FlowValue] {
         case v: FlowValue =>
           BoundedSet(v)
         case FieldFutureValue(v) =>
-          flatten(v.map(x=>x))
-        case ObjectRefValue(i) =>
+          derefStoredValue(v.map(x=>x))
+        case ObjectRef(i) =>
           BoundedSet(lookupObject(i))
       }
 
-      get(f) map { flatten } getOrElse { BoundedSet() }
+      def copy(root: FlowGraph.Node, structs: Map[Node, ObjectStructure]): ObjectValue = {
+        ObjectValue(root, structs)
+      }
+
+      def subsetOf(o: Value): Boolean = o match {
+        case o: ObjectValue => super[ObjectValueBase].subsetOf(o)
+        case _ => false
+      }
     }
 
-    def copyObject(root: FlowGraph.Node, structs: Map[FlowGraph.Node, Map[Field, BoundedSet[FieldContent]]]): ObjectValue = {
-      ObjectValue(root, structs)
-    }
-
-    def subsetOf(o: Value): Boolean = o match {
-      case o: ObjectValue => super.subsetOf(o)
-      case _ => false
-    }
+    object ObjectValue extends ObjectValueCompanion
   }
-
-  object ObjectValue extends ObjectHandlingCompanion {
-    type NodeT = Node
-    type StoredValueT = BoundedSet[FieldContent]
-    type Instance = ObjectValue
-  }
+  type ObjectInfo = ObjectHandlingInstance.ObjectInfo
+  type ObjectValue = ObjectHandlingInstance.ObjectValue
+  val ObjectValue = ObjectHandlingInstance.ObjectValue
+  type ObjectRefValue = ObjectHandlingInstance.ObjectRef
+  val ObjectRefValue = ObjectHandlingInstance.ObjectRef
 
   type State = BoundedSet[FlowValue]
 
@@ -375,7 +338,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
   // TODO: Implement context sensative analysis.
 
-  val contextLimit = 1
+  //val contextLimit = 1
 
   class CallGraphAnalyzer(graph: GraphDataProvider[Node, Edge]) extends Analyzer {
     import graph._
@@ -503,9 +466,12 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
       }
 
       val state: State = node match {
-        case ValueNode(Constant(v: ExtSite)) => inState + ExternalSiteValue(v)
-        case ValueNode(Constant(v)) => inState + DataValue(v)
-        case CallableNode(c, g) => inState + CallableValue(c, g)
+        case ValueNode(Constant(v: ExtSite)) =>
+          inState + ExternalSiteValue(v)
+        case ValueNode(Constant(v)) =>
+          inState + DataValue(v)
+        case CallableNode(c, g) =>
+          inState + CallableValue(c, g)
         case VariableNode(v, f: Force) =>
           // FIXME: This needs to correctly handle the two kinds of force. Including messing with objects and values that may have apply.
           inState flatMap {
@@ -523,20 +489,19 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
           //Logger.fine(s"Processing FieldAccess: $node ($inState)")
           inState flatMap { s =>
             s match {
-              case o: ObjectValue => o(f)
+              case o: ObjectValue => o.get(f).getOrElse(BoundedSet())
               case _ => MaximumBoundedSet()
             }
           }
         case node @ ExitNode(spAst@SpecificAST(New(self, _, bindings, _), _)) =>
-          val structs = ObjectValue.buildStructures(node) { (field, inNode, addObject) =>
+          val obj = ObjectValue.buildStructures(node) { (field, inNode, refObject) =>
             field match {
               case f@FieldFuture(expr) =>
                 val vs = states(inNode).collect({
                   case e: ObjectRefValue =>
                     throw new AssertionError(s"This is not expected: $e")
                   case o@ObjectValue(nw, structs) =>
-                    addObject(o)
-                    ObjectRefValue(nw)
+                    refObject(o)
                   case e: FieldFutureContent =>
                     e
                   case f: FutureValue =>
@@ -548,8 +513,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
                   case e: FieldFutureValue =>
                     throw new AssertionError(s"This is not expected: $e")
                   case o@ObjectValue(nw, structs) =>
-                    addObject(o)
-                    ObjectRefValue(nw)
+                    refObject(o)
                   case e: FieldContent =>
                     e
                 })
@@ -557,7 +521,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
           }
 
           // Logger.fine(s"Building SFO for: $nw ;;; $field = $fv ;;; Structs = $structs")
-          BoundedSet(ObjectValue(node, structs.toMap))
+          BoundedSet(obj)
         case ExitNode(SpecificAST(Call(target, args, _), path)) =>
           states.get(ValueNode(target, path)) match {
             case Some(targets) if targets.exists(v => !v.isInstanceOf[CallableValue]) =>
