@@ -398,18 +398,8 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
       valueOutputs(node).map(e => ConnectedNode(e, e.to)) ++ node.outEdgesOf[UseEdge].map(e => ConnectedNode(e, e.to))
     }
 
-    var timestamp = 0
-
     def transfer(node: Node, old: State, states: States): (State, Seq[Node]) = {
       def inState = states.inStateReduced[ValueFlowEdge](combine _)
-
-      timestamp += 1
-
-      /*
-      The bug appears to be that an old version of a value is stored in the structures of another Object and then reappears. It's not clear how it reappears however.
-      The reappearance appears to be a real problem. But it's also not clear now to keep the version of "structures" up to date. Maybe I need to move to a global object table.
-      I didn't want to do that, but I do this it is sound as long as objects are distinguished by instantiation point in all places. It should even work if we can additional sensativies as long as the object table is aware of them.
-      */
 
       ifDebugNode(node) {
         Logger.fine(s"Processing node: $node @ ${node match { case n: WithSpecificAST => n.location; case n => n.ast}}\n$inState\n${inputs(node).map(_.edge)}")

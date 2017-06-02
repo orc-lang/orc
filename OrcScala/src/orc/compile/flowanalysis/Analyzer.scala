@@ -31,6 +31,7 @@ abstract class Analyzer {
   /** The set of nodes to initially process.
     */
   def initialNodes: Seq[NodeT]
+  
   /** The starting state of all the nodes and the default input state if there are no inputs selected.
     */
   val initialState: StateT

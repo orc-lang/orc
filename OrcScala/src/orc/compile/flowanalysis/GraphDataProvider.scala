@@ -14,6 +14,9 @@ trait GraphDataProvider[Node, Edge <: EdgeBase[Node]] {
   def nodes: collection.Set[Node]
   def edges: collection.Set[Edge]
 
+  def entry: Node
+  def exit: Node
+
   def subgraphs: collection.Set[_ <: GraphDataProvider[Node, Edge]]
 
   protected[this] lazy val edgeFromIndex: collection.Map[Node, Set[Edge]] = {

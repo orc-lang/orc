@@ -32,6 +32,9 @@ class PublicationCountAnalysis(
   extends DebuggableGraphDataProvider[Node, Edge] {
   def edges = graph.edges
   def nodes = graph.nodes
+  def exit = graph.exit
+  def entry = graph.entry
+  
   def subgraphs = Set()
 
   val expressions = results collect {
