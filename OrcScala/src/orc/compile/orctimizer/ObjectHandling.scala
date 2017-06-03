@@ -91,7 +91,7 @@ trait ObjectHandling {
     //def unapply(ref: ObjectInfo): Option[NodeT]
   }
   
-  val ObjectRef: ObjectRefCompanion
+  def ObjectRefCompanion: ObjectRefCompanion
 
   protected trait ObjectValueBase extends ObjectInfo {
     val root: NodeT
@@ -173,9 +173,9 @@ trait ObjectHandling {
   }
 
   protected trait ObjectValueCompanion {
-    def apply(root: NodeT, structs: Map[NodeT, ObjectStructure]): ObjectValue
+    //def apply(root: NodeT, structs: Map[NodeT, ObjectStructure]): ObjectValue
     
-    def buildStructures(node: ExitNode)(processField: (FieldValue, Node, (ObjectInfo) => ObjectRef) => StoredValueT): ObjectValue = {
+    def buildStructures(node: ExitNode)(processField: (FieldValue, Node, (ObjectInfo) => ObjectRef) => StoredValueT): Map[NodeT, ObjectStructure] = {
       val ExitNode(spAst @ SpecificAST(New(self, _, bindings, _), _)) = node
 
       val additionalStructures = mutable.Map[NodeT, Map[Field, StoredValueT]]()
@@ -198,7 +198,7 @@ trait ObjectHandling {
           for ((root, struct) <- o.structures) {
             addStructure(root, struct)
           }
-          ObjectRef(o.root)
+          ObjectRefCompanion(o.root)
         case ObjectRefReified(v) => 
           v
         case _ =>
@@ -221,7 +221,7 @@ trait ObjectHandling {
 
       // Logger.fine(s"Building SFO for: $nw ;;; $field = $fv ;;; Structs = $additionalStructures")
       val structs = additionalStructures.toMap
-      this(node, structs)
+      structs
     }
   }
 }

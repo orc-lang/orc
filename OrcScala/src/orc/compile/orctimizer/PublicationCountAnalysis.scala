@@ -34,7 +34,7 @@ class PublicationCountAnalysis(
   def nodes = graph.nodes
   def exit = graph.exit
   def entry = graph.entry
-  
+
   def subgraphs = Set()
 
   val expressions = results collect {
@@ -134,6 +134,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
 
     case class ObjectRef(root: NodeT) extends ObjectRefBase
     object ObjectRef extends ObjectRefCompanion
+    val ObjectRefCompanion = ObjectRef
 
     case class ObjectValue(root: NodeT, structures: Map[NodeT, ObjectStructure]) extends ObjectValueBase {
       def derefStoredValue(i: StoredValueT): ResultValueT = {
@@ -242,27 +243,11 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     val initialState: PublicationInfo = PublicationInfo(Range(0, None), Range(0, 1), BoundedSet())
 
     def inputs(node: Node): collection.Seq[ConnectedNode] = {
-      node.inEdges.map(e => ConnectedNode(e, e.from)).toSeq ++ {
-        node match {
-          case ExitNode(b@SpecificAST(Branch(l, _, _), _)) =>
-            val n = ExitNode(SpecificAST(l, b.subtreePath))
-            Set(ConnectedNode(UseEdge(n, node), n))
-          case _ =>
-            Set()
-        }
-      }
+      node.inEdges.map(e => ConnectedNode(e, e.from)).toSeq
     }
 
     def outputs(node: Node): collection.Seq[ConnectedNode] = {
-      node.outEdges.map(e => ConnectedNode(e, e.to)).toSeq ++ {
-        node match {
-          case ExitNode(spAst @ SpecificAST(ast, Branch(l, _, _) :: _)) if ast == l =>
-            val n = ExitNode(SpecificAST(spAst.path.head.asInstanceOf[Branch], spAst.path.tail))
-            Set(ConnectedNode(UseEdge(node, n), n))
-          case _ =>
-            Set()
-        }
-      }
+      node.outEdges.map(e => ConnectedNode(e, e.to)).toSeq
     }
 
     def transfer(node: Node, old: PublicationInfo, states: States): (PublicationInfo, Seq[Node]) = {
@@ -384,7 +369,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
             case Trim(_) =>
               PublicationInfo(inStateFlow.publications.limitTo(1), inStateValue.futureValues, inStateValue.fields)
             case New(_, _, bindings, _) =>
-              val obj = ObjectValue.buildStructures(node) { (content, inNode, refObject) =>
+              val structs = ObjectValue.buildStructures(node) { (content, inNode, refObject) =>
                 val st = states(inNode)
                 val fields = st.fields map refObject
                 content match {
@@ -394,7 +379,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
                     PublicationInfo(Range(1, 1), st.futureValues, fields)
                 }
               }
-              PublicationInfo(inStateFlow.publications, Range(1, 1), BoundedSet(obj))
+              PublicationInfo(inStateFlow.publications, Range(1, 1), BoundedSet(ObjectValue(node, structs)))
             case FieldAccess(_, f) =>
               inStateValue.fields.values match {
                 case Some(s) =>

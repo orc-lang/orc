@@ -112,6 +112,7 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
           ()
         case FieldAccess(a, f) =>
           addEdges(
+              // TODO: Should this value edge be a UseEdge?
             ValueEdge(ValueNode(a, potentialPath), exit),
             TransitionEdge(entry, "FieldAccess", exit))
         case nw @ New(self, selfT, bindings, objT) =>
@@ -144,6 +145,8 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
           addEdges(
             ValueEdge(ExitNode(astInScope(f)), VariableNode(x, exit.location)),
             ValueEdge(ExitNode(astInScope(g)), exit))
+          addEdges(
+            UseEdge(ExitNode(astInScope(f)), exit))
           recurse(f)
           recurse(g)
         case Otherwise(f, g) =>
@@ -345,6 +348,12 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     }
   }
 
+  case object EverywhereNode extends Node {
+    override def toString() = s"$productPrefix"
+    val ast: NamedAST = CallSite(Constant(EverywhereNode), List(), None)
+    override val color = "red"
+  }
+
   sealed trait TokenFlowNode extends Node with WithSpecificAST {
     this: Product =>
     val location: SpecificAST[Expression]
@@ -451,15 +460,27 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     override def label = trans
   }
 
-  // Def/use chains
-  sealed trait DefUseEdge extends Edge {
-    this: Product =>
+  // TODO: Determine exactly how this is different from ValueEdges and document it. The main difference at the moment is that you can have many UseEdges, but onlye one value edge.
+  /** A node uses a value without directly publishing it or taking that value.
+   */
+  case class UseEdge(from: Node, to: Node) extends Edge {
     override def style: String = "dotted"
     override def color: String = "grey"
+    override def label = "‣"
   }
 
-  case class UseEdge(from: Node, to: Node) extends Edge with DefUseEdge {
-    override def label = "‣"
+  /** A flow edge that skips over futures and objects.
+    *
+    * If the source is an ExitNode then the input value is a future, if it
+    * is a ValueNode then the input value is a bare value. The input value
+    * is never an object.
+    *
+    * These edges is only added by CallGraph.
+    */
+  case class FutureValueSourceEdge(from: Node, to: TokenFlowNode) extends Edge {
+    override def style: String = "dotted"
+    override def color: String = "blue"
+    override def label = "⤸"
   }
 
   // Value flow edges
