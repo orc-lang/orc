@@ -80,6 +80,7 @@ abstract class Analyzer {
     var id = 0
     val traversal = mutable.Buffer[(Int, NodeT, Seq[EdgeT], StateT, Boolean)]()
     var avoidedEnqueues = 0
+    val startTime = System.nanoTime()
 
     val level = if (checkAnalysis) Level.INFO else Level.FINER
     Logger.log(level, s"Traversal $this: starting")
@@ -141,6 +142,7 @@ abstract class Analyzer {
       initialNodes.foreach(smartEnqueue)
       process(HashMap())
     } finally {
+      val endTime = System.nanoTime()
       if(Logger.julLogger.isLoggable(level)) {
         def entryToString(t: (Int, NodeT, Seq[EdgeT], StateT, Boolean)): String = {
           val (id, n, ins, s, b) = t
@@ -157,7 +159,7 @@ abstract class Analyzer {
         }).seq.toSeq.sortBy(_._1.map(_._1).max).map(_._2)
         val traceFile = File.createTempFile("analysis", ".txt")
 
-        Logger.log(level, s"Traversal $this: ${traversal.map(_._2).toSet.size} nodes, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
+        Logger.log(level, s"Traversal $this: (${((endTime.toFloat - startTime) / 1000 / 1000).formatted("%.1f")} ms) ${traversal.map(_._2).toSet.size} nodes, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
 
         val out = new FileWriter(traceFile)
         for(l <- traversalTable) {

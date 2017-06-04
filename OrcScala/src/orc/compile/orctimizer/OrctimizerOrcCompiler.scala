@@ -130,20 +130,27 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
         //g.debugShow()
 
         lazy val fg = cache.get(FlowGraph)(ast, None)
-        //fg.debugShow()
-
         lazy val cg = cache.get(CallGraph)(ast, None)
+        lazy val pubs = cache.get(PublicationCountAnalysis)(ast, None)
+        lazy val delay = cache.get(DelayAnalysis)(ast, None)
+        lazy val effect = cache.get(EffectAnalysis)(ast, None)
+
+        //fg.debugShow()
 
         //println("=============== results ---")
         //println(cg.results.filter(p => p._1.ast.isInstanceOf[Var]).map(p => s"${shortString(p._1)}\t----> ${p._2}").mkString("\n"))
 
         //cg.debugShow()
 
-        lazy val pubs = cache.get(PublicationCountAnalysis)(ast, None)
-
         //println("=============== publication results ---")
         //println(pubs.expressions.par.map(p => s"${shortString(p._1.ast)}\t----=========--> ${p._2}").seq.mkString("\n"))
         //pubs.debugShow()
+
+        //println("=============== delay results ---")
+        //println(delay.results.par.map(p => s"${shortString(p._1.ast)}\t----=========--> ${p._2}").seq.mkString("\n"))
+        //delay.debugShow()
+
+        //effect.debugShow()
 
         //System.exit(0)
       }

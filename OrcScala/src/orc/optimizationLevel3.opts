@@ -8,6 +8,7 @@ orct:def-elim
 orct:seq-reassoc
 orct:seq-elim
 orct:seq-elim-arg
+orct:seq-elim-const
 orct:stop-equiv
 orct:stop-elim
 orct:constant-propogation

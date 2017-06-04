@@ -54,11 +54,11 @@ class EffectAnalysis(
     }
   }
   
-  def effects(e: SpecificAST[Expression]): Bookean = {
+  def effects(e: SpecificAST[Expression]): Boolean = {
     effectsInfoOf(e).effects
   }
 
-  def effected(e: SpecificAST[Expression]): Bookean = {
+  def effected(e: SpecificAST[Expression]): Boolean = {
     effectsInfoOf(e).effected
   }
 

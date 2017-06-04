@@ -21,8 +21,6 @@ import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
 import orc.compile.CompilerOptions
 import orc.types
-import orc.values.sites.Delay
-import orc.values.sites.Effects
 import orc.values.sites.Site
 import orc.lib.state.NewFlag
 import orc.lib.state.SetFlag
@@ -38,26 +36,65 @@ import orc.compile.AnalysisCache
 import orc.compile.orctimizer.FlowGraph.{ValueNode, ValueFlowNode}
 import orc.compile.orctimizer.CallGraph.FlowValue
 import orc.compile.orctimizer.CallGraph.CallableValue
+import orc.compile.orctimizer.DelayAnalysis.DelayInfo
+import orc.ast.orctimizer.named.FieldValue
 
-class AnalysisResults(val callgraph: CallGraph, val publications: PublicationCountAnalysis) {
-  private val exprMapping = mutable.HashMap[SpecificAST[Expression], SpecificAST[Expression]]()
+class HashFirstEquality[T](val value: T) {
+  override def toString() = value.toString()
+  override def hashCode() = value.hashCode()
+  override def equals(o: Any) = o match {
+    case o: HashFirstEquality[T] =>
+      value.hashCode() == o.value.hashCode() && value == o.value
+    case _ =>
+      false
+  }
+}
+
+object HashFirstEquality {
+  def apply[T](v: T) = {
+    new HashFirstEquality(v)
+  }
+}
+
+class AnalysisResults(cache: AnalysisCache, e: Expression) {
+  val callgraph: CallGraph = cache.get(CallGraph)((e, None))
+  val publications: PublicationCountAnalysis = cache.get(PublicationCountAnalysis)((e, None))
+  val effectsAnalysis: EffectAnalysis = cache.get(EffectAnalysis)((e, None))
+  val delays: DelayAnalysis = cache.get(DelayAnalysis)((e, None))
+
+  private val exprMapping = mutable.HashMap[HashFirstEquality[SpecificAST[Expression]], SpecificAST[Expression]]()
   private val varMapping = mutable.HashMap[ValueFlowNode, ValueFlowNode]()
+
+  // TODO: The mapping stuff seems to be a really large performance cost. Maybe if I make it a reference equality it will be better? But that would also be fragile.
 
   def addMapping(req: Argument, real: Argument, p: List[NamedAST]): Unit = {
     varMapping += ((ValueNode(req, p), remap(ValueNode(real, p))))
   }
   def addMapping(req: SpecificAST[Expression], real: SpecificAST[Expression]): Unit = {
-    exprMapping += req -> remap(real)
+    exprMapping += HashFirstEquality(req) -> remap(real)
   }
 
   private def remap(req: ValueFlowNode) = varMapping.get(req).getOrElse(req)
-  private def remap(req: SpecificAST[Expression]) = exprMapping.get(req).getOrElse(req)
+  private def remap(req: SpecificAST[Expression]) = exprMapping.get(HashFirstEquality(req)).getOrElse(req)
 
   def valuesOf(e: Argument, p: List[NamedAST]) = callgraph.valuesOf[FlowValue](remap(ValueNode(e, p)))
   def valuesOf(e: SpecificAST[Expression]) = callgraph.valuesOf(remap(e))
 
   def stopabilityOf(e: Argument, p: List[NamedAST]) = publications.stopabilityOf(remap(ValueNode(e, p)))
   def publicationsOf(e: SpecificAST[Expression]) = publications.publicationsOf(remap(e))
+
+  def effects(e: SpecificAST[Expression]): Boolean = {
+    effectsAnalysis.effects(remap(e))
+  }
+  def effected(e: SpecificAST[Expression]): Boolean = {
+    effectsAnalysis.effected(remap(e))
+  }
+
+  def delayOf(e: SpecificAST[Expression]): DelayInfo = {
+    delays.delayOf(remap(e))
+  }
+
+  def nMappings = exprMapping.size + varMapping.size
 }
 
 trait Optimization extends ((SpecificAST[Expression], AnalysisResults) => Option[Expression]) with NamedOptimization {
@@ -95,7 +132,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   def apply(e: Expression, cache: AnalysisCache): Expression = {
-    val results = new AnalysisResults(cache.get(CallGraph)((e, None)), cache.get(PublicationCountAnalysis)((e, None)))
+    val results = new AnalysisResults(cache, e)
 
     val trans = new SpecificASTTransform {
       override val onExpression = {
@@ -107,13 +144,15 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               case None => e
               case Some(e2) =>
                 val e3 = if (e.ast != e2) {
-                  Logger.fine(s"${opt.name}: ${e.ast.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
+                  Logger.fine(s"${opt.name}: [${results.nMappings} mappings] ${e.ast.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
                   countOptimization(opt)
-                  SpecificAST(e2, e.path)
+                  val e3 = SpecificAST(e2, e.path)
+                  results.addMapping(e3, e)
+                  e3
                 } else {
                   e
                 }
-                results.addMapping(e3, e)
+
                 e3
             }
           })
@@ -164,14 +203,11 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   Information about forcing of expressions. What it forces, and if it halts with it. What is forces may also need to be categorized into before and after first side-effect/publication.
 
-  Time information: Real-time delay before publication and halt.
-
   */
 
-  /*
   val FutureElim = OptFull("future-elim") { (e, a) =>
-    (e, a) match {
-      case IndependentFutures(futs, core) => {
+    e match {
+      /*case IndependentFutures(futs, core) => {
         // futs is a seq of (f, x)
         // f_1 >x_1> ... >x_n-1> f_n >x_n> core
         var interestingElimables = 0
@@ -201,11 +237,45 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             Logger.fine(s"Eliminating futures: $futs\n${e.e}\n====>\n${keep.mkString(" >>\n")} >> --\n${elim.mkString(" >>\n")} >> --\n${core.e}")
           Some(result)
         } else None
+      }*/
+      case SpecificAST(Future(body), _) => {
+        val sbody = e.subtree(body)
+        val byNonBlocking1 = a.delayOf(sbody).maxFirstPubDelay == ComputationDelay()
+        if (byNonBlocking1)
+          Some(body)
+        else
+          None
+      }
+      case SpecificAST(n@New(self, _, fields, _), _) => {
+        var changed = false
+        val newFields = fields.mapValues({
+          case f@FieldFuture(a: Argument) if !a.freeVars.contains(self) => {
+            changed = true
+            (FieldArgument(a), None, None)
+          }
+          case f@FieldFuture(body) if !body.freeVars.contains(self) => {
+            val sbody = SpecificAST(body, f :: n :: e.path)
+            val byNonBlocking1 = a.delayOf(sbody).maxFirstPubDelay == ComputationDelay()
+            lazy val x = new BoundVar()
+            if (byNonBlocking1) {
+              changed = true
+              (FieldArgument(x), Some(body), Some(x))
+            } else
+              (f, None, None)
+          }
+          case f => (f, None, None)
+        }).view.force
+
+        if(changed) {
+          val exprs = newFields.values.collect({ case (_, Some(expr), Some(x)) => (expr, x) })
+          val newF = newFields.mapValues(_._1).view.force
+          Some(exprs.foldRight(n.copy(bindings = newF) : Expression)((p, c) => Branch(p._1, p._2, c)))
+        } else
+          None
       }
       case _ => None
     }
   }
-  */
 
   /*
   val UnusedFutureElim = Opt("unused-future-elim") {
@@ -288,10 +358,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     e.ast match {
       case Branch(f, x, y) if x == y =>
         Some(f)
-      case Branch(y: Constant, x, f) =>
-        Some(f.subst(y, x))
-      case Branch(y: Argument, x, f) =>
-        Some(f.subst(y, x))
       case _ => None
     }
   }
@@ -303,16 +369,16 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     case SpecificAST(Otherwise(f, Stop()), _) => f
   }
 
-  /*
-  This is invalid. Once I have side-effect and delay information it can be made correct
-
   val SeqElimConstant = OptFull("seq-elim-const") { (e, a) =>
     e.ast match {
       case Branch(c, x, y) =>
-        val vs = a.valuesOf(e.subtree(c))
-        need to also check for delay and side-effects
+        val sc = e.subtree(c)
+        val vs = a.valuesOf(sc)
+        val effects = a.effects(sc)
+        val DelayInfo(delay, _) = a.delayOf(sc)
+        //println(s"seq-elim-const: $c\n${vs.values}, $effects, $delay")
         vs.values match {
-          case Some(s) if s.size == 1 =>
+          case Some(s) if s.size == 1 && !effects && delay == ComputationDelay() =>
             val v = s.head
             import CallGraph._
             v match {
@@ -331,7 +397,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
-  */
 
   /*
   val LiftForce = OptFull("lift-force") { (e, a) =>
@@ -698,7 +763,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 }
 
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
-  val allOpts = List(IfDefElim, ForceElim, SeqElimArg, StopElim)
+  val allOpts = List(IfDefElim, ForceElim, SeqElimArg, StopElim, SeqElimConstant, FutureElim)
   /*
   val allOpts = List(
     SeqReassoc,
@@ -715,7 +780,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
 
   val opts = allOpts.filter { o =>
     val b = co.options.optimizationFlags(s"orct:${o.name}").asBool()
-    Logger.finest(s"${if (b) "ENABLED" else "disabled"} ${o.name}")
+    Logger.fine(s"${if (b) "ENABLED" else "disabled"} ${o.name}")
     b
   }
 

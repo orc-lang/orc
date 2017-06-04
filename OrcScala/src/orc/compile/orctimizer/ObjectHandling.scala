@@ -159,10 +159,10 @@ trait ObjectHandling {
 
     def subsetOf(o: ObjectInfo): Boolean = o match {
       case ObjectValueReified(o) =>
-        val sharedStructs = structures.keySet intersect o.structures.keySet
+        //val sharedStructs = structures.keySet intersect o.structures.keySet
         this.root == o.root &&
-          (sharedStructs forall { r =>
-            val b = structureSubsetOf(structures(r), o.structures(r))
+          (structures.keySet forall { r =>
+            val b = o.structures.contains(r) && structureSubsetOf(structures(r), o.structures(r))
             if (!b) {
               //Logger.severe(s"Substructure failed subset check: $r\n${structures.get(r)}\n${o.structures.get(r)}")
             }

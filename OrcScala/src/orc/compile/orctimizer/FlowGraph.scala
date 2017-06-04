@@ -372,6 +372,12 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
   // TODO: I think this may not be needed, however it's not clear where to store the nested flowgraph if callables are just VariableNodes.
   case class CallableNode(location: SpecificAST[Callable], flowgraph: FlowGraph) extends Node with ValueFlowNode with WithSpecificAST {
+    override def equals(o: Any) = o match {
+      case o: CallableNode =>
+        location == o.location // Ignore flowgraph for equality. This is an optimization.
+      case _ =>
+        false
+    }
   }
 
   case class ValueNode(ast: Constant) extends Node with ValueFlowNode {
