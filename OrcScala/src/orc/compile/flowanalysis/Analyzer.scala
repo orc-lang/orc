@@ -123,8 +123,10 @@ abstract class Analyzer {
               states + (node -> newState)
             }
 
-            id += 1
-            traversal += ((id, node, inputs(node).map(_.edge), newState, oldState == newState))
+            if(Logger.julLogger.isLoggable(level)) {
+              id += 1
+              traversal += ((id, node, inputs(node).map(_.edge), newState, oldState == newState))
+            }
 
             if (checkAnalysis) {
               assert(moreCompleteOrEqual(newState, oldState),
@@ -159,7 +161,7 @@ abstract class Analyzer {
         }).seq.toSeq.sortBy(_._1.map(_._1).max).map(_._2)
         val traceFile = File.createTempFile("analysis", ".txt")
 
-        Logger.log(level, s"Traversal $this: (${((endTime.toFloat - startTime) / 1000 / 1000).formatted("%.1f")} ms) ${traversal.map(_._2).toSet.size} nodes, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
+        Logger.log(level, s"Traversal $this: (${((endTime.toFloat - startTime) / 1000 / 1000).formatted("%.1f")} ms) ${traversal.map(_._2).toSet.size} nodes, ${traversal.flatMap(_._3).toSet.size} edges, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
 
         val out = new FileWriter(traceFile)
         for(l <- traversalTable) {
