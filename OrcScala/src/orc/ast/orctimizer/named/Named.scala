@@ -85,8 +85,7 @@ sealed abstract class Expression
   with Substitution[Expression]
   //with ContextualSubstitution
   //with Guarding
-  with PrecomputeHashcode
-  {
+  with PrecomputeHashcode {
   this: Product =>
   //lazy val withoutNames: nameless.Expression = namedToNameless(this, Nil, Nil)
 
@@ -162,7 +161,8 @@ case class HasType(body: Expression, expectedType: Type) extends Expression
 
 case class New(self: BoundVar, selfType: Option[Type], bindings: Map[values.Field, FieldValue], objType: Option[Type]) extends Expression
 
-sealed abstract class FieldValue extends NamedAST {
+sealed abstract class FieldValue extends NamedAST with PrecomputeHashcode {
+  this: Product =>
 }
 
 case class FieldFuture(expr: Expression) extends FieldValue
@@ -256,7 +256,9 @@ sealed case class Site(name: BoundVar, formals: List[BoundVar], body: Expression
 sealed abstract class Type
   extends NamedAST
   //with hasFreeTypeVars
-  with Substitution[Type] {
+  with Substitution[Type]
+  with PrecomputeHashcode {
+  this: Product =>
   //lazy val withoutNames: nameless.Type = namedToNameless(this, Nil)
 }
 case class Top() extends Type
@@ -289,14 +291,19 @@ sealed case class NominalType(supertype: Type) extends Type
 
 sealed case class StructuralType(members: Map[values.Field, Type]) extends Type
 
-sealed trait Typevar extends Type with hasOptionalVariableName
+sealed trait Typevar extends Type with hasOptionalVariableName {
+  this: Product =>
+}
 case class UnboundTypevar(name: String) extends Typevar {
   optionalVariableName = Some(name)
 }
-class BoundTypevar(optionalName: Option[String] = None) extends Typevar with hasAutomaticVariableName {
+class BoundTypevar(optionalName: Option[String] = None) extends Typevar with hasAutomaticVariableName with Product {
+  def canEqual(that: Any): Boolean = that.isInstanceOf[BoundTypevar]
+
+  // Members declared in scala.Product
+  def productArity: Int = 1
+  def productElement(n: Int): Any = optionalName
 
   optionalVariableName = optionalName
   autoName("T")
-
-  def productIterator = optionalVariableName.toList.iterator
 }

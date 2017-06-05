@@ -172,6 +172,6 @@ trait SpecificASTTransform {
   def order[E <: NamedAST](pf: PartialFunction[SpecificAST[E], E], descend: SpecificAST[E] => E)(e: SpecificAST[E]): SpecificAST[E] = {
     val e1 = SpecificAST(e ->> descend(e), e.path)
     val o = pf.lift(e1)
-    SpecificAST(e ->> o.getOrElse(e1.ast), e.path)
+    SpecificAST(e ->> o.map(eo => if(e1.ast == eo) e1.ast else eo).getOrElse(e1.ast), e.path)
   }
 }
