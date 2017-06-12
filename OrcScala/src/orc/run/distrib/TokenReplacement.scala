@@ -89,7 +89,11 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
   protected def marshalClosureGroup(cg: ClosureGroup, execution: DOrcExecution, ast: Expression, destination: PeerLocation) = {
 
     //FIXME: Broken: Requires closures' enclose operation to be complete.
-    assert(cg.isResolved, "Closure group must be resolved")
+    //assert(cg.isResolved, "Closure group must be resolved")
+    while (!cg.isResolved) {
+      Logger.info("Awaiting resolution of "+cg)
+      Thread.sleep(10);
+    }
 
     ClosureGroupReplacement.closureGroupReplacements synchronized {
       ClosureGroupReplacement.closureGroupReplacements.get(cg) match {
