@@ -47,7 +47,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
       val optimizer = StandardOptimizer(co)
 
       def opt(prog: Expression, pass: Int): Expression = {
-        val prog1 = optimizer(prog, cache)
+        val prog1 = optimizer(prog.toZipper(), cache)
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Optimizer pass $pass/$maxPasses: $optimizationCountsStr")
@@ -128,12 +128,14 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
         */
         //println(g.toDot)
         //g.debugShow()
+        
+        val z = ast.toZipper()
 
-        lazy val fg = cache.get(FlowGraph)(ast, None)
-        lazy val cg = cache.get(CallGraph)(ast, None)
-        lazy val pubs = cache.get(PublicationCountAnalysis)(ast, None)
-        lazy val delay = cache.get(DelayAnalysis)(ast, None)
-        lazy val effect = cache.get(EffectAnalysis)(ast, None)
+        lazy val fg = cache.get(FlowGraph)(z, None)
+        lazy val cg = cache.get(CallGraph)(z, None)
+        lazy val pubs = cache.get(PublicationCountAnalysis)(z, None)
+        lazy val delay = cache.get(DelayAnalysis)(z, None)
+        lazy val effect = cache.get(EffectAnalysis)(z, None)
 
         //fg.debugShow()
 
@@ -192,8 +194,6 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
       else
         ast
         */
-
-      TransformContext.clear()
 
       ast
     }

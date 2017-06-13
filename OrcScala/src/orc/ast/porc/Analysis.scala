@@ -106,21 +106,21 @@ class Analyzer extends AnalysisProvider[PorcAST] {
       }
       case SiteCallIn(target, p, c, t, args, ctx) =>
         target.siteMetadata flatMap { sm =>
-          sm.returnMetadata(args.map {
+          sm.returnMetadata(args.map({
             _ match {
               case OrcValue(v) => Some(v)
               case _ => None
             }
-          })
+          }).toList)
         }
       case SiteCallDirectIn(target, args, ctx) =>
         target.siteMetadata flatMap { sm =>
-          sm.returnMetadata(args.map {
+          sm.returnMetadata(args.map({
             _ match {
               case OrcValue(v) => Some(v)
               case _ => None
             }
-          })
+          }).toList)
         }
       case _ => None
     }

@@ -12,7 +12,7 @@
 //
 package orc.ast.orctimizer.named
 
-import scala.collection.mutable._
+import scala.collection.mutable.{Map, HashMap}
 import orc.values.Format
 import orc.values.Field
 import orc.util.PrettyPrintInterpolator
@@ -45,7 +45,7 @@ class PrettyPrint {
   def newTypevarName(): String = { typevarCounter += 1; "`T" + typevarCounter }
   def lookup(temp: BoundTypevar) = typevars.getOrElseUpdate(temp, newVarName())
 
-  def commasep(l: List[NamedAST]): FragmentAppender = {
+  def commasep(l: Seq[NamedAST]): FragmentAppender = {
     FragmentAppender.mkString(l.map(reduce), ", ")
   }
 

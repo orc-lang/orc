@@ -31,7 +31,7 @@ import orc.compile.AnalysisCache
 /** A control flow graph for an Orc program which represents the flow of tokens through the program.
   *
   */
-class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]] = None) extends DebuggableGraphDataProvider[FlowGraph.Node, FlowGraph.Edge] {
+class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None) extends DebuggableGraphDataProvider[FlowGraph.Node, FlowGraph.Edge] {
   outer =>
 
   import FlowGraph._
@@ -70,198 +70,178 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
     }
   }
 
-  implicit class OptionSpecificASTAdds[T <: NamedAST](l: Option[SpecificAST[T]]) {
-    def subtreePath = l.map(_.subtreePath).getOrElse(Nil)
-  }
+  val entry = EntryNode(root)
+  val exit = ExitNode(root)
 
-  val entry = EntryNode(SpecificAST(root, location.subtreePath))
-  val exit = ExitNode(SpecificAST(root, location.subtreePath))
-
-  def arguments: List[VariableNode] = {
-    location.map(l => l.ast.formals.map(VariableNode(_, l.ast :: l.path))).getOrElse(List())
+  def arguments: Seq[VariableNode] = {
+    location.map(l => l.value.formals.map(VariableNode(_, l.parents))).getOrElse(Seq())
   }
 
   protected[this] def compute(): Unit = {
-    def process(e: Expression, path: List[NamedAST]): Unit = {
-      val potentialPath = e :: path
-      def recurse(e1: Expression) = process(e1, potentialPath)
-
-      def astInScope[T <: NamedAST](ast: T): SpecificAST[T] = {
-        val i = potentialPath.indexWhere(_.subtrees.toSet contains ast)
-        if (i < 0) {
-          assert(ast == potentialPath.last, s"Path ${path.map(shortString).mkString("[", ", ", "]")} does not contain a parent of $ast")
-          SpecificAST(ast, List())
-        } else {
-          //Logger.fine(s"Found index $i in ${potentialPath.map(shortString).mkString("[", ", ", "]")} looking for $ast")
-          SpecificAST(ast, potentialPath.drop(i))
-        }
-      }
-
+    def process(e: Expression.Z): Unit = {
       def declareVariable(e: Node, a: BoundVar) = {
         //addEdges(DefEdge(e, ValueNode(a)))
       }
 
-      val entry = EntryNode(astInScope(e))
-      val exit = ExitNode(astInScope(e))
+      val entry = EntryNode(e)
+      val exit = ExitNode(e)
 
       // Add nodes that we process even if they don't have edges
       nodeSet ++= Set(entry, exit)
 
       e match {
-        case Stop() =>
+        case Stop.Z() =>
           ()
-        case FieldAccess(a, f) =>
+        case FieldAccess.Z(a, f) =>
           addEdges(
               // TODO: Should this value edge be a UseEdge?
-            ValueEdge(ValueNode(a, potentialPath), exit),
+            ValueEdge(ValueNode(a), exit),
             TransitionEdge(entry, "FieldAccess", exit))
-        case nw @ New(self, selfT, bindings, objT) =>
+        case nw @ New.Z(self, selfT, bindings, objT) =>
           declareVariable(entry, self)
           addEdges(
-            ValueEdge(exit, VariableNode(self, potentialPath)))
+            ValueEdge(exit, VariableNode(self, nw.parents)))
           addEdges(
             TransitionEdge(entry, "New-Obj", exit))
           for ((f, b) <- bindings) {
             b match {
-              case FieldFuture(e) =>
+              case FieldFuture.Z(se) =>
                 //Logger.fine(s"Processing field $b with $potentialPath")
-                val se = SpecificAST(e, b :: potentialPath)
-                //val tmp = FutureFieldNode(astInScope(nw), f)
+                //val tmp = FutureFieldNode(nw, f)
                 addEdges(
                   TransitionEdge(entry, "New-Spawn", EntryNode(se)),
                   UseEdge(ExitNode(se), exit))
-                process(e, b :: potentialPath)
-              case FieldArgument(v) =>
+                process(se)
+              case FieldArgument.Z(v) =>
                 addEdges(
-                  UseEdge(ValueNode(v, potentialPath), exit))
+                  UseEdge(ValueNode(v), exit))
             }
           }
-        case Branch(f, x, g) =>
+        case Branch.Z(f, x, g) =>
           declareVariable(entry, x)
           addEdges(
-            TransitionEdge(entry, "Bra-Enter", EntryNode(astInScope(f))),
-            TransitionEdge(ExitNode(astInScope(f)), "Bra-PubL", EntryNode(astInScope(g))),
-            TransitionEdge(ExitNode(astInScope(g)), "Bra-PubR", exit))
+            TransitionEdge(entry, "Bra-Enter", EntryNode(f)),
+            TransitionEdge(ExitNode(f), "Bra-PubL", EntryNode(g)),
+            TransitionEdge(ExitNode(g), "Bra-PubR", exit))
           addEdges(
-            ValueEdge(ExitNode(astInScope(f)), VariableNode(x, exit.location)),
-            ValueEdge(ExitNode(astInScope(g)), exit))
+            ValueEdge(ExitNode(f), VariableNode(x, exit.location)),
+            ValueEdge(ExitNode(g), exit))
           addEdges(
-            UseEdge(ExitNode(astInScope(f)), exit))
-          recurse(f)
-          recurse(g)
-        case Otherwise(f, g) =>
+            UseEdge(ExitNode(f), exit))
+          process(f)
+          process(g)
+        case Otherwise.Z(f, g) =>
           addEdges(
-            TransitionEdge(entry, "Otw-Entry", EntryNode(astInScope(f))),
-            AfterHaltEdge(entry, "Otw-Halt", EntryNode(astInScope(g))),
-            TransitionEdge(ExitNode(astInScope(f)), "Otw-PubL", exit),
-            TransitionEdge(ExitNode(astInScope(g)), "Otw-PubR", exit))
+            TransitionEdge(entry, "Otw-Entry", EntryNode(f)),
+            AfterHaltEdge(entry, "Otw-Halt", EntryNode(g)),
+            TransitionEdge(ExitNode(f), "Otw-PubL", exit),
+            TransitionEdge(ExitNode(g), "Otw-PubR", exit))
           addEdges(
-            ValueEdge(ExitNode(astInScope(f)), exit),
-            ValueEdge(ExitNode(astInScope(g)), exit))
-          recurse(f)
-          recurse(g)
-        case Parallel(f, g) =>
+            ValueEdge(ExitNode(f), exit),
+            ValueEdge(ExitNode(g), exit))
+          process(f)
+          process(g)
+        case Parallel.Z(f, g) =>
           addEdges(
-            TransitionEdge(entry, "Par-Enter", EntryNode(astInScope(f))),
-            TransitionEdge(entry, "Par-Enter", EntryNode(astInScope(g))),
-            TransitionEdge(ExitNode(astInScope(f)), "Par-PubL", exit),
-            TransitionEdge(ExitNode(astInScope(g)), "Par-PubR", exit))
+            TransitionEdge(entry, "Par-Enter", EntryNode(f)),
+            TransitionEdge(entry, "Par-Enter", EntryNode(g)),
+            TransitionEdge(ExitNode(f), "Par-PubL", exit),
+            TransitionEdge(ExitNode(g), "Par-PubR", exit))
           addEdges(
-            ValueEdge(ExitNode(astInScope(f)), exit),
-            ValueEdge(ExitNode(astInScope(g)), exit))
-          recurse(f)
-          recurse(g)
-        case Future(f) =>
+            ValueEdge(ExitNode(f), exit),
+            ValueEdge(ExitNode(g), exit))
+          process(f)
+          process(g)
+        case Future.Z(f) =>
           addEdges(
-            TransitionEdge(entry, "Future-Spawn", EntryNode(astInScope(f))),
+            TransitionEdge(entry, "Future-Spawn", EntryNode(f)),
             TransitionEdge(entry, "Future-Future", exit))
           addEdges(
-            ValueEdge(ExitNode(astInScope(f)), exit))
-          recurse(f)
-        case Trim(f) =>
+            ValueEdge(ExitNode(f), exit))
+          process(f)
+        case Trim.Z(f) =>
           addEdges(
-            TransitionEdge(entry, "Trim-Enter", EntryNode(astInScope(f))),
-            TransitionEdge(ExitNode(astInScope(f)), "Trim-Exit", exit))
+            TransitionEdge(entry, "Trim-Enter", EntryNode(f)),
+            TransitionEdge(ExitNode(f), "Trim-Exit", exit))
           addEdges(
-            ValueEdge(ExitNode(astInScope(f)), exit))
-          recurse(f)
-        case Force(xs, vs, b, f) =>
+            ValueEdge(ExitNode(f), exit))
+          process(f)
+        case Force.Z(xs, vs, b, f) =>
           xs foreach { declareVariable(entry, _) }
           addEdges(
-            TransitionEdge(entry, "Force-Enter", EntryNode(astInScope(f))),
-            TransitionEdge(ExitNode(astInScope(f)), "Force-Exit", exit))
+            TransitionEdge(entry, "Force-Enter", EntryNode(f)),
+            TransitionEdge(ExitNode(f), "Force-Exit", exit))
           addEdges((xs zip vs) map {
             case (x, v) =>
               val tmp = VariableNode(x, exit.location)
-              ValueEdge(ValueNode(v, potentialPath), tmp)
+              ValueEdge(ValueNode(v), tmp)
           }: _*)
-          addEdges(vs.flatMap(e => Seq(UseEdge(ValueNode(e, potentialPath), entry),
-              UseEdge(ValueNode(e, potentialPath), exit))): _*)
-          addEdges(ValueEdge(ExitNode(astInScope(f)), exit))
-          recurse(f)
-        case IfDef(b, f, g) =>
+          addEdges(vs.flatMap(e => Seq(UseEdge(ValueNode(e), entry),
+              UseEdge(ValueNode(e), exit))): _*)
+          addEdges(ValueEdge(ExitNode(f), exit))
+          process(f)
+        case IfDef.Z(b, f, g) =>
           addEdges(
-            TransitionEdge(entry, "IfDef-Def", EntryNode(astInScope(f))),
-            TransitionEdge(entry, "IfDef-Not", EntryNode(astInScope(g))),
-            TransitionEdge(ExitNode(astInScope(f)), "IfDef-L", exit),
-            TransitionEdge(ExitNode(astInScope(g)), "IfDef-R", exit))
+            TransitionEdge(entry, "IfDef-Def", EntryNode(f)),
+            TransitionEdge(entry, "IfDef-Not", EntryNode(g)),
+            TransitionEdge(ExitNode(f), "IfDef-L", exit),
+            TransitionEdge(ExitNode(g), "IfDef-R", exit))
           addEdges(
-            UseEdge(ValueNode(b, potentialPath), entry),
-            UseEdge(ValueNode(b, potentialPath), exit),
-            ValueEdge(ExitNode(astInScope(f)), exit),
-            ValueEdge(ExitNode(astInScope(g)), exit))
-          recurse(f)
-          recurse(g)
-        case Call(target, args, _) =>
+            UseEdge(ValueNode(b), entry),
+            UseEdge(ValueNode(b), exit),
+            ValueEdge(ExitNode(f), exit),
+            ValueEdge(ExitNode(g), exit))
+          process(f)
+          process(g)
+        case Call.Z(target, args, _) =>
           val trans = (e: @unchecked) match {
-            case _: CallDef => "CallDef"
-            case _: CallSite => "CallSite"
+            case _: CallDef.Z => "CallDef"
+            case _: CallSite.Z => "CallSite"
           }
           addEdges(AfterEdge(entry, trans, exit))
-          addEdges(args.map(e => UseEdge(ValueNode(e, potentialPath), entry)): _*)
-          addEdges(args.map(e => UseEdge(ValueNode(e, potentialPath), exit)): _*)
+          addEdges(args.map(e => UseEdge(ValueNode(e), entry)): _*)
+          addEdges(args.map(e => UseEdge(ValueNode(e), exit)): _*)
           addEdges(
-              UseEdge(ValueNode(target, potentialPath), entry),
-              UseEdge(ValueNode(target, potentialPath), exit))
-        case DeclareCallables(callables, body) =>
+              UseEdge(ValueNode(target), entry),
+              UseEdge(ValueNode(target), exit))
+        case DeclareCallables.Z(callables, body) =>
           callables.map(_.name) foreach { declareVariable(entry, _) }
 
           for (callable <- callables) {
-            val loc = SpecificAST(callable, potentialPath)
-            val graph = new FlowGraph(callable.body, Some(loc))
+            val graph = new FlowGraph(callable.body, Some(callable))
             // TODO: Consider computing the subgraph only as needed using the AnalysisCache
-            val me = CallableNode(loc, graph)
-            addEdges(ValueEdge(me, VariableNode(callable.name, potentialPath)))
+            val me = CallableNode(callable, graph)
+            addEdges(ValueEdge(me, VariableNode(callable.name, callable +: callable.parents)))
           }
 
           addEdges(
-            TransitionEdge(entry, "Declare-Enter", EntryNode(astInScope(body))),
-            TransitionEdge(ExitNode(astInScope(body)), "Declare-Exit", exit))
-          addEdges(ValueEdge(ExitNode(astInScope(body)), exit))
-          recurse(body)
-        case e @ Constant(c) =>
+            TransitionEdge(entry, "Declare-Enter", EntryNode(body)),
+            TransitionEdge(ExitNode(body), "Declare-Exit", exit))
+          addEdges(ValueEdge(ExitNode(body), exit))
+          process(body)
+        case e @ Constant.Z(c) =>
           addEdges(
             TransitionEdge(entry, "Const", exit))
           addEdges(
             ValueEdge(ValueNode(e), exit))
-        case v: BoundVar =>
+        case v: BoundVar.Z =>
           addEdges(
             TransitionEdge(entry, "Var", exit))
           addEdges(
-            ValueEdge(ValueNode(v, potentialPath), exit))
-        case DeclareType(_, _, body) =>
+            ValueEdge(ValueNode(v), exit))
+        case DeclareType.Z(_, _, body) =>
           addEdges(
-            TransitionEdge(entry, "", EntryNode(astInScope(body))),
-            TransitionEdge(ExitNode(astInScope(body)), "", exit))
-          addEdges(ValueEdge(ExitNode(astInScope(body)), exit))
-          recurse(body)
-        case HasType(body, _) =>
+            TransitionEdge(entry, "", EntryNode(body)),
+            TransitionEdge(ExitNode(body), "", exit))
+          addEdges(ValueEdge(ExitNode(body), exit))
+          process(body)
+        case HasType.Z(body, _) =>
           addEdges(
-            TransitionEdge(entry, "", EntryNode(astInScope(body))),
-            TransitionEdge(ExitNode(astInScope(body)), "", exit))
-          addEdges(ValueEdge(ExitNode(astInScope(body)), exit))
-          recurse(body)
-        case UnboundVar(s) =>
+            TransitionEdge(entry, "", EntryNode(body)),
+            TransitionEdge(ExitNode(body), "", exit))
+          addEdges(ValueEdge(ExitNode(body), exit))
+          process(body)
+        case UnboundVar.Z(s) =>
           addEdges(
             AfterEdge(entry, "UnboundVar", exit))
       }
@@ -270,7 +250,7 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
     // Always include arguments to this function.
     nodeSet ++= arguments
 
-    process(root, location.subtreePath)
+    process(root)
   }
 
   override def hashCode() = root.hashCode ^ (location.hashCode * 37)
@@ -284,7 +264,7 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
     s"FlowGraph(${shortString(root)}, ${location})"
   }
 
-  override def graphLabel: String = shortString(location.map(_.ast).getOrElse(""))
+  override def graphLabel: String = shortString(location.map(_.value).getOrElse(""))
 
   override def computedNodeDotAttributes(n: Node): DotAttributes = {
     (if (n == entry) Map("color" -> "green", "peripheries" -> "2") else Map()) ++
@@ -311,8 +291,8 @@ class FlowGraph(val root: Expression, val location: Option[SpecificAST[Callable]
   }
 }
 
-object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), FlowGraph] {
-  def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): FlowGraph = {
+object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), FlowGraph] {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): FlowGraph = {
     new FlowGraph(params._1, params._2)
   }
 
@@ -335,11 +315,11 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
   sealed trait WithSpecificAST extends Node {
     this: Product =>
-    val location: SpecificAST[NamedAST]
-    val ast = location.ast
+    val location: NamedAST.Z
+    val ast = location.value
     override lazy val group = {
-      val p = location.path
-      val i = p.lastIndexWhere(_.isInstanceOf[Callable])
+      val p = location.parents
+      val i = p.lastIndexWhere(_.isInstanceOf[Callable.Z])
       if (i >= 0) {
         p(i)
       } else {
@@ -356,8 +336,8 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
   sealed trait TokenFlowNode extends Node with WithSpecificAST {
     this: Product =>
-    val location: SpecificAST[Expression]
-    override def label = location.ast match {
+    val location: Expression.Z
+    override def label = location.value match {
       case Future(_) => s"◊"
       case _ => s"${shortString(ast)}"
     }
@@ -371,7 +351,7 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
   }
 
   // TODO: I think this may not be needed, however it's not clear where to store the nested flowgraph if callables are just VariableNodes.
-  case class CallableNode(location: SpecificAST[Callable], flowgraph: FlowGraph) extends Node with ValueFlowNode with WithSpecificAST {
+  case class CallableNode(location: Callable.Z, flowgraph: FlowGraph) extends Node with ValueFlowNode with WithSpecificAST {
     override def equals(o: Any) = o match {
       case o: CallableNode =>
         location == o.location // Ignore flowgraph for equality. This is an optimization.
@@ -384,45 +364,45 @@ object FlowGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
     override def label = ast.toString()
   }
   object ValueNode {
-    def apply(ast: Argument, path: List[NamedAST]): ValueFlowNode = ast match {
-      case a: Constant =>
-        ValueNode(a)
-      case a: UnboundVar =>
+    def apply(ast: Argument.Z): ValueFlowNode = ast match {
+      case a: Constant.Z =>
+        ValueNode(a.value)
+      case a: UnboundVar.Z =>
         throw new IllegalArgumentException(s"Congrats!!! You just volunteered to implement unbound variables in this analysis if you think we really need them.")
-      case v: BoundVar =>
-        VariableNode(v, path)
+      case v: BoundVar.Z =>
+        VariableNode(v.value, v.parents)
     }
   }
 
-  case class VariableNode(ast: BoundVar, binder: NamedAST) extends Node with ValueFlowNode {
+  case class VariableNode(ast: BoundVar, binder: NamedAST.Z) extends Node with ValueFlowNode {
     require(binder.boundVars contains ast)
 
     override def label = binder match {
-      case Force(_, _, publishForce, _) => s"♭${if (publishForce) "p" else "c"} $ast"
-      case _ => s"$ast from ${shortString(binder)}"
+      case Force.Z(_, _, publishForce, _) => s"♭${if (publishForce) "p" else "c"} $ast"
+      case _ => s"$ast from ${shortString(binder.value)}"
     }
   }
   object VariableNode {
-    def apply(ast: BoundVar, path: List[NamedAST]): VariableNode = {
+    def apply(ast: BoundVar, path: Seq[NamedAST.Z]): VariableNode = {
       VariableNode(ast, path.find(_.boundVars contains ast).getOrElse(
         throw new IllegalArgumentException(s"$ast should be a variable bound on the path:\n$path")))
     }
   }
 
   /*
-  case class FutureFieldNode(location: SpecificAST[New], field: Field) extends Node with ValueFlowNode with WithSpecificAST {
+  case class FutureFieldNode(location: New.Z, field: Field) extends Node with ValueFlowNode with WithSpecificAST {
     override def label = s"◊ $field"
   }
-  case class ArgumentFieldNode(location: SpecificAST[New], field: Field) extends Node with ValueFlowNode with WithSpecificAST {
+  case class ArgumentFieldNode(location: New.Z, field: Field) extends Node with ValueFlowNode with WithSpecificAST {
     override def label = s"$field"
   }
   */
 
-  case class EntryNode(location: SpecificAST[Expression]) extends Node with TokenFlowNode {
+  case class EntryNode(location: Expression.Z) extends Node with TokenFlowNode {
     override def label = s"⤓ ${super.label}"
   }
 
-  case class ExitNode(location: SpecificAST[Expression]) extends Node with TokenFlowNode {
+  case class ExitNode(location: Expression.Z) extends Node with TokenFlowNode {
     override def label = s"↧ ${super.label}"
   }
 

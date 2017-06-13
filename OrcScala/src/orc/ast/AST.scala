@@ -30,10 +30,10 @@ trait Positioned {
   }
 }
 
-trait AST extends Positioned {
+trait ASTForSwivel extends Positioned {
   /** Metadata transfer.
     */
-  def ->>[B <: AST](that: B): B = {
+  def ->>[B <: ASTForSwivel](that: B): B = {
     that.pushDownPosition(this.sourceTextRange)
     transferOptionalVariableName(this, that)
     that
@@ -41,16 +41,18 @@ trait AST extends Positioned {
 
   /** Metadata-preserving transform.
     */
-  def ->[B <: AST](f: this.type => B): B = {
+  def ->[B <: ASTForSwivel](f: this.type => B): B = {
     this ->> f(this)
   }
 
+  def subtrees: Iterable[ASTForSwivel]
+  
   /** If the argument has an earlier file position than
     * this AST node, reassign this node's position.
     *
     * If either position is undefined, choose the defined one.
     */
-  def aggregatePosWith[B <: AST](that: B): this.type = {
+  def aggregatePosWith[B <: ASTForSwivel](that: B): this.type = {
     (this.sourceTextRange.isDefined, that.sourceTextRange.isDefined) match {
       case (false, false) => {}
       case (false, true) => pushDownPosition(that.sourceTextRange)
@@ -79,7 +81,7 @@ trait AST extends Positioned {
   /** If both AST nodes have an optional variable name,
     * copy that name from this node to the other.
     */
-  def transferOptionalVariableName(source: AST, target: AST) {
+  def transferOptionalVariableName(source: ASTForSwivel, target: ASTForSwivel) {
     (source, target) match {
       case (x: hasOptionalVariableName, y: hasOptionalVariableName) if x.optionalVariableName.isDefined => {
         y.optionalVariableName = x.optionalVariableName
@@ -89,6 +91,25 @@ trait AST extends Positioned {
 
   }
 
+  def equalsIgnoreChildren(that: AnyRef): Boolean = {
+    if (this eq that) {
+      return true
+    } else if (this.getClass == that.getClass) {
+      val thatT = that.asInstanceOf[this.type]
+      def p[A, B](a: A, b: B): Boolean = {
+        ((a.isInstanceOf[ASTForSwivel] && b.isInstanceOf[ASTForSwivel]) || (a.isInstanceOf[scala.collection.Iterable[_]] && b.isInstanceOf[scala.collection.Iterable[_]]) || a.equals(b))
+      }
+      this.productIterator.toSeq.corresponds(thatT.productIterator.toSeq)(p)
+    } else {
+      return false
+    }
+  }
+
+  def productIterator: Iterator[Any] //Subclasses that are case classes will supply automatically
+
+}
+
+trait AST extends ASTForSwivel {
   /** All AST node children of this node, as a single list
     */
   def subtrees: Iterable[AST] = {
@@ -116,35 +137,19 @@ trait AST extends Positioned {
     goodKids
   }
 
-  def equalsIgnoreChildren(that: AnyRef): Boolean = {
-    if (this eq that) {
-      return true
-    } else if (this.getClass == that.getClass) {
-      val thatT = that.asInstanceOf[this.type]
-      def p[A, B](a: A, b: B): Boolean = {
-        ((a.isInstanceOf[AST] && b.isInstanceOf[AST]) || (a.isInstanceOf[scala.collection.Iterable[_]] && b.isInstanceOf[scala.collection.Iterable[_]]) || a.equals(b))
-      }
-      this.productIterator.toSeq.corresponds(thatT.productIterator.toSeq)(p)
-    } else {
-      return false
-    }
-  }
-
-  def productIterator: Iterator[Any] //Subclasses that are case classes will supply automatically
-
   def dump(prefix: String = ""): this.type = {
     Console.println(prefix + getClass().getCanonicalName() + " at " + sourceTextRange + ": " + toString())
     subtrees foreach { _.dump(prefix + "  ") }
     this
   }
-
 }
+
 
 trait OrcSyntaxConvertible {
   def toOrcSyntax: String
 }
 
-trait hasOptionalVariableName extends AST {
+trait hasOptionalVariableName extends ASTForSwivel {
   var optionalVariableName: Option[String] = None
 }
 

@@ -15,7 +15,6 @@ package orc.compile.orctimizer
 
 import orc.compile.AnalysisRunner
 import orc.ast.orctimizer.named.Expression
-import orc.ast.orctimizer.named.SpecificAST
 import orc.ast.orctimizer.named.Callable
 import orc.compile.AnalysisCache
 import scala.reflect.ClassTag
@@ -31,7 +30,7 @@ import orc.values.sites.Effects
 
 
 class EffectAnalysis(
-  val results: Map[SpecificAST[Expression], EffectAnalysis.EffectInfo],
+  val results: Map[Expression.Z, EffectAnalysis.EffectInfo],
   graph: GraphDataProvider[Node, Edge])
   extends DebuggableGraphDataProvider[Node, Edge] {
   import FlowGraph._
@@ -44,7 +43,7 @@ class EffectAnalysis(
 
   def subgraphs = Set()
 
-  def effectsInfoOf(e: SpecificAST[Expression]): EffectInfo = {
+  def effectsInfoOf(e: Expression.Z): EffectInfo = {
     results.get(e) match {
       case Some(r) =>
         r
@@ -54,11 +53,11 @@ class EffectAnalysis(
     }
   }
   
-  def effects(e: SpecificAST[Expression]): Boolean = {
+  def effects(e: Expression.Z): Boolean = {
     effectsInfoOf(e).effects
   }
 
-  def effected(e: SpecificAST[Expression]): Boolean = {
+  def effected(e: Expression.Z): Boolean = {
     effectsInfoOf(e).effected
   }
 
@@ -76,10 +75,10 @@ class EffectAnalysis(
   }
 }
 
-object EffectAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), EffectAnalysis] {
+object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), EffectAnalysis] {
   import FlowGraph._
 
-  def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): EffectAnalysis = {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): EffectAnalysis = {
     val cg = cache.get(CallGraph)(params)
     val a = new DelayAnalyzer(cg)
     val res = a()
@@ -148,15 +147,15 @@ object EffectAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Cal
       lazy val inState = states.inStateReduced[Edge](_ combine _)
       
       val state: StateT = node match {
-        case node @ ExitNode(spAst @ SpecificAST(ast, _)) =>
+        case node @ ExitNode(ast) =>
           import orc.ast.orctimizer.named._
           ast match {
-            case Future(_) =>
+            case Future.Z(_) =>
               inState
-            case CallSite(target, _, _) => {
+            case CallSite.Z(target, _, _) => {
               import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
 
-              val possibleV = graph.valuesOf[FlowValue](ValueNode(target, spAst.subtreePath))
+              val possibleV = graph.valuesOf[FlowValue](ValueNode(target))
               val extPubs = possibleV match {
                 case CallGraph.BoundedSet.ConcreteBoundedSet(s) if s.exists(v => v.isInstanceOf[ExternalSiteValue]) =>
                   val pubss = s.toSeq.collect {
@@ -183,12 +182,12 @@ object EffectAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Cal
               }
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combine _))(_ combine _).getOrElse(worstState)
             }
-            case CallDef(target, _, _) =>
+            case CallDef.Z(target, _, _) =>
               inState
-            case IfDef(v, l, r) => {
+            case IfDef.Z(v, l, r) => {
               // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
               import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
-              val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v, spAst.subtreePath))
+              val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v))
               val isDef = possibleV match {
                 case _: CallGraph.MaximumBoundedSet[_] =>
                   None
@@ -210,31 +209,31 @@ object EffectAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Cal
               }
               val realizableIn = isDef match {
                 case Some(true) =>
-                  states(ExitNode(SpecificAST(l, spAst.subtreePath)))
+                  states(ExitNode(l))
                 case Some(false) =>
-                  states(ExitNode(SpecificAST(r, spAst.subtreePath)))
+                  states(ExitNode(r))
                 case None =>
                   inState
               }
               realizableIn
             }
-            case Trim(_) =>
+            case Trim.Z(_) =>
               inState
-            case New(_, _, bindings, _) =>
+            case New.Z(_, _, bindings, _) =>
               inState
-            case FieldAccess(_, f) =>
+            case FieldAccess.Z(_, f) =>
               initialState
-            case Otherwise(l, r) =>
+            case Otherwise.Z(l, r) =>
               // TODO: Could use publication info to improve this.
               inState
-            case Stop() =>
+            case Stop.Z() =>
               initialState
-            case Force(_, _, b, _) =>
+            case Force.Z(_, _, b, _) =>
               inState
-            case Branch(_, _, _) =>
+            case Branch.Z(_, _, _) =>
               inState
-            case _: BoundVar | Parallel(_, _) | Constant(_) |
-              DeclareCallables(_, _) | DeclareType(_, _, _) | HasType(_, _) =>
+            case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) |
+              DeclareCallables.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
               inState
           }
         case EverywhereNode =>

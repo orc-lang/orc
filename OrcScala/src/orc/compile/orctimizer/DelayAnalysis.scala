@@ -15,7 +15,6 @@ package orc.compile.orctimizer
 
 import orc.compile.AnalysisRunner
 import orc.ast.orctimizer.named.Expression
-import orc.ast.orctimizer.named.SpecificAST
 import orc.ast.orctimizer.named.Callable
 import orc.compile.AnalysisCache
 import scala.reflect.ClassTag
@@ -81,7 +80,7 @@ case class IndefiniteDelay() extends Delay {
 }
 
 class DelayAnalysis(
-  val results: Map[SpecificAST[Expression], DelayAnalysis.DelayInfo],
+  val results: Map[Expression.Z, DelayAnalysis.DelayInfo],
   graph: GraphDataProvider[Node, Edge])
   extends DebuggableGraphDataProvider[Node, Edge] {
   import FlowGraph._
@@ -94,7 +93,7 @@ class DelayAnalysis(
 
   def subgraphs = Set()
 
-  def delayOf(e: SpecificAST[Expression]): DelayInfo = {
+  def delayOf(e: Expression.Z): DelayInfo = {
     results.get(e) match {
       case Some(r) =>
         r
@@ -118,10 +117,10 @@ class DelayAnalysis(
   }
 }
 
-object DelayAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), DelayAnalysis] {
+object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), DelayAnalysis] {
   import FlowGraph._
 
-  def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): DelayAnalysis = {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): DelayAnalysis = {
     val cg = cache.get(CallGraph)(params)
     val a = new DelayAnalyzer(cg)
     val res = a()
@@ -190,15 +189,15 @@ object DelayAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Call
       lazy val inStateFutureValueSource = states.inStateReduced[FutureValueSourceEdge](_ combineOneOf _)
       
       val state: StateT = node match {
-        case node @ ExitNode(spAst @ SpecificAST(ast, _)) =>
+        case node @ ExitNode(ast) =>
           import orc.ast.orctimizer.named._
           ast match {
-            case Future(_) =>
+            case Future.Z(_) =>
               DelayInfo(ComputationDelay(), inStateValue.maxHaltDelay)
-            case CallSite(target, _, _) => {
+            case CallSite.Z(target, _, _) => {
               import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
 
-              val possibleV = graph.valuesOf[FlowValue](ValueNode(target, spAst.subtreePath))
+              val possibleV = graph.valuesOf[FlowValue](ValueNode(target))
               val extPubs = possibleV match {
                 case CallGraph.BoundedSet.ConcreteBoundedSet(s) if s.exists(v => v.isInstanceOf[ExternalSiteValue]) =>
                   val pubss = s.toSeq.collect {
@@ -225,12 +224,12 @@ object DelayAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Call
               }
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combineOneOf _))(_ combineOneOf _).getOrElse(worstState)
             }
-            case CallDef(target, _, _) =>
+            case CallDef.Z(target, _, _) =>
               inStateOneOf
-            case IfDef(v, l, r) => {
+            case IfDef.Z(v, l, r) => {
               // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
               import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
-              val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v, spAst.subtreePath))
+              val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v))
               val isDef = possibleV match {
                 case _: CallGraph.MaximumBoundedSet[_] =>
                   None
@@ -252,38 +251,38 @@ object DelayAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Call
               }
               val realizableIn = isDef match {
                 case Some(true) =>
-                  states(ExitNode(SpecificAST(l, spAst.subtreePath)))
+                  states(ExitNode(l))
                 case Some(false) =>
-                  states(ExitNode(SpecificAST(r, spAst.subtreePath)))
+                  states(ExitNode(r))
                 case None =>
                   inStateOneOf
               }
               realizableIn
             }
-            case Trim(_) =>
+            case Trim.Z(_) =>
               DelayInfo(inStateAllOf.maxFirstPubDelay, inStateAllOf.maxFirstPubDelay)
-            case New(_, _, bindings, _) =>
+            case New.Z(_, _, bindings, _) =>
               DelayInfo(inStateAllOf.maxFirstPubDelay, inStateUse.maxHaltDelay)
-            case FieldAccess(_, f) =>
+            case FieldAccess.Z(_, f) =>
               inStateAllOf
-            case Otherwise(l, r) =>
-              val lState = states(ExitNode(SpecificAST(l, spAst.subtreePath)))
-              val rState = states(ExitNode(SpecificAST(r, spAst.subtreePath)))
+            case Otherwise.Z(l, r) =>
+              val lState = states(ExitNode(l))
+              val rState = states(ExitNode(r))
               DelayInfo(lState.maxFirstPubDelay max (lState.maxHaltDelay + rState.maxFirstPubDelay), lState.maxHaltDelay + rState.maxHaltDelay)
-            case Stop() =>
+            case Stop.Z() =>
               DelayInfo(IndefiniteDelay(), ComputationDelay())
-            case Force(_, _, b, _) =>
+            case Force.Z(_, _, b, _) =>
               // We know the future binding must have started before the force starts.
               // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
               DelayInfo(inStateFutureValueSource.maxFirstPubDelay + inStateAllOf.maxFirstPubDelay, 
                   (inStateFutureValueSource.maxFirstPubDelay min inStateFutureValueSource.maxHaltDelay) + inStateAllOf.maxHaltDelay)
-            case Branch(_, _, _) =>
+            case Branch.Z(_, _, _) =>
               DelayInfo(inStateAllOf.maxFirstPubDelay + inStateUse.maxFirstPubDelay, inStateAllOf.maxHaltDelay + inStateUse.maxHaltDelay)
-            case _: BoundVar | Parallel(_, _) | Constant(_) |
-              DeclareCallables(_, _) | DeclareType(_, _, _) | HasType(_, _) =>
+            case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) |
+              DeclareCallables.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
               inStateAllOf
           }
-        case node @ EntryNode(spAst @ SpecificAST(ast, _)) =>
+        case node @ EntryNode(ast) =>
           initialState
         case _: ValueFlowNode =>
           // All values are available immediately and never execute

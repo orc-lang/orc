@@ -12,6 +12,8 @@
 //
 package orc.ast.orctimizer.named
 
+import swivel.Zipper
+
 /** Direct substitutions on named ASTs.
   *
   * @author dkitchin
@@ -19,8 +21,8 @@ package orc.ast.orctimizer.named
 trait Substitution[X <: NamedAST] {
   self: NamedAST =>
 
-  def subst(a: Argument, x: Argument): X = Substitution(a, x)(this).asInstanceOf[X]
-  def subst(a: Argument, s: String): X = Substitution(a, UnboundVar(s))(this).asInstanceOf[X]
+  def subst(a: Argument, x: Argument): X = Substitution(a, x)(this.toZipper()).asInstanceOf[X]
+  def subst(a: Argument, s: String): X = Substitution(a, UnboundVar(s))(this.toZipper()).asInstanceOf[X]
 
   def substAll(sublist: List[(Argument, String)]): X = {
     val subs = new scala.collection.mutable.HashMap[Argument, Argument]()
@@ -29,14 +31,14 @@ trait Substitution[X <: NamedAST] {
       assert(!subs.contains(x))
       subs += ((x, a))
     }
-    Substitution.allArgs(subs)(this).asInstanceOf[X]
+    Substitution.allArgs(subs)(this.toZipper()).asInstanceOf[X]
   }
   def substAll(subs: Map[Argument, Argument]): X = {
-    Substitution.allArgs(subs)(this).asInstanceOf[X]
+    Substitution.allArgs(subs)(this.toZipper()).asInstanceOf[X]
   }
 
-  def subst(t: Type, u: Typevar): X = Substitution(t, u)(this).asInstanceOf[X]
-  def subst(t: Typevar, s: String): X = Substitution(t, UnboundTypevar(s))(this).asInstanceOf[X]
+  def subst(t: Type, u: Typevar): X = Substitution(t, u)(this.toZipper()).asInstanceOf[X]
+  def subst(t: Typevar, s: String): X = Substitution(t, UnboundTypevar(s))(this.toZipper()).asInstanceOf[X]
   def substAllTypes(sublist: List[(Type, String)]): X = {
     val subs = new scala.collection.mutable.HashMap[Typevar, Type]()
     for ((t, s) <- sublist) {
@@ -44,45 +46,45 @@ trait Substitution[X <: NamedAST] {
       assert(!subs.isDefinedAt(u))
       subs += ((u, t))
     }
-    Substitution.allTypes(subs)(this).asInstanceOf[X]
+    Substitution.allTypes(subs)(this.toZipper()).asInstanceOf[X]
   }
   def substAllTypes(subs: Map[Typevar, Type]): X = {
-    Substitution.allTypes(subs)(this).asInstanceOf[X]
+    Substitution.allTypes(subs)(this.toZipper()).asInstanceOf[X]
   }
 }
 
 object Substitution {
 
   def apply(a: Argument, x: Argument) =
-    new NamedASTTransform {
-      override def onArgument(context: List[BoundVar]) = {
-        case `x` => a
-        case y: Argument => y
+    new Transform {
+      override val onArgument = {
+        case Zipper(`x`, _) => a
+        case y: Argument.Z => y.value
       }
     }
 
   def apply(t: Type, u: Typevar) =
-    new NamedASTTransform {
-      override def onType(typecontext: List[BoundTypevar]) = {
-        case `u` => t
-        case w: Typevar => w
+    new Transform {
+      override val onType = {
+        case Zipper(`u`, _) => t
+        case w: Typevar.Z => w.value
       }
     }
 
   def allArgs(subs: scala.collection.Map[Argument, Argument]) =
-    new NamedASTTransform {
-      override def onArgument(context: List[BoundVar]) = {
-        case x: Var => {
-          if (subs.isDefinedAt(x)) { subs(x) } else { x }
+    new Transform {
+      override val onArgument = {
+        case x: Var.Z => {
+          if (subs.isDefinedAt(x.value)) { subs(x.value) } else { x.value }
         }
       }
     }
 
   def allTypes(subs: scala.collection.Map[Typevar, Type]) =
-    new NamedASTTransform {
-      override def onType(typecontext: List[BoundTypevar]) = {
-        case u: Typevar => {
-          if (subs.isDefinedAt(u)) { subs(u) } else { u }
+    new Transform {
+      override val onType = {
+        case u: Typevar.Z => {
+          if (subs.isDefinedAt(u.value)) { subs(u.value) } else { u.value }
         }
       }
     }
@@ -94,15 +96,15 @@ trait ContextualSubstitution {
 
   def subst(subContext: Map[String, Argument], subTypeContext: Map[String, Type]): Expression = {
     val transform =
-      new NamedASTTransform {
-        override def onArgument(unusedContext: List[BoundVar]) = {
-          case x @ UnboundVar(s) => subContext.getOrElse(s, x)
+      new Transform {
+        override val onArgument = {
+          case x @ UnboundVar.Z(s) => subContext.getOrElse(s, x.value)
         }
-        override def onType(unusedTypeContext: List[BoundTypevar]) = {
-          case x @ UnboundTypevar(s) => subTypeContext.getOrElse(s, x)
+        override val onType = {
+          case x @ UnboundTypevar.Z(s) => subTypeContext.getOrElse(s, x.value)
         }
       }
-    transform(this)
+    transform(this.toZipper())
   }
 
 }

@@ -35,7 +35,7 @@ trait PorcInfixValue {
 }
 trait PorcInfixExpr {
   this: Expr =>
-  def :::(f: Expr): Sequence = Sequence(f, this)
+  def :::(f: Expr): Sequence = Sequence(Seq(f, this))
 }
 
 object PorcInfixNotation {
@@ -90,7 +90,7 @@ object DefIn {
 }
 
 object DefCPSIn {
-  type MatchResult = Option[(Var, Var, Var, Var, List[Var], TransformContext, WithContext[Expr])]
+  type MatchResult = Option[(Var, Var, Var, Var, Seq[Var], TransformContext, WithContext[Expr])]
   def unapply(e: WithContext[PorcAST]): MatchResult = e match {
     case (s: DefCPS) in ctx =>
       val bodyctx = ctx extendBindings (s.arguments :+ s.pArg :+ s.cArg :+ s.tArg).map(DefArgumentBound(ctx, s, _))
@@ -100,7 +100,7 @@ object DefCPSIn {
 }
 
 object DefDirectIn {
-  type MatchResult = Option[(Var, List[Var], TransformContext, WithContext[Expr])]
+  type MatchResult = Option[(Var, Seq[Var], TransformContext, WithContext[Expr])]
   def unapply(e: WithContext[PorcAST]): MatchResult = e match {
     case (s: DefDirect) in ctx =>
       val bodyctx = ctx extendBindings s.arguments.map(DefArgumentBound(ctx, s, _))

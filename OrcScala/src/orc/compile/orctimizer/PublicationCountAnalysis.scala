@@ -25,6 +25,7 @@ import scala.reflect.ClassTag
 import orc.values.Field
 import orc.ast.orctimizer.named.FieldAccess
 import orc.compile.orctimizer.CallGraph.CallableValue
+import swivel.Zipper
 
 class PublicationCountAnalysis(
   results: Map[Node, PublicationCountAnalysis.PublicationInfo],
@@ -44,7 +45,7 @@ class PublicationCountAnalysis(
     case (n@ (_: ValueFlowNode), p) => (n, p)
   }
 
-  def publicationsOf(e: SpecificAST[Expression]) =
+  def publicationsOf(e: Expression.Z) =
     expressions.get(e).getOrElse(PublicationCountAnalysis.defaultResult).publications
 
   def stopabilityOf(e: ValueFlowNode) =
@@ -67,7 +68,7 @@ class PublicationCountAnalysis(
   * tracking value count information along value edges.
   *
   */
-object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), PublicationCountAnalysis] {
+object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), PublicationCountAnalysis] {
   object BoundedSetInstance extends BoundedSetModule {
     type TU = ObjectInfo
     type TL = ObjectInfo
@@ -108,7 +109,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
 
   val defaultResult: PublicationInfo = PublicationInfo(Range(0, None), Range(0, 1), BoundedSet())
 
-  def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): PublicationCountAnalysis = {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): PublicationCountAnalysis = {
     val cg = cache.get(CallGraph)(params)
     val a = new PublicationCountAnalyzer(cg)
     val res = a()
@@ -237,7 +238,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
     def initialNodes: collection.Seq[Node] = {
       (graph.nodesBy {
         case n @ (ValueNode(_) | VariableNode(_, _)) => n
-        case n @ ExitNode(SpecificAST(Stop(), _)) => n
+        case n @ ExitNode(Stop.Z()) => n
       }).toSeq :+ graph.entry
     }
     val initialState: PublicationInfo = PublicationInfo(Range(0, None), Range(0, 1), BoundedSet())
@@ -265,10 +266,10 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
         Range(0, None), _.publications, _ + _)
 
       lazy val inStateFlow = node match {
-        case EntryNode(SpecificAST(ast, Otherwise(l, r) :: _)) if ast == r =>
+        case EntryNode(Zipper(ast, Some(Otherwise.Z(l, r)))) if ast == r =>
           // If we are on the right of an Otherwise then we need to transfer the pub count by the HappensBefore edge
           states.inStateReduced[HappensBeforeEdge](mergeInputs)
-        case EntryNode(SpecificAST(ast, Callable(_, _, body, _, _, _) :: _)) if ast == body =>
+        case EntryNode(Zipper(ast, Some(Callable.Z(_, _, body, _, _, _)))) if ast == body =>
           // If we are the body of a call. We need to union the publication inputs.
           PublicationInfo(inStateTokenOneOf, Range(0, 1), BoundedSet())
         case _ =>
@@ -285,25 +286,25 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
       val MaximumBoundedSet = CallGraph.BoundedSet.MaximumBoundedSet[CallGraph.FlowValue]
 
       val outState = node match {
-        case EntryNode(SpecificAST(ast, _)) =>
+        case EntryNode(ast) =>
           ast match {
             case n if node == graph.entry =>
               PublicationInfo(Range(1, 1), Range(0, 1), BoundedSet())
-            case Force(_, _, b, _) =>
+            case Force.Z(_, _, b, _) =>
               PublicationInfo(inStateUse.futureValues, Range(0, 1), BoundedSet())
-            case _: BoundVar | Branch(_, _, _) | Parallel(_, _) | Future(_) | Constant(_) |
-              Call(_, _, _) | IfDef(_, _, _) | Trim(_) | DeclareCallables(_, _) | Otherwise(_, _) |
-              New(_, _, _, _) | FieldAccess(_, _) | DeclareType(_, _, _) | HasType(_, _) | Stop() =>
+            case _: BoundVar.Z | Branch.Z(_, _, _) | Parallel.Z(_, _) | Future.Z(_) | Constant.Z(_) |
+              Call.Z(_, _, _) | IfDef.Z(_, _, _) | Trim.Z(_) | DeclareCallables.Z(_, _) | Otherwise.Z(_, _) |
+              New.Z(_, _, _, _) | FieldAccess.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) | Stop.Z() =>
               PublicationInfo(Range(1, 1), Range(0, 1), BoundedSet())
           }
-        case node@ExitNode(spAst @ SpecificAST(ast, _)) =>
+        case node@ExitNode(ast) =>
           ast match {
-            case Future(_) =>
+            case Future.Z(_) =>
               PublicationInfo(inStateFlow.publications, inStateValue.publications.limitTo(1), inStateValue.fields)
-            case CallSite(target, _, _) => {
+            case CallSite.Z(target, _, _) => {
               lazy val inStateHappensBefore = states.inStateReduced[HappensBeforeEdge](mergeInputs)
               import CallGraph.{FlowValue, ExternalSiteValue, CallableValue}
-              val possibleV = graph.valuesOf[FlowValue](ValueNode(target, spAst.subtreePath))
+              val possibleV = graph.valuesOf[FlowValue](ValueNode(target))
               val extPubs = possibleV match {
                 case CallGraph.BoundedSet.ConcreteBoundedSet(s) if s.exists(v => v.isInstanceOf[ExternalSiteValue]) =>
                   val pubss = s.toSeq.collect {
@@ -331,12 +332,12 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
               val p = applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ union _))(_ union _).getOrElse(Range(0, None))
               PublicationInfo(p, Range(1, 1), inStateValue.fields)
             }
-            case CallDef(target, _, _) =>
+            case CallDef.Z(target, _, _) =>
               PublicationInfo(inStateTokenOneOf, Range(1, 1), inStateValue.fields)
-            case IfDef(v, l, r) => {
+            case IfDef.Z(v, l, r) => {
               // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
               import CallGraph.{FlowValue, ExternalSiteValue, CallableValue}
-              val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v, spAst.subtreePath))
+              val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v))
               val isDef = possibleV match {
                 case MaximumBoundedSet =>
                   None
@@ -358,17 +359,17 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
               }
               val realizableIn = isDef match {
                 case Some(true) =>
-                  states(ExitNode(SpecificAST(l, spAst.subtreePath)))
+                  states(ExitNode(l))
                 case Some(false) =>
-                  states(ExitNode(SpecificAST(r, spAst.subtreePath)))
+                  states(ExitNode(r))
                 case None =>
                   defaultFlowInState
               }
               realizableIn
             }
-            case Trim(_) =>
+            case Trim.Z(_) =>
               PublicationInfo(inStateFlow.publications.limitTo(1), inStateValue.futureValues, inStateValue.fields)
-            case New(_, _, bindings, _) =>
+            case New.Z(_, _, bindings, _) =>
               val structs = ObjectValue.buildStructures(node) { (content, inNode, refObject) =>
                 val st = states(inNode)
                 val fields = st.fields map refObject
@@ -380,16 +381,16 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
                 }
               }
               PublicationInfo(inStateFlow.publications, Range(1, 1), BoundedSet(ObjectValue(node, structs)))
-            case FieldAccess(_, f) =>
+            case FieldAccess.Z(_, f) =>
               inStateValue.fields.values match {
                 case Some(s) =>
                   s.map(_.get(f)).fold(None)(applyOrOverride(_, _)(_ combine _)).getOrElse(initialState)
                 case None =>
                   PublicationInfo(Range(0, None), Range(0, None), PublicationCountAnalysis.BoundedSet.MaximumBoundedSet())
               }
-            case Otherwise(l, r) =>
-              val lState = states(ExitNode(SpecificAST(l, spAst.subtreePath)))
-              val rState = states(ExitNode(SpecificAST(r, spAst.subtreePath)))
+            case Otherwise.Z(l, r) =>
+              val lState = states(ExitNode(l))
+              val rState = states(ExitNode(r))
               if (lState.publications > 0) {
                 lState
               } else if (lState.publications only 0) {
@@ -397,25 +398,25 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression, Option[Speci
               } else {
                 PublicationInfo((lState.publications intersect Range(1, None)) union rState.publications, inStateValue.futureValues, inStateValue.fields)
               }
-            case Stop() =>
+            case Stop.Z() =>
               PublicationInfo(Range(0, 0), Range(0, 0), BoundedSet())
-            case Force(_, _, b, _) =>
+            case Force.Z(_, _, b, _) =>
               PublicationInfo(inStateFlow.publications * inStateUse.futureValues, inStateValue.futureValues, inStateValue.fields)
-            case Branch(_, _, _) =>
+            case Branch.Z(_, _, _) =>
               PublicationInfo(inStateFlow.publications * inStateUse.publications, inStateValue.futureValues, inStateValue.fields)
-            case _: BoundVar | Parallel(_, _) | Constant(_) |
-                DeclareCallables(_, _) | DeclareType(_, _, _) | HasType(_, _) =>
+            case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) |
+                DeclareCallables.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
               defaultFlowInState
           }
         case VariableNode(x, ast) =>
           ast match {
-            case Force(_, _, b, _) =>
+            case Force.Z(_, _, b, _) =>
               nonFutureVariableState
-            case New(_, _, _, _) =>
+            case New.Z(_, _, _, _) =>
               nonFutureVariableState
-            case DeclareCallables(_, _) | Callable(_, _, _, _, _, _) =>
+            case DeclareCallables.Z(_, _) | Callable.Z(_, _, _, _, _, _) =>
               nonFutureVariableState
-            case Branch(_, _, _) =>
+            case Branch.Z(_, _, _) =>
               defaultFlowInState
           }
         case ValueNode(_) | CallableNode(_, _) =>

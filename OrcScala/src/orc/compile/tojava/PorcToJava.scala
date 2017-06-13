@@ -158,14 +158,14 @@ public class $name extends OrcProgram {$StartIndent
         assert(!isJavaExpression)
         pp"""$DNL
         |Object ${argument(x)};
-        |${sitecalldirect(Some(x), target, args)}
+        |${sitecalldirect(Some(x), target, args.toList)}
         |${expression(b)}
         """
 
       }
       case SiteCallDirect(target, args) => {
         assert(!isJavaExpression)
-        sitecalldirect(None, target, args)
+        sitecalldirect(None, target, args.toList)
       }
       case DefCall(target, p, c, t, args) => {
         pp"""($coerceToDefCallable${argument(target)}).call($execution, $coerceToContinuation(${argument(p)}), $coerceToCounter(${argument(c)}), $coerceToTerminator(${argument(t)}), new Object[] { ${args.map(argument(_)).mkString(",")} });"""

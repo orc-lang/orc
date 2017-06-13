@@ -74,7 +74,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
 
   val callLocations: Set[CallLocation] = {
     graph.nodesBy({
-      case EntryNode(v @ SpecificAST(_: Call, _)) => v.asInstanceOf[SpecificAST[Call]]
+      case EntryNode(v : Call.Z) => v
     })
   }
 
@@ -113,7 +113,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
     }
   }
 
-  def valuesOf(e: SpecificAST[Expression]): BoundedSet[FlowValue] = {
+  def valuesOf(e: Expression.Z): BoundedSet[FlowValue] = {
     valuesOf[FlowValue](ExitNode(e))
   }
 
@@ -148,8 +148,8 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
   }
 }
 
-object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable]]), CallGraph] {
-  def compute(cache: AnalysisCache)(params: (Expression, Option[SpecificAST[Callable]])): CallGraph = {
+object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), CallGraph] {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): CallGraph = {
     val fg = cache.get(FlowGraph)(params)
     
     /*
@@ -357,7 +357,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
   type State = BoundedSet[FlowValue]
 
-  type CallLocation = SpecificAST[Call]
+  type CallLocation = Call.Z
 
   case class AnalysisLocation[T <: NamedAST](stack: List[CallLocation], node: Node) {
     def limit(n: Int) = AnalysisLocation(stack.take(n), node)
@@ -379,8 +379,8 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
       (graph.nodesBy {
         case n @ CallableNode(_, _) => n
         //case n @ ExitNode(SpecificAST(Call(_, _, _), _)) => n
-        case n @ ExitNode(SpecificAST(New(_, _, _, _), _)) if valueInputs(n).isEmpty => n
-        case n @ ExitNode(SpecificAST(Stop(), _)) => n
+        case n @ ExitNode(New.Z(_, _, _, _)) if valueInputs(n).isEmpty => n
+        case n @ ExitNode(Stop.Z()) => n
         case n @ ValueNode(Constant(_)) => n
       }).toSeq
     }
@@ -445,17 +445,17 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
       // Nodes must be computed before the state because the computation adds the additional edges to the list.
       val nodes: Seq[Node] = node match {
-        case entry @ EntryNode(n @ SpecificAST(call@Call(target, args, _), path)) =>
+        case entry @ EntryNode(n @ Call.Z(target, args, _)) =>
           val exit = ExitNode(n)
-          states.get(ValueNode(target, path)) match {
+          states.get(ValueNode(target)) match {
             case Some(targets) =>
               // TODO: Make sure this properly handles totally unknown calls. MaximumBoundedSet()
 
               // Select all callables with the correct arity and correct kind.
               val callables = targets.collect({
-                case c@CallableValue(callable: Def, _) if callable.formals.size == args.size && call.isInstanceOf[CallDef] =>
+                case c@CallableValue(callable: Def, _) if callable.formals.size == args.size && n.isInstanceOf[CallDef.Z] =>
                   c
-                case c@CallableValue(callable: Site, _) if callable.formals.size == args.size && call.isInstanceOf[CallSite] =>
+                case c@CallableValue(callable: Site, _) if callable.formals.size == args.size && n.isInstanceOf[CallSite.Z] =>
                   c
                 })
               // Build edges for arguments of this call site to all targets
@@ -464,7 +464,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
                 c <- cs
                 (formal, actual) <- (c.graph.arguments zip args)
               } yield {
-                ValueEdge(ValueNode(actual, path), formal)
+                ValueEdge(ValueNode(actual), formal)
               }
               // Build edges for return value of this call site from all targets
               val retEdges = for {
@@ -496,7 +496,7 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
       // Add edges we don't actually use in this analysis but do use in later analyses. These don't need to be reported to the analyzer framework.
       node match {
-        case entry @ EntryNode(n @ SpecificAST(f @ Force(_, vs, _, _), path)) =>
+        case entry @ EntryNode(n @ Force.Z(_, vs, _, _)) =>
           val exit = ExitNode(n)
           val sources = states.inStateProcessed[UseEdge, Option[Set[Node]]](Some(Set()), _.values map { v =>
             v flatMap[Node, Set[Node]] { 
@@ -527,8 +527,8 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
         case ValueNode(Constant(v)) =>
           inState + DataValue(v)
         case CallableNode(c, g) =>
-          inState + CallableValue(c, g)
-        case VariableNode(v, f: Force) =>
+          inState + CallableValue(c.value, g)
+        case VariableNode(v, f: Force.Z) =>
           // FIXME: This needs to correctly handle the two kinds of force. Including messing with objects and values that may have apply.
           inState flatMap {
             case FutureValue(s, _) => s.map(x => x: FlowValue)
@@ -536,19 +536,19 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
           }
         case VariableNode(v, _) if valueInputs(node).nonEmpty =>
           inState
-        case ExitNode(spAst @ SpecificAST(Future(expr), _)) =>
-          val inNode = ExitNode(SpecificAST(expr, spAst.subtreePath))
+        case ExitNode(Future.Z(expr)) =>
+          val inNode = ExitNode(expr)
           BoundedSet(FutureValue(inState.collect({
             case e: FutureContent => e
             case f: FutureValue => throw new AssertionError("Futures should never be inside futures")
           }), Set(inNode)))
-        case ExitNode(SpecificAST(FieldAccess(_, f), _)) =>
+        case ExitNode(FieldAccess.Z(_, f)) =>
           //Logger.fine(s"Processing FieldAccess: $node ($inState)")
           inState flatMap {
             case o: ObjectValue => o.get(f).getOrElse(BoundedSet())
             case _ => MaximumBoundedSet()
           }
-        case node @ ExitNode(spAst@SpecificAST(New(self, _, bindings, _), _)) =>
+        case node @ ExitNode(New.Z(self, _, bindings, _)) =>
           val structs = ObjectValue.buildStructures(node) { (field, inNode, refObject) =>
             field match {
               case f@FieldFuture(expr) =>
@@ -577,19 +577,19 @@ object CallGraph extends AnalysisRunner[(Expression, Option[SpecificAST[Callable
 
           // Logger.fine(s"Building SFO for: $nw ;;; $field = $fv ;;; Structs = $structs")
           BoundedSet(ObjectValue(node, structs))
-        case ExitNode(SpecificAST(Call(target, args, _), path)) =>
-          states.get(ValueNode(target, path)) match {
+        case ExitNode(Call.Z(target, args, _)) =>
+          states.get(ValueNode(target)) match {
             case Some(targets) if targets.exists(v => !v.isInstanceOf[CallableValue]) =>
               MaximumBoundedSet()
             case _ =>
               inState
           }
-        case ExitNode(SpecificAST(Stop(), _)) =>
+        case ExitNode(Stop.Z()) =>
           initialState
         case ExitNode(_) if valueInputs(node).nonEmpty =>
           // Pass through publications
           inState
-        case EntryNode(SpecificAST(Call(target, args, _), path)) =>
+        case EntryNode(Call.Z(target, args, _)) =>
           // We don't really need this result so this value shouldn't matter. We only process these
           // entries because we need to add nodes for them.
           inState

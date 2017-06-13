@@ -14,7 +14,6 @@ package orc.compile.orctimizer
 import orc.values.Field
 import orc.compile.orctimizer.FlowGraph.{ ExitNode, Node }
 import scala.collection.mutable
-import orc.ast.orctimizer.named.SpecificAST
 import orc.ast.orctimizer.named.New
 import orc.ast.orctimizer.named.FieldFuture
 import orc.ast.orctimizer.named.FieldArgument
@@ -176,7 +175,7 @@ trait ObjectHandling {
     //def apply(root: NodeT, structs: Map[NodeT, ObjectStructure]): ObjectValue
     
     def buildStructures(node: ExitNode)(processField: (FieldValue, Node, (ObjectInfo) => ObjectRef) => StoredValueT): Map[NodeT, ObjectStructure] = {
-      val ExitNode(spAst @ SpecificAST(New(self, _, bindings, _), _)) = node
+      val ExitNode(New.Z(self, _, bindings, _)) = node
 
       val additionalStructures = mutable.Map[NodeT, Map[Field, StoredValueT]]()
 
@@ -207,12 +206,12 @@ trait ObjectHandling {
 
       val struct: Map[Field, StoredValueT] = (for ((field, content) <- bindings) yield {
         val contentRepr = content match {
-          case f @ FieldFuture(expr) =>
-            val inNode = ExitNode(SpecificAST(expr, f :: spAst.subtreePath))
-            processField(f, inNode, refObject)
-          case f @ FieldArgument(a) =>
-            val inNode = ValueNode(a, f :: spAst.subtreePath)
-            processField(f, inNode, refObject)
+          case f @ FieldFuture.Z(expr) =>
+            val inNode = ExitNode(expr)
+            processField(f.value, inNode, refObject)
+          case f @ FieldArgument.Z(a) =>
+            val inNode = ValueNode(a)
+            processField(f.value, inNode, refObject)
         }
         (field -> contentRepr)
       }).toMap

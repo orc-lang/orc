@@ -93,10 +93,10 @@ sealed abstract class Expr extends PorcAST with FreeVariables with Substitution[
 
 sealed abstract class Value extends Expr with PorcInfixValue with UnnumberedPorcAST with PrecomputeHashcode //with Substitution[Value]
 case class OrcValue(value: AnyRef) extends Value
-/*case class Tuple(values: List[Value]) extends Value
+/*case class Tuple(values: Seq[Value]) extends Value
 object Tuple {
   def apply(values: Value*): Tuple = Tuple(values.toList)
-  def unapplySeq(t: Tuple): Option[List[Value]] = Some(t.values)
+  def unapplySeq(t: Tuple): Option[Seq[Value]] = Some(t.values)
 }*/
 
 case class Unit() extends Value
@@ -132,48 +132,48 @@ object Var {
 case class Call(target: Value, argument: Value) extends Expr
 case class Let(x: Var, v: Expr, body: Expr) extends Expr
 
-case class Sequence(es: List[Expr]) extends Expr with UnnumberedPorcAST {
+case class Sequence(es: Seq[Expr]) extends Expr with UnnumberedPorcAST {
   //assert(!es.isEmpty)
 
   def simplify = es match {
-    case List(e) => e
+    case Seq(e) => e
     case _ => this
   }
 }
 object Sequence {
-  /*def apply(es: Seq[Expr]): Sequence = {
+  def apply(es: Seq[Expr]): Sequence = {
     new Sequence((es.flatMap {
       case Sequence(fs) => fs
-      case e => List(e)
-    }).toList)
-  }*/
-  def apply(es: Expr*): Sequence = {
-    new Sequence((es.flatMap {
-      case Sequence(fs) => fs
-      case e => List(e)
+      case e => Seq(e)
     }).toList)
   }
+  /*def apply(es: Expr*): Sequence = {
+    new Sequence((es.flatMap {
+      case Sequence(fs) => fs
+      case e => Seq(e)
+    }).toList)
+  }*/
 }
 
 case class Continuation(argument: Var, body: Expr) extends Expr
 
-case class DefDeclaration(defs: List[Def], body: Expr) extends Expr
+case class DefDeclaration(defs: Seq[Def], body: Expr) extends Expr
 sealed abstract class Def extends PorcAST {
   def name: Var
-  def arguments: List[Var]
+  def arguments: Seq[Var]
   def body: Expr
 
-  def allArguments: List[Var] = arguments
+  def allArguments: Seq[Var] = arguments
 }
-final case class DefCPS(name: Var, pArg: Var, cArg: Var, tArg: Var, arguments: List[Var], body: Expr) extends Def {
-  override def allArguments: List[Var] = pArg :: cArg :: tArg :: arguments
+final case class DefCPS(name: Var, pArg: Var, cArg: Var, tArg: Var, arguments: Seq[Var], body: Expr) extends Def {
+  override def allArguments: Seq[Var] = pArg +: cArg +: tArg +: arguments
 }
-final case class DefDirect(name: Var, arguments: List[Var], body: Expr) extends Def
+final case class DefDirect(name: Var, arguments: Seq[Var], body: Expr) extends Def
 
-case class SiteCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: List[Value]) extends Expr
-case class SiteCallDirect(target: Value, arguments: List[Value]) extends Expr
-case class DefCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: List[Value]) extends Expr
-case class DefCallDirect(target: Value, arguments: List[Value]) extends Expr
+case class SiteCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: Seq[Value]) extends Expr
+case class SiteCallDirect(target: Value, arguments: Seq[Value]) extends Expr
+case class DefCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: Seq[Value]) extends Expr
+case class DefCallDirect(target: Value, arguments: Seq[Value]) extends Expr
 
 case class IfDef(argument: Value, left: Expr, right: Expr) extends Expr
 
@@ -201,7 +201,7 @@ case class NewFuture() extends Expr
 
 case class SpawnBindFuture(fut: Value, c: Value, t: Value, pArg: Var, cArg: Var, expr: Expr) extends Expr
 
-case class Force(p: Value, c: Value, t: Value, forceClosures: Boolean, futures: List[Value]) extends Expr
+case class Force(p: Value, c: Value, t: Value, forceClosures: Boolean, futures: Seq[Value]) extends Expr
 
 case class GetField(p: Value, c: Value, t: Value, future: Value, field: Field) extends Expr
 
