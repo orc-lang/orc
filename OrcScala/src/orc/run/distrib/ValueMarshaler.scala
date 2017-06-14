@@ -28,10 +28,14 @@ package orc.run.distrib
 trait ValueMarshaler { self: DOrcExecution =>
 
   def marshalValue(destination: PeerLocation)(value: AnyRef): AnyRef with java.io.Serializable = {
-    //FIXME: Walk all fields and apply same policies.  Graph traversal and performance problems will manifest.
     //Logger.finest(s"marshalValue: $value:${value.getClass.getCanonicalName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
 
-    val mv = value match {
+    val replacedValue = value match {
+      case dmr: DOrcMarshalingReplaceable => dmr.replaceForMarshaling(marshalValue(destination)(_))
+      case st: scala.collection.Traversable[AnyRef] => st.map(marshalValue(destination)(_)) //FIXME:Scala-specific, generalize
+      case v => v
+    }
+    val marshaledValue = replacedValue match {
       case null => null
       case ro: RemoteObjectRef => ro.marshal()
       case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(v) => v
@@ -43,18 +47,18 @@ trait ValueMarshaler { self: DOrcExecution =>
       case mn: DOrcMarshalingNotifications => mn.marshaled()
       case _ => { /* Nothing to do */ }
     }
-    //Logger.finest(s"marshalValue($destination)($value)=$mv")
-    mv
+    //Logger.finest(s"marshalValue($destination)($value)=$marshaledValue")
+    marshaledValue
   }
 
   private val knownGoodSerializables = new java.util.WeakHashMap[java.io.Serializable, Unit]()
   private val knownBadSerializables = new java.util.WeakHashMap[java.io.Serializable, Unit]()
   private val nullOos = new java.io.ObjectOutputStream(new java.io.OutputStream { def write(b: Int) {} } )
   /** Many, many objects violate the java.io.Serializable interface by
-    * implementing Serializable, but then holding references to 
-    * non-Serializable values without using any of the compensating 
+    * implementing Serializable, but then holding references to
+    * non-Serializable values without using any of the compensating
     * mechanisms (transient, externalization, etc.).
-    * 
+    *
     * So we have to detect these broken objects before they cause I/O
     * exceptions during serialization.
     */
@@ -70,10 +74,10 @@ trait ValueMarshaler { self: DOrcExecution =>
       /* Ideally, we'd do this via reflection, but the serialization logic is
        * intricate and complex enough that it's unlikely we'd re-implement it
        * consistently.
-       * 
+       *
        * Future work: Statically discover safe classes that only refer to
-       * primitive or other safe classes. 
-       * 
+       * primitive or other safe classes.
+       *
        * Future work: Build a "lint"-er that flags Serializable classes that
        * refer to un-serializable values.
        */
@@ -97,18 +101,23 @@ trait ValueMarshaler { self: DOrcExecution =>
       (v.getClass.isArray && v.getClass.getComponentType.isPrimitive)
 
   def unmarshalValue(value: AnyRef): AnyRef = {
-    val v = value match {
+    val unmarshaledValue = value match {
       case rrr: RemoteObjectRefReplacement => rrr.unmarshal(self)
       case _ => value
     }
-    v match {
+    val replacedValue = unmarshaledValue match {
+      case dmr: DOrcMarshalingReplaceable => dmr.replaceForUnmarshaling(unmarshalValue(_))
+      case st: scala.collection.Traversable[AnyRef] => st.map(unmarshalValue(_)) //FIXME:Scala-specific, generalize
+      case v => v
+    }
+    replacedValue match {
       case mn: DOrcMarshalingNotifications => mn.unmarshaled()
       case _ => { /* Nothing to do */ }
     }
-    //Logger.finest(s"unmarshalValue($value)=$v")
-    v
+    //Logger.finest(s"unmarshalValue($value)=$replacedValue")
+    replacedValue
   }
-  
+
 }
 
 /** Orc values implementing this trait will be notified of marshaling for
@@ -119,4 +128,15 @@ trait ValueMarshaler { self: DOrcExecution =>
 trait DOrcMarshalingNotifications {
   def marshaled() {}
   def unmarshaled() {}
+}
+
+/** Orc values implementing this trait will be asked for a marshalble
+  * replacement for themselves when they are marshaled for serialization
+  * to another location.
+  *
+  * @author jthywiss
+  */
+trait DOrcMarshalingReplaceable {
+  def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable
+  def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef
 }

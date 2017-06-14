@@ -12,19 +12,15 @@
 //
 package orc.values
 
-import orc.values.sites.UntypedSite
-import orc.values.sites.PartialSite
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.NoSuchMemberException
 import scala.collection.immutable.Map
+
+import orc.error.runtime.NoSuchMemberException
 import orc.run.core.BoundValue
-import orc.run.core.Binding
-import orc.values.sites.NonBlockingSite
+import orc.run.distrib.DOrcMarshalingReplaceable
 
 /** @author dkitchin
   */
-case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers {
+case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcMarshalingReplaceable {
 
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)
@@ -66,4 +62,10 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers {
   override def hasMember(field: Field): Boolean = {
     entries.contains(field.field)
   }
+
+  override def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable =
+    OrcRecord(entries.map((kv: (String, AnyRef))=>(kv._1, marshaler(kv._2))))
+
+  override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef = this
+
 }

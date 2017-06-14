@@ -12,17 +12,14 @@
 //
 package orc.values
 
-import orc.values.sites.UntypedSite
-import orc.values.sites.PartialSite
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.TupleIndexOutOfBoundsException
-import orc.values.sites.NonBlockingSite
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, TupleIndexOutOfBoundsException }
+import orc.run.distrib.DOrcMarshalingReplaceable
 import orc.util.ArrayExtensions.Array1
+import orc.values.sites.{ NonBlockingSite, PartialSite, UntypedSite }
 
 /** @author dkitchin
   */
-case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite with NonBlockingSite {
+case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplaceable {
   assert(values.length > 1)
 
   def evaluate(args: Array[AnyRef]) =
@@ -35,5 +32,12 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
       case Array1(a) => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")
       case _ => throw new ArityMismatchException(1, args.size)
     }
+
+  override def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable =
+    OrcTuple(values map marshaler)
+
+  override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef = this
+
   override def toOrcSyntax() = "(" + Format.formatSequence(values) + ")"
+
 }
