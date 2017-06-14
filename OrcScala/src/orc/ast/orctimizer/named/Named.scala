@@ -87,7 +87,7 @@ sealed abstract class Expression
     val varset = new scala.collection.mutable.HashSet[BoundVar]()
     val collect = new Transform {
       override val onArgument = {
-        case x: BoundVar.Z => (if (x.context contains x.value) {} else { varset += x.value }); x.value
+        case x: BoundVar.Z => (if (x.contextBoundVars contains x.value) {} else { varset += x.value }); x.value
       }
     }
     collect(this.toZipper())
@@ -97,7 +97,7 @@ sealed abstract class Expression
 
 object Expression {
   class Z {
-    def context = {
+    def contextBoundVars = {
       parents.flatMap(_.value.boundVars)
     }
     def freeVars = {

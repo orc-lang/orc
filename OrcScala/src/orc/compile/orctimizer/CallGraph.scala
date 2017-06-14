@@ -98,7 +98,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
       case Some(r) =>
         r.collect({ case CType(t) => t})
       case None =>
-        Logger.fine(s"The node $c does not appear in the analysis results. Using top.")
+        Logger.finest(s"The node $c does not appear in the analysis results. Using top.")
         MaximumBoundedSet()
     }
   }
@@ -108,7 +108,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
       case Some(n) =>
         valuesOf[FlowValue](n)
       case None =>
-        Logger.fine(s"The expression $e does not appear in the analysis results. Using top.")
+        Logger.finest(s"The expression $e does not appear in the analysis results. Using top.")
         MaximumBoundedSet()
     }
   }

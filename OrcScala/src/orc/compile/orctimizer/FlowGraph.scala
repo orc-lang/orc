@@ -385,7 +385,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
   object VariableNode {
     def apply(ast: BoundVar, path: Seq[NamedAST.Z]): VariableNode = {
       VariableNode(ast, path.find(_.boundVars contains ast).getOrElse(
-        throw new IllegalArgumentException(s"$ast should be a variable bound on the path:\n$path")))
+        throw new IllegalArgumentException(s"$ast should be a variable bound on the path:\n${path.head}")))
     }
   }
 

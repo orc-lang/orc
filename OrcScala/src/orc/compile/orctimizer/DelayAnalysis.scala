@@ -98,7 +98,7 @@ class DelayAnalysis(
       case Some(r) =>
         r
       case None =>
-        Logger.fine(s"The node $e does not appear in the analysis results. Using top.")
+        Logger.finest(s"The node $e does not appear in the analysis results. Using top.")
         DelayAnalysis.worstState
     }
   }

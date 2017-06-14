@@ -142,7 +142,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               case None => e
               case Some(e2) =>
                 val e3 = if (e.value != e2) {
-                  Logger.fine(s"${opt.name}: [${results.nMappings} mappings] ${e.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
+                  Logger.fine(s"${opt.name}: [${results.nMappings} mappings] ${e.value.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
                   countOptimization(opt)
                   val e3 = e.replace(e2)
                   results.addMapping(e3, e)
@@ -243,7 +243,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         else
           None
       }
-      /*
       case n@New.Z(self, _, fields, _) => {
         var changed = false
         val newFields = fields.mapValues({
@@ -270,7 +269,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         } else
           None
       }
-      */
       case _ => None
     }
   }
@@ -383,7 +381,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                 Some(y.value.subst(Constant(v), x))
               case ExternalSiteValue(v) =>
                 Some(y.value.subst(Constant(v), x))
-              case CallableValue(Callable(name, _, _, _, _, _), _) =>
+              case CallableValue(Callable(name, _, _, _, _, _), _) if (e.freeVars contains name) && (e.contextBoundVars contains name) =>
                 Some(y.value.subst(name, x))
               case _ =>
                 None

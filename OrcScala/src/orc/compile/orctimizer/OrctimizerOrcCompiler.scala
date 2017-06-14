@@ -47,67 +47,33 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
       val optimizer = StandardOptimizer(co)
 
       def opt(prog: Expression, pass: Int): Expression = {
-        val prog1 = optimizer(prog.toZipper(), cache)
-
-        def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
-        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Optimizer pass $pass/$maxPasses: $optimizationCountsStr")
-
-        if ((prog1 == prog && pass > 1) || pass > maxPasses)
-          prog1
-        else {
-          opt(prog1, pass + 1)
-        }
-      }
-      /*
-      def opt(prog: Expression, pass: Int): Expression = {
         def logAnalysis() = {
-          val stats = Map(
-            "limits" -> Analysis.count(prog, {
-              case Trim(_) => true
-              case _ => false
-            }),
-            "futures" -> Analysis.count(prog, {
-              case Future(_) => true
-              case _ => false
-            }),
-            "forces" -> Analysis.count(prog, {
-              case Force(_, _, _, _) => true
-              case _ => false
-            }),
-            "ifdef" -> Analysis.count(prog, {
-              case IfDef(_, _, _) => true
-              case _ => false
-            }),
-            "stops" -> Analysis.count(prog, {
-              case Stop() => true
-              case _ => false
-            }),
-            "parallels" -> Analysis.count(prog, {
-              case f || g => true
-              case _ => false
-            }),
-            "sequences" -> Analysis.count(prog, {
-              case f > x > g => true
-              case _ => false
-            }),
-            "otherwises" -> Analysis.count(prog, {
-              case f Otherwise g => true
-              case _ => false
-            }),
-            "nodes" -> Analysis.count(prog, (_ => true)),
-            "cost" -> Analysis.cost(prog))
+          val typeCounts: collection.Map[Class[_], Int] = {
+            val counts = new collection.mutable.HashMap[Class[_], Int]()
+            def add(c: Class[_]) = {
+              counts += c -> (counts.getOrElse(c, 0) + 1)
+            }
+            def process(n: NamedAST): Unit = {
+              add(n.getClass())
+              n.subtrees foreach process
+            }
+            process(prog)
+            counts
+          }
+          val stats = typeCounts
+                .filterNot(kv => classOf[Type].isAssignableFrom(kv._1) || classOf[DeclareCallables].isAssignableFrom(kv._1) || classOf[DeclareType].isAssignableFrom(kv._1))
+                .map({ case (k, v) => (k.getSimpleName(), v) }) + 
+                ("total" -> typeCounts.values.sum)
           val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
           s"Orctimizer before pass $pass/$maxPasses: $s"
         }
 
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, logAnalysis())
 
-        val analyzer = new ExpressionAnalyzer
-        //val optimizer = StandardOptimizer(co)
-        val prog1 = ??? // optimizer(prog, analyzer)
+        val prog1 = optimizer(prog.toZipper(), cache)
 
-        //def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
-        //co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Optimizer pass $pass/$maxPasses: $optimizationCountsStr")
+        def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Orctimizer after pass $pass/$maxPasses: $optimizationCountsStr")
 
         if ((prog1 == prog && pass > 1) || pass > maxPasses)
           prog1
@@ -115,20 +81,10 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
           opt(prog1, pass + 1)
         }
       }
-      */
 
       def shortString(o: AnyRef) = s"'${o.toString().replace('\n', ' ').take(30)}'"
 
       {
-        //val g = new FlowGraph(ast)
-        /*println("=============== Nodes ---")
-        println(g.nodes.mkString("\n"))
-        println("=============== Edges ---")
-        println(g.edges.mkString("\n"))
-        */
-        //println(g.toDot)
-        //g.debugShow()
-        
         val z = ast.toZipper()
 
         lazy val fg = cache.get(FlowGraph)(z, None)
@@ -269,7 +225,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
   }
 
   def nullOutput[T] = new CompilerPhase[CompilerOptions, T, String] {
-    val phaseName = "toJava"
+    val phaseName = "nullOutput"
     override def apply(co: CompilerOptions) =
       { ast =>
         ""
@@ -295,6 +251,8 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       outputIR(3) >>>
       optimize() >>>
       outputIR(4) >>>
+      nullOutput
+      /*
       //unroll >>>
       //outputIR(5, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
       //optimize(_.options.optimizationFlags("orct:unroll-def").asBool()) >>>
@@ -304,5 +262,5 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       optimizePorc >>>
       outputIR(8) >>>
       porcToJava >>>
-      outputIR(9)
+      outputIR(9)*/
 }
