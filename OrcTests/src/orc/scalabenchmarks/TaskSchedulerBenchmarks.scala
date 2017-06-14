@@ -8,7 +8,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import java.util.Scanner
 import java.util.concurrent.{ ForkJoinPool => JavaForkJoinPool }
-import orc.run.extensions.OrcForkJoinExecutor
 import orc.run.extensions.OrcThreadPoolExecutor
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.ForkJoinPool.ManagedBlocker
@@ -224,110 +223,8 @@ object TaskSchedulerBenchmarks {
     }
   }
 
-  class ForkJoinPoolImpl extends JavaForkJoinPool(
-    //TODO: Make more of these params configurable
-    math.max(16, Runtime.getRuntime().availableProcessors * 2),
-    // We want our own threads
-    new OrcForkJoinExecutor.OrcWorkerThreadFactory("Name"),
-    // Default exception handler
-    null,
-    // Use async mode (FIFO queue instead of LIFO stack of tasks)
-    false) {
-    import java.util.concurrent.ForkJoinWorkerThread
-    import java.util.concurrent.ForkJoinTask
-
-    def dumpStats() {
-      println(s"getStealCount() = ${getStealCount()}")
-      println(s"getPoolSize() = ${getPoolSize()}")
-      println(s"getParallelism() = ${getParallelism()}")
-    }
-
-    def startScheduler(): Unit = {
-    }
-    def stopScheduler(): Unit = {
-      shutdown()
-    }
-    def allowBlock[T](f: => T): T = {
-      f
-    }
-
-    def schedule(t: Task): Unit = {
-      Thread.currentThread() match {
-        case _: ForkJoinWorkerThread =>
-          ForkJoinTask.adapt(t).fork()
-        case _ =>
-          execute(t)
-      }
-    }
-  }
-
-  class BlockableForkJoinPoolImpl extends JavaForkJoinPool(
-    //TODO: Make more of these params configurable
-    math.max(16, Runtime.getRuntime().availableProcessors * 2),
-    // We want our own threads
-    new OrcForkJoinExecutor.OrcWorkerThreadFactory("Name"),
-    // Default exception handler
-    null,
-    // Use async mode (FIFO queue instead of LIFO stack of tasks)
-    false) {
-    import java.util.concurrent.ForkJoinWorkerThread
-    import java.util.concurrent.ForkJoinTask
-
-    def dumpStats() {
-      println(s"getStealCount() = ${getStealCount()}")
-      println(s"getPoolSize() = ${getPoolSize()}")
-      println(s"getParallelism() = ${getParallelism()}")
-    }
-
-    def startScheduler(): Unit = {
-    }
-    def stopScheduler(): Unit = {
-      shutdown()
-    }
-
-    def allowBlock[T](f: => T): T = {
-      var res: T = null.asInstanceOf[T]
-      JavaForkJoinPool.managedBlock(new JavaForkJoinPool.ManagedBlocker {
-        var done = false
-        def block() = {
-          res = f
-          done = true
-          true
-        }
-        def isReleasable() = done
-      })
-      res
-    }
-
-    class WrapperTask(t: Task) extends ForkJoinTask[Unit] {
-      def exec(): Boolean = {
-        t.run()
-        true
-      }
-
-      def getRawResult(): Unit = {
-        ()
-      }
-
-      def setRawResult(x$1: Unit): Unit = {
-
-      }
-    }
-
-    def schedule(t: Task): Unit = {
-      Thread.currentThread() match {
-        case _: ForkJoinWorkerThread =>
-          new WrapperTask(t).fork()
-        case _ =>
-          execute(new WrapperTask(t))
-      }
-    }
-  }
-
   class ThreadPoolExecutorImplBenchmark extends ThreadPoolExecutorImpl with TaskSchedulerBenchmark
   class OrcThreadPoolExecutorImplBenchmark extends OrcThreadPoolExecutorImpl with TaskSchedulerBenchmark
-  class ForkJoinPoolImplBenchmark extends ForkJoinPoolImpl with TaskSchedulerBenchmark
-  class BlockableForkJoinPoolImplBenchmark extends BlockableForkJoinPoolImpl with TaskSchedulerBenchmark
   class SimpleWorkStealingImplBenchmark extends SimpleWorkStealingScheduler(512) with TaskSchedulerBenchmark {
     def allowBlock[T](f: => T): T = {
       potentiallyBlocking(f)
@@ -351,10 +248,6 @@ object TaskSchedulerBenchmarks {
         new ThreadPoolExecutorImplBenchmark().main(args.tail)
       case "OrcThreadPoolExecutor" =>
         new OrcThreadPoolExecutorImplBenchmark().main(args.tail)
-      case "ForkJoinPool" =>
-        new ForkJoinPoolImplBenchmark().main(args.tail)
-      case "BlockableForkJoinPool" =>
-        new BlockableForkJoinPoolImplBenchmark().main(args.tail)
       case "SimpleWorkStealing" =>
         new SimpleWorkStealingImplBenchmark().main(args.tail)
     }
