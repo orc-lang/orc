@@ -418,6 +418,8 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Call
       }
     }
 
+    // TODO: The filter operations are actually costing a notable amount of time. We may need to build an index or something.
+    
     def valueInputs(node: Node): Seq[Edge] = {
       node.inEdgesOf[ValueFlowEdge].toSeq ++ additionalEdges.filter(_.to == node)
     }

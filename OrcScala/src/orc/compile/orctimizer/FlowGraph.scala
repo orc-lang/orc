@@ -62,6 +62,12 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
     }
   }
 
+  // TODO: addEdges is a surprisingly large time sink. It may be useful to optimize it somehow.
+  // If we are not accessing the sets during processing maybe we could actually build a simpler 
+  // data structure and then dump it more efficiently into the HashMaps.
+  // If this turns into a large problem we could even use a bloom filter (modified to only have 
+  // false negatives) to approximate the sets and check the bloom filter before inserting into
+  // the actual HastSet.
   protected[this] def addEdges(es: Edge*): Unit = {
     for (e <- es) {
       edgeSet += e
