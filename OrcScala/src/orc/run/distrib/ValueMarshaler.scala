@@ -27,15 +27,31 @@ package orc.run.distrib
   */
 trait ValueMarshaler { self: DOrcExecution =>
 
+  def marshalValueWouldReplace(destination: PeerLocation)(value: AnyRef): Boolean = {
+    value match {
+      /* keep in sync with cases in marshalValue */
+      //FIXME: Handle circular references
+      case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForMarshaling(marshalValueWouldReplace(destination)(_)) => true
+      case st: scala.collection.Traversable[AnyRef] if st.exists(marshalValueWouldReplace(destination)(_)) => true //FIXME:Scala-specific, generalize
+      case null => false
+      case ro: RemoteObjectRef => true
+      case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(v) => false
+      case _ /* Cannot be marshaled to this destination */ => true
+    }
+  }
+
   def marshalValue(destination: PeerLocation)(value: AnyRef): AnyRef with java.io.Serializable = {
     //Logger.finest(s"marshalValue: $value:${value.getClass.getCanonicalName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
 
     val replacedValue = value match {
-      case dmr: DOrcMarshalingReplaceable => dmr.replaceForMarshaling(marshalValue(destination)(_))
+      /* keep in sync with cases in marshalValueWouldReplace */
+      //FIXME: Handle circular references
+      case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForMarshaling(marshalValueWouldReplace(destination)(_))  => dmr.replaceForMarshaling(marshalValue(destination)(_))
       case st: scala.collection.Traversable[AnyRef] => st.map(marshalValue(destination)(_)) //FIXME:Scala-specific, generalize
       case v => v
     }
     val marshaledValue = replacedValue match {
+      /* keep in sync with cases in marshalValueWouldReplace */
       case null => null
       case ro: RemoteObjectRef => ro.marshal()
       case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(v) => v
@@ -48,6 +64,7 @@ trait ValueMarshaler { self: DOrcExecution =>
       case _ => { /* Nothing to do */ }
     }
     //Logger.finest(s"marshalValue($destination)($value)=$marshaledValue")
+    assert((marshaledValue != value) == marshalValueWouldReplace(destination)(value))
     marshaledValue
   }
 
@@ -100,13 +117,27 @@ trait ValueMarshaler { self: DOrcExecution =>
       v == null || v.isInstanceOf[Class[_]] || v.isInstanceOf[String] || v.getClass.isPrimitive || v.getClass.isEnum ||
       (v.getClass.isArray && v.getClass.getComponentType.isPrimitive)
 
+  def unmarshalValueWouldReplace(value: AnyRef): Boolean = {
+    value match {
+      /* keep in sync with cases in unmarshalValue */
+      case rrr: RemoteObjectRefReplacement => true
+      //FIXME: Handle circular references
+      case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace(_)) => true
+      case st: scala.collection.Traversable[AnyRef] if st.exists(unmarshalValueWouldReplace(_)) => true //FIXME:Scala-specific, generalize
+      case _ => false
+    }
+  }
+
   def unmarshalValue(value: AnyRef): AnyRef = {
     val unmarshaledValue = value match {
+      /* keep in sync with cases in unmarshalValueWouldReplace */
       case rrr: RemoteObjectRefReplacement => rrr.unmarshal(self)
       case _ => value
     }
     val replacedValue = unmarshaledValue match {
-      case dmr: DOrcMarshalingReplaceable => dmr.replaceForUnmarshaling(unmarshalValue(_))
+      /* keep in sync with cases in unmarshalValueWouldReplace */
+      //FIXME: Handle circular references
+      case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace(_)) => dmr.replaceForUnmarshaling(unmarshalValue(_))
       case st: scala.collection.Traversable[AnyRef] => st.map(unmarshalValue(_)) //FIXME:Scala-specific, generalize
       case v => v
     }
@@ -115,6 +146,7 @@ trait ValueMarshaler { self: DOrcExecution =>
       case _ => { /* Nothing to do */ }
     }
     //Logger.finest(s"unmarshalValue($value)=$replacedValue")
+    assert((replacedValue != value) == unmarshalValueWouldReplace(value))
     replacedValue
   }
 
@@ -136,7 +168,9 @@ trait DOrcMarshalingNotifications {
   *
   * @author jthywiss
   */
-trait DOrcMarshalingReplaceable {
+trait DOrcMarshalingReplacement {
+  def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean
   def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable
+  def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean
   def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef
 }

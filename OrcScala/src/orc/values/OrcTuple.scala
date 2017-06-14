@@ -13,13 +13,13 @@
 package orc.values
 
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, TupleIndexOutOfBoundsException }
-import orc.run.distrib.DOrcMarshalingReplaceable
+import orc.run.distrib.DOrcMarshalingReplacement
 import orc.util.ArrayExtensions.Array1
 import orc.values.sites.{ NonBlockingSite, PartialSite, UntypedSite }
 
 /** @author dkitchin
   */
-case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplaceable {
+case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement {
   assert(values.length > 1)
 
   def evaluate(args: Array[AnyRef]) =
@@ -33,10 +33,17 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
       case _ => throw new ArityMismatchException(1, args.size)
     }
 
+  override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean =
+    values exists marshalValueWouldReplace
+
   override def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable =
     OrcTuple(values map marshaler)
 
-  override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef = this
+  override def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean =
+    values exists unmarshalValueWouldReplace
+
+  override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef =
+    OrcTuple(values map unmarshaler)
 
   override def toOrcSyntax() = "(" + Format.formatSequence(values) + ")"
 

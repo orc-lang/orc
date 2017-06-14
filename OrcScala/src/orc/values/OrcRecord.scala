@@ -16,11 +16,11 @@ import scala.collection.immutable.Map
 
 import orc.error.runtime.NoSuchMemberException
 import orc.run.core.BoundValue
-import orc.run.distrib.DOrcMarshalingReplaceable
+import orc.run.distrib.DOrcMarshalingReplacement
 
 /** @author dkitchin
   */
-case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcMarshalingReplaceable {
+case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcMarshalingReplacement {
 
   def this(entries: (String, AnyRef)*) = {
     this(entries.toMap)
@@ -63,9 +63,16 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcM
     entries.contains(field.field)
   }
 
-  override def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable =
-    OrcRecord(entries.map((kv: (String, AnyRef))=>(kv._1, marshaler(kv._2))))
+  override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean =
+    entries.exists( { kv: (String, AnyRef) => marshalValueWouldReplace(kv._2) } )
 
-  override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef = this
+  override def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable =
+    OrcRecord(entries.map( { kv: (String, AnyRef) => (kv._1, marshaler(kv._2)) } ))
+
+  override def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean =
+    entries.exists( { kv: (String, AnyRef) => unmarshalValueWouldReplace(kv._2) } )
+
+  override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef =
+    OrcRecord(entries.map( { kv: (String, AnyRef) => (kv._1, unmarshaler(kv._2)) } ))
 
 }
