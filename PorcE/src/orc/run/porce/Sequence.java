@@ -2,6 +2,7 @@ package orc.run.porce;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 public class Sequence extends Expression {
 	@Children

@@ -1,11 +1,12 @@
 package orc.run.porce;
 
+import orc.OrcRuntime;
 import orc.run.extensions.SimpleWorkStealingScheduler;
 
 public class PorcEContext {
-	public final SimpleWorkStealingScheduler scheduler;
+	public final OrcRuntime runtime;
 	
-	public PorcEContext(SimpleWorkStealingScheduler scheduler) {
-		this.scheduler = scheduler;
+	public PorcEContext(OrcRuntime runtime) {
+		this.runtime = runtime;
 	}
 }

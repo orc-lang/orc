@@ -7,21 +7,21 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
+import orc.run.porce.runtime.PorcEClosure;
 
 public class Continuation extends Expression {
-	//protected final FrameSlot[] argumentSlots;
-	//protected final FrameSlot[] capturedSlots;
-
 	@Children
 	protected final Expression[] capturedVariables;
-	private final RootCallTarget callTarget;
+	protected RootCallTarget callTarget;
 
-	public Continuation(FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, Expression body, FrameDescriptor descriptor) {
+	public Continuation(FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameSlot[] capturingSlots, FrameDescriptor descriptor, Expression body) {
 		this.capturedVariables = new Expression[capturedSlots.length];
 		for (int i = 0; i < capturedSlots.length; i++) {
 			capturedVariables[i] = new Variable(capturedSlots[i]);
 		}
-		ContinuationRootNode rootNode = new ContinuationRootNode(argumentSlots, capturedSlots, descriptor, body);
+		PorcERootNode rootNode = new PorcERootNode(argumentSlots, capturingSlots, descriptor, body);
 		this.callTarget = Truffle.getRuntime().createCallTarget(rootNode);
 	}
 	
@@ -35,10 +35,10 @@ public class Continuation extends Expression {
 		for (int i = 0; i < capturedVariables.length; i++) {
 			capturedValues[i] = capturedVariables[i].execute(frame);
 		}
-		return new PorcEContinuationClosure(capturedValues, callTarget);
+		return new PorcEClosure(capturedValues, callTarget, false);
 	}
 
-	public static Continuation create(FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, Expression body, FrameDescriptor descriptor) {
-		return new Continuation(argumentSlots, capturedSlots, body, descriptor);
+	public static Continuation create(FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameSlot[] capturingSlots, FrameDescriptor descriptor, Expression body) {
+		return new Continuation(argumentSlots, capturedSlots, capturingSlots, descriptor, body);
 	}
 }

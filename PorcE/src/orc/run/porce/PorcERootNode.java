@@ -7,15 +7,16 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import orc.error.runtime.ArityMismatchException;
 
-public class ContinuationRootNode extends RootNode {
+public class PorcERootNode extends RootNode {
 	protected @Child Expression body;
 	private final FrameSlot[] argumentSlots;
 	private final FrameSlot[] capturedSlots;
 
-	public ContinuationRootNode(FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameDescriptor descriptor, Expression body) {
+	public PorcERootNode(FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameDescriptor descriptor, Expression body) {
 		super(null, descriptor);
 		this.argumentSlots = argumentSlots;
 		this.capturedSlots = capturedSlots;
@@ -33,8 +34,7 @@ public class ContinuationRootNode extends RootNode {
 		Object[] captureds = (Object[]) arguments[0];
 		if(injectBranchProbability(SLOWPATH_PROBABILITY,
 				captureds.length != capturedSlots.length)) {
-			transferToInterpreter();
-			throw new Error("captureds array is the wrong length");
+			InternalPorcEError.capturedLengthError(capturedSlots.length, captureds.length);
 		}
 		for (int i = 0; i < argumentSlots.length; i++) {
 			frame.setObject(argumentSlots[i], arguments[i+1]);
@@ -46,7 +46,7 @@ public class ContinuationRootNode extends RootNode {
 		return ret;
 	}
 	
-	@TruffleBoundary
+	@TruffleBoundary(allowInlining = true)
 	private static void throwArityException(int nReceived, int nExpected) {
 		throw new ArityMismatchException(nExpected, nReceived);
 	}

@@ -4,24 +4,24 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
 
+import orc.OrcRuntime;
 import orc.run.extensions.SimpleWorkStealingScheduler;
-import scala.NotImplementedError;
 
 @TruffleLanguage.Registration(name = "Orc", version = "2.99.0.1", mimeType = PorcELanguage.MIME_TYPE)
 @ProvidedTags({})
 public class PorcELanguage extends TruffleLanguage<PorcEContext> {
     public static final String MIME_TYPE = "application/x-orc";
     
-    private SimpleWorkStealingScheduler scheduler = null;
+	private OrcRuntime runtime = null;    
 
 	@Override
 	protected PorcEContext createContext(com.oracle.truffle.api.TruffleLanguage.Env env) {
-		return new PorcEContext(scheduler);
+		return new PorcEContext(runtime );
 	}
 	
 	@Override
     protected CallTarget parse(ParsingRequest request) throws Exception {
-		throw new NotImplementedError();
+		throw new Error("Not Implemented");
     }
 
 	@Override
