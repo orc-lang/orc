@@ -12,26 +12,21 @@
 //
 package orc.lib.util
 
-import orc.values.sites.TypedSite
-import java.lang.Iterable
-import orc.compile.typecheck.Typeloader
-import orc.lib.builtin.structured.ListType
-import orc.types.TypeVariable
-import orc.types.FunctionType
-import orc.types.SimpleFunctionType
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.types.Bot
-import orc.values.sites.Site1
-import orc.Handle
-import orc.run.extensions.SupportForCallsIntoOrc
 import java.util.concurrent.Callable
+
+import orc.Handle
+import orc.compile.typecheck.Typeloader
+import orc.run.core.ExternalSiteCallHandle
+import orc.run.extensions.SupportForCallsIntoOrc
+import orc.types.{ Bot, FunctionType, SimpleFunctionType, TypeVariable }
+import orc.values.sites.{ Site1, TypedSite }
 
 /** Convert an Orc callable into a Java Runnable instance.
   * @author amp
   */
 object CallableToRunnable extends Site1 with TypedSite {
   def call(arg: AnyRef, h: Handle) = {
-    val runtime = h.execution match {
+    val runtime = h.asInstanceOf[ExternalSiteCallHandle].caller.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
@@ -54,7 +49,7 @@ object CallableToRunnable extends Site1 with TypedSite {
   */
 object CallableToCallable extends Site1 with TypedSite {
   def call(arg: AnyRef, h: Handle) = {
-    val runtime = h.execution match {
+    val runtime = h.asInstanceOf[ExternalSiteCallHandle].caller.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }

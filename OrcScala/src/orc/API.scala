@@ -115,9 +115,6 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   */
 trait Handle {
 
-  val runtime: OrcRuntime
-  val execution: ExecutionRoot
-
   def notifyOrc(event: OrcEvent): Unit
   def setQuiescent(): Unit
 
@@ -143,7 +140,7 @@ trait OrcEvent
 
 case class PublishedEvent(value: AnyRef) extends OrcEvent
 case object HaltedOrKilledEvent extends OrcEvent
-case class CaughtEvent(e: Throwable) extends OrcEvent
+case class CaughtEvent(e: Throwable) extends OrcEvent { e.printStackTrace() }
 
 /** An action for a few major events reported by an Orc execution.
   * This is an alternative to receiving <code>OrcEvents</code> for a client
