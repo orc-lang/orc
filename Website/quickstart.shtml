@@ -11,7 +11,7 @@
 sufficient, but any Eclipse package with the JDT can be used.</li>
 <li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.12.2.
 Note that the Scala IDE for Eclipse <a href="http://scala-ide.org/docs/2.0.x/advancedsetup.html">works better with a modified eclipse.ini</a>.</li>
-<li>A Git distribution that includes the <code>git describe</code> command.  Most UNIX systems (including macOS),
+<li>A Git distribution that includes the <code>git describe</code> command.  Most UNIX systems (including macOS with <a href="https://itunes.apple.com/us/app/xcode/id497799835?mt=12">Xcode</a>),
 Linux distributions, BSD variants, and other OSes include this as part of their base platform.  A few OSes, notably Windows,
 require one to install a <a href="https://git-scm.com/downloads">Git client</a>.</li>
 </ol>
@@ -19,8 +19,8 @@ require one to install a <a href="https://git-scm.com/downloads">Git client</a>.
 <h2>Check out Orc</h2>
 
 <p>Use the method of your choice to check out
-<tt>https://github.com/orc-lang/orc</tt> and import it into the
-Eclipse project <tt>OrcScala</tt>. Here is how to accomplish this using Subversive:</p>
+<tt>https://github.com/orc-lang/orc</tt> and import it into 
+Eclipse projects. Here is how to accomplish this using EGit:</p>
 <ol>
 <li>Launch Eclipse</li>
 <li>Go to <b>File -&gt; Import...</b></li>
