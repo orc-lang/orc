@@ -26,6 +26,8 @@ import swivel.replacement
 import swivel.EmptyFunction
 import scala.PartialFunction
 
+// TODO: Remove "Named" from classes and package tree. There is no nameless Orctimizer.
+
 trait Transform extends swivel.TransformFunction {
   val onExpression: PartialFunction[Expression.Z, Expression] = {
     case a: Argument.Z if onArgument.isDefinedAt(a) => onArgument(a)
@@ -146,6 +148,7 @@ object Force {
 @leaf @transform
 final case class IfDef(@subtree v: Argument, @subtree left: Expression, @subtree right: Expression) extends Expression
 
+// TODO: Make all calls use the same node. Anything that needs to differentiate can do it based on analysis.
 @branch
 sealed abstract class Call extends Expression {
   this: Product =>

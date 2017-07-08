@@ -36,6 +36,7 @@ import orc.compile.orctimizer.CallGraph.FlowValue
 import orc.compile.orctimizer.CallGraph.CallableValue
 import orc.compile.orctimizer.DelayAnalysis.DelayInfo
 import orc.ast.orctimizer.named.FieldValue
+import swivel.Zipper
 
 class HashFirstEquality[T](val value: T) {
   override def toString() = value.toString()
@@ -137,12 +138,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         case (e: Expression.Z) => {
           val e1 = opts.foldLeft(e)((e, opt) => {
             import orc.util.StringExtension._
-            //Logger.fine(s"${opt.name}: invoking on ${e.ast.toString.truncateTo(60)}")
+            //Logger.fine(s"invoking ${opt.name} on:\n${e.value.toString.truncateTo(120)}")
             opt(e, results) match {
               case None => e
               case Some(e2) =>
                 val e3 = if (e.value != e2) {
-                  Logger.fine(s"${opt.name}: [${results.nMappings} mappings] ${e.value.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
+                  Logger.fine(s"${opt.name}:\n${e.value.toString.truncateTo(120)}\n====>\n${e2.toString.truncateTo(120)}")
                   countOptimization(opt)
                   val e3 = e.replace(e2)
                   results.addMapping(e3, e)
@@ -237,7 +238,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         } else None
       }*/
       case Future.Z(body) => {
-        val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay()
+        val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
         if (byNonBlocking1)
           Some(body.value)
         else
@@ -273,11 +274,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  /*
   val UnusedFutureElim = Opt("unused-future-elim") {
-    case (FutureAt(x, f, g), a) if !(g.freeVars contains x) => g || (f >> Stop())
+    case (Branch.Z(Future.Z(f), x, g), a) if !(g.freeVars contains x) => 
+      (f.value >> Stop()) || g.value
   }
-  */
 
   /*
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
@@ -350,12 +350,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  val SeqElimArg = OptFull("seq-elim-arg") { (e, a) =>
-    e match {
-      case Branch.Z(f, x, y) if x == y.value =>
-        Some(f.value)
-      case _ => None
-    }
+  val StopEquiv = Opt("stop-equiv") {
+    case (f, a) if f.value != Stop() &&
+      (a.publicationsOf(f) only 0) &&
+      (!a.effects(f)) &&
+      a.delayOf(f).maxHaltDelay == ComputationDelay() =>
+      Stop()
   }
 
   val StopElim = OptSimple("stop-elim") {
@@ -363,15 +363,24 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     case Parallel.Z(f, Stop.Z()) => f.value
     case Otherwise.Z(Stop.Z(), g) => g.value
     case Otherwise.Z(f, Stop.Z()) => f.value
+    case Branch.Z(Stop.Z(), _, g) => Stop()
   }
 
-  val SeqElimConstant = OptFull("seq-elim-const") { (e, a) =>
+  val BranchElimArg = OptFull("branch-elim-arg") { (e, a) =>
+    e match {
+      case Branch.Z(f, x, y) if x == y.value =>
+        Some(f.value)
+      case _ => None
+    }
+  }
+
+  val BranchElimConstant = OptFull("branch-elim-const") { (e, a) =>
     e match {
       case Branch.Z(c, x, y) =>
         val vs = a.valuesOf(c)
         val effects = a.effects(c)
         val DelayInfo(delay, _) = a.delayOf(c)
-        //println(s"seq-elim-const: $c\n${vs.values}, $effects, $delay")
+        //println(s"branch-elim-const: $c\n${vs.values}, $effects, $delay")
         vs.values match {
           case Some(s) if s.size == 1 && !effects && delay == ComputationDelay() =>
             val v = s.head
@@ -392,6 +401,24 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
+
+  val BranchElim = OptFull("branch-elim") { (e, a) =>
+    e match {
+      case Branch.Z(f, x, g) if a.publicationsOf(f) only 0 => Some(f.value)
+      case Branch.Z(f, x, g) if !a.effects(f) && 
+        a.delayOf(f).maxFirstPubDelay == ComputationDelay() && a.delayOf(f).maxHaltDelay == ComputationDelay() && 
+        (a.publicationsOf(f) only 1) && !g.freeVars.contains(x) => Some(g.value)
+      case Branch.Z(f, x, g) =>
+        //Logger.finest(s"Failed to elimate >>: ${f.effectFree} && ${f.nonBlockingPublish} && ${f.publications} only 1 && ${f.timeToHalt} && ${!g.freeVars.contains(x)} : ${e.e}")
+        None
+      case _ => None
+    }
+  }
+  
+  val TrimElim = Opt("trim-elim") {
+    case (Trim.Z(f), a) if a.publicationsOf(f) <= 1 && !a.effects(f) => f.value
+  }
+
 
   /*
   val LiftForce = OptFull("lift-force") { (e, a) =>
@@ -449,28 +476,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  val StopEquiv = Opt("stop-equiv") {
-    case (f, a) if f != Stop() &&
-      (a(f).publications only 0) &&
-      a(f).effects == Effects.None &&
-      a(f).timeToHalt == Delay.NonBlocking =>
-      Stop()
-  }
-  val SeqElim = OptFull("seq-elim") { (e, a) =>
-    import a.ImplicitResults._
-    e match {
-      case f > x > g if f.silent => Some(f)
-      case f > x > g if f.effectFree && f.nonBlockingPublish &&
-        (f.publications only 1) && f.nonBlockingHalt && !g.freeVars.contains(x) => Some(g)
-      case f > x > g =>
-        //Logger.finest(s"Failed to elimate >>: ${f.effectFree} && ${f.nonBlockingPublish} && ${f.publications} only 1 && ${f.timeToHalt} && ${!g.freeVars.contains(x)} : ${e.e}")
-        None
-      case _ => None
-    }
-  }
-
   /*
-  val SeqRHSInline= OptFull("seq-rhs-inline") { (e, a) =>
+  val BranchRHSInline= OptFull("branch-rhs-inline") { (e, a) =>
     import a.ImplicitResults._
     e match {
       case f > x > g if g strictOn x =>
@@ -479,7 +486,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
   */
 
-  val SeqExp = Opt("seq-expansion") {
+  val BranchExp = Opt("branch-expansion") {
     case (e @ (Pars(fs, ctx) > x > g), a) if fs.size > 1 && fs.exists(f => a(f in ctx).silent) => {
       // This doesn't really eliminate any code and I cannot think of a case where
       val (sil, nsil) = fs.partition(f => a(f in ctx).silent)
@@ -500,12 +507,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  val SeqReassoc = Opt("seq-reassoc") {
+  val BranchReassoc = Opt("branch-reassoc") {
     case (Seqs(ss, en), a) if ss.size > 1 => {
       Seqs(ss, en)
     }
   }
-  val DefSeqNorm = Opt("def-seq-norm") {
+  val DefBranchNorm = Opt("def-branch-norm") {
     case (DeclareCallablesAt(defs, ctx, b) > x > e, a) if (e.freeVars & defs.map(_.name).toSet).isEmpty => {
       DeclareCallables(defs, b > x > e)
     }
@@ -529,10 +536,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  val TrimElim = Opt("limit-elim") {
-    case (TrimAt(f), a) if a(f).publications <= 1 && a(f).effects <= Effects.BeforePub => f
-  }
-  val TrimCompChoice = Opt("limit-compiler-choice") {
+  val TrimCompChoice = Opt("trim-compiler-choice") {
     case (TrimAt(Pars(fs, ctx)), a) if fs.size > 1 && fs.exists(f => a(f in ctx).nonBlockingPublish) => {
       // This could even be smarter and pick the "best" or "fastest" expression.
       val Some(f1) = fs.find(f => a(f in ctx).nonBlockingPublish)
@@ -758,18 +762,18 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 }
 
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
-  val allOpts = List(IfDefElim, ForceElim, SeqElimArg, StopElim, SeqElimConstant, FutureElim)
+  val allOpts = List(BranchElim, TrimElim, UnusedFutureElim, StopEquiv, IfDefElim, ForceElim, BranchElimArg, StopElim, BranchElimConstant, FutureElim)
   /*
   val allOpts = List(
-    SeqReassoc,
-    DefSeqNorm, DefElim,
+    BranchReassoc,
+    DefBranchNorm, DefElim,
     LiftUnrelated, LiftForce,
     FutureElimFlatten, /*UnusedFutureElim,*/ FutureElim,
     /*FutureForceElim,*/ ForceElim, IfDefElim,
     TupleElim, AccessorElim,
     TrimCompChoice, TrimElim, ConstProp,
     StopEquiv, StopElim,
-    SeqExp, SeqElim, SeqElimVar,
+    BranchExp, BranchElim, BranchElimVar,
     InlineDef, TypeElim)
     */
 

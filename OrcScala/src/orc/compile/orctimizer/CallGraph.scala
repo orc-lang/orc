@@ -32,7 +32,6 @@ import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import orc.util.DotUtils.DotAttributes
 import orc.compile.AnalysisCache
 import orc.compile.AnalysisRunner
-import orc.compile.AnalysisRunner
 
 /** Compute and store a call graph for the program stored in flowgraph.
   *
@@ -114,7 +113,12 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
   }
 
   def valuesOf(e: Expression.Z): BoundedSet[FlowValue] = {
-    valuesOf[FlowValue](ExitNode(e))
+    e match {
+      case a: Argument.Z =>
+        valuesOf[FlowValue](ValueNode(a))
+      case e =>
+        valuesOf[FlowValue](ExitNode(e))
+    }
   }
 
   override def graphLabel: String = "Call Graph"
@@ -236,10 +240,10 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Call
   // Values that may be contained in a future
   sealed trait FutureContent extends FlowValue
 
-   // Values that may be stored in fields
+  // Values that may be stored in fields
   sealed trait FieldContent extends Value
 
-   // Values that may be stored in field futures (aka not futures)
+  // Values that may be stored in field futures (aka not futures)
   sealed trait FieldFutureContent extends FieldContent
 
   sealed trait SimpleValue extends FutureContent with FieldFutureContent with FlowValue

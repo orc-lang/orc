@@ -53,6 +53,7 @@ abstract class BoundedSetModule {
     def supersetOf(o: BoundedSet[T]): Boolean = o.subsetOf(this)
     
     def exists(f: (T) => Boolean): Boolean
+    def forall(f: (T) => Boolean): Boolean
 
     override def hashCode() = values.hashCode()
     override def equals(o: Any) = o match {
@@ -97,6 +98,7 @@ abstract class BoundedSetModule {
     }
 
     def exists(f: (T) => Boolean): Boolean = s.exists(f)
+    def forall(f: (T) => Boolean): Boolean = s.forall(f)
   }
 
   class ConcreteBoundedSetCompanion {
@@ -123,5 +125,6 @@ abstract class BoundedSetModule {
     
     // TODO: This is not actually strictly correct. f could always be false.
     def exists(f: (T) => Boolean): Boolean = true
+    def forall(f: (T) => Boolean): Boolean = false
   }
 }
