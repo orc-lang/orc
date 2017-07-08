@@ -382,7 +382,7 @@ object OrcXML {
       case false => <false/>
       case orc.values.Signal => <signal/>
       case orc.values.Field(s) => <field>{ s }</field>
-      case x: orc.values.sites.JavaClassProxy => <jclassproxy>{ x.name }</jclassproxy>
+      // TODO: Reinstate this support. case x: orc.values.sites.JavaClassProxy => <jclassproxy>{ x.name }</jclassproxy>
       case x: orc.values.sites.Site =>
         <site>{ strip$(a.asInstanceOf[AnyRef].getClass().getName) }</site>
       case _ => throw new AssertionError("Could not serialize value " + a.toString + " to XML.")

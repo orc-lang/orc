@@ -57,9 +57,10 @@ case object Signal extends OrcValue {
   override val hashCode = super.hashCode() // Only need to compute this once for an immutable object
 }
 
-// TODO: The name of the field should be in the field name instead of field. Good luck parsing that sentence. Rename "field" to "name".
-case class Field(field: String) extends OrcValue {
+case class Field(name: String) extends OrcValue {
   override def toOrcSyntax() = "." + field
+  @deprecated("Use name instead.", "3.0")
+  def field = name
 }
 
 class Tag(val name: String)

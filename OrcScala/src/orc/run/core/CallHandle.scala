@@ -111,7 +111,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     assert(state.isInstanceOf[CallInProgress] || state == CallWasKilled, state.toString)
     caller.discorporate()
   }
-  def !!(e: OrcException) = synchronized {
+  def halt(e: OrcException) = synchronized {
     setState(CallRaisedException(e))
   }
 

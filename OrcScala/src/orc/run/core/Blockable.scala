@@ -64,7 +64,7 @@ trait Blockable extends Schedulable {
     *
     * Semantically this is equivalent to "awakeNonterminalValue(v); halt();", however
     * for implementation reasons it is a separate primitive. Specifically,
-    * There are cases in Token where awakeNonterminalValue would trigger an illegal
+    * there are cases in Token where awakeNonterminalValue would trigger an illegal
     * copy. This method must be used for all awakes from argument blockers:
     * Closure, and GraftGroup.
     */

@@ -15,7 +15,6 @@ package orc.values
 import scala.collection.immutable.Map
 
 import orc.error.runtime.NoSuchMemberException
-import orc.run.core.BoundValue
 import orc.run.distrib.DOrcMarshalingReplacement
 
 /** @author dkitchin
@@ -53,14 +52,14 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcM
   def extendWith(other: OrcRecord): OrcRecord = this + other
 
   def getMember(field: Field) = {
-    entries.get(field.field) match {
-      case Some(v) => BoundValue(v)
+    entries.get(field.name) match {
+      case Some(v) => v
       case None => throw new NoSuchMemberException(this, "this record")
     }
   }
 
   override def hasMember(field: Field): Boolean = {
-    entries.contains(field.field)
+    entries.contains(field.name)
   }
 
   override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean =

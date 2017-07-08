@@ -18,7 +18,7 @@ package orc.values.sites
   * @author jthywiss
   */
 trait SiteResolver {
-  def resolve(name: String): Site
+  def resolve(name: String): AnyRef
 }
 
 /** Supertype of forms of sites, such as Orc site, Java site, Web

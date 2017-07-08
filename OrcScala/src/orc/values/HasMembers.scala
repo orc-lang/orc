@@ -15,6 +15,9 @@ package orc.values
 
 import orc.error.runtime.NoSuchMemberException
 import orc.run.core.Binding
+import orc.values.sites.AccessorValue
+import orc.Accessor
+import orc.error.runtime.DoesNotHaveMembersException
 
 // TODO: This should replace OrcObjectInterface and HasFields
 
@@ -25,16 +28,18 @@ import orc.run.core.Binding
   * # Members are monotonic (once they are resolved they stay resolved)
   * # Members are immutable (they will never change once resolved)
   * # The set of members on a value is will not change once the object is created,
-  *  so the `hasMember(f)` will always return the same value for a given `f`.
+  * so the `hasMember(f)` will always return the same value for a given `f`.
   *
   * @author amp
   */
-trait HasMembers extends OrcValue {
+@deprecated("Implement AccessorValue", "3.0")
+trait HasMembers extends OrcValue with AccessorValue {
   /** Get the binding of a member.
+    *
+    * The returned value may be an orc.Future.
     */
   @throws[NoSuchMemberException]("If member does not exist")
-  def getMember(f: Field): Binding
-  // TODO: Eliminate use of Binding. It is tied to the token interpreter and is unlikely to be useful in other backends.
+  def getMember(f: Field): AnyRef
 
   /** Return true iff this object has the field `f`.
     *
@@ -50,5 +55,25 @@ trait HasMembers extends OrcValue {
       case _: NoSuchMemberException =>
         false
     }
+  }
+  
+  @throws[NoSuchMemberException]
+  def getAccessor(field: Field): Accessor = {
+    if(hasMember(field)) {
+      new HasMemberAccessor(field)
+    } else {
+      throw new NoSuchMemberException(this, field.name)
+    }
+  }
+}
+
+final class HasMemberAccessor(field: Field) extends Accessor {
+  def canGet(target: AnyRef): Boolean = {
+    target.isInstanceOf[HasMembers]
+  }
+
+  @throws[NoSuchMemberException]
+  def get(target: AnyRef): AnyRef = {
+    target.asInstanceOf[HasMembers].getMember(field)
   }
 }

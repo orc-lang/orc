@@ -12,6 +12,9 @@
 //
 package orc.run.core
 
+import orc.FutureReadHandle
+import java.lang.AssertionError
+
 /** @author amp
   */
 trait Resolver extends Blockable {
@@ -44,10 +47,11 @@ trait Resolver extends Blockable {
       case BoundStop => k(None)
       case BoundReadable(g) => {
         pushContinuation(k)
-        g read this
+        g.read(this)
       }
     }
   }
+
 
   /** Store a continuation that will be run when this resolver is unblocked with a value.
     * None means stop. Some(v) means the value v.

@@ -57,7 +57,8 @@ abstract class DOrcExecution(
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case orc.lib.util.Prompt => Set(locationForFollowerNum(0))
       case _: java.util.concurrent.ConcurrentSkipListSet[_] => Set(locationForFollowerNum(1))
-      case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], _) => Set(locationForFollowerNum(1))
+      // TODO: Make sure this change was correct.
+      //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], _) => Set(locationForFollowerNum(1))
       //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "clear") => Set(locationForFollowerNum(1))
       //case orc.values.sites.JavaMemberProxy(s: java.util.concurrent.ConcurrentSkipListSet[_], "contains") => Set(locationForFollowerNum(if (s.size < 50) 0 else 1))
       //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "add") => Set(locationForFollowerNum(1))
@@ -72,7 +73,8 @@ abstract class DOrcExecution(
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case orc.lib.util.Prompt => Set(locationForFollowerNum(0))
       case _: java.util.concurrent.ConcurrentSkipListSet[_] => Set(locationForFollowerNum(1))
-      case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], _) => Set(locationForFollowerNum(1))
+      // TODO: Make sure this change was correct.
+      //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], _) => Set(locationForFollowerNum(1))
       //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "clear") => Set(locationForFollowerNum(1))
       //case orc.values.sites.JavaMemberProxy(s: java.util.concurrent.ConcurrentSkipListSet[_], "contains") => Set(locationForFollowerNum(if (s.size < 50) 0 else 1))
       //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "add") => Set(locationForFollowerNum(1))

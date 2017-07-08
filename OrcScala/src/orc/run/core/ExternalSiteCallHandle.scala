@@ -15,6 +15,7 @@ package orc.run.core
 import orc.{ CaughtEvent, Schedulable }
 import orc.error.OrcException
 import orc.values.sites._
+import orc.error.runtime.JavaException
 
 /** A call handle specific to site calls.
   * Scheduling this call handle will invoke the site.
@@ -39,10 +40,16 @@ class ExternalSiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[An
         }
         isLive
       }) {
-        caller.runtime.invoke(this, calledSite, actuals.toArray)
+        val args = actuals.toArray
+        try {
+          caller.runtime.getInvoker(calledSite, args).invoke(this, calledSite, args)
+        } catch {
+          // FIXME: What is this check doing here and how will it handle OrcExceptions correctly.
+          case e: Exception => { notifyOrc(CaughtEvent(new JavaException(e))); halt() }
+        }
       }
     } catch {
-      case e: OrcException => this !! e
+      case e: OrcException => this.halt(e)
       case e: InterruptedException => { halt(); Thread.currentThread().interrupt() } // Thread interrupt causes halt without notify
       case e: Exception => { notifyOrc(CaughtEvent(e)); halt() }
     } finally {

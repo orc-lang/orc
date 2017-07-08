@@ -24,6 +24,12 @@ import orc.progress.ProgressMonitor
 import orc.values.Signal
 import scala.util.parsing.input.Position
 import orc.compile.CompilerFlagValue
+import orc.error.runtime.HaltException
+import orc.values.Field
+import orc.error.runtime.{ TypeNoSuchMemberException, UncallableTypeException, NoSuchMemberException, UncallableValueException, TypeDoesNotHaveMembersException }
+import orc.error.runtime.DoesNotHaveMembersException
+
+// TODO: This file is huge and covers many unrelated things. Split into multiple sub API with limited relationships. Also it's not clear where to put utility implementations/bases for these APIs.
 
 /** The interface from a caller to the Orc compiler
   */
@@ -48,7 +54,8 @@ trait OrcCompiler[+E] extends OrcCompilerProvides[E] with OrcCompilerRequires
 /** The interface from a caller to an Orc runtime
   */
 trait OrcRuntimeProvides {
-  @throws(classOf[ExecutionException])
+  // TODO: Remove the expression argument on run. It is tied to the token interpreter since other interperters do not use Nameless.
+  @throws[ExecutionException]
   def run(e: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions): Unit
   def stop(): Unit
 }
@@ -57,12 +64,347 @@ trait OrcRuntimeProvides {
   */
 trait OrcRuntimeRequires extends InvocationBehavior
 
+/** This Invoker or Accessor should be inlined into the caller if supported.
+  *
+  * Inlining should be performed on all Invoker and Accessor methods.
+  *
+  * A marker trait used by the Truffle backend. Any class implementing this
+  * interface should manually limit inlining as needed. This may include
+  * using the TruffleBoundary annotation or similar. These annotations will
+  * be ignored in other backends so they shouldn't be a problem.
+  */
+trait AgressivelyInlined
+
+/** An action class implementing invocation for specific target and argument types.
+  *
+  * The fundemental difference between an Invoker and Accessor is that an accessor can return a future
+  * for later forcing, where as an Invoker allows blocking during the call itself. These APIs are
+  * mutually encodable, however this encoding would have a significant performance cost.
+  * 
+  * Invoker.canInvoke must only depend on immutable information in targets and the invoker. This means
+  * canInvoke(v) will always return the same value for a specific value v. Similarly, if getInvoker(v) returns 
+  * invoker, then invoker.canInvoke(v) must always be true.
+  */
+trait Invoker {
+  /** Return true if InvocationBehavior#getInvoker would return an equivalent
+    * instance for these argument types. Equivalent means that for these values
+    * invoke would behave the same.
+    *
+    * This should be as fast as possible. Returning false erroneously is allowed,
+    * but may dramatically effect performance on some backends.
+    */
+  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
+
+  /** Invoke target with the given arguments.
+    *
+    * If canInvoke(target, arguments) would return false than the behavior of
+    * this call is undefined.
+    *
+    * This call may still throw UncallableValueException even if canInvoke returns true.
+    * This could occur for sites which have mutable values which may stop being callable.
+    */
+  @throws[UncallableValueException]
+  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit
+}
+
+/** Implement direct invocation for calls with do not block and do not need runtime access.
+  *
+  */
+trait DirectInvoker extends Invoker {
+  /** Invoke target with the given arguments are returns it's single publication or throws HaltException if
+    * the invocation does not publish.
+    *
+    * This call may not block on external events, but may use locks as needed as long as the locks will
+    * be available with relatively low-latency. Any delay in this call may delay the execution of unrelated
+    * tasks or threads.
+    * 
+    * This call may still throw UncallableValueException even if canInvoke returns true.
+    * This could occur for sites which have mutable values which may stop being callable.
+    *
+    * The returned value may not be a future.
+    */
+  @throws[HaltException]
+  @throws[UncallableValueException]
+  def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef
+}
+
+/** Type of error sentinals returned by InvocationBehavior.getInvoker.
+  *
+  * These invokers must NEVER be cached.
+  */
+trait ErrorInvoker extends Invoker
+
+/** A accessor sentinal representing the fact that unknownMember does not exist on the given value.
+	*/
+case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker {
+  @throws[UncallableValueException]
+  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    throw new UncallableValueException(target)
+  }
+
+  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    this.target == target
+  }
+}
+
+/** An action class implementing field extraction for a specific target type and field.
+  *
+  * The fundemental difference between an Invoker and Accessor is that an accessor can return a future
+  * for later forcing, where as an Invoker allows blocking during the call itself. These APIs are
+  * mutually encodable, however this encoding would have a significant performance cost.
+  * 
+  * Accessor.canGet must only depend on immutable information in targets and the accessor. This means
+  * canGet(v) will always return the same value for a specific value v. Similarly, if getAccessor(v) returns 
+  * accessor, then accessor.canGet(v) must always be true.
+  */
+trait Accessor {
+  /** Return true if InvocationBehavior#getAccessor would return an equivalent
+    * instance for this target type. Equivalent means that for these values get
+    * would behave the same.
+    *
+    * This should be as fast as possible. Returning false erroniously is allowed,
+    * but may dramatically effect performance on some backends.
+    */
+  def canGet(target: AnyRef): Boolean
+
+  /** Extract the value of the field from target.
+    *
+    * The returned value may be a future. The caller must check the future and force
+    * it when appropriate.
+    *
+    * If canGet(target) would return false than the behavior of this call is
+    * undefined.
+    *
+    * This call may still throw NoSuchMemberException even if canGet returns true.
+    * This occures for types with runtime variable sets of fields meaning that while
+    * this is the correct accessor there is no field available.
+    */
+  @throws[NoSuchMemberException]
+  @throws[DoesNotHaveMembersException]
+  def get(target: AnyRef): AnyRef
+}
+
+/** Type of error sentinals returned by InvocationBehavior.getAccessor.
+  *
+  * These accessors must NEVER be cached.
+  */
+trait ErrorAccessor extends Accessor
+
+/** A accessor sentinal representing the fact that unknownMember does not exist on the given value.
+	*/
+case class NoSuchMemberAccessor(target: AnyRef, unknownMember: String) extends ErrorAccessor {
+  @throws[NoSuchMemberException]
+  def get(target: AnyRef): AnyRef = {
+    throw new NoSuchMemberException(target, unknownMember)
+  }
+
+  def canGet(target: AnyRef): Boolean = {
+    this.target == target
+  }
+}
+
+/** A accessor sentinal representing the fact that the value does not have members.
+	*/
+case class DoesNotHaveMembersAccessor(target: AnyRef) extends ErrorAccessor {
+  @throws[DoesNotHaveMembersException]
+  def get(target: AnyRef): AnyRef = {
+    throw new DoesNotHaveMembersException(target)
+  }
+
+  def canGet(target: AnyRef): Boolean = {
+    this.target == target
+  }
+}
+
+/** An interface for objects which can receive future results.
+  *
+  * Elements of Orc runtimes should implement this interface to support
+  * handling future results. Non-orc code can also implement this interface
+  * to interact with Orc futures when implementing external routine methods.
+  */
+trait FutureReadHandle {
+  /** Called if the future is bound to a value.
+    *
+    * The value may not be another Future.
+    *
+    * onBound must execute quickly as the time this takes to execute will delay
+    * the execution of the binder of the future. The implementation may block on
+    * locks if needed, but the lock latency should be as short as possible.
+    */
+  def publish(v: AnyRef): Unit
+
+  /** Called if the future is bound to stop.
+    *
+    * onHalted must execute quickly as the time this takes to execute will delay
+    * the execution of the binder of the future. The implementation may block on
+    * locks if needed, but the lock latency should be as short as possible.
+    */
+  def halt(): Unit
+}
+
+/** The state of a Future.
+  */
+sealed abstract class FutureState
+
+/** The future is currently not resolved.
+  */
+final case object FutureUnbound extends FutureState
+
+/** The future is resolved to stop.
+  */
+final case object FutureStopped extends FutureState
+
+/** The future is bound to a specific value.
+  */
+final case class FutureBound(value: AnyRef) extends FutureState
+
+/** An interface for futures or future wrappers from other systems.
+  *
+  * This interface is directly implemented by Orc futures and should be
+  * easy to implement using a wrapper on most future types. However, due
+  * to the async callback based nature of this interface futures that only
+  * provide polling or blocking interfaces will need a background thread or
+  * other machinery to implement this interface. This is unavoidable.
+  */
+trait Future {
+  /** Return the state of the future.
+    */
+  def get(): FutureState
+
+  /** Register to get the value of this future.
+    *
+    * reader methods may be called during the execution of this call (in this thread) or
+    * called in another thread at any point after this call begins.
+    */
+  def read(reader: FutureReadHandle): Unit
+}
+
+object StoppedFuture extends Future {
+  def get() = FutureStopped
+  def read(reader: FutureReadHandle) = {
+    reader.halt()
+  }
+}
+
+case class BoundFuture(v: AnyRef) extends Future {
+  def get() = FutureBound(v)
+  def read(reader: FutureReadHandle) = {
+    reader.publish(v)
+  }
+}
+
 /** Define invocation behaviors for a runtime
   */
 trait InvocationBehavior {
-  /** Called to handle a site call.  Called on a thread that can block, if needed. */
-  /* By default, an invocation halts silently. This will be overridden by other traits. */
-  def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) { h.halt }
+  /** Get an invoker for a specific target type and argment types.
+    *
+    * This method is slow and the results should be cached if possible.
+    *
+    * @return An Invoker or DirectInvoker for the given values or an 
+    * 			  instance of InvokerError if there is no invoker.
+    * 
+    * @see UncallableValueInvoker
+    */
+  def getInvoker(target: AnyRef, arguments: Array[AnyRef]): Invoker
+
+  /** Get an accessor which extracts a given field value from a target.
+    *
+    * This method is slow and the results should be cached if possible.
+    *
+    * @return An Accessor for the given classes or an 
+    * 			  instance of AccessorError if there is no accessor.
+    * 
+    * @see NoSuchMemberAccessor, DoesNotHaveMembersAccessor
+    */
+  def getAccessor(target: AnyRef, field: Field): Accessor
+}
+
+/** The interface through which the environment response to site calls.
+  *
+  * Published values passed to publish and publishNonterminal may not be futures.
+  */
+trait Handle extends FutureReadHandle {
+
+  // TODO: Consider making this a seperate API that is not core to the Orc JVM API.
+  /** Submit an event to the Orc runtime.
+    */
+  def notifyOrc(event: OrcEvent): Unit
+
+  // TODO: Replace with onidle API.
+  /** Specify that the call is quiescent and will remain so until it halts or is killed.
+    */
+  def setQuiescent(): Unit
+
+  /** Publish a value from this call without halting the call.
+    */
+  def publishNonterminal(v: AnyRef): Unit
+
+  /** Publish a value from this call and halt the call.
+    */
+  def publish(v: AnyRef): Unit = {
+    publishNonterminal(v)
+    halt
+  }
+
+  @deprecated("Use publish(Signal) explicitly.", "3.0")
+  def publish() { publish(Signal) }
+
+  /** Halt this call without publishing a value.
+    */
+  def halt(): Unit
+
+  @deprecated("Use halt(e).", "3.0")
+  def !!(e: OrcException): Unit = halt(e)
+
+  /** Halt this call without publishing a value, providing an exception which caused the halt.
+    */
+  def halt(e: OrcException): Unit
+
+  /** Notify the runtime that the call will never publish again, but will not halt.
+    */
+  def discorporate(): Unit
+
+  /** Provide a source position from which this call was made.
+    *
+    * Some runtimes may always return None.
+    */
+  def callSitePosition: Option[OrcSourceRange]
+
+  /** Return true iff the caller has the right named.
+    */
+  def hasRight(rightName: String): Boolean
+
+  /** Return true iff the call is still live (not killed).
+    */
+  def isLive: Boolean
+}
+
+/** An event reported by an Orc execution
+  */
+trait OrcEvent
+
+case class PublishedEvent(value: AnyRef) extends OrcEvent
+case object HaltedOrKilledEvent extends OrcEvent
+case class CaughtEvent(e: Throwable) extends OrcEvent
+
+/** An action for a few major events reported by an Orc execution.
+  * This is an alternative to receiving <code>OrcEvents</code> for a client
+  * with simple needs, or for Java code that cannot create Scala functions.
+  */
+class OrcEventAction {
+  val asFunction: (OrcEvent => Unit) = _ match {
+    case PublishedEvent(v) => published(v)
+    case CaughtEvent(e) => caught(e)
+    case HaltedOrKilledEvent => haltedOrKilled()
+    case event => other(event)
+  }
+
+  def published(value: AnyRef) {}
+  def caught(e: Throwable) {}
+  def haltedOrKilled() {}
+
+  @throws[Exception]
+  def other(event: OrcEvent) {}
 }
 
 trait Schedulable extends Runnable {
@@ -109,57 +451,6 @@ trait OrcRuntime extends OrcRuntimeProvides with OrcRuntimeRequires {
   def stopScheduler(): Unit
 
   def removeRoot(exec: ExecutionRoot): Unit
-}
-
-/** The interface through which the environment response to site calls.
-  */
-trait Handle {
-
-  def notifyOrc(event: OrcEvent): Unit
-  def setQuiescent(): Unit
-
-  def publishNonterminal(v: AnyRef): Unit
-  def publish(v: AnyRef) {
-    publishNonterminal(v)
-    halt
-  }
-  def publish() { publish(Signal) }
-  def halt: Unit
-  def discorporate(): Unit
-  def !!(e: OrcException): Unit
-
-  def callSitePosition: Option[OrcSourceRange]
-  def hasRight(rightName: String): Boolean
-
-  def isLive: Boolean
-}
-
-/** An event reported by an Orc execution
-  */
-trait OrcEvent
-
-case class PublishedEvent(value: AnyRef) extends OrcEvent
-case object HaltedOrKilledEvent extends OrcEvent
-case class CaughtEvent(e: Throwable) extends OrcEvent { e.printStackTrace() }
-
-/** An action for a few major events reported by an Orc execution.
-  * This is an alternative to receiving <code>OrcEvents</code> for a client
-  * with simple needs, or for Java code that cannot create Scala functions.
-  */
-class OrcEventAction {
-  val asFunction: (OrcEvent => Unit) = _ match {
-    case PublishedEvent(v) => published(v)
-    case CaughtEvent(e) => caught(e)
-    case HaltedOrKilledEvent => haltedOrKilled()
-    case event => other(event)
-  }
-
-  def published(value: AnyRef) {}
-  def caught(e: Throwable) {}
-  def haltedOrKilled() {}
-
-  @throws(classOf[Exception])
-  def other(event: OrcEvent) {}
 }
 
 /** Options for Orc compilation and execution.

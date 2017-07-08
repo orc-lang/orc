@@ -38,7 +38,6 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import orc.values.OrcTuple
 import javax.servlet.AsyncContext
 import org.eclipse.jetty.servlet.ServletMapping
-import orc.run.core.BoundValue
 import orc.values.HasMembers
 
 trait CastArgumentSupport {
@@ -124,7 +123,7 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
     Field("stop") -> StopSite)
 
   def getMember(f: Field) = {
-    BoundValue(fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field)))
+    fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.name))
   }
 
   override def hasMember(f: Field): Boolean = {
@@ -215,7 +214,7 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
     Field("stop") -> StopSite)
 
   def getMember(f: Field) = {
-    BoundValue(fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.field)))
+    fields.get(f).getOrElse(throw new NoSuchMemberException(this, f.name))
   }
 
   override def hasMember(f: Field): Boolean = {
