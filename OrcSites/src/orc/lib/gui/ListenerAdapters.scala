@@ -29,6 +29,7 @@ import java.awt.event.WindowFocusListener
 import java.awt.event.MouseListener
 import java.awt.event.MouseEvent
 import orc.values.HasMembers
+import orc.run.core.ExternalSiteCallHandle
 
 abstract class ListenerAdapter {
   val deligate: HasMembers
@@ -45,7 +46,7 @@ abstract class ListenerAdapter {
 // TODO: Make this typed once we have object types.
 abstract class ListenerAdapterSite extends Site1 {
   def call(arg: AnyRef, h: Handle) = {
-    val execution = h.execution match {
+    val execution = h.asInstanceOf[ExternalSiteCallHandle].execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }

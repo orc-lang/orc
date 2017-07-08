@@ -19,6 +19,7 @@ import orc.values.Field
 import orc.Handle
 import orc.values.sites.Site1
 import orc.values.HasMembers
+import orc.run.core.ExternalSiteCallHandle
 
 /** @author amp
   */
@@ -47,7 +48,7 @@ class ToStringAdapter(val deligate: HasMembers, val execution: SupportForCallsIn
 
 object ToStringAdapter extends Site1 {
   def call(arg: AnyRef, h: Handle) = {
-    val execution = h.execution match {
+    val execution = h.asInstanceOf[ExternalSiteCallHandle].execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
