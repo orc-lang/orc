@@ -11,7 +11,7 @@ def rangeBy(low, high, skip) =
 
 -- val N = 9921 -- OpenJDK succeeds (fails on 9922)
 -- val N = 9911 -- Oracle succeeds (fails on 9912)
-val N = 5000
+val N = 3000 -- Lowered value since the max depth in the test harness appears to be much less.
 
 upto(100) >>
 rangeBy(0, N, 1) >> stop ;
