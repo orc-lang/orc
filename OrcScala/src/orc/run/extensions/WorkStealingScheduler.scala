@@ -19,6 +19,7 @@ import scala.collection.mutable.ArrayBuffer
 import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
 import orc.util.ABPWSDeque
+import java.util.logging.Level
 
 /**
  *
@@ -137,19 +138,24 @@ class SimpleWorkStealingScheduler(
           }
           try {
             val tClassName = t.getClass.getSimpleName
-            orc.util.Profiler.measureInterval(0L, Symbol(tClassName+"_run *")) {
+            
+            // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, Symbol(tClassName+"_run *")) 
+            {
               if (t.nonblocking) {
                 t.run()
               } else {
                 potentiallyBlocking(t.run())
               }
             }
-            orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) {
+            
+            // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) 
+            {
               afterExecute(this, t, null)
             }
           } catch {
             case ex: Exception =>
-              orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) {
+              // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) 
+              {
                 afterExecute(this, t, ex)
               }
           }
@@ -215,7 +221,8 @@ class SimpleWorkStealingScheduler(
         if (stealFailureRunLength == stealAttemptsBeforeBlocking) {
           // Wipe the queue when we are about to start blocking.
           // This is required to prevent previously scheduled tokens or
-          // other schedulables from being held. Overwrite is not needed
+          // other schedulables from being kept around by the GC. 
+          // Overwrite is not needed
           // if the thread is active since it will be constantly
           // overwriting previous tasks as the queue is used.
           workQueue.wipe()
@@ -354,6 +361,9 @@ trait OrcWithWorkStealingScheduler extends Orc {
         val stage = OrcWithWorkStealingScheduler.stagedTasks.get
         stage.foreach(w.scheduleLocal)
         stage.clear()
+        if (t != null) {
+          Logger.log(Level.WARNING, s"Schedulable threw exception.", t)
+        }
       }
     }
 
