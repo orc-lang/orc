@@ -17,13 +17,13 @@ public class InternalPorcEError extends Error {
 		super(msg);
 	}
 
-	public static void typeError(PorcENode n, UnexpectedResultException e) {
+	public static InternalPorcEError typeError(PorcENode n, UnexpectedResultException e) {
 		transferToInterpreter();
 		throw new InternalPorcEError("Received illegal value '" + e.getResult() + "' as some parameter in '" + n + "'.",
 				e);
 	}
 
-	public static void capturedLengthError(int slotsLen, int capturedsLen) {
+	public static InternalPorcEError capturedLengthError(int slotsLen, int capturedsLen) {
 		transferToInterpreter();
 		throw new InternalPorcEError(
 				"captureds array is the wrong length: slots len = " + slotsLen + ", captureds len = " + capturedsLen);

@@ -244,7 +244,7 @@ final case class IfDef(@subtree argument: Argument, @subtree left: Expression, @
 final case class GetField(@subtree future: Argument, field: Field) extends Expression
 
 @leaf @transform
-final case class New(@subtree bindings: Map[Field, Expression]) extends Expression
+final case class New(@subtree bindings: Map[Field, Argument]) extends Expression
 
 // ==================== PROCESS ===================
 

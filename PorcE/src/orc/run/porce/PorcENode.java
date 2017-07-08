@@ -9,6 +9,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Terminator;
 import orc.run.porce.runtime.PorcEClosure;
+import orc.run.porce.runtime.PorcEObject;
 
 @NodeInfo(language = "PorcE")
 @TypeSystemReference(PorcETypes.class)
@@ -40,5 +41,10 @@ public abstract class PorcENode extends Node {
 	public orc.Future executeFuture(VirtualFrame frame)
 			throws UnexpectedResultException {
 		return PorcETypesGen.expectFuture(execute(frame));
+	}
+
+	public PorcEObject executePorcEObject(VirtualFrame frame)
+			throws UnexpectedResultException {
+		return PorcETypesGen.expectPorcEObject(execute(frame));
 	}
 }

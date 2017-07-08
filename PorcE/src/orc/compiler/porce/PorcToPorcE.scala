@@ -1,5 +1,7 @@
 package orc.compiler.porce
 
+import scala.collection.mutable
+
 import orc.ast.porc
 import orc.run.porce
 import swivel.Zipper
@@ -9,6 +11,7 @@ import com.oracle.truffle.api.CallTarget
 import orc.run.porce.runtime.PorcEExecution
 import orc.run.porce.runtime.PorcEClosure
 import orc.compile.Logger
+import orc.values.Field
 
 class PorcToPorcE {
   case class Context(descriptor: FrameDescriptor, execution: PorcEExecution)
@@ -18,6 +21,12 @@ class PorcToPorcE {
   
   private def normalizeOrder(s: TraversableOnce[porc.Variable]) = {
     s.toSeq.sortBy(_.optionalName)
+  }
+
+  val fieldOrderCache = mutable.HashMap[Set[Field], Seq[Field]]()
+  
+  private def normalizeFieldOrder(s: Iterable[Field]) = {
+    fieldOrderCache.getOrElseUpdate(s.toSet, s.toSeq.sortBy(_.name))
   }
 
   private def normalizeOrderAndLookup(s: TraversableOnce[porc.Variable])(implicit ctx: Context) = {
@@ -67,11 +76,13 @@ class PorcToPorcE {
       case porc.MethodDeclaration.Z(methods, body) =>
         val recCapturedVars = normalizeOrder(methods.map(_.name)).view.force
         val scopeCapturedVars = normalizeOrder(methods.flatMap(m => m.body.freeVars -- m.allArguments).toSet -- recCapturedVars)
-        //val capturedVars = scopeCapturedVars ++ recCapturedVars
 
-        Logger.fine(s"Converting decl group $recCapturedVars with:\nscopeCapturedVars = $scopeCapturedVars")
+        //Logger.fine(s"Converting decl group $recCapturedVars with:\nscopeCapturedVars = $scopeCapturedVars")
         
-        val newMethods = methods.map(transform(_, scopeCapturedVars, recCapturedVars))
+        val methodsOrdered = methods.sortBy(_.name.optionalName)
+        val newMethods = methodsOrdered.map(transform(_, scopeCapturedVars, recCapturedVars))
+        
+        assert(methodsOrdered.map(_.name) == recCapturedVars)
                 
         porce.MethodDeclaration.create(newMethods.toArray, transform(body))
       case porc.NewFuture.Z() =>
@@ -104,7 +115,11 @@ class PorcToPorcE {
       case porc.GetField.Z(o, f) =>
         porce.GetField.create(transform(o), f, ctx.execution)      
       case porc.New.Z(bindings) =>
-        ???
+        val newBindings = bindings.mapValues(transform(_)).view.force
+        val fieldOrdering = normalizeFieldOrder(bindings.keys)
+        //Logger.fine(s"Generating object: $fieldOrdering ${System.identityHashCode(fieldOrdering)}\n${e.value}")
+        val fieldValues = fieldOrdering.map(newBindings(_))
+        porce.NewObject.create(fieldOrdering.toArray, fieldValues.toArray)
     }
   }
   
@@ -116,10 +131,10 @@ class PorcToPorcE {
       val descriptor = new FrameDescriptor()
       implicit val ctx = oldCtx.copy(descriptor = descriptor)
       val scopeCapturedSlots = (scopeCapturedVars ++ recCapturedVars).map(lookupVariable(_))
-      assert(scopeCapturedSlots.size == scopeCapturingSlots.size + recCapturedVars.size)
+      assert(scopeCapturedSlots.map(_.getIdentifier()) == scopeCapturingSlots.map(_.getIdentifier()) ++ recCapturedVars)
       val argSlots = arguments.map(lookupVariable(_))
       val newBody = transform(m.body)
-      Logger.fine(s"Converting decl ${m.name} with:\ncapturingSlots = $scopeCapturingSlots\ncapturedSlots = $scopeCapturedSlots\nargSlots = $argSlots\n$descriptor")
+      //Logger.fine(s"Converting decl ${m.name} with:\ncapturingSlots = $scopeCapturingSlots\ncapturedSlots = $scopeCapturedSlots\nargSlots = $argSlots\n$descriptor")
       porce.Method.create(oldCtx.descriptor.findOrAddFrameSlot(m.name), 
           argSlots.toArray, scopeCapturedSlots.toArray, scopeCapturingSlots.toArray, descriptor, m.value.isDef, newBody)
     }  

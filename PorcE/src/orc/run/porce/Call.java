@@ -44,8 +44,7 @@ public abstract class Call extends Expression {
 		try {
 			t = target.executePorcEClosure(frame);
 		} catch (UnexpectedResultException e) {
-			// FIXME: What's the correct exception here?
-			throw new UnsupportedSpecializationException(this, new Node[] { this.target }, e);
+			throw InternalPorcEError.typeError(this, e);
 		}
 		Object[] argumentValues = new Object[arguments.length + 1];
 		argumentValues[0] = t.capturedValues;
