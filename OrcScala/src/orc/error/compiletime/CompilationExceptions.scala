@@ -215,6 +215,15 @@ case class FeatureNotSupportedException(feature: String)
   extends CompilationException(s"$feature is unsupported")
   with SeverityFatal
 
+/** Internal errors in the compiler
+  */
+case class InternalCompilerError(s: String) extends CompilationException(s"ICE: $s") with SeverityError
+
+/** Internal warning for the compiler writers
+  */
+case class InternalCompilerWarning(s: String) extends CompilationException(s"ICE: $s") with SeverityDebug
+
+
 /** Many errors occured during compilation and we want to report them all.
   *
   * This exception will have all the other errors as suppressed exceptions.

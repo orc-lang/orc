@@ -15,15 +15,35 @@ import orc.compile._
 import orc.ast.orctimizer
 import orc.ast.porc
 import orc.error.compiletime.CompileLogger
+import orc.ast.orctimizer.named.AssertedType
+import orc.ast.porc.VariableChecker
 
 /** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
   * and specifies that compilation will finish with named.
   *
   * @author jthywiss
   */
-abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
-  with StandardOrcCompilerEnvInterface[String]
+abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
+  with StandardOrcCompilerEnvInterface[porc.MethodCPS]
   with CoreOrcCompilerPhases {
+
+  private[this] var currentAnalysisCache: Option[AnalysisCache] = None   
+  def cache = currentAnalysisCache match {
+    case Some(c) => c
+    case None =>
+      currentAnalysisCache = Some(new AnalysisCache())
+      currentAnalysisCache.get
+  }
+  def clearCache() = currentAnalysisCache = None
+  
+  def clearCachePhase[T] = new CompilerPhase[CompilerOptions, T, T] {
+    val phaseName = "clearCache"
+    override def apply(co: CompilerOptions) =
+      { ast =>
+        clearCache()
+        ast
+      }
+  }
 
   Logger.warning("You are using the Porc/Orctimizer back end. It is UNSTABLE!!")
 
@@ -42,7 +62,6 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
     override def apply(co: CompilerOptions) = { ast =>
       //println(co.options.optimizationFlags)
       val maxPasses = co.options.optimizationFlags("orct:max-passes").asInt(8)
-      val cache = new AnalysisCache()
       val optimizer = StandardOptimizer(co)
 
       def opt(prog: Expression, pass: Int): Expression = {
@@ -60,10 +79,15 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
             counts
           }
           val stats = typeCounts
-                .filterNot(kv => classOf[Type].isAssignableFrom(kv._1) || classOf[DeclareCallables].isAssignableFrom(kv._1) || classOf[DeclareType].isAssignableFrom(kv._1))
+                .filterNot(kv => classOf[Type].isAssignableFrom(kv._1) || 
+                    classOf[DeclareCallables].isAssignableFrom(kv._1) || 
+                    classOf[HasType].isAssignableFrom(kv._1) ||
+                    classOf[AssertedType].isAssignableFrom(kv._1) ||
+                    classOf[Var].isAssignableFrom(kv._1) ||
+                    classOf[DeclareType].isAssignableFrom(kv._1))
                 .map({ case (k, v) => (k.getSimpleName(), v) }) + 
                 ("total" -> typeCounts.values.sum)
-          val s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
+          val s = stats.map(p => s"${p._1}=${p._2}").mkString(", ")
           s"Orctimizer before pass $pass/$maxPasses: $s"
         }
 
@@ -71,7 +95,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
 
         val prog1 = optimizer(prog.toZipper(), cache)
 
-        def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
+        def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1}=${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Orctimizer after pass $pass/$maxPasses: $optimizationCountsStr")
 
         if ((prog1 == prog && pass > 1) || pass > maxPasses)
@@ -156,30 +180,43 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[String]
 }
 
 class PorcOrcCompiler() extends OrctimizerOrcCompiler {
-  val toPorc = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, porc.DefCPS] {
+  val toPorc = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, porc.MethodCPS] {
     val phaseName = "translate"
     override def apply(co: CompilerOptions) =
       { ast =>
         val translator = new OrctimizerToPorc()
-        translator(ast)
+        val res = translator(ast, cache)
+        VariableChecker(res.toZipper(), co)
+        res
       }
   }
 
-  val optimizePorc = new CompilerPhase[CompilerOptions, porc.DefCPS, porc.DefCPS] {
+  /*
+  val porcToJava = new CompilerPhase[CompilerOptions, porc.MethodCPS, String] {
+    val phaseName = "toJava"
+    override def apply(co: CompilerOptions) =
+      { ast =>
+        val translator = new PorcToJava()
+        translator(ast)
+      }
+  }
+  */
+
+  val optimizePorc = new CompilerPhase[CompilerOptions, porc.MethodCPS, porc.MethodCPS] {
     import orc.ast.porc._
     val phaseName = "optimize"
     override def apply(co: CompilerOptions) = { ast =>
       val maxPasses = co.options.optimizationFlags("porc:max-passes").asInt(5)
 
-      def opt(prog: DefCPS, pass: Int): DefCPS = {
+      def opt(prog: MethodCPS, pass: Int): MethodCPS = {
         val analyzer = new Analyzer
         val stats = Map(
           "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
           "spawns" -> Analysis.count(prog, _.isInstanceOf[Spawn]),
           "closures" -> Analysis.count(prog, _.isInstanceOf[Continuation]),
-          "indirect calls" -> Analysis.count(prog, _.isInstanceOf[SiteCall]),
-          "direct calls" -> Analysis.count(prog, _.isInstanceOf[SiteCallDirect]),
-          "sites" -> Analysis.count(prog, _.isInstanceOf[DefDeclaration]),
+          "indirect calls" -> Analysis.count(prog, _.isInstanceOf[MethodCPSCall]),
+          "direct calls" -> Analysis.count(prog, _.isInstanceOf[MethodDirectCall]),
+          "sites" -> Analysis.count(prog, _.isInstanceOf[MethodDeclaration]),
           "nodes" -> Analysis.count(prog, (_ => true)),
           "cost" -> Analysis.cost(prog))
         def s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
@@ -189,12 +226,13 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         //println("-------==========")
 
         val optimizer = Optimizer(co)
-        val prog1 = optimizer(prog, analyzer).asInstanceOf[DefCPS]
+        val prog1 = optimizer(prog, analyzer).asInstanceOf[MethodCPS]
 
         orc.ast.porc.Logger.finest(s"analyzer.size = ${analyzer.cache.size}")
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $optimizationCountsStr")
+        VariableChecker(prog1.toZipper(), co)
 
         if (prog1 == prog || pass > maxPasses)
           prog1
@@ -208,8 +246,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       else
         ast
 
-      TransformContext.clear()
-      e.assignNumbers()
       e
     }
   }
@@ -241,14 +277,13 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       outputIR(3) >>>
       optimize() >>>
       outputIR(4) >>>
-      nullOutput
-      /*
       //unroll >>>
       //outputIR(5, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
       //optimize(_.options.optimizationFlags("orct:unroll-def").asBool()) >>>
       //outputIR(6, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
       toPorc >>>
+      clearCachePhase >>>
       outputIR(7) >>>
       optimizePorc >>>
-      outputIR(8)*/
+      outputIR(8)
 }

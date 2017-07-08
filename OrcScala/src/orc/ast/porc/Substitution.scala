@@ -20,15 +20,15 @@ package orc.ast.porc
 trait Substitution[X <: PorcAST] {
   self: PorcAST =>
 
-  def substAll(subs: collection.Map[Var, Value]): X = Substitution.allArgs(subs)(this).asInstanceOf[X]
+  def substAll(subs: collection.Map[Variable, Argument]): X = Substitution.allArgs(subs)(this.toZipper()).asInstanceOf[X]
 }
 
 object Substitution {
-  def allArgs(subs: scala.collection.Map[Var, Value]) =
-    new ContextualTransform.NonDescending {
-      override def onVar = {
-        case (x: Var) in ctx => {
-          if (subs.isDefinedAt(x)) { subs(x) } else { x }
+  def allArgs(subs: scala.collection.Map[Variable, Argument]) =
+    new Transform {
+      override def onArgument = {
+        case x: Variable.Z => {
+          if (subs.isDefinedAt(x.value)) { subs(x.value) } else { x.value }
         }
       }
     }

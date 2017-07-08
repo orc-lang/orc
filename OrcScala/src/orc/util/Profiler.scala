@@ -54,6 +54,7 @@ object Profiler {
     }
   }
 
+  // TODO: PERFORMANCE: Consider removing this since it will introduce an additional megamorphic call site in the java code in many cases. Make people use begine/endInterval.
   @inline /* sadly, Scala can't inline because of the try-finally block */
   def measureInterval[A](locationId: Long, intervalType: Symbol)(block: => A): A = {
     if (profilerOn) {

@@ -18,17 +18,16 @@ import scala.collection.mutable
   * @author amp
   */
 trait FreeVariables {
-  this: Expr =>
-  lazy val freevars: Set[Var] = {
-    val s = mutable.Set[Var]()
-    // TODO: Do not use ContextualTransform here. It will generate a bunch of useless contexts.
-    (new ContextualTransform.NonDescending {
-      override def onVar = {
-        case (v: Var) in ctx if !ctx.contains(v) =>
-          s += v
-          v
+  this: Expression =>
+  lazy val freeVars: Set[Variable] = {
+    val s = mutable.Set[Variable]()
+    (new Transform {
+      override def onArgument = {
+        case v: Variable.Z if !v.contextBoundVars.contains(v.value) =>
+          s += v.value
+          v.value
       }
-    })(this)
+    })(this.toZipper())
     //Logger.finest(s"$this has free vars ${s.toSet}")
     s.toSet
   }

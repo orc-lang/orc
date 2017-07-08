@@ -18,101 +18,144 @@ import orc.values.sites
 import orc.ast.PrecomputeHashcode
 import java.util.logging.Level
 import orc.values.Field
+import orc.ast.ASTForSwivel
+import swivel.root
+import swivel.replacement
+import swivel.leaf
+import swivel.branch
+import swivel.subtree
+import orc.ast.hasAutomaticVariableName
+import scala.PartialFunction
+import swivel.TransformFunction
+import orc.util.Ternary
+
+/* TODO: Also change to simplify the truffle implementation but without increasing the complexity of say a C or JS implementation.
+ * 
+ * Continuation is not needed. Each time we use it we could instead have an expression to call as the continuation.
+ * This would effectively defer CPS conversion to the backend. However it also sets aside the continuations so that conversion would be trivial.
+ * Since we can now have specialized argument bindings for each continuation. This should avoid the need for builtin TupleElim.
+ * 
+ * The problem with this is that it can result in code duplication when there is more than one call to the continuation
+ * (which there is in the presence of parallel). This means there will still need to be something like Continuation.
+ * It might be useful to give it "join" (like the Jones talk) semantics were it is limited and guaranteed to be
+ * compilable to a jump.
+ * 
+ * Let is still needed.
+ * 
+ * The continuations which appear inline would still need information to assist in capture. This would be
+ * argument names and free variables which will be captured from the scope. This would make continuation lifting
+ * trivial in the backend.
+ * 
+ * Defs and sites should also include captured variables to allow for compaction and easier lifting.
+ * 
+ * Can defs and sites be declared the same way?
+ *   It should be possible. A site simply captures T from it's declaring scope and ignores it's parameter T.
+ *   Sites will always receive non-futures as arguments. Sites will also artificially increment the halt count to prevent the declaration from ever halting.
+ *   Defs will not capture T and will have future arguments.
+ *   
+ *   Calls to these values are all the same. The calls receive a continuation arg and other useful args.
+ *   
+ *   Eliminate direct calls and replace with a CPS version with a flag marking calls which are statically known to be direct.
+ *   
+ * 
+ * Can that system be reused to dedup continuations?
+ *   Probably not. Since continuations should have guaranteed jump semantics.
+ *
+ * Even continuations will not always be implementable as a jump.
+ * The problem is that in the presence of parallel a continuation is called in a non-tail position.
+ * 
+ * 
+ * 
+ * It appears that very little can actually easily change.
+ * Continuations are multiple called in parallel so they both cannot be jumps and cannot be inlined in 
+ * all cases (because of potential code explosion).
+ * Def and site decl and call can be combined, but splitting it out to allow static optimization or
+ * simply better start-up of the JIT (because more is known the first compile) may be useful.
+ * 
+ * Continuations could be expanded to multiple parameters to eliminate the need for any tuples.
+ * SpawnFutureBind could be changed to take a continuation which takes either a tuple of P and C or
+ * multiple parameters.
+ * Spawn could take zero args or a unit arg.
+ * 
+ * These changes would simplify the language by preventing any code from appearing inside operators
+ * like spawn. However, the opposite would also be possible. Remove explicit continuations and
+ * have explicit code blocks in all positions. The problem with this is that the same continuation 
+ * is used more than once in some cases, so explicit continuations will remove that duplication.
+ * 
+ * Forced inlining of the continuations (on speculative direct paths) would still be possible by
+ * making the continuation and it's body into compile time constants. However, truffle and graal have
+ * their own inlining which may well solve the problem without the need for forced inlining. Spectulative
+ * directifying may still be useful, but the P call would be a normal call.
+ * 
+ * Multiple parameter continuations would be slightly harder to implement on some backends. However, 
+ * they would probably be faster in almost all cases since they would allow the underlying compiler
+ * to store both values on the stack without needing to detect the potential for on-stack scalar replacement.
+ * 
+ */
+
+abstract class Transform extends TransformFunction {
+  def onExpression: PartialFunction[Expression.Z, Expression] = {
+    case a: Argument.Z if onArgument.isDefinedAt(a) => onArgument(a)
+  }
+  def apply(e: Expression.Z) = transformWith[Expression.Z, Expression](e)(this, onExpression)
+
+  def onArgument: PartialFunction[Argument.Z, Argument] = PartialFunction.empty
+  def apply(e: Argument.Z) = transformWith[Argument.Z, Argument](e)(this, onArgument)
+
+  def onMethod: PartialFunction[Method.Z, Method] = PartialFunction.empty
+  def apply(e: Method.Z) = transformWith[Method.Z, Method](e)(this, onMethod)
+
+  def apply(e: PorcAST.Z): PorcAST = e match {
+    case e: Argument.Z => apply(e)
+    case e: Expression.Z => apply(e)
+    case e: Method.Z => apply(e)
+  }
+}
 
 /** @author amp
   */
-sealed abstract class PorcAST extends AST with Product with WithContextInfixCombinator {
+@root @transform[Transform]
+sealed abstract class PorcAST extends ASTForSwivel with Product {
   def prettyprint() = (new PrettyPrint()).reduce(this).toString()
   override def toString() = prettyprint()
 
-  var number: Option[Int] = None
-
-  override def subtrees: Iterable[AST] = this match {
-    case Call(a, b) => List(a, b)
-    case Let(a, b, c) => List(a, b, c)
-    case Sequence(l) => l
-    case Continuation(x, e) => List(x, e)
-    case DefDeclaration(ds, e) => e +: ds
-    case DefCPS(a, b, c, d, e, f) => a +: b +: c +: d +: f +: e
-    case DefDirect(a, b, c) => a +: c +: b
-    case SiteCall(a, b, c, d, e) => a +: c +: b +: d +: e
-    case SiteCallDirect(a, b) => a +: b
-    case DefCall(a, b, c, d, e) => a +: c +: b +: d +: e
-    case DefCallDirect(a, b) => a +: b
-    case IfDef(a, b, c) => List(a, b, c)
-    case New(b) => b.values.toList
-    case Spawn(a, b, c) => List(a, b, c)
-    case NewTerminator(a) => List(a)
-    case Kill(a) => List(a)
-    case TryOnKilled(a, b) => List(a, b)
-    case NewCounter(a, b) => List(a, b)
-    case Halt(a) => List(a)
-    case TryOnHalted(a, b) => List(a, b)
-    case TryFinally(a, b) => List(a, b)
-    case NewFuture() => List()
-    case SpawnBindFuture(a, b, c, d, e, f) => List(a, b, c, d, e, f)
-    case Force(a, b, c, _, e) => a +: b +: c +: e
-    case GetField(a, b, c, d, _) => List(a, b, c, d)
-    case TupleElem(a, _) => List(a)
-    case _ => List()
-  }
-
-  /** Assign numbers in depth first order stating at 0.
-    */
-  def assignNumbers() {
-    assignNumbersStartingAt(0)
-  }
-
-  /** Assign numbers starting at n and returning the
-    */
-  protected[porc] def assignNumbersStartingAt(n: Int): Int = {
-    /*if (Logger.isLoggable(Level.FINE)) {
-      number match {
-        case Some(oldN) =>
-          if (n != oldN)
-            Logger.fine("Reassigning PorcAST instruction number to something different. This may be a problem or at least confusing.")
-        case None => ()
-      }
-    }*/
-    number = Some(n)
-
-    val children = subtrees.collect { case c: PorcAST => c }.toSeq
-    children.reverse.foldRight(n + 1)(_.assignNumbersStartingAt(_))
-  }
-}
-
-sealed trait UnnumberedPorcAST extends PorcAST {
-  override protected[porc] def assignNumbersStartingAt(n: Int): Int = {
-    val children = subtrees.collect { case c: PorcAST => c }.toSeq
-    children.reverse.foldRight(n)(_.assignNumbersStartingAt(_))
-  }
+  def boundVars: Set[Variable] = Set()
 }
 
 // ==================== CORE ===================
-sealed abstract class Expr extends PorcAST with FreeVariables with Substitution[Expr] with Product with PrecomputeHashcode with PorcInfixExpr
+@branch @replacement[Expression]
+sealed abstract class Expression extends PorcAST with FreeVariables with Substitution[Expression] with PrecomputeHashcode with PorcInfixExpr
 
-sealed abstract class Value extends Expr with PorcInfixValue with UnnumberedPorcAST with PrecomputeHashcode //with Substitution[Value]
-case class OrcValue(value: AnyRef) extends Value
-/*case class Tuple(values: Seq[Value]) extends Value
-object Tuple {
-  def apply(values: Value*): Tuple = Tuple(values.toList)
-  def unapplySeq(t: Tuple): Option[Seq[Value]] = Some(t.values)
-}*/
-
-case class Unit() extends Value
-
-class Var(optionalName: Option[String] = None) extends Value with hasOptionalVariableName {
-  optionalVariableName = optionalName match {
-    case Some(n) => Some(n)
-    case None =>
-      Some(Var.getNextVariableName())
+object Expression {
+  class Z {
+    def contextBoundVars = {
+      parents.flatMap(_.value.boundVars)
+    }
+    def freeVars = {
+      value.freeVars
+    }
+    def binderOf(x: Variable) = {
+      parents.find(_.value.boundVars.contains(x))
+    }
   }
+}
 
-  def this(s: String) = this(Some(Var.getNextVariableName(s)))
+@branch
+sealed abstract class Argument extends Expression with PorcInfixValue with PrecomputeHashcode
+@leaf @transform
+final case class Constant(v: AnyRef) extends Argument
+@leaf @transform
+final case class PorcUnit() extends Argument
+@leaf @transform
+final class Variable(val optionalName: Option[String] = None) extends Argument with hasAutomaticVariableName {
+  optionalVariableName = optionalName
+  autoName("pv")
+
+  def this(s: String) = this(Some(s))
 
   override def productIterator = Nil.iterator
   // Members declared in scala.Equals
-  def canEqual(that: Any): Boolean = that.isInstanceOf[Var]
+  def canEqual(that: Any): Boolean = that.isInstanceOf[Variable]
   // Members declared in scala.Product
   def productArity: Int = 0
   def productElement(n: Int): Any = ???
@@ -120,19 +163,16 @@ class Var(optionalName: Option[String] = None) extends Value with hasOptionalVar
   override val hashCode = System.identityHashCode(this)
 }
 
-object Var {
-  private var nextVar: Int = 0
-  def getNextVariableName(): String = getNextVariableName("pv")
-  def getNextVariableName(s: String): String = synchronized {
-    nextVar += 1
-    s"`$s$nextVar"
-  }
+@leaf @transform
+final case class CallContinuation(@subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression
+
+@leaf @transform
+final case class Let(x: Variable, @subtree v: Expression, @subtree body: Expression) extends Expression {
+  override def boundVars: Set[Variable] = Set(x)
 }
 
-case class Call(target: Value, argument: Value) extends Expr
-case class Let(x: Var, v: Expr, body: Expr) extends Expr
-
-case class Sequence(es: Seq[Expr]) extends Expr with UnnumberedPorcAST {
+@leaf @transform
+final case class Sequence(@subtree es: Seq[Expression]) extends Expression {
   //assert(!es.isEmpty)
 
   def simplify = es match {
@@ -141,78 +181,101 @@ case class Sequence(es: Seq[Expr]) extends Expr with UnnumberedPorcAST {
   }
 }
 object Sequence {
-  def apply(es: Seq[Expr]): Sequence = {
+  def apply(es: Seq[Expression]): Sequence = {
     new Sequence((es.flatMap {
       case Sequence(fs) => fs
       case e => Seq(e)
     }).toList)
   }
-  /*def apply(es: Expr*): Sequence = {
-    new Sequence((es.flatMap {
-      case Sequence(fs) => fs
-      case e => Seq(e)
-    }).toList)
-  }*/
 }
 
-case class Continuation(argument: Var, body: Expr) extends Expr
-
-case class DefDeclaration(defs: Seq[Def], body: Expr) extends Expr
-sealed abstract class Def extends PorcAST {
-  def name: Var
-  def arguments: Seq[Var]
-  def body: Expr
-
-  def allArguments: Seq[Var] = arguments
+@leaf @transform
+final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression {
+  override def boundVars: Set[Variable] = arguments.toSet
 }
-final case class DefCPS(name: Var, pArg: Var, cArg: Var, tArg: Var, arguments: Seq[Var], body: Expr) extends Def {
-  override def allArguments: Seq[Var] = pArg +: cArg +: tArg +: arguments
+
+@leaf @transform
+final case class MethodDeclaration(@subtree defs: Seq[Method], @subtree body: Expression) extends Expression {
+  override def boundVars: Set[Variable] = defs.map(_.name).toSet
 }
-final case class DefDirect(name: Var, arguments: Seq[Var], body: Expr) extends Def
 
-case class SiteCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: Seq[Value]) extends Expr
-case class SiteCallDirect(target: Value, arguments: Seq[Value]) extends Expr
-case class DefCall(target: Value, pArg: Value, cArg: Value, tArg: Value, arguments: Seq[Value]) extends Expr
-case class DefCallDirect(target: Value, arguments: Seq[Value]) extends Expr
+@branch @replacement[Method]
+sealed abstract class Method extends PorcAST {
+  def name: Variable
+  def arguments: Seq[Variable]
+  def body: Expression
+  def isDef: Boolean
 
-case class IfDef(argument: Value, left: Expr, right: Expr) extends Expr
+  def allArguments: Seq[Variable]
+  
+  override def boundVars: Set[Variable] = allArguments.toSet
+}
 
-case class New(bindings: Map[Field, Expr]) extends Expr
+object Method {
+  class Z {
+    def name: Variable
+    def arguments: Seq[Variable]
+    def allArguments: Seq[Variable] = value.allArguments
+    def body: Expression.Z    
+  }
+}
+
+// TODO: Currently Methods are not handled correctly. Specifically defs never correctly force any futures.
+//       We will need either a resolve combinator here or a split between routines and services.
+
+@leaf @transform
+final case class MethodCPS(name: Variable, pArg: Variable, cArg: Variable, tArg: Variable, isDef: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+  override def allArguments: Seq[Variable] = pArg +: cArg +: tArg +: arguments
+}
+@leaf @transform
+final case class MethodDirect(name: Variable, isDef: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+  override def allArguments: Seq[Variable] = arguments
+}
+
+@leaf @transform
+final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression
+@leaf @transform
+final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression
+
+@leaf @transform
+final case class IfDef(@subtree argument: Argument, @subtree left: Expression, @subtree right: Expression) extends Expression
+
+@leaf @transform
+final case class GetField(@subtree future: Argument, field: Field) extends Expression
+
+@leaf @transform
+final case class New(@subtree bindings: Map[Field, Expression]) extends Expression
 
 // ==================== PROCESS ===================
 
 // TODO: The semantics of this have been changed to "spawn or run as the runtime prefers"
-case class Spawn(cArg: Value, tArg: Value, body: Expr) extends Expr
+@leaf @transform
+final case class Spawn(@subtree c: Argument, @subtree t: Argument, @subtree computation: Argument) extends Expression
 
-case class NewTerminator(parent: Value) extends Expr
-case class Kill(t: Value) extends Expr
-case class TryOnKilled(body: Expr, handler: Expr) extends Expr
+@leaf @transform
+final case class NewTerminator(@subtree parentT: Argument) extends Expression
+@leaf @transform
+final case class Kill(@subtree t: Argument) extends Expression
+@leaf @transform
+final case class TryOnKilled(@subtree body: Expression, @subtree handler: Expression) extends Expression
 
-case class NewCounter(parent: Value, haltCont: Expr) extends Expr
-case class Halt(c: Value) extends Expr
-case class SetDiscorporate(c: Value) extends Expr
-case class TryOnHalted(body: Expr, handler: Expr) extends Expr
+@leaf @transform
+final case class NewCounter(@subtree parentT: Argument, @subtree haltHandler: Argument) extends Expression
+@leaf @transform
+final case class Halt(@subtree c: Argument) extends Expression
+@leaf @transform
+final case class SetDiscorporate(@subtree c: Argument) extends Expression
+@leaf @transform
+final case class TryOnHalted(@subtree body: Expression, @subtree handler: Expression) extends Expression
 
-case class TryFinally(body: Expr, handler: Expr) extends Expr
+@leaf @transform
+final case class TryFinally(@subtree body: Expression, @subtree handler: Expression) extends Expression
 
 // ==================== FUTURE ===================
 
-case class NewFuture() extends Expr
-
-case class SpawnBindFuture(fut: Value, c: Value, t: Value, pArg: Var, cArg: Var, expr: Expr) extends Expr
-
-case class Force(p: Value, c: Value, t: Value, forceClosures: Boolean, futures: Seq[Value]) extends Expr
-
-case class GetField(p: Value, c: Value, t: Value, future: Value, field: Field) extends Expr
-
-case class TupleElem(v: Value, i: Int) extends Expr
-
-// ==================== TYPE ===================
-/*
-sealed abstract class Type extends PorcAST
-
-case class ContinuationType() extends Type
-case class SiteType() extends Type
-case class CounterType() extends Type
-case class TerminatorType() extends Type
-*/
+@leaf @transform
+final case class NewFuture() extends Expression
+@leaf @transform
+final case class SpawnBindFuture(@subtree fut: Argument, @subtree c: Argument, @subtree t: Argument, @subtree computation: Argument) extends Expression
+@leaf @transform
+final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, forceClosures: Boolean, @subtree futures: Seq[Argument]) extends Expression

@@ -24,7 +24,7 @@ class PrettyPrint {
     implicit def implicitInterpolator(sc: StringContext) = new MyInterpolator(sc)
     class MyInterpolator(sc: StringContext) extends Interpolator(sc) {
       override val processValue: PartialFunction[Any, FragmentAppender] = {
-        case a: Expr =>
+        case a: Expression =>
           reduce(a)
       }
     }
@@ -37,21 +37,19 @@ class PrettyPrint {
   def reduce(ast: PorcAST): FragmentAppender = {
     tag(ast,
       ast match {
-        case OrcValue(v) => FragmentAppender(Format.formatValue(v))
-        case v: Var => FragmentAppender(v.optionalVariableName.getOrElse(v.toString))
+        case Constant(v) => FragmentAppender(Format.formatValue(v))
+        case v: Variable => FragmentAppender(v.optionalVariableName.getOrElse(v.toString))
 
         case Let(x, v, b) => pp"let $x = $StartIndent$v$EndIndent in\n$b"
-        case DefDeclaration(l, b) => pp"def $StartIndent$StartIndent${FragmentAppender.mkString(l.map(reduce), ";\n")}$EndIndent in\n$b$StartIndent"
-        case DefCPS(name, p, c, t, args, body) => pp"$name ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
-        case DefDirect(name, args, body) => pp"direct $name (${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
+        case MethodDeclaration(l, b) => pp"def $StartIndent$StartIndent${FragmentAppender.mkString(l.map(reduce), ";\n")}$EndIndent in\n$b$StartIndent"
+        case MethodCPS(name, p, c, t, isDef, args, body) => pp"cps${if (isDef) "_d" else "_s"} $name ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
+        case MethodDirect(name, isDef, args, body) => pp"direct${if (isDef) "_d" else "_s"} $name (${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
 
-        case Continuation(arg, b) => pp"\u03BB($arg).$StartIndent\n$b$EndIndent"
+        case Continuation(args, b) => pp"\u03BB(${args.map(reduce(_)).mkString(", ")}).$StartIndent\n$b$EndIndent"
 
-        case Call(t, a) => pp"$t ($a)"
-        case SiteCall(target, p, c, t, args) => pp"sitecall $target ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")})"
-        case SiteCallDirect(target, args) => pp"sitecall direct $target (${args.map(reduce(_)).mkString(", ")})"
-        case DefCall(target, p, c, t, args) => pp"defcall $target ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")})"
-        case DefCallDirect(target, args) => pp"defcall direct $target (${args.map(reduce(_)).mkString(", ")})"
+        case CallContinuation(t, args) => pp"$t (${args.map(reduce(_)).mkString(", ")})"
+        case MethodCPSCall(isExt, target, p, c, t, args) => pp"call cps $isExt $target ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")})"
+        case MethodDirectCall(isExt, target, args) => pp"call direct $isExt $target (${args.map(reduce(_)).mkString(", ")})"
         case IfDef(arg, f, g) => pp"ifdef $arg then$StartIndent\n$f$EndIndent\nelse$StartIndent\n$g$EndIndent"
 
         case Sequence(es) => FragmentAppender.mkString(es.map(reduce(_)), ";\n")
@@ -60,9 +58,9 @@ class PrettyPrint {
         case TryOnHalted(b, h) => pp"try$StartIndent\n$b$EndIndent\nonHalted$StartIndent\n$h$EndIndent"
         case TryFinally(b, h) => pp"try$StartIndent\n$b$EndIndent\nfinally$StartIndent\n$h$EndIndent"
 
-        case Spawn(c, t, e) => pp"spawn $c $t {$StartIndent\n$e$EndIndent\n}"
+        case Spawn(c, t, e) => pp"spawn $c $t $e"
 
-        case NewCounter(c, h) => pp"counter $c { $StartIndent$h$EndIndent }"
+        case NewCounter(c, h) => pp"counter $c $h"
         case Halt(c) => pp"halt $c"
         case SetDiscorporate(c) => pp"setDiscorporate $c"
 
@@ -70,15 +68,14 @@ class PrettyPrint {
         case Kill(t) => pp"kill $t"
 
         case NewFuture() => pp"newFuture"
-        case SpawnBindFuture(f, c, t, pArg, cArg, e) => pp"spawnBindFuture $f $c $t ($pArg, $cArg) {$StartIndent\n$e$EndIndent\n}"
+        case SpawnBindFuture(f, c, t, computation) => pp"spawnBindFuture $f $c $t $computation"
 
         case Force(p, c, t, b, vs) => pp"force[${if (b) "publish" else "call"}] $p $c $t (${vs.map(reduce(_)).mkString(", ")})"
-        case TupleElem(v, i) => pp"elem($v, $i)"
 
-        case GetField(p, c, t, o, f) => pp"getField $p $c $t $o$f"
+        case GetField(o, f) => pp"$o$f"
 
         case New(bindings) => {
-          def reduceField(f: (Field, Expr)) = {
+          def reduceField(f: (Field, Expression)) = {
             val (name, expr) = f
             pp"${name} = ${reduce(expr)}"
           }
@@ -86,7 +83,7 @@ class PrettyPrint {
           pp"new { ${if (bindings.nonEmpty) fields else ""} }"
         }
 
-        case Unit() => FragmentAppender("unit")
+        case PorcUnit() => FragmentAppender("unit")
 
         //case v if v.productArity == 0 => v.productPrefix
 

@@ -18,106 +18,160 @@ import orc.compile.CompilerOptions
 import orc.compile.OptimizerStatistics
 import orc.compile.NamedOptimization
 import scala.collection.mutable
+import swivel.Zipper
+import orc.ast.porc.Continuation
 
-trait Optimization extends ((WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) with NamedOptimization {
+trait Optimization extends ((Expression.Z, AnalysisProvider[PorcAST]) => Option[Expression]) with NamedOptimization {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
   val name: String
 }
 
-case class Opt(name: String)(f: PartialFunction[(WithContext[Expr], AnalysisProvider[PorcAST]), Expr]) extends Optimization {
-  def apply(e: WithContext[Expr], analysis: AnalysisProvider[PorcAST]): Option[Expr] = f.lift((e, analysis))
+case class Opt(name: String)(f: PartialFunction[(Expression.Z, AnalysisProvider[PorcAST]), Expression]) extends Optimization {
+  def apply(e: Expression.Z, analysis: AnalysisProvider[PorcAST]): Option[Expression] = f.lift((e, analysis))
 }
-case class OptFull(name: String)(f: (WithContext[Expr], AnalysisProvider[PorcAST]) => Option[Expr]) extends Optimization {
-  def apply(e: WithContext[Expr], analysis: AnalysisProvider[PorcAST]): Option[Expr] = f(e, analysis)
+case class OptFull(name: String)(f: (Expression.Z, AnalysisProvider[PorcAST]) => Option[Expression]) extends Optimization {
+  def apply(e: Expression.Z, analysis: AnalysisProvider[PorcAST]): Option[Expression] = f(e, analysis)
 }
 
 /** @author amp
   */
 case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   def apply(e: PorcAST, analysis: AnalysisProvider[PorcAST]): PorcAST = {
-    val trans = new ContextualTransform.Pre {
-      override def onExpr = {
-        case (e: WithContext[Expr]) => {
+    val trans = new Transform {
+      override def onExpression = {
+        case (e: Expression.Z) => {
           val e1 = opts.foldLeft(e)((e, opt) => {
             opt(e, analysis) match {
               case None => e
               case Some(e2) =>
-                if (e.e != e2) {
+                if (e.value != e2) {
                   import orc.util.StringExtension._
-                  Logger.fine(s"${opt.name}: ${e.e.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
+                  Logger.fine(s"${opt.name}: ${e.value.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
                   countOptimization(opt)
-                  e2 in e.ctx
+                  e.replace(e.value ->> e2)
                 } else
                   e
             }
           })
-          e1.e
+          e1.value
         }
       }
     }
 
-    trans(e)
+    trans(e.toZipper())
   }
 
   import Optimizer._
 
-  // FIXME: Some inlining is occuring that makes code execute in the wrong terminator.
+  def newName(x: Variable) = {
+    new Variable(x.optionalName.map(_ + "i"))
+  }
+  
+  def renameVariables(e: Method.Z)(implicit mapping: Map[Variable, Variable]): Method = {
+    e.value ->> (e match {
+      case MethodCPS.Z(name, p, c, t, isDef, args, b) =>
+        val newArgs = args.map(newName)
+        val (newP, newC, newT) = (newName(p), newName(c), newName(t))
+        MethodCPS(mapping(name), newP, newC, newT, isDef, newArgs, renameVariables(b)(mapping + ((p, newP)) + ((c, newC)) + ((t, newT)) ++ (args zip newArgs)))
+      case MethodDirect.Z(name, isDef, args, b) =>
+        val newArgs = args.map(newName)
+        MethodDirect(mapping(name), isDef, newArgs, renameVariables(b)(mapping ++ (args zip newArgs)))
+    })
+  }
 
-  def renameVariables(e: Expr): Expr = {
-    // FIXME: This is a hack and really needs to be a deeper smarter process.
-    val cache = mutable.Map[Var, Var]()
-    val trans = new ContextualTransform.Pre {
-      override def onExpr = {
-        case LetIn(x, v, b) =>
-          val x1 = new Var(x.optionalVariableName.map(_ + "i"))
-          Logger.fine(s"Rebinding let var $x to $x1")
-          cache += ((x, x1))
-          Let(x1, v, b)
-      }
-      override def onVar = {
-        case (v: Var) in ctx =>
-          cache.getOrElse(v, v)
-      }
-    }
-    trans(e)
+  def renameVariables(e: Argument.Z)(implicit mapping: Map[Variable, Variable]): Argument = {
+    e.value ->> (e.value match {
+      case v: Variable =>
+        mapping.getOrElse(v, v)
+      case a =>
+        a
+    })
+  }
+
+  def renameVariables(e: Expression.Z)(implicit mapping: Map[Variable, Variable]): Expression = {
+    e.value ->> (e match {
+      case Let.Z(x, v, b) =>
+        val newX = newName(x)
+        Let(newX, renameVariables(v), renameVariables(b)(mapping + ((x, newX))))
+      case Continuation.Z(args, b) =>
+        val newArgs = args.map(newName)
+        Continuation(newArgs, renameVariables(b)(mapping ++ (args zip newArgs)))
+      case MethodDeclaration.Z(methods, b) =>
+        val newMethodNames = methods.map(m => newName(m.name))
+        val newMapping = mapping ++ (methods.map(_.name) zip newMethodNames)
+        val newMethods = methods.map(m => renameVariables(m)(newMapping))
+        MethodDeclaration(newMethods, renameVariables(b)(newMapping))
+      case a: Argument.Z =>
+        renameVariables(a)
+      case CallContinuation.Z(t, args) =>
+        CallContinuation(renameVariables(t), args.map(renameVariables))
+      case Force.Z(p, c, t, b, futs) =>
+        Force(renameVariables(p), renameVariables(c), renameVariables(t), b, futs.map(renameVariables))
+      case Sequence.Z(exprs) =>
+        Sequence(exprs.map(renameVariables))
+      case MethodCPSCall.Z(external, target, p, c, t, args) =>
+        MethodCPSCall(external, renameVariables(target), renameVariables(p), renameVariables(c), renameVariables(t), args.map(renameVariables))
+      case MethodDirectCall.Z(external, target, args) =>
+        MethodDirectCall(external, renameVariables(target), args.map(renameVariables))
+      case IfDef.Z(a, left, right) =>
+        IfDef(renameVariables(a), renameVariables(left), renameVariables(right))
+      case GetField.Z(o, f) =>
+        GetField(renameVariables(o), f)
+      case New.Z(bindings) =>
+        New(bindings.mapValues(renameVariables).view.force)
+      case Spawn.Z(c, t, comp) =>
+        Spawn(renameVariables(c), renameVariables(t), renameVariables(comp))
+      case NewTerminator.Z(t) =>
+        NewTerminator(renameVariables(t))
+      case Kill.Z(t) =>
+        Kill(renameVariables(t))
+      case TryOnKilled.Z(b, h) =>
+        TryOnKilled(renameVariables(b), renameVariables(h))
+
+      case NewCounter.Z(b, h) =>
+        NewCounter(renameVariables(b), renameVariables(h))
+      case Halt.Z(c) =>
+        Halt(renameVariables(c))
+      case SetDiscorporate.Z(c) =>
+        SetDiscorporate(renameVariables(c))
+      case TryOnHalted.Z(b, h) =>
+        TryOnHalted(renameVariables(b), renameVariables(h))
+      case TryFinally.Z(b, h) =>
+        TryFinally(renameVariables(b), renameVariables(h))
+
+      case SpawnBindFuture.Z(fut, c, t, comp) =>
+        SpawnBindFuture(renameVariables(fut), renameVariables(c), renameVariables(t), renameVariables(comp))
+      case f @ NewFuture.Z() =>
+        f.value
+    })
   }
 
   val letInlineThreshold = co.options.optimizationFlags("porc:let-inline-threshold").asInt(30)
   val letInlineCodeExpansionThreshold = co.options.optimizationFlags("porc:let-inline-expansion-threshold").asInt(30)
   val referenceThreshold = co.options.optimizationFlags("porc:let-inline-ref-threshold").asInt(5)
-
+  
   val InlineLet = OptFull("inline-let") { (expr, a) =>
     import a.ImplicitResults._
     expr match {
-      case LetIn(x in _, lam @ ContinuationIn(formal, _, impl), scope) =>
-        def size = Analysis.cost(impl)
+      case Let.Z(x, lam @ Continuation.Z(formals, impl), scope) =>
+        def size = Analysis.cost(impl.value)
         lazy val (noncompatReferences, compatReferences, compatCallsCost) = {
           var refs = 0
           var refsCompat = 0
           var callsCost = 0
-          (new ContextualTransform.Pre {
-            override def onVar = {
-              case `x` in _ =>
+          (new Transform {
+            override def onArgument = {
+              case Zipper(`x`, _) =>
                 refs += 1
                 x
             }
-            override def onValue = {
-              case `x` in _ =>
-                refs += 1
-                x
-            }
-            override def onExpr = {
-              case e @ (Call(`x`, _) in usectx) =>
-                if (usectx.compatibleFor(impl)(expr.ctx)) {
-                  refsCompat += 1
-                  callsCost += Analysis.cost(e)
-                } else {
-                  //Logger.finest(s"Incompatible call site for $x: ${e.e}")
-                }
-                e
-              case `x` in _ =>
-                refs += 1
-                x
+            override def onExpression = {
+              case e @ CallContinuation.Z(Zipper(`x`, _), _) =>
+                refsCompat += 1
+                callsCost += Analysis.cost(e.value)
+                e.value
+              case a: Argument.Z if onArgument.isDefinedAt(a) =>
+                onArgument(a)
             }
           })(scope)
           (refs - refsCompat, refsCompat, callsCost)
@@ -126,30 +180,33 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         val codeExpansion = compatReferences * size - compatCallsCost -
           (if (noncompatReferences == 0) size else 0)
 
-        def doInline(rename: Boolean) = new ContextualTransform.NonDescending {
-          override def onExpr = {
-            case Call(`x`, arg) in usectx if usectx.compatibleFor(impl)(expr.ctx) =>
-              val res = impl.substAll(Map((formal, arg)))
+        def doInline(rename: Boolean) = new Transform {
+          override def onExpression = {
+            case CallContinuation.Z(Zipper(`x`, _), args) =>
+              val res = impl.replace(impl.value.substAll((formals zip args.map(_.value)).toMap))
               if (rename)
-                renameVariables(res)
+                renameVariables(res)(Map[Variable, Variable]())
               else
-                res
+                res.value
           }
         }
 
         //Logger.finer(s"Attempting inline: $x: $compatReferences $noncompatReferences $compatCallsCost $size; $codeExpansion")
         if (compatReferences > 0 && codeExpansion <= letInlineCodeExpansionThreshold) {
           if (noncompatReferences > 0)
-            Some(Let(x, lam, doInline(true)(scope)))
+            Some(Let(x, lam.value, doInline(true)(scope)))
           else
             Some(doInline(compatReferences != 1)(scope))
         } else {
           None
         }
+      case Let.Z(x, Zipper(a: Argument, _), scope)=>
+        Some(scope.value.substAll(Map((x, a))))
       case e =>
         None
     }
   }
+  /*
 
   val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(30)
 
@@ -201,11 +258,8 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
    */
 
-  val allOpts = List(
-    VarLetElim, SpecializeSiteCall, InlineSpawn,
-    InlineLet, LetElim, DefElim, OnHaltedElim,
-    EtaReduce, EtaSpawnReduce)
-  // TODO: When can EtaSpawnReduce be used safely?
+*/
+  val allOpts = List[Optimization](InlineLet)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -213,15 +267,16 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 }
 
 object Optimizer {
+  /*
   object <::: {
-    def unapply(e: WithContext[PorcAST]) = e match {
+    def unapply(e: PorcAST.Z) = e match {
       case Sequence(l) in ctx if !l.isEmpty =>
         Some(Sequence(l.init) in ctx, l.last in ctx)
       case _ => None
     }
   }
   object :::> {
-    def unapply(e: WithContext[PorcAST]) = e match {
+    def unapply(e: PorcAST.Z) = e match {
       case Sequence(e :: l) in ctx =>
         Some(e in ctx, Sequence(l) in ctx)
       case _ => None
@@ -229,7 +284,7 @@ object Optimizer {
   }
 
   object LetStackIn {
-    def unapply(e: WithContext[PorcAST]): Some[(Seq[(Option[WithContext[Var]], WithContext[Expr])], WithContext[PorcAST])] = e match {
+    def unapply(e: PorcAST.Z): Some[(Seq[(Option[Var.Z], Expr.Z)], PorcAST.Z)] = e match {
       case LetIn(x, v, b) =>
         val LetStackIn(bindings, b1) = b
         Some(((Some(x), v) +: bindings, b1))
@@ -242,7 +297,7 @@ object Optimizer {
   }
 
   object LetStack {
-    def apply(bindings: Seq[(Option[WithContext[Var]], WithContext[Expr])], b: Expr) = {
+    def apply(bindings: Seq[(Option[Var.Z], Expr.Z)], b: Expr) = {
       bindings.foldRight(b)((bind, b) => {
         bind match {
           case (Some(x), v) =>
@@ -306,4 +361,5 @@ object Optimizer {
       case _ => None
     }
   }
+  */
 }

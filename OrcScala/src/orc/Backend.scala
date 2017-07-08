@@ -59,7 +59,7 @@ case object DistributedBackendType extends BackendType {
   */
 case object PorcCompilerBackend extends BackendType {
   override val toString = "porc"
-  override def newBackend(): Backend[orc.ast.porc.DefCPS] = {
+  override def newBackend(): Backend[orc.ast.porc.MethodCPS] = {
     ???
   }
 }
