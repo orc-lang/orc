@@ -15,7 +15,6 @@ import orc.compile._
 import orc.ast.orctimizer
 import orc.ast.porc
 import orc.error.compiletime.CompileLogger
-import orc.compile.tojava.PorcToJava
 
 /** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
   * and specifies that compilation will finish with named.
@@ -166,15 +165,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       }
   }
 
-  val porcToJava = new CompilerPhase[CompilerOptions, porc.DefCPS, String] {
-    val phaseName = "toJava"
-    override def apply(co: CompilerOptions) =
-      { ast =>
-        val translator = new PorcToJava()
-        translator(ast)
-      }
-  }
-
   val optimizePorc = new CompilerPhase[CompilerOptions, porc.DefCPS, porc.DefCPS] {
     import orc.ast.porc._
     val phaseName = "optimize"
@@ -260,7 +250,5 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       toPorc >>>
       outputIR(7) >>>
       optimizePorc >>>
-      outputIR(8) >>>
-      porcToJava >>>
-      outputIR(9)*/
+      outputIR(8)*/
 }

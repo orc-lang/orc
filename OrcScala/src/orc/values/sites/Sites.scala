@@ -24,8 +24,8 @@ import orc.types.Type
 import orc.types.Bot
 import orc.types.RecordType
 import orc.error.runtime.RightException
-import orc.run.tojava.HaltException
-import orc.run.tojava.ExceptionHaltException
+import orc.error.runtime.HaltException
+import orc.error.runtime.ExceptionHaltException
 import orc.util.ArrayExtensions._
 import orc.values.HasMembers
 import orc.error.runtime.UncallableValueException

@@ -59,7 +59,9 @@ case object DistributedBackendType extends BackendType {
   */
 case object PorcCompilerBackend extends BackendType {
   override val toString = "porc"
-  override def newBackend(): Backend[PorcBackend.CompiledOrcProgram] = new PorcBackend()
+  override def newBackend(): Backend[orc.ast.porc.DefCPS] = {
+    ???
+  }
 }
 
 /** This represents an abstract Orc compiler. It generates an opaque code object that can be

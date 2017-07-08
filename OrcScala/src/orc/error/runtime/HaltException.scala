@@ -1,6 +1,8 @@
 //
-// Exceptions.scala -- Exceptions for use in the toJava runtime
+// HaltException.scala -- Scala exception HaltException
 // Project OrcScala
+//
+// Created by amp in 2016.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
@@ -9,14 +11,14 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.tojava
+package orc.error.runtime
 
-/** Notify the enclosing code that this direct form Orc code has halted.
+/** Notify the enclosing code that a direct Orc call has halted
   */
 class HaltException() extends RuntimeException() {
 }
 
-/** Notify the enclosing code that this direct form Orc code has halted due to an expected exception in the Java code.
+/** Notify the enclosing code that a direct Orc call has halted due to an expected exception in the Java code.
   */
 class ExceptionHaltException(e: Throwable) extends HaltException {
   initCause(e)
@@ -32,20 +34,4 @@ object HaltException {
    */
 
   final def throwIt() = throw SINGLETON
-}
-
-/** Notify the enclosing code that this Orc code has been killed.
-  *
-  * This is thrown by checkLive() and caught in Trim implementations.
-  */
-final class KilledException extends RuntimeException
-
-object KilledException {
-  /** A singleton instance of KilledException to avoid allocation.
-    */
-  val SINGLETON = new KilledException
-  /* NOTE: Using a singleton is the "right thing" for performance,
-   * however it makes the stacks wrong. You can change this to a def
-   * to get the stacks right.
-   */
 }
