@@ -14,7 +14,6 @@
 package orc.run.porce.runtime
 
 import orc.Schedulable
-import orc.run.Logger
 import orc.error.runtime.HaltException
 
 /** A Schedulable which manages Context spawn/halt counting automatically.

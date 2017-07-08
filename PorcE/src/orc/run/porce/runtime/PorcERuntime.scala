@@ -23,7 +23,7 @@ import orc.run.extensions.SupportForSynchronousExecution
 class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   with StandardInvocationBehavior
   // with SupportForPorcEClosure
-  with OrcWithWorkStealingScheduler
+  with PorcEWithWorkStealingScheduler
   with SupportForRwait
   with SupportForSynchronousExecution
   with PorcERuntimeOperations {

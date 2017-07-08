@@ -46,6 +46,7 @@ object Counter {
   }
 
   @elidable(elidable.ASSERTION)
+  @TruffleBoundary
   def addCounter(c: Counter) = {
     if (Logger.julLogger.isLoggable(Level.FINE)) {
       liveCounters.add(c)
@@ -53,6 +54,7 @@ object Counter {
   }
 
   @elidable(elidable.ASSERTION)
+  @TruffleBoundary
   def removeCounter(c: Counter) = {
     if (Logger.julLogger.isLoggable(Level.FINE)) {
       liveCounters.remove(c)
@@ -109,13 +111,15 @@ abstract class Counter {
     */
   def halt(): Unit = {
     val n = count.decrementAndGet()
+    /*
     logChange(s"- Down to $n")
-    /*if (n < 0) {
+    if (n < 0) {
       Counter.report()
-    }*/
+    }
     assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
+    */
     if (n == 0) {
-      Counter.removeCounter(this)
+      // Counter.removeCounter(this)
       onContextHalted()
     }
   }
@@ -124,11 +128,13 @@ abstract class Counter {
     */
   def prepareSpawn(): Unit = {
     val n = count.getAndIncrement()
+    /*
     logChange(s"+ Up from $n")
     if (n <= 0) {
       Counter.report()
     }
     assert(n > 0, s"Spawning is not allowed once we go to zero count. No zombies allowed!!! $this")
+    */
   }
 
   /** Called when this whole context has halted.

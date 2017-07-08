@@ -16,6 +16,7 @@ package orc.run.porce.runtime
 import java.util.concurrent.atomic.AtomicReference
 import scala.collection.JavaConverters._
 import scala.collection.convert.ImplicitConversions._
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 trait Terminatable {
   /** Kill this terminatable.
@@ -33,6 +34,7 @@ class Terminator extends Terminatable {
   // FIXME: children can theoretically grow without bound. We need to actually remove the children when they are gone.
   private[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
 
+  @TruffleBoundary(allowInlining=true)
   def addChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig == null) {

@@ -12,11 +12,11 @@
 package orc.run.porce.runtime
 
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
-import orc.run.Logger
 import orc.FutureReadHandle
 import orc.FutureBound
 import orc.FutureStopped
 import orc.FutureUnbound
+import orc.run.porce.Logger
 
 /** Join a number of futures by blocking on all of them simultaneously.
   *
