@@ -382,7 +382,7 @@ object OrcXML {
       case false => <false/>
       case orc.values.Signal => <signal/>
       case orc.values.Field(s) => <field>{ s }</field>
-      // TODO: Reinstate this support. case x: orc.values.sites.JavaClassProxy => <jclassproxy>{ x.name }</jclassproxy>
+      case x: java.lang.Class[_] => <jclass>{ x.getCanonicalName() }</jclass>
       case x: orc.values.sites.Site =>
         <site>{ strip$(a.asInstanceOf[AnyRef].getClass().getName) }</site>
       case _ => throw new AssertionError("Could not serialize value " + a.toString + " to XML.")
@@ -404,7 +404,7 @@ object OrcXML {
       case <signal/> => orc.values.Signal
       case <field>{ s @ _* }</field> => orc.values.Field(s.text.trim)
       case <nil/> => null
-      case <jclassproxy>{ x @ _* }</jclassproxy> =>
+      case <jclass>{ x @ _* }</jclass> =>
         orc.values.sites.JavaSiteForm.resolve(x.text.trim)
       case <site>{ c @ _* }</site> => {
         orc.values.sites.OrcSiteForm.resolve(c.text.trim)

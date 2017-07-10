@@ -166,7 +166,7 @@
       <xs:element name="signal" />
       <xs:element name="field" type="xs:string" />
       <xs:element name="nil" />
-      <xs:element name="jclassproxy" type="xs:string" />
+      <xs:element name="jclass" type="xs:string" />
       <xs:element name="site" type="xs:string" />
     </xs:choice>
   </xs:group>

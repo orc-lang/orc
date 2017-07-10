@@ -23,7 +23,7 @@ import orc.compile.Logger
   */
 object JavaSiteForm extends SiteForm {
   @throws(classOf[SiteResolutionException])
-  def resolve(name: String) = {
+  def resolve(name: String): Class[_] = {
     Logger.finer("Resolving Java class " + name)
     try {
       loadClass(name)
