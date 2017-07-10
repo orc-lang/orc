@@ -26,6 +26,9 @@ import orc.ast.hasAutomaticVariableName
 import orc.ast.AST
 import orc.ast.Positioned
 import orc.compile.Logger
+import orc.compile.optimize.FractionDefs
+import orc.compile.Logger
+import com.sun.xml.internal.bind.v2.model.core.ClassInfo
 
 /** This class contains all the information needed to generate an instance of a class.
   *
@@ -35,99 +38,100 @@ import orc.compile.Logger
   *
   * This does not contain the linearization for a class. However, the linearization
   * can be computed from a set of ClassInfos for all the classes involved.
+  *
+  * @param name The name of the class. This will be a generated name for synthetic classes.
+  * @param superclasses The sequence of parents of this class. This is only direct superclasses.
+  * @param abstractMembers The names of all abstract members in this class mapped to their types. This does not include members defined in superclasses.
+  * @param concreteMembers The names of all concrete members in this class mapped to their bodies. The body must have an explicit type. This does not include members defined in superclasses.
+  * @param classLiteral The class literal containing all the listed abstract and concrete members. If this is None then there may not be any members defined in this class.
+  *
+  * @param typeName The type name for nominal references to the class.
+  * @param partialConstructorName The name of the partial constructor def. This will take two arguments, self and super, plus any free variables.
+  * @param partialConstructorPlaceholderName The name of the partial constructor placeholder. This will be eliminated as the compilation progresses. This will take two arguments, self and super.
+  * @param constructorName The name of the overall constructor def. This will take no arguments other than free variables.
+  * @param constructorPlaceholderName The name of the overall constructor placeholder. This will be eliminated as the compilation progresses. This will take no arguments other than free variables.
+  *
   */
-trait ClassBasicInfo extends Positioned {
-  this: Product =>
+class ClassInfo private (
+  val name: String,
+  val superclasses: Seq[String],
+  val abstractMembers: Seq[Field],
+  val concreteMembers: Seq[Field],
+  val classLiteral: Option[ext.ClassLiteral],
+  val capturedVariables: Option[Seq[BoundVar]] = None)(
+    val typeName: BoundTypevar = new BoundTypevar(Some(name)),
+    val partialConstructorName: BoundVar = new BoundVar(Some(s"$$partialConstructor$$$name")),
+    val partialConstructorPlaceholderName: BoundVar = new BoundVar(Some(s"placeholder$$partialConstructor$$$name")),
+    val constructorName: BoundVar = new BoundVar(Some(s"$$constructor$$$name")),
+    val constructorPlaceholderName: BoundVar = new BoundVar(Some(s"placeholder$$constructor$$$name")))
+  extends Positioned {
 
-  /** The name of the class.
-    *
-    * This will be a generated name for synthetic classes.
-    */
-  def name: String
-
-  /** The type name for nominal references to the class
-    */
-  val typeName: BoundTypevar = new BoundTypevar(Some(name))
-
-  /** The name of the partial constructor def.
-    *
-    * This will take two arguments: self and super.
-    */
-  val partialConstructorName: BoundVar = new BoundVar(Some(s"$$partialConstructor$$$name"))
-
-  /** The name of the overall constructor def.
-    *
-    * This will take no arguments.
-    */
-  val constructorName: BoundVar = new BoundVar(Some(s"$$constructor$$$name"))
-
-  /** The sequence of parents of this class.
-    *
-    * This is only direct superclasses.
-    */
-  val superclasses: List[String]
-
-  /** The names of all abstract members in this class mapped to their types.
-    *
-    * This does not include members defined in superclasses.
-    */
-  val abstractMembers: List[Field]
-
-  /** The names of all concrete members in this class mapped to their bodies.
-    *
-    * The body must have an explicit type. This does not include members defined in superclasses.
-    */
-  val concreteMembers: List[Field]
-
-  /** The class literal containing all the listed abstract and concrete members.
-    *
-    * If this is None then there may not be any members defined in this class.
-    */
-  val classLiteral: Option[ext.ClassLiteral]
+  def unplaceholder(v: BoundVar) = {
+    if (v == constructorPlaceholderName) {
+      constructorName
+    } else if (v == partialConstructorPlaceholderName) {
+      partialConstructorName
+    } else {
+      throw new IllegalArgumentException(v.toString())
+    }
+  }
 
   require(if (classLiteral.isEmpty) abstractMembers.isEmpty && concreteMembers.isEmpty else true,
     "If classLiteral is not provided then there may not be any members")
 
-  def copy(superclasses: List[String] = superclasses, abstractMembers: List[Field] = abstractMembers, concreteMembers: List[Field] = concreteMembers, classLiteral: Option[ext.ClassLiteral] = classLiteral): ClassBasicInfo
+  fillSourceTextRange(classLiteral.flatMap(_.sourceTextRange))
 
-  override def toString(): String = s"$productPrefix($name, $superclasses, ...)"
+  override def toString(): String = s"ClassInfo($name, $superclasses, ..., $capturedVariables)"
+
+  override def hashCode(): Int = name.## ^ superclasses.## ^ abstractMembers.## ^ concreteMembers.## ^ classLiteral.## ^ capturedVariables.##
+  override def equals(o: Any) = o match {
+    case ClassInfo(`name`, `superclasses`, `abstractMembers`, `concreteMembers`, `classLiteral`, `capturedVariables`) => true
+    case _ => false
+  }
+
+  def copy(superclasses: Seq[String] = this.superclasses,
+    abstractMembers: Seq[Field] = this.abstractMembers,
+    concreteMembers: Seq[Field] = this.concreteMembers,
+    classLiteral: Option[ext.ClassLiteral] = this.classLiteral,
+    capturedVariables: Option[Seq[BoundVar]] = this.capturedVariables) = {
+    new ClassInfo(
+      name, superclasses, abstractMembers, concreteMembers, classLiteral, capturedVariables)(
+      typeName, partialConstructorName, partialConstructorPlaceholderName, constructorName, constructorPlaceholderName)
+  }
 }
 
-object ClassBasicInfo {
-  def apply(name: Option[String], superclasses: List[String], abstractMembers: List[Field], concreteMembers: List[Field], classLiteral: Option[ext.ClassLiteral]) = {
-    name match {
-      case Some(n) =>
-        ClassInfo(n, superclasses, abstractMembers, concreteMembers, classLiteral)
-      case None =>
-        AnonymousClassInfo(superclasses, abstractMembers, concreteMembers, classLiteral)
+object ClassInfo {
+  def apply(
+    name: String,
+    superclasses: Seq[String],
+    abstractMembers: Seq[Field],
+    concreteMembers: Seq[Field],
+    classLiteral: Option[ext.ClassLiteral],
+    capturedVariables: Option[Seq[BoundVar]] = None) = {
+    new ClassInfo(name, superclasses, abstractMembers, concreteMembers, classLiteral, capturedVariables)()
+  }
+
+  def unapply(info: ClassInfo): Option[(String, Seq[String], Seq[Field], Seq[Field], Option[ext.ClassLiteral], Option[Seq[BoundVar]])] = {
+    if (info != null) {
+      Some((info.name, info.superclasses, info.abstractMembers, info.concreteMembers, info.classLiteral, info.capturedVariables))
+    } else {
+      None
     }
   }
 }
 
-case class AnonymousClassInfo(superclasses: List[String], abstractMembers: List[Field], concreteMembers: List[Field], classLiteral: Option[ext.ClassLiteral]) extends ClassBasicInfo {
-  lazy val name = hasAutomaticVariableName.getNextVariableName("syncls")
-
-  def copy(superclasses: List[String] = superclasses, abstractMembers: List[Field] = abstractMembers, concreteMembers: List[Field] = concreteMembers, classLiteral: Option[ext.ClassLiteral] = classLiteral) = {
-    AnonymousClassInfo(superclasses, abstractMembers, concreteMembers, classLiteral)
-  }
-
-  fillSourceTextRange(classLiteral.flatMap(_.sourceTextRange))
-}
-case class ClassInfo(name: String, superclasses: List[String], abstractMembers: List[Field], concreteMembers: List[Field], classLiteral: Option[ext.ClassLiteral]) extends ClassBasicInfo {
-  def copy(superclasses: List[String] = superclasses, abstractMembers: List[Field] = abstractMembers, concreteMembers: List[Field] = concreteMembers, classLiteral: Option[ext.ClassLiteral] = classLiteral) = {
-    ClassInfo(name, superclasses, abstractMembers, concreteMembers, classLiteral)
-  }
-
-  fillSourceTextRange(classLiteral.flatMap(_.sourceTextRange))
-}
-
 /** Helper functions for class conversion
+  *
   * @author amp
   */
 case class ClassForms(val translator: Translator) {
   import translator._
 
-  def uniqueField(kind: String) = {
+  def syntheticName() = {
+    hasAutomaticVariableName.getNextVariableName("syncls")
+  }
+
+  private def uniqueField(kind: String) = {
     Field(hasAutomaticVariableName.getNextVariableName(kind))
   }
 
@@ -137,7 +141,7 @@ case class ClassForms(val translator: Translator) {
     * classes. The returned set must include all classes needed to generate the linearization.
     *
     */
-  def makeClassInfos(clss: Iterable[ext.ClassDeclaration])(implicit ctx: TranslatorContext): Set[ClassBasicInfo] = {
+  def makeClassInfos(clss: Iterable[ext.ClassDeclaration])(implicit ctx: TranslatorContext): Set[ClassInfo] = {
     clss.flatMap(cls => {
       val (c, ecs) = classForms.makeClassInfo(cls.classExpression, Some(cls.name))
       // Force this class to have the location of the declaration instead of the location of the class literal.
@@ -152,10 +156,10 @@ case class ClassForms(val translator: Translator) {
     *
     * name is set on the root class info if name is provided. Otherwise the returned class info is synthetic.
     */
-  def makeClassInfo(e: ext.ClassExpression, name: Option[String] = None)(implicit ctx: TranslatorContext): (ClassBasicInfo, Set[ClassBasicInfo]) = {
+  private def makeClassInfo(e: ext.ClassExpression, name: Option[String] = None)(implicit ctx: TranslatorContext): (ClassInfo, Set[ClassInfo]) = {
     e match {
       case ext.ClassVariable(n) =>
-        def getAllClasses(n: String): Set[ClassBasicInfo] = {
+        def getAllClasses(n: String): Set[ClassInfo] = {
           ctx.classContext(n).superclasses.flatMap(getAllClasses).toSet
         }
         val cls = ctx.classContext(n)
@@ -163,6 +167,7 @@ case class ClassForms(val translator: Translator) {
       case cl @ ext.ClassLiteral(thisname, decls) => {
         var abstractMembers = List[Field]()
         var concreteMembers = List[Field]()
+        var freeVars = List[BoundVar]()
         def processDecls(ds: Seq[ext.Declaration]): Unit = ds match {
           // NOTE: The first two cases are optimizations. The third case also covers them, but also introduces extra fields.
           case ext.Val(ext.VariablePattern(x), f) +: rest => {
@@ -208,7 +213,7 @@ case class ClassForms(val translator: Translator) {
 
         processDecls(decls)
 
-        (ClassBasicInfo(name, List(), abstractMembers, concreteMembers, Some(cl)), Set())
+        (ClassInfo(name.getOrElse(syntheticName()), List(), abstractMembers, concreteMembers, Some(cl)), Set())
       }
       case ext.ClassSubclassLiteral(ext.ClassMixins(ss @ _*), b) => {
         val (sns, sec) = ss.map(getClassName(_)).unzip
@@ -224,12 +229,12 @@ case class ClassForms(val translator: Translator) {
       }
       case ext.ClassMixins(cs @ _*) => {
         val (rn, rec) = cs.map(getClassName(_)).unzip
-        (ClassBasicInfo(name, List(rn: _*), List(), List(), None), rec.flatten.toSet)
+        (ClassInfo(name.getOrElse(syntheticName()), List(rn: _*), List(), List(), None), rec.flatten.toSet)
       }
     }
   }
 
-  def getClassName(e: ext.ClassExpression, name: Option[String] = None)(implicit ctx: TranslatorContext): (String, Set[ClassBasicInfo]) = {
+  private def getClassName(e: ext.ClassExpression, name: Option[String] = None)(implicit ctx: TranslatorContext): (String, Set[ClassInfo]) = {
     e match {
       case ext.ClassVariable(n) if ctx.classContext contains n =>
         (ctx.classContext(n).name, Set())
@@ -241,39 +246,45 @@ case class ClassForms(val translator: Translator) {
     }
   }
 
-  def getMembers(cls: ClassBasicInfo)(implicit ctx: TranslatorContext): (Set[Field], Set[Field]) = {
+  private def getMembers(cls: ClassInfo)(implicit ctx: TranslatorContext): (Set[Field], Set[Field]) = {
     val lin = generateLinearization(cls)
     getMembers(lin)
   }
 
-  def getMembers(lin: List[ClassBasicInfo])(implicit ctx: TranslatorContext): (Set[Field], Set[Field]) = {
+  private def getMembers(lin: Seq[ClassInfo])(implicit ctx: TranslatorContext): (Set[Field], Set[Field]) = {
     val allConcreteMembers = lin.flatMap(_.concreteMembers).toSet
     val allAbstractMembers = lin.flatMap(_.abstractMembers).toSet -- allConcreteMembers
     (allConcreteMembers, allAbstractMembers)
   }
 
-  def isAbstract(cls: ClassBasicInfo)(implicit ctx: TranslatorContext): Boolean = {
+  private def isAbstract(cls: ClassInfo)(implicit ctx: TranslatorContext): Boolean = {
     val (_, allAbstractMembers) = getMembers(cls)
     allAbstractMembers.nonEmpty
   }
 
+  // FIXME: Either inline the constructor at every construction site or lift the free variables of all the
+  //        classes (which are passed as arguments to the partial constructors) as arguments of the
+  //        constructor and pass them from the construction site.
+
   /** Build the constructor for the given class.
     *
-    * All it's super classes must be in ctx.
+    * All its super classes must be in ctx.
     *
     * For each concrete class declaration C with linearization L = A1, ..., An, C generate a function:
-    * def newC(): C = new self: C {
-    * partialObject = buildObject(self)
-    * partialA1 = buildA1(self, partialObject)
-    * partialA2 = buildA2(self, partialA1)
+    * def constructorC(): C = new self: C {
+    * partialObject = partialConstructorObject(self)
+    * partialA1 = partialConstructorA1(self, partialObject)
+    * partialA2 = partialConstructorA2(self, partialA1)
     * ...
-    * partialAn = buildAn(self, partialAn-1)
-    * partialC = buildC(self, partialAn)
+    * partialAn = partialConstructorAn(self, partialAn-1)
+    * partialC = partialConstructorC(self, partialAn)
     * x = partialC.x for each field in partialC
     * }
     * This is a truly recursive object which ties together all the partials into a chain in linearization order.
+    *
+    * The generated function requires patching for closure lifting.
     */
-  def generateConstructor(cls: ClassBasicInfo)(implicit ctx: TranslatorContext): Option[Def] = {
+  private def generateConstructor(cls: ClassInfo)(implicit ctx: TranslatorContext): Option[Def] = {
     try {
       val lin = generateLinearization(cls)
 
@@ -308,7 +319,7 @@ case class ClassForms(val translator: Translator) {
             val superRef = generateForwardingObject(new BoundVar(), None, Seq(), concreteFields, Some(IntersectionType(types)))
             val partialConstructorCall =
               Graft(x, superRef,
-                Call(cls.partialConstructorName, List(self, x), Some(List())))
+                Call(cls.partialConstructorPlaceholderName, List(self, x), Some(List())))
             val clsPartialField = partialField(cls.name)
             state.copy(concreteFields = concreteFields ++ cls.concreteMembers.map(_ -> clsPartialField),
               partials = (clsPartialField, partialConstructorCall) +: partials,
@@ -324,7 +335,7 @@ case class ClassForms(val translator: Translator) {
         val argtypes = Some(List())
         val returntype = Some(cls.typeName)
 
-        val d = Def(cls.constructorName, formals, body, typeformals, argtypes, returntype)
+        val d = Def(cls.constructorPlaceholderName, formals, body, typeformals, argtypes, returntype)
         Some(d)
       } else {
         // There are abstract members so there is no constructor.
@@ -337,7 +348,7 @@ case class ClassForms(val translator: Translator) {
     }
   }
 
-  def makeForwardingField(self: Argument, partial: Field, f: Field) = {
+  private def makeForwardingField(self: Argument, partial: Field, f: Field) = {
     val x = new BoundVar()
     val extraction: Expression = FieldAccess(self, partial) > x > FieldAccess(x, f)
     (f, extraction)
@@ -346,7 +357,7 @@ case class ClassForms(val translator: Translator) {
   /** Generate the C3 linearization of cls based on ctx.
     *
     */
-  def generateLinearization(cls: ClassBasicInfo)(implicit ctx: TranslatorContext): List[ClassBasicInfo] = {
+  private def generateLinearization(cls: ClassInfo)(implicit ctx: TranslatorContext): Seq[ClassInfo] = {
     // TODO: This has to totally recompute all linearizations ever time.
 
     /** A cache of linearizations which serves to break cycles.
@@ -356,15 +367,15 @@ case class ClassForms(val translator: Translator) {
       *
       * This may also improve performance, but that's not the goals.
       */
-    val linearizationCache = new mutable.HashMap[ClassBasicInfo, Option[List[ClassBasicInfo]]]()
+    val linearizationCache = new mutable.HashMap[ClassInfo, Option[Seq[ClassInfo]]]()
 
     /** Generate the C3 linearization of cls based on ctx.
       *
       */
     @throws[ConflictingOrderException]
     @throws[CyclicInheritanceException]
-    def genLin(cls: ClassBasicInfo)(implicit ctx: TranslatorContext): List[ClassBasicInfo] = {
-      def merge(orders: List[List[ClassBasicInfo]]): List[ClassBasicInfo] = {
+    def genLin(cls: ClassInfo)(implicit ctx: TranslatorContext): Seq[ClassInfo] = {
+      def merge(orders: Seq[Seq[ClassInfo]]): Seq[ClassInfo] = {
         Logger.finest(s"Linearizing: (${cls.name}) Merging ${orders.map(_.map(_.name))}")
         orders match {
           case List() => List()
@@ -372,7 +383,7 @@ case class ClassForms(val translator: Translator) {
           case orders => {
             val heads = orders.map(_.head)
             val tails = orders.flatMap(_.tail).toSet
-            def goodCandidate(c: ClassBasicInfo): Boolean = !tails.contains(c)
+            def goodCandidate(c: ClassInfo): Boolean = !tails.contains(c)
             heads.find(goodCandidate) match {
               case None =>
                 throw (ConflictingOrderException(orders.map(_.map(_.name))) at cls)
@@ -395,7 +406,7 @@ case class ClassForms(val translator: Translator) {
               None
             }
           }
-          val superLins = supers.toList.map(genLin(_))
+          val superLins = supers.toSeq.map(genLin(_))
           val res = merge(superLins :+ (cls +: supers))
           linearizationCache += cls -> Some(res)
           res
@@ -410,7 +421,7 @@ case class ClassForms(val translator: Translator) {
     genLin(cls)
   }
 
-  def makePartialObject(self: BoundVar): New = {
+  private def makePartialObject(self: BoundVar): New = {
     New(new BoundVar, Some(StructuralType(Map())), Map(), Some(StructuralType(Map())))
   }
 
@@ -418,17 +429,19 @@ case class ClassForms(val translator: Translator) {
     *
     * For a "class C extends B { decls }" definition generate a function:
     *
-    * def buildC(self: C, super: B): C = new _: C { decls ... }
+    * def partialConstructorC(self: C, super: B): C = new _: C { decls ... }
     * (decls will include forwarding declarations for any non-overridden values from B.)
     *
     * The decls will use the self argument as their self instead of the actual object being
     * built. In fact this record construction is not recursive which could be advantageous
     * for optimizations. super is used for any super references in the declarations.
+    *
+    * The generated function requires patching for closure lifting.
     */
-  def generatePartialConstructor(cls: ClassBasicInfo)(implicit ctx: TranslatorContext): Def = {
+  private def generatePartialConstructor(cls: ClassInfo)(implicit ctx: TranslatorContext): Def = {
     val (allConcreteMembers, allAbstractMembers) = getMembers(cls)
     val literal = cls.classLiteral.getOrElse(ext.ClassLiteral(None, List()))
-    val (selfRef, superRef, privateRef, fields) = convertClassLiteral(literal, (allConcreteMembers ++ allAbstractMembers).map(_.field))
+    val (selfRef, superRef, privateRef, fields) = convertClassLiteral(literal, (allConcreteMembers ++ allAbstractMembers).map(_.name))
     val forwardedFields = allConcreteMembers -- fields.keys
     val forwards = forwardedFields.map(f => (f, FieldAccess(superRef, f)))
 
@@ -441,7 +454,7 @@ case class ClassForms(val translator: Translator) {
       New(privateRef, None, fields ++ forwards, Some(selfType))
     }
 
-    // TODO: TYPECHECKER: Replace superType with Union supertype concrete member sets.
+    // TODO: TYPECHECKER: Replace superType with Union of supertype concrete member sets.
     val superType = cls.superclasses.flatMap(c => ctx.classContext.get(c).map(_.typeName: Type)).reduceOption(IntersectionType(_, _)).getOrElse(Top())
 
     val formals = List(selfRef, superRef)
@@ -449,7 +462,7 @@ case class ClassForms(val translator: Translator) {
     val argtypes = Some(List(selfType, superType))
     val returntype = Some(selfType)
 
-    val d = Def(cls.partialConstructorName, formals, body, typeformals, argtypes, returntype)
+    val d = Def(cls.partialConstructorPlaceholderName, formals, body, typeformals, argtypes, returntype)
     d
   }
 
@@ -457,7 +470,7 @@ case class ClassForms(val translator: Translator) {
     *
     * Return the BoundVar for this and the mapping of fields to expressions.
     */
-  def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit ctx: TranslatorContext): (BoundVar, BoundVar, BoundVar, Map[Field, Expression]) = {
+  private def convertClassLiteral(lit: ext.ClassLiteral, fieldNames: Set[String])(implicit ctx: TranslatorContext): (BoundVar, BoundVar, BoundVar, Map[Field, Expression]) = {
     import ctx._
 
     val thisName = lit.thisname.getOrElse("this")
@@ -477,6 +490,7 @@ case class ClassForms(val translator: Translator) {
         (Field(x), Some(convert(f)(newCtx))) +: convertFields(rest)
       case ext.Val(ext.TypedPattern(ext.VariablePattern(x), t), f) +: rest =>
         (Field(x), Some(HasType(convert(f)(newCtx), convertType(t)))) +: convertFields(rest)
+
       case ext.Val(p, f) +: rest =>
         val tmpField = uniqueField("pattmp")
         // FIXME: Is it a problem if the same variable is bound in multiple subtrees? We can just call convertPattern with different bridges or modify
@@ -526,6 +540,7 @@ case class ClassForms(val translator: Translator) {
     }
 
     val newbindings = convertFields(lit.decls).collect({ case (f, Some(e)) => (f, e) }).toMap.mapValues(desugarMembers.apply)
+
     (thisVar, superVar, privateVar, Map() ++ newbindings)
   }
 
@@ -541,9 +556,9 @@ case class ClassForms(val translator: Translator) {
   }
 
   /** Extend the provided context with class information.
-   *
-   */
-  def makeClassContext(clss: Set[ClassBasicInfo])(implicit ctx: TranslatorContext): TranslatorContext = {
+    *
+    */
+  def makeClassContext(clss: Set[ClassInfo])(implicit ctx: TranslatorContext): TranslatorContext = {
     // This intermediate context is needed since isAbstract requires a context with all superclasses of the class we want to check.
     val tmpCtx = clss.foldLeft(ctx)((c, cls) => c.copy(classContext = c.classContext + (cls.name -> cls)))
     val newCtx = clss.foldLeft(ctx)((newCtx, cls) => {
@@ -558,31 +573,107 @@ case class ClassForms(val translator: Translator) {
     newCtx
   }
 
-  /** Create the class declarations and return them in order.
-   *
-   *  The provided context must already have the classes in clss (See makeClassContext).
-   */
-  def makeClassDeclarations(clss: Set[ClassBasicInfo])(implicit ctx: TranslatorContext): (List[Callable], List[(BoundTypevar, Type)]) = {
-    val clssOrdered = orderBySubclassing(clss.toList).toList
-    val defs = clssOrdered.flatMap(generateConstructor(_)) ++ clssOrdered.map(generatePartialConstructor(_))
-    //val core: Expression = DeclareCallables(defs, bodyFunc(ctx))
-    val types = clssOrdered map { (cls) =>
-      val lin = generateLinearization(cls)
-      val superTypes = lin.tail.map(_.typeName)
-      // TODO: TYPECHECKER: This types all the members are not put in place here. They are not available in ClassInfo. They probably need to be.
-      val addedMembers = (cls.concreteMembers ++ cls.abstractMembers).map((_, Top())).toMap
-      val clsType = NominalType(IntersectionType(StructuralType(addedMembers) +: superTypes))
-      (cls.typeName, clsType)
+  private def patchCalls(implicit ctx: TranslatorContext) = new NamedASTTransform {
+    override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = {
+      // Patch calls for which the context contains a placeholder with defined captured variable information.
+      case Call(target: BoundVar, args, targs) if ctx.classesByPlaceholder.contains(target) && ctx.classesByPlaceholder(target).capturedVariables.isDefined =>
+        val info = ctx.classesByPlaceholder(target)
+        Call(info.unplaceholder(target), (info.capturedVariables.get ++ args).toList, targs)
     }
-    (defs, types)
   }
 
-  def makeClassDeclarationExpression(clss: Set[ClassBasicInfo])(bodyFunc: TranslatorContext => Expression)(implicit ctx: TranslatorContext): Expression = {
-    val newCtx = classForms.makeClassContext(clss)(ctx)
-    val (newDefs, newTypes) = classForms.makeClassDeclarations(clss)(newCtx)
+  private def patchDef(implicit ctx: TranslatorContext) = (d: Callable) => d match {
+    case Def(name, formals, body, typeformals, argtypes, returntype) =>
+      assert(ctx.classesByPlaceholder.contains(name))
+      val info = ctx.classesByPlaceholder(name)
+      assert(info.capturedVariables.isDefined)
+      val captured = info.capturedVariables.get
+      val addArgs = captured.map(v => new BoundVar(v.optionalVariableName.map(_ + "_lifted")))
+      val newBody = (addArgs zip captured).foldLeft(body) { (e, substPair) =>
+        val (a, x) = substPair
+        assert(a != x)
+        e.subst(a, x)
+      }
 
-    val core = DeclareCallables(newDefs, bodyFunc(newCtx))
-    newTypes.foldRight(core : Expression) { (p, acc) =>
+      // FIXME: We have a problem here since the types of the closed variables are not known.
+      d ->> Def(info.unplaceholder(name), (addArgs ++ formals).toList, newBody, typeformals, argtypes, returntype)
+    case d => d
+  }
+
+  /** Create the class declarations and return them in order.
+    *
+    * The provided context must already have the classes in clss (See makeClassContext).
+    */
+  def makeClassDeclarations(clss: Set[ClassInfo])(implicit ctx: TranslatorContext): (List[Callable], List[(BoundTypevar, Type)], TranslatorContext) = {
+    if (clss.nonEmpty) {
+      val clssOrdered = orderBySubclassing(clss.toList).toList
+      val defs = clssOrdered.flatMap(generateConstructor(_)) ++ clssOrdered.map(generatePartialConstructor(_))
+
+      val groups = FractionDefs.fraction(defs)
+      val closedVariablesByGroup = groups.foldLeft(Map[List[Callable], Set[BoundVar]]()) { (soFar, g) =>
+        // Find all the values closed over by the defs
+        val direct = g.flatMap(_.freevars).toSet
+        // Find any transitively closed values (within this class def set only)
+        val indirectLocal = soFar.filter(p => direct.exists(d => p._1.exists(_.name == d))).values.flatten.toSet
+        // Find any transitively closed values (from the context)
+        val indirectContext = direct.flatMap(v => ctx.classesByPlaceholder.get(v).flatMap(_.capturedVariables).getOrElse(Seq()))
+        // Combine the direct and indirect
+        val closed = direct ++ indirectLocal ++ indirectContext
+
+        soFar + (g -> closed)
+      }
+
+      val closedVariables = closedVariablesByGroup.flatMap(p => p._1.map(c => (c.name, p._2.toList)))
+
+      val newCtx = ctx.copy(classContext = {
+        val classPlaceholders = (ctx.classContext.values ++ clss).flatMap(i => Seq(i.constructorPlaceholderName, i.partialConstructorPlaceholderName))
+        ctx.classContext.mapValues({ i =>
+          if (clss.contains(i)) {
+            val constructorClosed = closedVariables.getOrElse(i.constructorPlaceholderName, Seq())
+            val partialClosed = closedVariables(i.partialConstructorPlaceholderName)
+            val closed = partialClosed.toSet ++ constructorClosed -- classPlaceholders
+            i.copy(capturedVariables = Some(closed.toSeq))
+          } else {
+            i
+          }
+        }).view.force
+      })
+
+      {
+        implicit val ctx = newCtx
+
+        Logger.fine(s"Class context with captures:\n${newCtx.classContext}\n${newCtx.classesByPlaceholder}")
+
+        val patchCallsTrans = patchCalls(newCtx)
+
+        // Patch all calls to provide the closed variables
+        val defsPatched1 = defs.map(patchCallsTrans(_))
+
+        // Patch the definitions to include and use the closed variables
+        val defsPatched2 = defsPatched1.map(patchDef(newCtx))
+
+        val types = clssOrdered map { (cls) =>
+          val lin = generateLinearization(cls)
+          val superTypes = lin.tail.map(_.typeName)
+          // TODO: TYPECHECKER: This types all the members are not put in place here. They are not available in ClassInfo. They probably need to be.
+          val addedMembers = (cls.concreteMembers ++ cls.abstractMembers).map((_, Top())).toMap
+          val clsType = NominalType(IntersectionType(StructuralType(addedMembers) +: superTypes))
+          (cls.typeName, clsType)
+        }
+
+        (defsPatched2, types, newCtx)
+      }
+    } else {
+      (Nil, Nil, ctx)
+    }
+  }
+
+  private def makeClassDeclarationExpression(clss: Set[ClassInfo])(bodyFunc: TranslatorContext => Expression)(implicit ctx: TranslatorContext): Expression = {
+    val newCtx = makeClassContext(clss)(ctx)
+    val (newDefs, newTypes, newCtx2) = makeClassDeclarations(clss)(newCtx)
+
+    val core = DeclareCallables(newDefs, bodyFunc(newCtx2))
+    newTypes.foldRight(core: Expression) { (p, acc) =>
       val (tv, t) = p
       DeclareType(tv, t, acc)
     }
@@ -596,18 +687,23 @@ case class ClassForms(val translator: Translator) {
     val (cls, clss) = makeClassInfo(e)
     makeClassDeclarationExpression(clss ++ (if (ctx.classContext.contains(cls.name)) List() else List(cls))) { ctx =>
       if (ctx.boundDefs.contains(cls.constructorName)) {
-        Call(cls.constructorName, List(), Some(List()))
+        ctx.classContext(cls.name).capturedVariables match {
+          case Some(captured) =>
+            Call(cls.constructorName, captured.toList, Some(List()))
+          case None =>
+            Call(cls.constructorPlaceholderName, List(), Some(List()))
+        }
       } else {
         val (_, allAbstractMembers) = getMembers(cls)(ctx)
-        translator.reportProblem(InstantiatingAbstractClassException(allAbstractMembers.toList.map(_.field)) at e)
+        translator.reportProblem(InstantiatingAbstractClassException(allAbstractMembers.toList.map(_.name)) at e)
         Call(Constant(cls.name), List(), Some(List()))
       }
     }
   }
 
-  /** Sort a sequence of
+  /** Sort a sequence of ClassInfo objects.
     */
-  private def orderBySubclassing(clss: Seq[ClassBasicInfo]): Seq[ClassBasicInfo] = {
+  private def orderBySubclassing(clss: Seq[ClassInfo]): Seq[ClassInfo] = {
     import orc.util.{ Graph, Node, Direction }
 
     if (clss.size == 1)

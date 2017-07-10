@@ -32,7 +32,8 @@ import orc.values.sites.Site
 import orc.compile.Logger
 
 case class TranslatorContext(context: Map[String, Argument], typecontext: Map[String, Type],
-  boundDefs: Set[BoundVar], classContext: Map[String, ClassBasicInfo]) {
+  boundDefs: Set[BoundVar], classContext: Map[String, ClassInfo]) {
+  lazy val classesByPlaceholder = classContext.values.flatMap(i => Seq((i.constructorPlaceholderName, i), (i.partialConstructorPlaceholderName, i))).toMap
 }
 
 class Translator(val reportProblem: CompilationException with ContinuableSeverity => Unit) {
@@ -75,7 +76,10 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Call(target, gs) => {
         var expr = convert(target)
         for (g <- gs) {
-          expr = unfold(List(expr), { case List(m) => convertArgumentGroup(m, g); case _ => throw new AssertionError("Translator internal failure (convert Call arg group match error)") })
+          expr = unfold(List(expr), { 
+            case List(m) => convertArgumentGroup(m, g)
+            case _ => throw new AssertionError("Translator internal failure (convert Call arg group match error)") 
+          })
         }
         expr
       }
@@ -162,11 +166,11 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         val clsContext = classForms.makeClassContext(infos)(ctx)
         val (newContext, defsIntermediate, defNames) = makeCallablesContext(defs)(clsContext)
         //Logger.info(s"Processing ${clss.map(_.name)} and ${defs.map(_.name)}:\n$newContext")
-        val (newClsDefs, newTypes) = classForms.makeClassDeclarations(infos)(newContext)
-        val newDefDefs = makeCallables(defsIntermediate, defNames)(newContext)
+        val (newClsDefs, newTypes, newContext2) = classForms.makeClassDeclarations(infos)(newContext)
+        val newDefDefs = makeCallables(defsIntermediate, defNames)(newContext2)
         val newDefs = newClsDefs ++ newDefDefs
         //Logger.info(s"Processing ${clss.map(_.name)} and ${defs.map(_.name)}:\n${newDefs.map(_.name)}")
-        val newBody = convert(body)(newContext)
+        val newBody = convert(body)(newContext2)
         val core = DeclareCallables(newDefs, newBody)
         newTypes.foldRight(core : Expression) { (p, acc) =>
           val (tv, t) = p

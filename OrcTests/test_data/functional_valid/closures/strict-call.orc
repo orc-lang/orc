@@ -18,6 +18,6 @@ Rwait(250) >> Println("250ms") >> stop
 
 {-
 OUTPUT:
-f()
 250ms
+f()
 -}

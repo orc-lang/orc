@@ -11,6 +11,7 @@ val x = Rwait(500) >> 23
 class C {
   val x' = id(x)
   val y = 1
+  def otherNew() = new C
   def other() = C()
 }
 def C() = x >> new C
@@ -19,13 +20,22 @@ Rwait(250) >> Println("250ms") >> stop
 |
 (
   val o = new C
+  val on = o.otherNew()
   val o' = o.other()
-  o.y | (o'.y + 1)
+  o.y | (o'.y + 1) | (on.y + 2)
 )
 
 {-
 OUTPUT:
 1
 250ms
+3
 2
+-}
+{-
+OUTPUT:
+1
+250ms
+2
+3
 -}

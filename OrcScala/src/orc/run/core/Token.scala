@@ -765,7 +765,7 @@ class Token protected (
            * Allow a def to be called with an open context.
            * This functionality is sound, but technically exceeds the formal semantics of Orc.
            */
-          case BoundReadable(c: Closure) => functionCall(c.code, c.context, params)
+          //case BoundReadable(c: Closure) => functionCall(c.code, c.context, params)
 
           case b => resolve(b) { makeCall(_, params) }
         }

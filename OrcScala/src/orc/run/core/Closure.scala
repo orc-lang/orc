@@ -28,7 +28,7 @@ class Closure(
   extends ResolvableCollectionMember[Def](index, closureGroup) with Serializable {
   def code: Def = definition
 
-  override def toString = super.toString + (code.body.sourceTextRange, closureGroup, index)
+  override def toString = super.toString + (code.optionalVariableName.getOrElse(""), code.body.sourceTextRange, closureGroup, index)
 
   @throws(classOf[ObjectStreamException])
   protected def writeReplace(): AnyRef = {
