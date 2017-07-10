@@ -99,8 +99,10 @@ trait ValueMarshaler { self: DOrcExecution =>
        * refer to un-serializable values.
        */
       try {
-        nullOos.writeObject(v)
-        nullOos.flush()
+        nullOos synchronized {
+          nullOos.writeObject(v)
+          nullOos.flush()
+        }
         knownGoodSerializables.put(v, ())
         true
       } catch {
@@ -162,7 +164,7 @@ trait DOrcMarshalingNotifications {
   def unmarshaled() {}
 }
 
-/** Orc values implementing this trait will be asked for a marshalble
+/** Orc values implementing this trait will be asked for a marshalable
   * replacement for themselves when they are marshaled for serialization
   * to another location.
   *
