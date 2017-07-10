@@ -26,9 +26,12 @@ us</a> if you are interested in obtaining an account.</p>
 <a id="eclipse"></a>
 <h3>Eclipse Users</h3>
 
-<p>To use the Orc plug-in for Eclipse, you will need <a href="https://www.eclipse.org/downloads/">Eclipse</a> and Java installed on your workstation.  Only the Eclipse Standard package is needed.</p>
+<p>To use the Orc plug-in for Eclipse, you will need <a href="https://www.eclipse.org/downloads/">Eclipse</a> and Java installed on your workstation.  The "Eclipse IDE for Eclipse Committers" (formerly called "Eclipse Standard") is sufficient, but any Eclipse package with the JDT can be used.</p>
 
 <h4>Install the Orc plug-in for Eclipse</h4>
+
+<a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=1007" title="Drag to your running Eclipse* workspace. *Requires Eclipse Marketplace Client"><img src="images/btn-install.png" alt="Drag to your running Eclipse* workspace. *Requires Eclipse Marketplace Client" /></a>
+<p>Drag this icon to your running Eclipse workspace, <em>OR</em> follow these steps:</p>
 
 <ol>
 <li>Open Eclipse</li>
