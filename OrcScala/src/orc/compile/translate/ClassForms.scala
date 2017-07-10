@@ -262,10 +262,6 @@ case class ClassForms(val translator: Translator) {
     allAbstractMembers.nonEmpty
   }
 
-  // FIXME: Either inline the constructor at every construction site or lift the free variables of all the
-  //        classes (which are passed as arguments to the partial constructors) as arguments of the
-  //        constructor and pass them from the construction site.
-
   /** Build the constructor for the given class.
     *
     * All its super classes must be in ctx.
@@ -504,7 +500,7 @@ case class ClassForms(val translator: Translator) {
         (tmpField, Some(source(newf))) +: (generatedFields ++ convertFields(rest))
       case ext.ValSig(v, t) +: rest =>
         val field = Field(v)
-        // TODO: Store type for later use in type checking.
+        // TODO: TYPECHECKER: Store type for later use in type checking.
         (field, None) +: convertFields(rest)
       case ext.CallableSingle(defs, rest) =>
         assert(defs.forall(_.name == defs.head.name))
@@ -513,7 +509,7 @@ case class ClassForms(val translator: Translator) {
         val agg = defs.foldLeft(AggregateDef.empty(translator))(_ + _)
         if (agg.clauses.isEmpty) {
           // Abstract
-          // TODO: Store type for later use in type checking.
+          // TODO: TYPECHECKER: Store type for later use in type checking.
           (field, None) +: convertFields(rest)
         } else {
           // Concrete
@@ -595,7 +591,7 @@ case class ClassForms(val translator: Translator) {
         e.subst(a, x)
       }
 
-      // FIXME: We have a problem here since the types of the closed variables are not known.
+      // FIXME: TYPECHECKER: We have a problem here since the types of the closed variables are not known.
       d ->> Def(info.unplaceholder(name), (addArgs ++ formals).toList, newBody, typeformals, argtypes, returntype)
     case d => d
   }
