@@ -607,9 +607,6 @@ class Token protected (
         case BoundValue(v) => v
         case BoundReadable(f: orc.Future) => f
         case BoundStop => StoppedFuture
-        case BoundReadable(c: Closure) =>
-          Logger.warning(s"The handling of closures in objects is currently broken due to changes in how field values are represented. This will be fixed when closures are strict. For not closures may occationally be lenient.")
-          c
         case BoundReadable(v) =>
           throw new Error(s"WTF: $v")
       }
@@ -760,15 +757,7 @@ class Token protected (
 
       case Call(target, args, _) => {
         val params = args map lookup
-        lookup(target) match {
-          /*
-           * Allow a def to be called with an open context.
-           * This functionality is sound, but technically exceeds the formal semantics of Orc.
-           */
-          //case BoundReadable(c: Closure) => functionCall(c.code, c.context, params)
-
-          case b => resolve(b) { makeCall(_, params) }
-        }
+        resolve(lookup(target)) { makeCall(_, params) }
       }
 
       case Parallel(left, right) => {
@@ -845,7 +834,7 @@ class Token protected (
 
         decls.head match {
           case _: Def => {
-            val closureGroup = new ClosureGroup(decls.collect({ case d: Def => d }), lexicalContext, runtime)
+            val closureGroup = new ClosureGroup(decls.collect({ case d: Def => d }), lexicalContext, runtime, clock)
             runtime.stage(closureGroup)
 
             for (c <- closureGroup.members) {
@@ -880,7 +869,7 @@ class Token protected (
   }
 
   def publish(v: Option[AnyRef]) {
-    Logger.fine(s"Publishing $v in $this")
+    Logger.finest(s"Publishing $v in $this")
     v foreach { vv =>
       assert(!vv.isInstanceOf[Binding], s"Interpreter bug. Triggered at $this, with $vv")
       assert(!vv.isInstanceOf[java.math.BigInteger], s"Type coercion error at $this, with $vv")
@@ -974,7 +963,6 @@ class Token protected (
     env.zipWithIndex.map({
       case (b, i) => s"$i: " + (b match {
         case BoundValue(v) => v.toString
-        case BoundReadable(c: Closure) => c.code.toString
         case BoundReadable(c) => c.toString
         case BoundStop => "stop"
       })

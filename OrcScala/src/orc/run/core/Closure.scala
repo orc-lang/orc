@@ -16,6 +16,7 @@ import orc.{ OrcRuntime, Schedulable }
 import orc.ast.oil.nameless.Def
 import orc.util.BlockableMapExtension
 import java.io.ObjectStreamException
+import orc.run.core.VirtualClock
 
 /** A closure that both resolves itself and represents the closure itself. This should
   * be scheduled when it is created.
@@ -44,7 +45,8 @@ protected case class ClosureMarshalingReplacement(index: Int, closureGroup: Clos
 class ClosureGroup(
   _defs: List[Def],
   _lexicalContext: List[Binding],
-  runtime: OrcRuntime)
-  extends ResolvableCollection[Def, Closure](_defs, _lexicalContext, runtime) {
+  runtime: OrcRuntime,
+  clock: Option[VirtualClock])
+  extends ResolvableCollection[Def, Closure](_defs, _lexicalContext, runtime, clock) {
   def buildMember(i: Int) = new Closure(i, this)
 }

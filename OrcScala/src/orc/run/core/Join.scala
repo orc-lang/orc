@@ -28,11 +28,6 @@ abstract class JoinBase extends Blocker {
   val waiter: Blockable
   val runtime: OrcRuntime
 
-  // TODO: Optimize the case where no parameter requires blocking.
-
-  // Additional implementation will be needed to detect when a blocking step could be skipped,
-  // for example, when a pruning group or closure is already bound.
-
   val items = new Array[Binding](params.size)
   var state: JoinState = JoinInProgress(params.size)
 
@@ -46,7 +41,7 @@ abstract class JoinBase extends Blocker {
         state = JoinInProgress(n - 1)
       }
       case JoinHalted => {}
-      case _ => throw new AssertionError("Erroneous state transformation in Join")
+      case _ => throw new AssertionError("Erroneous state transition in Join")
     }
     // If we just finished filling everything in then go to Complete state
     state match {
@@ -91,7 +86,7 @@ class Join(val params: List[Binding], val waiter: Blockable, val runtime: OrcRun
         runtime.stage(waiter)
       }
       case JoinHalted => {}
-      case JoinComplete => throw new AssertionError("Erroneous state transformation in Join")
+      case JoinComplete => throw new AssertionError("Erroneous state transition in Join")
     }
   }
 
