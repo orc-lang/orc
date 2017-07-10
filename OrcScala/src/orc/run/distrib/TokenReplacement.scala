@@ -43,7 +43,8 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
   }
 
   protected def marshalBinding(execution: DOrcExecution, ast: Expression, destination: PeerLocation)(b: Binding): BindingReplacement = {
-    (b match {
+    //Logger.entering(getClass.getName, "marshalBinding", Seq(b))
+    val result = (b match {
       /* Optimization: Treat resolved local futures as just values */ 
       case BoundReadable(lfut: LocalFuture) => {
         lfut.readIfResolved() match {
@@ -73,6 +74,8 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
         BoundValueReplacement(execution.marshalValue(destination)(v))
       }
     }
+    //Logger.exiting(getClass.getName, "marshalBinding", result)
+    result
   }
 
   protected def marshalFrame(execution: DOrcExecution, ast: Expression, destination: PeerLocation)(f: Frame): FrameReplacement = {
@@ -119,7 +122,9 @@ abstract class TokenReplacementBase(token: Token, astRoot: Expression, val token
 
   private def extractEnv(t: Token, astRoot: Expression, destination: PeerLocation) = t.getEnv.toArray map marshalBinding(t.getGroup.execution.asInstanceOf[DOrcExecution], astRoot, destination)
 
+  //Logger.finest("extracting env...")
   val env = extractEnv(token, astRoot, destination)
+  //Logger.finest("extractEnv DONE.")
 
   //val clock: VirtualClock = t.getClock
   //val state: TokenState =
