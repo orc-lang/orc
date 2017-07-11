@@ -35,6 +35,7 @@ object Tracer {
       val destRuntimeId = destination match {
         case ll: LeaderLocation => ll.runtimeId
         case fl: FollowerLocation => fl.runtimeId
+        case pl: PeerLocationImpl => pl.runtimeId
       }
       orc.util.Tracer.trace(TokenSend, token.debugId, token.runtime.asInstanceOf[DOrcRuntime].runtimeId, destRuntimeId)
     }
@@ -46,6 +47,7 @@ object Tracer {
       val originRuntimeId = origin match {
         case ll: LeaderLocation => ll.runtimeId
         case fl: FollowerLocation => fl.runtimeId
+        case pl: PeerLocationImpl => pl.runtimeId
       }
       orc.util.Tracer.trace(TokenReceive, token.debugId, originRuntimeId, token.runtime.asInstanceOf[DOrcRuntime].runtimeId)
     }

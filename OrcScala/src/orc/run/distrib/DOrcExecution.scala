@@ -54,33 +54,21 @@ abstract class DOrcExecution(
   private val hereSet: Set[PeerLocation] = Set(runtime.here)
   override def currentLocations(v: Any) = {
     val cl = v match {
+      //TODO: Replace this with location tracking
+      case plp: LocationPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
-      case orc.lib.util.Prompt => Set(locationForFollowerNum(0))
-      case _: java.util.concurrent.ConcurrentSkipListSet[_] => Set(locationForFollowerNum(1))
-      // TODO: Make sure this change was correct.
-      //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], _) => Set(locationForFollowerNum(1))
-      //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "clear") => Set(locationForFollowerNum(1))
-      //case orc.values.sites.JavaMemberProxy(s: java.util.concurrent.ConcurrentSkipListSet[_], "contains") => Set(locationForFollowerNum(if (s.size < 50) 0 else 1))
-      //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "add") => Set(locationForFollowerNum(1))
       case _ => hereSet
     }
-    // Logger.finer(s"currentLocations($v: ${v.getClass.getName})=$cl")
+    //Logger.finer(s"currentLocations($v: ${v.getClass.getName})=$cl")
     cl
   }
   override def permittedLocations(v: Any): Set[PeerLocation] = {
     val pl = v match {
-      case plp: LocationPolicy => plp.permittedLocations()
+      case plp: LocationPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
-      case orc.lib.util.Prompt => Set(locationForFollowerNum(0))
-      case _: java.util.concurrent.ConcurrentSkipListSet[_] => Set(locationForFollowerNum(1))
-      // TODO: Make sure this change was correct.
-      //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], _) => Set(locationForFollowerNum(1))
-      //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "clear") => Set(locationForFollowerNum(1))
-      //case orc.values.sites.JavaMemberProxy(s: java.util.concurrent.ConcurrentSkipListSet[_], "contains") => Set(locationForFollowerNum(if (s.size < 50) 0 else 1))
-      //case orc.values.sites.JavaMemberProxy(_: java.util.concurrent.ConcurrentSkipListSet[_], "add") => Set(locationForFollowerNum(1))
       case _ => runtime.allLocations
     }
-    Logger.finest(s"permittedLocations($v: ${v.getClass.getName})=$pl")
+    //Logger.finest(s"permittedLocations($v: ${v.getClass.getName})=$pl")
     pl
   }
 

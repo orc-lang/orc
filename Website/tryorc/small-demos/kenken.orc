@@ -37,7 +37,7 @@ def addup(x:xs) = x + addup(xs)
 def interface(msg,f,h) =
     Prompt(msg + " : write value followed by number of cells for board size " + h)  >r>
       Read(r) >s> (s%10,s/10) >(p,v)>
-    (  Println(msg + v + " into " + p + " parts in board size " + h) >> f(h,p,v)
+    (  Println(r + ": " + msg + v + " into " + p + " parts in board size " + h) >> f(h,p,v)
      | interface(msg,f,h)
     )
 
@@ -47,17 +47,17 @@ def sum11(h,p,v) = parts(1,1,h,p,v)
 def sum01(h,p,v) = parts(0,1,h,p,v)
 
 def sizePrompt() =
-	    Prompt("Welcome to KENKEN helper. What is the board size?")  >r> Read(r) >board>
-	    (if (board <: 6 || board :> 9)
-	      then Println("Board size must be between 6 and 9") >> sizePrompt()
-	      else board)
+      Prompt("Welcome to KENKEN helper. What is the board size?")  >r> Read(r) >board>
+      (if (board <: 6 || board :> 9)
+        then Println("Board size must be between 6 and 9") >> sizePrompt()
+        else board)
 
 def main() =
-	    sizePrompt() >board>
-	    (  interface("outline * " ,prod0,board)
-	     | interface("inline * "  ,prod1,board)
-	     | interface("inline + "  ,sum11,board)
-	     | interface("outline + " ,sum01,board)
-	    )
+      sizePrompt() >board>
+      (  interface("outline * " ,prod0,board)
+       | interface("inline * "  ,prod1,board)
+       | interface("inline + "  ,sum11,board)
+       | interface("outline + " ,sum01,board)
+      )
 
 main()

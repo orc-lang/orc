@@ -36,7 +36,7 @@ trait Location[-M <: OrcCmd] {
   * @author jthywiss
   */
 trait LocationPolicy {
-  def permittedLocations(): Set[PeerLocation]
+  def permittedLocations(runtime: DOrcRuntime): Set[PeerLocation]
 }
 
 trait MigrationDecision
