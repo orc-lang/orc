@@ -36,9 +36,20 @@ public class PorcERootNode extends RootNode {
 				captureds.length != capturedSlots.length)) {
 			InternalPorcEError.capturedLengthError(capturedSlots.length, captureds.length);
 		}
+		
+		// TODO: PERFORMANCE: Evaluate using specialized Variable nodes which know which kind of value they are loading (mainly 
+		//    closed, but also argument) and load the value directly to avoid these transfers here. The captured look-up could even
+		//    profile and specialize on the specific captured variable array. 
+		//    This could use an assumption to invalidate the specializations if the same function is instantiated again with a 
+		//    different context. This would require a good way to check that the contexts were the same since multiple 
+		//    instantiations of the same function may end up with the same context even if their declarations where running
+		//    in different contexts.
+
+		// Load all the arguments into the frame.
 		for (int i = 0; i < argumentSlots.length; i++) {
 			frame.setObject(argumentSlots[i], arguments[i+1]);
 		}
+		// Load all the captured variables into the frame.
 		for (int i = 0; i < capturedSlots.length; i++) {
 			frame.setObject(capturedSlots[i], captureds[i]);
 		}

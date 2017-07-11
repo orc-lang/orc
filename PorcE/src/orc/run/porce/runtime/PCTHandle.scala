@@ -62,7 +62,7 @@ final class PCTHandle(val execution: PorcEExecution, p: PorcEClosure, c: Counter
     t.isLive()
   }
 
-  // FIXME: Get information from calling PorcE node using stack introspection in truffle.
+  // TODO: Get information from calling PorcE node using stack introspection in truffle.
   def callSitePosition: Option[OrcSourceRange] = None
 
   def discorporate(): Unit = {

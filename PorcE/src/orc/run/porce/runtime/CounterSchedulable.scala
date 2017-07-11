@@ -21,7 +21,8 @@ import orc.error.runtime.HaltException
   * @author amp
   */
 abstract class CounterSchedulable(c: Counter) extends Schedulable {
-  // TODO: We known we are non-blocking because all PorcE code is non-blocking. If we can split out site calls we could set this true.
+  // TODO: We know we are non-blocking because all PorcE code is non-blocking. If we can split out site calls we could set this true.
+  //       A better approach would be to set this to true and then dynamically call potentiallyBlocking when we do something that could block.
   override val nonblocking = false
 
   /** When we are scheduled prepare for spawning.

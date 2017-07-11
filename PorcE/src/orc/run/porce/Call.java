@@ -22,6 +22,18 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.Terminator;
 
 public abstract class Call extends Expression {
+	// FIXME: Split this into multiple different node types for only internal
+	// and only external invocations. Then have wrapper nodes which dispatch to
+	// internal and external handling as needed. This would allow us to easily
+	// separate caching strategies of the different invocation types.
+	
+	// TODO: PERFORMANCE: Add profiling to optimize the internal/external dispatch.
+
+	// FIXME: PERFORMANCE: Implement polymorphic inline cache for internal calls. See
+	// http://cesquivias.github.io/blog/2015/01/08/writing-a-language-in-truffle-part-3-making-my-language-much-faster/#making-function-calls-faster
+
+	// FIXME: PERFORMANCE: Implement polymorphic inline cache for invokers check with canInvoke.
+
 	@Child
 	protected Expression target;
 	@Children
@@ -64,7 +76,6 @@ public abstract class Call extends Expression {
 			super(target, arguments, execution);
 		}
 
-		@ExplodeLoop
 		public Object execute(VirtualFrame frame) {
 			return callInternal(frame);
 		}
@@ -83,8 +94,6 @@ public abstract class Call extends Expression {
 		public void executePorcEUnit(VirtualFrame frame) {
 			final Object t = target.execute(frame);
 			if (t instanceof PorcEClosure) {
-				// TODO: It may be possible to make internal calls into normal
-				// invoker based calls.
 				callInternal(frame);
 			} else {
 				final int realArgsLen = arguments.length - 3;

@@ -8,6 +8,7 @@ final public class PorcEClosure {
 	final public RootCallTarget body;
 	public final boolean isDef;
 
+	// TODO: PERFORMANCE: Using a frame instead of an array for captured values may perform better. Though that will mainly be true when we start using native values.
 	public PorcEClosure(Object[] capturedValues, RootCallTarget body, boolean isDef) {
 		this.capturedValues = capturedValues;
 		this.body = body;

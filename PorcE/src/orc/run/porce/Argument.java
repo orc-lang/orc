@@ -17,7 +17,6 @@ public abstract class Argument extends Expression {
 	}
 }
 
-
 class PorcUnit extends Argument {
 	public Object execute(VirtualFrame frame) {
 		return PorcEUnit.SINGLETON;
@@ -36,7 +35,6 @@ class Constant extends Argument {
 	}
 
 	public Object execute(VirtualFrame frame) {
-		//System.out.println(value);
 		return value;
 	}
 }
@@ -50,7 +48,6 @@ class Variable extends Argument {
 
 	public Object execute(VirtualFrame frame) {
 		Object value = frame.getValue(slot);
-		//System.out.println(slot + " = " + value);
 		return value;
 	}
 }

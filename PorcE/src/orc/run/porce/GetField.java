@@ -12,7 +12,7 @@ import orc.values.Field;
 public class GetField extends Expression {
 	protected final PorcEExecution execution;
 	protected final Field field;
-	
+
 	@Child
 	protected Expression object;
 
@@ -22,24 +22,24 @@ public class GetField extends Expression {
 		this.execution = execution;
 	}
 
+	public Object execute(VirtualFrame frame) {
+		final Object obj = object.execute(frame);
+
+		Accessor accessor = getAccessorWithBoundary(obj);
+		// FIXME: PERFORMANCE: Cache accessor and validate with accessor.canGet. With polymorphic cache.
+
+		if (accessor instanceof AgressivelyInlined) {
+			return accessor.get(obj);
+		} else {
+			return accessWithBoundary(accessor, obj);
+		}
+	}
+
 	@TruffleBoundary
 	protected Accessor getAccessorWithBoundary(final Object t) {
 		return execution.runtime().getAccessor(t, field);
 	}
-
-	@ExplodeLoop
-	public Object execute(VirtualFrame frame) {
-		final Object obj = object.execute(frame);
-		
-		Accessor accessor = getAccessorWithBoundary(obj);
-
-			if (accessor instanceof AgressivelyInlined) {
-				return accessor.get(obj);
-			} else {
-				return accessWithBoundary(accessor, obj);
-			}
-	}
-
+	
 	@TruffleBoundary(allowInlining = true)
 	private static Object accessWithBoundary(final Accessor accessor, final Object obj) {
 		return accessor.get(obj);

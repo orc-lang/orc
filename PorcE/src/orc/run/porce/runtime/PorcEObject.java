@@ -9,6 +9,7 @@ public class PorcEObject implements AccessorValue {
 	public final Field[] fieldNames;
 	public final Object[] fieldValues;
 
+	// TODO: PERFORMANCE: Using a frame instead of an array for field values may perform better. Though that will mainly be true when we start using native values.
 	public PorcEObject(Field[] fieldNames, Object[] fieldValues) {
 		assert fieldNames.length == fieldValues.length;
 		
