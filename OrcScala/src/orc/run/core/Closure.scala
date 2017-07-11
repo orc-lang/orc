@@ -16,7 +16,6 @@ import orc.{ OrcRuntime, Schedulable }
 import orc.ast.oil.nameless.Def
 import orc.util.BlockableMapExtension
 import java.io.ObjectStreamException
-import orc.run.core.VirtualClock
 
 /** A closure that both resolves itself and represents the closure itself. This should
   * be scheduled when it is created.

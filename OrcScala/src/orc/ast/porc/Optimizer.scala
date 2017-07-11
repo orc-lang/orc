@@ -19,7 +19,6 @@ import orc.compile.OptimizerStatistics
 import orc.compile.NamedOptimization
 import scala.collection.mutable
 import swivel.Zipper
-import orc.ast.porc.Continuation
 
 trait Optimization extends ((Expression.Z, AnalysisProvider[PorcAST]) => Option[Expression]) with NamedOptimization {
   //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))

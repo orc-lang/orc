@@ -35,7 +35,7 @@ public class Dictionary extends EvalSite {
 
         @Override
         synchronized public Object  getMember(Field f) {
-            final String field = f.field();
+            final String field = f.name();
             RefInstance out = map.get(field);
             if (out == null) {
                 out = new RefInstance();

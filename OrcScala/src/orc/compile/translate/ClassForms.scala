@@ -28,7 +28,6 @@ import orc.ast.Positioned
 import orc.compile.Logger
 import orc.compile.optimize.FractionDefs
 import orc.compile.Logger
-import com.sun.xml.internal.bind.v2.model.core.ClassInfo
 
 /** This class contains all the information needed to generate an instance of a class.
   *
