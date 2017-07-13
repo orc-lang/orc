@@ -1,36 +1,25 @@
+//
+// InvocationBehaviorUtilities.scala -- Utilities for implementing Invokers and Accessors.
+// Project OrcScala
+//
+// Created by amp on July, 2017.
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc
 
 import orc.error.runtime.UncallableValueException
 import orc.error.runtime.HaltException
+import orc.error.runtime.NoSuchMemberException
+import orc.error.runtime.DoesNotHaveMembersException
 
-/*
-trait TypeDirectedInvoker extends Invoker {
-  val targetCls: Class[_]
-  val argumentClss: Array[Class[_]]
-  
-  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    // TODO:PERFORMANCE: This zip/forall combo might be a performance problem.
-    targetCls.isInstance(target) && arguments.length == argumentClss.length && (argumentClss zip arguments).forall(p => p._1.isInstance(p._2))
-  }
-}
-
-trait ValueDirectedTargetTypeDirectedArgumentsInvoker extends Invoker {
-  val targetCls: Class[_]
-  val argumentClss: Array[Class[_]]
-  
-  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    // TODO:PERFORMANCE: This zip/forall combo might be a performance problem.
-    targetCls == target && arguments.length == argumentClss.length && (argumentClss zip arguments).forall(p => p._1.isInstance(p._2))
-  }
-}
-
-abstract class TypeDirectedAccessor(val targetCls: Class[_]) extends Accessor {
-  def canGet(target: AnyRef): Boolean = {
-    targetCls.isInstance(target)
-  }
-}
-*/
-
+/** A collection of utility methods for writing invokers and accessors.
+	*/
 object InvocationBehaviorUtilities {
   /** True iff arguments are all of the same type as the matching class in argumentClss.
     *
@@ -70,5 +59,44 @@ abstract class OnlyDirectInvoker extends DirectInvoker {
       case _: HaltException =>
         h.halt()
     }
+  }
+}
+
+/** A invoker sentinel representing the fact that target is not callable.
+	*/
+case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker {
+  @throws[UncallableValueException]
+  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    throw new UncallableValueException(target)
+  }
+
+  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    this.target == target
+  }
+}
+
+/** A accessor sentinel representing the fact that unknownMember does not exist on the given value.
+	*/
+case class NoSuchMemberAccessor(target: AnyRef, unknownMember: String) extends ErrorAccessor {
+  @throws[NoSuchMemberException]
+  def get(target: AnyRef): AnyRef = {
+    throw new NoSuchMemberException(target, unknownMember)
+  }
+
+  def canGet(target: AnyRef): Boolean = {
+    this.target == target
+  }
+}
+
+/** A accessor sentinel representing the fact that the value does not have members.
+	*/
+case class DoesNotHaveMembersAccessor(target: AnyRef) extends ErrorAccessor {
+  @throws[DoesNotHaveMembersException]
+  def get(target: AnyRef): AnyRef = {
+    throw new DoesNotHaveMembersException(target)
+  }
+
+  def canGet(target: AnyRef): Boolean = {
+    this.target == target
   }
 }
