@@ -58,7 +58,7 @@ class PrettyPrint {
         case TryOnHalted(b, h) => pp"try$StartIndent\n$b$EndIndent\nonHalted$StartIndent\n$h$EndIndent"
         case TryFinally(b, h) => pp"try$StartIndent\n$b$EndIndent\nfinally$StartIndent\n$h$EndIndent"
 
-        case Spawn(c, t, e) => pp"spawn $c $t $e"
+        case Spawn(c, t, b, e) => pp"spawn_${ if (b) "must" else "may" } $c $t $e"
 
         case NewCounter(c, h) => pp"counter $c $h"
         case Halt(c) => pp"halt $c"
@@ -68,9 +68,11 @@ class PrettyPrint {
         case Kill(t) => pp"kill $t"
 
         case NewFuture() => pp"newFuture"
-        case SpawnBindFuture(f, c, t, computation) => pp"spawnBindFuture $f $c $t $computation"
+        case Bind(f, v) => pp"bind $f $v"
+        case BindStop(f) => pp"bind $f stop"
 
-        case Force(p, c, t, b, vs) => pp"force[${if (b) "publish" else "call"}] $p $c $t (${vs.map(reduce(_)).mkString(", ")})"
+        case Force(p, c, t, vs) => pp"force $p $c $t (${vs.map(reduce(_)).mkString(", ")})"
+        case Resolve(p, c, t, vs) => pp"resolve $p $c $t (${vs.map(reduce(_)).mkString(", ")})"
 
         case GetField(o, f) => pp"$o$f"
 

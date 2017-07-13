@@ -290,9 +290,10 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
           ast match {
             case n if node == graph.entry =>
               PublicationInfo(Range(1, 1), Range(0, 1), BoundedSet())
-            case Force.Z(_, _, b, _) =>
+            case Force.Z(_, _, _) =>
               PublicationInfo(inStateUse.futureValues, Range(0, 1), BoundedSet())
-            case _: BoundVar.Z | Branch.Z(_, _, _) | Parallel.Z(_, _) | Future.Z(_) | Constant.Z(_) |
+              PublicationInfo(inStateUse.futureValues, Range(0, 1), BoundedSet())
+            case _: BoundVar.Z | Branch.Z(_, _, _) | Parallel.Z(_, _) | Future.Z(_) | Constant.Z(_) | Resolve.Z(_) |
               Call.Z(_, _, _) | IfDef.Z(_, _, _) | Trim.Z(_) | DeclareCallables.Z(_, _) | Otherwise.Z(_, _) |
               New.Z(_, _, _, _) | FieldAccess.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) | Stop.Z() =>
               PublicationInfo(Range(1, 1), Range(0, 1), BoundedSet())
@@ -400,17 +401,17 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
               }
             case Stop.Z() =>
               PublicationInfo(Range(0, 0), Range(0, 0), BoundedSet())
-            case Force.Z(_, _, b, _) =>
+            case Force.Z(_, _, _) =>
               PublicationInfo(inStateFlow.publications * inStateUse.futureValues, inStateValue.futureValues, inStateValue.fields)
             case Branch.Z(_, _, _) =>
               PublicationInfo(inStateFlow.publications * inStateUse.publications, inStateValue.futureValues, inStateValue.fields)
-            case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) |
+            case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) | Resolve.Z(_, _) |
                 DeclareCallables.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
               defaultFlowInState
           }
         case VariableNode(x, ast) =>
           ast match {
-            case Force.Z(_, _, b, _) =>
+            case Force.Z(_, _, _) =>
               nonFutureVariableState
             case New.Z(_, _, _, _) =>
               nonFutureVariableState

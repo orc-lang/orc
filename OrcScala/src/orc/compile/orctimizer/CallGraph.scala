@@ -502,7 +502,7 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Call
 
       // Add edges we don't actually use in this analysis but do use in later analyses. These don't need to be reported to the analyzer framework.
       node match {
-        case entry @ EntryNode(n @ Force.Z(_, vs, _, _)) =>
+        case entry @ EntryNode(n @ (Force.Z(_, _, _) | Resolve.Z(_, _))) =>
           val exit = ExitNode(n)
           val sources = states.inStateProcessed[UseEdge, Option[Set[Node]]](Some(Set()), _.values map { v =>
             v flatMap[Node, Set[Node]] { 

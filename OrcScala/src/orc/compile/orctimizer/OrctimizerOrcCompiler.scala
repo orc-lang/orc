@@ -52,7 +52,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
     override def apply(co: CompilerOptions) =
       { ast =>
         val translator = new OILToOrctimizer()
-        translator(ast)(Map())
+        translator(ast)(translator.Context(Map(), Map()))
       }
   }
 

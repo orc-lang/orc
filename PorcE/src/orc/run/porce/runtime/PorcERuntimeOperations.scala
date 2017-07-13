@@ -45,7 +45,17 @@ trait PorcERuntimeOperations {
       }
     })    
   }
-
+  
+  def resolve(p: PorcEClosure, c: Counter, t: Terminator, vs: Array[AnyRef]) = {
+    t.checkLive()
+    // Matches: halt in done() below
+    c.prepareSpawn()
+    new Resolve(vs) {
+      def done(): Unit = {
+        schedulePublishAndHalt(p, c, Array())
+      }
+    }
+  }
   /** Force a list of values: forcing futures and resolving closures.
     *
     * If vs contains a ForcableCallableBase it must have a correct and complete closedValues.

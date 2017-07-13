@@ -271,10 +271,19 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), 
               DelayInfo(lState.maxFirstPubDelay max (lState.maxHaltDelay + rState.maxFirstPubDelay), lState.maxHaltDelay + rState.maxHaltDelay)
             case Stop.Z() =>
               DelayInfo(IndefiniteDelay(), ComputationDelay())
-            case Force.Z(_, _, b, _) =>
+            case Force.Z(_, _, _) =>
               // We know the future binding must have started before the force starts.
               // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
+              // FIXME: This is now incorrect since when a future is bound is no longer based on when it's source publishes.
+              //        Resolve produces futures which are bould to one value based on the resolution of other futures.
               DelayInfo(inStateFutureValueSource.maxFirstPubDelay + inStateAllOf.maxFirstPubDelay, 
+                  (inStateFutureValueSource.maxFirstPubDelay min inStateFutureValueSource.maxHaltDelay) + inStateAllOf.maxHaltDelay)
+            case Resolve.Z(_, _) =>
+              // We know the future binding must have started before the force starts.
+              // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
+              // FIXME: This is now incorrect since when a future is bound is no longer based on when it's source publishes.
+              //        Resolve produces futures which are bould to one value based on the resolution of other futures.
+              DelayInfo((inStateFutureValueSource.maxFirstPubDelay min inStateFutureValueSource.maxHaltDelay) + inStateAllOf.maxFirstPubDelay, 
                   (inStateFutureValueSource.maxFirstPubDelay min inStateFutureValueSource.maxHaltDelay) + inStateAllOf.maxHaltDelay)
             case Branch.Z(_, _, _) =>
               DelayInfo(inStateAllOf.maxFirstPubDelay + inStateUse.maxFirstPubDelay, inStateAllOf.maxHaltDelay + inStateUse.maxHaltDelay)

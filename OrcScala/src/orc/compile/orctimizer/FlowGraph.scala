@@ -172,7 +172,7 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
           addEdges(
             ValueEdge(ExitNode(f), exit))
           process(f)
-        case Force.Z(xs, vs, b, f) =>
+        case Force.Z(xs, vs, f) =>
           xs foreach { declareVariable(entry, _) }
           addEdges(
             TransitionEdge(entry, "Force-Enter", EntryNode(f)),
@@ -186,6 +186,14 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
               UseEdge(ValueNode(e), exit))): _*)
           addEdges(ValueEdge(ExitNode(f), exit))
           process(f)
+        case Resolve.Z(futures, e) =>
+          addEdges(
+            TransitionEdge(entry, "Resolve-Enter", EntryNode(e)),
+            TransitionEdge(ExitNode(e), "Resolve-Exit", exit))
+          addEdges(futures.flatMap(e => Seq(UseEdge(ValueNode(e), entry),
+              UseEdge(ValueNode(e), exit))): _*)
+          addEdges(ValueEdge(ExitNode(e), exit))
+          process(e)
         case IfDef.Z(b, f, g) =>
           addEdges(
             TransitionEdge(entry, "IfDef-Def", EntryNode(f)),
@@ -384,7 +392,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
     require(binder.boundVars contains ast)
 
     override def label = binder match {
-      case Force.Z(_, _, publishForce, _) => s"♭${if (publishForce) "p" else "c"} $ast"
+      case Force.Z(_, _, _) => s"♭ $ast"
       case _ => s"$ast from ${shortString(binder.value)}"
     }
   }

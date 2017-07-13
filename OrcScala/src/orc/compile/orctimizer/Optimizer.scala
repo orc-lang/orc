@@ -299,7 +299,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val ForceElim = OptFull("force-elim") { (e, a) =>
     import orc.compile.orctimizer.CallGraph._
     e match {
-      case Force.Z(xs, vs, b, body) => {
+      case Force.Z(xs, vs, body) => {
         def isForcable(e: FlowValue) = e match {
           case _: FutureValue => true
           case _: CallableValue => true
@@ -314,7 +314,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         val (newXs, newVs) = fs.unzip
         val newBody = body.value.substAll(nfs.map(p => (p._1, p._2.value)).toMap[Argument, Argument])
         if (fs.nonEmpty)
-          Some(Force(newXs, newVs.map(_.value), b, newBody))
+          Some(Force(newXs, newVs.map(_.value), newBody))
         else
           Some(newBody)
       }

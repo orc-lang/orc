@@ -95,11 +95,15 @@ class PorcToPorcE {
         porce.Halt.create(transform(c))
       case porc.Kill.Z(t) =>
         porce.Kill.create(transform(t))
-      case porc.SpawnBindFuture.Z(fut, c, t, comp) =>
-        porce.SpawnBindFuture.create(transform(fut), transform(c), transform(t), transform(comp), ctx.execution)
-      case porc.Spawn.Z(c, t, comp) =>
+      case porc.Bind.Z(fut, v) =>
+        porce.Bind.create(transform(fut), transform(v))
+      case porc.BindStop.Z(fut) =>
+        porce.BindStop.create(transform(fut))
+      case porc.Spawn.Z(c, t, _, comp) =>
         porce.Spawn.create(transform(c), transform(t), transform(comp), ctx.execution)
-      case porc.Force.Z(p, c, t, b, futures) =>
+      case porc.Resolve.Z(p, c, t, futures) =>
+        porce.Resolve.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.execution)
+      case porc.Force.Z(p, c, t, futures) =>
         porce.Force.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.execution)
       case porc.SetDiscorporate.Z(c) =>
         porce.SetDiscorporate.create(transform(c))        

@@ -59,6 +59,7 @@ class OrctimizerToPorc {
   }
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
 
+  // FIXME: Transfer source position information into Porc.
   def expression(expr: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
     import porc.PorcInfixNotation._
     val code = expr match {
@@ -115,9 +116,9 @@ class OrctimizerToPorc {
             val v = newVarName("temp")
             val comp1 = newVarName("comp")
             val comp2 = newVarName("comp")
-            let((newP, porc.Continuation(Seq(v), let((comp1, porc.Continuation(Seq(), ctx.p(v)))) { porc.Spawn(ctx.c, ctx.t, comp1) })),
+            let((newP, porc.Continuation(Seq(v), let((comp1, porc.Continuation(Seq(), ctx.p(v)))) { porc.Spawn(ctx.c, ctx.t, true, comp1) })),
                 (comp2, porc.Continuation(Seq(), porc.MethodCPSCall(isExternal, argument(target), newP, ctx.c, ctx.t, args.map(argument(_)).view.force)))) {
-              porc.Spawn(ctx.c, ctx.t, comp2)
+              porc.Spawn(ctx.c, ctx.t, true, comp2)
             }
           }
         } else {
@@ -151,21 +152,43 @@ class OrctimizerToPorc {
       case Future.Z(f) => {
         val fut = newVarName("fut")
         val comp = newVarName("comp")
+        val v = newVarName("v")
+        val cr = newVarName("cr")
         val newP = newVarName("P")
         val newC = newVarName("C")
+        
         let((fut, porc.NewFuture()),
-            (comp, porc.Continuation(Seq(newP, newC), expression(f)(ctx.copy(p = newP, c = newC))))) {
-          porc.SpawnBindFuture(fut, ctx.c, ctx.t, comp) :::
+            (newP, porc.Continuation(Seq(v), porc.Bind(fut, v))),
+            (comp, porc.Continuation(Seq(), {
+              val crImpl = porc.Continuation(Seq(), {
+                porc.BindStop(fut)
+              })
+              let((cr, crImpl),
+                  (newC, porc.NewCounter(ctx.c, cr))) {
+                porc.TryFinally(
+                    expression(f)(ctx.copy(p = newP, c = newC)), 
+                    porc.Halt(newC))
+              }              
+            }))
+            ) {
+          porc.Spawn(ctx.c, ctx.t, true, comp) :::
             ctx.p(fut)
         }
       }
-      case Force.Z(xs, vs, forceClosures, e) => {
+      case Force.Z(xs, vs, e) => {
         val porcXs = xs.map(lookup)
         val newP = newVarName("P")
-        //val v = newVarName("temp")
         val body = expression(e)
         let((newP, porc.Continuation(porcXs, body))) {
-          porc.Force(newP, ctx.c, ctx.t, forceClosures, vs.map(argument))
+          porc.Force(newP, ctx.c, ctx.t, vs.map(argument))
+        }
+      }
+      case Resolve.Z(futures, e) => {
+        val newP = newVarName("P")
+        val v = argument(e)
+        // TODO: PERFORMANCE: Add an instruction here that allows v to rewrite itself when based on the fact futures are resolved.
+        let((newP, porc.Continuation(Seq(), ctx.p(v)))) {
+          porc.Resolve(newP, ctx.c, ctx.t, futures.map(argument))
         }
       }
       case Otherwise.Z(left, right) => {
@@ -209,14 +232,18 @@ class OrctimizerToPorc {
         val selfV = lookup(self)
 
         val fieldInfos = for ((f, b) <- bindings) yield {
-          val varName = newVarName(f.field)
+          val varName = newVarName(f.name)
           val (value, binder) = b match {
             case FieldFuture.Z(e) =>
               val newP = newVarName("P")
               val newC = newVarName("C")
+              val v = newVarName("v")
               val comp = newVarName("comp")
-              val binder = let((comp, porc.Continuation(Seq(newP, newC), expression(e)(ctx.copy(p = newP, c = newC))))) {
-                porc.SpawnBindFuture(varName, ctx.c, ctx.t, comp)
+              val binder = let(
+                  (newP, porc.Continuation(Seq(v), porc.Bind(varName, v))),
+                  (comp, porc.Continuation(Seq(newC), expression(e)(ctx.copy(p = newP, c = newC))))
+                  ) {
+                porc.Spawn(ctx.c, ctx.t, true, comp)
               }
               (porc.NewFuture(), Some(binder))
             case FieldArgument.Z(a) =>
@@ -235,7 +262,7 @@ class OrctimizerToPorc {
       }
 
       case FieldAccess.Z(o, f) => {
-        val v = newVarName(f.field)
+        val v = newVarName(f.name)
         let((v, porc.GetField(argument(o), f))) {
           ctx.p(v)
         }

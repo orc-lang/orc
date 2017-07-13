@@ -228,7 +228,9 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]),
               inState
             case Stop.Z() =>
               initialState
-            case Force.Z(_, _, b, _) =>
+            case Force.Z(_, _, _) =>
+              inState
+            case Resolve.Z(_, _) =>
               inState
             case Branch.Z(_, _, _) =>
               inState

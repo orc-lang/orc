@@ -110,11 +110,15 @@ object Expression {
 
 @leaf @transform
 final case class Stop() extends Expression
+
+@leaf @transform
+final case class Resolve(@subtree futures: Seq[Argument], @subtree expr: Argument) extends Expression
+
 @leaf @transform
 final case class Future(@subtree expr: Expression) extends Expression
 
 @leaf @transform
-final case class Force(xs: Seq[BoundVar], @subtree vs: Seq[Argument], publishForce: Boolean, @subtree expr: Expression) extends Expression {
+final case class Force(xs: Seq[BoundVar], @subtree vs: Seq[Argument], @subtree expr: Expression) extends Expression {
   def varForArg(v: Argument) = {
     try {
       xs(vs.indexOf(v))
@@ -137,11 +141,11 @@ final case class Force(xs: Seq[BoundVar], @subtree vs: Seq[Argument], publishFor
   override def boundVars: Set[BoundVar] = xs.toSet
 }
 object Force {
-  def apply(x: BoundVar, v: Argument, publishForce: Boolean, expr: Expression): Force =
-    Force(List(x), List(v), publishForce, expr)
-  def asExpr(v: Argument, publishForce: Boolean = true) = {
+  def apply(x: BoundVar, v: Argument, expr: Expression): Force =
+    Force(List(x), List(v), expr)
+  def asExpr(v: Argument) = {
     val x = new BoundVar()
-    Force(List(x), List(v), publishForce, x)
+    Force(List(x), List(v), x)
   }
 }
 
