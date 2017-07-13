@@ -8,8 +8,15 @@ Rwait(750) >> Println("Mark") >> stop | (g(10), h(f))
 
 {-
 OUTPUT:
+Mark
 f5
+f10
+(52, 47)
+-}
+{-
+OUTPUT:
 Mark
 f10
+f5
 (52, 47)
 -}

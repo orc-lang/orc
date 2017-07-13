@@ -1,4 +1,6 @@
-{- vclock_designate_closures.orc -- Orc program vclock_designate_closures
+{- vclock_closures.orc -- Orc program vclock_closures
+ -
+ - Make sure closures resolve without going quiescent in the declaring scope.
  - 
  - Created by amp on Sep 17, 2013 1:26:07 PM
  -}
@@ -12,7 +14,7 @@ def test() =
   val x = Thread.sleep(100) >> 42
   def f() = x
     Vawait(2) >> Println(2) >> stop
-  | x >> Vawait(1) >> Println(1) >> stop
+  | f >> Vawait(1) >> Println(1) >> stop
   )
   
 test()

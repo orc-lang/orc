@@ -14,21 +14,30 @@ package orc.run.extensions
 
 import orc.InvocationBehavior
 import orc.values.OrcValue
-import orc.Handle
+import orc.{Handle, Invoker, Accessor}
 import orc.values.sites.JavaCall
+import orc.values.Field
 
-/** @author dkitchin
+/** @author dkitchin, amp
   */
 trait SupportForJavaObjectInvocation extends InvocationBehavior {
-
-  override def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) {
-    v match {
-      case v: OrcValue => super.invoke(h, v, vs)
-      case _ => {
-        val successful = JavaCall(v, vs, h)
-        if (!successful) { super.invoke(h, v, vs) }
-      }
+  abstract override def getInvoker(target: AnyRef, arguments: Array[AnyRef]): Invoker = {
+    target match {
+      // Assume anything with the OrcValue marker has implemented everything it needs explicitly
+      case v: OrcValue => 
+        super.getInvoker(target, arguments)
+      case _ =>
+        JavaCall.getInvoker(target, arguments).getOrElse(super.getInvoker(target, arguments))
     }
   }
-
+  
+  abstract override def getAccessor(target: AnyRef, field: Field): Accessor = {
+    target match {
+      // Assume anything with the OrcValue marker has implemented everything it needs explicitly
+      case v: OrcValue => 
+        super.getAccessor(target, field)
+      case _ =>
+        JavaCall.getAccessor(target, field).getOrElse(super.getAccessor(target, field))
+    }
+  }
 }

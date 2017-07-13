@@ -13,6 +13,7 @@
 package orc.run.core
 
 import orc.Schedulable
+import orc.StoppedFuture
 
 /** A GraftGroup is the group associated with expression g in val x = g # f.
   *

@@ -26,6 +26,7 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
     args match {
       case Array1(bi: BigInt) => {
         val i: Int = bi.intValue
+        // TODO: PERFORMANCE: It would probably be faster to let the array reference throw IndexOutOfBounds. The JVM knows how to optimize that better I suspect.
         if (0 <= i && i < values.size) { Some(values(i)) }
         else { throw new TupleIndexOutOfBoundsException(i) }
       }

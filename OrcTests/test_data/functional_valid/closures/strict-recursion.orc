@@ -21,8 +21,8 @@ Rwait(250) >> Println("250ms") >> stop
 
 {-
 OUTPUT:
+250ms
 f(2)
 f(1)
 f(0)
-250ms
 -}

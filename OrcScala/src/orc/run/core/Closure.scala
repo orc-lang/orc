@@ -28,7 +28,7 @@ class Closure(
   extends ResolvableCollectionMember[Def](index, closureGroup) with Serializable {
   def code: Def = definition
 
-  override def toString = super.toString + (code.body.sourceTextRange, closureGroup, index)
+  override def toString = super.toString + (code.optionalVariableName.getOrElse(""), code.body.sourceTextRange, closureGroup, index)
 
   @throws(classOf[ObjectStreamException])
   protected def writeReplace(): AnyRef = {
@@ -44,7 +44,8 @@ protected case class ClosureMarshalingReplacement(index: Int, closureGroup: Clos
 class ClosureGroup(
   _defs: List[Def],
   _lexicalContext: List[Binding],
-  runtime: OrcRuntime)
-  extends ResolvableCollection[Def, Closure](_defs, _lexicalContext, runtime) {
+  runtime: OrcRuntime,
+  clock: Option[VirtualClock])
+  extends ResolvableCollection[Def, Closure](_defs, _lexicalContext, runtime, clock) {
   def buildMember(i: Int) = new Closure(i, this)
 }

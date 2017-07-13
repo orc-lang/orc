@@ -191,17 +191,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       }
   }
 
-  /*
-  val porcToJava = new CompilerPhase[CompilerOptions, porc.MethodCPS, String] {
-    val phaseName = "toJava"
-    override def apply(co: CompilerOptions) =
-      { ast =>
-        val translator = new PorcToJava()
-        translator(ast)
-      }
-  }
-  */
-
   val optimizePorc = new CompilerPhase[CompilerOptions, porc.MethodCPS, porc.MethodCPS] {
     import orc.ast.porc._
     val phaseName = "optimize"
@@ -221,9 +210,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
           "cost" -> Analysis.cost(prog))
         def s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $s")
-        //println("-------==========")
-        //println(prog)
-        //println("-------==========")
 
         val optimizer = Optimizer(co)
         val prog1 = optimizer(prog, analyzer).asInstanceOf[MethodCPS]

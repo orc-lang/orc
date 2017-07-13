@@ -1,4 +1,4 @@
--- A test of a trivial class and instantiation
+-- A test of a trivial class and instantiation with subclassing
 
 class B {
   -- An abstract member

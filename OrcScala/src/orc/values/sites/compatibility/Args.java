@@ -80,7 +80,7 @@ public class Args implements Serializable {
             throw new ArgumentTypeMismatchException(0, "message", "null");
         }
         if (v instanceof Field) {
-            return ((Field) v).field();
+            return ((Field) v).name();
         } else {
             throw new ArgumentTypeMismatchException(0, "message", v != null ? v.getClass().toString() : "null");
         }

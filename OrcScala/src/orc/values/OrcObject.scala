@@ -28,8 +28,11 @@ import orc.run.core.BoundReadable
   *
   * @author amp
   */
-case class OrcObject(private var entries: Map[Field, Binding] = null) extends HasMembers {
-  def setFields(_entries: Map[Field, Binding]) = {
+case class OrcObject(private var entries: Map[Field, AnyRef] = null) extends HasMembers {
+  // TODO: Replace the OrcObject implementation with something that can avoid the table look up when the Accessor is cached. 
+  // Maybe a mapping from fields to indexes and then an array of field values. The mapping could even be only created once per instantiation site.
+  // This would allow identical (and fast) access to all instances that come from the same "new {}".
+  def setFields(_entries: Map[Field, AnyRef]) = {
     assert(entries eq null)
     entries = _entries
   }
@@ -37,36 +40,13 @@ case class OrcObject(private var entries: Map[Field, Binding] = null) extends Ha
   override def hasMember(f: Field) = entries contains f
 
   @throws(classOf[NoSuchMemberException])
-  def getMember(f: Field): Binding = {
+  def getMember(f: Field): AnyRef = {
     assert(entries ne null)
-    entries.getOrElse(f, throw new NoSuchMemberException(this, f.field))
+    entries.getOrElse(f, throw new NoSuchMemberException(this, f.name))
   }
 
   override def toOrcSyntax() = {
     assert(entries ne null)
-    val formattedEntries =
-      for ((s, v) <- entries) yield {
-        s + " = " + Format.formatValue(v)
-      }
-    val contents =
-      formattedEntries.toList match {
-        case Nil => ""
-        case l => l reduceRight { _ + " # " + _ }
-      }
-    "{ " + contents + " }"
-  }
-}
-
-abstract class OrcObjectBase() extends OrcValue {
-  import scala.collection.JavaConverters._
-  def getMembers(): java.lang.Iterable[Field]
-
-  @throws[NoSuchMemberException]
-  def getMember(f: Field): AnyRef
-
-  override def toOrcSyntax() = {
-    val entries = getMembers().asScala.map(f => (f, getMember(f))).toMap
-
     val formattedEntries =
       for ((s, v) <- entries) yield {
         s + " = " + Format.formatValue(v)

@@ -27,7 +27,6 @@ import orc.error.runtime.RightException
 import orc.error.runtime.HaltException
 import orc.error.runtime.ExceptionHaltException
 import orc.util.ArrayExtensions._
-import orc.values.HasMembers
 import orc.error.runtime.UncallableValueException
 
 trait Site extends OrcValue with SiteMetadata {
@@ -75,7 +74,7 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
     try {
       h.publish(evaluate(args))
     } catch {
-      case (e: OrcException) => h !! e
+      case (e: OrcException) => h.halt(e)
     }
   }
   def calldirect(args: Array[AnyRef]): AnyRef = {

@@ -15,13 +15,12 @@ import java.util.HashMap;
 
 import orc.error.runtime.TokenException;
 import orc.lib.state.Ref.RefInstance;
-import orc.run.core.Binding;
-import orc.run.core.BoundValue;
 import orc.values.Field;
 import orc.values.HasMembers;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
 
+// TODO: Remove this entirely? It is based on the idea of objects with variable sets of fields which is kinda broken in the new OrcO stuff.
 /**
  * @author quark
  */
@@ -35,14 +34,14 @@ public class Dictionary extends EvalSite {
         }
 
         @Override
-        synchronized public Binding getMember(Field f) {
-            final String field = f.field();
+        synchronized public Object  getMember(Field f) {
+            final String field = f.name();
             RefInstance out = map.get(field);
             if (out == null) {
                 out = new RefInstance();
                 map.put(field, out);
             }
-            return new BoundValue(out);
+            return out;
         }
 
         @Override

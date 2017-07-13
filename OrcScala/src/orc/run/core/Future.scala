@@ -14,13 +14,15 @@ package orc.run.core
 
 import orc.OrcRuntime
 import orc.values.{ Format, OrcValue }
+import orc.FutureState
+import orc.FutureReader
 
 /** Interface for futures.
   *
   * This exists to provide a common interface for LocalFuture and
   * RemoteFuture if they need to have unrelated implementations.
   */
-trait Future extends ReadableBlocker with OrcValue {
+trait Future extends ReadableBlocker with OrcValue with orc.Future {
   def bind(v: AnyRef): Unit
   def stop(): Unit
 }
@@ -38,28 +40,52 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
 
   var _state = Unbound
   var _value: AnyRef = null
-  var _blocked: List[Blockable] = Nil
+  var _blocked: List[Either[Blockable, FutureReader]] = Nil
 
-  def bind(v: AnyRef) = synchronized {
-    if (_state == Unbound) {
-      _state = Bound
-      _value = v
+  def bind(v: AnyRef) = {
+    val (didIt, st) = synchronized {
+      if (_state == Unbound) {
+        _state = Bound
+        _value = v
+        (true, _state)
+      } else {
+        (false, _state)
+      }
+    }
+    if (didIt) {
       //Logger.finest(s"$this bound to $v")
-      scheduleBlocked()
+      scheduleBlocked(st)
+    }
+  }
+    
+  def stop() = {
+    val (didIt, st) = synchronized {
+      if (_state == Unbound) {
+        //Logger.finest(s"$this halted")
+        _state = Halt
+        (true, _state)
+      } else {
+        (false, _state)
+      }
+    }
+    if (didIt) {
+      scheduleBlocked(st)
     }
   }
 
-  def stop() = synchronized {
-    if (_state == Unbound) {
-      //Logger.finest(s"$this halted")
-      _state = Halt
-      scheduleBlocked()
-    }
-  }
-
-  private def scheduleBlocked(): Unit = {
+  private def scheduleBlocked(st: Int): Unit = {
+    assert(st != Unbound)
+    
     for (j <- _blocked) {
-      runtime.schedule(j)
+      j match {
+        case Left(j) =>
+          runtime.schedule(j)
+        case Right(j) =>
+          st match {
+            case Bound => j.publish(_value)
+            case Halt => j.halt()
+          }
+      }
     }
     // We will never need the blocked list again, so clear it to allow the blockables to be collected
     _blocked = null
@@ -70,7 +96,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
       _state match {
         case Unbound => {
           blockable.blockOn(this)
-          _blocked ::= blockable
+          _blocked ::= Left(blockable)
         }
         case _ => {}
       }
@@ -92,6 +118,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     }
   }
 
+  // TODO: Replace this with the get() method from orc.Future. We could rename get() if desired.
   def readIfResolved() = {
     synchronized { _state } match {
       case Unbound => None
@@ -105,6 +132,34 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
       case Bound => Format.formatValue(_value)
       case Halt => "stop"
       case Unbound => "$unbound$"
+    }
+  }
+
+  // orc.Future API
+  
+  def get(): FutureState = {
+    synchronized { _state } match {
+      case Unbound => orc.FutureUnbound
+      case Bound => orc.FutureBound(_value)
+      case Halt => orc.FutureStopped
+    }
+  }
+
+  def read(reader: FutureReader): Unit = {
+    val st = synchronized {
+      _state match {
+        case Unbound => {
+          _blocked ::= Right(reader)
+        }
+        case _ => {}
+      }
+      _state
+    }
+
+    st match {
+      case Bound => reader.publish(_value)
+      case Halt => reader.halt()
+      case Unbound => {}
     }
   }
 }

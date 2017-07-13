@@ -23,10 +23,10 @@ import orc.compile.Logger
   */
 object JavaSiteForm extends SiteForm {
   @throws(classOf[SiteResolutionException])
-  def resolve(name: String) = {
+  def resolve(name: String): Class[_] = {
     Logger.finer("Resolving Java class " + name)
     try {
-      new JavaClassProxy(loadClass(name).asInstanceOf[Class[_ <: java.lang.Object]])
+      loadClass(name)
     } catch {
       case e: InterruptedException => throw e
       case e: Exception =>

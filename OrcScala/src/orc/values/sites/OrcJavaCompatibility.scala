@@ -65,7 +65,7 @@ object OrcJavaCompatibility {
           case _ => f
         }
       }
-      case JavaObjectProxy(j) => j
+      //case JavaObjectProxy(j) => j
       case _ => orcValue.asInstanceOf[Object]
     }
 
@@ -75,9 +75,11 @@ object OrcJavaCompatibility {
     def getParameterTypes(): Array[java.lang.Class[_]]
     def isStatic: Boolean
     def isVarArgs: Boolean
+    def getName(): String
     def invoke(obj: Object, args: Array[Object]): Object
   }
 
+  // TODO: Fix spelling on invo(c|k)able.
   object Invocable {
     def apply(wrapped: java.lang.reflect.Member): Invocable = {
       wrapped match {
@@ -92,6 +94,7 @@ object OrcJavaCompatibility {
     def getParameterTypes(): Array[java.lang.Class[_]] = method.getParameterTypes
     def isStatic = Modifier.isStatic(method.getModifiers())
     def isVarArgs = method.isVarArgs()
+    def getName(): String = method.getName()
     def invoke(obj: Object, args: Array[Object]): Object = method.invoke(obj, args: _*)
   }
 
@@ -99,13 +102,15 @@ object OrcJavaCompatibility {
     def getParameterTypes(): Array[java.lang.Class[_]] = ctor.getParameterTypes
     def isStatic = true
     def isVarArgs = ctor.isVarArgs()
+    def getName(): String = ctor.getName()
     def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
   }
 
-  val methodSelectionCache = new ConcurrentHashMap[(Class[_], String, List[Class[_]]), Invocable]()
+  // TODO: This cache will be less and less useful as we move to cached invokers. We should consider removing it to save space and cache maintenance costs.
+  val methodSelectionCache = new ConcurrentHashMap[(Class[_], String, Seq[Class[_]]), Invocable]()
 
-  def chooseMethodForInvocation(targetClass: Class[_], memberName: String, argTypes: List[Class[_]]): Invocable = {
-    val key = (targetClass, memberName, argTypes)
+  def chooseMethodForInvocation(targetClass: Class[_], memberName: String, argTypes: Array[Class[_]]): Invocable = {
+    val key = (targetClass, memberName, argTypes.toSeq)
     methodSelectionCache.get(key) match {
       case null => {
         val inv = chooseMethodForInvocationSlow(targetClass, memberName, argTypes)
@@ -117,7 +122,7 @@ object OrcJavaCompatibility {
   }
 
   /** Given a method name and arg list, find the correct Method to call, per JLS §15.12.2's rules */
-  def chooseMethodForInvocationSlow(targetClass: Class[_], memberName: String, argTypes: List[Class[_]]): Invocable = {
+  def chooseMethodForInvocationSlow(targetClass: Class[_], memberName: String, argTypes: Array[Class[_]]): Invocable = {
     Logger.finest(s"$memberName target=$targetClass argTypes=(${argTypes.mkString(", ")})")
     //Phase 0: Identify Potentially Applicable Methods
     //A member method is potentially applicable to a method invocation if and only if all of the following are true:
@@ -127,6 +132,8 @@ object OrcJavaCompatibility {
     //* If the member is a variable arity method with arity n, the arity of the method invocation is greater or equal to n-1.
     //* If the member is a fixed arity method with arity n, the arity of the method invocation is equal to n.
     //* If the method invocation includes explicit type parameters, and the member is a generic method, then the number of actual type parameters is equal to the number of formal type parameters.
+
+    // FIXME: REmove this use of structural types and replace with use of Invocable from above.
     type JavaMethodOrCtor = java.lang.reflect.Member { def getParameterTypes(): Array[java.lang.Class[_]]; def isVarArgs(): Boolean }
     val methodName = if ("<init>".equals(memberName)) targetClass.getName() else memberName
     val ms: Traversable[JavaMethodOrCtor] = if ("<init>".equals(memberName)) targetClass.getConstructors() else getAccessibleMethods(targetClass)

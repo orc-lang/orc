@@ -60,7 +60,14 @@ case object DistributedBackendType extends BackendType {
 case object PorcCompilerBackend extends BackendType {
   override val toString = "porc"
   override def newBackend(): Backend[orc.ast.porc.MethodCPS] = {
-    ???
+    // FIXME: This hack is to allow OrcScala to build and work without the Truffle dependencies in PorcE.
+    try {
+      val cls = Class.forName("orc.PorcEBackend").asSubclass(classOf[PorcBackend])
+      cls.newInstance()
+    } catch {
+      case e: ClassNotFoundException =>
+        throw new Error("To use the Porc (PorcE) backend you must have the PorcE project on the classpath.", e)
+    }
   }
 }
 

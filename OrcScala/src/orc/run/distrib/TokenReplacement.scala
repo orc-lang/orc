@@ -231,7 +231,8 @@ protected final case class BoundFutureReplacement(bindingId: RemoteFutureRef#Rem
 protected final case class BoundClosureReplacement(index: Int, closureGroupReplacement: ClosureGroupReplacement) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation, astRoot: Expression) = {
     val cg = closureGroupReplacement.unmarshalClosureGroup(execution, origin, astRoot)
-    BoundReadable(new Closure(index, cg))
+    // TODO: Verify that this will never be reached before the closure group is resolved (and hence the Closures would be created naturally on another node).
+    BoundValue(new Closure(index, cg))
   }
 }
 
@@ -247,7 +248,8 @@ protected final case class ClosureGroupReplacement(defNodesIndicies: List[Seq[In
     if (cg == null) {
       val defs = (defNodesIndicies map { AstNodeIndexing.lookupNodeInTree(ast, _) }).asInstanceOf[List[Def]]
       val lexicalContext = env.toList map { _.unmarshalBinding(execution, origin, ast) }
-      cg = new ClosureGroup(defs, lexicalContext, execution.runtime)
+      // FIXME: The None clock is almost certainly wrong!!! However, I think it will no longer be needed since closures will never need to migrate before the are fully resolved.
+      cg = new ClosureGroup(defs, lexicalContext, execution.runtime, None)
       execution.runtime.schedule(cg)
     }
     cg

@@ -83,7 +83,7 @@ trait ASTForSwivel extends Positioned {
     */
   def transferOptionalVariableName(source: ASTForSwivel, target: ASTForSwivel) {
     (source, target) match {
-      case (x: hasOptionalVariableName, y: hasOptionalVariableName) if x.optionalVariableName.isDefined => {
+      case (x: hasOptionalVariableName, y: hasOptionalVariableName) if x.optionalVariableName.isDefined && y.optionalVariableName.isEmpty => {
         y.optionalVariableName = x.optionalVariableName
       }
       case _ => {}

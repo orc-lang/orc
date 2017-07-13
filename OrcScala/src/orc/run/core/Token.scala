@@ -13,17 +13,19 @@
 
 package orc.run.core
 
-import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable }
+import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable, FutureReader }
 import orc.ast.oil.nameless._
 import orc.ast.oil.nameless.Site
 import orc.error.OrcException
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, DoesNotHaveMembersException, StackLimitReachedError, TokenException }
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, DoesNotHaveMembersException, NoSuchMemberException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
 import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
-import orc.values.{ Field, HasMembers, OrcObject, OrcRecord, Signal }
+import orc.values.{ Field, OrcObject, OrcRecord, Signal }
 import orc.values.sites.TotalSite
 import orc.error.runtime.JavaStackLimitReachedError
+import orc.StoppedFuture
+import orc.ErrorAccessor
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -513,14 +515,27 @@ class Token protected (
     * The call target is resolved, but the parameters are not yet resolved.
     */
   protected def makeCall(target: AnyRef, params: List[Binding]) {
+    lazy val applyValue = try {
+      runtime.getAccessor(target, Field("apply")) match {
+        case _: ErrorAccessor =>
+          None
+        case a =>
+          Some(a.get(target))
+      }      
+    } catch {
+      case _: DoesNotHaveMembersException | _: NoSuchMemberException =>
+        Logger.fine(s"Call target $target provided an accessor which immediately failed. This is a major performance problem due to .apply checks. Fix the Accessor computation code for this value.")
+        None
+    }
+    
     target match {
       case c: Closure => {
         functionCall(c.code, c.context, params)
       }
-      // Check for HasMembers, but only on non-sites and OrcRecords
-      // TODO: This is a horrible list of special cases. We should remove this need by fully disentangling sites and values.
-      case o: HasMembers if (!o.isInstanceOf[orc.values.sites.Site] || o.isInstanceOf[orc.values.OrcRecord]) && o.hasMember(Field("apply")) => {
-        resolve(o.getMember(Field("apply"))) { makeCall(_, params) }
+      case o if applyValue.isDefined => {
+        resolvePossibleFuture(applyValue.get) { 
+          makeCall(_, params)
+        }
       }
       case s => {
         params match {
@@ -587,6 +602,17 @@ class Token protected (
   }
 
   def newObject(bindings: Map[Field, Expression]) {
+    def binding2MaybeFuture(b: Binding): AnyRef = {
+      b match {
+        case BoundValue(v) => v
+        case BoundReadable(f: orc.Future) => f
+        case BoundStop => StoppedFuture
+        case BoundReadable(v) =>
+          throw new Error(s"WTF: $v")
+      }
+    }
+    
+    
     val self = new OrcObject()
 
     Logger.fine(s"Instantiating class: ${bindings}")
@@ -596,10 +622,10 @@ class Token protected (
       expr match {
         // NOTE: The first two cases are optimizations to avoid creating a group and a token for simple fields.
         case Constant(v) => {
-          (name, BoundValue(v))
+          (name, v)
         }
         case Variable(n) => {
-          (name, objenv(n))
+          (name, binding2MaybeFuture(objenv(n)))
         }
 
         case _ => {
@@ -615,7 +641,7 @@ class Token protected (
             clock = clock)
           runtime.stage(t)
 
-          (name, pg.binding)
+          (name, binding2MaybeFuture(pg.binding))
         }
       }
     }
@@ -655,8 +681,8 @@ class Token protected (
         case Blocked(b) => orc.util.Profiler.measureInterval(debugId, 'Token_Blocked) { b.check(this) }
         case Publishing(v) => if (setState(Live)) orc.util.Profiler.measureInterval(debugId, 'Token_Publishing) { stack(this, v) }
         case Killed => orc.util.Profiler.measureInterval(debugId, 'Token_Killed) {} // This token was killed while it was on the schedule queue; ignore it
-        case Suspended(_) => throw new AssertionError("suspended token scheduled")
-        case Halted => throw new AssertionError("halted token scheduled")
+        case Suspended(_) => throw new AssertionError(s"suspended token scheduled: $this")
+        case Halted => throw new AssertionError(s"halted token scheduled: $this")
       }
     } catch {
       case e: OrcException => {
@@ -667,7 +693,7 @@ class Token protected (
         Thread.currentThread().interrupt()
       } //Thread interrupt causes halt without notify
       case e: StackOverflowError => {
-        this !! new JavaStackLimitReachedError(stack.count(_.isInstanceOf[FunctionFrame]))
+        this !! new JavaStackLimitReachedError(stack.count(_.isInstanceOf[FunctionFrame]), e)
       }
       case e: Throwable => {
         notifyOrc(CaughtEvent(e))
@@ -684,6 +710,39 @@ class Token protected (
     //Logger.check(isRunning.compareAndSet(true, false) || state == Killed || Token.isRunningAlreadyCleared.get, s"${System.nanoTime().toHexString}: Failed to clear running: $this")
     super.resolveOptional(b)(k)
   }
+    
+  protected def resolvePossibleFuture(v: AnyRef)(k: AnyRef => Unit) {
+    v match {
+      case f: orc.Future =>
+        resolve(f)(k)
+      case b: Binding =>
+        throw new AssertionError("This kind of resolve cannot ever handle Bindings")
+      case v =>
+        k(v)
+    }
+  }
+  
+  protected def resolve(f: orc.Future)(k: AnyRef => Unit) {
+    resolveOptional(f) {
+      case Some(v) => k(v)
+      case None => halt()
+    }
+  }
+  
+  protected def resolveOptional(f: orc.Future)(k: Option[AnyRef] => Unit) {
+    f.get() match {
+      case orc.FutureBound(v) =>
+        k(Some(v))
+      case orc.FutureStopped => 
+        k(None)
+      case orc.FutureUnbound => {
+        pushContinuation(k)
+        val h = new TokenFutureReader(this)
+        blockOn(h)
+        f.read(h)
+      }
+    }
+  }
 
   protected def eval(node: orc.ast.oil.nameless.Expression): Unit = orc.util.Profiler.measureInterval(debugId, 'Token_eval) {
     //Logger.finest(s"Evaluating: $node")
@@ -698,15 +757,7 @@ class Token protected (
 
       case Call(target, args, _) => {
         val params = args map lookup
-        lookup(target) match {
-          /*
-           * Allow a def to be called with an open context.
-           * This functionality is sound, but technically exceeds the formal semantics of Orc.
-           */
-          case BoundReadable(c: Closure) => functionCall(c.code, c.context, params)
-
-          case b => resolve(b) { makeCall(_, params) }
-        }
+        resolve(lookup(target)) { makeCall(_, params) }
       }
 
       case Parallel(left, right) => {
@@ -755,16 +806,16 @@ class Token protected (
       case FieldAccess(o, f) => {
         resolve(lookup(o)) {
           _ match {
-            case o: HasMembers =>
-              //Logger.finer(s"resolving $o$f")
-              resolve(o.getMember(f)) { x =>
-                //Logger.finer(s"resolved $o$f = $x")
-                publish(Some(x))
-              }
-            // Fallback on old call style fields
-            // TODO: Remove the need for this.
             case s: AnyRef =>
-              siteCall(s, List(f))
+              val v = runtime.getAccessor(s, f).get(s)
+              v match {
+                case f: orc.Future =>
+                  val h = new TokenFuturePublisher(this)
+                  blockOn(h)
+                  f.read(h)
+                case _ =>
+                  publish(Some(v))
+              }
             case null =>
               throw new DoesNotHaveMembersException(null)
           }
@@ -783,7 +834,7 @@ class Token protected (
 
         decls.head match {
           case _: Def => {
-            val closureGroup = new ClosureGroup(decls.collect({ case d: Def => d }), lexicalContext, runtime)
+            val closureGroup = new ClosureGroup(decls.collect({ case d: Def => d }), lexicalContext, runtime, clock)
             runtime.stage(closureGroup)
 
             for (c <- closureGroup.members) {
@@ -818,10 +869,11 @@ class Token protected (
   }
 
   def publish(v: Option[AnyRef]) {
+    Logger.finest(s"Publishing $v in $this")
     v foreach { vv =>
-      assert(!vv.isInstanceOf[Binding], s"Interpreter bug. Triggered at $this")
-      assert(!vv.isInstanceOf[java.math.BigInteger], s"Type coercion error at $this")
-      assert(!vv.isInstanceOf[java.math.BigDecimal], s"Type coercion error at $this")
+      assert(!vv.isInstanceOf[Binding], s"Interpreter bug. Triggered at $this, with $vv")
+      assert(!vv.isInstanceOf[java.math.BigInteger], s"Type coercion error at $this, with $vv")
+      assert(!vv.isInstanceOf[java.math.BigDecimal], s"Type coercion error at $this, with $vv")
     }
     state match {
       case Blocked(_: OtherwiseGroup) => throw new AssertionError("publish on a pending Token")
@@ -855,9 +907,11 @@ class Token protected (
     }
   }
 
+  @deprecated("Call publish(Some(Signal))", "3.0")
   def publish() { publish(Some(Signal)) }
 
   override def halt() {
+    Logger.finer(s"Token halted: $this")
     state match {
       case Publishing(_) | Live | Blocked(_) | Suspending(_) => {
         setState(Halted)
@@ -909,7 +963,6 @@ class Token protected (
     env.zipWithIndex.map({
       case (b, i) => s"$i: " + (b match {
         case BoundValue(v) => v.toString
-        case BoundReadable(c: Closure) => c.code.toString
         case BoundReadable(c) => c.toString
         case BoundStop => "stop"
       })

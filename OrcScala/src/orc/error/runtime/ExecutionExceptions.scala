@@ -37,7 +37,7 @@ class TokenLimitReachedError(val limit: Int) extends TokenError("Token limit (li
 /**
   */
 @SerialVersionUID(4878999138940046944L)
-class JavaStackLimitReachedError(val frames: Int) extends TokenError(s"Java stack limit reached (with $frames Orc frames; though many fewer may also cause the problem). Possible work-around: Increase the Java stack size.")
+class JavaStackLimitReachedError(val frames: Int, e: Throwable) extends TokenError(s"Java stack limit reached (with $frames Orc frames; though many fewer may also cause the problem). Possible work-around: Increase the Java stack size.", e)
 
 /**
   */
@@ -92,6 +92,11 @@ class TupleIndexOutOfBoundsException(val index: Int) extends RuntimeTypeExceptio
 @SerialVersionUID(-803260225175583163L)
 class MethodTypeMismatchException(val methodName: String, val clazz: Class[_]) extends RuntimeTypeException("Argument types did not match any implementation for method '" + methodName + "' in " + clazz.getName() + ".")
 
+/** Exception raised when an uncallable type (JVM class) is used as a call position.
+  */
+// TODO: Add SerialVersionUID
+class UncallableTypeException(uncallable: Class[_]) extends RuntimeTypeException("Type not callable: \"" + uncallable.toString() + "\"")
+
 /** Exception raised when an uncallable value occurs in call argPosition.
   */
 @SerialVersionUID(7171287004340017499L)
@@ -99,8 +104,18 @@ class UncallableValueException(uncallable: Any) extends RuntimeTypeException("Va
 
 /** Attempted dot access at an unknown member.
   */
+// TODO: Add SerialVersionUID
+class TypeNoSuchMemberException(v: Class[_], val unknownMember: String) extends RuntimeTypeException("Type " + v + " does not have a '" + unknownMember + "' member")
+
+/** Attempted dot access at an unknown member.
+  */
 @SerialVersionUID(7027861135377746868L)
 class NoSuchMemberException(v: AnyRef, val unknownMember: String) extends RuntimeTypeException("Value " + v + " does not have a '" + unknownMember + "' member")
+
+/** Attempted dot access to members on an type without members
+  */
+// TODO: Add SerialVersionUID
+class TypeDoesNotHaveMembersException(val v: Class[_]) extends RuntimeTypeException("Type " + v + " does not have members")
 
 /** Attempted dot access to members on an object without members
   */
@@ -139,3 +154,5 @@ class ProgramSignalledError(message: String) extends SiteException(message)
 
 @SerialVersionUID(-1814816409189456821L)
 class VirtualClockError(val message: String) extends TokenError(message)
+
+

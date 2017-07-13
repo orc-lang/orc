@@ -12,12 +12,14 @@ val x = Rwait(500) >> 23
 Rwait(250) >> Println("250ms") >> stop
 |
 (
-  def f() = Println("f()") >> x
-  f() >> stop
+  val o = new {
+  	def f() = Println("f()") >> x
+  }
+  o.f() >> stop
 )
 
 {-
 OUTPUT:
-f()
 250ms
+f()
 -}

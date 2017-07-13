@@ -14,6 +14,7 @@
 package orc.run.core
 
 import orc.{ OrcRuntime, Schedulable }
+import orc.run.core.VirtualClock
 
 /** An member of a collection of Ts that need a single resolved recursive context.
   *
@@ -21,18 +22,13 @@ import orc.{ OrcRuntime, Schedulable }
   */
 class ResolvableCollectionMember[T](
   index: Int,
-  val collection: ResolvableCollection[T, ResolvableCollectionMember[T]])
-  extends ReadableBlocker {
+  val collection: ResolvableCollection[T, ResolvableCollectionMember[T]]) {
 
   def definition: T = collection.definitions(index)
 
   def context = collection.context
 
   def lexicalContext = collection.lexicalContext
-
-  override def check(t: Blockable) = collection.check(t, index)
-
-  def read(t: Blockable) = collection.read(t, index)
 }
 
 /** A collection of Ts that all need a shared recursive context. This will
@@ -43,7 +39,8 @@ class ResolvableCollectionMember[T](
 abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]](
   private[run] var _defs: List[T],
   private var _lexicalContext: List[Binding],
-  val runtime: OrcRuntime)
+  val runtime: OrcRuntime,
+  val clock: Option[VirtualClock])
   extends Schedulable
   with Blockable {
   import ResolvableCollection._
@@ -67,9 +64,11 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
 
   def buildMember(i: Int): Member
 
+  //def buildFuture(i: Int): Future = new LocalFuture(runtime) 
+
   /** Create all the closures. They forward most of their methods here.
     */
-  val members = definitions.indices.toList map buildMember
+  val members = definitions.indices.toList map (_ => new LocalFuture(runtime))
 
   /** Stores the current version of the context. The initial value has BoundClosures for each closure,
     * so they will still be resolved if this context is used.
@@ -86,32 +85,16 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
    * of things.
    */
 
-  // State is used for the blocker side
+  /** State is used for the blocker side
+    *
+    */
   private var state: ResolvableCollectionState = Started
 
-  // Waitlist is the state of the blocker side. 
-  // These objects are below this in the dynamic scoping and hence cannot be called with the this lock held.
-  private var waitlist: List[Blockable] = Nil
-  // This should be empty at any time state = Resolved
-
-  private var activeCount = 0
-
   override def setQuiescent(): Unit = {
-    val blockablesToSet = synchronized {
-      assert(activeCount > 0)
-      activeCount -= 1
-      if (activeCount == 0) waitlist else Nil
-    }
-    blockablesToSet foreach { _.setQuiescent() }
+    clock foreach { _.setQuiescent() }
   }
   override def unsetQuiescent(): Unit = {
-    val blockablesToUnset = synchronized {
-      assert(activeCount >= 0)
-      activeCount += 1
-      // If activeCount WAS 0
-      if (activeCount == 1) waitlist else Nil
-    }
-    blockablesToUnset foreach { _.unsetQuiescent() }
+    clock foreach { _.unsetQuiescent() }
   }
 
   /** Execute the resolution process of this Closure. This should be called by the scheduler.
@@ -129,7 +112,9 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
       case Blocked(b) => {
         b.check(this)
       }
-      case Resolved => throw new AssertionError("Closure scheduled in bad state: " + state)
+      case Resolved => {
+        throw new AssertionError("Closure scheduled in bad state: " + state)
+      }
     }
   }
 
@@ -138,71 +123,32 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
     case _ => false
   }
 
-  //// Blocker Implementation
-
-  def check(t: Blockable, i: Int): Unit = orc.util.Profiler.measureInterval(0L, 'ResolvableCollection_check) {
-    synchronized { state } match {
-      case Resolved =>
-        t.awakeTerminalValue(members(i))
-      case _ => throw new AssertionError("Closure.check called in bad state: " + state)
-    }
-  }
-
-  def read(t: Blockable, i: Int) = {
-    // To avoid a negative transient of the activeCount of t (to zero being the problem)
-    // we unset here and then set again to undo it after if it was not needed. This means that
-    // blockables in waitlist can always be set without breaking things.
-    // t is guaranteed not to be quiescent (since it is calling read), so unsetting it again
-    // for a little while will not cause an extra step to 0. So we are intentionally creating
-    // a positive transient to avoid a possible negative transient.
-    t.unsetQuiescent()
-
-    val (doawake, doset) = synchronized {
-      state match {
-        case Resolved => (true, true)
-        case _ => {
-          t.blockOn(members(i))
-          waitlist ::= t
-          (false, activeCount == 0)
-        }
-      }
-    }
-
-    // Now undo the unset from above if needed.
-    if (doset) {
-      t.setQuiescent()
-    }
-
-    if (doawake) {
-      t.awakeTerminalValue(members(i))
-    }
-  }
-
   //// Blockable Implementation
 
   override def awakeNonterminalValue(v: AnyRef) = {
     // We only block on things that produce a single value so we don't have to handle multiple awakeNonterminalValue calls from one source.
     val bindings = v.asInstanceOf[List[Binding]]
-    val waits = synchronized {
+    synchronized {
       _lexicalContext = bindings
-      _context = members.reverse.map { BoundValue(_) } ::: lexicalContext
+      val realMembers = definitions.indices.toList map buildMember
+      for ((f, v) <- members zip realMembers) {
+        f.bind(v)
+      }
+      _context = realMembers.reverse.map { BoundValue(_) } ::: lexicalContext
       state = Resolved
-      waitlist
+      //waitlist
       //waitlist = Nil
     }
-    waits foreach runtime.stage
+    //waits foreach runtime.stage
   }
   override def awakeStop() = throw new AssertionError("Should never halt")
-  override def halt() {} // Ignore halts
+  override def halt(): Unit = {} // Ignore halts
 
   def blockOn(b: Blocker) {
     assert(state != Resolved)
     state = Blocked(b)
   }
 
-  //// Schedulable Implementation to handle Vclock correctly
-
-  // We cannot just unset/set on all elements of waitlist because that structure may change at any time.
   override def onSchedule() {
     unsetQuiescent()
   }

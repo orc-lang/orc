@@ -98,7 +98,7 @@ trait NamedASTTransform extends NamedASTFunction {
         case Graft(x, value, body) => Graft(x, recurse(value), transform(body, x :: context, typecontext))
         case Trim(f) => Trim(recurse(f))
         case Otherwise(left, right) => recurse(left) ow recurse(right)
-        case New(self, st, bindings, t) => New(self, st.map(transform(_, typecontext)), bindings.mapValues(transform(_, self :: context, typecontext)), t.map(transform(_, typecontext)))
+        case New(self, st, bindings, t) => New(self, st.map(transform(_, typecontext)), Map() ++ bindings.mapValues(transform(_, self :: context, typecontext)), t.map(transform(_, typecontext)))
         case FieldAccess(o, f) => FieldAccess(recurse(o), f)
         case DeclareCallables(defs, body) => {
           val defnames = defs map { _.name }

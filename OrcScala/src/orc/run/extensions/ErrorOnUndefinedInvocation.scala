@@ -13,16 +13,23 @@
 package orc.run.extensions
 
 import orc.InvocationBehavior
-import orc.Handle
+import orc.{Handle, Invoker, Accessor}
 import orc.values.Format
 import orc.error.runtime.UncallableValueException
+import orc.values.Field
+import orc.error.runtime.{TypeNoSuchMemberException, UncallableTypeException}
+import orc.error.runtime.NoSuchMemberException
+import orc.UncallableValueInvoker
+import orc.DoesNotHaveMembersAccessor
 
 /** @author dkitchin
   */
 trait ErrorOnUndefinedInvocation extends InvocationBehavior {
-  /* This replaces the default behavior because it does not call super */
-  override def invoke(h: Handle, v: AnyRef, vs: Array[AnyRef]) {
-    //val error = "You can't call the " + (if (v != null) v.getClass().toString() else "null") + " \" " + Format.formatValue(v) + " \""
-    h !! new UncallableValueException(v)
+  def getInvoker(target: AnyRef, arguments: Array[AnyRef]): Invoker = {
+    UncallableValueInvoker(target)
+  }
+  
+  def getAccessor(target: AnyRef, field: Field): Accessor = {
+    DoesNotHaveMembersAccessor(target)
   }
 }
