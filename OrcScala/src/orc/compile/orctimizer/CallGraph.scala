@@ -546,7 +546,7 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Call
           val inNode = ExitNode(expr)
           BoundedSet(FutureValue(inState.collect({
             case e: FutureContent => e
-            case f: FutureValue => throw new AssertionError("Futures should never be inside futures")
+            case f: FutureValue => throw new AssertionError(s"Futures should never be inside futures\n$expr")
           }), Set(inNode)))
         case ExitNode(FieldAccess.Z(_, f)) =>
           //Logger.fine(s"Processing FieldAccess: $node ($inState)")

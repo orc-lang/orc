@@ -118,7 +118,15 @@ public abstract class Call extends Expression {
 
 				counter.prepareSpawn();
 				
-				invokeWithBoundary(invoker, handle, t, argumentValues);
+				try {
+					invokeWithBoundary(invoker, handle, t, argumentValues);
+				} catch (ExceptionHaltException e) {
+					execution.notifyOrc(new CaughtEvent(e.getCause()));
+				} catch (HaltException e) {
+				} catch (Exception e) {
+					execution.notifyOrc(new CaughtEvent(e));
+					throw HaltException.SINGLETON();
+				}
 			}
 		}
 
@@ -158,7 +166,7 @@ public abstract class Call extends Expression {
 				} catch (HaltException e) {
 					throw e;
 				} catch (Exception e) {
-					execution.notifyOrc(new CaughtEvent(e.getCause()));
+					execution.notifyOrc(new CaughtEvent(e));
 					throw HaltException.SINGLETON();
 				}
 			}

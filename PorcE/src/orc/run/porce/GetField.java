@@ -4,6 +4,8 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import orc.Accessor;
+import orc.CaughtEvent;
+import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.values.Field;
 
@@ -26,7 +28,12 @@ public class GetField extends Expression {
 		Accessor accessor = getAccessorWithBoundary(obj);
 		// FIXME: PERFORMANCE: Cache accessor and validate with accessor.canGet. With polymorphic cache.
 
-		return accessWithBoundary(accessor, obj);
+		try {
+			return accessWithBoundary(accessor, obj);
+		} catch (Exception e) {
+			execution.notifyOrc(new CaughtEvent(e));
+			throw HaltException.SINGLETON();
+		}
 	}
 
 	@TruffleBoundary

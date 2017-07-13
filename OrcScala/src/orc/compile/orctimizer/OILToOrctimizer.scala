@@ -130,7 +130,7 @@ class OILToOrctimizer {
       case Otherwise(left, right) =>
         orct.Otherwise(apply(left), apply(right))
       case DeclareCallables(defs, body) => {
-        val bctx = ctx.copy(valueSource = ctx.valueSource ++ (defs map { d => (d.name, e) }), 
+        val bctx = ctx.copy(
             variableMapping = ctx.variableMapping ++ (defs map { d => (d.name, d.name ->> new orct.BoundVar()) }))
         val dctx = ctx.copy(valueSource = ctx.valueSource ++ (defs map { d => (d.name, e) }), 
             variableMapping = ctx.variableMapping ++ (defs map { d => (d.name, new orct.BoundVar(d.name.optionalVariableName.map(_ + "_temp"))) }))
@@ -169,11 +169,11 @@ class OILToOrctimizer {
         val bctx = ctx.addValueSource(self, e).addVariableMapping(self)
         val newMembers = members.mapValues(e => e match {
           case a: Argument =>
-            orct.FieldArgument(apply(a))
+            orct.FieldArgument(apply(a)(bctx))
           case _ =>
             orct.FieldFuture(apply(e)(bctx))
         }).view.force
-        orct.New(apply(self), selfT map apply, newMembers, objT map apply)
+        orct.New(apply(self)(bctx), selfT map apply, newMembers, objT map apply)
       }
 
       case VtimeZone(timeOrder, body) =>
@@ -253,7 +253,10 @@ class OILToOrctimizer {
         (d, newBody.freeVars -- newFormals)
       }
       case Site(name, formals, body, typeformals, argtypes, returntype) => {
-        val d = defn ->> orct.Site(apply(name), formals map apply, apply(body), typeformals map apply,
+        val bctx = formals.foldLeft(ctx)(_.addVariableMapping(_))
+        val newFormals = formals.map(apply(_)(bctx))
+        val newBody = apply(body)(bctx)
+        val d = defn ->> orct.Site(apply(name), newFormals, newBody, typeformals map apply,
           argtypes map { _ map apply }, returntype map apply)
         (d, Set())
       }
