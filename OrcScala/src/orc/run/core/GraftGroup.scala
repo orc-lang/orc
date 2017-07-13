@@ -1,5 +1,5 @@
 //
-// GraftGroup.scala -- Scala class PruningGroup
+// GraftGroup.scala -- Scala class GraftGroup
 // Project OrcScala
 //
 // Created by dkitchin on Aug 12, 2011.
@@ -109,7 +109,7 @@ class GraftGroup(parent: Group) extends {
   }
 }
 
-/** Possible states of a PruningGroup */
+/** Possible states of a GraftGroup */
 sealed abstract class GraftGroupState
 case object ValueUnknown extends GraftGroupState
 case object ValuePublished extends GraftGroupState

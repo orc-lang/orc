@@ -31,7 +31,7 @@ abstract class JoinBase extends Blocker {
   // TODO: Optimize the case where no parameter requires blocking.
 
   // Additional implementation will be needed to detect when a blocking step could be skipped,
-  // for example, when a pruning group or closure is already bound.
+  // for example, when a graft group or closure is already bound.
 
   val items = new Array[Binding](params.size)
   var state: JoinState = JoinInProgress(params.size)

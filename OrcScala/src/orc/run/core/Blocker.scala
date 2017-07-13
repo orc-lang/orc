@@ -16,7 +16,7 @@ import orc.OrcRuntime
 /** The trait for objects that can be blocked on.
   *
   * Many subclasses of Blocker implement a read method (for example Closure and
-  * PruningGroup). In addition to possibly blocking something on the Blocker,
+  * GraftGroup). In addition to possibly blocking something on the Blocker,
   * read will also manipulate the Vclocks so that blocked tokens are not quiescent
   * while the Blocker is running. This is important because the Blocker may serve
   * as a bridge from one non-quiescent token to another, so non-quiescence must
