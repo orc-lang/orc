@@ -2,7 +2,7 @@
 // OrcOptions.scala -- Interfaces for Orc options
 // Project OrcScala
 //
-// Created by dkitchin on May 10, 2010.
+// Created by amp on July 12, 2017.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
