@@ -15,7 +15,7 @@ package orc.run.core
 import orc.OrcRuntime
 import orc.values.{ Format, OrcValue }
 import orc.FutureState
-import orc.FutureReadHandle
+import orc.FutureReader
 
 /** Interface for futures.
   *
@@ -40,7 +40,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
 
   var _state = Unbound
   var _value: AnyRef = null
-  var _blocked: List[Either[Blockable, FutureReadHandle]] = Nil
+  var _blocked: List[Either[Blockable, FutureReader]] = Nil
 
   def bind(v: AnyRef) = {
     val (didIt, st) = synchronized {
@@ -145,7 +145,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     }
   }
 
-  def read(reader: FutureReadHandle): Unit = {
+  def read(reader: FutureReader): Unit = {
     val st = synchronized {
       _state match {
         case Unbound => {

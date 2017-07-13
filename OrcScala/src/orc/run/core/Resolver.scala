@@ -12,7 +12,7 @@
 //
 package orc.run.core
 
-import orc.FutureReadHandle
+import orc.FutureReader
 import java.lang.AssertionError
 
 /** @author amp

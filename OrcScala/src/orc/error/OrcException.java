@@ -24,7 +24,7 @@ import orc.compile.parse.OrcSourceRange;
  *
  * @author dkitchin
  */
-public abstract class OrcException extends RuntimeException {
+public abstract class OrcException extends Exception {
     private static final long serialVersionUID = -194692912947820229L;
 
     OrcSourceRange position;

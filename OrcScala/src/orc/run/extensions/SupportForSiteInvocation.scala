@@ -31,8 +31,6 @@ import orc.values.sites.AccessorValue
 import orc.ErrorInvoker
 import orc.ErrorAccessor
 
-// TODO: Implement Invoker away InvocationBehavior. One for classes that are Invokers, one for an invoker creation interface. Similarly for Accessor. 
-
 /** @author dkitchin
   */
 trait SupportForSiteInvocation extends InvocationBehavior {

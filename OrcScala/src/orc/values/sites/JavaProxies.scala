@@ -14,7 +14,7 @@ package orc.values.sites
 
 import scala.collection.immutable.List
 import scala.language.existentials
-import orc.{ Handle, Invoker, DirectInvoker, Accessor, AgressivelyInlined, OnlyDirectInvoker }
+import orc.{ Handle, Invoker, DirectInvoker, Accessor, OnlyDirectInvoker }
 import orc.values.Signal
 import orc.values.{ Field => OrcField }
 import orc.run.Logger
@@ -36,8 +36,6 @@ import orc.error.runtime.NoSuchMemberException
 import orc.util.ArrayExtensions.{ Array1, Array0 }
 import orc.error.runtime.{ UncallableValueException, HaltException, MethodTypeMismatchException }
 import java.lang.NoSuchMethodException
-import orc.AgressivelyInlined
-import orc.Accessor
 import orc.run.Logger
 import orc.InvocationBehaviorUtilities
 import orc.values.Field
@@ -155,7 +153,7 @@ object JavaCall {
     (target, args) match {
       // ARRAYS
       case (_, Array1(_: BigInt)) if targetCls.isArray() => {
-        Some(new OnlyDirectInvoker with AgressivelyInlined {
+        Some(new OnlyDirectInvoker {
           def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
             target.getClass().isArray() && arguments.length == 1 && arguments(0).isInstanceOf[BigInt]
           }

@@ -64,17 +64,6 @@ trait OrcRuntimeProvides {
   */
 trait OrcRuntimeRequires extends InvocationBehavior
 
-/** This Invoker or Accessor should be inlined into the caller if supported.
-  *
-  * Inlining should be performed on all Invoker and Accessor methods.
-  *
-  * A marker trait used by the Truffle backend. Any class implementing this
-  * interface should manually limit inlining as needed. This may include
-  * using the TruffleBoundary annotation or similar. These annotations will
-  * be ignored in other backends so they shouldn't be a problem.
-  */
-trait AgressivelyInlined
-
 /** An action class implementing invocation for specific target and argument types.
   *
   * The fundemental difference between an Invoker and Accessor is that an accessor can return a future
@@ -128,7 +117,7 @@ trait DirectInvoker extends Invoker {
   def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef
 }
 
-/** Type of error sentinals returned by InvocationBehavior.getInvoker.
+/** Type of error sentinels returned by InvocationBehavior.getInvoker.
   *
   * These invokers must NEVER be cached.
   */
@@ -222,7 +211,7 @@ case class DoesNotHaveMembersAccessor(target: AnyRef) extends ErrorAccessor {
   * handling future results. Non-orc code can also implement this interface
   * to interact with Orc futures when implementing external routine methods.
   */
-trait FutureReadHandle {
+trait FutureReader {
   /** Called if the future is bound to a value.
     *
     * The value may not be another Future.
@@ -276,19 +265,19 @@ trait Future {
     * reader methods may be called during the execution of this call (in this thread) or
     * called in another thread at any point after this call begins.
     */
-  def read(reader: FutureReadHandle): Unit
+  def read(reader: FutureReader): Unit
 }
 
 object StoppedFuture extends Future {
   def get() = FutureStopped
-  def read(reader: FutureReadHandle) = {
+  def read(reader: FutureReader) = {
     reader.halt()
   }
 }
 
 case class BoundFuture(v: AnyRef) extends Future {
   def get() = FutureBound(v)
-  def read(reader: FutureReadHandle) = {
+  def read(reader: FutureReader) = {
     reader.publish(v)
   }
 }
@@ -323,7 +312,7 @@ trait InvocationBehavior {
   *
   * Published values passed to publish and publishNonterminal may not be futures.
   */
-trait Handle extends FutureReadHandle {
+trait Handle {
 
   // TODO: Consider making this a seperate API that is not core to the Orc JVM API.
   /** Submit an event to the Orc runtime.

@@ -13,7 +13,7 @@
 
 package orc.run.core
 
-import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable, FutureReadHandle }
+import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable, FutureReader }
 import orc.ast.oil.nameless._
 import orc.ast.oil.nameless.Site
 import orc.error.OrcException
@@ -737,7 +737,7 @@ class Token protected (
         k(None)
       case orc.FutureUnbound => {
         pushContinuation(k)
-        val h = new TokenFutureReadHandle(this)
+        val h = new TokenFutureReader(this)
         blockOn(h)
         f.read(h)
       }
@@ -810,7 +810,7 @@ class Token protected (
               val v = runtime.getAccessor(s, f).get(s)
               v match {
                 case f: orc.Future =>
-                  val h = new CallHandle(this) {}
+                  val h = new TokenFuturePublisher(this)
                   blockOn(h)
                   f.read(h)
                 case _ =>
