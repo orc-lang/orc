@@ -3,7 +3,7 @@ package orc.run.porce.runtime
 import com.oracle.truffle.api.nodes.RootNode
 import com.oracle.truffle.api.frame.VirtualFrame
 import orc.run.porce.PorcEUnit
-import orc.FutureReadHandle
+import orc.FutureReader
 import orc.run.porce.Logger
 import orc.FutureBound
 import orc.FutureUnbound
@@ -89,7 +89,7 @@ trait PorcERuntimeOperations {
           }
           case FutureUnbound => {
             c.prepareSpawn() // Matches: c.halt below or halt in schedulePublishAndHalt.
-            f.read(new FutureReadHandle() {
+            f.read(new FutureReader() {
               def publish(v: AnyRef): Unit = {
                 schedulePublishAndHalt(p, c, Array(v))
               }

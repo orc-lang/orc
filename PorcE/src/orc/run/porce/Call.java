@@ -9,10 +9,10 @@ import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
-import orc.AgressivelyInlined;
 import orc.CaughtEvent;
 import orc.DirectInvoker;
 import orc.Invoker;
+import orc.error.OrcException;
 import orc.error.runtime.ExceptionHaltException;
 import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.Counter;
@@ -117,11 +117,8 @@ public abstract class Call extends Expression {
 				final PCTHandle handle = new PCTHandle(execution, pub, counter, term);
 
 				counter.prepareSpawn();
-				if (invoker instanceof AgressivelyInlined) {
-					invoker.invoke(handle, t, argumentValues);
-				} else {
-					invokeWithBoundary(invoker, handle, t, argumentValues);
-				}
+				
+				invokeWithBoundary(invoker, handle, t, argumentValues);
 			}
 		}
 
@@ -154,11 +151,7 @@ public abstract class Call extends Expression {
 				DirectInvoker invoker = (DirectInvoker) getInvokerWithBoundary(t, argumentValues);
 
 				try {
-					if (invoker instanceof AgressivelyInlined) {
-						return invoker.invokeDirect(t, argumentValues);
-					} else {
-						return invokeWithBoundary(invoker, t, argumentValues);
-					}
+					return invokeWithBoundary(invoker, t, argumentValues);
 				} catch (ExceptionHaltException e) {
 					execution.notifyOrc(new CaughtEvent(e.getCause()));
 					throw HaltException.SINGLETON();

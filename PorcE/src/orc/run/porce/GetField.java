@@ -2,10 +2,8 @@ package orc.run.porce;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 import orc.Accessor;
-import orc.AgressivelyInlined;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.values.Field;
 
@@ -28,11 +26,7 @@ public class GetField extends Expression {
 		Accessor accessor = getAccessorWithBoundary(obj);
 		// FIXME: PERFORMANCE: Cache accessor and validate with accessor.canGet. With polymorphic cache.
 
-		if (accessor instanceof AgressivelyInlined) {
-			return accessor.get(obj);
-		} else {
-			return accessWithBoundary(accessor, obj);
-		}
+		return accessWithBoundary(accessor, obj);
 	}
 
 	@TruffleBoundary

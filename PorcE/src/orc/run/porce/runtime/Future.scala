@@ -15,7 +15,7 @@ package orc.run.porce.runtime
 import orc.values.{ Format, OrcValue }
 import orc.values.Field
 import orc.FutureState
-import orc.FutureReadHandle
+import orc.FutureReader
 
 /** A future value that can be bound or unbound or halted.
   *
@@ -33,7 +33,7 @@ final class Future() extends OrcValue with orc.Future {
   var _state = Unbound
   var _value: AnyRef = null  
   // TODO: PERFORMANCE: An expanding array may perform quite a bit better since the adding a blocker would generally not need allocation (except when the array needs to expand).
-  var _blocked: List[FutureReadHandle] = Nil
+  var _blocked: List[FutureReader] = Nil
 
   /** Bind this to a value and call publish and halt on each blocked Blockable.
     */
@@ -90,7 +90,7 @@ final class Future() extends OrcValue with orc.Future {
     *
     * Return true if the value was already available.
     */
-  def read(blocked: FutureReadHandle): Unit = {
+  def read(blocked: FutureReader): Unit = {
     val st = synchronized {
       _state match {
         case Unbound => {

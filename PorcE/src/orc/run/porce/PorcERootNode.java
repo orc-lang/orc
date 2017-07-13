@@ -9,6 +9,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
+import orc.error.OrcException;
 import orc.error.runtime.ArityMismatchException;
 
 public class PorcERootNode extends RootNode {

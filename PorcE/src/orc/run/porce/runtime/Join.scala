@@ -12,7 +12,7 @@
 package orc.run.porce.runtime
 
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
-import orc.FutureReadHandle
+import orc.FutureReader
 import orc.FutureBound
 import orc.FutureStopped
 import orc.FutureUnbound
@@ -46,7 +46,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
 
   /** A Blockable that binds a specific element of values in publish().
     */
-  final private class JoinElement(i: Int) extends FutureReadHandle {
+  final private class JoinElement(i: Int) extends FutureReader {
     /** The flag used to make sure publish/halt is only called once.
       */
     var bound = new AtomicBoolean(false)

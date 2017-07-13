@@ -2,7 +2,7 @@ package orc.run.porce.runtime
 
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicBoolean
-import orc.FutureReadHandle
+import orc.FutureReader
 import orc.run.porce.Logger
 
 // TODO: Try to remove redundency between this and Join.
@@ -30,7 +30,7 @@ abstract class Resolve(inValues: Array[AnyRef]) {
 
   /** A Blockable that binds a specific element of values in publish().
     */
-  final class JoinElement() extends FutureReadHandle {
+  final class JoinElement() extends FutureReader {
     /** The flag used to make sure publish/halt is only called once.
       */
     var bound = new AtomicBoolean(false)
