@@ -37,7 +37,7 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
   override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean =
     values exists marshalValueWouldReplace
 
-  override def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable =
+  override def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef =
     OrcTuple(values map marshaler)
 
   override def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean =

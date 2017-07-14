@@ -111,7 +111,7 @@ class MigratedToken(
 
 object TokenFieldMarshaling {
 
-  def marshalPublishingValue(execution: DOrcExecution, destination: PeerLocation)(pv: Option[AnyRef]): Option[AnyRef with java.io.Serializable] = {
+  def marshalPublishingValue(execution: DOrcExecution, destination: PeerLocation)(pv: Option[AnyRef]): Option[AnyRef] = {
     pv.map(execution.marshalValue(destination)(_))
   }
 
@@ -163,13 +163,7 @@ object TokenFieldMarshaling {
   }
 
   def marshalClosureGroup(cg: ClosureGroup, execution: DOrcExecution, destination: PeerLocation) = {
-
-    //FIXME: Broken: Requires closures' enclose operation to be complete.
-    //assert(cg.isResolved, "Closure group must be resolved")
-    while (!cg.isResolved) {
-      Logger.info("Awaiting resolution of "+cg)
-      Thread.sleep(10);
-    }
+    assert(cg.isResolved, "Closure group must be resolved")
 
     Logger.fine("Creating new CGR for " + cg + ": " + (cg.definitions map { _.optionalVariableName.getOrElse("") }).mkString(","))
     val defNodesIndicies = cg.definitions map { AstNodeIndexing.nodeIndexInTree(_, execution.node).get }
@@ -216,7 +210,7 @@ protected abstract sealed class BindingReplacement() {
   def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation): Binding
 }
 
-protected final case class BoundValueReplacement(boundValue: AnyRef with java.io.Serializable) extends BindingReplacement() {
+protected final case class BoundValueReplacement(boundValue: AnyRef) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation) = {
     BoundValue(execution.unmarshalValue(boundValue))
   }
@@ -231,7 +225,6 @@ protected final case class BoundFutureReplacement(bindingId: RemoteFutureRef#Rem
 protected final case class BoundClosureReplacement(c: Closure) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation) = {
     /* Closures and ClosureGroups are unmarshaled (resolved) during deserialization */
-    // TODO: Verify that this will never be reached before the closure group is resolved (and hence the Closures would be created naturally on another node).
     BoundValue(c)
   }
 }

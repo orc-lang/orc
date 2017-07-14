@@ -65,7 +65,7 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcM
   override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean =
     entries.exists( { kv: (String, AnyRef) => marshalValueWouldReplace(kv._2) } )
 
-  override def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable =
+  override def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef =
     OrcRecord(entries.map( { kv: (String, AnyRef) => (kv._1, marshaler(kv._2)) } ))
 
   override def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean =

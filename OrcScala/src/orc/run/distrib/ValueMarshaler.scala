@@ -1,5 +1,5 @@
 //
-// ValueMarshaler.scala -- Scala trait ValueMarshaler
+// ValueMarshaler.scala -- Scala traits ValueMarshaler, DOrcMarshalingNotifications, and DOrcMarshalingReplacement
 // Project OrcScala
 //
 // Created by jthywiss on Mar 3, 2017.
@@ -12,6 +12,10 @@
 //
 
 package orc.run.distrib
+
+import scala.collection.mutable.WeakHashMap
+
+import orc.run.core.Closure
 
 /** A mix-in to marshal and unmarshal Orc program values.
   *
@@ -35,13 +39,14 @@ trait ValueMarshaler { self: DOrcExecution =>
       case st: scala.collection.Traversable[AnyRef] if st.exists(marshalValueWouldReplace(destination)(_)) => true //FIXME:Scala-specific, generalize
       case null => false
       case ro: RemoteObjectRef => true
-      case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(v) => false
+      case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => false
+      case c: Closure if self.permittedLocations(c).contains(destination) => false
       case _ /* Cannot be marshaled to this destination */ => true
     }
   }
 
-  def marshalValue(destination: PeerLocation)(value: AnyRef): AnyRef with java.io.Serializable = {
-    //Logger.finest(s"marshalValue: $value:${value.getClass.getCanonicalName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
+  def marshalValue(destination: PeerLocation)(value: AnyRef): AnyRef = {
+    Logger.finest(s"marshalValue: $value:${value.getClass.getCanonicalName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
 
     val replacedValue = value match {
       /* keep in sync with cases in marshalValueWouldReplace */
@@ -54,7 +59,8 @@ trait ValueMarshaler { self: DOrcExecution =>
       /* keep in sync with cases in marshalValueWouldReplace */
       case null => null
       case ro: RemoteObjectRef => ro.marshal()
-      case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(v) => v
+      case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => v
+      case c: Closure if self.permittedLocations(c).contains(destination) => c
       case v /* Cannot be marshaled to this destination */ => {
         new RemoteObjectRef(self.remoteIdForObject(v)).marshal()
       }
@@ -63,14 +69,14 @@ trait ValueMarshaler { self: DOrcExecution =>
       case mn: DOrcMarshalingNotifications => mn.marshaled()
       case _ => { /* Nothing to do */ }
     }
-    //Logger.finest(s"marshalValue($destination)($value)=$marshaledValue")
+    Logger.finest(s"marshalValue($destination)($value)=$marshaledValue")
     assert((marshaledValue != value) == marshalValueWouldReplace(destination)(value))
     marshaledValue
   }
 
-  private val knownGoodSerializables = new java.util.WeakHashMap[java.io.Serializable, Unit]()
-  private val knownBadSerializables = new java.util.WeakHashMap[java.io.Serializable, Unit]()
-  private val nullOos = new java.io.ObjectOutputStream(new java.io.OutputStream { def write(b: Int) {} } )
+  private val knownGoodSerializables = new WeakHashMap[java.io.Serializable, Unit]()
+  private val knownBadSerializables = new WeakHashMap[java.io.Serializable, Unit]()
+  private val nullOos = new RuntimeConnectionOutputStream(new java.io.OutputStream { def write(b: Int) {} } )
   /** Many, many objects violate the java.io.Serializable interface by
     * implementing Serializable, but then holding references to
     * non-Serializable values without using any of the compensating
@@ -79,12 +85,12 @@ trait ValueMarshaler { self: DOrcExecution =>
     * So we have to detect these broken objects before they cause I/O
     * exceptions during serialization.
     */
-  private def canReallySerialize(v: java.io.Serializable): Boolean = {
+  private def canReallySerialize(destination: PeerLocation)(v: java.io.Serializable): Boolean = {
     if (isAlwaysSerializable(v))
       true
-    else if (knownGoodSerializables.containsKey(v))
+    else if (knownGoodSerializables.contains(v))
       true
-    else if (knownBadSerializables.containsKey(v))
+    else if (knownBadSerializables.contains(v))
       false
     else {
       //FIXME: Terribly slow.  Leaks objects (refs in nullOos).  Just BadBadBad.
@@ -100,8 +106,10 @@ trait ValueMarshaler { self: DOrcExecution =>
        */
       try {
         nullOos synchronized {
+          nullOos.setContext(self, destination)
           nullOos.writeObject(v)
           nullOos.flush()
+          nullOos.clearContext()
         }
         knownGoodSerializables.put(v, ())
         true
@@ -172,7 +180,7 @@ trait DOrcMarshalingNotifications {
   */
 trait DOrcMarshalingReplacement {
   def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean
-  def replaceForMarshaling(marshaler: AnyRef => AnyRef with java.io.Serializable): AnyRef with java.io.Serializable
+  def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef
   def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean
   def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef
 }
