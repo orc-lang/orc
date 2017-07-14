@@ -54,14 +54,14 @@ class PrettyPrint {
       case Stop() => pp"stop"
       case CallDef(target, args, typeargs) => {
         val typePar = typeargs match {
-            case Some(ts) => pp"[${commasep(ts)}"
+            case Some(ts) => pp"[${commasep(ts)}]"
             case None => ""
           }
         pp"defcall $target$typePar(${commasep(args)})"
       }
       case CallSite(target, args, typeargs) => {
         val typePar = typeargs match {
-            case Some(ts) => pp"[${commasep(ts)}"
+            case Some(ts) => pp"[${commasep(ts)}]"
             case None => ""
           }
         pp"sitecall $target$typePar(${commasep(args)})"

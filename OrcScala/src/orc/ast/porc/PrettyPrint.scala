@@ -66,6 +66,7 @@ class PrettyPrint {
 
         case NewTerminator(t) => pp"terminator $t"
         case Kill(t) => pp"kill $t"
+        case CheckKilled(t) => pp"checkKilled $t"
 
         case NewFuture() => pp"newFuture"
         case Bind(f, v) => pp"bind $f $v"

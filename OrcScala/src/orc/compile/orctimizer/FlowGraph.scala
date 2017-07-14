@@ -284,7 +284,7 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
     (if (n == entry) Map("color" -> "green", "peripheries" -> "2") else Map()) ++
       (if (n == exit) Map("color" -> "red", "peripheries" -> "2") else Map()) ++
       (n match {
-        case v @ ValueNode(_) if arguments contains v =>
+        case v @ ValueNode(_, _) if arguments contains v =>
           Map("color" -> "green", "peripheries" -> "2")
         case _ => Map()
       })
@@ -374,13 +374,14 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
     }
   }
 
-  case class ValueNode(ast: Constant) extends Node with ValueFlowNode {
+  // This stores the class of the value along with it so that nodes with equal values of different types (2.0 == 2) are not collapsed into a single node.
+  case class ValueNode(ast: Constant, cls: Option[Class[_]]) extends Node with ValueFlowNode {
     override def label = ast.toString()
   }
   object ValueNode {
     def apply(ast: Argument.Z): ValueFlowNode = ast match {
       case a: Constant.Z =>
-        ValueNode(a.value)
+        ValueNode(a.value, Option(a.constantValue).map(_.getClass()))
       case a: UnboundVar.Z =>
         throw new IllegalArgumentException(s"Congrats!!! You just volunteered to implement unbound variables in this analysis if you think we really need them.")
       case v: BoundVar.Z =>

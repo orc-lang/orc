@@ -252,7 +252,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             (FieldArgument(a.value), None, None)
           }
           case f@FieldFuture.Z(body) if !body.freeVars.contains(self) => {
-            val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay()
+            val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
             lazy val x = new BoundVar()
             if (byNonBlocking1) {
               changed = true

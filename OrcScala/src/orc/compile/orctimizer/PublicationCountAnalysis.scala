@@ -237,7 +237,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
 
     def initialNodes: collection.Seq[Node] = {
       (graph.nodesBy {
-        case n @ (ValueNode(_) | VariableNode(_, _)) => n
+        case n @ (ValueNode(_, _) | VariableNode(_, _)) => n
         case n @ ExitNode(Stop.Z()) => n
       }).toSeq :+ graph.entry
     }
@@ -420,7 +420,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
             case Branch.Z(_, _, _) =>
               defaultFlowInState
           }
-        case ValueNode(_) | CallableNode(_, _) =>
+        case ValueNode(_, _) | CallableNode(_, _) =>
           nonFutureVariableState
       }
       //Logger.fine(s"Processed $node:  old=$old    out=$outState")

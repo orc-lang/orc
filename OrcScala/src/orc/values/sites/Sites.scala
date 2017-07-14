@@ -277,6 +277,7 @@ trait TotalSite3 extends TotalSite with SpecificArity {
   def eval(x: AnyRef, y: AnyRef, z: AnyRef): AnyRef
 }
 
+// TODO: This shouldn't be a site. Sites are invokable. This needs to have the apply method invoked.
 /* Template for building values which act as constructor-extractor sites,
  * such as the Some site.
  */

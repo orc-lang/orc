@@ -217,6 +217,8 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]),
               }
               realizableIn
             }
+            case DeclareCallables.Z(callables, _) if callables.exists(_.isInstanceOf[Site.Z]) =>
+              worstState
             case Trim.Z(_) =>
               inState
             case New.Z(_, _, bindings, _) =>
@@ -235,7 +237,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]),
             case Branch.Z(_, _, _) =>
               inState
             case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) |
-              DeclareCallables.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
+              DeclareType.Z(_, _, _) | HasType.Z(_, _) | DeclareCallables.Z(_, _) =>
               inState
           }
         case EverywhereNode =>

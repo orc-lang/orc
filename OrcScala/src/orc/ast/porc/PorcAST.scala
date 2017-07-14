@@ -189,6 +189,8 @@ final case class NewTerminator(@subtree parentT: Argument) extends Expression
 @leaf @transform
 final case class Kill(@subtree t: Argument) extends Expression
 @leaf @transform
+final case class CheckKilled(@subtree t: Argument) extends Expression
+@leaf @transform
 final case class TryOnKilled(@subtree body: Expression, @subtree handler: Expression) extends Expression
 
 @leaf @transform

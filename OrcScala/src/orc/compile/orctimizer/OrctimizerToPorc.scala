@@ -27,6 +27,7 @@ import orc.ast.porc.Continuation
 import orc.compile.AnalysisCache
 import orc.compile.Logger
 import orc.util.{Ternary, TUnknown, TTrue, TFalse}
+import orc.ast.orctimizer.named.CallDef
 
 case class ConversionContext(p: porc.Variable, c: porc.Variable, t: porc.Variable, recursives: Set[BoundVar], callgraph: CallGraph) {
 }
@@ -297,13 +298,14 @@ class OrctimizerToPorc {
     val Callable.Z(f, formals, body, _, _, _) = d
     val args = formals.map(lookup)
     val name = lookup(f)
-    val bodyT = d match {
-      case Def.Z(_, _, body, typeformals, argtypes, returntype) =>
-        newT
-      case Site.Z(_, _, body, typeformals, argtypes, returntype) =>
-        ctx.t
+    val (bodyT, bodyPrefix) = d match {
+      case _: Def.Z =>
+        (newT, porc.PorcUnit())
+      case _: Site.Z =>
+        (ctx.t, porc.CheckKilled(ctx.t))
     }
     porc.MethodCPS(name, newP, newC, newT, d.isInstanceOf[Def.Z], args,
+        bodyPrefix :::
       expression(body)(ctx.copy(p = newP, c = newC, t = bodyT, recursives = ctx.recursives ++ recursiveGroup)))
   }
 

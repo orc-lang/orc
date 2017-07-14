@@ -95,6 +95,8 @@ class PorcToPorcE {
         porce.Halt.create(transform(c))
       case porc.Kill.Z(t) =>
         porce.Kill.create(transform(t))
+      case porc.CheckKilled.Z(t) =>
+        porce.CheckKilled.create(transform(t))
       case porc.Bind.Z(fut, v) =>
         porce.Bind.create(transform(fut), transform(v))
       case porc.BindStop.Z(fut) =>

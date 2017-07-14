@@ -214,8 +214,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         val optimizer = Optimizer(co)
         val prog1 = optimizer(prog, analyzer).asInstanceOf[MethodCPS]
 
-        orc.ast.porc.Logger.finest(s"analyzer.size = ${analyzer.cache.size}")
-
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $optimizationCountsStr")
         VariableChecker(prog1.toZipper(), co)

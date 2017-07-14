@@ -8,7 +8,7 @@ import orc.CaughtEvent
 import orc.compile.parse.OrcSourceRange
 import orc.OrcRuntime
 
-final class PCTHandle(val execution: PorcEExecution, p: PorcEClosure, c: Counter, t: Terminator) extends Handle with Terminatable {
+final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator) extends Handle with Terminatable {
   val runtime = execution.runtime
   // TODO:PERFORMANCE: Use unsafe if this becomes a bottleneck.
   val halted = new AtomicBoolean(false)

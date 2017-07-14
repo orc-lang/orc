@@ -23,36 +23,6 @@ import orc.compile.Logger
 import orc.compile.flowanalysis.LatticeValue
 import scala.reflect.ClassTag
 
-/*
-
-  object ObjectHandlingInstance extends ObjectHandling {
-    type NodeT = <Node>
-    type StoredValueT = <PublicationInfo>
-    
-    val ObjectValueReified = implicitly[ClassTag[ObjectValue]]
-    
-    case class ObjectValue(root: NodeT, structures: Map[NodeT, ObjectStructure]) extends ObjectValueBase {
-      def derefStoredValue(i: StoredValueT): StoredValueT = {
-        <val fields = i.fields map[ObjectInfo] derefObject>
-        i.copy(<fields = fields>)
-      }
-      
-      protected def copy(root: NodeT, structs: Map[NodeT, ObjectStructure]): ObjectValue = {
-        ObjectValue(root, structs)
-      }
-    }
-    
-    object ObjectValue extends ObjectValueCompanion
-  }
-  
-  type ObjectInfo = ObjectHandlingInstance.ObjectInfo
-  type ObjectValue = ObjectHandlingInstance.ObjectValue
-  val ObjectValue = ObjectHandlingInstance.ObjectValue
-  type ObjectRef = ObjectHandlingInstance.ObjectRef
-  val ObjectRef = ObjectHandlingInstance.ObjectRef
-
-*/ 
-
 /**
  * A parametric module which implements object handling for analyses.
  * 
