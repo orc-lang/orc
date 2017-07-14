@@ -3,8 +3,7 @@
 val captured = 3
 
 class B {
-  -- An abstract member
-  --val y :: Integer
+  val y :: Integer
 }
 
 class C extends B {
