@@ -13,10 +13,8 @@
 
 package orc.util
 
-import java.io.{ ObjectInputStream, ObjectOutputStream }
-import java.net.{ InetAddress, InetSocketAddress, ServerSocket, Socket }
-import java.io.EOFException
-import java.net.SocketException
+import java.io.{ EOFException, ObjectInputStream, ObjectOutputStream }
+import java.net.{ InetAddress, InetSocketAddress, ServerSocket, Socket, SocketException }
 
 /** SocketObjectConnection, given an open Socket, provides Java object stream
   * send and receive operations over that socket.  The transmitted bytes are the
@@ -28,6 +26,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
 
   SocketObjectConnectionLogger.entering(getClass.getName, "<init>", Seq(socket))
 
+  /* Note: Always get output before input */
   val oos = new ObjectOutputStream(socket.getOutputStream())
   val ois = new ObjectInputStream(socket.getInputStream())
 
@@ -39,7 +38,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     val o = try {
       ois.readObject().asInstanceOf[R]
     } catch {
-      case e: SocketException if e.getMessage == "Socket closed" => throw new EOFException(); 
+      case e: SocketException if e.getMessage == "Socket closed" => throw new EOFException()
     }
     orc.run.distrib.Logger.finest(s"SocketObjectConnection.receive: Received $o on ${socket}")
     o

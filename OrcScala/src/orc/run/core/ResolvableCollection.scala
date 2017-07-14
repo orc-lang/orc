@@ -14,7 +14,6 @@
 package orc.run.core
 
 import orc.{ OrcRuntime, Schedulable }
-import orc.run.core.VirtualClock
 
 /** An member of a collection of Ts that need a single resolved recursive context.
   *

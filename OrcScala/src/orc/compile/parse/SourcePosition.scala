@@ -1,6 +1,6 @@
 //
 // SourcePosition.scala -- Scala class SourcePosition
-// Project project_name
+// Project OrcScala
 //
 // Created by jthywiss on Jul 23, 2016.
 //
