@@ -1,5 +1,5 @@
 //
-// LeaderRuntime.scala -- Scala class LeaderRuntime
+// LeaderRuntime.scala -- Scala classes LeaderRuntime, FollowerLocation, and FollowerConnectionClosedEvent
 // Project OrcScala
 //
 // Created by jthywiss on Dec 21, 2015.
@@ -16,8 +16,7 @@ package orc.run.distrib
 import java.io.EOFException
 import java.net.InetSocketAddress
 
-import scala.collection.JavaConverters._
-import scala.ref.WeakReference
+import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
 
 import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
@@ -25,7 +24,7 @@ import orc.ast.oil.nameless.Expression
 import orc.ast.oil.xml.OrcXML
 import orc.error.runtime.ExecutionException
 import orc.run.core.Token
-import orc.util.{ ConnectionInitiator, LatchingSignal, SocketObjectConnection }
+import orc.util.LatchingSignal
 
 /** Orc runtime engine leading a dOrc cluster.
   *
@@ -47,7 +46,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     val followers = Map(1 -> new InetSocketAddress("localhost", 36721), 2 -> new InetSocketAddress("localhost", 36722))
 
     runtimeLocationMap.put(0, here)
-    followers foreach { f => runtimeLocationMap.put(f._1, new FollowerLocation(f._1, ConnectionInitiator[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](f._2))) }
+    followers foreach { f => runtimeLocationMap.put(f._1, new FollowerLocation(f._1, RuntimeConnectionInitiator[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](f._2))) }
 
     followerEntries foreach { e => new ReceiveThread(e._1, e._2).start() }
     followerEntries foreach { e =>
@@ -76,7 +75,6 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     roots.add(root)
 
     /* Initial program token */
-    //root.sendToken(new Token(programAst, root), runtimeLocationMap(1))
     val t = new Token(programAst, root)
     schedule(t)
 
@@ -103,7 +101,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
         Logger.info(s"Reading events from ${followerLocation.connection.socket}")
         while (!followerLocation.connection.closed && !followerLocation.connection.socket.isInputShutdown) {
           val msg = try {
-            followerLocation.connection.receive()
+            followerLocation.connection.receiveInContext({ programs(_) }, followerLocation)()
           } catch {
             case _: EOFException => EOF
           }
@@ -159,7 +157,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
       doneSignal.await()
     } finally {
-      // Important: runSyncThread must be null before calling stop
+      /* Important: runSyncThread must be null before calling stop */
       synchronized {
         runSyncThread = null
       }
@@ -183,14 +181,16 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   object Here extends FollowerLocation(0, null) {
     override def send(message: OrcLeaderToFollowerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def sendInContext(execution: DOrcExecution)(message: OrcLeaderToFollowerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
   }
 
 }
 
-class FollowerLocation(val runtimeId: DOrcRuntime#RuntimeId, val connection: SocketObjectConnection[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd]) extends Location[OrcLeaderToFollowerCmd] {
+class FollowerLocation(val runtimeId: DOrcRuntime#RuntimeId, val connection: RuntimeConnection[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd]) extends Location[OrcLeaderToFollowerCmd] {
   override def toString = f"${getClass.getName}(runtimeId=$runtimeId%#x)"
 
   override def send(message: OrcLeaderToFollowerCmd) = connection.send(message)
+  override def sendInContext(execution: DOrcExecution)(message: OrcLeaderToFollowerCmd) = connection.sendInContext(execution, this)(message)
 }
 
 case class FollowerConnectionClosedEvent(location: FollowerLocation) extends OrcEvent

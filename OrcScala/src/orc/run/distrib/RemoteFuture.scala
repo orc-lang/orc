@@ -128,7 +128,7 @@ trait RemoteFutureManager { self: DOrcExecution =>
 
   def sendReadFuture(futureId: RemoteFutureRef#RemoteRefId) {
     val homeLocation = homeLocationForRemoteFutureId(futureId)
-    homeLocation.send(ReadFutureCmd(executionId, futureId, followerExecutionNum))
+    homeLocation.sendInContext(self)(ReadFutureCmd(executionId, futureId, followerExecutionNum))
   }
 
   def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: DOrcRuntime#RuntimeId) {
@@ -139,7 +139,7 @@ trait RemoteFutureManager { self: DOrcExecution =>
     Logger.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x"+futureId.toHexString, value))
     readers foreach { reader =>
       val mv = value.map(self.marshalValue(reader)(_))
-      reader.send(DeliverFutureResultCmd(executionId, futureId, mv))
+      reader.sendInContext(self)(DeliverFutureResultCmd(executionId, futureId, mv))
     }
   }
 

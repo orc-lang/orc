@@ -1,5 +1,5 @@
 //
-// ValueLocator.scala -- Scala traits ValueLocator and Location
+// ValueLocator.scala -- Scala traits ValueLocator, Location, LocationPolicy, and MigrationDecision
 // Project OrcScala
 //
 // Created by jthywiss on Dec 28, 2015.
@@ -29,6 +29,7 @@ trait ValueLocator {
   */
 trait Location[-M <: OrcCmd] {
   def send(message: M)
+  def sendInContext(execution: DOrcExecution)(message: M)
 }
 
 /** Provides the set of Locations that can feasibly have a copy of this value.

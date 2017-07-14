@@ -13,9 +13,8 @@
 
 package orc.run.distrib
 
-import orc.{ CaughtEvent, OrcEvent }
+import orc.{ CaughtEvent, OrcEvent, Schedulable }
 import orc.run.core.{ Execution, Group, GroupMember, Token }
-import orc.Schedulable
 
 /** Proxy for a group the resides on a remote dOrc node.
   * RemoteGroupProxy is created locally when a token has been migrated from
@@ -154,7 +153,7 @@ trait GroupProxyManager { self: DOrcExecution =>
 
     Tracer.traceTokenSend(token, destination)
 
-    destination.send(HostTokenCmd(executionId, new TokenReplacement(token, node, rmtProxy.thisProxyId, destination)))
+    destination.sendInContext(self)(HostTokenCmd(executionId, new TokenReplacement(token, rmtProxy.thisProxyId, destination)))
   }
 
   def hostToken(origin: PeerLocation, movedToken: TokenReplacement) {
@@ -167,10 +166,10 @@ trait GroupProxyManager { self: DOrcExecution =>
       }
       case gmp => gmp.parent
     }
-    val newToken = movedToken.asToken(origin, node, newTokenGroup)
+    val newToken = movedToken.asToken(origin, newTokenGroup)
     if (lookedUpProxyGroupMember != null) {
       /* Discard unused RemoteGroupMenbersProxy */
-      origin.send(HaltGroupMemberProxyCmd(executionId, movedToken.tokenProxyId))
+      origin.sendInContext(self)(HaltGroupMemberProxyCmd(executionId, movedToken.tokenProxyId))
     }
 
     Tracer.traceTokenReceive(newToken, origin)
@@ -181,23 +180,23 @@ trait GroupProxyManager { self: DOrcExecution =>
 
   def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(token: Token, pv: Option[AnyRef]) {
     Logger.fine(s"sendPublish: publish by token $token")
-    destination.send(PublishGroupCmd(executionId, proxyId, new PublishingTokenReplacement(token, node, proxyId, destination, pv)))
+    destination.sendInContext(self)(PublishGroupCmd(executionId, proxyId, new PublishingTokenReplacement(token, proxyId, destination, pv)))
   }
 
   def publishInGroup(origin: PeerLocation, groupMemberProxyId: GroupProxyId, publishingToken: PublishingTokenReplacement) {
     Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishingToken))
     val newTokenGroup = proxiedGroupMembers.get(publishingToken.tokenProxyId).parent
-    val newToken = publishingToken.asPublishingToken(origin, node, newTokenGroup)
+    val newToken = publishingToken.asPublishingToken(origin, newTokenGroup)
     Logger.fine(s"publishInGroup $newToken")
     runtime.schedule(newToken)
   }
 
   def sendHalt(destination: PeerLocation, groupMemberProxyId: GroupProxyId)() {
-    destination.send(HaltGroupMemberProxyCmd(executionId, groupMemberProxyId))
+    destination.sendInContext(self)(HaltGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
   def sendDiscorporate(destination: PeerLocation, groupMemberProxyId: GroupProxyId)() {
-    destination.send(DiscorporateGroupMemberProxyCmd(executionId, groupMemberProxyId))
+    destination.sendInContext(self)(DiscorporateGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
   def haltGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
@@ -221,7 +220,7 @@ trait GroupProxyManager { self: DOrcExecution =>
   }
 
   def sendKill(destination: PeerLocation, proxyId: GroupProxyId)() {
-    destination.send(KillGroupCmd(executionId, proxyId))
+    destination.sendInContext(self)(KillGroupCmd(executionId, proxyId))
   }
 
   def killGroupProxy(proxyId: GroupProxyId) {
