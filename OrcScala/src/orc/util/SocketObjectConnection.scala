@@ -35,22 +35,22 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     * no object is available, throw.
     */
   def receive(): R = ois synchronized {
-    val o = try {
+    val obj = try {
       ois.readObject().asInstanceOf[R]
     } catch {
       case e: SocketException if e.getMessage == "Socket closed" => throw new EOFException()
     }
-    orc.run.distrib.Logger.finest(s"SocketObjectConnection.receive: Received $o on ${socket}")
-    o
+    SocketObjectConnectionLogger.finest(s"SocketObjectConnection.receive: Received $obj on $socket")
+    obj
   }
 
   /** Put an object in the stream. If the stream is closed, throw.
     */
   def send(obj: S) = oos synchronized {
-    orc.run.distrib.Logger.finest(s"SocketObjectConnection.send: Sending $obj on ${socket}")
+    SocketObjectConnectionLogger.finest(s"SocketObjectConnection.send: Sending $obj on $socket")
     oos.writeObject(obj)
     oos.flush()
-    //orc.run.distrib.Logger.finest(s"SocketObjectConnection.send: Sent")
+    //SocketObjectConnectionLogger.finest(s"SocketObjectConnection.send: Sent")
     /* Need to do a TCP push, but can't from Java */
   }
 
@@ -60,7 +60,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     * When the stream is empty, return.
     */
   def close() {
-    SocketObjectConnectionLogger.finer("SocketObjectConnection.close on " + socket)
+    SocketObjectConnectionLogger.finer(s"SocketObjectConnection.close on $socket")
     oos.flush()
     oos.close()
     ois.close()
@@ -71,7 +71,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     * data. Any subsequent calls to send or receive will throw.
     */
   def abort() {
-    SocketObjectConnectionLogger.finer("SocketObjectConnection.abort on " + socket)
+    SocketObjectConnectionLogger.finer(s"SocketObjectConnection.abort on $socket")
     if (!socket.isClosed()) socket.setSoLinger(false, 0)
     /* Intentionally not closing oos -- causes a flush */
     ois.close()
@@ -82,7 +82,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     */
   def closed = socket.isClosed
 
-  SocketObjectConnectionLogger.finer("SocketObjectConnection created on " + socket)
+  SocketObjectConnectionLogger.finer(s"SocketObjectConnection created on $socket")
 
 }
 
@@ -119,14 +119,14 @@ class ConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) {
 
   def acceptConnection() = {
     val acceptedSocket = serverSocket.accept()
-    SocketObjectConnectionLogger.finer("ConnectionListener accepted " + acceptedSocket)
+    SocketObjectConnectionLogger.finer(s"ConnectionListener accepted $acceptedSocket")
     SocketObjectConnection.configSocket(acceptedSocket)
     new SocketObjectConnection[R, S](acceptedSocket)
   }
 
   def close() = serverSocket.close()
 
-  SocketObjectConnectionLogger.finer("ConnectionListener socket " + serverSocket)
+  SocketObjectConnectionLogger.finer(s"ConnectionListener socket $serverSocket")
 
 }
 
@@ -145,7 +145,7 @@ object ConnectionInitiator {
       socket.bind(localSockAddr)
     }
     socket.connect(remoteSockAddr)
-    SocketObjectConnectionLogger.finer("ConnectionInitiator socket " + socket)
+    SocketObjectConnectionLogger.finer(s"ConnectionInitiator socket $socket")
     new SocketObjectConnection[R, S](socket)
   }
 

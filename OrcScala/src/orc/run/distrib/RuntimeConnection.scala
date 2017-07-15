@@ -30,10 +30,21 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
   override val oos = new RuntimeConnectionOutputStream(socket.getOutputStream())
   override val ois = new RuntimeConnectionInputStream(socket.getInputStream())
 
+  override def receive(): R = {
+    val obj = super.receive()
+    Logger.finest(s"${Console.BLUE}RuntimeConnection.receive: Received $obj on $socket${Console.RESET}")
+    obj
+  }
+
+  override def send(obj: S) {
+    Logger.finest(s"${Console.RED}RuntimeConnection.send: Sending $obj on $socket${Console.RESET}")
+    super.send(obj)
+  }
+
   def receiveInContext(executionLookup: (DOrcExecution#ExecutionId) => DOrcExecution, origin: PeerLocation)(): R = ois synchronized {
     ois.setContext(executionLookup, origin)
     try {
-      super.receive()
+      receive()
     } finally {
       ois.clearContext()
     }
@@ -42,10 +53,20 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
   def sendInContext(execution: DOrcExecution, destination: PeerLocation)(obj: S) = oos synchronized {
     oos.setContext(execution, destination)
     try {
-      super.send(obj)
+      send(obj)
     } finally {
       oos.clearContext()
     }
+  }
+
+  override def close() {
+    Logger.finest(s"${Console.GREEN}RuntimeConnection.close on $socket${Console.RESET}")
+    super.close()
+  }
+
+  override def abort() {
+    Logger.finest(s"${Console.GREEN}RuntimeConnection.abort on $socket${Console.RESET}")
+    super.abort()
   }
 
 }
@@ -60,10 +81,12 @@ class RuntimeConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) extends
 
   override def acceptConnection() = {
     val acceptedSocket = serverSocket.accept()
-    Logger.finer("RuntimeConnectionListener accepted " + acceptedSocket)
+    Logger.finer(s"${Console.GREEN}RuntimeConnectionListener accepted $acceptedSocket${Console.RESET}")
     SocketObjectConnection.configSocket(acceptedSocket)
     new RuntimeConnection[R, S](acceptedSocket)
   }
+
+  Logger.finer(s"${Console.GREEN}RuntimeConnectionListener listening on $serverSocket${Console.RESET}")
 
 }
 
@@ -81,7 +104,7 @@ object RuntimeConnectionInitiator {
       socket.bind(localSockAddr)
     }
     socket.connect(remoteSockAddr)
-    Logger.finer("RuntimeConnectionInitiator socket " + socket)
+    Logger.finer(s"${Console.GREEN}RuntimeConnectionInitiator opening $socket${Console.RESET}")
     new RuntimeConnection[R, S](socket)
   }
 

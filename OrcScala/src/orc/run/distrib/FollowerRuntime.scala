@@ -148,7 +148,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         } catch {
           case _: EOFException => EOF
         }
-        Logger.finest(s"received $cmd")
+        //Logger.finest(s"received $cmd")
         cmd match {
           case AddPeerCmd(peerRuntimeId, peerListenAddress) => addPeer(peerRuntimeId, peerListenAddress)
           case RemovePeerCmd(peerRuntimeId) => removePeer(peerRuntimeId)
