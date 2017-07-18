@@ -16,7 +16,7 @@ package orc.run.distrib
 import java.io.EOFException
 import java.net.InetSocketAddress
 
-import scala.collection.JavaConverters.mapAsScalaConcurrentMap
+import scala.collection.JavaConverters.{ asScalaBufferConverter, mapAsScalaConcurrentMap }
 import scala.util.control.NonFatal
 
 import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
@@ -41,10 +41,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   override def allLocations = runtimeLocationMap.values.toSet
 
-  protected def connectToFollowers() {
-    // TODO: This hard codes the follower addresses. This should be configurable.
-    val followers = Map(1 -> new InetSocketAddress("localhost", 36721), 2 -> new InetSocketAddress("localhost", 36722))
-
+  protected def connectToFollowers(followers: Map[Int, InetSocketAddress]) {
     runtimeLocationMap.put(0, here)
     followers foreach { f => runtimeLocationMap.put(f._1, new FollowerLocation(f._1, RuntimeConnectionInitiator[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](f._2))) }
 
@@ -57,8 +54,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcLeaderExecution])
 
   override def run(programAst: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
-
-    connectToFollowers()
+    val followers = Map(options.followerSockets.asScala.toSeq.zipWithIndex.map( { case (s, i) => (i+1, s) } ): _*)
+    connectToFollowers(followers)
 
     val programOil = OrcXML.astToXml(programAst).toString
     val thisExecutionId = DOrcExecution.freshExecutionId()

@@ -14,6 +14,8 @@
 package orc
 
 import java.io.File
+import java.net.InetSocketAddress
+
 import orc.compile.CompilerFlagValue
 
 /** Options for Orc compilation and execution.
@@ -78,4 +80,8 @@ trait OrcExecutionOptions extends OrcCommonOptions {
   def maxSiteThreads_=(newVal: Int)
   def hasRight(rightName: String): Boolean
   def setRight(rightName: String, newVal: Boolean)
+
+  // For distributed runtime:
+  def followerSockets: java.util.List[InetSocketAddress]
+  def followerSockets_=(newVal: java.util.List[InetSocketAddress])
 }

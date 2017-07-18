@@ -12,27 +12,22 @@
 //
 package orc
 
-import javax.script.{ ScriptException, Compilable, ScriptEngine, ScriptEngineManager }
-import javax.script.ScriptContext.ENGINE_SCOPE
-import java.io.{ PrintStream, FileNotFoundException, InputStreamReader, FileInputStream, File }
-import scala.collection.JavaConverters._
+import java.io.{ FileInputStream, FileNotFoundException, InputStreamReader, PrintStream }
+import java.util.logging.{ FileHandler, Formatter, LogRecord }
+
+import scala.collection.JavaConverters.{ asScalaBufferConverter, seqAsJavaListConverter }
+
 import orc.error.OrcException
-import orc.error.runtime.JavaException
-import orc.script.{ OrcBindings, OrcScriptEngine }
-import orc.values.Format
-import orc.util.CmdLineParser
-import orc.util.CmdLineUsageException
-import orc.util.PrintVersionAndMessageException
-import orc.run.OrcDesktopEventAction
-import orc.ast.oil.xml.OrcXML
-import orc.util.UnrecognizedCmdLineOptArgException
-import java.util.logging.LogRecord
-import java.io.StringWriter
-import java.io.PrintWriter
-import java.util.logging.SimpleFormatter
-import java.util.logging.Formatter
 import orc.error.compiletime.CompilationException
-import java.util.logging.FileHandler
+import orc.error.runtime.JavaException
+import orc.run.OrcDesktopEventAction
+import orc.script.{ OrcBindings, OrcScriptEngine }
+import orc.util.{ CmdLineParser, CmdLineUsageException, PrintVersionAndMessageException, UnrecognizedCmdLineOptArgException }
+import orc.values.Format
+
+import javax.script.{ ScriptEngine, ScriptEngineManager, ScriptException }
+import javax.script.Compilable
+import javax.script.ScriptContext.ENGINE_SCOPE
 
 /** A command-line tool invocation of the Orc compiler and runtime engine
   *
@@ -232,4 +227,6 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
     usage = "Provide option for use by the optimizers separated by commas. Options in the form '[optimizer-name]' and '-[optimizer-name]=off' enable and disable optimizers. Other options are arbitrary key-value pairs used by the optimizer (the value defaults to 'true').")
 
   IntOpt(() => optimizationLevel, optimizationLevel = _, 'O', "optimize", usage = "Set a general optimization level. This selects a set of default optimization options. --opt-opt may be used to override these default.")
+
+  SocketListOpt(() => followerSockets.asScala, fs => followerSockets = fs.asJava, ' ', "follower-sockets", usage = "Set the list of sockets (host:port pairs) of follower distributed-Orc runtimes to use")
 }

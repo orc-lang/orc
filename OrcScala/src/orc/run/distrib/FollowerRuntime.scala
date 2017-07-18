@@ -22,8 +22,8 @@ import scala.util.control.NonFatal
 import scala.xml.XML
 
 import orc.{ OrcEvent, OrcExecutionOptions }
-import orc.ast.oil.nameless.Expression
 import orc.ast.oil.xml.OrcXML
+import orc.util.CmdLineParser
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -324,10 +324,59 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 object FollowerRuntime {
 
   def main(args: Array[String]) {
-    assert(args.length == 2, "arguments: runtime-id port")
-    new FollowerRuntime(args(0).toInt, new InetSocketAddress("localhost", args(1).toInt)).listen()
+    val frOptions = new FollowerRuntimeCmdLineOptions()
+    frOptions.parseCmdLine(args)
+
+    val orcLogger = java.util.logging.Logger.getLogger("orc")
+    val logLevel = java.util.logging.Level.parse(frOptions.logLevel)
+    setupLogging(orcLogger, logLevel)
+
+    new FollowerRuntime(frOptions.runtimeId, new InetSocketAddress("localhost", frOptions.port)).listen()
   }
 
+  def setupLogging(orcLogger: java.util.logging.Logger, logLevel: java.util.logging.Level) {
+    orcLogger.setLevel(logLevel)
+    val testOrcLogRecord = new java.util.logging.LogRecord(logLevel, "")
+    testOrcLogRecord.setLoggerName(orcLogger.getName())
+    def willLog(checkLogger: java.util.logging.Logger, testLogRecord: java.util.logging.LogRecord): Boolean = {
+      for (handler <- checkLogger.getHandlers()) {
+        if (handler.isLoggable(testLogRecord))
+          return true
+      }
+      if (checkLogger.getUseParentHandlers() && checkLogger.getParent() != null) {
+        return willLog(checkLogger.getParent(), testLogRecord)
+      } else {
+        return false
+      }
+    }
+    if (!willLog(orcLogger, testOrcLogRecord)) {
+      /* Only add handler if no existing handler (here or in parents) is at our logging level */
+      val oldLoggers = orcLogger.getHandlers()
+      val logHandler = new java.util.logging.ConsoleHandler()
+      logHandler.setLevel(logLevel)
+      orcLogger.addHandler(logHandler)
+      orcLogger.warning(s"No log handler found for 'orc' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records. The old handlers are: ${oldLoggers.toSeq}")
+    }
+  }
+
+}
+
+class FollowerRuntimeCmdLineOptions() extends CmdLineParser {
+  private var runtimeId_ = 0
+  def logLevel: String = logLevel_
+  def logLevel_=(newVal: String): Unit = logLevel_ = newVal
+  private var port_ = 0
+  def port: Int = port_
+  def port_=(newVal: Int): Unit = port_ = newVal
+  private var logLevel_ = "INFO"
+  def runtimeId: Int = runtimeId_
+  def runtimeId_=(newVal: Int): Unit = runtimeId_ = newVal
+
+  IntOprd(() => runtimeId, runtimeId = _, position = 0, argName = "runtime-id", required = true, usage = "d-Orc runtime (follower) ID")
+
+  IntOprd(() => port, port = _, position = 1, argName = "port", required = true, usage = "Local port to listen on")
+
+  StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL")
 }
 
 trait ClosableConnection {

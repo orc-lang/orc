@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 19, 2010.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,6 +13,7 @@
 package orc.util
 
 import java.io.File
+import java.net.InetSocketAddress
 import java.util.NoSuchElementException
 
 /** Parses command line arguments per POSIX and GNU command line syntax guidelines.
@@ -233,6 +234,16 @@ trait CmdLineParser {
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = { getter().map(_.toString).mkString(File.pathSeparator) }
     def setValue(value: String) { setter(value.split(File.pathSeparator).map(new File(_))) }
+  }
+
+  case class SocketListOpt(val getter: Function0[Seq[InetSocketAddress]], val setter: (Seq[InetSocketAddress] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "SOCKET-LIST", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+    extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().map( { isa => isa.getHostString + ":" + isa.getPort} ).mkString(",") }
+    def setValue(value: String) { setter(value.split(",").map(string2socket(_))) }
+    private def string2socket(s: String) = {
+      val lastColon = s.lastIndexOf(":")
+      new InetSocketAddress(s.substring(0, lastColon), s.substring(lastColon + 1).toInt)
+    }
   }
 
   ////////

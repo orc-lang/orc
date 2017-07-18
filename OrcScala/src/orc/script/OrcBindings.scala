@@ -13,12 +13,14 @@
 
 package orc.script
 
-import java.util.Map
 import java.io.File
-import javax.script.SimpleBindings
-import orc.OrcOptions
-import orc.BackendType
+import java.net.InetSocketAddress
+import java.util.Map
+
+import orc.{ BackendType, OrcOptions }
 import orc.compile.CompilerFlagValue
+
+import javax.script.SimpleBindings
 
 /** An extended implementation of <code>javax.script.Bindings</code>
   * with type-specific get and put methods.
@@ -36,6 +38,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def logLevel_=(newVal: String) = putString("orc.logLevel", newVal)
   def xmlLogFile: String = getString("orc.xmlLogFile", "")
   def xmlLogFile_=(newVal: String) = putString("orc.xmlLogFile", newVal)
+  def backend: BackendType = BackendType.fromString(getString("orc.backend", "Token"))
+  def backend_=(newVal: BackendType) = putString("orc.backend", newVal.toString)
 
   // Compile options
   def usePrelude: Boolean = getBoolean("orc.usePrelude", true)
@@ -63,8 +67,6 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def compileOnly_=(newVal: Boolean) = putBoolean("orc.onlyCompile", newVal)
   def runOil: Boolean = getBoolean("orc.runOil", false)
   def runOil_=(newVal: Boolean) = putBoolean("orc.runOil", newVal)
-  def backend: BackendType = BackendType.fromString(getString("orc.backend", "Token"))
-  def backend_=(newVal: BackendType) = putString("orc.backend", newVal.toString)
 
   def optimizationLevel: Int = getInt("orc.optimizationLevel", 0)
   def optimizationLevel_=(newVal: Int) = {
@@ -74,7 +76,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def optimizationOptions: java.util.List[String] = getStringList("orc.optimizationOptions", List().asJava, ",")
   def optimizationOptions_=(v: java.util.List[String]) = putStringList("orc.optimizationOptions", v, ",")
 
-  def parseOptionLine(s: String) = {
+  def parseOptimizationOptionLine(s: String) = {
     s.split("=") match {
       case Array(name) =>
         (name, new CompilerFlagValue(name, Some("true")))
@@ -105,7 +107,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     val flags = if (stream != null) {
       try {
         val source = Source.fromInputStream(stream)
-        source.getLines.map(_.trim).map(parseOptionLine).toMap - ""
+        source.getLines.map(_.trim).map(parseOptimizationOptionLine).toMap - ""
       } finally {
         stream.close()
       }
@@ -117,7 +119,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   }
 
   def optimizationFlags = {
-    val m = optimizationOptions.asScala.map(parseOptionLine).toMap
+    val m = optimizationOptions.asScala.map(parseOptimizationOptionLine).toMap
     (optimizationLevelFlags ++ m).withDefault(n => new CompilerFlagValue(n, None))
   }
 
@@ -145,6 +147,14 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def setRight(capName: String, newVal: Boolean) {
     capabilities.put(capName, newVal)
   }
+
+  private def string2socket(s: String) = {
+    val lastColon = s.lastIndexOf(":")
+    new InetSocketAddress(s.substring(0, lastColon), s.substring(lastColon + 1).toInt)
+  }
+
+  def followerSockets: java.util.List[InetSocketAddress] = getStringList("orc.distrib.followerSockets", List().asJava, ",").asScala.map(string2socket(_)).asJava
+  def followerSockets_=(newVal: java.util.List[InetSocketAddress]) = putStringList("orc.distrib.followerSockets", newVal.asScala.map({ isa => isa.getHostString + ":" + isa.getPort }).asJava, ",")
 
   /** @param key
     * @param value
