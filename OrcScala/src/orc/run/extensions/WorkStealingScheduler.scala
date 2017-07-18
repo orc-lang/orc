@@ -402,7 +402,10 @@ trait OrcWithWorkStealingScheduler extends Orc {
   }
 
   def stopScheduler(): Unit = {
-    scheduler.stopScheduler()
+    if (scheduler != null) {
+      scheduler.stopScheduler()
+      scheduler = null
+    }
   }
 }
 
