@@ -17,7 +17,7 @@ import java.io.{ IOException, InputStream, ObjectInputStream, ObjectOutputStream
 import java.net.{ InetAddress, InetSocketAddress, Socket }
 
 import orc.run.core.{ Closure, ClosureGroup }
-import orc.util.{ ConnectionListener, SocketObjectConnection }
+import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
 
 /** A connection between DOrcRuntimes.  Extends SocketObjectConnection to
   * provide extra serialization support for Orc/dOrc values.
@@ -33,12 +33,14 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
   override def receive(): R = {
     val obj = super.receive()
     Logger.finest(s"${Console.BLUE}RuntimeConnection.receive: Received $obj on $socket${Console.RESET}")
+    EventCounter.count(/*'receive*/ Symbol("recv "+obj.getClass.getName))
     obj
   }
 
   override def send(obj: S) {
     Logger.finest(s"${Console.RED}RuntimeConnection.send: Sending $obj on $socket${Console.RESET}")
     super.send(obj)
+    EventCounter.count(/*'send*/ Symbol("send "+obj.getClass.getName))
   }
 
   def receiveInContext(executionLookup: (DOrcExecution#ExecutionId) => DOrcExecution, origin: PeerLocation)(): R = ois synchronized {
