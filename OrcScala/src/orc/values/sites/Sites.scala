@@ -284,9 +284,10 @@ class StructurePairSite(
   applySite: TotalSite with TypedSite,
   unapplySite: PartialSite1 with TypedSite) extends OrcRecord(
   "apply" -> applySite,
-  "unapply" -> unapplySite) with TypedSite with PartialSite {
+  "unapply" -> unapplySite) with TypedSite {
 
-  override def evaluate(args: Array[AnyRef]) = throw new UncallableValueException(this)
+  // If we are called, call apply. This is needed since .apply passthrough only works on things that are not already callable.
+  def call(args: Array[AnyRef], h: Handle) = applySite.call(args, h)
 
   def orcType() = new RecordType(
     "apply" -> applySite.orcType(),

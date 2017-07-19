@@ -63,6 +63,9 @@ abstract class BoundedSetModule {
 
     def lessThan(o: BoundedSet[T]): Boolean = subsetOf(o)
     def combine(o: BoundedSet[T]): BoundedSet[T] = union(o)
+    
+    def isEmpty: Boolean
+    def nonEmpty: Boolean = !isEmpty
   }
 
   class ConcreteBoundedSet[T >: TL <: TU](s: Set[T]) extends BoundedSet[T] {
@@ -99,6 +102,8 @@ abstract class BoundedSetModule {
 
     def exists(f: (T) => Boolean): Boolean = s.exists(f)
     def forall(f: (T) => Boolean): Boolean = s.forall(f)
+    
+    def isEmpty: Boolean = s.isEmpty
   }
 
   class ConcreteBoundedSetCompanion {
@@ -126,5 +131,8 @@ abstract class BoundedSetModule {
     // TODO: This is not actually strictly correct. f could always be false.
     def exists(f: (T) => Boolean): Boolean = true
     def forall(f: (T) => Boolean): Boolean = false
+    
+    // TODO: This is not actually strictly correct. The domain could be empty.
+    def isEmpty: Boolean = false
   }
 }

@@ -6,7 +6,7 @@
  {-
  Attempt to trigger an issue in which when killing an otherwise, multiple
  subgroups can try to remove themselves from the otherwise group causing 
- it to repeatly halt causing an assertion in the OtherwiseGroup.
+ it to repeatedly halt causing an assertion in the OtherwiseGroup.
  -}
 
 class Complex {

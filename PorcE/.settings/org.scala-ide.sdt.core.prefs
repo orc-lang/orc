@@ -1,0 +1,10 @@
+P=
+Xplugin=
+Xplugin-disable=
+Xplugin-require=
+compileorder=JavaThenScala
+eclipse.preferences.version=1
+scala.compiler.additionalParams=
+scala.compiler.installation=2.12
+scala.compiler.sourceLevel=2.12
+scala.compiler.useProjectSettings=false

@@ -38,7 +38,7 @@ public class PorcExamplesTest {
 
         // Turn on Orctimizer
         bindings.backend_$eq(PorcCompilerBackend$.MODULE$);
-        bindings.optimizationLevel_$eq(3);
+        bindings.optimizationLevel_$eq(2);
 
         return TestUtils.buildSuite(PorcExamplesTest.class.getSimpleName(), PorcExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));
     }

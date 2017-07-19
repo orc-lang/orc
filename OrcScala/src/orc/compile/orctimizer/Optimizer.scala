@@ -252,7 +252,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             (FieldArgument(a.value), None, None)
           }
           case f@FieldFuture.Z(body) if !body.freeVars.contains(self) => {
-            val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay()
+            val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
             lazy val x = new BoundVar()
             if (byNonBlocking1) {
               changed = true
@@ -299,22 +299,22 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val ForceElim = OptFull("force-elim") { (e, a) =>
     import orc.compile.orctimizer.CallGraph._
     e match {
-      case Force.Z(xs, vs, b, body) => {
+      case Force.Z(xs, vs, body) => {
         def isForcable(e: FlowValue) = e match {
           case _: FutureValue => true
           case _: CallableValue => true
           case _ => false
         }
         val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).exists(isForcable _))
-        /*def addAnalysis(p: (BoundVar, Argument)) = {
+        def addAnalysis(p: (BoundVar, Argument.Z)) = {
           val (x, v) = p
-          (x, v, a.valuesOf(v))
-        }*/
+          (x, v.value, a.valuesOf(v))
+        }
         //Logger.fine(s"nfs = ${nfs.map(addAnalysis)}\nfs = ${fs.map(addAnalysis)}")
         val (newXs, newVs) = fs.unzip
         val newBody = body.value.substAll(nfs.map(p => (p._1, p._2.value)).toMap[Argument, Argument])
         if (fs.nonEmpty)
-          Some(Force(newXs, newVs.map(_.value), b, newBody))
+          Some(Force(newXs, newVs.map(_.value), newBody))
         else
           Some(newBody)
       }
@@ -326,7 +326,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     import orc.compile.orctimizer.CallGraph._
     e match {
       case IfDef.Z(v, f, g) =>
-        val vs = a.valuesOf(v)
+        val vs = a.callgraph.targetsFromValue(a.valuesOf(v))
         vs.values match {
           case Some(s) =>
             val (ds, nds) = s.partition(_ match {

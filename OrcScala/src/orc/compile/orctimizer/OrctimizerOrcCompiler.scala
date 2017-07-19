@@ -16,7 +16,6 @@ import orc.ast.orctimizer
 import orc.ast.porc
 import orc.error.compiletime.CompileLogger
 import orc.ast.orctimizer.named.AssertedType
-import orc.ast.porc.VariableChecker
 
 /** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
   * and specifies that compilation will finish with named.
@@ -52,7 +51,9 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
     override def apply(co: CompilerOptions) =
       { ast =>
         val translator = new OILToOrctimizer()
-        translator(ast)(Map())
+        val res = translator(ast)(translator.Context(Map(), Map()))
+        orctimizer.named.VariableChecker(res.toZipper(), co)
+        res
       }
   }
 
@@ -93,10 +94,19 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
 
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, logAnalysis())
 
+        {
+          lazy val z = prog.toZipper()
+          lazy val cg = cache.get(CallGraph)(z, None)
+          //cg.debugShow()
+        }
+
+
         val prog1 = optimizer(prog.toZipper(), cache)
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1}=${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Orctimizer after pass $pass/$maxPasses: $optimizationCountsStr")
+
+        orctimizer.named.VariableChecker(prog1.toZipper(), co)
 
         if ((prog1 == prog && pass > 1) || pass > maxPasses)
           prog1
@@ -186,7 +196,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       { ast =>
         val translator = new OrctimizerToPorc()
         val res = translator(ast, cache)
-        VariableChecker(res.toZipper(), co)
+        porc.VariableChecker(res.toZipper(), co)
         res
       }
   }
@@ -214,11 +224,9 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         val optimizer = Optimizer(co)
         val prog1 = optimizer(prog, analyzer).asInstanceOf[MethodCPS]
 
-        orc.ast.porc.Logger.finest(s"analyzer.size = ${analyzer.cache.size}")
-
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $optimizationCountsStr")
-        VariableChecker(prog1.toZipper(), co)
+        porc.VariableChecker(prog1.toZipper(), co)
 
         if (prog1 == prog || pass > maxPasses)
           prog1

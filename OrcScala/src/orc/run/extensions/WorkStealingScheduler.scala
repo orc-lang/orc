@@ -116,7 +116,7 @@ class SimpleWorkStealingScheduler(
     private[SimpleWorkStealingScheduler] val workQueue = new ABPWSDeque[Schedulable](workerQueueLength)
 
     @volatile
-    private[SimpleWorkStealingScheduler] var isPotentiallyBlocked = false
+    var isPotentiallyBlocked = false
 
     @volatile
     private[SimpleWorkStealingScheduler] var isShuttingDown = false
@@ -133,7 +133,8 @@ class SimpleWorkStealingScheduler(
       while (!isSchedulerShuttingDown && !isShuttingDown) {
         val t = next()
         if (t != null) {
-          orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_beforeExecute) {
+          // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_beforeExecute) 
+          {
             beforeExecute(this, t)
           }
           try {
@@ -144,7 +145,13 @@ class SimpleWorkStealingScheduler(
               if (t.nonblocking) {
                 t.run()
               } else {
-                potentiallyBlocking(t.run())
+                // PERFORMANCE: Manually inlined from potentiallyBlocking.
+                isPotentiallyBlocked = true
+                try {
+                  t.run()
+                } finally {
+                  isPotentiallyBlocked = false
+                }
               }
             }
             
@@ -165,6 +172,7 @@ class SimpleWorkStealingScheduler(
 
     @inline
     def potentiallyBlocking[T](f: => T): T = {
+      // This is manually inlined in run above.
       isPotentiallyBlocked = true
       try {
         f
@@ -344,7 +352,7 @@ class SimpleWorkStealingScheduler(
 /** An Orc runtime engine extension which
   * schedules Orc Tokens to run in an OrcThreadPoolExecutor.
   *
-  * @author jthywiss
+  * @author jthywiss, amp
   */
 trait OrcWithWorkStealingScheduler extends Orc {
   var scheduler: SimpleWorkStealingScheduler = null

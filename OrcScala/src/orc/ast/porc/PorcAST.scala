@@ -29,70 +29,6 @@ import scala.PartialFunction
 import swivel.TransformFunction
 import orc.util.Ternary
 
-/* TODO: Also change to simplify the truffle implementation but without increasing the complexity of say a C or JS implementation.
- * 
- * Continuation is not needed. Each time we use it we could instead have an expression to call as the continuation.
- * This would effectively defer CPS conversion to the backend. However it also sets aside the continuations so that conversion would be trivial.
- * Since we can now have specialized argument bindings for each continuation. This should avoid the need for builtin TupleElim.
- * 
- * The problem with this is that it can result in code duplication when there is more than one call to the continuation
- * (which there is in the presence of parallel). This means there will still need to be something like Continuation.
- * It might be useful to give it "join" (like the Jones talk) semantics were it is limited and guaranteed to be
- * compilable to a jump.
- * 
- * Let is still needed.
- * 
- * The continuations which appear inline would still need information to assist in capture. This would be
- * argument names and free variables which will be captured from the scope. This would make continuation lifting
- * trivial in the backend.
- * 
- * Defs and sites should also include captured variables to allow for compaction and easier lifting.
- * 
- * Can defs and sites be declared the same way?
- *   It should be possible. A site simply captures T from it's declaring scope and ignores it's parameter T.
- *   Sites will always receive non-futures as arguments. Sites will also artificially increment the halt count to prevent the declaration from ever halting.
- *   Defs will not capture T and will have future arguments.
- *   
- *   Calls to these values are all the same. The calls receive a continuation arg and other useful args.
- *   
- *   Eliminate direct calls and replace with a CPS version with a flag marking calls which are statically known to be direct.
- *   
- * 
- * Can that system be reused to dedup continuations?
- *   Probably not. Since continuations should have guaranteed jump semantics.
- *
- * Even continuations will not always be implementable as a jump.
- * The problem is that in the presence of parallel a continuation is called in a non-tail position.
- * 
- * 
- * 
- * It appears that very little can actually easily change.
- * Continuations are multiple called in parallel so they both cannot be jumps and cannot be inlined in 
- * all cases (because of potential code explosion).
- * Def and site decl and call can be combined, but splitting it out to allow static optimization or
- * simply better start-up of the JIT (because more is known the first compile) may be useful.
- * 
- * Continuations could be expanded to multiple parameters to eliminate the need for any tuples.
- * SpawnFutureBind could be changed to take a continuation which takes either a tuple of P and C or
- * multiple parameters.
- * Spawn could take zero args or a unit arg.
- * 
- * These changes would simplify the language by preventing any code from appearing inside operators
- * like spawn. However, the opposite would also be possible. Remove explicit continuations and
- * have explicit code blocks in all positions. The problem with this is that the same continuation 
- * is used more than once in some cases, so explicit continuations will remove that duplication.
- * 
- * Forced inlining of the continuations (on speculative direct paths) would still be possible by
- * making the continuation and it's body into compile time constants. However, truffle and graal have
- * their own inlining which may well solve the problem without the need for forced inlining. Spectulative
- * directifying may still be useful, but the P call would be a normal call.
- * 
- * Multiple parameter continuations would be slightly harder to implement on some backends. However, 
- * they would probably be faster in almost all cases since they would allow the underlying compiler
- * to store both values on the stack without needing to detect the potential for on-stack scalar replacement.
- * 
- */
-
 abstract class Transform extends TransformFunction {
   def onExpression: PartialFunction[Expression.Z, Expression] = {
     case a: Argument.Z if onArgument.isDefinedAt(a) => onArgument(a)
@@ -220,9 +156,6 @@ object Method {
   }
 }
 
-// TODO: Currently Methods are not handled correctly. Specifically defs never correctly force any futures.
-//       We will need either a resolve combinator here or a split between routines and services.
-
 @leaf @transform
 final case class MethodCPS(name: Variable, pArg: Variable, cArg: Variable, tArg: Variable, isDef: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
   override def allArguments: Seq[Variable] = pArg +: cArg +: tArg +: arguments
@@ -244,18 +177,19 @@ final case class IfDef(@subtree argument: Argument, @subtree left: Expression, @
 final case class GetField(@subtree future: Argument, field: Field) extends Expression
 
 @leaf @transform
-final case class New(@subtree bindings: Map[Field, Expression]) extends Expression
+final case class New(@subtree bindings: Map[Field, Argument]) extends Expression
 
 // ==================== PROCESS ===================
 
-// TODO: The semantics of this have been changed to "spawn or run as the runtime prefers"
 @leaf @transform
-final case class Spawn(@subtree c: Argument, @subtree t: Argument, @subtree computation: Argument) extends Expression
+final case class Spawn(@subtree c: Argument, @subtree t: Argument, blockingComputation: Boolean, @subtree computation: Argument) extends Expression
 
 @leaf @transform
 final case class NewTerminator(@subtree parentT: Argument) extends Expression
 @leaf @transform
 final case class Kill(@subtree t: Argument) extends Expression
+@leaf @transform
+final case class CheckKilled(@subtree t: Argument) extends Expression
 @leaf @transform
 final case class TryOnKilled(@subtree body: Expression, @subtree handler: Expression) extends Expression
 
@@ -276,6 +210,10 @@ final case class TryFinally(@subtree body: Expression, @subtree handler: Express
 @leaf @transform
 final case class NewFuture() extends Expression
 @leaf @transform
-final case class SpawnBindFuture(@subtree fut: Argument, @subtree c: Argument, @subtree t: Argument, @subtree computation: Argument) extends Expression
+final case class Bind(@subtree future: Argument, @subtree v: Argument) extends Expression
 @leaf @transform
-final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, forceClosures: Boolean, @subtree futures: Seq[Argument]) extends Expression
+final case class BindStop(@subtree future: Argument) extends Expression
+@leaf @transform
+final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression
+@leaf @transform
+final case class Resolve(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression

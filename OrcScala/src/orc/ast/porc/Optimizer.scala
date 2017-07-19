@@ -104,8 +104,10 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         renameVariables(a)
       case CallContinuation.Z(t, args) =>
         CallContinuation(renameVariables(t), args.map(renameVariables))
-      case Force.Z(p, c, t, b, futs) =>
-        Force(renameVariables(p), renameVariables(c), renameVariables(t), b, futs.map(renameVariables))
+      case Force.Z(p, c, t, futs) =>
+        Force(renameVariables(p), renameVariables(c), renameVariables(t), futs.map(renameVariables))
+      case Resolve.Z(p, c, t, futs) =>
+        Resolve(renameVariables(p), renameVariables(c), renameVariables(t), futs.map(renameVariables))
       case Sequence.Z(exprs) =>
         Sequence(exprs.map(renameVariables))
       case MethodCPSCall.Z(external, target, p, c, t, args) =>
@@ -118,8 +120,8 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         GetField(renameVariables(o), f)
       case New.Z(bindings) =>
         New(bindings.mapValues(renameVariables).view.force)
-      case Spawn.Z(c, t, comp) =>
-        Spawn(renameVariables(c), renameVariables(t), renameVariables(comp))
+      case Spawn.Z(c, t, b, comp) =>
+        Spawn(renameVariables(c), renameVariables(t), b, renameVariables(comp))
       case NewTerminator.Z(t) =>
         NewTerminator(renameVariables(t))
       case Kill.Z(t) =>
@@ -138,8 +140,8 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case TryFinally.Z(b, h) =>
         TryFinally(renameVariables(b), renameVariables(h))
 
-      case SpawnBindFuture.Z(fut, c, t, comp) =>
-        SpawnBindFuture(renameVariables(fut), renameVariables(c), renameVariables(t), renameVariables(comp))
+      case Bind.Z(fut, comp) =>
+        Bind(renameVariables(fut), renameVariables(comp))
       case f @ NewFuture.Z() =>
         f.value
     })

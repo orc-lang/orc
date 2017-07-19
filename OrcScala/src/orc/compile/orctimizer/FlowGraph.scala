@@ -172,7 +172,7 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
           addEdges(
             ValueEdge(ExitNode(f), exit))
           process(f)
-        case Force.Z(xs, vs, b, f) =>
+        case Force.Z(xs, vs, f) =>
           xs foreach { declareVariable(entry, _) }
           addEdges(
             TransitionEdge(entry, "Force-Enter", EntryNode(f)),
@@ -186,6 +186,14 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
               UseEdge(ValueNode(e), exit))): _*)
           addEdges(ValueEdge(ExitNode(f), exit))
           process(f)
+        case Resolve.Z(futures, e) =>
+          addEdges(
+            TransitionEdge(entry, "Resolve-Enter", EntryNode(e)),
+            TransitionEdge(ExitNode(e), "Resolve-Exit", exit))
+          addEdges(futures.flatMap(e => Seq(UseEdge(ValueNode(e), entry),
+              UseEdge(ValueNode(e), exit))): _*)
+          addEdges(ValueEdge(ExitNode(e), exit))
+          process(e)
         case IfDef.Z(b, f, g) =>
           addEdges(
             TransitionEdge(entry, "IfDef-Def", EntryNode(f)),
@@ -276,7 +284,7 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
     (if (n == entry) Map("color" -> "green", "peripheries" -> "2") else Map()) ++
       (if (n == exit) Map("color" -> "red", "peripheries" -> "2") else Map()) ++
       (n match {
-        case v @ ValueNode(_) if arguments contains v =>
+        case v @ ValueNode(_, _) if arguments contains v =>
           Map("color" -> "green", "peripheries" -> "2")
         case _ => Map()
       })
@@ -307,7 +315,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
   sealed abstract class Node extends WithDotAttributes with PrecomputeHashcode {
     this: Product =>
     val ast: NamedAST
-    override def toString() = s"$productPrefix(${shortString(ast)})"
+    override def toString() = s"$productPrefix(${shortString(ast)}#${ast.hashCode().formatted("%x")}${System.identityHashCode(ast).formatted("%x")})"
 
     def group: AnyRef = ast
     def shape: String = "ellipse"
@@ -366,30 +374,35 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
     }
   }
 
-  case class ValueNode(ast: Constant) extends Node with ValueFlowNode {
+  // This stores the class of the value along with it so that nodes with equal values of different types (2.0 == 2) are not collapsed into a single node.
+  case class ValueNode(ast: Constant, cls: Option[Class[_]]) extends Node with ValueFlowNode {
     override def label = ast.toString()
   }
   object ValueNode {
     def apply(ast: Argument.Z): ValueFlowNode = ast match {
       case a: Constant.Z =>
-        ValueNode(a.value)
+        ValueNode(a.value, Option(a.constantValue).map(_.getClass()))
       case a: UnboundVar.Z =>
-        throw new IllegalArgumentException(s"Congrats!!! You just volunteered to implement unbound variables in this analysis if you think we really need them.")
+        throw new IllegalArgumentException(s"Congrats!!! You just volunteered to implement unbound variables in this analysis if you think we really need them: $a")
       case v: BoundVar.Z =>
         VariableNode(v.value, v.parents)
     }
   }
 
   case class VariableNode(ast: BoundVar, binder: NamedAST.Z) extends Node with ValueFlowNode {
+    assert(binder.parents.tail.count(_.boundVars contains ast) == 0)
     require(binder.boundVars contains ast)
 
+    override def toString() = s"$productPrefix(${shortString(ast)}#${ast.asInstanceOf[AnyRef].hashCode().formatted("%x")}${System.identityHashCode(ast).formatted("%x")}, ${binder.value})"
+
     override def label = binder match {
-      case Force.Z(_, _, publishForce, _) => s"♭${if (publishForce) "p" else "c"} $ast"
+      case Force.Z(_, _, _) => s"♭ $ast"
       case _ => s"$ast from ${shortString(binder.value)}"
     }
   }
   object VariableNode {
     def apply(ast: BoundVar, path: Seq[NamedAST.Z]): VariableNode = {
+      assert(path.count(_.boundVars contains ast) <= 1)
       VariableNode(ast, path.find(_.boundVars contains ast).getOrElse(
         throw new IllegalArgumentException(s"$ast should be a variable bound on the path:\n${path.head}")))
     }
