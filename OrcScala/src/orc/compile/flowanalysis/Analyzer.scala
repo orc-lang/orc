@@ -16,10 +16,11 @@ import orc.compile.orctimizer.FlowGraph
 
 object Analyzer {
   val checkAnalysis = false
+
 }
 
 abstract class Analyzer {
-  import Analyzer.checkAnalysis
+  import Analyzer._
 
   type NodeT
   type EdgeT
@@ -27,6 +28,18 @@ abstract class Analyzer {
   type StateMap = Map[NodeT, StateT]
 
   case class ConnectedNode(edge: EdgeT, node: NodeT)
+  
+  case class AnalyzerLogEntry(id: Int, node: NodeT, inEdges: Seq[EdgeT], newState: StateT, isChange: Boolean, tracePredicate: (AnalyzerLogEntry, StateMap) => Boolean)
+
+  val defaultTracePredicate = (e: AnalyzerLogEntry, s: StateMap) => false
+  
+  val tracePredicateVariable = new ThreadLocal[(AnalyzerLogEntry, StateMap) => Boolean]() {
+    override def initialValue() = defaultTracePredicate
+  }
+  
+  val level = if (checkAnalysis) Level.INFO else Level.FINER
+  val finerLevel = if (checkAnalysis) Level.FINER else Level.FINEST
+
 
   /** The set of nodes to initially process.
     */
@@ -75,14 +88,18 @@ abstract class Analyzer {
       in
     }
   }
+  
+  protected def tracePredicate(f: (AnalyzerLogEntry, StateMap) => Boolean) = {
+    tracePredicateVariable.set(f)
+  }
 
   def apply(): StateMap = {
+    var states: StateMap = Map()
     var id = 0
-    val traversal = mutable.Buffer[(Int, NodeT, Seq[EdgeT], StateT, Boolean)]()
+    val traversal = mutable.Buffer[AnalyzerLogEntry]()
     var avoidedEnqueues = 0
     val startTime = System.nanoTime()
 
-    val level = if (checkAnalysis) Level.INFO else Level.FINER
     Logger.log(level, s"Traversal $this: starting")
 
     try {
@@ -111,6 +128,10 @@ abstract class Analyzer {
       def process(states: StateMap): StateMap = {
         smartDequeue() match {
           case Some(node) => {
+            if(Logger.julLogger.isLoggable(level)) {
+              tracePredicateVariable.set(defaultTracePredicate)
+            }
+            
             val oldState = states.getOrElse(node, initialState)
             val (newState, newNodes) = transfer(node, oldState, new States(node, states))
             val retroactiveWork = newNodes.filter(n => inputs(n).map(_.node).exists(states.contains(_)))
@@ -125,7 +146,7 @@ abstract class Analyzer {
 
             if(Logger.julLogger.isLoggable(level)) {
               id += 1
-              traversal += ((id, node, inputs(node).map(_.edge), newState, oldState == newState))
+              traversal += AnalyzerLogEntry(id, node, inputs(node).map(_.edge), newState, oldState == newState, tracePredicateVariable.get())
             }
 
             if (checkAnalysis) {
@@ -142,35 +163,108 @@ abstract class Analyzer {
       }
 
       initialNodes.foreach(smartEnqueue)
-      process(HashMap())
+      states = process(HashMap())
+      states
     } finally {
       val endTime = System.nanoTime()
       if(Logger.julLogger.isLoggable(level)) {
-        def entryToString(t: (Int, NodeT, Seq[EdgeT], StateT, Boolean)): String = {
-          val (id, n, ins, s, b) = t
-          f"$id% 4d: ${if (b) "==" else "!="} $s%s\n    ins=[${ins.mkString(",\n         ")}%s]"
-        }
-        def traversalTable = traversal.groupBy(_._2).par.map({
-          case (n, b) =>
-            val nn = n match {
-              case n: FlowGraph.WithSpecificAST => n.location
-              case n: FlowGraph.Node => n.ast
-              case _ => ""
-            }
-            (b, s"========= Node $n @\n$nn\n=====\n${b.map(entryToString).mkString("\n")}")
-        }).seq.toSeq.sortBy(_._1.map(_._1).max).map(_._2)
-        val traceFile = File.createTempFile("analysis", ".txt")
-
-        Logger.log(level, s"Traversal $this: (${((endTime.toFloat - startTime) / 1000 / 1000).formatted("%.1f")} ms) ${traversal.map(_._2).toSet.size} nodes, ${traversal.flatMap(_._3).toSet.size} edges, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
-
-        val out = new FileWriter(traceFile)
-        for(l <- traversalTable) {
-          out.write(l)
-          out.write("\n")
-        }
-        out.close()
+        writeSelectedLog(traversal, states)
+      }
+      if(Logger.julLogger.isLoggable(finerLevel)) {
+        writeFullLog(traversal, startTime, endTime, avoidedEnqueues)
       }
     }
+  }
+
+  private def writeSelectedLog(traversal: mutable.Buffer[AnalyzerLogEntry], states: StateMap) = {
+    import orc.util.PrettyPrintInterpolator
+    import orc.util.FragmentAppender
+    
+    class MyPrettyPrintInterpolator extends PrettyPrintInterpolator {
+      implicit def implicitInterpolator(sc: StringContext) = new MyInterpolator(sc)
+      class MyInterpolator(sc: StringContext) extends Interpolator(sc) {
+        override val processValue: PartialFunction[Any, FragmentAppender] = PartialFunction.empty
+      }
+    }
+    val interpolator = new MyPrettyPrintInterpolator
+    import interpolator._
+  
+    def findNodeEntryBefore(n: NodeT, i: Int): (Int, AnalyzerLogEntry) = {
+      val ind = traversal.lastIndexWhere(_.node == n, i)
+      if (ind < 0)
+        (-1, AnalyzerLogEntry(-1, n, Seq(), initialState, false, defaultTracePredicate))
+      else
+        (ind, traversal(ind))
+    }
+    
+    val statesDefault = states.withDefaultValue(initialState)
+    
+    val selected = traversal.zipWithIndex.par.flatMap({ p =>
+      val (e, i) = p
+      if (e.tracePredicate(e, statesDefault)) {
+        def print(e: AnalyzerLogEntry, i: Int, depth: Int): FragmentAppender = {
+          if (depth < 10) {
+            FragmentAppender.mkString(inputs(e.node).map({
+              case ConnectedNode(_, n) =>
+                val (j, e1) = findNodeEntryBefore(n, i)
+                if(j < 0) {
+                  pp""
+                } else {
+                  val in = ">" * depth
+                  val out = "<" * depth
+                  pp"NODE: ${e.node}\nSTATE: ${e.newState}\n$in$StartIndent\n${print(e1, j, depth+1)}$EndIndent\n$out"
+                }
+            }), "\n")
+          } else {
+            pp"..."
+          }
+        }
+        Seq("\n\n" + print(e, e.id, 0))
+      } else {
+        Seq()
+      }
+    }).seq
+    
+    if (selected.nonEmpty) {
+      val traceFile = File.createTempFile("analysis_selected_log_", ".txt")
+  
+      val out = new FileWriter(traceFile)
+      for(l <- selected) {
+        out.write(l)
+        out.write("\n")
+      }
+      out.close()
+      
+      Logger.log(level, s"Traversal $this: selected trace in $traceFile")
+    } else {
+      Logger.log(level, s"Traversal $this: selected trace is empty")
+    }
+  }
+
+  private def writeFullLog(traversal: mutable.Buffer[AnalyzerLogEntry], startTime: Long, endTime: Long, avoidedEnqueues: Int) = {
+    def entryToString(t: AnalyzerLogEntry): String = {
+      val AnalyzerLogEntry(id, n, ins, s, b, _) = t
+      f"$id% 4d: ${if (b) "==" else "!="} $s%s\n    ins=[${ins.mkString(",\n         ")}%s]"
+    }
+    def traversalTable = traversal.groupBy(_.node).par.map({
+      case (n, b) =>
+        val nn = n match {
+          case n: FlowGraph.WithSpecificAST => n.location
+          case n: FlowGraph.Node => n.ast
+          case _ => ""
+        }
+        (b, s"========= Node $n @\n$nn\n=====\n${b.map(entryToString).mkString("\n")}")
+    }).seq.toSeq.sortBy(_._1.map(_.id).max).map(_._2)
+    val traceFile = File.createTempFile("analysis_full_log", ".txt")
+
+    val out = new FileWriter(traceFile)
+    for(l <- traversalTable) {
+      out.write(l)
+      out.write("\n")
+    }
+    out.close()
+    
+    Logger.log(level, s"Traversal $this: (${((endTime.toDouble - startTime) / 1000 / 1000).formatted("%.1f")} ms) ${traversal.map(_.node).toSet.size} nodes, ${traversal.flatMap(_.inEdges).toSet.size} edges, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
   }
 
   def outputs(node: NodeT): Seq[ConnectedNode]

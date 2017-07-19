@@ -99,8 +99,7 @@ trait DebuggableGraphDataProvider[Node <: WithDotAttributes, Edge <: WithDotAttr
     }
 
     s"""
-${declarationType} ${idFor("cluster", this)} {
-compound=true;
+${declarationType} ${idFor("cluster_", this)} {
 label="${quote(graphLabel)}";
 ${subgraphs.map(_.toDot("subgraph", idMap)).mkString("\n\n")}
 $nodesStr
@@ -119,11 +118,13 @@ $edgesStr
     val outformat = "svg"
     val tmpPdf = File.createTempFile("orcprog", s".$outformat");
     //tmp.deleteOnExit();
-    Logger.info(s"Wrote gz to $tmpDot")
-    Logger.info(s"Wrote rendered to $tmpPdf")
 
     Files.write(Paths.get(tmpDot.toURI), toDot().getBytes(StandardCharsets.UTF_8))
+    Logger.info(s"Wrote gv to $tmpDot")
+    
     Seq("dot", s"-T$outformat", tmpDot.getAbsolutePath, s"-o${tmpPdf.getAbsolutePath}").!
+    Logger.info(s"Wrote rendered to $tmpPdf")
+    
     Seq("chromium-browser", tmpPdf.getAbsolutePath).!
   }
 }

@@ -306,10 +306,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           case _ => false
         }
         val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).exists(isForcable _))
-        /*def addAnalysis(p: (BoundVar, Argument)) = {
+        def addAnalysis(p: (BoundVar, Argument.Z)) = {
           val (x, v) = p
-          (x, v, a.valuesOf(v))
-        }*/
+          (x, v.value, a.valuesOf(v))
+        }
         //Logger.fine(s"nfs = ${nfs.map(addAnalysis)}\nfs = ${fs.map(addAnalysis)}")
         val (newXs, newVs) = fs.unzip
         val newBody = body.value.substAll(nfs.map(p => (p._1, p._2.value)).toMap[Argument, Argument])
@@ -326,7 +326,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     import orc.compile.orctimizer.CallGraph._
     e match {
       case IfDef.Z(v, f, g) =>
-        val vs = a.valuesOf(v)
+        val vs = a.callgraph.targetsFromValue(a.valuesOf(v))
         vs.values match {
           case Some(s) =>
             val (ds, nds) = s.partition(_ match {

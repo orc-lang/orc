@@ -315,7 +315,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
   sealed abstract class Node extends WithDotAttributes with PrecomputeHashcode {
     this: Product =>
     val ast: NamedAST
-    override def toString() = s"$productPrefix(${shortString(ast)})"
+    override def toString() = s"$productPrefix(${shortString(ast)}#${ast.hashCode().formatted("%x")}${System.identityHashCode(ast).formatted("%x")})"
 
     def group: AnyRef = ast
     def shape: String = "ellipse"
@@ -383,14 +383,17 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
       case a: Constant.Z =>
         ValueNode(a.value, Option(a.constantValue).map(_.getClass()))
       case a: UnboundVar.Z =>
-        throw new IllegalArgumentException(s"Congrats!!! You just volunteered to implement unbound variables in this analysis if you think we really need them.")
+        throw new IllegalArgumentException(s"Congrats!!! You just volunteered to implement unbound variables in this analysis if you think we really need them: $a")
       case v: BoundVar.Z =>
         VariableNode(v.value, v.parents)
     }
   }
 
   case class VariableNode(ast: BoundVar, binder: NamedAST.Z) extends Node with ValueFlowNode {
+    assert(binder.parents.tail.count(_.boundVars contains ast) == 0)
     require(binder.boundVars contains ast)
+
+    override def toString() = s"$productPrefix(${shortString(ast)}#${ast.asInstanceOf[AnyRef].hashCode().formatted("%x")}${System.identityHashCode(ast).formatted("%x")}, ${binder.value})"
 
     override def label = binder match {
       case Force.Z(_, _, _) => s"♭ $ast"
@@ -399,6 +402,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
   }
   object VariableNode {
     def apply(ast: BoundVar, path: Seq[NamedAST.Z]): VariableNode = {
+      assert(path.count(_.boundVars contains ast) <= 1)
       VariableNode(ast, path.find(_.boundVars contains ast).getOrElse(
         throw new IllegalArgumentException(s"$ast should be a variable bound on the path:\n${path.head}")))
     }

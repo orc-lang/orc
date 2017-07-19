@@ -277,7 +277,6 @@ trait TotalSite3 extends TotalSite with SpecificArity {
   def eval(x: AnyRef, y: AnyRef, z: AnyRef): AnyRef
 }
 
-// TODO: This shouldn't be a site. Sites are invokable. This needs to have the apply method invoked.
 /* Template for building values which act as constructor-extractor sites,
  * such as the Some site.
  */
@@ -285,9 +284,10 @@ class StructurePairSite(
   applySite: TotalSite with TypedSite,
   unapplySite: PartialSite1 with TypedSite) extends OrcRecord(
   "apply" -> applySite,
-  "unapply" -> unapplySite) with TypedSite with PartialSite {
+  "unapply" -> unapplySite) with TypedSite {
 
-  override def evaluate(args: Array[AnyRef]) = throw new UncallableValueException(this)
+  // If we are called, call apply. This is needed since .apply passthrough only works on things that are not already callable.
+  def call(args: Array[AnyRef], h: Handle) = applySite.call(args, h)
 
   def orcType() = new RecordType(
     "apply" -> applySite.orcType(),
