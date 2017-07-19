@@ -20,7 +20,7 @@ class AnalysisCache {
 
   private class AnalysisCacheKey(val analysis: AnalysisRunner[_, _], params1: Product) {
     val params = params1.productIterator.map(v => new AssociatedWeakRef(v.asInstanceOf[AnyRef], this, queue)).toSeq
-    override def hashCode() = analysis.hashCode() + params.map(_().hashCode()).sum
+    override val hashCode = analysis.hashCode() + params1.productIterator.map(_.hashCode()).sum
     override def equals(o: Any) = o match {
       case o: AnalysisCacheKey => {
         analysis == o.analysis &&
