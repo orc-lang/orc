@@ -30,6 +30,7 @@ trait ValueLocator {
 trait Location[-M <: OrcCmd] {
   def send(message: M)
   def sendInContext(execution: DOrcExecution)(message: M)
+  def runtimeId: DOrcRuntime#RuntimeId
 }
 
 /** Provides the set of Locations that can feasibly have a copy of this value.

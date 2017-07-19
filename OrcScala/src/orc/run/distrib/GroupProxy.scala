@@ -168,6 +168,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     }
     val newToken = movedToken.asToken(origin, newTokenGroup)
     if (lookedUpProxyGroupMember != null) {
+      Tracer.traceHaltGroupMemberSend(movedToken.tokenProxyId, self.runtime.here, origin)
       /* Discard unused RemoteGroupMenbersProxy */
       origin.sendInContext(self)(HaltGroupMemberProxyCmd(executionId, movedToken.tokenProxyId))
     }
@@ -180,6 +181,7 @@ trait GroupProxyManager { self: DOrcExecution =>
 
   def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(token: Token, pv: Option[AnyRef]) {
     Logger.fine(s"sendPublish: publish by token $token")
+    Tracer.tracePublishSend(token, destination)
     destination.sendInContext(self)(PublishGroupCmd(executionId, proxyId, new PublishingTokenReplacement(token, proxyId, destination, pv)))
   }
 
@@ -187,15 +189,18 @@ trait GroupProxyManager { self: DOrcExecution =>
     Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishingToken))
     val newTokenGroup = proxiedGroupMembers.get(publishingToken.tokenProxyId).parent
     val newToken = publishingToken.asPublishingToken(origin, newTokenGroup)
+    Tracer.tracePublishReceive(newToken, origin)
     Logger.fine(s"publishInGroup $newToken")
     runtime.schedule(newToken)
   }
 
   def sendHalt(destination: PeerLocation, groupMemberProxyId: GroupProxyId)() {
+    Tracer.traceHaltGroupMemberSend(groupMemberProxyId, self.runtime.here, destination)
     destination.sendInContext(self)(HaltGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
   def sendDiscorporate(destination: PeerLocation, groupMemberProxyId: GroupProxyId)() {
+    Tracer.traceDiscorporateGroupMemberSend(groupMemberProxyId, self.runtime.here, destination)
     destination.sendInContext(self)(DiscorporateGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
@@ -220,6 +225,7 @@ trait GroupProxyManager { self: DOrcExecution =>
   }
 
   def sendKill(destination: PeerLocation, proxyId: GroupProxyId)() {
+    Tracer.traceKillGroupSend(proxyId, self.runtime.here, destination)
     destination.sendInContext(self)(KillGroupCmd(executionId, proxyId))
   }
 

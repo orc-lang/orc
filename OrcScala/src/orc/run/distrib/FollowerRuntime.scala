@@ -207,6 +207,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     Logger.entering(getClass.getName, "sendEvent")
     val execution = programs(executionId)
     try {
+      Tracer.traceOrcEventSend(here, leaderLocation)
       leaderLocation.sendInContext(execution)(NotifyLeaderCmd(executionId, event))
     } catch {
       case e1: SocketException => {
@@ -317,6 +318,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     override def toString = f"${getClass.getName}(runtimeId=$runtimeId%#x)"
     override def send(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
     override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def runtimeId = FollowerRuntime.this.runtimeId
   }
 
 }
