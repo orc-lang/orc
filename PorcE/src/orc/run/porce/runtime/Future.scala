@@ -38,8 +38,8 @@ final class Future() extends OrcValue with orc.Future {
   /** Bind this to a value and call publish and halt on each blocked Blockable.
     */
   def bind(v: AnyRef) = {
-    assert(!v.isInstanceOf[Field])
-    assert(!v.isInstanceOf[orc.Future])
+    assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
+    assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
     val done = synchronized {
       if (_state == Unbound) {
         _state = Bound

@@ -23,8 +23,14 @@ import orc.compile.Logger
 // Conversions from named to nameless representations
 class OILToOrctimizer {
   case class Context(valueSource: Map[BoundVar, Expression], variableMapping: Map[BoundVar, orct.BoundVar]) {
-    def addValueSource(x: BoundVar, e: Expression) = copy(valueSource = valueSource + ((x, e)))
-    def addVariableMapping(x: BoundVar, y: orct.BoundVar): Context = copy(variableMapping = variableMapping + ((x, y)))
+    def addValueSource(x: BoundVar, e: Expression) = {
+      assert(!variableMapping.contains(x), s"Variable source for $x is already set")
+      copy(valueSource = valueSource + ((x, e)))
+    }
+    def addVariableMapping(x: BoundVar, y: orct.BoundVar): Context = {
+      assert(!variableMapping.contains(x), s"Variable mapping for $x is already set to ${variableMapping(x)}, not $y")
+      copy(variableMapping = variableMapping + ((x, y)))
+    }
     def addVariableMapping(x: BoundVar): Context = {
       val y = x ->> new orct.BoundVar()
       addVariableMapping(x, y)
