@@ -108,7 +108,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
 
         orctimizer.named.VariableChecker(prog1.toZipper(), co)
 
-        if ((prog1 == prog && pass > 1) || pass > maxPasses)
+        if (prog1 == prog || pass >= maxPasses)
           prog1
         else {
           opt(prog1, pass + 1)
@@ -228,7 +228,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $optimizationCountsStr")
         porc.VariableChecker(prog1.toZipper(), co)
 
-        if (prog1 == prog || pass > maxPasses)
+        if (prog1 == prog || pass >= maxPasses)
           prog1
         else {
           opt(prog1, pass + 1)
