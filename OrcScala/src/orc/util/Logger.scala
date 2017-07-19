@@ -170,8 +170,8 @@ object SyslogishFormatter extends Formatter {
       sb.append('-')
     }
 
-    sb.append(" [thread ")
-    sb.append(record.getThreadID())
+    sb.append(" [thread 0x")
+    sb.append(record.getThreadID().toHexString)
     sb.append("]: ")
 
     sb.append(record.getLevel().getLocalizedName())

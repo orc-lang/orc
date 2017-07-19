@@ -71,15 +71,18 @@ object EventCounter {
         }
       }
 
-      System.out.append(s"Profiling Accumulators: begin, ${sumMap.size} entries\n")
-      System.out.append("Event-Type".padTo(eventTypeColWidth, '-'))
-      System.out.append("\t-------Count--------\n")
+      /* Convention: synchronize on System.out during output of block */
+      System.out synchronized {
+        System.out.append(s"Profiling Accumulators: begin, ${sumMap.size} entries\n")
+        System.out.append("Event-Type".padTo(eventTypeColWidth, '-'))
+        System.out.append("\t-------Count--------\n")
 
-      for (e <- sumMap) {
-        System.out.append(e._1.name.padTo(eventTypeColWidth, ' '))
-        System.out.append(f"\t${e._2(0)}%20d\n")
+        for (e <- sumMap) {
+          System.out.append(e._1.name.padTo(eventTypeColWidth, ' '))
+          System.out.append(f"\t${e._2(0)}%20d\n")
+        }
+        System.out.append(f"Profiling Accumulators: end\n")
       }
-      System.out.append(f"Profiling Accumulators: end\n")
     }
 
     def register(ec: EventCounts) = synchronized {

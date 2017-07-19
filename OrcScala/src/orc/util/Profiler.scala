@@ -118,15 +118,18 @@ object Profiler {
         }
       }
 
-      System.out.append(s"Profiling Accumulators: begin, ${sumMap.size} entries\n")
-      System.out.append("Interval-Type".padTo(intervalTypeColWidth, '-'))
-      System.out.append("\t-------Count--------\t--Accum.-Time-(ns)--\n")
+      /* Convention: synchronize on System.out during output of block */
+      System.out synchronized {
+        System.out.append(s"Profiling Accumulators: begin, ${sumMap.size} entries\n")
+        System.out.append("Interval-Type".padTo(intervalTypeColWidth, '-'))
+        System.out.append("\t-------Count--------\t--Accum.-Time-(ns)--\n")
 
-      for (e <- sumMap) {
-        System.out.append(e._1.name.padTo(intervalTypeColWidth, ' '))
-        System.out.append(f"\t${e._2(0)}%20d\t${e._2(1)}%20d\n")
+        for (e <- sumMap) {
+          System.out.append(e._1.name.padTo(intervalTypeColWidth, ' '))
+          System.out.append(f"\t${e._2(0)}%20d\t${e._2(1)}%20d\n")
+        }
+        System.out.append(f"Profiling Accumulators: end\n")
       }
-      System.out.append(f"Profiling Accumulators: end\n")
     }
 
     def register(pa: ProfilingAccumulators) = synchronized {
