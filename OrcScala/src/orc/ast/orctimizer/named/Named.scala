@@ -255,7 +255,7 @@ final class BoundVar(val optionalName: Option[String] = None) extends Var with h
   def productElement(n: Int): Any = optionalName
 
   optionalVariableName = optionalName
-  autoName("ov")
+  //autoName("ov")
 }
 
 @branch @replacement[Callable]

@@ -376,13 +376,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   val BranchElimConstant = OptFull("branch-elim-const") { (e, a) =>
     e match {
-      case Branch.Z(c, x, y) =>
+      case Branch.Z(c, x, y) if (a.publicationsOf(c) only 1) && !a.effects(c) =>
         val vs = a.valuesOf(c)
-        val effects = a.effects(c)
         val DelayInfo(delay, _) = a.delayOf(c)
         //println(s"branch-elim-const: $c\n${vs.values}, $effects, $delay")
         vs.values match {
-          case Some(s) if s.size == 1 && !effects && delay == ComputationDelay() =>
+          case Some(s) if s.size == 1 && delay == ComputationDelay() =>
             val v = s.head
             import CallGraph._
             v match {
