@@ -35,7 +35,6 @@ import orc.compile.orctimizer.FlowGraph.{ValueNode, ValueFlowNode}
 import orc.compile.orctimizer.CallGraph.FlowValue
 import orc.compile.orctimizer.CallGraph.CallableValue
 import orc.compile.orctimizer.DelayAnalysis.DelayInfo
-import orc.ast.orctimizer.named.FieldValue
 import swivel.Zipper
 
 class HashFirstEquality[T](val value: T) {
@@ -252,9 +251,26 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             (FieldArgument(a.value), None, None)
           }
           case f@FieldFuture.Z(body) if !body.freeVars.contains(self) => {
+            // TODO: This is a hack. We just never lift out anything that references an object field. But really we just care about referencing 
+            //       objects that could be recursive with this one. This happens with the this arguments of partial constructors.
+            val noObjectRefs = {
+              case object FoundException extends RuntimeException
+              try {
+                (new Transform {
+                  override val onExpression = {
+                    case FieldAccess.Z(_, _) => throw FoundException 
+                  }
+                })(body)
+                true
+              } catch {
+                case FoundException => 
+                  false
+              }
+            }
+            
             val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
             lazy val x = new BoundVar()
-            if (byNonBlocking1) {
+            if (noObjectRefs && byNonBlocking1) {
               changed = true
               (FieldArgument(x), Some(body), Some(x))
             } else
