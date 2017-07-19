@@ -162,13 +162,6 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Call
   def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): CallGraph = {
     val fg = cache.get(FlowGraph)(params)
     
-    /*
-    println(BoundedSetInstance.ConcreteBoundedSet)
-    println(BoundedSetInstance.MaximumBoundedSet)
-    println(ObjectHandlingInstance.ObjectRef)
-    println(ObjectHandlingInstance.ObjectValue)
-    */
-    
     new CallGraph(fg)
   }
 

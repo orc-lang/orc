@@ -41,7 +41,7 @@ class PrettyPrint {
         case v: Variable => FragmentAppender(v.optionalVariableName.getOrElse(v.toString))
 
         case Let(x, v, b) => pp"let $x = $StartIndent$v$EndIndent in\n$b"
-        case MethodDeclaration(l, b) => pp"def $StartIndent$StartIndent${FragmentAppender.mkString(l.map(reduce), ";\n")}$EndIndent in\n$b$StartIndent"
+        case MethodDeclaration(l, b) => pp"def $StartIndent$StartIndent${FragmentAppender.mkString(l.map(reduce), ";\n")}$EndIndent in\n$b$EndIndent"
         case MethodCPS(name, p, c, t, isDef, args, body) => pp"cps${if (isDef) "_d" else "_s"} $name ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
         case MethodDirect(name, isDef, args, body) => pp"direct${if (isDef) "_d" else "_s"} $name (${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
 

@@ -109,7 +109,7 @@ class PrettyPrint {
       case HasType(body, expectedType) => pp"($body :: $expectedType)"
       case DeclareType(u, t, body) => pp"type $u = $t\n$body"
       //case VtimeZone(timeOrder, body) => "VtimeZone($timeOrder, $body)"
-      case FieldAccess(o, f) => pp"$o.${f.field}"
+      case FieldAccess(o, f) => pp"$o.${f.name}"
       case Constant(v) => FragmentAppender(Format.formatValue(v))
       case (x: BoundVar) => FragmentAppender(x.optionalVariableName.getOrElse(lookup(x)))
       case UnboundVar(s) => pp"?$s"

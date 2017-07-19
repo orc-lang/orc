@@ -2,7 +2,6 @@ package orc.run.porce;
 
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 public class Let extends Expression {
 	private final FrameSlot slot;
