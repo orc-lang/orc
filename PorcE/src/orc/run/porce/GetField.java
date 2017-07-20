@@ -6,17 +6,17 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import orc.Accessor;
 import orc.CaughtEvent;
 import orc.error.runtime.HaltException;
-import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.values.Field;
 
 public class GetField extends Expression {
-	protected final PorcEExecution execution;
+	protected final PorcEExecutionRef execution;
 	protected final Field field;
 
 	@Child
 	protected Expression object;
 
-	public GetField(Expression object, Field field, PorcEExecution execution) {
+	public GetField(Expression object, Field field, PorcEExecutionRef execution) {
 		this.object = object;
 		this.field = field;
 		this.execution = execution;
@@ -31,14 +31,14 @@ public class GetField extends Expression {
 		try {
 			return accessWithBoundary(accessor, obj);
 		} catch (Exception e) {
-			execution.notifyOrc(new CaughtEvent(e));
+			execution.get().notifyOrc(new CaughtEvent(e));
 			throw HaltException.SINGLETON();
 		}
 	}
 
 	@TruffleBoundary
 	protected Accessor getAccessorWithBoundary(final Object t) {
-		return execution.runtime().getAccessor(t, field);
+		return execution.get().runtime().getAccessor(t, field);
 	}
 	
 	@TruffleBoundary(allowInlining = true)
@@ -46,7 +46,7 @@ public class GetField extends Expression {
 		return accessor.get(obj);
 	}
 
-	public static GetField create(Expression object, Field field, PorcEExecution execution) {
+	public static GetField create(Expression object, Field field, PorcEExecutionRef execution) {
 		return new GetField(object, field, execution);
 	}
 }

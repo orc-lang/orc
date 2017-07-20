@@ -7,10 +7,10 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Terminator;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.runtime.PorcERuntime;
 
 public class Resolve extends Expression {
-	private final PorcEExecution execution;
+	private final PorcERuntime runtime;
 	@Child
 	protected Expression p;
 	@Child
@@ -20,12 +20,12 @@ public class Resolve extends Expression {
 	@Children
 	protected final Expression[] futures;
 	
-	public Resolve(Expression p, Expression c, Expression t, Expression[] futures, PorcEExecution execution) {
+	public Resolve(Expression p, Expression c, Expression t, Expression[] futures, PorcERuntime runtime) {
 		this.p = p;
 		this.c = c;
 		this.t = t;
 		this.futures = futures;
-		this.execution = execution;
+		this.runtime = runtime;
 	}
 
 	@ExplodeLoop
@@ -41,13 +41,13 @@ public class Resolve extends Expression {
 			// FIXME: PERFORMANCE: Make .force (below) execute a normal PorcE Call node. This would allow caching and inlining of the already resolved case.
 			// TODO: PERFORMANCE: Use a loop (in Java) to go over all the futures. This will allow ExplodeLoop since the length of .futures is known.
 			// TODO: PERFORMANCE: Speculate that the future state is stably stop or a value (maybe giving it a few tries to stabilize for initial accesses).
-			execution.runtime().resolve(pValue, cValue, tValue, futureValues);
+			runtime.resolve(pValue, cValue, tValue, futureValues);
 		} catch (UnexpectedResultException e) {
 			InternalPorcEError.typeError(this, e);
 		}
 	}
 	
-	public static Resolve create(Expression p, Expression c, Expression t, Expression[] futures, PorcEExecution execution) {
-		return new Resolve(p, c, t, futures, execution);
+	public static Resolve create(Expression p, Expression c, Expression t, Expression[] futures, PorcERuntime runtime) {
+		return new Resolve(p, c, t, futures, runtime);
 	}
 }

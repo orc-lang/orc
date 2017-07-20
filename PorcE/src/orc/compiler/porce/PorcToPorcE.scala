@@ -12,9 +12,11 @@ import orc.run.porce.runtime.PorcEExecution
 import orc.run.porce.runtime.PorcEClosure
 import orc.compile.Logger
 import orc.values.Field
+import orc.run.porce.runtime.PorcEExecutionHolder
+import orc.run.porce.runtime.PorcERuntime
 
 class PorcToPorcE {
-  case class Context(descriptor: FrameDescriptor, execution: PorcEExecution)
+  case class Context(descriptor: FrameDescriptor, execution: PorcEExecutionHolder, runtime: PorcERuntime)
 
   private def lookupVariable(x: porc.Variable)(implicit ctx: Context) =
     ctx.descriptor.findOrAddFrameSlot(x, FrameSlotKind.Object)
@@ -33,9 +35,9 @@ class PorcToPorcE {
     normalizeOrder(s).map(lookupVariable(_))
   }
 
-  def apply(e: porc.MethodCPS, execution: PorcEExecution): PorcEClosure = {
+  def apply(e: porc.MethodCPS, execution: PorcEExecutionHolder, runtime: PorcERuntime): PorcEClosure = {
     val descriptor = new FrameDescriptor()
-    implicit val ctx = Context(descriptor = descriptor, execution = execution)
+    implicit val ctx = Context(descriptor = descriptor, execution = execution, runtime = runtime)
     val m = transform(e.toZipper(), Seq(), Seq())
     m.getClosure(Array[AnyRef]())
   }
@@ -68,11 +70,11 @@ class PorcToPorcE {
           porce.Continuation.create(argSlots.toArray, capturedSlots.toArray, capturingSlots.toArray, descriptor, newBody)
         }
       case porc.CallContinuation.Z(target, arguments) =>
-        porce.Call.InternalOnly.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution)
+        porce.Call.InternalOnly.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
       case porc.MethodCPSCall.Z(isExt, target, p, c, t, arguments) =>
-        porce.Call.CPS.create(transform(target), (p +: c +: t +: arguments).map(transform(_)).toArray, ctx.execution)
+        porce.Call.CPS.create(transform(target), (p +: c +: t +: arguments).map(transform(_)).toArray, ctx.execution.newRef())
       case porc.MethodDirectCall.Z(isExt, target, arguments) =>
-        porce.Call.Direct.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution)
+        porce.Call.Direct.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
       case porc.MethodDeclaration.Z(methods, body) =>
         val recCapturedVars = normalizeOrder(methods.map(_.name)).view.force
         val scopeCapturedVars = normalizeOrder(methods.flatMap(m => m.body.freeVars -- m.allArguments).toSet -- recCapturedVars)
@@ -88,7 +90,7 @@ class PorcToPorcE {
       case porc.NewFuture.Z() =>
         porce.NewFuture.create()
       case porc.NewCounter.Z(p, h) =>
-        porce.NewCounter.create(ctx.execution, transform(p), transform(h))
+        porce.NewCounter.create(ctx.execution.newRef(), transform(p), transform(h))
       case porc.NewTerminator.Z(p) =>
         porce.NewTerminator.create(transform(p))
       case porc.Halt.Z(c) =>
@@ -102,11 +104,11 @@ class PorcToPorcE {
       case porc.BindStop.Z(fut) =>
         porce.BindStop.create(transform(fut))
       case porc.Spawn.Z(c, t, _, comp) =>
-        porce.Spawn.create(transform(c), transform(t), transform(comp), ctx.execution)
+        porce.Spawn.create(transform(c), transform(t), transform(comp), ctx.runtime)
       case porc.Resolve.Z(p, c, t, futures) =>
-        porce.Resolve.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.execution)
+        porce.Resolve.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.runtime)
       case porc.Force.Z(p, c, t, futures) =>
-        porce.Force.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.execution)
+        porce.Force.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.runtime)
       case porc.SetDiscorporate.Z(c) =>
         porce.SetDiscorporate.create(transform(c))        
       case porc.TryOnKilled.Z(b, h) =>
@@ -119,7 +121,7 @@ class PorcToPorcE {
       case porc.IfDef.Z(arg, l, r) =>
         porce.IfDef.create(transform(arg), transform(l), transform(r))      
       case porc.GetField.Z(o, f) =>
-        porce.GetField.create(transform(o), f, ctx.execution)      
+        porce.GetField.create(transform(o), f, ctx.execution.newRef())      
       case porc.New.Z(bindings) =>
         val newBindings = bindings.mapValues(transform(_)).view.force
         val fieldOrdering = normalizeFieldOrder(bindings.keys)

@@ -12,13 +12,12 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import orc.CaughtEvent;
 import orc.DirectInvoker;
 import orc.Invoker;
-import orc.error.OrcException;
 import orc.error.runtime.ExceptionHaltException;
 import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PCTHandle;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.Terminator;
 
 public abstract class Call extends Expression {
@@ -41,9 +40,9 @@ public abstract class Call extends Expression {
 	@Child
 	protected IndirectCallNode callNode;
 
-	protected final PorcEExecution execution;
+	protected final PorcEExecutionRef execution;
 
-	public Call(Expression target, Expression[] arguments, PorcEExecution execution) {
+	public Call(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 		this.target = target;
 		this.arguments = arguments;
 		this.execution = execution;
@@ -68,11 +67,11 @@ public abstract class Call extends Expression {
 
 	@TruffleBoundary
 	protected Invoker getInvokerWithBoundary(final Object t, final Object[] argumentValues) {
-		return execution.runtime().getInvoker(t, argumentValues);
+		return execution.get().runtime().getInvoker(t, argumentValues);
 	}
 
 	public static class InternalOnly extends Call {
-		public InternalOnly(Expression target, Expression[] arguments, PorcEExecution execution) {
+		public InternalOnly(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 			super(target, arguments, execution);
 		}
 
@@ -80,13 +79,13 @@ public abstract class Call extends Expression {
 			return callInternal(frame);
 		}
 
-		public static Call create(Expression target, Expression[] arguments, PorcEExecution execution) {
+		public static Call create(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 			return new InternalOnly(target, arguments, execution);
 		}
 	}
 
 	public static class CPS extends Call {
-		public CPS(Expression target, Expression[] arguments, PorcEExecution execution) {
+		public CPS(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 			super(target, arguments, execution);
 		}
 
@@ -114,17 +113,17 @@ public abstract class Call extends Expression {
 					argumentValues[i] = arguments[i + 3].execute(frame);
 				}
 				Invoker invoker = getInvokerWithBoundary(t, argumentValues);
-				final PCTHandle handle = new PCTHandle(execution, pub, counter, term);
+				final PCTHandle handle = new PCTHandle(execution.get(), pub, counter, term);
 
 				counter.prepareSpawn();
 				
 				try {
 					invokeWithBoundary(invoker, handle, t, argumentValues);
 				} catch (ExceptionHaltException e) {
-					execution.notifyOrc(new CaughtEvent(e.getCause()));
+					execution.get().notifyOrc(new CaughtEvent(e.getCause()));
 				} catch (HaltException e) {
 				} catch (Exception e) {
-					execution.notifyOrc(new CaughtEvent(e));
+					execution.get().notifyOrc(new CaughtEvent(e));
 					throw HaltException.SINGLETON();
 				}
 			}
@@ -136,13 +135,13 @@ public abstract class Call extends Expression {
 			invoker.invoke(handle, t, argumentValues);
 		}
 
-		public static Call create(Expression target, Expression[] arguments, PorcEExecution execution) {
+		public static Call create(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 			return new CPS(target, arguments, execution);
 		}
 	}
 
 	public static class Direct extends Call {
-		public Direct(Expression target, Expression[] arguments, PorcEExecution execution) {
+		public Direct(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 			super(target, arguments, execution);
 		}
 
@@ -161,12 +160,12 @@ public abstract class Call extends Expression {
 				try {
 					return invokeWithBoundary(invoker, t, argumentValues);
 				} catch (ExceptionHaltException e) {
-					execution.notifyOrc(new CaughtEvent(e.getCause()));
+					execution.get().notifyOrc(new CaughtEvent(e.getCause()));
 					throw HaltException.SINGLETON();
 				} catch (HaltException e) {
 					throw e;
 				} catch (Exception e) {
-					execution.notifyOrc(new CaughtEvent(e));
+					execution.get().notifyOrc(new CaughtEvent(e));
 					throw HaltException.SINGLETON();
 				}
 			}
@@ -178,7 +177,7 @@ public abstract class Call extends Expression {
 			return invoker.invokeDirect(t, argumentValues);
 		}
 
-		public static Call create(Expression target, Expression[] arguments, PorcEExecution execution) {
+		public static Call create(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 			return new Direct(target, arguments, execution);
 		}
 	}

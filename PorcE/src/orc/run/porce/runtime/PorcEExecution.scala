@@ -13,15 +13,17 @@ import orc.Schedulable
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit) extends ExecutionRoot with EventHandler {
-  private var isDone = false
+  private var _isDone = false
   
   /** Block until this context halts.
     */
   def waitForHalt(): Unit = {
     synchronized {
-      while (!isDone) wait()
+      while (!_isDone) wait()
     }
   }
+  
+  def isDone = _isDone
 
   runtime.installHandlers(this)
 
@@ -49,7 +51,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       Logger.fine("Top level context complete.")
       runtime.removeRoot(PorcEExecution.this)
       PorcEExecution.this.synchronized {
-        PorcEExecution.this.isDone = true
+        PorcEExecution.this._isDone = true
         PorcEExecution.this.notifyAll()
       }
     }
