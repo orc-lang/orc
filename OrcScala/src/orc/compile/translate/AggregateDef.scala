@@ -73,7 +73,7 @@ case class AggregateDef(clauses: List[Clause],
     }
 
   def +(lambda: (List[Pattern], Expression)): AggregateDef = {
-    // TODO: Reintroduce support for types.
+    // TODO: TYPECHECKER: Reintroduce support for types.
     val (formals, body) = lambda
     assert(this.kindSample.isEmpty || (this.kindSample.get.isInstanceOf[Def]))
     val (newformals, maybeArgTypes) = AggregateDef.formalsPartition(formals)
