@@ -47,18 +47,15 @@ case class BenchmarkConfig(
   tests: Int = Int.MaxValue,
   timeout: Long = 180L,
   nRuns: Int = 12,
-  nDroppedRuns: Int = 4,
   outputCompileTime: Boolean = false,
   outputHeader: Boolean = true,
-  outputStdDev: Boolean = false,
   outputCpuTime: Boolean = true,
-  nDroppedWarmups: Int = 1,
-  timeoutLimit: Int = 2) {
-  assert(nDroppedRuns % 2 == 0, s"nDroppedRuns must be a multiple of two since the same number of elements must be removed from each end.")
+  timeoutLimit: Int = 3) {
 
   def name = s"$backend -O$optLevel on ${cpus.size} cpus"
+  def config = s"-O$optLevel"
 
-  def oneRun = copy(nRuns = 1, nDroppedRuns = 0, nDroppedWarmups = 0)
+  def oneRun = copy(nRuns = 1)
 
   def asArguments: Seq[String] = Seq[String](
     "-o", output.getAbsolutePath(),
@@ -67,11 +64,8 @@ case class BenchmarkConfig(
     "-O", optLevel.toString,
     "-#", tests.toString,
     "-t", timeout.toString,
-    "-r", nRuns.toString,
-    "-d", nDroppedRuns.toString,
-    "-w", nDroppedWarmups.toString) ++
+    "-r", nRuns.toString) ++
     (if (outputCompileTime) Seq("-C") else Seq()) ++
-    (if (outputStdDev) Seq() else Seq("-s")) ++
     (if (outputHeader) Seq() else Seq("-H"))
 }
 
@@ -80,20 +74,25 @@ case class BenchmarkConfig(
 object BenchmarkTest {
   object Logger extends orc.util.Logger("orc.test.benchmark")
 
-  case class TimeData(compTime: Double, compStddev: Double, runTime: Double, runStddev: Double, cpuTime: Double, cpuStddev: Double) {
-    def toString(showCompTime: Boolean, showStdDev: Boolean, showCpuTime: Boolean): String = {
-      val res = new StringBuilder()
-      if (showCompTime)
-        res ++= s"$compTime,$compStddev,"
-      res ++= s"$runTime,"
-      if (showStdDev)
-        res ++= s"$runStddev,"
-      if (showCpuTime) {
-        res ++= s"$cpuTime,"
-        if (showStdDev)
-          res ++= s"$cpuStddev,"
-      }
-      res.toString
+  lazy val versionProperties = {
+    val p = new java.util.Properties()
+    val vp = orc.Main.getClass().getResourceAsStream("version.properties")
+    if (vp == null) throw new java.util.MissingResourceException("Unable to load version.properties resource", "/orc/version.properties", "")
+    p.load(vp)
+    p
+  }
+  lazy val scmRevision: String = versionProperties.getProperty("orc.scm-revision")
+  lazy val orcVersion: String = versionProperties.getProperty("orc.version") + " rev. " + scmRevision + " (built " + versionProperties.getProperty("orc.build.date") + " " + versionProperties.getProperty("orc.build.user") + ") (JVM: " + System.getProperty("java.vm.version") + ")"
+
+  case class RunData(implName: String, implRev: String, testName: String, testRev: String, config: String, nCpus: Int, compTime: Option[Double], runTime: Double, cpuTime: Double) {
+    override def toString(): String = {
+      s"$implName\t$implRev\t$testName\t$testRev\t$config\t$nCpus\t${compTime.getOrElse("NA")}\t$runTime\t$cpuTime"
+    }
+  }
+  
+  object RunData {
+    val header = {
+      "implName\timplRev\ttestName\ttestRev\tconfig\tnCpus\tcompTime\trunTime\tcpuTime"
     }
   }
 
@@ -102,6 +101,20 @@ object BenchmarkTest {
     b.optimizationLevel = opt
     b.backend = backend
     b
+  }
+  
+  object git {
+    import scala.sys.process._
+    
+    def getLastRev(f: File): String = {
+      val dirty = if(isChanged(f)) "-dirty" else ""
+      Seq("git", "rev-list", "-1", "HEAD", f.toString()).!!<.stripLineEnd + dirty
+    }
+    
+    def isChanged(f: File): Boolean = {
+      Seq("git", "diff", "--name-only", f.toString()).!!<.size != 0 ||
+      Seq("git", "diff", "--cached", "--name-only", f.toString()).!!<.size != 0
+    }
   }
 
   val dateFormatter = new SimpleDateFormat("yyyy-MM-dd.HH-mm-ss")
@@ -127,7 +140,7 @@ object BenchmarkTest {
       case "-c" +: arg +: rest =>
         processArgs(rest, conf.copy(cpus = 0 until arg.toInt))
       case "-S" +: arg +: rest =>
-        val s = arg match {
+        val s = arg.toLowerCase() match {
           case "orc" => OrcBenchmarkSet
           case "scala" => ScalaBenchmarkSet
         }
@@ -142,14 +155,8 @@ object BenchmarkTest {
         processArgs(rest, conf.copy(timeout = arg.toLong))
       case "-r" +: arg +: rest =>
         processArgs(rest, conf.copy(nRuns = arg.toInt))
-      case "-d" +: arg +: rest =>
-        processArgs(rest, conf.copy(nDroppedRuns = arg.toInt))
-      case "-w" +: arg +: rest =>
-        processArgs(rest, conf.copy(nDroppedWarmups = arg.toInt))
       case "-C" +: rest =>
         processArgs(rest, conf.copy(outputCompileTime = true))
-      case "-s" +: rest =>
-        processArgs(rest, conf.copy(outputStdDev = false))
       case "-H" +: rest =>
         processArgs(rest, conf.copy(outputHeader = false))
       case "-o" +: arg +: rest =>
@@ -210,46 +217,38 @@ object BenchmarkTest {
     }
 
     def write(s: String) = {
-      println("Data> " + s)
+      println("Data> " + s + "\n")
       Console.out.flush()
-      dataout.write(s)
+      dataout.write(s + "\n")
       dataout.flush()
     }
 
     config.benchmarkSet match {
       case OrcBenchmarkSet =>
+        if (config.outputHeader) {
+          write(RunData.header)
+        }
         println("Running each test once to warm up the VM")
         for ((testname, file) <- orcTests) {
-          runTest(testname, file, makeBindings(config.optLevel, config.backend))(config.oneRun)
+          val result = runTest(testname, file, makeBindings(config.optLevel, config.backend))(config.oneRun)
+          result foreach { d => write(d.toString()) }
         }
-        if (config.outputHeader) {
-          write("Config," + orcTests.map(c => {
-            val cname = c._1
-            (if (config.outputCompileTime) s"$cname Comp. Avg,$cname Comp. Stdev," else "") +
-              s"$cname Run Avg" + (if (config.outputStdDev) s",$cname Run Stdev" else "")
-          }).mkString(",") + "\n")
-        }
-        write(s"${config.name}")
         for ((testname, file) <- orcTests) {
           val result = runTest(testname, file, makeBindings(config.optLevel, config.backend))
-          write("," + result.toString(config.outputCompileTime, config.outputStdDev, config.outputCpuTime))
-        }
-        {
-          val bindings = makeBindings(config.optLevel, config.backend)
-          write(s",'${bindings.optimizationFlags}'")
+          result foreach { d => write(d.toString()) }
         }
       case ScalaBenchmarkSet =>
         if (config.outputHeader) {
-          write("Config," + scalaTests.map(c => {
-            val cname = c._1
-            (if (config.outputCompileTime) s"$cname Comp. Avg,$cname Comp. Stdev," else "") +
-              s"$cname Run Avg" + (if (config.outputStdDev) s",$cname Run Stdev" else "")
-          }).mkString(",") + "\n")
+          write(RunData.header)
         }
-        write(s"${config.name}")
+        println("Running each test once to warm up the VM")
+        for ((testname, module) <- scalaTests) {
+          val result = runTest(testname, module())(config.oneRun)
+          result foreach { d => write(d.toString()) }
+        }
         for ((testname, module) <- scalaTests) {
           val result = runTest(testname, module())
-          write("," + result.toString(config.outputCompileTime, config.outputStdDev, config.outputCpuTime))
+          result foreach { d => write(d.toString()) }
         }
     }
 
@@ -268,56 +267,54 @@ object BenchmarkTest {
     expecteds.shouldBenchmark()
   }
 
-  def runTest(testname: String, app: BenchmarkApplication)(implicit config: BenchmarkConfig): TimeData = {
+  def runTest(testname: String, app: BenchmarkApplication)(implicit config: BenchmarkConfig): Seq[RunData] = {
     println(s"\n==== Benchmarking $testname ${app.getClass().getSimpleName()} ====")
     var timedout = 0
-
-    val times = for (i <- 0 until config.nRuns) yield {
+    
+    val sourceFile = {
+      val sourceName = app.getClass().getCanonicalName().replaceAll("\\.","/").stripSuffix("$") + ".scala"
+      val src = new File("src")
+      new File(src, sourceName).getAbsoluteFile
+    }
+    
+    def genData(runTime: Double, cpuTime: Double) = {
+      RunData("scala", System.getProperty("java.vm.version"), testname, git.getLastRev(sourceFile), "", config.cpus.size, None, runTime, cpuTime)
+    }
+    
+    for (i <- 0 until config.nRuns) yield {
       try {
         SynchronousThreadExec(s"Benchmark $testname $i", config.timeout * 1000L, {
           print(s"$i:")
           System.gc()
           if (timedout >= config.timeoutLimit) {
             println(s" run SKIPPING DUE TO TOO MANY TIMEOUTS")
-            (config.timeout.toDouble, 0.0)
+            genData(config.timeout.toDouble, 0.0)
           } else {
             val (runTime: Double, cpuTime: Double, _) = time {
               app.main(Array())
             }
             println(s" run $runTime, cpu $cpuTime (${cpuTime / runTime} cores, ${cpuTime / runTime / osmxbean.getAvailableProcessors})")
-            (runTime, cpuTime)
+            genData(runTime, cpuTime)
           }
         })
       } catch {
         case _: TimeoutException =>
           timedout += 1
-          (config.timeout.toDouble, 0.0)
+          genData(config.timeout.toDouble, 0.0)
       }
     }
-
-    // If we have enough drop the first (before sorting) to allow for JVM warm up.
-    val measurements = {
-      val t = times.drop(config.nDroppedWarmups)
-      Logger.info(s"Dropping leading measurement: ${times.take(config.nDroppedWarmups)} ::: ${t}")
-      t
-    }
-
-    val (runTimes, cpuTimes) = medians[(Double, Double)](measurements, _._1).unzip
-
-    val (avgRunTime, sdRunTime) = average(runTimes)
-    val (avgCpuTime, sdCpuTime) = average(cpuTimes)
-
-    println(s">'$testname','native',,,,$avgRunTime,$sdRunTime,")
-
-    TimeData(0, 0, avgRunTime, sdRunTime, avgCpuTime, sdCpuTime)
   }
 
-  def runTest(testname: String, file: File, bindings: OrcBindings)(implicit config: BenchmarkConfig): TimeData = {
+  def runTest(testname: String, file: File, bindings: OrcBindings)(implicit config: BenchmarkConfig): Seq[RunData] = {
     println(s"\n==== Benchmarking $testname ${bindings.backend} -O${bindings.optimizationLevel} ====")
     try {
       var timedout = 0
+    
+      def genData(compTime: Option[Double], runTime: Double, cpuTime: Double) = {
+        RunData(bindings.backend.toString(), orcVersion, testname, git.getLastRev(file), config.config, config.cpus.size, compTime, runTime, cpuTime)
+      }
 
-      val times = for (i <- 0 until config.nRuns) yield {
+      for (i <- 0 until config.nRuns) yield {
         SynchronousThreadExec(s"Benchmark $testname $i", {
           print(s"$i:")
           System.gc()
@@ -327,7 +324,7 @@ object BenchmarkTest {
           System.gc()
           if (timedout >= config.timeoutLimit) {
             println(s" compile $compTime, run SKIPPING DUE TO TOO MANY TIMEOUTS")
-            (compTime, config.timeout.toDouble, 0.0)
+            genData(Some(compTime), config.timeout.toDouble, 0.0)
           } else {
             val (runTime: Double, cpuTime, _) = time {
               try {
@@ -338,27 +335,10 @@ object BenchmarkTest {
               }
             }
             println(s" compile $compTime, run $runTime, cpu $cpuTime (${cpuTime / runTime} cores, ${cpuTime / runTime / osmxbean.getAvailableProcessors})")
-            (compTime, runTime, cpuTime)
+            genData(Some(compTime), runTime, cpuTime)
           }
         })
       }
-
-      // If we have enough drop the first (before sorting) to allow for JVM warm up.
-      val measurements = {
-        val t = times.drop(config.nDroppedWarmups)
-        Logger.info(s"Dropping leading 'warm-up' measurements: ${times.take(config.nDroppedWarmups)} ::: ${t}")
-        t
-      }
-
-      val (compTimes, runTimes, cpuTimes) = medians[(Double, Double, Double)](measurements, _._1).unzip3
-
-      val (avgCompTime, sdCompTime) = average(compTimes)
-      val (avgRunTime, sdRunTime) = average(runTimes)
-      val (avgCpuTime, sdCpuTime) = average(cpuTimes)
-
-      println(s">'$testname','${bindings.backend}',${bindings.optimizationLevel},$avgCompTime,$sdCompTime,$avgRunTime,$sdRunTime,'${bindings.optimizationFlags}'")
-
-      TimeData(avgCompTime, sdCompTime, avgRunTime, sdRunTime, avgCpuTime, sdCpuTime)
     } catch {
       case ce: CompilationException =>
         throw new AssertionError(ce.getMessageAndDiagnostics())
@@ -407,26 +387,5 @@ object BenchmarkTest {
     val stop = System.nanoTime()
     val stopCpu = osmxbean.getProcessCpuTime
     ((stop - start) / 1000000000.0, (stopCpu - startCpu) / 1000000000.0, v)
-  }
-
-  def medians[T](times: Seq[T], valueF: T => Double)(implicit config: BenchmarkConfig) = {
-        assert(config.nDroppedRuns % 2 == 0)
-    val toDrop = config.nDroppedRuns / 2
-    val medians = if (times.size > config.nDroppedRuns) {
-      val s = times.sorted(Ordering.by(valueF))
-      val core = s.drop(toDrop).dropRight(toDrop)
-      Logger.info(s"Dropping low and high measurement: ${s.take(toDrop)} ::: ${core} ::: ${s.takeRight(toDrop)}")
-      core
-    } else {
-      times
-    }
-    medians
-  }
-
-  def average(times: Seq[Double])(implicit config: BenchmarkConfig) = {
-    val avg = times.sum / times.size
-    val stddev = times.map(x => (x - avg).abs).sum / times.size
-    Logger.fine(s"Averaging $times: avg $avg, stddev $stddev")
-    (avg, stddev)
   }
 }

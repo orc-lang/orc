@@ -41,23 +41,20 @@ object AllBenchmarkTests {
     optLevels: Seq[Int],
     output: File,
     tests: Int = Int.MaxValue,
-    timeout: Long = 120L,
+    timeout: Long = 20L,
     nRuns: Int = 5,
     nDroppedRuns: Int = 2,
     nDroppedWarmups: Int = 1,
     outputCompileTime: Boolean = false,
-    outputStdDev: Boolean = true,
     jvmArguments: Seq[String] = Nil) {
     def configs = {
       val cs = for (cpuCount <- cpuCounts; optLevel <- optLevels; backend <- backends) yield {
         BenchmarkConfig(OrcBenchmarkSet, 0 until cpuCount, backend, optLevel,
           timeout = timeout, nRuns = nRuns, tests = tests,
-          nDroppedRuns = nDroppedRuns, nDroppedWarmups = nDroppedWarmups,
           outputCompileTime = outputCompileTime, output = output,
-          outputHeader = false, outputStdDev = outputStdDev)
+          outputHeader = true)
       }
-
-      cs.head.copy(outputHeader = true) +: cs.tail
+      cs
     }
   }
 
@@ -94,8 +91,6 @@ object AllBenchmarkTests {
         processArgs(rest, conf.copy(nDroppedRuns = arg.toInt))
       case "-C" +: rest =>
         processArgs(rest, conf.copy(outputCompileTime = true))
-      case "-s" +: rest =>
-        processArgs(rest, conf.copy(outputStdDev = false))
       case "+J" +: rest if rest.contains("-J") =>
         val i = rest.indexOf("-J")
         processArgs(rest.drop(i), conf.copy(jvmArguments = rest.take(i - 1)))
@@ -112,21 +107,20 @@ object AllBenchmarkTests {
 
     println(s"Running configs: (${config.configs.size})\n${config.configs.map(_.asArguments.mkString(" ")).mkString("\n")}")
 
+    val bootpath = if (System.getProperty("sun.boot.class.path") ne null) {
+      System.getProperty("path.separator", ":") + System.getProperty("sun.boot.class.path")
+    } else {
+      ""
+    }
+
+    val jvm = if (System.getProperty("os.name").startsWith("Win")) {
+      System.getProperty("java.home") + File.separator + "bin" + File.separator + "java.exe";
+    } else {
+      System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+    }
+
     for (conf <- config.configs) {
       import scala.sys.process._
-
-      val bootpath = if (System.getProperty("sun.boot.class.path") ne null) {
-        System.getProperty("path.separator", ":") + System.getProperty("sun.boot.class.path")
-      } else {
-        ""
-      }
-
-      val jvm = if (System.getProperty("os.name").startsWith("Win")) {
-        System.getProperty("java.home") + File.separator + "bin" + File.separator + "java.exe";
-      } else {
-        System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-      }
-
       val cmd = Seq(jvm, "-cp", System.getProperty("java.class.path") + bootpath) ++
         config.jvmArguments ++
         Seq(BenchmarkTest.getClass().getCanonicalName().stripSuffix("$")) ++ conf.asArguments

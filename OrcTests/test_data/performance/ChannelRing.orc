@@ -23,12 +23,14 @@ class Connector {
 }
 def Connector(x_ :: Top, y_ :: Top, n_ :: Integer) = new Connector { val x = x_ # val y = y_ # val n = n_ }
 
+-- FIXME: This test is running, but it's running in ^2 time wrt the 1000 below. Huh? That's the number of times the value should go around the ring....
+-- TODO: Change to 5000 once PorcE can handle it. Also uncomment the second token below.
 timeIt({
-  each(zip(chans, rotateList(chans))) >(x, y)> Connector(x, y, 5000) >> stop -->c> c.wait()
+  each(zip(chans, rotateList(chans))) >(x, y)> Connector(x, y, 1000) >> stop -->c> c.wait()
   |
   head(chans).put(1)
-  |
-  head(chans).put(-100000)
+  --|
+  --head(chans).put(-100000)
 })
 
 {-

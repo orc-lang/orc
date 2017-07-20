@@ -5,7 +5,8 @@
 
 include "timeIt.inc"
 
-val n = 80000
+-- TODO: Change back to 80000 when PorcE can handle it.
+val n = 5000
 val c = Counter(n)
 
 timeIt({

@@ -28,7 +28,8 @@ def makeRandomArray(n) =
   a
 
 def runTest() =
-  timeIt({ makeRandomArray(10000) }) >a>
+  -- TODO: Change back to 10000 when PorcE can handle it.
+  timeIt({ makeRandomArray(5000) }) >a>
   --Println(arrayToList(a)) >>
   timeIt({ quicksort(a) })
   --Println(arrayToList(a))

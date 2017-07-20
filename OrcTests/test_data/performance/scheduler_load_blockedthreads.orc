@@ -5,7 +5,7 @@
 
 import class Thread = "java.lang.Thread"
 
-def sleep(x) = Thread.currentThread().sleep(x)
+def sleep(x) = Thread.sleep(x)
 
 val timestep = 100 -- ms
 
