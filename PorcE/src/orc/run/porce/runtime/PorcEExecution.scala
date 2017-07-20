@@ -23,7 +23,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
   }
   
-  def isDone = _isDone
+  def isDone = PorcEExecution.this.synchronized { _isDone }
 
   runtime.installHandlers(this)
 
@@ -60,18 +60,15 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   val t = new Terminator
 
   def scheduleProgram(prog: PorcEClosure): Unit = {
-    // HACK: This is to force compilation on small programs.
-    for(i <- 0 until 1) {
-      runtime.schedule(new CounterSchedulable(c) {
-        def run(): Unit = {
-          try {
-            prog.callFromRuntime(p, c, t)
-          } finally {
-            //
-          }
+    runtime.schedule(new CounterSchedulable(c) {
+      def run(): Unit = {
+        try {
+          prog.callFromRuntime(p, c, t)
+        } finally {
+          //
         }
-      })
-    }
+      }
+    })
     c.halt()
   }
 }

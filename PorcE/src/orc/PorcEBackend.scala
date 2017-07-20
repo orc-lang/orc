@@ -35,7 +35,7 @@ class PorcEBackend extends PorcBackend {
     
     val cache = new collection.mutable.HashMap[MethodCPS, (PorcEExecutionHolder, PorcEClosure)]()
     
-    private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecution = {
+    private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecution = synchronized {
       val execution = new PorcEExecution(this, k)
       val porceAst = cache.get(ast) match {
         case Some((holder, porceAst)) => {
