@@ -12,7 +12,7 @@ object Threads {
 	and waits for them to terminate.
 	*/
 
-  val N = 20
+  val N = 18
   def threads(n: Int): Unit = {
     if (n != 0) {
       val t = Future {

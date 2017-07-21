@@ -57,8 +57,8 @@ object ThreadRing extends BenchmarkApplication {
   }
 
   def main(args: Array[String]): Unit = {
-    threadRingRunner(5000)
-    threadRingRunner(50000)
+    threadRingRunner(2000)
+    threadRingRunner(20000)
   }
 }
 

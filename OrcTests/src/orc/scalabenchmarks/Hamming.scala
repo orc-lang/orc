@@ -103,7 +103,7 @@ object Hamming extends BenchmarkApplication {
 
     out.put(1)
 
-    println(getN(4500, out1))
+    println(getN(400, out1))
 
     threads.foreach(_.terminate())
   }

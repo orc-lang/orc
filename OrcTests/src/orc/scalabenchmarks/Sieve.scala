@@ -49,7 +49,7 @@ object Sieve extends BenchmarkApplication {
   }
 
   def main(args: Array[String]): Unit = {
-    println(Util.timeIt { primes(25000) })
+    println(Util.timeIt { primes(20000) })
   }
 
 }

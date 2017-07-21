@@ -13,7 +13,7 @@ object NQueens extends BenchmarkApplication {
   def main(args: Array[String]) {
     val size: Int = args match {
       case Array() =>
-        println("Defaulting to size 9"); 9
+        println("Defaulting to size 8"); 8
       case Array(n) => n.toInt
     }
     def placeQueens(n: BigInt): Solutions = n match {

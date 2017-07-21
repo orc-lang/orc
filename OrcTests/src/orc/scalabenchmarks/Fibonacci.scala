@@ -28,10 +28,10 @@ object Fibonacci extends BenchmarkApplication {
   }
   def main(args: Array[String]) {
     Util.timeIt {
-      println(fibPairTailrec(10000))
+      println(fibPairTailrec(3000))
       println(fibPairTailrec(1000))
       println(fibPair(1000))
-      println(fibNaive(20))
+      println(fibNaive(19))
     }
   }
 }

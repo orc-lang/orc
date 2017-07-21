@@ -18,7 +18,7 @@ object Mandelbrot extends BenchmarkApplication {
 
   val threshold: D = 100
   val steps: Integer = 10
-  val size: Integer = 64
+  val size: Integer = 48
   val resolution = D(3.0) / D(size)
   val offset = D(size) / D(2.0)
 
