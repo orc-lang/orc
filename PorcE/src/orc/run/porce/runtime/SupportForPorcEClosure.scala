@@ -40,7 +40,7 @@ class PorcEClosureInvoker(val closure: PorcEClosure) extends Invoker {
     args(1) = handle.c
     args(2) = handle.t
     System.arraycopy(arguments, 0, args, 3, arguments.length)
-    closure.callFromRuntime(args: _*)
+    closure.callFromRuntimeVarArgs(args)
     handle.c.halt()
   }
 }

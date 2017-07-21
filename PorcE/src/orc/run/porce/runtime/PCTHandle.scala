@@ -30,6 +30,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
       c.halt()
       // Matched to: Every invocation is required to be proceeded by a
       //             prepareSpawn since it might spawn.
+      t.removeChild(this)
     }
   }
 
@@ -40,6 +41,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
       c.halt()
       // Matched to: Every invocation is required to be proceeded by a
       //             prepareSpawn since it might spawn.
+      t.removeChild(this)
     }
   }
 
@@ -52,7 +54,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
 
   def halt(e: OrcException): Unit = {
     notifyOrc(CaughtEvent(e))
-    halt
+    halt()
   }
 
   // TODO: Support rights.
@@ -70,6 +72,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
       c.discorporate()
       // Matched to: Every invocation is required to be proceeded by a
       //             prepareSpawn since it might spawn.
+      t.removeChild(this)
     }
   }
 }

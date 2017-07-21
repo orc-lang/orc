@@ -93,6 +93,7 @@ abstract class Counter {
     * reaches 0.
     */
   val count = new AtomicInteger(1)
+  @volatile
   var isDiscorporated = false
 
   def setDiscorporate() = {

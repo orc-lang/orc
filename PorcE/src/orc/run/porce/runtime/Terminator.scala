@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicReference
 import scala.collection.JavaConverters._
 import scala.collection.convert.ImplicitConversions._
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import orc.run.porce.Logger
 
 trait Terminatable {
   /** Kill this terminatable.
@@ -49,6 +50,14 @@ class Terminator extends Terminatable {
     if (children.get() == null) {
       child.kill()
       throw KilledException.SINGLETON
+    }
+  }
+  
+  @TruffleBoundary(allowInlining=true)
+  def removeChild(child: Terminatable): Unit = {
+    val orig = children.get()
+    if (orig != null) {
+      orig.remove(child)
     }
   }
 
@@ -97,5 +106,12 @@ class Terminator extends Terminatable {
   * @author amp
   */
 final class TerminatorNested(parent: Terminator) extends Terminator {
+  //Logger.info(s"$this($parent)")
   parent.addChild(this)
+  override def kill(): Unit = {
+    // FIXME: MEMORYLEAK: This is not actually enough. We actually need to detect halting of the elements in this terminators.... I think Counters and Terminators need to be connected.
+    // Specifically this will be a problem if an expression halts without publishing inside a terminator. The optimizer will remove this for statically known cases.
+    parent.removeChild(this)
+    super.kill()
+  }
 }

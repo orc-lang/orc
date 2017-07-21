@@ -109,7 +109,7 @@ trait PorcERuntimeOperations {
   private final def schedulePublishAndHalt(p: PorcEClosure, c: Counter, v: Array[AnyRef]) = {
     scheduleOrCall(c, () => {
       try {
-        p.callFromRuntime(v: _*)
+        p.callFromRuntimeVarArgs(v)
       } finally {
         // Matches: Call to prepareSpawn in constructor
         c.halt()
@@ -119,7 +119,7 @@ trait PorcERuntimeOperations {
   
   private final def schedulePublish(p: PorcEClosure, c: Counter, v: Array[AnyRef]) = {
     scheduleOrCall(c, () => { 
-      p.callFromRuntime(v: _*)
+      p.callFromRuntimeVarArgs(v)
     })
   }
 
