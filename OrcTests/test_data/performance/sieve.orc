@@ -24,6 +24,8 @@ Note: you can compute the "floored" square root of a number like this:
 Floor(sqrt(n))
 -}
 
+include "benchmark.inc"
+
 import class Set = "java.util.Set"
 import class HashSet = "java.util.HashSet"
 import class Collections = "java.util.Collections"
@@ -42,7 +44,7 @@ def primes(n) =
   joinMap(set.add, candidates(n)) >>
   sieve(n, set)
 
-primes(20000)
+benchmark({ primes(20000) })
 
 {-
 OUTPUT:

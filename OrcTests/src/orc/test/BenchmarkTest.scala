@@ -33,6 +33,7 @@ import orc.TokenInterpreterBackend
 import java.util.Properties
 import java.io.FileInputStream
 import java.lang.management.ManagementFactory
+import orc.lib.BenchmarkTimes
 
 sealed trait BenchmarkSet
 case object ScalaBenchmarkSet extends BenchmarkSet
@@ -308,38 +309,24 @@ object BenchmarkTest {
   def runTest(testname: String, file: File, bindings: OrcBindings)(implicit config: BenchmarkConfig): Seq[RunData] = {
     println(s"\n==== Benchmarking $testname ${bindings.backend} -O${bindings.optimizationLevel} ====")
     try {
-      var timedout = 0
-    
       def genData(compTime: Option[Double], runTime: Double, cpuTime: Double) = {
         RunData(bindings.backend.toString(), orcVersion, testname, git.getLastRev(file), config.config, config.cpus.size, compTime, runTime, cpuTime)
       }
 
-      for (i <- 0 until config.nRuns) yield {
-        SynchronousThreadExec(s"Benchmark $testname $i", {
-          print(s"$i:")
-          System.gc()
-          val (compTime, _, code) = time {
-            compileCode(file, bindings)
-          }
-          System.gc()
-          if (timedout >= config.timeoutLimit) {
-            println(s" compile $compTime, run SKIPPING DUE TO TOO MANY TIMEOUTS")
-            genData(Some(compTime), config.timeout.toDouble, 0.0)
-          } else {
-            val (runTime: Double, cpuTime, _) = time {
-              try {
-                runCode(code)
-              } catch {
-                case _: TimeoutException =>
-                  timedout += 1
-              }
-            }
-            println(s" compile $compTime, run $runTime, cpu $cpuTime (${cpuTime / runTime} cores, ${cpuTime / runTime / osmxbean.getAvailableProcessors})")
-            genData(Some(compTime), runTime, cpuTime)
-          }
-        })
+      System.gc()
+      val (compTime, _, code) = time {
+        compileCode(file, bindings)
+      }
+      System.gc()
+      val ress = runCode(code)
+      assert(ress.nonEmpty, s"$testname should use 'benchmark({ ... })'")
+      ress map { t =>
+        genData(Some(compTime), t.runTime, t.cpuTime)
       }
     } catch {
+      case _: TimeoutException =>
+        println(s"$testname TIMED OUT")
+        Seq()
       case ce: CompilationException =>
         throw new AssertionError(ce.getMessageAndDiagnostics())
     }
@@ -347,8 +334,14 @@ object BenchmarkTest {
 
   @throws(classOf[OrcException])
   @throws(classOf[TimeoutException])
-  def runCode(code: OrcScriptEngine[AnyRef]#OrcCompiledScript)(implicit config: BenchmarkConfig) = {
-    OrcForTesting.run(code, config.timeout);
+  def runCode(code: OrcScriptEngine[AnyRef]#OrcCompiledScript)(implicit config: BenchmarkConfig): Seq[BenchmarkTimes] = {
+    System.setProperty("benchmark.nRuns", config.nRuns.toString)
+    val buffer = collection.mutable.ArrayBuffer[BenchmarkTimes]()
+    OrcForTesting.run(code, config.timeout * config.nRuns, {
+      case b: BenchmarkTimes => buffer += b
+      case _ => {}
+    })
+    buffer.toList
   }
 
   val compiledCodeCache = collection.mutable.Map[(File, OrcBindings), OrcScriptEngine[AnyRef]#OrcCompiledScript]()

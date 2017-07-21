@@ -1,6 +1,6 @@
 -- Hamming sequence
 
-include "timeIt.inc"
+include "benchmark.inc"
 
 def listUpto(Integer) :: List[Integer]
 def listUpto(0) = []
@@ -67,6 +67,7 @@ def takeN(n, chan) =
 
 def makeChannels[A](n :: Integer) = collect({ upto(n) >> Channel[A]() })
 
+benchmark({
 val [out, out', x2, x3, x5, x2', x3', x5'] as chans = makeChannels[Integer](8)
 
 Fanout(out.get, [x2.put, x3.put, x5.put, out'.put]) >> stop |
@@ -75,14 +76,13 @@ Trans({ _*2 }, x2.get, x2'.put) >> stop |
 Trans({ _*3 }, x3.get, x3'.put) >> stop | 
 Trans({ _*5 }, x5.get, x5'.put) >> stop |
 
---timeIt({
 Println(takeN(400, out')) >>
 -- The getAll is required because there may be values in the channel and that will cause close to block.
 each(chans) >c> (c.getAll() >> stop | c.close()) >> stop
 
 |
 out.put(1) >> stop
---})
+})
 
 {-
 OUTPUT:

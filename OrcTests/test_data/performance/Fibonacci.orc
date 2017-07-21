@@ -1,4 +1,4 @@
-include "timeIt.inc"
+include "benchmark.inc"
 
 def fibNaive(Integer) :: Integer
 def fibNaive(0) = 0
@@ -22,6 +22,8 @@ def fibPairTailrec(n) =
   def fib(i, curr, prev) = fib(i+1, curr + prev, curr)
   fib(0, 0, 1)
 
+benchmark({
+
 fibPairTailrec(3000) >x> Println(x) >> stop
 
 ;
@@ -35,6 +37,7 @@ fibPair(1000) >x> Println(x) >> stop
 ;
 
 fibNaive(19) >x> Println(x) >> stop
+})
 
 {-
 OUTPUT:

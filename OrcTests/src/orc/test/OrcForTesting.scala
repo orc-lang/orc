@@ -69,11 +69,18 @@ object OrcForTesting {
   @throws(classOf[OrcException])
   @throws(classOf[TimeoutException])
   def run(compiledScript: OrcScriptEngine[AnyRef]#OrcCompiledScript, timeout: Long): String = {
+    run(compiledScript, timeout, (v) => {})
+  }
+  
+  @throws(classOf[OrcException])
+  @throws(classOf[TimeoutException])
+  def run(compiledScript: OrcScriptEngine[AnyRef]#OrcCompiledScript, timeout: Long, publicationHandler: (AnyRef) => Unit): String = {
     try {
       val output = new StringBuffer()
       var lastError: Throwable = null
       val eventActions = new OrcEventAction() {
         override def published(value: AnyRef) {
+          publicationHandler(value)
           output.append(Format.formatValue(value) + "\n")
           println(Format.formatValue(value))
           Console.out.flush()

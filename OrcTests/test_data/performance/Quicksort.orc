@@ -3,7 +3,7 @@
  - Created by amp on Jul 20, 2013 12:29:59 PM
  -}
 
-include "timeIt.inc"
+include "benchmark.inc"
 
 def quicksort(a) =
   def part(p, s, t) =
@@ -29,12 +29,12 @@ def makeRandomArray(n) =
 
 def runTest() =
   -- TODO: Change back to 10000 when PorcE can handle it.
-  timeIt({ makeRandomArray(5000) }) >a>
+  makeRandomArray(5000) >a>
   --Println(arrayToList(a)) >>
-  timeIt({ quicksort(a) })
+  quicksort(a)
   --Println(arrayToList(a))
   
-runTest() 
+benchmark(runTest) 
 
 {-
 BENCHMARK

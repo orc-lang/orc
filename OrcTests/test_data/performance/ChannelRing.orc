@@ -1,11 +1,9 @@
-include "timeIt.inc"
+include "benchmark.inc"
 
 val n = 20
 
 def makeChannels[A](n :: Integer) = collect({ upto(n) >> Channel[A]() })
 def rotateList(x : xs) = append(xs, [x])
-
-val chans = makeChannels[Integer](n)
 
 -- TODO: Give real types.
 class Connector {
@@ -25,10 +23,12 @@ def Connector(x_ :: Top, y_ :: Top, n_ :: Integer) = new Connector { val x = x_ 
 
 -- FIXME: This test is running, but it's running in ^2 time wrt the 1000 below. Huh? That's the number of times the value should go around the ring....
 -- TODO: Change to 5000 once PorcE can handle it. Also uncomment the second token below.
-timeIt({
+benchmark({
+  val chans = makeChannels[Integer](n)
+
   each(zip(chans, rotateList(chans))) >(x, y)> Connector(x, y, 1000) >> stop -->c> c.wait()
   |
-  head(chans).put(1)
+  head(chans).put(1) >> stop
   --|
   --head(chans).put(-100000)
 })

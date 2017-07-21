@@ -14,6 +14,8 @@ order values were received on the input channel.
 SOLUTION:
 --}
 
+include "benchmark.inc"
+
 type InType = Number
 type OutType = Number
 type SiteType = (lambda(InType) :: OutType)
@@ -55,7 +57,10 @@ def run(i) =
         ; in.close() >> stop )
     | collect({ repeat(out.get) }) >x> (if length(x) /= 10 then Println("FAIL " + length(x)) >> stop else stop)
     ) ; signal
-uptoSeq(200, run)
+    
+benchmark({
+  uptoSeq(200, run)
+})
 
 {-
 BENCHMARK

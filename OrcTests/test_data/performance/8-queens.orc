@@ -3,6 +3,8 @@
  - Created by dkitchin
  -}
 
+include "benchmark.inc"
+
 {- The position of a queen on the chessboard is a coordinate pair -}
 type Queen = (Integer,Integer)
 
@@ -24,12 +26,9 @@ def queens(N) =
   def extend(x,n) = extend(x,n-1) >y> upto(N) >j> addqueen((n,j), y)
   extend([],N)
 
---repeat(lambda() = 
-val clock = Rclock().time
-collect(defer(queens, 8)) >x>
-Println("Time elapsed: " + clock() + "ms")
---)
--->> each(x)
+benchmark({
+  collect(defer(queens, 8)) >x> signal
+})
 
 {-
 BENCHMARK

@@ -2,7 +2,7 @@
  - Created by amp on Nov 10, 2012 2:08:01 PM
  -}
 
-include "timeIt.inc"
+include "benchmark.inc"
 
 type Board = List[ List[ Option[ Integer ] ] ]
 
@@ -81,10 +81,12 @@ val ex1 = "  7  5  2\n    31 8 \n 3    7  \n  8 2   3\n 73   82 \n5   6 9  \n  5
 
 val b = load(ex0)
 
-Println(printBoard(b)) >>
-Println("==================") >>
-timeIt({ solveAlgo0(b) }) >x> 
-Println(printBoard(x))
+benchmark({ 
+	Println(printBoard(b)) >>
+	Println("==================") >>
+	solveAlgo0(b) >x> 
+	Println(printBoard(x))
+})
 
 {-
 BENCHMARK
