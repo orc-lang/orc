@@ -15,6 +15,8 @@ package orc.values.sites
 
 import orc.error.compiletime.SiteResolutionException
 import orc.compile.Logger
+import orc.values.sites.InvokerMethod
+import orc.values.sites.AccessorValue
 
 /** Services (such as name resolution) for normal Orc sites.
   *
@@ -22,7 +24,7 @@ import orc.compile.Logger
   */
 object OrcSiteForm extends SiteForm {
   @throws(classOf[SiteResolutionException])
-  def resolve(name: String): Site = {
+  def resolve(name: String): AnyRef = {
     Logger.finer("Resolving Orc site " + name)
     var loadedClass: java.lang.Class[_] = null
     try {
@@ -36,9 +38,9 @@ object OrcSiteForm extends SiteForm {
       case e: Error =>
         throw new SiteResolutionException(name, e)
     }
-    if (classOf[Site].isAssignableFrom(loadedClass)) {
+    if (classOf[Site].isAssignableFrom(loadedClass) || classOf[InvokerMethod].isAssignableFrom(loadedClass) || classOf[AccessorValue].isAssignableFrom(loadedClass)) {
       try {
-        return loadedClass.asInstanceOf[Class[Site]].newInstance()
+        return loadedClass.asInstanceOf[Class[_ <: AnyRef]].newInstance()
       } catch {
         case e: InterruptedException => throw e
         case e: Exception =>
@@ -51,7 +53,11 @@ object OrcSiteForm extends SiteForm {
     } else {
       try { // Maybe it's a Scala object....
         val loadedClassCompanion = loadClass(name + "$")
-        return loadedClassCompanion.getField("MODULE$").get(null).asInstanceOf[Site]
+        val instance = loadedClassCompanion.getField("MODULE$").get(null)
+        loadedClass = instance.getClass()
+        if(classOf[Site].isAssignableFrom(loadedClass) || classOf[InvokerMethod].isAssignableFrom(loadedClass) || classOf[AccessorValue].isAssignableFrom(loadedClass)) {
+          return instance
+        }
       } catch {
         case e: InterruptedException => throw e
         case _: Exception => {} //Ignore -- It's not a Scala object, then.

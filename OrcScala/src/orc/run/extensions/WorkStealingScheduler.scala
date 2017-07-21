@@ -138,8 +138,7 @@ class SimpleWorkStealingScheduler(
             beforeExecute(this, t)
           }
           try {
-            val tClassName = t.getClass.getSimpleName
-            
+            // val tClassName = t.getClass.getSimpleName
             // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, Symbol(tClassName+"_run *")) 
             {
               if (t.nonblocking) {

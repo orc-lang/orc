@@ -17,6 +17,8 @@ import orc.error.runtime.UncallableValueException
 import orc.error.runtime.HaltException
 import orc.error.runtime.NoSuchMemberException
 import orc.error.runtime.DoesNotHaveMembersException
+import java.lang.IllegalArgumentException
+import java.lang.IllegalArgumentException
 
 /** A collection of utility methods for writing invokers and accessors.
 	*/
@@ -72,6 +74,19 @@ case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker {
 
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     this.target == target
+  }
+}
+
+/** A invoker sentinel representing the fact that target is not callable.
+	*/
+case class IllegalArgumentInvoker(target: AnyRef, arguments: Array[AnyRef]) extends ErrorInvoker {
+  @throws[IllegalArgumentException]
+  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    throw new IllegalArgumentException(s"$target(${arguments.mkString(", ")})")
+  }
+
+  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    this.target == target && this.arguments == arguments
   }
 }
 
