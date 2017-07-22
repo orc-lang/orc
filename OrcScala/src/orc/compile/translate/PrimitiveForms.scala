@@ -110,7 +110,7 @@ object PrimitiveForms {
     val b = new BoundVar()
     val nb = new BoundVar()
     Graft(b, test, (callIft(b) >> trueBranch) || (
-        Graft(nb, b ow Constant(java.lang.Boolean.TRUE),  
+        Graft(nb, b ow Constant(java.lang.Boolean.FALSE),  
         callIff(nb)) >> falseBranch))
   }
 
