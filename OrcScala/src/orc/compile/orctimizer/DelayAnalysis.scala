@@ -188,6 +188,8 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), 
       lazy val inStateUse = states.inStateReduced[UseEdge](_ combineAllOf _)
       lazy val inStateFutureValueSource = states.inStateReduced[FutureValueSourceEdge](_ combineOneOf _)
       
+      // FIXME: This produces overly aggressive results for self referential values. It states they are instantly available which is not strictly true since the futures in the cycle are the only reason the cycle can complete.
+      
       val state: StateT = node match {
         case node @ ExitNode(ast) =>
           import orc.ast.orctimizer.named._

@@ -237,8 +237,25 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         } else None
       }*/
       case Future.Z(body) => {
+        // TODO: This is a hack. We just never lift out anything that references an object field. But really we just care about referencing 
+        //       objects that could be recursive with an enclosing field. Otherwise, the optimization can create deadlocks.
+        lazy val noObjectRefs = {
+          case object FoundException extends RuntimeException
+          try {
+            (new Transform {
+              override val onExpression = {
+                case FieldAccess.Z(_, _) => throw FoundException 
+              }
+            })(body)
+            true
+          } catch {
+            case FoundException => 
+              false
+          }
+        }
+        
         val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
-        if (byNonBlocking1)
+        if (byNonBlocking1 && noObjectRefs)
           Some(body.value)
         else
           None
@@ -253,7 +270,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           case f@FieldFuture.Z(body) if !body.freeVars.contains(self) => {
             // TODO: This is a hack. We just never lift out anything that references an object field. But really we just care about referencing 
             //       objects that could be recursive with this one. This happens with the this arguments of partial constructors.
-            val noObjectRefs = {
+            lazy val noObjectRefs = {
               case object FoundException extends RuntimeException
               try {
                 (new Transform {
@@ -270,7 +287,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             
             val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
             lazy val x = new BoundVar()
-            if (noObjectRefs && byNonBlocking1) {
+            if (byNonBlocking1 && noObjectRefs) {
               changed = true
               (FieldArgument(x), Some(body), Some(x))
             } else
