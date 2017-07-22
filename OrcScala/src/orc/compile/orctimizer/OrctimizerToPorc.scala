@@ -27,8 +27,11 @@ import orc.compile.AnalysisCache
 import orc.compile.Logger
 import orc.util.{ Ternary, TUnknown, TTrue, TFalse }
 import orc.ast.orctimizer.named.CallDef
+import orc.compile.orctimizer.EffectAnalysis
+import orc.compile.orctimizer.EffectAnalysis
+import orc.ast.porc.PorcUnit
 
-case class ConversionContext(p: porc.Variable, c: porc.Variable, t: porc.Variable, recursives: Set[BoundVar], callgraph: CallGraph) {
+case class ConversionContext(p: porc.Variable, c: porc.Variable, t: porc.Variable, recursives: Set[BoundVar], callgraph: CallGraph, effects: EffectAnalysis) {
 }
 
 /** @author amp
@@ -37,11 +40,12 @@ class OrctimizerToPorc {
   def apply(prog: Expression, cache: AnalysisCache): porc.MethodCPS = {
     val z = prog.toZipper()
     val callgraph: CallGraph = cache.get(CallGraph)((z, None))
+    val effects: EffectAnalysis = cache.get(EffectAnalysis)((z, None))
 
     val newP = newVarName("P")
     val newC = newVarName("C")
     val newT = newVarName("T")
-    implicit val clx = ConversionContext(p = newP, c = newC, t = newT, recursives = Set(), callgraph = callgraph)
+    implicit val clx = ConversionContext(p = newP, c = newC, t = newT, recursives = Set(), callgraph = callgraph, effects = effects)
     val body = expression(z)
     prog ->> porc.MethodCPS(newVarName("Prog"), newP, newC, newT, false, Nil, body)
   }
@@ -159,12 +163,20 @@ class OrctimizerToPorc {
           })
         }
 
+        // Use a kill check for effectful calls or recursive ones.
+        val killCheck = if (ctx.effects.effects(c) || !isNotRecursive) {
+          porc.CheckKilled(ctx.t)
+        } else {
+          porc.PorcUnit()
+        }
+
         // TODO: Spawning on publication is a big issue since it results in O(n^2) spawns during stack
         //       unrolling. Can we avoid the need for the spawn in P.
         // TODO: Consider a hybrid approach which allows a few direct calls and then bounces. Maybe back these semantics into spawn.
 
         if (!isDirect) {
-          if (isNotRecursive) {
+          if (isNotRecursive) { 
+            killCheck :::
             porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).view.force)
           } else {
             // For possibly recusive functions spawn before calling and spawn before passing on the publication.
@@ -173,6 +185,7 @@ class OrctimizerToPorc {
             val v = newVarName("temp")
             val comp1 = newVarName("comp")
             val comp2 = newVarName("comp")
+            killCheck :::
             let(
               (newP, porc.Continuation(Seq(v), {
                 let((comp1, porc.Continuation(Seq(), ctx.p(v)))) {
@@ -187,6 +200,7 @@ class OrctimizerToPorc {
           }
         } else {
           val v = newVarName("temp")
+          killCheck :::
           let((v, porc.MethodDirectCall(isExternal, argument(target), args.map(argument(_)).view.force))) {
             ctx.p(v)
           }

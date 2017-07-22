@@ -448,7 +448,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
   
   val TrimElim = Opt("trim-elim") {
-    case (Trim.Z(f), a) if a.publicationsOf(f) <= 1 && !a.effects(f) => f.value
+    case _ if false => ???
+    // TODO: Reenable this when DelayAnalysis is fixed for recursive functions.
+    //case (Trim.Z(f), a) if a.publicationsOf(f) <= 1 && a.delayOf(f).maxHaltDelay == ComputationDelay() && !a.effects(f) => f.value
   }
 
 

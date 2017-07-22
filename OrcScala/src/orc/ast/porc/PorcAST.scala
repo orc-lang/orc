@@ -120,6 +120,7 @@ object Sequence {
   def apply(es: Seq[Expression]): Sequence = {
     new Sequence((es.flatMap {
       case Sequence(fs) => fs
+      case PorcUnit() => Seq()
       case e => Seq(e)
     }).toList)
   }

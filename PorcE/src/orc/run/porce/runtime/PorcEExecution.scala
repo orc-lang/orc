@@ -73,7 +73,9 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       }
     })
     
-    //Thread.sleep(5000)
-    //Counter.report()
+    /*if(Counter.tracingEnabled) {
+      Thread.sleep(5000)
+      Counter.report()
+    }*/
   }
 }

@@ -19,6 +19,7 @@ public class IfDef extends Expression {
 	}
 
 	public Object execute(VirtualFrame frame) {
+	    // FIXME: This does not detect object with defs in .apply. This causes forcing of arguments even though the call is strictly speaking to a def.
 		if(Utilities.isDef(argument.execute(frame))) {
 			return left.execute(frame);
 		} else {

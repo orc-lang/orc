@@ -13,6 +13,7 @@ object Utilities {
   }
   
   def isDef(v: AnyRef): Boolean = v match {
+    // FIXME: This does not detect object with defs in .apply. This causes forcing of arguments even though the call is strictly speaking to a def.
     case c: PorcEClosure => {
       c.isDef
     }

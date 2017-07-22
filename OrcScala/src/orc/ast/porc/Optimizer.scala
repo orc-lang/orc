@@ -125,6 +125,8 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         NewTerminator(renameVariables(t))
       case Kill.Z(t) =>
         Kill(renameVariables(t))
+      case CheckKilled.Z(t) =>
+        CheckKilled(renameVariables(t))
       case TryOnException.Z(b, h) =>
         TryOnException(renameVariables(b), renameVariables(h))
 
@@ -227,7 +229,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val VarLetElim = Opt("var-let-elim") {
     case (Let.Z(x, Zipper(y: Variable, _), b), a) => b.value.substAll(Map((x, y)))
   }
-  
+
   /*
 
   val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(30)

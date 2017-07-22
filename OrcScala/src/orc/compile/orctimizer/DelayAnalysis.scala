@@ -119,7 +119,7 @@ class DelayAnalysis(
 
 object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), DelayAnalysis] {
   import FlowGraph._
-
+  
   def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): DelayAnalysis = {
     val cg = cache.get(CallGraph)(params)
     val a = new DelayAnalyzer(cg)
@@ -198,6 +198,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), 
               DelayInfo(ComputationDelay(), inStateValue.maxHaltDelay)
             case CallSite.Z(target, _, _) => {
               import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
+              // FIXME: Recursive function calls should have IndefiniteDelays or should be otherwise marked to avoid infinite recursion being treated as computation delay.
 
               val possibleV = graph.valuesOf[FlowValue](ValueNode(target))
               val extPubs = possibleV match {
@@ -227,6 +228,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), 
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combineOneOf _))(_ combineOneOf _).getOrElse(worstState)
             }
             case CallDef.Z(target, _, _) =>
+              // FIXME: Recursive function calls should have IndefiniteDelays or should be otherwise marked to avoid infinite recursion being treated as computation delay.
               inStateOneOf
             case IfDef.Z(v, l, r) => {
               // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
