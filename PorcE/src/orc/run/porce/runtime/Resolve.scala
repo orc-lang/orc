@@ -47,27 +47,29 @@ abstract class Resolve(inValues: Array[AnyRef]) {
     def prepareSpawn(): Unit = {}
   }
 
-  // Start all the required forces.
-  var nNonFutures = 0
-  for (v <- inValues) v match {
-    case f: Future => {
-      Logger.finest(s"$resolve: Resolve joining on $f")
-      val e = new JoinElement()
-      f.read(e)
+  final def apply() = {
+    // Start all the required forces.
+    var nNonFutures = 0
+    for (v <- inValues) v match {
+      case f: Future => {
+        Logger.finest(s"$resolve: Resolve joining on $f")
+        val e = new JoinElement()
+        f.read(e)
+      }
+      case _ => {
+        nNonFutures += 1
+      }
     }
-    case _ => {
-      nNonFutures += 1
-    }
+  
+    // Now decrement the unbound count by the number of non-futures we found.
+    // And maybe finish immediately.
+    if (nNonFutures > 0)
+      // Don't do this if it will not change the value. Otherwise this could
+      // cause multiple calls to done.
+      checkComplete(nUnbound.addAndGet(-nNonFutures))
+  
+    Logger.finest(s"$resolve: Resolve setup with (${inValues.mkString(", ")}) and nonfut=$nNonFutures and unbound=$nUnbound")
   }
-
-  // Now decrement the unbound count by the number of non-futures we found.
-  // And maybe finish immediately.
-  if (nNonFutures > 0)
-    // Don't do this if it will not change the value. Otherwise this could
-    // cause multiple calls to done.
-    checkComplete(nUnbound.addAndGet(-nNonFutures))
-
-  Logger.finest(s"$resolve: Resolve setup with (${inValues.mkString(", ")}) and nonfut=$nNonFutures and unbound=$nUnbound")
 
   /** Check if we are done by looking at n which must be the current number of
     * unbound values.

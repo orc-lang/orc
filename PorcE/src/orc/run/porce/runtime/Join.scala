@@ -38,11 +38,11 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   require(inValues.size > 0, "Join must have at least one argument. Check before call.")
 
   // The number of unbound values in values.
-  private var nUnbound = new AtomicInteger(inValues.size)
+  protected var nUnbound = new AtomicInteger(inValues.size)
   // The array of values that have already been bound.
   val values = Array.ofDim[AnyRef](inValues.size)
   // The flag saying if we have already halted.
-  protected var halted = new AtomicBoolean(false)
+  protected val halted = new AtomicBoolean(false)
 
   /** A Blockable that binds a specific element of values in publish().
     */
@@ -64,7 +64,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
         // will cause the read of it, enforcing the needed ordering).
         values(i) = v
         // TODO: Does this write need to be volatile?
-        // Not decrement the number of unbound values and see if we are done.
+        // Now decrement the number of unbound values and see if we are done.
         join.checkComplete(join.nUnbound.decrementAndGet())
       }
     }
@@ -88,29 +88,31 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
 
   //Logger.finest(s"Starting join with: ${inValues.mkString(", ")}")
 
-  // Start all the required forces.
-  var nNonFutures = 0
-  for ((v, i) <- inValues.zipWithIndex) v match {
-    case f: orc.Future => {
-      Logger.finest(s"$join: Join joining on $f")
-      // Force f so it will bind the correct index.
-      val e = new JoinElement(i)
-      // TODO: PERFORMANCE: It's possible this could be improved by checking if f is resolved and using special handling. But it may not matter.
-      f.read(e)
+  final def apply() = {
+    // Start all the required forces.
+    var nNonFutures = 0
+    for ((v, i) <- inValues.zipWithIndex) v match {
+      case f: orc.Future => {
+        Logger.finest(s"$join: Join joining on $f")
+        // Force f so it will bind the correct index.
+        val e = new JoinElement(i)
+        // TODO: PERFORMANCE: It's possible this could be improved by checking if f is resolved and using special handling. But it may not matter.
+        f.read(e)
+      }
+      case _ => {
+        // v is not a future so just bind it.
+        values(i) = v
+        nNonFutures += 1
+      }
     }
-    case _ => {
-      // v is not a future so just bind it.
-      values(i) = v
-      nNonFutures += 1
-    }
+    
+    // Now decrement the unbound count by the number of non-futures we found.
+    // And maybe finish immediately.
+    if (nNonFutures > 0)
+      // Don't do this if it will not change the value. Otherwise this could
+      // cause multiple calls to done.
+      checkComplete(nUnbound.addAndGet(-nNonFutures))
   }
-  
-  // Now decrement the unbound count by the number of non-futures we found.
-  // And maybe finish immediately.
-  if (nNonFutures > 0)
-    // Don't do this if it will not change the value. Otherwise this could
-    // cause multiple calls to done.
-    checkComplete(nUnbound.addAndGet(-nNonFutures))
 
   /** Check if we are done by looking at n which must be the current number of
     * unbound values.

@@ -15,7 +15,6 @@ package orc.run.porce.runtime
 
 import java.util.concurrent.atomic.AtomicReference
 import scala.collection.JavaConverters._
-import scala.collection.convert.ImplicitConversions._
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.run.porce.Logger
 
@@ -41,6 +40,14 @@ class Terminator extends Terminatable {
       child.kill()
     } else {
       orig.add(child)
+      
+      /*
+      val s = orig.size()
+      if(s > 2000 && (s % 1000) == 0) {
+        Logger.warning(s"ADDING: You may be leaking Terminatables: $this size=$s\nThis terminatable is $child\n----\n${orig.asScala.take(1000).mkString("\n")}")
+      }
+      */
+      
       // Check for kill again.
       // The .add and .get here race against .getAndSet and iteration in kill().
       // However, this .get here will always return null if iteration will not observe the .add.
@@ -55,6 +62,10 @@ class Terminator extends Terminatable {
   def removeChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig != null) {
+      /*val s = orig.size()
+      if(s > 10000 && (s % 2000) == 0) {
+        Logger.warning(s"REMOVING: You may be leaking Terminatables: $this size=$s\nThis terminatable is $child")
+      }*/
       orig.remove(child)
     }
   }

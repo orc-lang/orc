@@ -20,10 +20,9 @@ trait PorcERuntimeOperations {
       
   def resolve(p: PorcEClosure, c: Counter, t: Terminator, vs: Array[AnyRef]) = {
     t.checkLive()
-    new { // Early initializer because Resolve may call done in it's constructor.
+    val resolver = new Resolve(vs) with Terminatable {
       // The flag saying if we have already halted.
       protected var halted = new AtomicBoolean(false) 
-    } with Resolve(vs) with Terminatable {
       t.addChild(this)
       
       def done(): Unit = {
@@ -40,6 +39,7 @@ trait PorcERuntimeOperations {
         }
       }
     }
+    resolver()
   }
   
   /** Force a list of values: forcing futures and resolving closures.
@@ -54,7 +54,8 @@ trait PorcERuntimeOperations {
       }
       case _ => {
         // Token: Pass to join.
-        new PCTJoin(p, c, t, vs, true)
+        val joiner = new PCTJoin(p, c, t, vs, true)
+        joiner()
       }
     }
   }
@@ -90,19 +91,20 @@ trait PorcERuntimeOperations {
     })
   }
 
-  private final class PCTJoin(p: PorcEClosure, c: Counter, t: Terminator, vs: Array[AnyRef], forceClosures: Boolean) extends Join(vs, forceClosures) with Terminatable {
+  private final class PCTJoin(p: PorcEClosure, c: Counter, t: Terminator, vs: Array[AnyRef], forceClosures: Boolean)
+      extends Join(vs, forceClosures) with Terminatable {
     t.addChild(this)
-    
+
     Logger.finer(s"Spawn for PCJoin $this (${vs.mkString(", ")})")
 
     def done(): Unit = {
-      Logger.finer(s"Done for PCJoin $this (${values.mkString(", ")})")
+      Logger.finer(s"Done for $this")
       t.removeChild(this)
       // Token: Pass to p.
       schedulePublish(p, c, values)
     }
     def halt(): Unit = {
-      Logger.finer(s"Halt for PCJoin $this (${values.mkString(", ")})")
+      Logger.finer(s"Halt for $this")
       t.removeChild(this)
       // Token: Remove token passed in.
       c.haltToken()
@@ -114,6 +116,12 @@ trait PorcERuntimeOperations {
         halt()
       }
     }
+
+    /*
+    override def toString(): String = {
+      s"PCTJoin@${hashCode().formatted("%08x")}(${halted.get()}, $nUnbound, ${vs.toSeq}, ${values.toSeq})"
+    }
+    */
   }
   
   private final class PCTFutureReader(p: PorcEClosure, c: Counter, t: Terminator) extends FutureReader with Terminatable {
