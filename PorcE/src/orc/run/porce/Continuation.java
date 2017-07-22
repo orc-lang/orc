@@ -8,12 +8,18 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 
+import orc.ast.porc.PorcAST;
 import orc.run.porce.runtime.PorcEClosure;
 
 public class Continuation extends Expression {
 	@Children
 	protected final Expression[] capturedVariables;
 	protected RootCallTarget callTarget;
+	
+	public void setPorcAST(PorcAST ast) {
+		((PorcERootNode)callTarget.getRootNode()).setPorcAST(ast);
+		super.setPorcAST(ast);
+	}
 
 	public Continuation(FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameSlot[] capturingSlots, FrameDescriptor descriptor, Expression body) {
 		this.capturedVariables = new Expression[capturedSlots.length];

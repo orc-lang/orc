@@ -42,7 +42,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   // The array of values that have already been bound.
   val values = Array.ofDim[AnyRef](inValues.size)
   // The flag saying if we have already halted.
-  private var halted = new AtomicBoolean(false)
+  protected var halted = new AtomicBoolean(false)
 
   /** A Blockable that binds a specific element of values in publish().
     */
@@ -117,7 +117,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
     */
   private final def checkComplete(n: Int): Unit = {
     assert(n >= 0, n)
-    if (n == 0) {
+    if (n == 0 && halted.compareAndSet(false, true)) {
       Logger.finest(s"$join: Join finished with: ${values.mkString(", ")}")
       done()
     }

@@ -17,6 +17,7 @@ import orc.values.Field
 import orc.values.sites.{ Site => OrcSite }
 import orc.values.sites.SiteMetadata
 import orc.values.sites.Delay
+import orc.ast.porc.HaltToken
 
 case class AnalysisResults(
   isNotFuture: Boolean,
@@ -112,7 +113,7 @@ object Analysis {
       case _: CallContinuation => callCost
       case _: MethodDirectCall => externalCallCost
       case _: MethodCPSCall => externalCallCost + spawnCost
-      case _: Kill | _: Halt => atomicOperation
+      case _: Kill | _: HaltToken | _: NewToken => atomicOperation
       case _ => 0
     }) + (cs.map(cost).sum)
   }

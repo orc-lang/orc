@@ -8,12 +8,25 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Terminator;
+import scala.Option;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEObject;
 
+import orc.ast.porc.PorcAST;
+
 @NodeInfo(language = "PorcE")
 @TypeSystemReference(PorcETypes.class)
-public abstract class PorcENode extends Node {
+public abstract class PorcENode extends Node implements HasPorcNode {
+	private Option<PorcAST> porcNode = Option.apply(null);
+	
+	public void setPorcAST(PorcAST ast) {
+		porcNode = Option.apply(ast);
+	}
+	
+	public Option<PorcAST> porcNode() {
+		return porcNode;
+	}
+	
 	public Object execute(VirtualFrame frame) {
 		executePorcEUnit(frame);
 		return PorcEUnit.SINGLETON;
@@ -47,4 +60,6 @@ public abstract class PorcENode extends Node {
 			throws UnexpectedResultException {
 		return PorcETypesGen.expectPorcEObject(execute(frame));
 	}
+	
+	
 }

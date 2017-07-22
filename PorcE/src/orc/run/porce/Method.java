@@ -7,13 +7,28 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.nodes.Node;
 
+import orc.ast.porc.PorcAST;
 import orc.run.porce.runtime.PorcEClosure;
+import scala.Option;
 
-public class Method extends Node {
+public class Method extends Node implements HasPorcNode {
 	protected RootCallTarget callTarget;
 	private final FrameSlot name;
 	private final FrameSlot[] capturingSlots;
 	private boolean isDef;
+	
+	private Option<PorcAST> porcNode = Option.apply(null);
+	
+	public void setPorcAST(PorcAST ast) {
+		((PorcERootNode)callTarget.getRootNode()).setPorcAST(ast);
+		porcNode = Option.apply(ast);
+	}
+	
+	public Option<PorcAST> porcNode() {
+		return porcNode;
+	}
+	
+
 
 	public Method(FrameSlot name, FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameSlot[] capturingSlots, FrameDescriptor descriptor, boolean isDef, Expression body) {
 		this.name = name;

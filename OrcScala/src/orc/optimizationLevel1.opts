@@ -3,14 +3,10 @@ remove-unused-types
 fraction-defs
 porc
 porc:eta-reduce
-porc:eta-spawn-reduce
 porc:var-let-elim 
 porc:specialize-sitecall
-porc:inline-spawn
-porc:spawn-inline-threshold=30
 porc:inline-let
 porc:let-inline-expansion-threshold=30
-porc:let-elim 
-porc:def-elim 
-porc:onhalted-elim
-porc:max-passes=100
+porc:try-catch-elim
+porc:try-finally-elim
+porc:max-passes=2

@@ -143,7 +143,7 @@ sealed abstract class Method extends PorcAST {
   def isDef: Boolean
 
   def allArguments: Seq[Variable]
-  
+
   override def boundVars: Set[Variable] = allArguments.toSet
 }
 
@@ -152,7 +152,7 @@ object Method {
     def name: Variable
     def arguments: Seq[Variable]
     def allArguments: Seq[Variable] = value.allArguments
-    def body: Expression.Z    
+    def body: Expression.Z
   }
 }
 
@@ -165,6 +165,10 @@ final case class MethodDirect(name: Variable, isDef: Boolean, arguments: Seq[Var
   override def allArguments: Seq[Variable] = arguments
 }
 
+/** Call a CPS method.
+  *
+  * This consumes a token of c when it is called and then returns a token to each call to p which must return that token to its caller.
+  */
 @leaf @transform
 final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression
 @leaf @transform
@@ -181,6 +185,10 @@ final case class New(@subtree bindings: Map[Field, Argument]) extends Expression
 
 // ==================== PROCESS ===================
 
+/** Spawn a new task.
+  *
+  * This consumes a token of c and passes it to computation.
+  */
 @leaf @transform
 final case class Spawn(@subtree c: Argument, @subtree t: Argument, blockingComputation: Boolean, @subtree computation: Argument) extends Expression
 
@@ -190,18 +198,31 @@ final case class NewTerminator(@subtree parentT: Argument) extends Expression
 final case class Kill(@subtree t: Argument) extends Expression
 @leaf @transform
 final case class CheckKilled(@subtree t: Argument) extends Expression
-@leaf @transform
-final case class TryOnKilled(@subtree body: Expression, @subtree handler: Expression) extends Expression
 
+/** Create a counter.
+  *
+  * The counter initially has one token.
+  *
+  * This consumes a token of parentC and then returns it to the halt handler.
+  */
 @leaf @transform
-final case class NewCounter(@subtree parentT: Argument, @subtree haltHandler: Argument) extends Expression
+final case class NewCounter(@subtree parentC: Argument, @subtree haltHandler: Argument) extends Expression
+/** Add a new token to a counter.
+  */
 @leaf @transform
-final case class Halt(@subtree c: Argument) extends Expression
+final case class NewToken(@subtree c: Argument) extends Expression
+/** Remove a token from a counter.
+  */
+@leaf @transform
+final case class HaltToken(@subtree c: Argument) extends Expression
 @leaf @transform
 final case class SetDiscorporate(@subtree c: Argument) extends Expression
-@leaf @transform
-final case class TryOnHalted(@subtree body: Expression, @subtree handler: Expression) extends Expression
 
+/** Catch either kill or halted.
+  *
+  */
+@leaf @transform
+final case class TryOnException(@subtree body: Expression, @subtree handler: Expression) extends Expression
 @leaf @transform
 final case class TryFinally(@subtree body: Expression, @subtree handler: Expression) extends Expression
 
@@ -213,7 +234,19 @@ final case class NewFuture() extends Expression
 final case class Bind(@subtree future: Argument, @subtree v: Argument) extends Expression
 @leaf @transform
 final case class BindStop(@subtree future: Argument) extends Expression
+/** Force a sequence of futures and pass their values to p.
+  *
+  * If any future halts this whole call halts.
+  *
+  * This consumes a token of c and passes it to p and finally removes it.
+  */
 @leaf @transform
 final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression
+/** Resolve a sequence of futures.
+  *
+  * This calls p when every future is either stopped or resolved to a value.
+  *
+  * This consumes a token of c and passes it to p and finally removes it.
+  */
 @leaf @transform
 final case class Resolve(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression

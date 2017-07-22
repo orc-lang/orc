@@ -13,7 +13,6 @@
 package orc.ast.porc
 
 import orc.values.sites.{ Site => OrcSite }
-//TODO: import orc.values.sites.DirectSite
 import orc.compile.CompilerOptions
 import orc.compile.OptimizerStatistics
 import orc.compile.NamedOptimization
@@ -65,7 +64,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   def newName(x: Variable) = {
     new Variable(x.optionalName.map(_ + "i"))
   }
-  
+
   def renameVariables(e: Method.Z)(implicit mapping: Map[Variable, Variable]): Method = {
     e.value ->> (e match {
       case MethodCPS.Z(name, p, c, t, isDef, args, b) =>
@@ -126,17 +125,17 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         NewTerminator(renameVariables(t))
       case Kill.Z(t) =>
         Kill(renameVariables(t))
-      case TryOnKilled.Z(b, h) =>
-        TryOnKilled(renameVariables(b), renameVariables(h))
+      case TryOnException.Z(b, h) =>
+        TryOnException(renameVariables(b), renameVariables(h))
 
       case NewCounter.Z(b, h) =>
         NewCounter(renameVariables(b), renameVariables(h))
-      case Halt.Z(c) =>
-        Halt(renameVariables(c))
+      case HaltToken.Z(c) =>
+        HaltToken(renameVariables(c))
+      case NewToken.Z(c) =>
+        NewToken(renameVariables(c))
       case SetDiscorporate.Z(c) =>
         SetDiscorporate(renameVariables(c))
-      case TryOnHalted.Z(b, h) =>
-        TryOnHalted(renameVariables(b), renameVariables(h))
       case TryFinally.Z(b, h) =>
         TryFinally(renameVariables(b), renameVariables(h))
 
@@ -150,7 +149,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val letInlineThreshold = co.options.optimizationFlags("porc:let-inline-threshold").asInt(30)
   val letInlineCodeExpansionThreshold = co.options.optimizationFlags("porc:let-inline-expansion-threshold").asInt(30)
   val referenceThreshold = co.options.optimizationFlags("porc:let-inline-ref-threshold").asInt(5)
-  
+
   val InlineLet = OptFull("inline-let") { (expr, a) =>
     import a.ImplicitResults._
     expr match {
@@ -201,12 +200,34 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         } else {
           None
         }
-      case Let.Z(x, Zipper(a: Argument, _), scope)=>
+      case Let.Z(x, Zipper(a: Argument, _), scope) =>
         Some(scope.value.substAll(Map((x, a))))
       case e =>
         None
     }
   }
+
+  val TryCatchElim = Opt("try-catch-elim") {
+    // TODO: Figure out why this is taking multiple passes to finish. This should eliminate all excess onHalted expressions in one pass.
+    case (TryOnException.Z(Zipper(LetStack(bindings, TryOnException(b, h1)), _), h2), a) if h1 == h2.value =>
+      TryOnException(LetStack(bindings, b), h2.value)
+  }
+
+  val TryFinallyElim = Opt("try-finally-elim") {
+    // TODO: Figure out why this is taking multiple passes to finish. This should eliminate all excess onHalted expressions in one pass.
+    case (TryFinally.Z(Zipper(LetStack(bindings, TryFinally(b, h1)), _), h2), a) if h1 == h2.value =>
+      TryFinally(LetStack(bindings, b), h2.value)
+  }
+
+  val EtaReduce = Opt("eta-reduce") {
+    case (Continuation.Z(formals, CallContinuation.Z(t, args)), a) if args == formals =>
+      t.value
+  }
+
+  val VarLetElim = Opt("var-let-elim") {
+    case (Let.Z(x, Zipper(y: Variable, _), b), a) => b.value.substAll(Map((x, y)))
+  }
+  
   /*
 
   val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(30)
@@ -260,7 +281,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
    */
 
 */
-  val allOpts = List[Optimization](InlineLet)
+  val allOpts = List[Optimization](InlineLet, EtaReduce, TryCatchElim, TryFinallyElim)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -270,35 +291,40 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 object Optimizer {
   /*
   object <::: {
-    def unapply(e: PorcAST.Z) = e match {
-      case Sequence(l) in ctx if !l.isEmpty =>
-        Some(Sequence(l.init) in ctx, l.last in ctx)
+    def unapply(e: PorcAST.Z): Option[(Sequence, Expression)] = e match {
+      case Sequence.Z(l) if !l.isEmpty =>
+        Some((Sequence(l.init.map(_.value)), l.last.value))
       case _ => None
     }
   }
+  */
+  
   object :::> {
-    def unapply(e: PorcAST.Z) = e match {
-      case Sequence(e :: l) in ctx =>
-        Some(e in ctx, Sequence(l) in ctx)
+    def unapply(e: PorcAST.Z): Option[(Expression, Sequence)] = e match {
+      case Sequence.Z(e :: l) =>
+        Some((e.value, Sequence(l.map(_.value))))
       case _ => None
     }
-  }
-
-  object LetStackIn {
-    def unapply(e: PorcAST.Z): Some[(Seq[(Option[Var.Z], Expr.Z)], PorcAST.Z)] = e match {
-      case LetIn(x, v, b) =>
-        val LetStackIn(bindings, b1) = b
-        Some(((Some(x), v) +: bindings, b1))
-      case s :::> ss if !ss.es.isEmpty =>
-        val LetStackIn(bindings, b1) = ss.simplify in ss.ctx
-        //Logger.fine(s"unpacked sequence: $s $ss $bindings $b1")
-        Some(((None, s) +: bindings, b1))
-      case _ => Some((Seq(), e))
+    def unapply(e: PorcAST): Option[(Expression, Sequence)] = e match {
+      case Sequence(e :: l) =>
+        Some((e, Sequence(l)))
+      case _ => None
     }
   }
 
   object LetStack {
-    def apply(bindings: Seq[(Option[Var.Z], Expr.Z)], b: Expr) = {
+    def unapply(e: PorcAST): Some[(Seq[(Option[Variable], Expression)], PorcAST)] = e match {
+      case Let(x, v, b) =>
+        val LetStack(bindings, b1) = b
+        Some(((Some(x), v) +: bindings, b1))
+      case s :::> ss if !ss.es.isEmpty =>
+        val LetStack(bindings, b1) = ss.simplify
+        //Logger.fine(s"unpacked sequence: $s $ss $bindings $b1")
+        Some(((None, s) +: bindings, b1))
+      case _ => Some((Seq(), e))
+    }
+    
+    def apply(bindings: Seq[(Option[Variable], Expression)], b: Expression) = {
       bindings.foldRight(b)((bind, b) => {
         bind match {
           case (Some(x), v) =>
@@ -316,10 +342,7 @@ object Optimizer {
     }*/
   }
 
-  val EtaReduce = Opt("eta-reduce") {
-    case (ContinuationIn(formal, _, CallIn(t, arg, _)), a) if arg == formal =>
-      t
-  }
+  /*
   val EtaSpawnReduce = Opt("eta-spawn-reduce") {
     case (ContinuationIn(formal, _, SpawnIn(_, _, CallIn((t: Var) in ctx, arg, _))), a) if arg == formal && ctx(t).isInstanceOf[DefArgumentBound] =>
       t
@@ -330,9 +353,6 @@ object Optimizer {
     case (LetIn(x, ContinuationIn(_, _, _), b), a) if !b.freevars.contains(x) => b
     case (LetIn(x, TupleElem(_, _) in _, b), a) if !b.freevars.contains(x) => b
     case (LetIn(x, v, b), a) if !b.freevars.contains(x) => v ::: b
-  }
-  val VarLetElim = Opt("var-let-elim") {
-    case (LetIn(x, (y: Var) in _, b), a) => b.substAll(Map((x, y)))
   }
   val DefElim = Opt("def-elim") {
     case (DefDeclarationIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
@@ -350,15 +370,6 @@ object Optimizer {
               p(v)
             }
           }, Unit()))
-      case _ => None
-    }
-  }
-
-  val OnHaltedElim = OptFull("onhalted-elim") { (e, a) =>
-    // TODO: Figure out why this is taking multiple passes to finish. This should eliminate all excess onHalted expressions in one pass.
-    e match {
-      case TryOnHaltedIn(LetStackIn(bindings, TryOnHaltedIn(b, h1)), h2) if h1.e == h2.e =>
-        Some(TryOnHalted(LetStack(bindings, b), h2))
       case _ => None
     }
   }

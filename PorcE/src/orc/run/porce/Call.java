@@ -113,10 +113,9 @@ public abstract class Call extends Expression {
 					argumentValues[i] = arguments[i + 3].execute(frame);
 				}
 				Invoker invoker = getInvokerWithBoundary(t, argumentValues);
+				// Token: Passed to handle from arguments.
 				final PCTHandle handle = new PCTHandle(execution.get(), pub, counter, term);
 
-				counter.prepareSpawn();
-				
 				try {
 					invokeWithBoundary(invoker, handle, t, argumentValues);
 				} catch (ExceptionHaltException e) {

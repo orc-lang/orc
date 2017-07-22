@@ -16,6 +16,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
   t.addChild(this)
 
   def publishNonterminal(v: AnyRef): Unit = {
+    c.newToken() // Token: Passed to p.
     runtime.scheduleOrCall(c, () => p.callFromRuntime(v))
   }
 
@@ -24,12 +25,10 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
     * The semantics of a publication for a handle include halting so add that.
     */
   override def publish(v: AnyRef) = {
+    // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
     if (halted.compareAndSet(false, true)) {
-      // TODO: It should be possible to pass the count we have on to the schedulable. It would save two atomic updates per pub. Only do if profiling shows this is an issue.
+      // Token: Pass token to p.
       runtime.scheduleOrCall(c, () => p.callFromRuntime(v))
-      c.halt()
-      // Matched to: Every invocation is required to be proceeded by a
-      //             prepareSpawn since it might spawn.
       t.removeChild(this)
     }
   }
@@ -38,9 +37,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
 
   def halt(): Unit = {
     if (halted.compareAndSet(false, true)) {
-      c.halt()
-      // Matched to: Every invocation is required to be proceeded by a
-      //             prepareSpawn since it might spawn.
+      c.haltToken() // Token: Taken from passed in c.
       t.removeChild(this)
     }
   }
@@ -69,9 +66,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
 
   def discorporate(): Unit = {
     if (halted.compareAndSet(false, true)) {
-      c.discorporate()
-      // Matched to: Every invocation is required to be proceeded by a
-      //             prepareSpawn since it might spawn.
+      c.discorporateToken() // Token: Taken from passed in c.
       t.removeChild(this)
     }
   }

@@ -43,7 +43,7 @@ class PorcToPorcE {
   }
 
   def transform(e: porc.Expression.Z)(implicit ctx: Context): porce.Expression = {
-    e match {
+    val res = e match {
       case porc.Constant.Z(v) =>
         porce.Argument.createConstant(v)
       case porc.PorcUnit.Z() =>
@@ -93,8 +93,10 @@ class PorcToPorcE {
         porce.NewCounter.create(ctx.execution.newRef(), transform(p), transform(h))
       case porc.NewTerminator.Z(p) =>
         porce.NewTerminator.create(transform(p))
-      case porc.Halt.Z(c) =>
-        porce.Halt.create(transform(c))
+      case porc.NewToken.Z(c) =>
+        porce.NewToken.create(transform(c))
+      case porc.HaltToken.Z(c) =>
+        porce.HaltToken.create(transform(c))
       case porc.Kill.Z(t) =>
         porce.Kill.create(transform(t))
       case porc.CheckKilled.Z(t) =>
@@ -111,10 +113,8 @@ class PorcToPorcE {
         porce.Force.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.runtime)
       case porc.SetDiscorporate.Z(c) =>
         porce.SetDiscorporate.create(transform(c))        
-      case porc.TryOnKilled.Z(b, h) =>
-        porce.TryOnKilled.create(transform(b), transform(h))
-      case porc.TryOnHalted.Z(b, h) =>
-        porce.TryOnHalted.create(transform(b), transform(h))
+      case porc.TryOnException.Z(b, h) =>
+        porce.TryOnException.create(transform(b), transform(h))
       case porc.TryFinally.Z(b, h) =>
         porce.TryFinally.create(transform(b), transform(h))    
         
@@ -129,6 +129,8 @@ class PorcToPorcE {
         val fieldValues = fieldOrdering.map(newBindings(_))
         porce.NewObject.create(fieldOrdering.toArray, fieldValues.toArray)
     }
+    res.setPorcAST(e.value)
+    res
   }
   
   def transform(m: porc.Method.Z, scopeCapturedVars: Seq[porc.Variable], recCapturedVars: Seq[porc.Variable])(implicit ctx: Context): porce.Method = { 
@@ -147,11 +149,13 @@ class PorcToPorcE {
           argSlots.toArray, scopeCapturedSlots.toArray, scopeCapturingSlots.toArray, descriptor, m.value.isDef, newBody)
     }  
     
-    m match {
+    val res = m match {
       case porc.MethodDirect.Z(name, _, arguments, body) =>
         process(arguments)
       case porc.MethodCPS.Z(name, pArg, cArg, tArg, _, arguments, body) =>
         process(pArg +: cArg +: tArg +: arguments)
     }
+    res.setPorcAST(m.value)
+    res
   }
 }

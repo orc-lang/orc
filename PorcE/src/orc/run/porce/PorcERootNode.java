@@ -1,18 +1,34 @@
 package orc.run.porce;
 
-import com.oracle.truffle.api.CompilerDirectives.*;
-import static com.oracle.truffle.api.CompilerDirectives.*;
+import static com.oracle.truffle.api.CompilerDirectives.SLOWPATH_PROBABILITY;
+import static com.oracle.truffle.api.CompilerDirectives.injectBranchProbability;
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
-import orc.error.OrcException;
+import java.util.logging.Level;
+
+import orc.ast.porc.PorcAST;
 import orc.error.runtime.ArityMismatchException;
+import orc.error.runtime.HaltException;
+import orc.run.porce.runtime.KilledException;
+import scala.Option;
 
-public class PorcERootNode extends RootNode {
+public class PorcERootNode extends RootNode implements HasPorcNode {
+	private Option<PorcAST> porcNode = Option.apply(null);
+	
+	public void setPorcAST(PorcAST ast) {
+		porcNode = Option.apply(ast);
+	}
+	
+	public Option<PorcAST> porcNode() {
+		return porcNode;
+	}
+	
 	protected @Child Expression body;
 	private final FrameSlot[] argumentSlots;
 	private final FrameSlot[] capturedSlots;
@@ -50,12 +66,19 @@ public class PorcERootNode extends RootNode {
 		for (int i = 0; i < argumentSlots.length; i++) {
 			frame.setObject(argumentSlots[i], arguments[i+1]);
 		}
+		
 		// Load all the captured variables into the frame.
 		for (int i = 0; i < capturedSlots.length; i++) {
 			frame.setObject(capturedSlots[i], captureds[i]);
 		}
-		Object ret = body.execute(frame);
-		return ret;
+		
+		try {
+			Object ret = body.execute(frame);
+			return ret;
+		} catch(KilledException | HaltException e) {
+			Logger.log(Level.WARNING, () -> "Caught " + e + " from root node.", e);
+			return PorcEUnit.SINGLETON;
+		}
 	}
 	
 	@TruffleBoundary(allowInlining = true)

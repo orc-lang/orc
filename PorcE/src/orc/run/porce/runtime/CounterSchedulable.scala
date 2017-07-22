@@ -15,6 +15,7 @@ package orc.run.porce.runtime
 
 import orc.Schedulable
 import orc.error.runtime.HaltException
+import orc.run.porce.Logger
 
 /** A Schedulable which manages Context spawn/halt counting automatically.
   *
@@ -28,13 +29,11 @@ abstract class CounterSchedulable(c: Counter) extends Schedulable {
   /** When we are scheduled prepare for spawning.
     */
   override def onSchedule() = {
-    c.prepareSpawn() // Matched to: halt in onComplete
   }
 
   /** When execution completes halt.
     */
   override def onComplete() = {
-    c.halt() // Matched to: prepareSpawn in onSchedule
   }
 }
 
@@ -56,11 +55,10 @@ final class CounterSchedulableFunc(c: Counter, f: () => Unit) extends CounterSch
     try {
       f()
     } catch {
-      // Ignore both killed and halt exceptions. The correct code has been stopped by the unrolling and nothing else is needed.
       case _: KilledException =>
-        ()
+        Logger.warning(s"Caught KilledException from $f")
       case _: HaltException =>
-        ()
+        Logger.warning(s"Caught HaltException from $f")
     }
   }
 }

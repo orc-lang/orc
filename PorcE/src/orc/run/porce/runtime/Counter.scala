@@ -19,36 +19,84 @@ import java.util.concurrent.LinkedBlockingDeque
 import scala.annotation.elidable
 import orc.run.porce.Logger
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import orc.ast.porc
+import com.oracle.truffle.api.Truffle
+import com.oracle.truffle.api.frame.FrameInstance
+import orc.run.porce.PorcENode
+import com.oracle.truffle.api.RootCallTarget
+import com.oracle.truffle.api.nodes.{ Node => TruffleNode }
+import orc.run.porce.HasPorcNode
 
 object Counter {
+  // Due to inlining, changing this will likely require a full rebuild.
+  val tracingEnabled = false
+
   val liveCounters = new LinkedBlockingDeque[Counter]()
 
   def exceptionString(e: Exception) = {
     val ss = new StringWriter()
     e.printStackTrace(new PrintWriter(ss))
-    ss.toString()
+    val s = ss.toString()
+    s.dropWhile(_ != ':')
   }
 
   @TruffleBoundary
-  def report() = {
-    if (Logger.julLogger.isLoggable(Level.FINE)) {
-      import scala.collection.JavaConverters._
-      Logger.fine(s"Live Counter Report: ${liveCounters.size}")
-      for (c <- liveCounters.asScala) {
-        Logger.fine(s"$c: log size = ${c.log.size}, count = ${c.count.get}")
+  def getPorcStackTrace(): Seq[porc.PorcAST] = {
+    var b = Seq.newBuilder[porc.PorcAST]
+    def appendIfPorc(n: TruffleNode) = n match {
+      case n: HasPorcNode =>
+        n.porcNode match {
+          case Some(n) =>
+            b += n
+          case None =>
+            Logger.fine(s"Found PorcE node without Porc node: $n")
+        }
+      case null =>
+        {}
+      case n =>
+        Logger.fine(s"Found unknown node: $n")
+    }
+    Truffle.getRuntime.iterateFrames((f: FrameInstance) => {
+      appendIfPorc(f.getCallNode)
+      f.getCallTarget match {
+        case c: RootCallTarget =>
+          appendIfPorc(c.getRootNode)
+        case t =>
+          Logger.fine(s"Found unknown target: $t")
       }
-      for (c <- liveCounters.asScala) {
-        Logger.fine(s"$c:\n${c.log.asScala.map(exceptionString(_)).mkString("----\n")}")
+    })
+    b.result()
+  }
+
+  val leavesOnly = true
+
+  @TruffleBoundary
+  def report() = {
+    if (Counter.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
+      import scala.collection.JavaConverters._
+
+      val allCounters = liveCounters.asScala
+      lazy val parentCounters = allCounters.collect({
+        case c: CounterNestedBase =>
+          c.parent
+      }).toSet
+      lazy val leafCounters = allCounters.filterNot(parentCounters)
+      val counters = if (leavesOnly) leafCounters else allCounters
+
+      Logger.fine(s"========================= Counter Report; showing ${counters.size} of ${allCounters.size} counters")
+      Logger.fine(counters.map(c => s"$c: log size = ${c.log.size}, count = ${c.count.get}").mkString("\n"))
+      for (c <- counters) {
+        Logger.fine(s"$c:\n${c.log.asScala.map(exceptionString(_)).mkString("---------------\n")}")
       }
     } else {
-      Logger.warning(s"Cannot report Counter information if FINE is not loggable in ${Logger.julLogger.getName}")
+      Logger.warning(s"Cannot report Counter information if FINE is not loggable in ${Logger.julLogger.getName} or Counter.tracingEnabled == false")
     }
   }
 
   @elidable(elidable.ASSERTION)
   @TruffleBoundary
   def addCounter(c: Counter) = {
-    if (Logger.julLogger.isLoggable(Level.FINE)) {
+    if (Counter.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       liveCounters.add(c)
     }
   }
@@ -56,24 +104,29 @@ object Counter {
   @elidable(elidable.ASSERTION)
   @TruffleBoundary
   def removeCounter(c: Counter) = {
-    if (Logger.julLogger.isLoggable(Level.FINE)) {
+    if (Counter.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       liveCounters.remove(c)
     }
   }
 }
 
-/** @author amp
-  */
+/**
+ * @author amp
+ */
 abstract class Counter {
-  /*
   @elidable(elidable.ASSERTION)
-  val log = new LinkedBlockingDeque[Exception]()
+  val log = if (Counter.tracingEnabled) new LinkedBlockingDeque[Exception]() else null
 
   @elidable(elidable.ASSERTION)
-  @inline
-  private def logChange(s: => String) = {
-    if (Logger.julLogger.isLoggable(Level.FINE)) {
-      log.add(new Exception(s))
+  @TruffleBoundary
+  private final def logChange(s: => String) = {
+    if (Counter.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
+      val stack = Counter.getPorcStackTrace().map(n => {
+        val rangeStr = n.sourceTextRange.map(_.lineContentWithCaret).getOrElse("")
+        val nodeStr = n.toString().take(80)
+        s"$rangeStr\n$nodeStr"
+      }).mkString("\n---vvv---\n")
+      log.add(new Exception(s"$s in Porc stack:\n$stack"))
     }
   }
   logChange(s"Init to 1")
@@ -81,17 +134,19 @@ abstract class Counter {
   Counter.addCounter(this)
   // */
 
+  /*
   val log: LinkedBlockingDeque[Exception] = null
   @inline
   private def logChange(s: => String) = {
   }
   // */
 
-  /** The number of executions that are either running or pending.
-    *
-    * This functions similarly to a reference count and this halts when count
-    * reaches 0.
-    */
+  /**
+   * The number of executions that are either running or pending.
+   *
+   * This functions similarly to a reference count and this halts when count
+   * reaches 0.
+   */
   val count = new AtomicInteger(1)
   @volatile
   var isDiscorporated = false
@@ -101,74 +156,88 @@ abstract class Counter {
     isDiscorporated = true
   }
 
-  def discorporate() = {
+  def discorporateToken() = {
     setDiscorporate()
-    halt()
+    haltToken()
   }
 
-  /** Decrement the count and check for overall halting.
-    *
-    * If we did halt call onContextHalted().
-    */
-  def halt(): Unit = {
+  /**
+   * Decrement the count and check for overall halting.
+   *
+   * If we did halt call onContextHalted().
+   */
+  def haltToken(): Unit = {
     val n = count.decrementAndGet()
-    /*
-    logChange(s"- Down to $n")
-    if (n < 0) {
-      Counter.report()
+    if (Counter.tracingEnabled) {
+      logChange(s"- Down to $n")
+      if (n < 0) {
+        Counter.report()
+      }
+      assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
     }
-    assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
-    */
     if (n == 0) {
-      // Counter.removeCounter(this)
+      if (Counter.tracingEnabled) {
+        Counter.removeCounter(this)
+      }
       onContextHalted()
     }
   }
 
-  /** Increment the count.
-    */
-  def prepareSpawn(): Unit = {
+  /**
+   * Increment the count.
+   */
+  def newToken(): Unit = {
     val n = count.getAndIncrement()
-    /*
-    logChange(s"+ Up from $n")
-    if (n <= 0) {
-      Counter.report()
+    if (Counter.tracingEnabled) {
+      logChange(s"+ Up from $n")
+      if (n <= 0) {
+        Counter.report()
+      }
+      assert(n > 0, s"Spawning is not allowed once we go to zero count. No zombies allowed!!! $this")
     }
-    assert(n > 0, s"Spawning is not allowed once we go to zero count. No zombies allowed!!! $this")
-    */
   }
 
-  /** Called when this whole context has halted.
-    */
+  /**
+   * Called when this whole context has halted.
+   */
   def onContextHalted(): Unit
 }
 
-/** @author amp
-  */
-abstract class CounterNestedBase(parent: Counter) extends Counter {
-  // Matched against: onContextHalted call to halt
-  parent.prepareSpawn()
-
-  /** Called when this whole context has halted.
-    */
+/**
+ * @author amp
+ */
+abstract class CounterNestedBase(val parent: Counter) extends Counter {
+  /**
+   * Called when this whole context has halted.
+   */
   def onContextHalted(): Unit = {
-    // Matched against: constructor call to prepareSpawn
     if (isDiscorporated)
-      parent.discorporate()
-    else
-      parent.halt()
+      parent.setDiscorporate()
+    // Token: from parent
+    parent.haltToken()
+  }
+
+  override def toString() = {
+    s"${super.toString()}($parent)"
   }
 }
 
-/** @author amp
-  */
+/**
+ * @author amp
+ */
 final class CounterNested(execution: PorcEExecution, parent: Counter, haltContinuation: PorcEClosure) extends CounterNestedBase(parent) {
-  /** Called when this whole context has halted.
-    */
+  /**
+   * Called when this whole context has halted.
+   */
   override def onContextHalted(): Unit = {
     if (!isDiscorporated) {
-      execution.runtime.scheduleOrCall(parent, () => haltContinuation.callFromRuntime())
+      // Token: from parent
+      execution.runtime.scheduleOrCall(parent, () => {
+        haltContinuation.callFromRuntime()
+      })
+      // Not calling super since the token has already been given away.
+    } else {
+      super.onContextHalted()
     }
-    super.onContextHalted()
   }
 }

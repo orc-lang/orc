@@ -38,6 +38,8 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
         // Skip the first argument since it is our captured value array.
         val v = frame.getArguments()(1)
         notifyOrcWithBoundary(PublishedEvent(v))
+        // Token: from initial caller of p.
+        c.haltToken()
         PorcEUnit.SINGLETON
       }      
     })
@@ -60,6 +62,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   val t = new Terminator
 
   def scheduleProgram(prog: PorcEClosure): Unit = {
+    // Token: From initial.
     runtime.schedule(new CounterSchedulable(c) {
       def run(): Unit = {
         try {
@@ -69,6 +72,8 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
         }
       }
     })
-    c.halt()
+    
+    //Thread.sleep(5000)
+    //Counter.report()
   }
 }

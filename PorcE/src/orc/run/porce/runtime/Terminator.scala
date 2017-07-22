@@ -32,24 +32,22 @@ trait Terminatable {
   * @author amp
   */
 class Terminator extends Terminatable {
-  // FIXME: children can theoretically grow without bound. We need to actually remove the children when they are gone.
   private[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
-
+  
   @TruffleBoundary(allowInlining=true)
   def addChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig == null) {
       child.kill()
-      throw KilledException.SINGLETON
-    }
-    orig.add(child)
-    // Check for kill again.
-    // The .add and .get here race against .getAndSet and iteration in kill().
-    // However, this .get here will always return null if iteration will not observe the .add.
-    // TODO: Someone please check this.
-    if (children.get() == null) {
-      child.kill()
-      throw KilledException.SINGLETON
+    } else {
+      orig.add(child)
+      // Check for kill again.
+      // The .add and .get here race against .getAndSet and iteration in kill().
+      // However, this .get here will always return null if iteration will not observe the .add.
+      // TODO: Someone please check this.
+      if (children.get() == null) {
+        child.kill()
+      }
     }
   }
   
@@ -108,6 +106,7 @@ class Terminator extends Terminatable {
 final class TerminatorNested(parent: Terminator) extends Terminator {
   //Logger.info(s"$this($parent)")
   parent.addChild(this)
+  
   override def kill(): Unit = {
     // FIXME: MEMORYLEAK: This is not actually enough. We actually need to detect halting of the elements in this terminators.... I think Counters and Terminators need to be connected.
     // Specifically this will be a problem if an expression halts without publishing inside a terminator. The optimizer will remove this for statically known cases.

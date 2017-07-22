@@ -16,6 +16,7 @@ import orc.values.Format
 import orc.values.Field
 import orc.util.PrettyPrintInterpolator
 import orc.util.FragmentAppender
+import orc.ast.porc.TryOnException
 
 /** @author amp
   */
@@ -54,14 +55,14 @@ class PrettyPrint {
 
         case Sequence(es) => FragmentAppender.mkString(es.map(reduce(_)), ";\n")
 
-        case TryOnKilled(b, h) => pp"try$StartIndent\n$b$EndIndent\nonKilled$StartIndent\n$h$EndIndent"
-        case TryOnHalted(b, h) => pp"try$StartIndent\n$b$EndIndent\nonHalted$StartIndent\n$h$EndIndent"
+        case TryOnException(b, h) => pp"try$StartIndent\n$b$EndIndent\ncatch$StartIndent\n$h$EndIndent"
         case TryFinally(b, h) => pp"try$StartIndent\n$b$EndIndent\nfinally$StartIndent\n$h$EndIndent"
 
         case Spawn(c, t, b, e) => pp"spawn_${ if (b) "must" else "may" } $c $t $e"
 
         case NewCounter(c, h) => pp"counter $c $h"
-        case Halt(c) => pp"halt $c"
+        case HaltToken(c) => pp"haltToken $c"
+        case NewToken(c) => pp"newToken $c"
         case SetDiscorporate(c) => pp"setDiscorporate $c"
 
         case NewTerminator(t) => pp"terminator $t"

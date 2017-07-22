@@ -6,14 +6,14 @@ import com.oracle.truffle.api.dsl.Specialization;
 import orc.run.porce.runtime.Counter;
 
 @NodeChild("counter")
-public class Halt extends Expression {
+public class NewToken extends Expression {
 	@Specialization
 	public PorcEUnit run(Counter counter) {
-		counter.halt();
+		counter.newToken();
 		return PorcEUnit.SINGLETON;
 	}
 	
-	public static Halt create(Expression parent) {
-		return HaltNodeGen.create(parent);
+	public static NewToken create(Expression parent) {
+		return NewTokenNodeGen.create(parent);
 	}
 }
