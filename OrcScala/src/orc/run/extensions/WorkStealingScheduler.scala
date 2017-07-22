@@ -37,8 +37,13 @@ class SimpleWorkStealingScheduler(
   val maxStealWait = 20
   val goalUsableThreads = minWorkers + goalExtraThreads
   val maxUsableThreads = goalUsableThreads * 2
-  val dumpInterval = -1 // 1000
+  val dumpInterval = -1 // 10000
   val itemsToEvictOnOverflow = workerQueueLength / 4
+  
+  /** The average period of taking new work from another queue even if this thread has work. 
+   * 
+   */
+  val newWorkPeriod = -1 // 100000
 
   require(maxSiteThreads >= 0)
   require(monitorInterval >= 0)
@@ -115,12 +120,13 @@ class SimpleWorkStealingScheduler(
   final class Worker(workerID: Int) extends Thread(s"Worker $workerID") {
     private[SimpleWorkStealingScheduler] val workQueue = new ABPWSDeque[Schedulable](workerQueueLength)
 
-    @volatile
+    //@volatile
     var isPotentiallyBlocked = false
 
     @volatile
     private[SimpleWorkStealingScheduler] var isShuttingDown = false
 
+    var newWorks = 0
     var steals = 0
     var stealFailures = 0
     var overflows = 0
@@ -209,17 +215,54 @@ class SimpleWorkStealingScheduler(
       }
     }
 
+    @inline
+    private[this] def stepPRNG() = {
+      // An XORShift PRNG
+      var x = seed
+    	x ^= x << 13
+    	x ^= x >>> 17
+    	x ^= x << 5
+    	seed = x
+    }
+    
     //@inline
     private[this] def next(): Schedulable = {
-      var t = workQueue.popBottom()
-      if (t == null) {
-        t = stealFromAnotherQueue(stealFailureRunLength)
-        if (t != null) {
-          steals += 1
-          stealFailureRunLength = 0
-          seed = seed * 997 + 449 + workerID
+      
+      val getNewWork = newWorkPeriod > 0 && {
+        stepPRNG()
+        (seed % newWorkPeriod) == 0
+      }
+        
+      var t: Schedulable = null
+      
+      @inline
+      def ourWork(): Unit = {
+        if (t == null) {
+          t = workQueue.popBottom()
         }
       }
+      
+      @inline
+      def stealWork(): Unit = {
+        if (t == null) {
+          t = stealFromAnotherQueue(stealFailureRunLength)
+          if (t != null) {
+            steals += 1
+            stealFailureRunLength = 0
+          }
+        }
+      }
+      
+      if (!getNewWork) {
+        ourWork()
+        stealWork()
+      } else {
+        newWorks += 1
+        stealWork()
+        ourWork()
+      }
+      
+      
       if (t == null) {
         stealFailures += 1
         stealFailureRunLength += 1
@@ -252,7 +295,7 @@ class SimpleWorkStealingScheduler(
     private[this] def stealFromAnotherQueue(i: Int): Schedulable = {
       var t = inputQueue.poll()
       if (t == null) {
-        val index = ((i + workerID * 997 + seed) % nWorkers).abs
+        val index = (seed % nWorkers).abs
         val w = workers(index)
         if (w != null) {
           t = w.workQueue.popTop()
@@ -294,6 +337,8 @@ class SimpleWorkStealingScheduler(
     statLine(s"nWorkers = ${ws.size}")
     val steals = ws.map(_.steals).sum
     statLine(s"steals = ${steals}")
+    val newWorks = ws.map(_.newWorks).sum
+    statLine(s"newWorks = ${newWorks}")
     val stealFailures = ws.map(_.stealFailures).sum
     statLine(s"stealFailures = ${stealFailures}")
     val overflows = ws.map(_.overflows).sum
