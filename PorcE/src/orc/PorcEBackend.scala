@@ -33,11 +33,11 @@ class PorcEBackend extends PorcBackend {
     startScheduler(options)
     val translator = new PorcToPorcE
     
-    val cache = new collection.mutable.HashMap[MethodCPS, (PorcEExecutionHolder, PorcEClosure)]()
+    //val cache = new collection.mutable.HashMap[MethodCPS, (PorcEExecutionHolder, PorcEClosure)]()
     
     private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecution = synchronized {
       val execution = new PorcEExecution(this, k)
-      val porceAst = cache.get(ast) match {
+      /*val porceAst = cache.get(ast) match {
         case Some((holder, porceAst)) => {
           if(holder.setExecution(execution)) {
             Logger.info(s"Updating execution for cached program.")
@@ -51,12 +51,14 @@ class PorcEBackend extends PorcBackend {
         }
         case None => {
           Logger.info(s"Converting and caching input program.")
-          val executionHolder = new PorcEExecutionHolder(execution)
-          val porceAst = translator(ast, executionHolder, this)
-          cache += ((ast, (executionHolder, porceAst)))
+          ...
+		      cache += ((ast, (executionHolder, porceAst)))
           porceAst
         }
       }
+	    */
+      val executionHolder = new PorcEExecutionHolder(execution)
+      val porceAst = translator(ast, executionHolder, this)
       addRoot(execution)
       execution.scheduleProgram(porceAst)
       execution
