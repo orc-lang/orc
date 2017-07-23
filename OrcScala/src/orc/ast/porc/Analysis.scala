@@ -17,7 +17,6 @@ import orc.values.Field
 import orc.values.sites.{ Site => OrcSite }
 import orc.values.sites.SiteMetadata
 import orc.values.sites.Delay
-import orc.ast.porc.HaltToken
 
 case class AnalysisResults(
   isNotFuture: Boolean,

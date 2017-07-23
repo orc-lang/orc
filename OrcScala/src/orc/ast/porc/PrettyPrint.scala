@@ -16,7 +16,6 @@ import orc.values.Format
 import orc.values.Field
 import orc.util.PrettyPrintInterpolator
 import orc.util.FragmentAppender
-import orc.ast.porc.TryOnException
 
 /** @author amp
   */

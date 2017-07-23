@@ -228,39 +228,45 @@ class SimpleWorkStealingScheduler(
     
     //@inline
     private[this] def next(): Schedulable = {
-      
       val getNewWork = newWorkPeriod > 0 && {
         stepPRNG()
         (seed % newWorkPeriod) == 0
       }
         
       var t: Schedulable = null
-      
+
+      // To make sure that the inlining works, make sure these functions do not capture any values from their scope.
       @inline
-      def ourWork(): Unit = {
+      def ourWork(t: Schedulable): Schedulable = {
         if (t == null) {
-          t = workQueue.popBottom()
+          workQueue.popBottom()
+        } else {
+          t
         }
       }
       
       @inline
-      def stealWork(): Unit = {
+      def stealWork(t: Schedulable): Schedulable = {
         if (t == null) {
-          t = stealFromAnotherQueue(stealFailureRunLength)
-          if (t != null) {
+          val u = stealFromAnotherQueue(stealFailureRunLength)
+          if (u != null) {
             steals += 1
             stealFailureRunLength = 0
           }
+          u
+        } else {
+          t
         }
       }
       
-      if (!getNewWork) {
-        ourWork()
-        stealWork()
-      } else {
+      // If we are getting new work, then first try to steal then get from our queue if that doesn't work. Otherwise, try in the other order.
+      if (getNewWork) {
         newWorks += 1
-        stealWork()
-        ourWork()
+        t = stealWork(t)
+        t = ourWork(t)
+      } else {
+        t = ourWork(t)
+        t = stealWork(t)
       }
       
       

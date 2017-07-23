@@ -15,8 +15,6 @@ package orc.values.sites
 
 import orc.error.compiletime.SiteResolutionException
 import orc.compile.Logger
-import orc.values.sites.InvokerMethod
-import orc.values.sites.AccessorValue
 
 /** Services (such as name resolution) for normal Orc sites.
   *

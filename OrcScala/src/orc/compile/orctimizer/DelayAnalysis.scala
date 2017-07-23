@@ -236,7 +236,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
                 case _: CallGraph.MaximumBoundedSet[_] =>
                   None
                 case CallGraph.ConcreteBoundedSet(s) =>
-                  val (ds, nds) = s.partition {
+                  val (ds: Set[FlowValue], nds: Set[FlowValue]) = s.partition {
                     case CallableValue(callable: Routine, _) =>
                       true
                     case _ =>

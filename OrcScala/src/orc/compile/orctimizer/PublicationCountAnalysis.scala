@@ -292,7 +292,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
             case Force.Z(_, _, _) =>
               PublicationInfo(inStateUse.futureValues, Range(0, 1), BoundedSet())
               PublicationInfo(inStateUse.futureValues, Range(0, 1), BoundedSet())
-            case _: BoundVar.Z | Branch.Z(_, _, _) | Parallel.Z(_, _) | Future.Z(_) | Constant.Z(_) | Resolve.Z(_) |
+            case _: BoundVar.Z | Branch.Z(_, _, _) | Parallel.Z(_, _) | Future.Z(_) | Constant.Z(_) | Resolve.Z(_, _) |
               Call.Z(_, _, _) | IfLenientMethod.Z(_, _, _) | Trim.Z(_) | DeclareMethods.Z(_, _) | Otherwise.Z(_, _) |
               New.Z(_, _, _, _) | GetField.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) | Stop.Z() =>
               PublicationInfo(Range(1, 1), Range(0, 1), BoundedSet())
@@ -340,7 +340,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
                 case MaximumBoundedSet =>
                   None
                 case CallGraph.ConcreteBoundedSet(s) =>
-                  val (ds, nds) = s.partition {
+                  val (ds: Set[FlowValue], nds: Set[FlowValue]) = s.partition {
                     case CallableValue(callable: Routine, _) =>
                       true
                     case _ =>

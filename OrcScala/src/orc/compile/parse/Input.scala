@@ -16,6 +16,7 @@ package orc.compile.parse
 import java.io.{ File, FileInputStream, IOException, InputStreamReader, StringReader }
 import java.net.{ URI, URL }
 
+// TODO: This should be replaced with: import scala.util.parsing.input.PagedSeq. However that will not exist until at least scala-parser-combinators 1.0.7.
 import scala.collection.immutable.PagedSeq
 import scala.collection.mutable.ArrayBuffer
 import scala.util.parsing.input.PagedSeqReader
