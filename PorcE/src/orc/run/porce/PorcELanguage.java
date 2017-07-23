@@ -5,7 +5,6 @@ import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
 
 import orc.OrcRuntime;
-import orc.run.extensions.SimpleWorkStealingScheduler;
 
 @TruffleLanguage.Registration(name = "Orc", version = "2.99.0.1", mimeType = PorcELanguage.MIME_TYPE)
 @ProvidedTags({})

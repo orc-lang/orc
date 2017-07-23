@@ -5,7 +5,6 @@ import java.util.Arrays;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import orc.run.porce.runtime.PorcEClosure;
 

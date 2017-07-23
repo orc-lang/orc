@@ -1,7 +1,6 @@
 package orc.run.porce;
 
 import orc.OrcRuntime;
-import orc.run.extensions.SimpleWorkStealingScheduler;
 
 public class PorcEContext {
 	public final OrcRuntime runtime;

@@ -5,6 +5,8 @@ import static com.oracle.truffle.api.CompilerDirectives.*;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 public class InternalPorcEError extends Error {
+	private static final long serialVersionUID = 269299963113819157L;
+
 	public InternalPorcEError(Throwable e) {
 		super(e);
 	}
