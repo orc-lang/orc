@@ -44,7 +44,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               case Some(e2) =>
                 if (e.value != e2) {
                   import orc.util.StringExtension._
-                  Logger.fine(s"${opt.name}: ${e.value.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
+                  Logger.finer(s"${opt.name}: ${e.value.toString.truncateTo(60)}\n====>\n${e2.toString.truncateTo(60)}")
                   countOptimization(opt)
                   e.replace(e.value ->> e2)
                 } else
@@ -286,7 +286,9 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val allOpts = List[Optimization](InlineLet, EtaReduce, TryCatchElim, TryFinallyElim)
 
   val opts = allOpts.filter { o =>
-    co.options.optimizationFlags(s"porc:${o.name}").asBool()
+    val b = co.options.optimizationFlags(s"porc:${o.name}").asBool()
+    Logger.fine(s"${if (b) "ENABLED" else "disabled"} ${o.name}")
+    b
   }
 }
 

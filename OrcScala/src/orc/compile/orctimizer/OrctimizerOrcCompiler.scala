@@ -47,7 +47,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
   Logger.warning("You are using the Porc/Orctimizer back end. It is UNSTABLE!!")
 
   val toOrctimizer = new CompilerPhase[CompilerOptions, orc.ast.oil.named.Expression, orctimizer.named.Expression] {
-    val phaseName = "translate"
+    val phaseName = "to-orctimizer"
     override def apply(co: CompilerOptions) =
       { ast =>
         val translator = new OILToOrctimizer()
@@ -59,7 +59,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
 
   def optimize(pred: (CompilerOptions) => Boolean = (co) => true) = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, orctimizer.named.Expression] {
     import orctimizer.named._
-    val phaseName = "optimize"
+    val phaseName = "orctimizer-optimize"
     override def apply(co: CompilerOptions) = { ast =>
       //println(co.options.optimizationFlags)
       val maxPasses = co.options.optimizationFlags("orct:max-passes").asInt(8)
@@ -191,7 +191,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
 
 class PorcOrcCompiler() extends OrctimizerOrcCompiler {
   val toPorc = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, porc.MethodCPS] {
-    val phaseName = "translate"
+    val phaseName = "to-porc"
     override def apply(co: CompilerOptions) =
       { ast =>
         val translator = new OrctimizerToPorc()
@@ -203,7 +203,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
 
   val optimizePorc = new CompilerPhase[CompilerOptions, porc.MethodCPS, porc.MethodCPS] {
     import orc.ast.porc._
-    val phaseName = "optimize"
+    val phaseName = "porc-optimize"
     override def apply(co: CompilerOptions) = { ast =>
       val maxPasses = co.options.optimizationFlags("porc:max-passes").asInt(5)
 
@@ -244,11 +244,11 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     }
   }
 
-  def nullOutput[T] = new CompilerPhase[CompilerOptions, T, String] {
+  def nullOutput[T >: Null] = new CompilerPhase[CompilerOptions, T, T] {
     val phaseName = "nullOutput"
     override def apply(co: CompilerOptions) =
       { ast =>
-        ""
+        null
       }
   }
 
@@ -257,27 +257,29 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
   ////////
   val phases =
     parse.timePhase >>>
+      outputIR(1) >>>
       translate.timePhase >>>
       vClockTrans.timePhase >>>
       noUnboundVars.timePhase >>>
       fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
-      //outputIR(1) >>>
       noUnguardedRecursion.timePhase >>>
+      outputIR(2) >>>
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
-      outputIR(2) >>>
-      toOrctimizer >>>
       outputIR(3) >>>
-      optimize() >>>
+      abortOnError >>>
+      toOrctimizer.timePhase >>>
       outputIR(4) >>>
+      optimize().timePhase >>>
+      outputIR(5) >>>
       //unroll >>>
-      //outputIR(5, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
-      //optimize(_.options.optimizationFlags("orct:unroll-def").asBool()) >>>
       //outputIR(6, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
-      toPorc >>>
+      //optimize(_.options.optimizationFlags("orct:unroll-def").asBool()) >>>
+      //outputIR(7, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
+      toPorc.timePhase >>>
       clearCachePhase >>>
-      outputIR(7) >>>
-      optimizePorc >>>
-      outputIR(8)
+      outputIR(8) >>>
+      optimizePorc.timePhase >>>
+      outputIR(9)
 }

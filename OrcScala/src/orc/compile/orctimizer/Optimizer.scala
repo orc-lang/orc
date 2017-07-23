@@ -142,7 +142,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               case None => e
               case Some(e2) =>
                 val e3 = if (e.value != e2) {
-                  Logger.fine(s"${opt.name}:\n${e.value.toString.truncateTo(120)}\n====>\n${e2.toString.truncateTo(120)}")
+                  Logger.finer(s"${opt.name}:\n${e.value.toString.truncateTo(120)}\n====>\n${e2.toString.truncateTo(120)}")
                   countOptimization(opt)
                   val e3 = e.replace(e2)
                   results.addMapping(e3, e)

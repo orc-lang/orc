@@ -91,6 +91,18 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   */
 trait CoreOrcCompilerPhases {
   this: OrcCompilerRequires =>
+  
+  def abortOnError[A >: Null] = new CompilerPhase[CompilerOptions, A, A] {
+    val phaseName = "abortOnError"
+    override def apply(co: CompilerOptions) = { v => 
+      if (co.compileLogger.getMaxSeverity().ordinal() >= Severity.ERROR.ordinal())
+        // If there has been an error return null to abort the compilation.
+        null
+      else
+        // Otherwise keep compiling with the input value.
+        v
+    }
+  }
 
   ////////
   // Definition of the phases of the compiler
