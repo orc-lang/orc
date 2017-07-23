@@ -218,6 +218,7 @@ class SimpleWorkStealingScheduler(
     @inline
     private[this] def stepPRNG() = {
       // An XORShift PRNG
+      // This RNG does not pass statistical tests, but that doesn't matter for what we need.
       var x = seed
     	x ^= x << 13
     	x ^= x >>> 17

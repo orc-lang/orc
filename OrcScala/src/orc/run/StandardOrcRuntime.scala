@@ -24,3 +24,4 @@ class StandardOrcRuntime(engineInstanceName: String) extends Orc(engineInstanceN
   with SupportForRwait
   with SupportForSynchronousExecution
   with SwappableASTs
+  //with SupportForSchedulerUseProfiling
