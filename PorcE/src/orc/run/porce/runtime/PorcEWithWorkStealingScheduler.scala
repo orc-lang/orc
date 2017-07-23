@@ -29,17 +29,20 @@ import com.oracle.truffle.api.CompilerDirectives
 trait PorcEWithWorkStealingScheduler extends Orc {
   var scheduler: SimpleWorkStealingScheduler = null
 
+  def beforeExecute(): Unit
+
   def startScheduler(options: OrcExecutionOptions): Unit = {
     val maxSiteThreads = if (options.maxSiteThreads > 0) options.maxSiteThreads else 256
     scheduler = new SimpleWorkStealingScheduler(maxSiteThreads) {
       override def beforeExecute(w: Worker, r: Schedulable): Unit = {
+        PorcEWithWorkStealingScheduler.this.beforeExecute()
       }
 
       override def afterExecute(w: Worker, r: Schedulable, t: Throwable): Unit = {
         r.onComplete()
         if (t != null) {
           CompilerDirectives.transferToInterpreter()
-          Logger.log(Level.WARNING, s"Schedulable threw exception.", t)
+          Logger.log(Level.SEVERE, s"Schedulable threw exception.", t)
         }
       }
     }

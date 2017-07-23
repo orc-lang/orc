@@ -4,6 +4,9 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicBoolean
 import orc.FutureReader
 import orc.run.porce.Logger
+import orc.FutureBound
+import orc.FutureStopped
+import orc.FutureUnbound
 
 // TODO: Try to remove redundency between this and Join.
 
@@ -47,28 +50,40 @@ abstract class Resolve(inValues: Array[AnyRef]) {
     def prepareSpawn(): Unit = {}
   }
 
-  final def apply() = {
+  final def apply(): Boolean = {
     // Start all the required forces.
     var nNonFutures = 0
     for (v <- inValues) v match {
       case f: Future => {
-        Logger.finest(s"$resolve: Resolve joining on $f")
-        val e = new JoinElement()
-        f.read(e)
+        f.get() match {
+          case FutureBound(_) | FutureStopped => {
+            nNonFutures += 1
+          }
+          case FutureUnbound => {
+            Logger.finest(s"$resolve: Resolve joining on $f")
+            val e = new JoinElement()
+            f.read(e)
+          }
+        }
       }
       case _ => {
         nNonFutures += 1
       }
     }
   
+    Logger.finest(s"$resolve: Resolve setup with (${inValues.mkString(", ")}) and nonfut=$nNonFutures and unbound=$nUnbound")
+    
     // Now decrement the unbound count by the number of non-futures we found.
     // And maybe finish immediately.
-    if (nNonFutures > 0)
+    if (nNonFutures > 0) {
       // Don't do this if it will not change the value. Otherwise this could
       // cause multiple calls to done.
-      checkComplete(nUnbound.addAndGet(-nNonFutures))
-  
-    Logger.finest(s"$resolve: Resolve setup with (${inValues.mkString(", ")}) and nonfut=$nNonFutures and unbound=$nUnbound")
+      if (nUnbound.addAndGet(-nNonFutures) == 0) {
+        return true
+      }
+    }
+    
+    return false
   }
 
   /** Check if we are done by looking at n which must be the current number of

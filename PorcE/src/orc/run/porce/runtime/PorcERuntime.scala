@@ -19,27 +19,52 @@ import orc.run.StandardInvocationBehavior
 import orc.run.extensions.OrcWithWorkStealingScheduler
 import orc.run.extensions.SupportForRwait
 import orc.run.extensions.SupportForSynchronousExecution
+import orc.run.extensions.SupportForSchedulerUseProfiling
 
 class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
-  with PorcEInvocationBehavior
-  // with SupportForPorcEClosure
-  with PorcEWithWorkStealingScheduler
-  with SupportForRwait
-  with SupportForSynchronousExecution
-  with PorcERuntimeOperations {
-  
+    with PorcEInvocationBehavior
+    // with SupportForPorcEClosure
+    with PorcEWithWorkStealingScheduler
+    with SupportForRwait
+    with SupportForSynchronousExecution
+    with PorcERuntimeOperations 
+    // with SupportForSchedulerUseProfiling 
+    {
+
   override def removeRoot(arg: ExecutionRoot) = synchronized {
     super.removeRoot(arg)
     if (roots.isEmpty())
       stopScheduler()
   }
   def addRoot(root: ExecutionRoot) = roots.add(root)
-  
+
   // TODO:PERFORMANCE: f will probably create an extra megamorphic call site. It may be better to have the caller create the CounterSchedulable instance.
   //    This decision should be made along with the decision of whether to actually perform direct calls here.
   def scheduleOrCall(c: Counter, f: () => Unit) = {
-    schedule(new CounterSchedulableFunc(c, f))
+    val depth = PorcERuntime.stackDepthThreadLocal.get()
+    if (PorcERuntime.maxStackDepth > 0 && depth < PorcERuntime.maxStackDepth) {
+      // Call in this stack
+      PorcERuntime.stackDepthThreadLocal.set(depth + 1)
+      f()
+    } else {
+      // Schedule/trampoline
+      schedule(new CounterSchedulableFunc(c, f))
+    }
   }
+
+  def beforeExecute(): Unit = {
+    PorcERuntime.stackDepthThreadLocal.set(0)
+  }
+}
+
+object PorcERuntime {
+  val stackDepthThreadLocal = new ThreadLocal[Int]() {
+    override def initialValue() = {
+      0
+    }
+  }
+
+  val maxStackDepth = -1 // 24
 }
 
 /*

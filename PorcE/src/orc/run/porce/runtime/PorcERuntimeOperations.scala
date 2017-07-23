@@ -23,6 +23,7 @@ trait PorcERuntimeOperations {
     val resolver = new Resolve(vs) with Terminatable {
       // The flag saying if we have already halted.
       protected var halted = new AtomicBoolean(false) 
+      // TODO: PERFORMANCE: Ideally we could delay this add until we know we will actually be blocking.
       t.addChild(this)
       
       def done(): Unit = {
@@ -39,7 +40,11 @@ trait PorcERuntimeOperations {
         }
       }
     }
-    resolver()
+    if (resolver()) {
+      // The resolver is instantly complete. So we handle the callback here.
+      t.removeChild(resolver)
+      p.callFromRuntime()
+    }
   }
   
   /** Force a list of values: forcing futures and resolving closures.
@@ -54,8 +59,22 @@ trait PorcERuntimeOperations {
       }
       case _ => {
         // Token: Pass to join.
-        val joiner = new PCTJoin(p, c, t, vs, true)
-        joiner()
+        val joiner = new PCTJoin(p, c, t, vs)
+        joiner() match {
+          case null => {
+            // The joiner has taken over.
+          }
+          case Join.HaltSentinel => {
+            // The join halted immediately.
+            // Do nothing p will never be called.
+            t.removeChild(joiner)
+            c.haltToken()
+          }
+          case vs => {
+            t.removeChild(joiner)
+            p.callFromRuntimeVarArgs(vs)
+          }
+        }
       }
     }
   }
@@ -80,7 +99,7 @@ trait PorcERuntimeOperations {
         }
       }
       case _ => {
-        schedulePublish(p, c, vs)
+        p.callFromRuntime(v)
       }
     }
   }
@@ -91,8 +110,10 @@ trait PorcERuntimeOperations {
     })
   }
 
-  private final class PCTJoin(p: PorcEClosure, c: Counter, t: Terminator, vs: Array[AnyRef], forceClosures: Boolean)
-      extends Join(vs, forceClosures) with Terminatable {
+  private final class PCTJoin(p: PorcEClosure, c: Counter, t: Terminator, vs: Array[AnyRef])
+      extends Join(vs) with Terminatable {
+    
+    // TODO: PERFORMANCE: Ideally we could delay this add until we know we will actually be blocking.
     t.addChild(this)
 
     Logger.finer(s"Spawn for PCJoin $this (${vs.mkString(", ")})")

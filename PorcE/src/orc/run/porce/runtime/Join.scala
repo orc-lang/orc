@@ -28,7 +28,7 @@ import orc.run.porce.Logger
   *
   * @author amp
   */
-abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
+abstract class Join(inValues: Array[AnyRef]) {
   join =>
   /* This does not do real halts or spawns. Instead it assumes it can spawn
    * if needed and will always call halt or done (but not both) when it is
@@ -40,6 +40,7 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
   // The number of unbound values in values.
   protected var nUnbound = new AtomicInteger(inValues.size)
   // The array of values that have already been bound.
+  // TODO: PERFORMANCE: Could this be the same array as inValues and we just overwrite values as we get them?
   val values = Array.ofDim[AnyRef](inValues.size)
   // The flag saying if we have already halted.
   protected val halted = new AtomicBoolean(false)
@@ -86,18 +87,35 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
     def prepareSpawn(): Unit = {}
   }
 
-  //Logger.finest(s"Starting join with: ${inValues.mkString(", ")}")
 
-  final def apply() = {
+  final def apply(): Array[AnyRef] = {
+    // TODO: PERFORMANCE: It would probably perform slightly better to move this into an object method which only creates the actual join object if it is actually needed.
+    //    The above would also enable reusing the incoming array in more cases.
+    
+    
+    //Logger.finest(s"Starting join with: ${inValues.mkString(", ")}")
+    
     // Start all the required forces.
     var nNonFutures = 0
+    var halted = false
     for ((v, i) <- inValues.zipWithIndex) v match {
       case f: orc.Future => {
-        Logger.finest(s"$join: Join joining on $f")
-        // Force f so it will bind the correct index.
-        val e = new JoinElement(i)
-        // TODO: PERFORMANCE: It's possible this could be improved by checking if f is resolved and using special handling. But it may not matter.
-        f.read(e)
+        f.get() match {
+          case FutureBound(v) => {
+            values(i) = v
+            nNonFutures += 1
+          }
+          case FutureStopped => {
+            // TODO: PERFORMANCE: Could break iteration here.
+            halted = true
+          }
+          case FutureUnbound => {
+            Logger.finest(s"$join: Join joining on $f")
+            // Force f so it will bind the correct index.
+            val e = new JoinElement(i)
+            f.read(e)
+          }
+        }
       }
       case _ => {
         // v is not a future so just bind it.
@@ -108,10 +126,18 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
     
     // Now decrement the unbound count by the number of non-futures we found.
     // And maybe finish immediately.
-    if (nNonFutures > 0)
+    if (halted) {
+      if (join.halted.compareAndSet(false, true)) {
+        return Join.HaltSentinel
+      }
+    } else if (nNonFutures > 0) {
       // Don't do this if it will not change the value. Otherwise this could
       // cause multiple calls to done.
-      checkComplete(nUnbound.addAndGet(-nNonFutures))
+      if (nUnbound.addAndGet(-nNonFutures) == 0 && join.halted.compareAndSet(false, true)) {
+        return values
+      }
+    }
+    return null
   }
 
   /** Check if we are done by looking at n which must be the current number of
@@ -136,4 +162,9 @@ abstract class Join(inValues: Array[AnyRef], forceClosures: Boolean) {
     * values will not be completely bound.
     */
   def halt(): Unit
+}
+
+
+object Join {
+  val HaltSentinel = Array[AnyRef]()
 }
