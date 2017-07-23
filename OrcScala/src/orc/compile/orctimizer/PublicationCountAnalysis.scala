@@ -23,7 +23,6 @@ import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
 import scala.reflect.ClassTag
 import orc.values.Field
-import orc.ast.orctimizer.named.FieldAccess
 import orc.compile.orctimizer.CallGraph.CallableValue
 import swivel.Zipper
 
@@ -68,7 +67,7 @@ class PublicationCountAnalysis(
   * tracking value count information along value edges.
   *
   */
-object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), PublicationCountAnalysis] {
+object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), PublicationCountAnalysis] {
   object BoundedSetInstance extends BoundedSetModule {
     type TU = ObjectInfo
     type TL = ObjectInfo
@@ -109,7 +108,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
 
   val defaultResult: PublicationInfo = PublicationInfo(Range(0, None), Range(0, 1), BoundedSet())
 
-  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): PublicationCountAnalysis = {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Method.Z])): PublicationCountAnalysis = {
     val cg = cache.get(CallGraph)(params)
     val a = new PublicationCountAnalyzer(cg)
     val res = a()
@@ -269,7 +268,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
         case EntryNode(Zipper(ast, Some(Otherwise.Z(l, r)))) if ast == r =>
           // If we are on the right of an Otherwise then we need to transfer the pub count by the HappensBefore edge
           states.inStateReduced[HappensBeforeEdge](mergeInputs)
-        case EntryNode(Zipper(ast, Some(Callable.Z(_, _, body, _, _, _)))) if ast == body =>
+        case EntryNode(Zipper(ast, Some(Method.Z(_, _, body, _, _, _)))) if ast == body =>
           // If we are the body of a call. We need to union the publication inputs.
           PublicationInfo(inStateTokenOneOf, Range(0, 1), BoundedSet())
         case _ =>
@@ -294,15 +293,15 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
               PublicationInfo(inStateUse.futureValues, Range(0, 1), BoundedSet())
               PublicationInfo(inStateUse.futureValues, Range(0, 1), BoundedSet())
             case _: BoundVar.Z | Branch.Z(_, _, _) | Parallel.Z(_, _) | Future.Z(_) | Constant.Z(_) | Resolve.Z(_) |
-              Call.Z(_, _, _) | IfDef.Z(_, _, _) | Trim.Z(_) | DeclareCallables.Z(_, _) | Otherwise.Z(_, _) |
-              New.Z(_, _, _, _) | FieldAccess.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) | Stop.Z() =>
+              Call.Z(_, _, _) | IfLenientMethod.Z(_, _, _) | Trim.Z(_) | DeclareMethods.Z(_, _) | Otherwise.Z(_, _) |
+              New.Z(_, _, _, _) | GetField.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) | Stop.Z() =>
               PublicationInfo(Range(1, 1), Range(0, 1), BoundedSet())
           }
         case node@ExitNode(ast) =>
           ast match {
             case Future.Z(_) =>
               PublicationInfo(inStateFlow.publications, inStateValue.publications.limitTo(1), inStateValue.fields)
-            case CallSite.Z(target, _, _) => {
+            case Call.Z(target, _, _) => {
               lazy val inStateHappensBefore = states.inStateReduced[HappensBeforeEdge](mergeInputs)
               import CallGraph.{FlowValue, ExternalSiteValue, CallableValue}
               val possibleV = graph.valuesOf[FlowValue](ValueNode(target))
@@ -333,9 +332,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
               val p = applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ union _))(_ union _).getOrElse(Range(0, None))
               PublicationInfo(p, Range(1, 1), inStateValue.fields)
             }
-            case CallDef.Z(target, _, _) =>
-              PublicationInfo(inStateTokenOneOf, Range(1, 1), inStateValue.fields)
-            case IfDef.Z(v, l, r) => {
+            case IfLenientMethod.Z(v, l, r) => {
               // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
               import CallGraph.{FlowValue, ExternalSiteValue, CallableValue}
               val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v))
@@ -344,7 +341,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
                   None
                 case CallGraph.ConcreteBoundedSet(s) =>
                   val (ds, nds) = s.partition {
-                    case CallableValue(callable: Def, _) =>
+                    case CallableValue(callable: Routine, _) =>
                       true
                     case _ =>
                       false
@@ -382,7 +379,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
                 }
               }
               PublicationInfo(inStateFlow.publications, Range(1, 1), BoundedSet(ObjectValue(node, structs)))
-            case FieldAccess.Z(_, f) =>
+            case GetField.Z(_, f) =>
               inStateValue.fields.values match {
                 case Some(s) =>
                   s.map(_.get(f)).fold(None)(applyOrOverride(_, _)(_ combine _)).getOrElse(initialState)
@@ -406,7 +403,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
             case Branch.Z(_, _, _) =>
               PublicationInfo(inStateFlow.publications * inStateUse.publications, inStateValue.futureValues, inStateValue.fields)
             case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) | Resolve.Z(_, _) |
-                DeclareCallables.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
+                DeclareMethods.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
               defaultFlowInState
           }
         case VariableNode(x, ast) =>
@@ -415,7 +412,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Cal
               nonFutureVariableState
             case New.Z(_, _, _, _) =>
               nonFutureVariableState
-            case DeclareCallables.Z(_, _) | Callable.Z(_, _, _, _, _, _) =>
+            case DeclareMethods.Z(_, _) | Method.Z(_, _, _, _, _, _) =>
               nonFutureVariableState
             case Branch.Z(_, _, _) =>
               defaultFlowInState

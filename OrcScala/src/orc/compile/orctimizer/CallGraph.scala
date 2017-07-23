@@ -14,10 +14,10 @@
 package orc.compile.orctimizer
 
 import scala.collection.mutable
+import scala.annotation.tailrec
 
 import orc.ast.orctimizer.named._
 import orc.compile.orctimizer.FlowGraph._
-import scala.annotation.tailrec
 import scala.collection.mutable.Queue
 import orc.compile.flowanalysis.Analyzer
 import orc.compile.flowanalysis.BoundedSetModule
@@ -152,14 +152,14 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
         case None => Map()
       }) ++
       (n match {
-        case VariableNode(v, f: Callable.Z) => Map("color" -> "darkgreen", "peripheries" -> "2")
+        case VariableNode(v, f: Method.Z) => Map("color" -> "darkgreen", "peripheries" -> "2")
         case _ => Map()
       })
   }
 }
 
-object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), CallGraph] {
-  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): CallGraph = {
+object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGraph] {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Method.Z])): CallGraph = {
     val fg = cache.get(FlowGraph)(params)
     
     new CallGraph(fg)
@@ -270,7 +270,7 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Call
     }
   }
 
-  case class CallableValue(callable: Callable, graph: FlowGraph) extends CallTarget {
+  case class CallableValue(callable: Method, graph: FlowGraph) extends CallTarget {
     override def toString() = s"CallableValue(${shortString(callable)})"
     def subsetOf(o: Value): Boolean = o match {
       case CallableValue(`callable`, _) => true
@@ -489,9 +489,9 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Call
               
               // Select all callables with the correct arity and correct kind.
               val callablesNaïve = (targets ++ potentialTargets).collect({
-                case c@CallableValue(callable: Def, _) if callable.formals.size == args.size && n.isInstanceOf[CallDef.Z] =>
+                case c@CallableValue(callable: Routine, _) if callable.formals.size == args.size =>
                   c
-                case c@CallableValue(callable: Site, _) if callable.formals.size == args.size && n.isInstanceOf[CallSite.Z] =>
+                case c@CallableValue(callable: Service, _) if callable.formals.size == args.size =>
                   c
                 })
               
@@ -600,7 +600,7 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Call
             case e: FutureContent => e
             case f: FutureValue => throw new AssertionError(s"Futures should never be inside futures\n$expr")
           }), Set(inNode)))
-        case ExitNode(FieldAccess.Z(_, f)) =>
+        case ExitNode(GetField.Z(_, f)) =>
           //Logger.fine(s"Processing FieldAccess: $node ($inState)")
           val r: BoundedSet[FlowValue] = inState flatMap {
             case o: ObjectValue => o.get(f).getOrElse(BoundedSet())

@@ -244,7 +244,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           try {
             (new Transform {
               override val onExpression = {
-                case FieldAccess.Z(_, _) => throw FoundException 
+                case GetField.Z(_, _) => throw FoundException 
               }
             })(body)
             true
@@ -275,7 +275,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               try {
                 (new Transform {
                   override val onExpression = {
-                    case FieldAccess.Z(_, _) => throw FoundException 
+                    case GetField.Z(_, _) => throw FoundException 
                   }
                 })(body)
                 true
@@ -358,12 +358,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val IfDefElim = OptFull("ifdef-elim") { (e, a) =>
     import orc.compile.orctimizer.CallGraph._
     e match {
-      case IfDef.Z(v, f, g) =>
+      case IfLenientMethod.Z(v, f, g) =>
         val vs = a.callgraph.targetsFromValue(a.valuesOf(v))
         vs.values match {
           case Some(s) =>
             val (ds, nds) = s.partition(_ match {
-              case CallableValue(_: Def, _) => true
+              case CallableValue(_: Routine, _) => true
               case _ => false
             })
             if(ds.nonEmpty && nds.nonEmpty) {
@@ -422,7 +422,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                 Some(y.value.subst(Constant(v), x))
               case ExternalSiteValue(v) =>
                 Some(y.value.subst(Constant(v), x))
-              case CallableValue(Callable(name, _, _, _, _, _), _) if (e.freeVars contains name) && (e.contextBoundVars contains name) =>
+              case CallableValue(Method(name, _, _, _, _, _), _) if (e.freeVars contains name) && (e.contextBoundVars contains name) =>
                 Some(y.value.subst(name, x))
               case _ =>
                 None

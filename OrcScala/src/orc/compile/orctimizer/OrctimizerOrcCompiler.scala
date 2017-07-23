@@ -81,7 +81,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
           }
           val stats = typeCounts
                 .filterNot(kv => classOf[Type].isAssignableFrom(kv._1) || 
-                    classOf[DeclareCallables].isAssignableFrom(kv._1) || 
+                    classOf[DeclareMethods].isAssignableFrom(kv._1) || 
                     classOf[HasType].isAssignableFrom(kv._1) ||
                     classOf[AssertedType].isAssignableFrom(kv._1) ||
                     classOf[Var].isAssignableFrom(kv._1) ||

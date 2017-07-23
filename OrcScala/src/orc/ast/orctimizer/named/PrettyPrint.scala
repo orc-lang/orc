@@ -52,20 +52,14 @@ class PrettyPrint {
   def reduce(ast: NamedAST): FragmentAppender = {
     val exprStr: FragmentAppender = ast match {
       case Stop() => pp"stop"
-      case CallDef(target, args, typeargs) => {
+      case Call(target, args, typeargs) => {
         val typePar = typeargs match {
             case Some(ts) => pp"[${commasep(ts)}]"
             case None => ""
           }
-        pp"defcall $target$typePar(${commasep(args)})"
+        pp"call $target$typePar(${commasep(args)})"
       }
-      case CallSite(target, args, typeargs) => {
-        val typePar = typeargs match {
-            case Some(ts) => pp"[${commasep(ts)}]"
-            case None => ""
-          }
-        pp"sitecall $target$typePar(${commasep(args)})"
-      }
+      case GetMethod(o) => pp"method $o"
       case left Parallel right => pp"($left | $right)"
       case Branch(left, x, right) => pp"$left >$x>\n$right"
       case Trim(f) => pp"{| $f |}"
@@ -73,26 +67,26 @@ class PrettyPrint {
       case Future(f) => pp"future { $StartIndent$f$EndIndent }"
       case Force(xs, vs, e) => pp"force ${commasep(xs)} = ${commasep(vs)} #\n$e"
       case left Otherwise right => pp"($left ; $right)"
-      case IfDef(a, l, r) => pp"ifdef $a then$StartIndent\n$l$EndIndent\nelse$StartIndent\n$r$EndIndent"
-      case DeclareCallables(defs, body) => pp"-- mutual\n${FragmentAppender.mkString(defs.map(reduce))}\n$body"
-      case Def(f, formals, body, typeformals, argtypes, returntype) => {
+      case IfLenientMethod(a, l, r) => pp"iflenient $a then$StartIndent\n$l$EndIndent\nelse$StartIndent\n$r$EndIndent"
+      case DeclareMethods(defs, body) => pp"-- mutual\n${FragmentAppender.mkString(defs.map(reduce))}\n$body"
+      case Routine(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))
         val retT = returntype match {
             case Some(t) => pp" :: t"
             case None => ""
           }
-        pp"""def $name[${commasep(typeformals)}](${commasep(argtypes.getOrElse(Nil))})$retT
-            "def $name(${commasep(formals)}) = $StartIndent$body$EndIndent
+        pp"""routine $name[${commasep(typeformals)}](${commasep(argtypes.getOrElse(Nil))})$retT
+            "routine $name(${commasep(formals)}) = $StartIndent$body$EndIndent
           |"""
       }
-      case Site(f, formals, body, typeformals, argtypes, returntype) => {
+      case Service(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))
         val retT = returntype match {
             case Some(t) => pp" :: t"
             case None => ""
           }
-        pp"""site $name[${commasep(typeformals)}](${commasep(argtypes.getOrElse(Nil))})$retT
-            "site $name(${commasep(formals)}) = $StartIndent$body$EndIndent
+        pp"""service $name[${commasep(typeformals)}](${commasep(argtypes.getOrElse(Nil))})$retT
+            "service $name(${commasep(formals)}) = $StartIndent$body$EndIndent
           |"""
       }
       case New(self, st, bindings, t) => {
@@ -109,7 +103,7 @@ class PrettyPrint {
       case HasType(body, expectedType) => pp"($body :: $expectedType)"
       case DeclareType(u, t, body) => pp"type $u = $t\n$body"
       //case VtimeZone(timeOrder, body) => "VtimeZone($timeOrder, $body)"
-      case FieldAccess(o, f) => pp"$o.${f.name}"
+      case GetField(o, f) => pp"$o.${f.name}"
       case Constant(v) => FragmentAppender(Format.formatValue(v))
       case (x: BoundVar) => FragmentAppender(x.optionalVariableName.getOrElse(lookup(x)))
       case UnboundVar(s) => pp"?$s"

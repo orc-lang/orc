@@ -28,6 +28,8 @@ import scala.PartialFunction
 
 // TODO: Remove "Named" from classes and package tree. There is no nameless Orctimizer.
 
+/** The base class for safe transforms on Orctimizer trees.
+  */
 trait Transform extends swivel.TransformFunction {
   val onExpression: PartialFunction[Expression.Z, Expression] = {
     case a: Argument.Z if onArgument.isDefinedAt(a) => onArgument(a)
@@ -37,8 +39,8 @@ trait Transform extends swivel.TransformFunction {
   val onArgument: PartialFunction[Argument.Z, Argument] = PartialFunction.empty
   def apply(e: Argument.Z) = transformWith[Argument.Z, Argument](e)(this, onArgument)
 
-  val onCallable: PartialFunction[Callable.Z, Callable] = PartialFunction.empty
-  def apply(e: Callable.Z) = transformWith[Callable.Z, Callable](e)(this, onCallable)
+  val onMethod: PartialFunction[Method.Z, Method] = PartialFunction.empty
+  def apply(e: Method.Z) = transformWith[Method.Z, Method](e)(this, onMethod)
 
   val onFieldValue: PartialFunction[FieldValue.Z, FieldValue] = PartialFunction.empty
   def apply(e: FieldValue.Z) = transformWith[FieldValue.Z, FieldValue](e)(this, onFieldValue)
@@ -48,36 +50,50 @@ trait Transform extends swivel.TransformFunction {
 
   def apply(e: NamedAST.Z): NamedAST = e match {
     case e: Expression.Z => apply(e)
-    case e: Callable.Z => apply(e)
+    case e: Method.Z => apply(e)
     case e: FieldValue.Z => apply(e)
     case e: Type.Z => apply(e)
   }
 }
 
-// TODO: Consider porting Porc Tuple access sites. Or should it be a variant of FieldAccess (_1, _2, ...)?
-// This issue with this is that while it's easy to detect field access (Field constants don't appear anywhere else)
-// it's hard to tell what is a tuple access.
+/** The base of all Orctimizer AST including non-expressions.
+  */
 @root @transform[Transform]
 sealed abstract class NamedAST extends ASTForSwivel {
   def prettyprint() = (new PrettyPrint()).reduce(this).toString()
   override def toString() = prettyprint()
 
+  /** @return a set of variables that are bound by this AST node.
+    * 				These variables in in scope for any subexpressions.
+    */
   def boundVars: Set[BoundVar] = Set()
 }
 
 object NamedAST {
-  import scala.language.implicitConversions
-  implicit def zipper2Value(z: NamedAST.Z): z.Value = z.value
+  /** The Zipper base for NamedAST.
+    *
+    * This class contains explicitly added members. Swivel also adds many implicit methods.
+    */
+  class Z {
+    /** @return a set of variables that are bound by this AST node.
+      * 				These variables in in scope for any subexpressions.
+      *
+      * This simply forwards to value.boundVars.
+      */
+    def boundVars: Set[BoundVar] = value.boundVars
+  }
 }
 
+/** The base of all Orctimizer expressions.
+  *
+  * Expressions can be executed on their own and publish value. All subclasses
+  * are documented with their execution semantics.
+  */
 @branch @replacement[Expression]
 sealed abstract class Expression
   extends NamedAST
   with NamedInfixCombinators
-  //with hasVars
   with Substitution[Expression]
-  //with ContextualSubstitution
-  //with Guarding
   with PrecomputeHashcode {
   this: Product =>
 
@@ -99,96 +115,94 @@ sealed abstract class Expression
 
 object Expression {
   class Z {
+    /** @return the set of all variable bound in the current context.
+      */
     def contextBoundVars = {
       parents.flatMap(_.value.boundVars)
     }
+
+    /** @return the set of free variable in this expression.
+      *
+      * This simply forwards to value.freeVars.
+      */
     def freeVars = {
       value.freeVars
     }
   }
 }
 
+/** Publish nothing and halts immediately.
+  */
 @leaf @transform
 final case class Stop() extends Expression
 
-@leaf @transform
-final case class Resolve(@subtree futures: Seq[Argument], @subtree expr: Argument) extends Expression
-
+/** Publish a future and execute `expr` resolve the future to it's first publication.
+  */
 @leaf @transform
 final case class Future(@subtree expr: Expression) extends Expression
 
+/** Force a set of futures, halting if any halts.
+  *
+  * `expr` only executes when all the futures (`vs`) are resolved to values. `xs` are bound to the values of
+  * the futures.
+  */
 @leaf @transform
 final case class Force(xs: Seq[BoundVar], @subtree vs: Seq[Argument], @subtree expr: Expression) extends Expression {
-  def varForArg(v: Argument) = {
-    try {
-      xs(vs.indexOf(v))
-    } catch {
-      case _: IndexOutOfBoundsException =>
-        throw new IllegalArgumentException(s"Unknown argument: $v")
-    }
-  }
-  def argForVar(x: BoundVar) = {
-    try {
-      vs(xs.indexOf(x))
-    } catch {
-      case _: IndexOutOfBoundsException =>
-        throw new IllegalArgumentException(s"Unknown variable: $x")
-    }
-  }
-
-  def toMap = (xs zip vs).toMap
-
   override def boundVars: Set[BoundVar] = xs.toSet
 }
 object Force {
+  /** Construct a Force node with only one future and value.
+    */
   def apply(x: BoundVar, v: Argument, expr: Expression): Force =
     Force(List(x), List(v), expr)
+
+  /** Construct an expression which forces the value `v` and publishes the result.
+    */
   def asExpr(v: Argument) = {
     val x = new BoundVar()
     Force(List(x), List(v), x)
   }
 }
 
+/** Wait for all `futures` to be resolved to a value or stop, then publish `expr`.
+  *
+  * `expr` must be a method. This allows for rewritting concrete values in place of the futures.
+  */
 @leaf @transform
-final case class IfDef(@subtree v: Argument, @subtree left: Expression, @subtree right: Expression) extends Expression
+final case class Resolve(@subtree futures: Seq[Argument], @subtree expr: Argument) extends Expression
 
-// TODO: Make all calls use the same node. Anything that needs to differentiate can do it based on analysis.
-@branch
-sealed abstract class Call extends Expression {
-  this: Product =>
-  val target: Argument
-  val args: Seq[Argument]
-  val typeargs: Option[Seq[Type]]
-}
-object Call {
-  def unapply(c: Call) = 
-    if (c != null)
-      Some((c.target, c.args, c.typeargs))
-    else
-      None
-  
-  class Z {
-  }
-  object Z {
-    def unapply(value: Call.Z) = {
-      value match {
-        case CallDef.Z(target, args, typeargs) =>
-          Some((target, args, typeargs))
-        case CallSite.Z(target, args, typeargs) =>
-          Some((target, args, typeargs))
-        case _ =>
-          None
-      }
-    }
-  }
-}
+/** Publish a value (generally a method or method future) which should be called to handle a call to `expr`.
+  *
+  * `expr` may not be a future. The expression must always publish a value. The published value may be a future.
+  * 
+  * This node exists to allow objects to be translated into methods before the IfLenientMethod check. This
+  * is required to correctly implement dynamic .apply methods.
+  */
 @leaf @transform
-final case class CallDef(@subtree target: Argument, @subtree args: Seq[Argument], @subtree typeargs: Option[Seq[Type]]) extends Call
-@leaf @transform
-final case class CallSite(@subtree target: Argument, @subtree args: Seq[Argument], @subtree typeargs: Option[Seq[Type]]) extends Call
+final case class GetMethod(@subtree expr: Argument) extends Expression
 
+/** If `v` is a lenient method (a routine), execute `left` otherwise execute `right`.
+  *
+  * If `v` is not a method of any kind, then this will execute `right`. For instance,
+  * objects (even those with a .apply field) will cause `right` to execute.
+  */
+@leaf @transform
+final case class IfLenientMethod(@subtree v: Argument, @subtree left: Expression, @subtree right: Expression) extends Expression
+
+/** Call `target` with arguments `args`.
+  *
+  * This can call all kinds of methods (routine or service, and internal or external).
+  */
+@leaf @transform
+final case class Call(@subtree target: Argument, @subtree args: Seq[Argument], @subtree typeargs: Option[Seq[Type]]) extends Expression
+
+/** Execute `left` and `right` concurrently.
+  */
 @leaf @transform
 final case class Parallel(@subtree left: Expression, @subtree right: Expression) extends Expression
+
+/** Execute `left` and whenever it publishes, execute an instance of `right` with `x` bound to the publication.
+  */
 @leaf @transform
 final case class Branch(@subtree left: Expression, x: BoundVar, @subtree right: Expression) extends Expression
   with hasOptionalVariableName {
@@ -196,73 +210,40 @@ final case class Branch(@subtree left: Expression, x: BoundVar, @subtree right: 
 
   override def boundVars: Set[BoundVar] = Set(x)
 }
+
+/** Execute `expr` and terminate it when it publishes for the first time.
+  */
 @leaf @transform
 final case class Trim(@subtree expr: Expression) extends Expression
+
+/** Execute `left` and if it halts without publishing a value, execute `right`.
+  */
 @leaf @transform
 final case class Otherwise(@subtree left: Expression, @subtree right: Expression) extends Expression
 
-@leaf @transform
-final case class DeclareCallables(@subtree defs: Seq[Callable], @subtree body: Expression) extends Expression {
-  override def boundVars: Set[BoundVar] = defs.map(_.name).toSet
-}
-@leaf @transform
-final case class DeclareType(name: BoundTypevar, @subtree t: Type, @subtree body: Expression) extends Expression
-  with hasOptionalVariableName { transferOptionalVariableName(name, this) }
-@leaf @transform
-final case class HasType(@subtree body: Expression, @subtree expectedType: Type) extends Expression
-
-@leaf @transform
-final case class New(self: BoundVar, @subtree selfType: Option[Type], @subtree bindings: Map[values.Field, FieldValue], @subtree objType: Option[Type]) extends Expression {
-  override def boundVars: Set[BoundVar] = Set(self)
-}
-
-@branch @replacement[FieldValue]
-sealed abstract class FieldValue extends NamedAST with PrecomputeHashcode {
-  this: Product =>
-}
-
-@leaf @transform
-final case class FieldFuture(@subtree expr: Expression) extends FieldValue
-@leaf @transform
-final case class FieldArgument(@subtree expr: Argument) extends FieldValue
-
-/** Read the value from a field.
+/** Declare a set of recursive methods, and execute `body`.
+  *
+  * The methods will captures their closures at this point. All closures are lenient.
+  * Methods bind their names to method values. To regain routine strictness semantics,
+  * Resolve must be used to wait for closed variables to be resolved.
   */
 @leaf @transform
-final case class FieldAccess(@subtree obj: Argument, field: values.Field) extends Expression
-
-@branch
-sealed abstract class Argument extends Expression {
-  this: Product =>
-}
-@leaf @transform
-final case class Constant(constantValue: AnyRef) extends Argument
-@branch
-sealed abstract class Var extends Argument with hasOptionalVariableName {
-  this: Product =>
-}
-@leaf @transform
-final case class UnboundVar(name: String) extends Var {
-  optionalVariableName = Some(name)
-}
-@leaf @transform
-final class BoundVar(val optionalName: Option[String] = None) extends Var with hasAutomaticVariableName with Product {
-  // Members declared in scala.Equals
-  def canEqual(that: Any): Boolean = that.isInstanceOf[BoundVar]
-
-  // Members declared in scala.Product
-  def productArity: Int = 1
-  def productElement(n: Int): Any = optionalName
-
-  optionalVariableName = optionalName
-  //autoName("ov")
+final case class DeclareMethods(@subtree methods: Seq[Method], @subtree body: Expression) extends Expression {
+  override def boundVars: Set[BoundVar] = methods.map(_.name).toSet
 }
 
-@branch @replacement[Callable]
-sealed abstract class Callable
+/** A static representation of a method.
+  *
+  * In Orctimizer, all method are lenient on bound variables and parameters. The Orc
+  * semantics are reclaimed using Force and Resove.
+  *
+  * These objects are used in DeclareMethods.
+  */
+@branch @replacement[Method]
+sealed abstract class Method
   extends NamedAST
   with hasOptionalVariableName
-  with Substitution[Callable]
+  with Substitution[Method]
   with PrecomputeHashcode {
   this: Product =>
 
@@ -278,45 +259,46 @@ sealed abstract class Callable
     body: Expression = body,
     typeformals: Seq[BoundTypevar] = typeformals,
     argtypes: Option[Seq[Type]] = argtypes,
-    returntype: Option[Type] = returntype): Callable
+    returntype: Option[Type] = returntype): Method
 
   override def boundVars: Set[BoundVar] = formals.toSet
 }
-object Callable {
-  def unapply(value: Callable) = {
+
+object Method {
+  def unapply(value: Method) = {
     if (value != null) {
       Some((value.name, value.formals, value.body, value.typeformals, value.argtypes, value.returntype))
     } else {
       None
     }
   }
-  
+
   class Z {
     def name = this match {
-      case Def.Z(name, formals, body, typeformals, argtypes, returntype) =>
+      case Routine.Z(name, formals, body, typeformals, argtypes, returntype) =>
         name
-      case Site.Z(name, formals, body, typeformals, argtypes, returntype) =>
+      case Service.Z(name, formals, body, typeformals, argtypes, returntype) =>
         name
     }
     def formals = this match {
-      case Def.Z(name, formals, body, typeformals, argtypes, returntype) =>
+      case Routine.Z(name, formals, body, typeformals, argtypes, returntype) =>
         formals
-      case Site.Z(name, formals, body, typeformals, argtypes, returntype) =>
+      case Service.Z(name, formals, body, typeformals, argtypes, returntype) =>
         formals
     }
     def body = this match {
-      case Def.Z(name, formals, body, typeformals, argtypes, returntype) =>
+      case Routine.Z(name, formals, body, typeformals, argtypes, returntype) =>
         body
-      case Site.Z(name, formals, body, typeformals, argtypes, returntype) =>
+      case Service.Z(name, formals, body, typeformals, argtypes, returntype) =>
         body
     }
   }
   object Z {
-    def unapply(value: Callable.Z) = {
+    def unapply(value: Method.Z) = {
       value match {
-        case Def.Z(name, formals, body, typeformals, argtypes, returntype) =>
+        case Routine.Z(name, formals, body, typeformals, argtypes, returntype) =>
           Some((name, formals, body, typeformals, argtypes, returntype))
-        case Site.Z(name, formals, body, typeformals, argtypes, returntype) =>
+        case Service.Z(name, formals, body, typeformals, argtypes, returntype) =>
           Some((name, formals, body, typeformals, argtypes, returntype))
         case _ =>
           None
@@ -325,9 +307,13 @@ object Callable {
   }
 }
 
+/** A routine method.
+  *
+  * In Orctimizer, routines are simply methods which execute in the terminator scope of the call and allow the declaration to halt.
+  */
 @leaf @transform
-final case class Def(override val name: BoundVar, override val formals: Seq[BoundVar], @subtree override val body: Expression, typeformals: Seq[BoundTypevar], @subtree argtypes: Option[Seq[Type]], @subtree returntype: Option[Type])
-  extends Callable {
+final case class Routine(override val name: BoundVar, override val formals: Seq[BoundVar], @subtree override val body: Expression, typeformals: Seq[BoundTypevar], @subtree argtypes: Option[Seq[Type]], @subtree returntype: Option[Type])
+  extends Method {
   //TODO: Does Def need to have the closed variables listed here? Probably not unless we are type checking.
 
   transferOptionalVariableName(name, this)
@@ -338,13 +324,17 @@ final case class Def(override val name: BoundVar, override val formals: Seq[Boun
     typeformals: Seq[BoundTypevar] = typeformals,
     argtypes: Option[Seq[Type]] = argtypes,
     returntype: Option[Type] = returntype) = {
-    this ->> Def(name, formals, body, typeformals, argtypes, returntype)
+    this ->> Routine(name, formals, body, typeformals, argtypes, returntype)
   }
 }
 
+/** A service method.
+  *
+  * In Orctimizer, services are simply methods which execute in the terminator scope of the declaration and prevent the declaration from halting.
+  */
 @leaf @transform
-final case class Site(override val name: BoundVar, override val formals: Seq[BoundVar], @subtree override val body: Expression, typeformals: Seq[BoundTypevar], @subtree argtypes: Option[Seq[Type]], @subtree returntype: Option[Type])
-  extends Callable {
+final case class Service(override val name: BoundVar, override val formals: Seq[BoundVar], @subtree override val body: Expression, typeformals: Seq[BoundTypevar], @subtree argtypes: Option[Seq[Type]], @subtree returntype: Option[Type])
+  extends Method {
   transferOptionalVariableName(name, this)
 
   def copy(name: BoundVar = name,
@@ -353,9 +343,102 @@ final case class Site(override val name: BoundVar, override val formals: Seq[Bou
     typeformals: Seq[BoundTypevar] = typeformals,
     argtypes: Option[Seq[Type]] = argtypes,
     returntype: Option[Type] = returntype) = {
-    this ->> Site(name, formals, body, typeformals, argtypes, returntype)
+    this ->> Service(name, formals, body, typeformals, argtypes, returntype)
   }
 }
+
+/** Construct a recursive object with specified fields and bindings.
+  *
+  * Field values are specified using a special type to guarentee that every field value
+  * is immediately available.
+  */
+@leaf @transform
+final case class New(self: BoundVar, @subtree selfType: Option[Type], @subtree bindings: Map[values.Field, FieldValue], @subtree objType: Option[Type]) extends Expression {
+  override def boundVars: Set[BoundVar] = Set(self)
+}
+
+/** The base for field trees in objects.
+  */
+@branch @replacement[FieldValue]
+sealed abstract class FieldValue extends NamedAST with PrecomputeHashcode {
+  this: Product =>
+}
+
+/** A field which is bound to a future which will be resolved to the first publication of `expr`.
+  *
+  * This is equivelent to future { expre }.
+  */
+@leaf @transform
+final case class FieldFuture(@subtree expr: Expression) extends FieldValue
+/** A field which is bound to a concrete value.
+  *
+  * The value may be a future.
+  */
+@leaf @transform
+final case class FieldArgument(@subtree expr: Argument) extends FieldValue
+
+/** Publish the `field` from the value `obj`.
+  *
+  * Halt without publishing, if `obj` does not have such a field.
+  */
+@leaf @transform
+final case class GetField(@subtree obj: Argument, field: values.Field) extends Expression
+
+/** The base for simple expressions which always immediately produce a value.
+  */
+@branch
+sealed abstract class Argument extends Expression {
+  this: Product =>
+}
+
+/** Publish `constantValue` immediately.
+  */
+@leaf @transform
+final case class Constant(constantValue: AnyRef) extends Argument
+
+/** Publish the value of the variable.
+  */
+@branch
+sealed abstract class Var extends Argument with hasOptionalVariableName {
+  this: Product =>
+}
+
+/** A variable that was never declared.
+  *
+  * Encountering one of these is generally an error.
+  */
+@leaf @transform
+final case class UnboundVar(name: String) extends Var {
+  optionalVariableName = Some(name)
+}
+
+/** A variable bound to some value in the context of this expression.
+  *
+  * BoundVars use identity equality without regard for their name.
+  */
+@leaf @transform
+final class BoundVar(val optionalName: Option[String] = None) extends Var with hasAutomaticVariableName with Product {
+  // Members declared in scala.Equals
+  def canEqual(that: Any): Boolean = that.isInstanceOf[BoundVar]
+
+  // Members declared in scala.Product
+  def productArity: Int = 1
+  def productElement(n: Int): Any = optionalName
+
+  optionalVariableName = optionalName
+  //autoName("ov")
+}
+
+/** Declare a type in a context.
+  */
+@leaf @transform
+final case class DeclareType(name: BoundTypevar, @subtree t: Type, @subtree body: Expression) extends Expression
+  with hasOptionalVariableName { transferOptionalVariableName(name, this) }
+
+/** Specify that a given expression must have a specific type.
+  */
+@leaf @transform
+final case class HasType(@subtree body: Expression, @subtree expectedType: Type) extends Expression
 
 @branch @replacement[Type]
 sealed abstract class Type

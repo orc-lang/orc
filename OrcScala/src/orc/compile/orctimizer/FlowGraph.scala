@@ -27,11 +27,12 @@ import orc.util.DotUtils._
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import orc.compile.AnalysisRunner
 import orc.compile.AnalysisCache
+import orc.ast.orctimizer.named.IfLenientMethod
 
 /** A control flow graph for an Orc program which represents the flow of tokens through the program.
   *
   */
-class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None) extends DebuggableGraphDataProvider[FlowGraph.Node, FlowGraph.Edge] {
+class FlowGraph(val root: Expression.Z, val location: Option[Method.Z] = None) extends DebuggableGraphDataProvider[FlowGraph.Node, FlowGraph.Edge] {
   outer =>
 
   import FlowGraph._
@@ -98,7 +99,7 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
       e match {
         case Stop.Z() =>
           ()
-        case FieldAccess.Z(a, f) =>
+        case GetField.Z(a, f) =>
           addEdges(
               // TODO: Should this value edge be a UseEdge?
             ValueEdge(ValueNode(a), exit),
@@ -194,7 +195,7 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
               UseEdge(ValueNode(e), exit))): _*)
           addEdges(ValueEdge(ExitNode(e), exit))
           process(e)
-        case IfDef.Z(b, f, g) =>
+        case IfLenientMethod.Z(b, f, g) =>
           addEdges(
             TransitionEdge(entry, "IfDef-Def", EntryNode(f)),
             TransitionEdge(entry, "IfDef-Not", EntryNode(g)),
@@ -208,17 +209,14 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
           process(f)
           process(g)
         case Call.Z(target, args, _) =>
-          val trans = (e: @unchecked) match {
-            case _: CallDef.Z => "CallDef"
-            case _: CallSite.Z => "CallSite"
-          }
+          val trans = "Call"
           addEdges(AfterEdge(entry, trans, exit))
           addEdges(args.map(e => UseEdge(ValueNode(e), entry)): _*)
           addEdges(args.map(e => UseEdge(ValueNode(e), exit)): _*)
           addEdges(
               UseEdge(ValueNode(target), entry),
               UseEdge(ValueNode(target), exit))
-        case DeclareCallables.Z(callables, body) =>
+        case DeclareMethods.Z(callables, body) =>
           callables.map(_.name) foreach { declareVariable(entry, _) }
 
           for (callable <- callables) {
@@ -305,8 +303,8 @@ class FlowGraph(val root: Expression.Z, val location: Option[Callable.Z] = None)
   }
 }
 
-object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), FlowGraph] {
-  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): FlowGraph = {
+object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGraph] {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Method.Z])): FlowGraph = {
     new FlowGraph(params._1, params._2)
   }
 
@@ -333,7 +331,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
     val ast = location.value
     override lazy val group = {
       val p = location.parents
-      val i = p.lastIndexWhere(_.isInstanceOf[Callable.Z])
+      val i = p.lastIndexWhere(_.isInstanceOf[Method.Z])
       if (i >= 0) {
         p(i)
       } else {
@@ -344,7 +342,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
 
   case object EverywhereNode extends Node {
     override def toString() = s"$productPrefix"
-    val ast: NamedAST = CallSite(Constant(EverywhereNode), List(), None)
+    val ast: NamedAST = Call(Constant(EverywhereNode), List(), None)
     override val color = "red"
   }
 
@@ -365,7 +363,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), Flow
   }
 
   // TODO: I think this may not be needed, however it's not clear where to store the nested flowgraph if callables are just VariableNodes.
-  case class CallableNode(location: Callable.Z, flowgraph: FlowGraph) extends Node with ValueFlowNode with WithSpecificAST {
+  case class CallableNode(location: Method.Z, flowgraph: FlowGraph) extends Node with ValueFlowNode with WithSpecificAST {
     override def equals(o: Any) = o match {
       case o: CallableNode =>
         location == o.location // Ignore flowgraph for equality. This is an optimization.

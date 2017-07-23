@@ -26,9 +26,6 @@ import orc.ast.porc.Continuation
 import orc.compile.AnalysisCache
 import orc.compile.Logger
 import orc.util.{ Ternary, TUnknown, TTrue, TFalse }
-import orc.ast.orctimizer.named.CallDef
-import orc.compile.orctimizer.EffectAnalysis
-import orc.compile.orctimizer.EffectAnalysis
 import orc.ast.porc.PorcUnit
 
 case class ConversionContext(p: porc.Variable, c: porc.Variable, t: porc.Variable, recursives: Set[BoundVar], callgraph: CallGraph, effects: EffectAnalysis) {
@@ -294,11 +291,11 @@ class OrctimizerToPorc {
             }
           }
       }
-      case IfDef.Z(a, f, g) => {
+      case IfLenientMethod.Z(a, f, g) => {
         porc.IfDef(argument(a), expression(f), expression(g))
       }
-      case DeclareCallables.Z(defs, body) => {
-        val b = if (defs.exists(_.isInstanceOf[Site.Z]))
+      case DeclareMethods.Z(defs, body) => {
+        val b = if (defs.exists(_.isInstanceOf[Service.Z]))
           SetDiscorporate(ctx.c) ::: expression(body)
         else
           expression(body)
@@ -328,7 +325,7 @@ class OrctimizerToPorc {
         }
       }
 
-      case FieldAccess.Z(o, f) => {
+      case GetField.Z(o, f) => {
         val v = newVarName(f.name)
         let((v, porc.GetField(argument(o), f))) {
           ctx.p(v)
@@ -342,29 +339,29 @@ class OrctimizerToPorc {
       case HasType.Z(body, expectedType) => expression(body)
       case DeclareType.Z(u, t, body) => expression(body)
     }
-    expr ->> code
+    expr.value ->> code
   }
 
   def argument(a: Argument.Z): porc.Argument = {
-    a ->> a.value match {
+    a.value -> {
       case c @ Constant(v) => porc.Constant(v)
       case (x: BoundVar) => lookup(x)
       //case _ => ???
     }
   }
 
-  def callable(recursiveGroup: Seq[BoundVar], d: Callable.Z)(implicit ctx: ConversionContext): porc.Method = {
+  def callable(recursiveGroup: Seq[BoundVar], d: Method.Z)(implicit ctx: ConversionContext): porc.Method = {
     val oldCtx = ctx
     val newP = newVarName("P")
     val newC = newVarName("C")
     val newT = newVarName("T")
-    val Callable.Z(f, formals, body, _, _, _) = d
+    val Method.Z(f, formals, body, _, _, _) = d
     val args = formals.map(lookup)
     val name = lookup(f)
     val (bodyT, bodyPrefix) = d match {
-      case _: Def.Z =>
+      case _: Routine.Z =>
         (newT, porc.PorcUnit())
-      case _: Site.Z =>
+      case _: Service.Z =>
         (ctx.t, porc.CheckKilled(ctx.t))
     }
     val newBody = {
@@ -373,7 +370,7 @@ class OrctimizerToPorc {
         bodyPrefix ::: expression(body)
       }
     }
-    d ->> porc.MethodCPS(name, newP, newC, newT, d.isInstanceOf[Def.Z], args, newBody)
+    d.value ->> porc.MethodCPS(name, newP, newC, newT, d.isInstanceOf[Service.Z], args, newBody)
   }
 
   private def newFlag(): MethodDirectCall = {

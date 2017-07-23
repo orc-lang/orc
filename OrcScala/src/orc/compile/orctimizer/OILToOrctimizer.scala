@@ -106,20 +106,20 @@ class OILToOrctimizer {
         def siteCall = {
           val uniqueArgs = args.toSet.toList
           val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(s"f_$a")))).toMap
-          val call = orct.CallSite(t, args map argVarsMap, typeargs map { _ map apply })
+          val call = orct.Call(t, args map argVarsMap, typeargs map { _ map apply })
           if (uniqueArgs.size > 0) {
             maybePublishForce(uniqueArgs map argVarsMap, uniqueArgs, call)
           } else {
             call
           }
         }
-        def defCall = orct.CallDef(t, args map apply, typeargs map { _ map apply })
+        def defCall = orct.Call(t, args map apply, typeargs map { _ map apply })
         val call = if (isDef(target)) {
           defCall
         } else if (isSite(target)) {
           siteCall
         } else {
-          orct.IfDef(t, defCall, siteCall)
+          orct.IfLenientMethod(t, defCall, siteCall)
         }
         orct.Force(t, apply(target), call)
       }
@@ -156,7 +156,7 @@ class OILToOrctimizer {
           })
         
         // Do not include the callables in their own scope. They don't force normally in that scope.
-        orct.DeclareCallables(newDefs, resolves)
+        orct.DeclareMethods(newDefs, resolves)
       }
       case DeclareType(x, t, body) => {
         orct.DeclareType(apply(x), apply(t), apply(body))
@@ -167,7 +167,7 @@ class OILToOrctimizer {
         val fv1 = new orct.BoundVar(Some(s"f_${o}_${f.name}'"))
         val fv2 = new orct.BoundVar(Some(s"f_${o}_${f.name}"))
         maybePublishForce(t, o, {
-          orct.FieldAccess(t, f) > fv1 >
+          orct.GetField(t, f) > fv1 >
             orct.Force(fv2, fv1, fv2)
         })
       }
@@ -247,14 +247,14 @@ class OILToOrctimizer {
     }
   }
 
-  def apply(defn: Callable)(implicit ctx: Context): (orct.Callable, Set[orct.BoundVar]) = {
+  def apply(defn: Callable)(implicit ctx: Context): (orct.Method, Set[orct.BoundVar]) = {
     defn match {
       case Def(name, formals, body, typeformals, argtypes, returntype) => {
         val newName = apply(name)
         val bctx = formals.foldLeft(ctx)(_.addVariableMapping(_))
         val newFormals = formals.map(apply(_)(bctx))
         val newBody = apply(body)(bctx)
-        val d = defn ->> orct.Def(newName, newFormals, newBody, typeformals map apply,
+        val d = defn ->> orct.Routine(newName, newFormals, newBody, typeformals map apply,
           argtypes map { _ map apply }, returntype map apply)
         (d, newBody.freeVars -- newFormals)
       }
@@ -262,7 +262,7 @@ class OILToOrctimizer {
         val bctx = formals.foldLeft(ctx)(_.addVariableMapping(_))
         val newFormals = formals.map(apply(_)(bctx))
         val newBody = apply(body)(bctx)
-        val d = defn ->> orct.Site(apply(name), newFormals, newBody, typeformals map apply,
+        val d = defn ->> orct.Service(apply(name), newFormals, newBody, typeformals map apply,
           argtypes map { _ map apply }, returntype map apply)
         (d, Set())
       }

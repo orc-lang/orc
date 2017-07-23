@@ -29,7 +29,7 @@ import orc.lib.builtin.structured.RecordConstructor
 /** @author amp
   */
 class OrctimizerAnalysisTest {
-  lazy val unanalyzableCall = CallSite(Constant(new orc.lib.net.BingSearchFactoryUsernameKey), List(), None)
+  lazy val unanalyzableCall = Call(Constant(new orc.lib.net.BingSearchFactoryUsernameKey), List(), None)
 
   @Test
   def analyzeStop(): Unit = {

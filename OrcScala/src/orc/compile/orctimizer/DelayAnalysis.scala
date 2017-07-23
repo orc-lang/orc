@@ -15,7 +15,7 @@ package orc.compile.orctimizer
 
 import orc.compile.AnalysisRunner
 import orc.ast.orctimizer.named.Expression
-import orc.ast.orctimizer.named.Callable
+import orc.ast.orctimizer.named.Method
 import orc.compile.AnalysisCache
 import scala.reflect.ClassTag
 import orc.compile.flowanalysis.LatticeValue
@@ -26,6 +26,7 @@ import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
 import orc.ast.orctimizer.named.Future
+import orc.ast.orctimizer.named.IfLenientMethod
 
 sealed abstract class Delay {
   def <(o: Delay): Boolean
@@ -117,10 +118,10 @@ class DelayAnalysis(
   }
 }
 
-object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), DelayAnalysis] {
+object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), DelayAnalysis] {
   import FlowGraph._
   
-  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): DelayAnalysis = {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Method.Z])): DelayAnalysis = {
     val cg = cache.get(CallGraph)(params)
     val a = new DelayAnalyzer(cg)
     val res = a()
@@ -196,7 +197,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), 
           ast match {
             case Future.Z(_) =>
               DelayInfo(ComputationDelay(), inStateValue.maxHaltDelay)
-            case CallSite.Z(target, _, _) => {
+            case Call.Z(target, _, _) => {
               import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
               // FIXME: Recursive function calls should have IndefiniteDelays or should be otherwise marked to avoid infinite recursion being treated as computation delay.
 
@@ -227,10 +228,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), 
               }
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combineOneOf _))(_ combineOneOf _).getOrElse(worstState)
             }
-            case CallDef.Z(target, _, _) =>
-              // FIXME: Recursive function calls should have IndefiniteDelays or should be otherwise marked to avoid infinite recursion being treated as computation delay.
-              inStateOneOf
-            case IfDef.Z(v, l, r) => {
+            case IfLenientMethod.Z(v, l, r) => {
               // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
               import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
               val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v))
@@ -239,7 +237,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), 
                   None
                 case CallGraph.ConcreteBoundedSet(s) =>
                   val (ds, nds) = s.partition {
-                    case CallableValue(callable: Def, _) =>
+                    case CallableValue(callable: Routine, _) =>
                       true
                     case _ =>
                       false
@@ -267,7 +265,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), 
               DelayInfo(inStateAllOf.maxFirstPubDelay, inStateAllOf.maxFirstPubDelay)
             case New.Z(_, _, bindings, _) =>
               DelayInfo(inStateAllOf.maxFirstPubDelay, inStateUse.maxHaltDelay)
-            case FieldAccess.Z(_, f) =>
+            case GetField.Z(_, f) =>
               inStateAllOf
             case Otherwise.Z(l, r) =>
               val lState = states(ExitNode(l))
@@ -292,7 +290,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), 
             case Branch.Z(_, _, _) =>
               DelayInfo(inStateAllOf.maxFirstPubDelay + inStateUse.maxFirstPubDelay, inStateAllOf.maxHaltDelay + inStateUse.maxHaltDelay)
             case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) |
-              DeclareCallables.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
+              DeclareMethods.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
               inStateAllOf
           }
         case node @ EntryNode(ast) =>

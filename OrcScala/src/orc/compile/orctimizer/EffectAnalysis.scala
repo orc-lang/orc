@@ -13,19 +13,18 @@
 
 package orc.compile.orctimizer
 
-import orc.compile.AnalysisRunner
-import orc.ast.orctimizer.named.Expression
-import orc.ast.orctimizer.named.Callable
-import orc.compile.AnalysisCache
 import scala.reflect.ClassTag
+
+import orc.ast.orctimizer.named._
+import orc.compile.AnalysisRunner
+import orc.compile.AnalysisCache
 import orc.compile.flowanalysis.LatticeValue
 import orc.compile.flowanalysis.GraphDataProvider
 import orc.compile.flowanalysis.Analyzer
-import FlowGraph.{Node, Edge}
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
+import FlowGraph.{Node, Edge}
 import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
-import orc.ast.orctimizer.named.{Future, New, Branch}
 import orc.values.sites.Effects
 
 
@@ -75,10 +74,10 @@ class EffectAnalysis(
   }
 }
 
-object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]), EffectAnalysis] {
+object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), EffectAnalysis] {
   import FlowGraph._
 
-  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Callable.Z])): EffectAnalysis = {
+  def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Method.Z])): EffectAnalysis = {
     val cg = cache.get(CallGraph)(params)
     val a = new DelayAnalyzer(cg)
     val res = a()
@@ -152,7 +151,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]),
           ast match {
             case Future.Z(_) =>
               inState
-            case CallSite.Z(target, _, _) => {
+            case Call.Z(target, _, _) => {
               import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
 
               val possibleV = graph.valuesOf[FlowValue](ValueNode(target))
@@ -182,9 +181,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]),
               }
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combine _))(_ combine _).getOrElse(worstState)
             }
-            case CallDef.Z(target, _, _) =>
-              inState
-            case IfDef.Z(v, l, r) => {
+            case IfLenientMethod.Z(v, l, r) => {
               // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
               import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
               val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v))
@@ -193,7 +190,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]),
                   None
                 case CallGraph.ConcreteBoundedSet(s) =>
                   val (ds, nds) = s.partition {
-                    case CallableValue(callable: Def, _) =>
+                    case CallableValue(callable: Routine, _) =>
                       true
                     case _ =>
                       false
@@ -217,13 +214,13 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]),
               }
               realizableIn
             }
-            case DeclareCallables.Z(callables, _) if callables.exists(_.isInstanceOf[Site.Z]) =>
+            case DeclareMethods.Z(callables, _) if callables.exists(_.isInstanceOf[Service.Z]) =>
               worstState
             case Trim.Z(_) =>
               inState
             case New.Z(_, _, bindings, _) =>
               inState
-            case FieldAccess.Z(_, f) =>
+            case GetField.Z(_, f) =>
               initialState
             case Otherwise.Z(l, r) =>
               // TODO: Could use publication info to improve this.
@@ -237,7 +234,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Callable.Z]),
             case Branch.Z(_, _, _) =>
               inState
             case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) |
-              DeclareType.Z(_, _, _) | HasType.Z(_, _) | DeclareCallables.Z(_, _) =>
+              DeclareType.Z(_, _, _) | HasType.Z(_, _) | DeclareMethods.Z(_, _) =>
               inState
           }
         case EverywhereNode =>
