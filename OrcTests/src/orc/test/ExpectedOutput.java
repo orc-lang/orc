@@ -59,26 +59,30 @@ public class ExpectedOutput {
     public ExpectedOutput(final File file) throws IOException {
         final BufferedReader r = new BufferedReader(new FileReader(file));
 
-        boolean permutable = false;
-        StringBuilder oneOutput = null;
-        for (String line = r.readLine(); line != null; line = r.readLine()) {
-            if (oneOutput != null) {
-                if (line.startsWith("-}")) {
-                    outs.add(new MaybePermutableOutput(permutable, oneOutput.toString()));
-                    oneOutput = null;
-                } else {
-                    oneOutput.append(line);
-                    oneOutput.append("\n");
+        try {
+            boolean permutable = false;
+            StringBuilder oneOutput = null;
+            for (String line = r.readLine(); line != null; line = r.readLine()) {
+                if (oneOutput != null) {
+                    if (line.startsWith("-}")) {
+                        outs.add(new MaybePermutableOutput(permutable, oneOutput.toString()));
+                        oneOutput = null;
+                    } else {
+                        oneOutput.append(line);
+                        oneOutput.append("\n");
+                    }
+                } else if (line.startsWith("OUTPUT:PERMUTABLE")) {
+                    permutable = true;
+                    oneOutput = new StringBuilder();
+                } else if (line.startsWith("OUTPUT:")) {
+                    permutable = false;
+                    oneOutput = new StringBuilder();
+                } else if (line.startsWith("BENCHMARK")) {
+                    shouldBenchmark = true;
                 }
-            } else if (line.startsWith("OUTPUT:PERMUTABLE")) {
-                permutable = true;
-                oneOutput = new StringBuilder();
-            } else if (line.startsWith("OUTPUT:")) {
-                permutable = false;
-                oneOutput = new StringBuilder();
-            } else if (line.startsWith("BENCHMARK")) {
-                shouldBenchmark = true;
             }
+        } finally {
+          r.close();
         }
     }
 
