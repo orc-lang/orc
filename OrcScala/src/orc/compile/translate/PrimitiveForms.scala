@@ -58,9 +58,8 @@ object PrimitiveForms {
     getExtractor > extractor > invokeExtractor
   }
 
-  // TODO: Make this into something that will be easier to optimize.
+  // TODO: Replace current tuple values with object and _n fields.
   def makeNth(a: Argument, i: Int) = Call(a, List(Constant(BigInt(i))), None)
-  //def makeNth(a: Argument, i: Int) = Call(Constant(GetElem), List(a, Constant(BigInt(i))), None)
   //def makeNth(a: Argument, i: Int) = FieldAccess(a, Field(s"_$i"))
 
   def makeLet(args: List[Argument]): Expression = {
@@ -71,6 +70,7 @@ object PrimitiveForms {
     }
   }
 
+  // TODO: Replace current tuple values with object and _n fields.
   def makeTuple(elements: List[Argument]) = Call(Constant(TupleConstructor), elements, None)
 
   def makeList(elements: List[Argument]) = {

@@ -19,6 +19,8 @@ import orc.types._
 import orc.values._
 import orc.values.sites._
 
+// TODO: Replace current tuple values with object and _n fields.
+
 object TupleConstructor extends TotalSite with TypedSite with FunctionalSite with TalkativeSite {
   override def name = "Tuple"
   def evaluate(args: Array[AnyRef]) = OrcTuple(args)
