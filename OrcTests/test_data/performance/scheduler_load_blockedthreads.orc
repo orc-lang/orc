@@ -16,7 +16,3 @@ def snoozie(x) if (x :> 0) = sleep(timestep) >> snoozie(x - timestep)
 def f(x) if (x :> 0) = (f(x-1) >> snoozie(500)) | snoozie(500)
 
 benchmark({ f(1000) })
-
-{-
-BENCHMARK
--}
