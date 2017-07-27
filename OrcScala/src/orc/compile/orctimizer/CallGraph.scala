@@ -27,9 +27,8 @@ import orc.values.sites.{ InvokerMethod => ExtInvokerMethod }
 import orc.compile.Logger
 import orc.ast.PrecomputeHashcode
 import scala.reflect.ClassTag
-import orc.compile.flowanalysis.GraphDataProvider
+import orc.compile.flowanalysis._
 import orc.util.DotUtils.shortString
-import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import orc.util.DotUtils.DotAttributes
 import orc.compile.AnalysisCache
 import orc.compile.AnalysisRunner
@@ -84,7 +83,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
   val (additionalEdges, results) = {
     val vrs = new CallGraphAnalyzer(graph)
     val r = vrs()
-    (vrs.additionalEdges.toSet ++ vrs.additionalEdgesNonValueFlow, r)
+    (vrs.additionalEdges.edges ++ vrs.additionalEdgesNonValueFlow, r)
   }
 
   val edges: collection.Set[Edge] = {
@@ -285,15 +284,15 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
     }
     val initialState: State = FlowValueSet()
 
-    val additionalEdges = mutable.HashSet[ValueEdge]()
+    val additionalEdges = new MutableGraphDataProvider[Node, Edge]()
     val additionalEdgesNonValueFlow = mutable.HashSet[Edge]()
 
     def addEdge(e: ValueEdge): Boolean = {
-      if (additionalEdges.contains(e) || edges.contains(e)) {
+      if (additionalEdges.edges.contains(e) || edges.contains(e)) {
         false
       } else {
         // Logger.fine(s"Adding edge $e")
-        additionalEdges += e
+        additionalEdges.addEdge(e)
         true
       }
     }
@@ -321,11 +320,11 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
     //          Should be able to implement a mutable subclass of GraphDataProvider and use it's indexing support and accessors.
     
     def valueInputs(node: Node): Seq[Edge] = {
-      node.inEdgesOf[ValueEdge].toSeq ++ node.inEdgesOf[AfterEdge].toSeq ++ additionalEdges.filter(_.to == node)
+      node.inEdgesOf[ValueEdge].toSeq ++ node.inEdgesOf[AfterEdge].toSeq ++ additionalEdges.NodeAdds(node).inEdges.toSeq
     }
 
     def valueOutputs(node: Node): Seq[Edge] = {
-      node.outEdgesOf[ValueEdge].toSeq ++ node.outEdgesOf[AfterEdge].toSeq ++ additionalEdges.filter(_.from == node)
+      node.outEdgesOf[ValueEdge].toSeq ++ node.outEdgesOf[AfterEdge].toSeq ++ additionalEdges.NodeAdds(node).outEdges.toSeq
     }
 
     def inputs(node: Node): collection.Seq[ConnectedNode] = {

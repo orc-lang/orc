@@ -26,6 +26,7 @@ trait GraphDataProvider[Node, Edge <: EdgeBase[Node]] {
     }
     m
   }
+  
   protected[this] lazy val edgeToIndex: collection.Map[Node, Set[Edge]] = {
     val m = mutable.HashMap[Node, Set[Edge]]()
     for (e <- edges) {
@@ -55,7 +56,37 @@ trait GraphDataProvider[Node, Edge <: EdgeBase[Node]] {
       edgeToIndex.getOrElse(n, Set()).collect { case TType(e) => e }
     }
   }
+}
 
+class MutableGraphDataProvider[Node, Edge <: EdgeBase[Node]] extends GraphDataProvider[Node, Edge] {
+  private[this] val nodeStore = mutable.Set[Node]() 
+  private[this] val edgeStore = mutable.Set[Edge]()
+  
+  def addNode(n: Node) = {
+    nodeStore += n
+    
+  }
+  
+  def addEdge(e: Edge) = {
+    edgeStore += e
+    edgeFromIndex += (e.from -> (edgeFromIndex.getOrElse(e.from, Set[Edge]()) + e))
+    edgeToIndex += (e.to -> (edgeToIndex.getOrElse(e.to, Set[Edge]()) + e))
+    addNode(e.to)
+    addNode(e.from)
+  }
+  
+  def nodes: collection.Set[Node] = nodeStore
+  def edges: collection.Set[Edge] = edgeStore
+
+  // TODO: Eliminate these from the top level API.
+  def entry: Node = ???
+  def exit: Node = ???
+
+  // TODO: Eliminate these from the top level API.
+  def subgraphs: collection.Set[_ <: GraphDataProvider[Node, Edge]] = Set()
+
+  protected[this] override lazy val edgeFromIndex: mutable.Map[Node, Set[Edge]] = mutable.HashMap[Node, Set[Edge]]()  
+  protected[this] override lazy val edgeToIndex: mutable.Map[Node, Set[Edge]] = mutable.HashMap[Node, Set[Edge]]()
 }
 
 trait DebuggableGraphDataProvider[Node <: WithDotAttributes, Edge <: WithDotAttributes with EdgeBase[Node]] extends GraphDataProvider[Node, Edge] {
