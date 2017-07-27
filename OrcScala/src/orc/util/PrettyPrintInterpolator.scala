@@ -18,7 +18,13 @@ class StringBuilderWrapper(sb: StringBuilder)(implicit interp: PrettyPrintInterp
     def doNewLine() = {
       if (!deleteNewLine) {
         // "\n" + (" " * (indentStep * indentLevel))
-        sb.appendAll(spaces, 0, 1 + indentStep * indentLevel)
+        require(indentLevel >= 0)
+        sb.append("\n")
+        var i = indentStep * indentLevel
+        while(i > 0) {
+          sb.append(" ")
+          i -= 1
+        }
 
         lineNo += 1
       } else {
@@ -95,7 +101,7 @@ object StringBuilderWrapper {
   case object Passthrough extends State
   case object EatWhiteSpace extends State
 
-  val spaces = ("\n" + " "*512).toArray
+  //val spaces = ("\n" + " "*(1024 * 2)).toArray
 }
 
 class FragmentAppender(val appendTo: StringBuilderWrapper => Unit)(implicit interp: PrettyPrintInterpolator) {

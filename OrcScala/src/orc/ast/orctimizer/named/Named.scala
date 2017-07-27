@@ -173,13 +173,14 @@ final case class Resolve(@subtree futures: Seq[Argument], @subtree expr: Argumen
 
 /** Publish a value (generally a method or method future) which should be called to handle a call to `expr`.
   *
-  * `expr` may not be a future. The expression must always publish a value. The published value may be a future.
-  * 
+  * `expr` may not be a future. The expression must always publish a value. The published value may be a future,
+  * but only if `expr` is not a method.
+  *
   * This node exists to allow objects to be translated into methods before the IfLenientMethod check. This
   * is required to correctly implement dynamic .apply methods.
   */
 @leaf @transform
-final case class GetMethod(@subtree expr: Argument) extends Expression
+final case class GetMethod(@subtree target: Argument) extends Expression
 
 /** If `v` is a lenient method (a routine), execute `left` otherwise execute `right`.
   *
@@ -211,6 +212,25 @@ final case class Branch(@subtree left: Expression, x: BoundVar, @subtree right: 
   override def boundVars: Set[BoundVar] = Set(x)
 }
 
+object Branch {
+  /** A smart constructor which normalizes the AST to be right nested for Branch and things that contain it.
+   */
+  def apply(left: Expression, x: BoundVar, right: Expression): Expression = {
+    left match {
+      case Force(xs, vs, b) =>
+        Force(xs, vs, Branch(b, x, right))
+      case DeclareMethods(ms, b) =>
+        DeclareMethods(ms, Branch(b, x, right))
+      case DeclareType(t, tt, b) =>
+        DeclareType(t, tt, Branch(b, x, right))
+      case Branch(l, y, r) =>
+        Branch(l, y, Branch(r, x, right))
+      case _ =>
+        new Branch(left, x, right)
+    }
+  }
+}
+
 /** Execute `expr` and terminate it when it publishes for the first time.
   */
 @leaf @transform
@@ -220,6 +240,21 @@ final case class Trim(@subtree expr: Expression) extends Expression
   */
 @leaf @transform
 final case class Otherwise(@subtree left: Expression, @subtree right: Expression) extends Expression
+
+object Otherwise {
+  /** A smart constructor which normalizes the AST to be right nested for Otherwise and things that contain it.
+   */
+  def apply(left: Expression, right: Expression): Expression = {
+    left match {
+      case DeclareType(t, tt, b) =>
+        DeclareType(t, tt, Otherwise(b, right))
+      case Otherwise(l, r) =>
+        Otherwise(l, Otherwise(r, right))
+      case _ =>
+        new Otherwise(left, right)
+    }
+  }
+}
 
 /** Declare a set of recursive methods, and execute `body`.
   *
@@ -349,7 +384,7 @@ final case class Service(override val name: BoundVar, override val formals: Seq[
 
 /** Construct a recursive object with specified fields and bindings.
   *
-  * Field values are specified using a special type to guarentee that every field value
+  * Field values are specified using a special type to guarantee that every field value
   * is immediately available.
   */
 @leaf @transform
@@ -358,6 +393,9 @@ final case class New(self: BoundVar, @subtree selfType: Option[Type], @subtree b
 }
 
 /** The base for field trees in objects.
+  *
+  * Field values use a special type to guarantee that every field value
+  * is immediately available.
   */
 @branch @replacement[FieldValue]
 sealed abstract class FieldValue extends NamedAST with PrecomputeHashcode {
@@ -366,10 +404,11 @@ sealed abstract class FieldValue extends NamedAST with PrecomputeHashcode {
 
 /** A field which is bound to a future which will be resolved to the first publication of `expr`.
   *
-  * This is equivelent to future { expre }.
+  * This is equivelent to future { `expr` }.
   */
 @leaf @transform
 final case class FieldFuture(@subtree expr: Expression) extends FieldValue
+
 /** A field which is bound to a concrete value.
   *
   * The value may be a future.

@@ -5,13 +5,13 @@ orct
 orct:type-elim
 orct:def-branch-norm
 orct:def-elim
-orct:branch-reassoc
 orct:branch-elim
 orct:branch-elim-arg
 orct:branch-elim-const
 orct:stop-equiv
 orct:stop-elim
 orct:constant-propogation
+orct:getmethod-elim
 orct:trim-elim
 orct:trim-compiler-choice
 orct:inline-def
@@ -21,6 +21,7 @@ orct:future-elim
 orct:unused-future-elim
 orct:future-force-elim
 orct:force-elim
+orct:resolve-elim
 orct:lift-force
 orct:tuple-elim
 orct:accessor-elim

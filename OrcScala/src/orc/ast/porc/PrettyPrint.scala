@@ -50,7 +50,7 @@ class PrettyPrint {
         case CallContinuation(t, args) => pp"$t (${args.map(reduce(_)).mkString(", ")})"
         case MethodCPSCall(isExt, target, p, c, t, args) => pp"call cps $isExt $target ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")})"
         case MethodDirectCall(isExt, target, args) => pp"call direct $isExt $target (${args.map(reduce(_)).mkString(", ")})"
-        case IfDef(arg, f, g) => pp"ifdef $arg then$StartIndent\n$f$EndIndent\nelse$StartIndent\n$g$EndIndent"
+        case IfLenientMethod(arg, f, g) => pp"iflenient $arg then$StartIndent\n$f$EndIndent\nelse$StartIndent\n$g$EndIndent"
 
         case Sequence(es) => FragmentAppender.mkString(es.map(reduce(_)), ";\n")
 
@@ -76,6 +76,7 @@ class PrettyPrint {
         case Resolve(p, c, t, vs) => pp"resolve $p $c $t (${vs.map(reduce(_)).mkString(", ")})"
 
         case GetField(o, f) => pp"$o$f"
+        case GetMethod(o) => pp"method $o"
 
         case New(bindings) => {
           def reduceField(f: (Field, Expression)) = {

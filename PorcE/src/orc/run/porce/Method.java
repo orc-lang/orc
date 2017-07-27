@@ -15,7 +15,7 @@ public class Method extends Node implements HasPorcNode {
 	protected RootCallTarget callTarget;
 	private final FrameSlot name;
 	private final FrameSlot[] capturingSlots;
-	private boolean isDef;
+	private boolean areArgsLenient;
 	
 	private Option<PorcAST> porcNode = Option.apply(null);
 	
@@ -30,17 +30,17 @@ public class Method extends Node implements HasPorcNode {
 	
 
 
-	public Method(FrameSlot name, FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameSlot[] capturingSlots, FrameDescriptor descriptor, boolean isDef, Expression body) {
+	public Method(FrameSlot name, FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameSlot[] capturingSlots, FrameDescriptor descriptor, boolean areArgsLenient, Expression body) {
 		this.name = name;
 		//this.capturedSlots = capturedSlots;
 		this.capturingSlots = capturingSlots;
-		this.isDef = isDef;
+		this.areArgsLenient = areArgsLenient;
 		PorcERootNode rootNode = new PorcERootNode(argumentSlots, capturedSlots, descriptor, body);
 		this.callTarget = Truffle.getRuntime().createCallTarget(rootNode);
 	}
 
 	public PorcEClosure getClosure(Object[] capturedValues) {
-		return new PorcEClosure(capturedValues, callTarget, isDef);
+		return new PorcEClosure(capturedValues, callTarget, areArgsLenient);
 	}
 	
 	public CallTarget getCallTarget() {

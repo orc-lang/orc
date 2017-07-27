@@ -6,13 +6,13 @@ import com.oracle.truffle.api.RootCallTarget;
 final public class PorcEClosure {
 	final public Object[] capturedValues;
 	final public RootCallTarget body;
-	public final boolean isDef;
+	public final boolean areArgsLenient;
 
 	// TODO: PERFORMANCE: Using a frame instead of an array for captured values may perform better. Though that will mainly be true when we start using native values.
-	public PorcEClosure(Object[] capturedValues, RootCallTarget body, boolean isDef) {
+	public PorcEClosure(Object[] capturedValues, RootCallTarget body, boolean areArgsLenient) {
 		this.capturedValues = capturedValues;
 		this.body = body;
-		this.isDef = isDef;
+		this.areArgsLenient = areArgsLenient;
 	}
 	
 	public Object callFromRuntime() {

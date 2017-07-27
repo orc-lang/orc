@@ -31,11 +31,11 @@ import scala.collection.mutable
 import orc.compile.OptimizerStatistics
 import orc.compile.NamedOptimization
 import orc.compile.AnalysisCache
-import orc.compile.orctimizer.FlowGraph.{ValueNode, ValueFlowNode}
-import orc.compile.orctimizer.CallGraph.FlowValue
-import orc.compile.orctimizer.CallGraph.CallableValue
+import orc.compile.orctimizer.FlowGraph._
+import orc.compile.orctimizer.CallGraphValues._
 import orc.compile.orctimizer.DelayAnalysis.DelayInfo
 import swivel.Zipper
+import orc.compile.orctimizer.FlowGraph.EverywhereNode
 
 class HashFirstEquality[T](val value: T) {
   override def toString() = value.toString()
@@ -61,7 +61,7 @@ class AnalysisResults(cache: AnalysisCache, e: Expression.Z) {
   val delays: DelayAnalysis = cache.get(DelayAnalysis)((e, None))
 
   private val exprMapping = mutable.HashMap[HashFirstEquality[Expression.Z], Expression.Z]()
-  private val varMapping = mutable.HashMap[ValueFlowNode, ValueFlowNode]()
+  private val varMapping = mutable.HashMap[ValueNode, ValueNode]()
 
   // TODO: The mapping stuff seems to be a really large performance cost. Maybe if I make it a reference equality it will be better? But that would also be fragile.
 
@@ -72,13 +72,12 @@ class AnalysisResults(cache: AnalysisCache, e: Expression.Z) {
     exprMapping += HashFirstEquality(req) -> remap(real)
   }
 
-  private def remap(req: ValueFlowNode) = varMapping.get(req).getOrElse(req)
+  private def remap(req: ValueNode) = varMapping.get(req).getOrElse(req)
   private def remap(req: Expression.Z) = exprMapping.get(HashFirstEquality(req)).getOrElse(req)
 
-  def valuesOf(e: Argument.Z) = callgraph.valuesOf[FlowValue](remap(ValueNode(e)))
+  def valuesOf(e: Argument.Z) = callgraph.valuesOf(remap(ValueNode(e)))
   def valuesOf(e: Expression.Z) = callgraph.valuesOf(remap(e))
 
-  def stopabilityOf(e: Argument.Z) = publications.stopabilityOf(remap(ValueNode(e)))
   def publicationsOf(e: Expression.Z) = publications.publicationsOf(remap(e))
 
   def effects(e: Expression.Z): Boolean = {
@@ -96,7 +95,6 @@ class AnalysisResults(cache: AnalysisCache, e: Expression.Z) {
 }
 
 trait Optimization extends ((Expression.Z, AnalysisResults) => Option[Expression]) with NamedOptimization {
-  //def apply(e : Expression, analysis : ExpressionAnalysisProvider[Expression], ctx: OptimizationContext) : Expression = apply((e, analysis, ctx))
   val name: String
 
   override def toString = name
@@ -135,9 +133,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     val trans = new Transform {
       override val onExpression = {
         case (e: Expression.Z) => {
+          import orc.util.StringExtension._
+          //Logger.finer(s"Optimizing:${" " * e.parents.size}${e.value.getClass.getSimpleName} ${e.value.toString.truncateTo(40)}")
           val e1 = opts.foldLeft(e)((e, opt) => {
-            import orc.util.StringExtension._
-            //Logger.fine(s"invoking ${opt.name} on:\n${e.value.toString.truncateTo(120)}")
+            //Logger.finer(s"invoking ${opt.name} on:\n${e.value.toString.truncateTo(120)}")
             opt(e, results) match {
               case None => e
               case Some(e2) =>
@@ -160,23 +159,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
 
     val r = trans(e)
-
-//    val check = transformFrom {
-//      case SpecificAST(e: Expression, path) => {
-//        for (v <- e.freeVars) {
-//          try {
-//            ctx(v)
-//          } catch {
-//            case exc: UnboundVariableException => {
-//              throw new AssertionError(s"Variable $v not bound in expression:\n$e\n=== in context: $ctx\n=== in overall program:\n$r", exc)
-//            }
-//          }
-//        }
-//        e
-//      }
-//    }
-//
-//    check(r)
 
     r
   }
@@ -244,30 +226,30 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           try {
             (new Transform {
               override val onExpression = {
-                case GetField.Z(_, _) => throw FoundException 
+                case GetField.Z(_, _) => throw FoundException
               }
             })(body)
             true
           } catch {
-            case FoundException => 
+            case FoundException =>
               false
           }
         }
-        
+
         val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
         if (byNonBlocking1 && noObjectRefs)
           Some(body.value)
         else
           None
       }
-      case n@New.Z(self, _, fields, _) => {
+      case n @ New.Z(self, _, fields, _) => {
         var changed = false
         val newFields = fields.mapValues({
-          case f@FieldFuture.Z(a: Argument.Z) if !a.freeVars.contains(self) => {
+          case f @ FieldFuture.Z(a: Argument.Z) if !a.freeVars.contains(self) => {
             changed = true
             (FieldArgument(a.value), None, None)
           }
-          case f@FieldFuture.Z(body) if !body.freeVars.contains(self) => {
+          case f @ FieldFuture.Z(body) if !body.freeVars.contains(self) => {
             // TODO: This is a hack. We just never lift out anything that references an object field. But really we just care about referencing 
             //       objects that could be recursive with this one. This happens with the this arguments of partial constructors.
             lazy val noObjectRefs = {
@@ -275,16 +257,16 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               try {
                 (new Transform {
                   override val onExpression = {
-                    case GetField.Z(_, _) => throw FoundException 
+                    case GetField.Z(_, _) => throw FoundException
                   }
                 })(body)
                 true
               } catch {
-                case FoundException => 
+                case FoundException =>
                   false
               }
             }
-            
+
             val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
             lazy val x = new BoundVar()
             if (byNonBlocking1 && noObjectRefs) {
@@ -296,10 +278,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           case f => (f.value, None, None)
         }).view.force
 
-        if(changed) {
+        if (changed) {
           val exprs = newFields.values.collect({ case (_, Some(expr), Some(x)) => (expr, x) })
           val newF = newFields.mapValues(_._1).view.force
-          Some(exprs.foldRight(n.value.copy(bindings = newF) : Expression)((p, c) => Branch(p._1.value, p._2, c)))
+          Some(exprs.foldRight(n.value.copy(bindings = newF): Expression)((p, c) => Branch(p._1.value, p._2, c)))
         } else
           None
       }
@@ -308,8 +290,16 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   val UnusedFutureElim = Opt("unused-future-elim") {
-    case (Branch.Z(Future.Z(f), x, g), a) if !(g.freeVars contains x) => 
+    case (Branch.Z(Future.Z(f), x, g), a) if !(g.freeVars contains x) =>
       (f.value >> Stop()) || g.value
+  }
+
+  val GetMethodElim = Opt("getmethod-elim") {
+    case (GetMethod.Z(o), a) if a.valuesOf(o).forall({
+      case n: NodeValue[_] => n.isMethod
+      case _ => false
+    }) =>
+      o.value
   }
 
   /*
@@ -330,15 +320,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   */
 
   val ForceElim = OptFull("force-elim") { (e, a) =>
-    import orc.compile.orctimizer.CallGraph._
+    import orc.compile.orctimizer.CallGraphValues._
     e match {
       case Force.Z(xs, vs, body) => {
-        def isForcable(e: FlowValue) = e match {
-          case _: FutureValue => true
-          case _: CallableValue => true
-          case _ => false
-        }
-        val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).exists(isForcable _))
+        val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).futures.nonEmpty)
         def addAnalysis(p: (BoundVar, Argument.Z)) = {
           val (x, v) = p
           (x, v.value, a.valuesOf(v))
@@ -355,29 +340,47 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
+  val ResolveElim = OptFull("resolve-elim") { (e, a) =>
+    import orc.compile.orctimizer.CallGraphValues._
+    e match {
+      case Resolve.Z(vs, body) => {
+        val (fs, nfs) = vs.partition(v => a.valuesOf(v).futures.nonEmpty)
+        if (fs.isEmpty)
+          Some(body.value)
+        else
+          None
+      }
+      case _ => None
+    }
+  }
+
   val IfDefElim = OptFull("ifdef-elim") { (e, a) =>
-    import orc.compile.orctimizer.CallGraph._
+    import orc.compile.orctimizer.CallGraphValues._
     e match {
       case IfLenientMethod.Z(v, f, g) =>
-        val vs = a.callgraph.targetsFromValue(a.valuesOf(v))
-        vs.values match {
-          case Some(s) =>
-            val (ds, nds) = s.partition(_ match {
-              case CallableValue(_: Routine, _) => true
-              case _ => false
-            })
-            if(ds.nonEmpty && nds.nonEmpty) {
-              None
-            } else if (ds.nonEmpty && nds.isEmpty) {
-              Some(f.value)
-            } else if (ds.isEmpty && nds.nonEmpty) {
-              Some(g.value)
-            } else {
-              // This probably shouldn't be reached.
-              None
-            }
-          case _ =>
-            None
+        val vs = a.callgraph.targetsFromValue(a.valuesOf(v)).toSet
+        val hasLenient = vs.exists(_ match {
+          case NodeValue(MethodNode(_: Routine.Z, _)) => true
+          case NodeValue(ExitNode(_: Call.Z)) => true
+          case NodeValue(EverywhereNode) => true
+          case _ => false
+        })
+        val hasStrict = vs.exists(_ match {
+          case NodeValue(MethodNode(_: Service.Z, _)) => true
+          case n: NodeValue[_] if !n.isExternalMethod.isFalse => true
+          case NodeValue(ExitNode(_: Call.Z)) => true
+          case NodeValue(EverywhereNode) => true
+          case _ => false
+        })
+        if (hasLenient && hasStrict) {
+          None
+        } else if (hasLenient && !hasStrict) {
+          Some(f.value)
+        } else if (!hasLenient && hasStrict) {
+          //Logger.info(s"Choosing R: $vs")
+          Some(g.value)
+        } else {
+          throw new AssertionError(s"Found neither lenient nor strict: $vs\n$e")
         }
       case _ => None
     }
@@ -388,6 +391,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       (a.publicationsOf(f) only 0) &&
       (!a.effects(f)) &&
       a.delayOf(f).maxHaltDelay == ComputationDelay() =>
+      //Logger.info(s"stop-equiv: ${f.value}\n====\n${a.delayOf(f)} ${a.publicationsOf(f)} ${a.effects(f)}")
       Stop()
   }
 
@@ -408,37 +412,36 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   val BranchElimConstant = OptFull("branch-elim-const") { (e, a) =>
+    import orc.compile.orctimizer.CallGraphValues._
     e match {
+      case Branch.Z(a: Argument.Z, x, y) =>
+        Some(y.value.subst(a.value, x))
       case Branch.Z(c, x, y) if (a.publicationsOf(c) only 1) && !a.effects(c) =>
-        val vs = a.valuesOf(c)
+        val vs = a.valuesOf(c).toSet
         val DelayInfo(delay, _) = a.delayOf(c)
         //println(s"branch-elim-const: $c\n${vs.values}, $effects, $delay")
-        vs.values match {
-          case Some(s) if s.size == 1 && delay == ComputationDelay() =>
-            val v = s.head
-            import CallGraph._
-            v match {
-              case DataValue(v) =>
-                Some(y.value.subst(Constant(v), x))
-              case ExternalSiteValue(v) =>
-                Some(y.value.subst(Constant(v), x))
-              case CallableValue(Method(name, _, _, _, _, _), _) if (e.freeVars contains name) && (e.contextBoundVars contains name) =>
-                Some(y.value.subst(name, x))
-              case _ =>
-                None
-            }
-          case _ =>
-            None
+        if (vs.size == 1 && delay == ComputationDelay()) {
+          vs.head match {
+            case NodeValue(ConstantNode(Constant(v), _)) =>
+              Some(y.value.subst(Constant(v), x))
+            case NodeValue(MethodNode(Method.Z(name, _, _, _, _, _), _)) if (e.freeVars contains name) && (e.contextBoundVars contains name) =>
+              Some(y.value.subst(name, x))
+            case _ =>
+              None
+          }
+        } else {
+          None
         }
-      case _ => None
+      case _ =>
+        None
     }
   }
 
   val BranchElim = OptFull("branch-elim") { (e, a) =>
     e match {
       case Branch.Z(f, x, g) if a.publicationsOf(f) only 0 => Some(f.value)
-      case Branch.Z(f, x, g) if !a.effects(f) && 
-        a.delayOf(f).maxFirstPubDelay == ComputationDelay() && a.delayOf(f).maxHaltDelay == ComputationDelay() && 
+      case Branch.Z(f, x, g) if !a.effects(f) &&
+        a.delayOf(f).maxFirstPubDelay == ComputationDelay() && a.delayOf(f).maxHaltDelay == ComputationDelay() &&
         (a.publicationsOf(f) only 1) && !g.freeVars.contains(x) => Some(g.value)
       case Branch.Z(f, x, g) =>
         //Logger.finest(s"Failed to elimate >>: ${f.effectFree} && ${f.nonBlockingPublish} && ${f.publications} only 1 && ${f.timeToHalt} && ${!g.freeVars.contains(x)} : ${e.e}")
@@ -446,13 +449,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
-  
+
   val TrimElim = Opt("trim-elim") {
     case _ if false => ???
     // TODO: Reenable this when DelayAnalysis is fixed for recursive functions.
     //case (Trim.Z(f), a) if a.publicationsOf(f) <= 1 && a.delayOf(f).maxHaltDelay == ComputationDelay() && !a.effects(f) => f.value
   }
-
 
   /*
   val LiftForce = OptFull("lift-force") { (e, a) =>
@@ -796,7 +798,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 }
 
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
-  val allOpts = List(BranchElim, TrimElim, UnusedFutureElim, StopEquiv, IfDefElim, ForceElim, BranchElimArg, StopElim, BranchElimConstant, FutureElim)
+  val allOpts = List(BranchElim, TrimElim, UnusedFutureElim, StopEquiv, 
+      IfDefElim, ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant, 
+      FutureElim, GetMethodElim)
   /*
   val allOpts = List(
     BranchReassoc,

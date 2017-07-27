@@ -21,12 +21,14 @@ import scala.reflect.ClassTag
 import orc.compile.flowanalysis.LatticeValue
 import orc.compile.flowanalysis.GraphDataProvider
 import orc.compile.flowanalysis.Analyzer
-import FlowGraph.{Node, Edge}
+import FlowGraph.{ Node, Edge }
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
 import orc.ast.orctimizer.named.Future
 import orc.ast.orctimizer.named.IfLenientMethod
+import orc.values.sites.{Site => ExtSite}
+import orc.util.{ TTrue, TFalse, TUnknown }
 
 sealed abstract class Delay {
   def <(o: Delay): Boolean
@@ -120,7 +122,7 @@ class DelayAnalysis(
 
 object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), DelayAnalysis] {
   import FlowGraph._
-  
+
   def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Method.Z])): DelayAnalysis = {
     val cg = cache.get(CallGraph)(params)
     val a = new DelayAnalyzer(cg)
@@ -128,7 +130,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
 
     new DelayAnalysis(res collect { case (ExitNode(e), r) => (e, r) }, cg)
   }
-  
+
   val worstState: DelayInfo = DelayInfo(IndefiniteDelay(), IndefiniteDelay())
 
   case class DelayInfo(maxFirstPubDelay: Delay, maxHaltDelay: Delay) {
@@ -158,17 +160,14 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
 
     val initialState: DelayInfo = DelayInfo(ComputationDelay(), ComputationDelay())
 
-    // TODO: I only actually need the value edges into future nodes.
     def inputs(node: Node): collection.Seq[ConnectedNode] = {
       node.inEdgesOf[HappensBeforeEdge].toSeq.map(e => ConnectedNode(e, e.from)) ++
-        node.inEdgesOf[UseEdge].toSeq.map(e => ConnectedNode(e, e.from)) ++
         node.inEdgesOf[FutureValueSourceEdge].toSeq.map(e => ConnectedNode(e, e.from)) ++
         node.inEdgesOf[ValueEdge].toSeq.filter(_.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.from))
     }
 
     def outputs(node: Node): collection.Seq[ConnectedNode] = {
       node.outEdgesOf[HappensBeforeEdge].toSeq.map(e => ConnectedNode(e, e.to)) ++
-        node.outEdgesOf[UseEdge].toSeq.map(e => ConnectedNode(e, e.to)) ++
         node.outEdgesOf[FutureValueSourceEdge].toSeq.map(e => ConnectedNode(e, e.to)) ++
         node.outEdgesOf[ValueEdge].toSeq.filter(_.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.to))
     }
@@ -182,126 +181,105 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
       }
 
     def transfer(node: Node, old: DelayInfo, states: States): (DelayInfo, Seq[Node]) = {
-      lazy val inStateAllOf = states.inStateReduced[HappensBeforeEdge](_ combineAllOf _)
-      lazy val inStateOneOf = states.inStateReduced[HappensBeforeEdge](_ combineOneOf _)
-      lazy val inStateValue = states.inStateReduced[ValueEdge](_ combineOneOf _)
-      // This is for the branch use edges from L-exit to exit
-      lazy val inStateUse = states.inStateReduced[UseEdge](_ combineAllOf _)
-      lazy val inStateFutureValueSource = states.inStateReduced[FutureValueSourceEdge](_ combineOneOf _)
-      
+      lazy val inStateAllOf = states.inStateReduced[TransitionEdge](_ combineAllOf _)
+      lazy val inStateOneOf = states.inStateReduced[TransitionEdge](_ combineOneOf _)
+      lazy val inStateEntryExit = states.inStateReduced[EntryExitEdge](_ combineAllOf _)
+
       // FIXME: This produces overly aggressive results for self referential values. It states they are instantly available which is not strictly true since the futures in the cycle are the only reason the cycle can complete.
-      
+
       val state: StateT = node match {
+        case node @ EntryNode(ast) =>
+          import orc.ast.orctimizer.named._
+          import CallGraphValues._
+          ast match {
+            case Resolve.Z(_, _) =>
+              val inState = states.inStateProcessed[FutureValueSourceEdge, Delay](
+                  ComputationDelay(),
+                  v => v.maxFirstPubDelay min v.maxHaltDelay,
+                  _ max _)
+              // We know the future binding must have started before the force starts.
+              // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
+              DelayInfo(inState, inState)
+            case ast@Force.Z(_, _, _) =>
+              val inState = states.inStateProcessed[FutureValueSourceEdge, DelayInfo](
+                  initialState,
+                  v => DelayInfo(v.maxFirstPubDelay, v.maxFirstPubDelay min v.maxHaltDelay),
+                  _ combineOneOf _)
+              // We know the future binding must have started before the force starts.
+              // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
+              //Logger.info(s"Force-Entry: ${node}    $inState\n${inputs(node).map(_.node.toString.take(100))}\n${outputs(node).map(_.node.toString.take(100))}")
+              inState
+            case _ =>
+              initialState
+          }
         case node @ ExitNode(ast) =>
           import orc.ast.orctimizer.named._
+          import CallGraphValues._
           ast match {
             case Future.Z(_) =>
+              val inStateValue = states.inStateReduced[ValueEdge](_ combineAllOf _)
               DelayInfo(ComputationDelay(), inStateValue.maxHaltDelay)
             case Call.Z(target, _, _) => {
-              import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
-              // FIXME: Recursive function calls should have IndefiniteDelays or should be otherwise marked to avoid infinite recursion being treated as computation delay.
+              val (extPubs, intPubs, otherPubs) = graph.byCallTargetCases(target)(
+                externals = { vs =>
+                  vs.collect({
+                    case site: ExtSite => DelayInfo(Delay(site.timeToPublish), Delay(site.timeToHalt))
+                    case _ => worstState
+                  }).reduce(_ combineOneOf _)
+                }, internals = { vs =>
+                  inStateOneOf
+                }, others = { vs =>
+                  worstState
+                })
 
-              val possibleV = graph.valuesOf[FlowValue](ValueNode(target))
-              val extPubs = possibleV match {
-                case CallGraph.BoundedSet.ConcreteBoundedSet(s) if s.exists(v => v.isInstanceOf[ExternalSiteValue]) =>
-                  val pubss = s.toSeq.collect {
-                    case ExternalSiteValue(site) =>
-                      DelayInfo(Delay(site.timeToPublish), Delay(site.timeToHalt))
-                  }
-                  Some(pubss.reduce(_ combineOneOf _))
-                case _ =>
-                  None
-              }
-              val intPubs = possibleV match {
-                case CallGraph.BoundedSet.ConcreteBoundedSet(s) if s.exists(v => v.isInstanceOf[CallableValue]) =>
-                  Some(inStateOneOf)
-                case _ =>
-                  None
-              }
-              val otherPubs = possibleV match {
-                case CallGraph.ConcreteBoundedSet(s) if s.exists(v => !v.isInstanceOf[ExternalSiteValue] && !v.isInstanceOf[CallableValue]) =>
-                  Some(worstState)
-                case _: CallGraph.MaximumBoundedSet[_] =>
-                  Some(worstState)
-                case _ =>
-                  None
-              }
+              //Logger.info(s"Handling call to ${node} ${target.value}: ${(extPubs, intPubs, otherPubs)}")
+                
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combineOneOf _))(_ combineOneOf _).getOrElse(worstState)
             }
             case IfLenientMethod.Z(v, l, r) => {
-              // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
-              import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
-              val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v))
-              val isDef = possibleV match {
-                case _: CallGraph.MaximumBoundedSet[_] =>
-                  None
-                case CallGraph.ConcreteBoundedSet(s) =>
-                  val (ds: Set[FlowValue], nds: Set[FlowValue]) = s.partition {
-                    case CallableValue(callable: Routine, _) =>
-                      true
-                    case _ =>
-                      false
-                  }
-                  (ds.nonEmpty, nds.nonEmpty) match {
-                    case (true, false) =>
-                      Some(true)
-                    case (false, true) =>
-                      Some(false)
-                    case _ =>
-                      None
-                  }
-              }
-              val realizableIn = isDef match {
-                case Some(true) =>
-                  states(ExitNode(l))
-                case Some(false) =>
-                  states(ExitNode(r))
-                case None =>
-                  inStateOneOf
-              }
-              realizableIn
+              graph.byIfLenientCases(v)(
+                  left = states(ExitNode(l)),
+                  right = states(ExitNode(r)),
+                  both = inStateOneOf)
             }
             case Trim.Z(_) =>
-              DelayInfo(inStateAllOf.maxFirstPubDelay, inStateAllOf.maxFirstPubDelay)
-            case New.Z(_, _, bindings, _) =>
-              DelayInfo(inStateAllOf.maxFirstPubDelay, inStateUse.maxHaltDelay)
-            case GetField.Z(_, f) =>
-              inStateAllOf
+              DelayInfo(inStateAllOf.maxFirstPubDelay, inStateAllOf.maxFirstPubDelay min inStateAllOf.maxHaltDelay)
+            case New.Z(_, _, _, _) =>
+              val inStateValue = states.inStateReduced[ValueEdge](_ combineAllOf _)
+              DelayInfo(ComputationDelay(), inStateValue.maxHaltDelay)
+            case GetField.Z(_, _) =>
+              initialState
+            case GetMethod.Z(e) =>
+              initialState
             case Otherwise.Z(l, r) =>
               val lState = states(ExitNode(l))
               val rState = states(ExitNode(r))
               DelayInfo(lState.maxFirstPubDelay max (lState.maxHaltDelay + rState.maxFirstPubDelay), lState.maxHaltDelay + rState.maxHaltDelay)
             case Stop.Z() =>
               DelayInfo(IndefiniteDelay(), ComputationDelay())
-            case Force.Z(_, _, _) =>
+            case ast@Force.Z(_, _, _) =>
               // We know the future binding must have started before the force starts.
               // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
-              // FIXME: This is now incorrect since when a future is bound is no longer based on when it's source publishes.
-              //        Resolve produces futures which are bould to one value based on the resolution of other futures.
-              DelayInfo(inStateFutureValueSource.maxFirstPubDelay + inStateAllOf.maxFirstPubDelay, 
-                  (inStateFutureValueSource.maxFirstPubDelay min inStateFutureValueSource.maxHaltDelay) + inStateAllOf.maxHaltDelay)
+              //Logger.info(s"Force-Exit: ${node}    $inStateEntryExit, $inStateAllOf")
+              DelayInfo(inStateEntryExit.maxFirstPubDelay + inStateAllOf.maxFirstPubDelay,
+                inStateEntryExit.maxHaltDelay + inStateAllOf.maxHaltDelay)
             case Resolve.Z(_, _) =>
               // We know the future binding must have started before the force starts.
-              // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
-              // FIXME: This is now incorrect since when a future is bound is no longer based on when it's source publishes.
-              //        Resolve produces futures which are bould to one value based on the resolution of other futures.
-              DelayInfo((inStateFutureValueSource.maxFirstPubDelay min inStateFutureValueSource.maxHaltDelay) + inStateAllOf.maxFirstPubDelay, 
-                  (inStateFutureValueSource.maxFirstPubDelay min inStateFutureValueSource.maxHaltDelay) + inStateAllOf.maxHaltDelay)
+              DelayInfo(inStateEntryExit.maxFirstPubDelay + inStateAllOf.maxFirstPubDelay,
+                inStateEntryExit.maxHaltDelay + inStateAllOf.maxHaltDelay)
             case Branch.Z(_, _, _) =>
-              DelayInfo(inStateAllOf.maxFirstPubDelay + inStateUse.maxFirstPubDelay, inStateAllOf.maxHaltDelay + inStateUse.maxHaltDelay)
+              // This is for the branch after edges from L-exit to exit
+              val inStateAfter = states.inStateReduced[CombinatorInternalOrderEdge](_ combineAllOf _)
+              DelayInfo(inStateAllOf.maxFirstPubDelay + inStateAfter.maxFirstPubDelay, 
+                  inStateAllOf.maxHaltDelay + inStateAfter.maxHaltDelay)
             case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) |
               DeclareMethods.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
               inStateAllOf
           }
-        case node @ EntryNode(ast) =>
-          initialState
-        case _: ValueFlowNode =>
+        case _: ValueNode =>
           // All values are available immediately and never execute
-          initialState 
+          initialState
         case EverywhereNode =>
-          worstState
-        case _ =>
-          Logger.warning(s"Unknown node given worst case result: $node")
           worstState
       }
 

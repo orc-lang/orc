@@ -26,6 +26,7 @@ import FlowGraph.{Node, Edge}
 import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
 import orc.values.sites.Effects
+import orc.values.sites.{Site => ExtSite}
 
 
 class EffectAnalysis(
@@ -116,8 +117,8 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
       node match {
         case n: ExitNode =>
           node.inEdgesOf[HappensBeforeEdge].toSeq.filter(_.to.isInstanceOf[ExitNode]).map(e => ConnectedNode(e, e.from)) ++
-            node.inEdgesOf[ValueEdge].toSeq.filter(_.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.from)) ++        
-            node.inEdgesOf[UseEdge].toSeq.filter(n => n.to.ast.isInstanceOf[New] || n.to.ast.isInstanceOf[Branch]).map(e => ConnectedNode(e, e.from))
+            node.inEdgesOf[ValueEdge].toSeq.filter(n => n.to.ast.isInstanceOf[New] || n.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.from)) ++        
+            node.inEdgesOf[AfterEdge].toSeq.filter(n => n.to.ast.isInstanceOf[Branch]).map(e => ConnectedNode(e, e.from))
         case _ =>
           Seq()
       }
@@ -127,8 +128,8 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
       node match {
         case n: ExitNode =>
           node.outEdgesOf[HappensBeforeEdge].toSeq.filter(_.to.isInstanceOf[ExitNode]).map(e => ConnectedNode(e, e.to)) ++        
-            node.outEdgesOf[ValueEdge].toSeq.filter(_.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.to)) ++        
-            node.outEdgesOf[UseEdge].toSeq.filter(n => n.to.ast.isInstanceOf[New] || n.to.ast.isInstanceOf[Branch]).map(e => ConnectedNode(e, e.to))
+            node.outEdgesOf[ValueEdge].toSeq.filter(n => n.to.ast.isInstanceOf[New] ||n.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.to)) ++        
+            node.outEdgesOf[AfterEdge].toSeq.filter(n => n.to.ast.isInstanceOf[Branch]).map(e => ConnectedNode(e, e.to))
         case _ =>
           Seq()
       }
@@ -152,78 +153,38 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
             case Future.Z(_) =>
               inState
             case Call.Z(target, _, _) => {
-              import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
-
-              val possibleV = graph.valuesOf[FlowValue](ValueNode(target))
-              val extPubs = possibleV match {
-                case CallGraph.BoundedSet.ConcreteBoundedSet(s) if s.exists(v => v.isInstanceOf[ExternalSiteValue]) =>
-                  val pubss = s.toSeq.collect {
-                    case ExternalSiteValue(site) =>
-                      EffectInfo(site.effects != Effects.None, true)
-                  }
-                  Some(pubss.reduce(_ combine _))
-                case _ =>
-                  None
-              }
-              val intPubs = possibleV match {
-                case CallGraph.BoundedSet.ConcreteBoundedSet(s) if s.exists(v => v.isInstanceOf[CallableValue]) =>
-                  Some(inState)
-                case _ =>
-                  None
-              }
-              val otherPubs = possibleV match {
-                case CallGraph.ConcreteBoundedSet(s) if s.exists(v => !v.isInstanceOf[ExternalSiteValue] && !v.isInstanceOf[CallableValue]) =>
-                  Some(worstState)
-                case _: CallGraph.MaximumBoundedSet[_] =>
-                  Some(worstState)
-                case _ =>
-                  None
-              }
+              val (extPubs, intPubs, otherPubs) = graph.byCallTargetCases(target)(
+                externals = { vs =>
+                  vs.collect({
+                    case site: ExtSite => EffectInfo(site.effects != Effects.None, true)
+                    case _ => worstState
+                  }).reduce(_ combine _)
+                }, internals = { vs =>
+                  inState
+                }, others = { vs =>
+                  worstState
+                })
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combine _))(_ combine _).getOrElse(worstState)
             }
             case IfLenientMethod.Z(v, l, r) => {
-              // This complicated mess is cutting around the graph. Ideally this information could be encoded in the graph, but this is flow sensitive?
-              import CallGraph.{ FlowValue, ExternalSiteValue, CallableValue }
-              val possibleV = graph.valuesOf[CallGraph.FlowValue](ValueNode(v))
-              val isDef = possibleV match {
-                case _: CallGraph.MaximumBoundedSet[_] =>
-                  None
-                case CallGraph.ConcreteBoundedSet(s) =>
-                  val (ds: Set[FlowValue], nds: Set[FlowValue]) = s.partition {
-                    case CallableValue(callable: Routine, _) =>
-                      true
-                    case _ =>
-                      false
-                  }
-                  (ds.nonEmpty, nds.nonEmpty) match {
-                    case (true, false) =>
-                      Some(true)
-                    case (false, true) =>
-                      Some(false)
-                    case _ =>
-                      None
-                  }
-              }
-              val realizableIn = isDef match {
-                case Some(true) =>
-                  states(ExitNode(l))
-                case Some(false) =>
-                  states(ExitNode(r))
-                case None =>
-                  inState
-              }
-              realizableIn
+              graph.byIfLenientCases(v)(
+                  left = states(ExitNode(l)),
+                  right = states(ExitNode(r)),
+                  both = inState)
             }
             case DeclareMethods.Z(callables, _) if callables.exists(_.isInstanceOf[Service.Z]) =>
+              // TODO: Can we do better than this? This is terrible. The real thing we need to encode here is that not killing this will have an effect.
               worstState
             case Trim.Z(_) =>
               inState
-            case New.Z(_, _, bindings, _) =>
+            case New.Z(_, _, _, _) =>
               inState
-            case GetField.Z(_, f) =>
+            case GetField.Z(_, _) =>
+              initialState
+            case GetMethod.Z(_) =>
               initialState
             case Otherwise.Z(l, r) =>
-              // TODO: Could use publication info to improve this.
+              // TODO: Could use publication info to improve this. But doing so would force an ordering on the analyses. Make sure pubs doesn't need this.
               inState
             case Stop.Z() =>
               initialState

@@ -100,7 +100,7 @@ abstract class Analyzer {
     var avoidedEnqueues = 0
     val startTime = System.nanoTime()
 
-    Logger.log(level, s"Traversal $this: starting")
+    Logger.log(finerLevel, s"Traversal $this: starting")
 
     try {
       val queue = mutable.Queue[NodeT]()
@@ -237,7 +237,7 @@ abstract class Analyzer {
       
       Logger.log(level, s"Traversal $this: selected trace in $traceFile")
     } else {
-      Logger.log(level, s"Traversal $this: selected trace is empty")
+      //Logger.log(level, s"Traversal $this: selected trace is empty")
     }
   }
 

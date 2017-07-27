@@ -119,6 +119,9 @@ class OrctimizerToPorc {
 
   def expression(expr: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
     import porc.PorcInfixNotation._
+    import CallGraphValues._
+    import FlowGraph._
+    
     val oldCtx = ctx
 
     val code = expr match {
@@ -129,22 +132,14 @@ class OrctimizerToPorc {
 
         val potentialTargets = ctx.callgraph.valuesOf(target)
 
-        val isExternal: Ternary = {
-          if (potentialTargets.forall(_.isInstanceOf[ExternalSiteValue])) {
-            TTrue
-          } else {
-            if (potentialTargets.forall(_.isInstanceOf[CallableValue])) {
-              TFalse
-            } else {
-              TUnknown
-            }
-          }
-        }
+        val isExternal = potentialTargets.view.collect({
+          case n: NodeValue[_] => n.isExternalMethod
+        }).fold(TUnknown)(_ union _)
 
         // TODO: Handle internal direct callables.
         val isDirect = {
           potentialTargets.forall({
-            case ExternalSiteValue(s) if s.isDirectCallable =>
+            case NodeValue(ConstantNode(Constant(s: orc.values.sites.Site), _)) if s.isDirectCallable =>
               true
             case _ =>
               false
@@ -153,7 +148,7 @@ class OrctimizerToPorc {
 
         val isNotRecursive = {
           potentialTargets.forall({
-            case CallableValue(c, _) if ctx.recursives.contains(c.name) =>
+            case NodeValue(MethodNode(c, _)) if ctx.recursives.contains(c.name) =>
               false
             case _ =>
               true
@@ -292,7 +287,7 @@ class OrctimizerToPorc {
           }
       }
       case IfLenientMethod.Z(a, f, g) => {
-        porc.IfDef(argument(a), expression(f), expression(g))
+        porc.IfLenientMethod(argument(a), expression(f), expression(g))
       }
       case DeclareMethods.Z(defs, body) => {
         val b = if (defs.exists(_.isInstanceOf[Service.Z]))
@@ -328,6 +323,12 @@ class OrctimizerToPorc {
       case GetField.Z(o, f) => {
         val v = newVarName(f.name)
         let((v, porc.GetField(argument(o), f))) {
+          ctx.p(v)
+        }
+      }
+      case GetMethod.Z(o) => {
+        val v = o.value ->> newVarName()
+        let((v, porc.GetMethod(argument(o)))) {
           ctx.p(v)
         }
       }
@@ -370,7 +371,7 @@ class OrctimizerToPorc {
         bodyPrefix ::: expression(body)
       }
     }
-    d.value ->> porc.MethodCPS(name, newP, newC, newT, d.isInstanceOf[Service.Z], args, newBody)
+    d.value ->> porc.MethodCPS(name, newP, newC, newT, d.isInstanceOf[Routine.Z], args, newBody)
   }
 
   private def newFlag(): MethodDirectCall = {

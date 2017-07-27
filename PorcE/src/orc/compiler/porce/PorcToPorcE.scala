@@ -118,10 +118,12 @@ class PorcToPorcE {
       case porc.TryFinally.Z(b, h) =>
         porce.TryFinally.create(transform(b), transform(h))    
         
-      case porc.IfDef.Z(arg, l, r) =>
-        porce.IfDef.create(transform(arg), transform(l), transform(r))      
+      case porc.IfLenientMethod.Z(arg, l, r) =>
+        porce.IfLenientMethod.create(transform(arg), transform(l), transform(r))      
       case porc.GetField.Z(o, f) =>
         porce.GetField.create(transform(o), f, ctx.execution.newRef())      
+      case porc.GetMethod.Z(o) =>
+        porce.GetMethod.create(transform(o), ctx.execution.newRef())      
       case porc.New.Z(bindings) =>
         val newBindings = bindings.mapValues(transform(_)).view.force
         val fieldOrdering = normalizeFieldOrder(bindings.keys)
@@ -146,7 +148,7 @@ class PorcToPorcE {
       val newBody = transform(m.body)
       //Logger.fine(s"Converting decl ${m.name} with:\ncapturingSlots = $scopeCapturingSlots\ncapturedSlots = $scopeCapturedSlots\nargSlots = $argSlots\n$descriptor")
       porce.Method.create(oldCtx.descriptor.findOrAddFrameSlot(m.name), 
-          argSlots.toArray, scopeCapturedSlots.toArray, scopeCapturingSlots.toArray, descriptor, m.value.isDef, newBody)
+          argSlots.toArray, scopeCapturedSlots.toArray, scopeCapturingSlots.toArray, descriptor, m.value.areArgsLenient, newBody)
     }  
     
     val res = m match {

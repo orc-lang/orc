@@ -86,6 +86,8 @@ class OILToOrctimizer {
     maybePublishForce(List(x), List(v), expr)
   }
 
+  // TODO: Use smart constructor for branch which does direct substitution when possible. This would simplify the output tree and reduce the amount of work for the optimizer and analyser.
+  
   def apply(e: Expression)(implicit ctx: Context): orct.Expression = {
     e -> {
       case Stop() => orct.Stop()
@@ -102,26 +104,32 @@ class OILToOrctimizer {
         maybePublishForce(x, a, x)
       }
       case Call(target, args, typeargs) => {
-        val t = new orct.BoundVar(Some(s"f_$target"))
+        val ft = new orct.BoundVar(Some(s"ft_$target"))
+        val m = new orct.BoundVar(Some(s"m_$target"))
+        val fm = new orct.BoundVar(Some(s"fm_$target"))
         def siteCall = {
           val uniqueArgs = args.toSet.toList
           val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(s"f_$a")))).toMap
-          val call = orct.Call(t, args map argVarsMap, typeargs map { _ map apply })
+          val call = orct.Call(fm, args map argVarsMap, typeargs map { _ map apply })
           if (uniqueArgs.size > 0) {
             maybePublishForce(uniqueArgs map argVarsMap, uniqueArgs, call)
           } else {
             call
           }
         }
-        def defCall = orct.Call(t, args map apply, typeargs map { _ map apply })
+        def defCall = orct.Call(fm, args map apply, typeargs map { _ map apply })
         val call = if (isDef(target)) {
-          defCall
+          ft >fm> defCall
         } else if (isSite(target)) {
-          siteCall
+          ft >fm> siteCall
         } else {
-          orct.IfLenientMethod(t, defCall, siteCall)
+          orct.GetMethod(ft) >m>
+          orct.Force(fm, m, {
+            orct.IfLenientMethod(fm, defCall, siteCall)
+          })
+          
         }
-        orct.Force(t, apply(target), call)
+        maybePublishForce(ft, target, call)
       }
       case Parallel(left, right) => orct.Parallel(apply(left), apply(right))
       case Sequence(left, x, right) => {

@@ -113,10 +113,12 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         MethodCPSCall(external, renameVariables(target), renameVariables(p), renameVariables(c), renameVariables(t), args.map(renameVariables))
       case MethodDirectCall.Z(external, target, args) =>
         MethodDirectCall(external, renameVariables(target), args.map(renameVariables))
-      case IfDef.Z(a, left, right) =>
-        IfDef(renameVariables(a), renameVariables(left), renameVariables(right))
+      case IfLenientMethod.Z(a, left, right) =>
+        IfLenientMethod(renameVariables(a), renameVariables(left), renameVariables(right))
       case GetField.Z(o, f) =>
         GetField(renameVariables(o), f)
+      case GetMethod.Z(o) =>
+        GetMethod(renameVariables(o))
       case New.Z(bindings) =>
         New(bindings.mapValues(renameVariables).view.force)
       case Spawn.Z(c, t, b, comp) =>

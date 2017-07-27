@@ -141,7 +141,7 @@ sealed abstract class Method extends PorcAST {
   def name: Variable
   def arguments: Seq[Variable]
   def body: Expression
-  def isDef: Boolean
+  def areArgsLenient: Boolean
 
   def allArguments: Seq[Variable]
 
@@ -158,11 +158,11 @@ object Method {
 }
 
 @leaf @transform
-final case class MethodCPS(name: Variable, pArg: Variable, cArg: Variable, tArg: Variable, isDef: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+final case class MethodCPS(name: Variable, pArg: Variable, cArg: Variable, tArg: Variable, areArgsLenient: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
   override def allArguments: Seq[Variable] = pArg +: cArg +: tArg +: arguments
 }
 @leaf @transform
-final case class MethodDirect(name: Variable, isDef: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+final case class MethodDirect(name: Variable, areArgsLenient: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
   override def allArguments: Seq[Variable] = arguments
 }
 
@@ -176,10 +176,13 @@ final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @
 final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression
 
 @leaf @transform
-final case class IfDef(@subtree argument: Argument, @subtree left: Expression, @subtree right: Expression) extends Expression
+final case class IfLenientMethod(@subtree argument: Argument, @subtree left: Expression, @subtree right: Expression) extends Expression
 
 @leaf @transform
-final case class GetField(@subtree future: Argument, field: Field) extends Expression
+final case class GetField(@subtree argument: Argument, field: Field) extends Expression
+
+@leaf @transform
+final case class GetMethod(@subtree argument: Argument) extends Expression
 
 @leaf @transform
 final case class New(@subtree bindings: Map[Field, Argument]) extends Expression

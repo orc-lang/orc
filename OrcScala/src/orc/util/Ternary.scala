@@ -21,6 +21,8 @@ sealed abstract class Ternary extends Product with Serializable {
   def unary_! : Ternary
   def &&(o: Ternary): Ternary
   def ||(o: Ternary): Ternary
+  
+  def union(o: Ternary): Ternary
 }
 
 object Ternary {
@@ -44,6 +46,11 @@ case object TTrue extends Ternary {
   def &&(o: Ternary): Ternary = o
   def ||(o: Ternary): Ternary = this
   
+  def union(o: Ternary): Ternary = o match {
+    case TTrue => TTrue
+    case _ => TUnknown
+  }
+  
   override def toString() = "true"
 }
 
@@ -62,6 +69,8 @@ case object TUnknown extends Ternary {
     case _ => TUnknown
   } 
   
+  def union(o: Ternary): Ternary = this
+  
   override def toString() = "unknown"
 }
 
@@ -73,6 +82,11 @@ case object TFalse extends Ternary {
   def unary_! : Ternary = TTrue
   def &&(o: Ternary): Ternary = this
   def ||(o: Ternary): Ternary = o
+  
+  def union(o: Ternary): Ternary = o match {
+    case TFalse => TFalse
+    case _ => TUnknown
+  }
   
   override def toString() = "false"
 }
