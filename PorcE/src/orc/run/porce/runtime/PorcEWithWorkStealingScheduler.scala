@@ -42,7 +42,7 @@ trait PorcEWithWorkStealingScheduler extends Orc {
         r.onComplete()
         if (t != null) {
           CompilerDirectives.transferToInterpreter()
-          Logger.log(Level.SEVERE, s"Schedulable threw exception.", t)
+          Logger.log(Level.SEVERE, s"Schedulable threw exception: $r", t)
         }
       }
     }

@@ -37,7 +37,7 @@ class SimpleWorkStealingScheduler(
   val maxStealWait = 20
   val goalUsableThreads = minWorkers + goalExtraThreads
   val maxUsableThreads = goalUsableThreads * 2
-  val dumpInterval = -1 // 10000
+  val dumpInterval = -1 // 2000
   val itemsToEvictOnOverflow = workerQueueLength / 2
   
   /** The average period of taking new work from another queue even if this thread has work. 
@@ -81,7 +81,7 @@ class SimpleWorkStealingScheduler(
         val ws = currentWorkers
         val nw = ws.size
 
-        // Count a thread as working if it is executing a potentially bloacking task and is RUNNABLE
+        // Count a thread as working if it is executing a potentially blocking task and is RUNNABLE
         val nBlocked = ws.count(t => {
           t.isPotentiallyBlocked && t.getState != Thread.State.RUNNABLE
         })
@@ -132,7 +132,7 @@ class SimpleWorkStealingScheduler(
     var overflows = 0
     var atRemovalSafePoint = false
 
-    private[this] var seed: Int = workerID * 997
+    private[this] var prngState: Int = workerID + 1 // Must be non-zero
     private[this] var stealFailureRunLength = 0
 
     override def run() = {
@@ -216,21 +216,21 @@ class SimpleWorkStealingScheduler(
     }
 
     @inline
-    private[this] def stepPRNG() = {
+    private[this] def getLocalRandomNumber() = {
       // An XORShift PRNG
       // This RNG does not pass statistical tests, but that doesn't matter for what we need.
-      var x = seed
+      var x = prngState
     	x ^= x << 13
     	x ^= x >>> 17
     	x ^= x << 5
-    	seed = x
+    	prngState = x
+    	x
     }
     
     //@inline
     private[this] def next(): Schedulable = {
       val getNewWork = newWorkPeriod > 0 && {
-        stepPRNG()
-        (seed % newWorkPeriod) == 0
+        (getLocalRandomNumber() % newWorkPeriod) == 0
       }
         
       var t: Schedulable = null
@@ -287,7 +287,7 @@ class SimpleWorkStealingScheduler(
           try {
             schedulerThis.synchronized {
               atRemovalSafePoint = true
-              schedulerThis.wait((stealFailureRunLength - n * 2) min maxStealWait)
+              schedulerThis.wait((stealFailureRunLength - stealAttemptsBeforeBlocking) min maxStealWait)
               atRemovalSafePoint = false
             }
           } catch {
@@ -302,7 +302,7 @@ class SimpleWorkStealingScheduler(
     private[this] def stealFromAnotherQueue(i: Int): Schedulable = {
       var t = inputQueue.poll()
       if (t == null) {
-        val index = (seed % nWorkers).abs
+        val index = (getLocalRandomNumber() % nWorkers).abs
         val w = workers(index)
         if (w != null) {
           t = w.workQueue.popTop()
@@ -340,8 +340,13 @@ class SimpleWorkStealingScheduler(
       buf += '\n'
     }
     val ws = currentWorkers
-    statLine(s"workers.size = ${workers.size}")
+    // Count a thread as working if it is executing a potentially blocking task and is RUNNABLE
+    val nBlocked = ws.count(t => {
+      t.isPotentiallyBlocked && t.getState != Thread.State.RUNNABLE
+    })
+    //statLine(s"workers.size = ${workers.size}")
     statLine(s"nWorkers = ${ws.size}")
+    statLine(s"nBlocked = ${nBlocked}")
     val steals = ws.map(_.steals).sum
     statLine(s"steals = ${steals}")
     val newWorks = ws.map(_.newWorks).sum
