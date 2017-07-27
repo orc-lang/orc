@@ -41,10 +41,8 @@ class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   // TODO:PERFORMANCE: f will probably create an extra megamorphic call site. It may be better to have the caller create the CounterSchedulable instance.
   //    This decision should be made along with the decision of whether to actually perform direct calls here.
   def scheduleOrCall(c: Counter, f: () => Unit) = {
-    val depth = PorcERuntime.stackDepthThreadLocal.get()
-    if (PorcERuntime.maxStackDepth > 0 && depth < PorcERuntime.maxStackDepth) {
-      // Call in this stack
-      PorcERuntime.stackDepthThreadLocal.set(depth + 1)
+    if (PorcERuntime.checkAndImplementStackDepth()) {
+      // Call in this stack      
       f()
     } else {
       // Schedule/trampoline
@@ -53,7 +51,7 @@ class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   }
 
   def beforeExecute(): Unit = {
-    PorcERuntime.stackDepthThreadLocal.set(0)
+    PorcERuntime.resetStackDepth()
   }
 }
 
@@ -61,6 +59,24 @@ object PorcERuntime {
   val stackDepthThreadLocal = new ThreadLocal[Int]() {
     override def initialValue() = {
       0
+    }
+  }
+  
+  def checkAndImplementStackDepth() = {
+    if(PorcERuntime.maxStackDepth > 0) {
+      val depth = PorcERuntime.stackDepthThreadLocal.get()
+      val r = depth < PorcERuntime.maxStackDepth
+      if(r) 
+        PorcERuntime.stackDepthThreadLocal.set(depth + 1)
+      r
+    } else {
+      false
+    }
+  }
+  
+  def resetStackDepth() = {
+    if(PorcERuntime.maxStackDepth > 0) {
+      PorcERuntime.stackDepthThreadLocal.set(0)
     }
   }
 

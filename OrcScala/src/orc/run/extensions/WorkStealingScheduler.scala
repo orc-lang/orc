@@ -29,7 +29,7 @@ class SimpleWorkStealingScheduler(
   maxSiteThreads: Int,
   val monitorInterval: Int = 10,
   val goalExtraThreads: Int = 0,
-  val workerQueueLength: Int = 256) {
+  val workerQueueLength: Int = 1024) {
   schedulerThis =>
   val nCores = Runtime.getRuntime().availableProcessors()
   val minWorkers = math.max(4, nCores * 2)
@@ -38,7 +38,7 @@ class SimpleWorkStealingScheduler(
   val goalUsableThreads = minWorkers + goalExtraThreads
   val maxUsableThreads = goalUsableThreads * 2
   val dumpInterval = -1 // 10000
-  val itemsToEvictOnOverflow = workerQueueLength / 4
+  val itemsToEvictOnOverflow = workerQueueLength / 2
   
   /** The average period of taking new work from another queue even if this thread has work. 
    * 
