@@ -27,7 +27,6 @@ import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
 import orc.ast.orctimizer.named.Future
 import orc.ast.orctimizer.named.IfLenientMethod
-import orc.values.sites.{Site => ExtSite}
 import orc.util.{ TTrue, TFalse, TUnknown }
 
 sealed abstract class Delay {
@@ -219,11 +218,18 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
             case Future.Z(_) =>
               val inStateValue = states.inStateReduced[ValueEdge](_ combineAllOf _)
               DelayInfo(ComputationDelay(), inStateValue.maxHaltDelay)
-            case Call.Z(target, _, _) => {
+            case Call.Z(target, args, _) => {
               val (extPubs, intPubs, otherPubs) = graph.byCallTargetCases(target)(
                 externals = { vs =>
+                  // FIXME: Update to use compile time "invoker" API once available. This will avoid problems of too specific results since the Site assumes a specific arity, etc.
                   vs.collect({
-                    case site: ExtSite => DelayInfo(Delay(site.timeToPublish), Delay(site.timeToHalt))
+                    case site: orc.values.sites.SpecificArity =>
+                      if (args.size == site.arity) {
+                        DelayInfo(Delay(site.timeToPublish), Delay(site.timeToHalt))
+                      } else {
+                        worstState
+                      }
+                    case site: orc.values.sites.Site => DelayInfo(Delay(site.timeToPublish), Delay(site.timeToHalt))
                     case _ => worstState
                   }).reduce(_ combineOneOf _)
                 }, internals = { vs =>

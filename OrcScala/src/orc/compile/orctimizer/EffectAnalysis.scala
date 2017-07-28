@@ -26,7 +26,6 @@ import FlowGraph.{Node, Edge}
 import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
 import orc.values.sites.Effects
-import orc.values.sites.{Site => ExtSite}
 
 
 class EffectAnalysis(
@@ -152,11 +151,18 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
           ast match {
             case Future.Z(_) =>
               inState
-            case Call.Z(target, _, _) => {
+            case Call.Z(target, args, _) => {
               val (extPubs, intPubs, otherPubs) = graph.byCallTargetCases(target)(
                 externals = { vs =>
+                  // FIXME: Update to use compile time "invoker" API once available. This will avoid problems of too specific results since the Site assumes a specific arity, etc.
                   vs.collect({
-                    case site: ExtSite => EffectInfo(site.effects != Effects.None, true)
+                    case site: orc.values.sites.SpecificArity =>
+                      if (args.size == site.arity) {
+                        EffectInfo(site.effects != Effects.None, true)
+                      } else {
+                        worstState
+                      }
+                    case site: orc.values.sites.Site => EffectInfo(site.effects != Effects.None, true)
                     case _ => worstState
                   }).reduce(_ combine _)
                 }, internals = { vs =>

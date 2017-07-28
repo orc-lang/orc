@@ -24,7 +24,6 @@ import orc.compile.Logger
 import scala.reflect.ClassTag
 import orc.values.Field
 import swivel.Zipper
-import orc.values.sites.{Site => ExtSite}
 
 class PublicationCountAnalysis(
   results: Map[Node, Range],
@@ -155,11 +154,18 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
           ast match {
             case Future.Z(_) =>
               onePublication
-            case Call.Z(target, _, _) => {
+            case Call.Z(target, args, _) => {
               val (extPubs, intPubs, otherPubs) = graph.byCallTargetCases(target)(
                 externals = { vs =>
                   vs.collect({
-                    case site: ExtSite => site.publications
+                    // FIXME: Update to use compile time "invoker" API once available. This will avoid problems of too specific results since the Site assumes a specific arity, etc.
+                    case site: orc.values.sites.SpecificArity =>
+                      if (args.size == site.arity) {
+                        site.publications
+                      } else {
+                        defaultResult
+                      }
+                    case site: orc.values.sites.Site => site.publications
                     case _ => defaultResult
                   }).reduce(_ union _)
                 }, internals = { vs =>

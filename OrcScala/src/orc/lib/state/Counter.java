@@ -127,7 +127,7 @@ public class Counter extends EvalSite implements TypedSite {
 
     @Override
     public int minPublications() {
-        return 1;
+        return 0;
     }
 
     @Override
