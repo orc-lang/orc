@@ -159,9 +159,16 @@ case class ClassForms(val translator: Translator) {
     e match {
       case ext.ClassVariable(n) =>
         def getAllClasses(n: String): Set[ClassInfo] = {
-          ctx.classContext(n).superclasses.flatMap(getAllClasses).toSet
+          ctx.classContext.get(n).map(_.superclasses.flatMap(getAllClasses).toSet).getOrElse({
+            translator.reportProblem(UnboundClassVariableException(n) at e)
+            Set()
+          })
         }
-        val cls = ctx.classContext(n)
+        val cls = ctx.classContext.getOrElse(n, {
+          translator.reportProblem(UnboundClassVariableException(n) at e)
+          // Build a dummy ClassInfo to allow compilation to continue.
+          ClassInfo(n, Seq(), Seq(), Seq(), None)
+        })
         (cls, cls.superclasses.flatMap(getAllClasses).toSet -- ctx.classContext.values)
       case cl @ ext.ClassLiteral(thisname, decls) => {
         var abstractMembers = List[Field]()
