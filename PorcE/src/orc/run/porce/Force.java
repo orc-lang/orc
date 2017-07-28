@@ -39,7 +39,6 @@ public class Force extends Expression {
 				futureValues[i] = futures[i].execute(frame);
 			}
 			// FIXME: PERFORMANCE: Make .force (below) execute a normal PorcE Call node. This would allow caching and inlining of the already resolved case.
-			// TODO: PERFORMANCE: Use a loop (in Java) to go over all the futures. This will allow ExplodeLoop since the length of .futures is known.
 			// TODO: PERFORMANCE: Speculate that the future state is stably stop or a value (maybe giving it a few tries to stabilize for initial accesses).
 			runtime.force(pValue, cValue, tValue, futureValues);
 		} catch (UnexpectedResultException e) {

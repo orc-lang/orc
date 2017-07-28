@@ -31,6 +31,7 @@ public class Resolve extends Expression {
 	@ExplodeLoop
 	public void executePorcEUnit(VirtualFrame frame) {
 		try {
+			// FIXME: PERFORMANCE: Remove this array entirely. Instead the futures can be handled by specializable subnodes. This will also eliminate the need to bundle them up.
 			final PorcEClosure pValue = p.executePorcEClosure(frame);
 			final Counter cValue = c.executeCounter(frame);
 			final Terminator tValue = t.executeTerminator(frame);
@@ -39,7 +40,6 @@ public class Resolve extends Expression {
 				futureValues[i] = futures[i].execute(frame);
 			}
 			// FIXME: PERFORMANCE: Make .force (below) execute a normal PorcE Call node. This would allow caching and inlining of the already resolved case.
-			// TODO: PERFORMANCE: Use a loop (in Java) to go over all the futures. This will allow ExplodeLoop since the length of .futures is known.
 			// TODO: PERFORMANCE: Speculate that the future state is stably stop or a value (maybe giving it a few tries to stabilize for initial accesses).
 			runtime.resolve(pValue, cValue, tValue, futureValues);
 		} catch (UnexpectedResultException e) {

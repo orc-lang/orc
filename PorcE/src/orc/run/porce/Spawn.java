@@ -17,6 +17,7 @@ public abstract class Spawn extends Expression {
 	@Specialization
 	public PorcEUnit spawnBindFuture(PorcERuntime runtime, Counter c, Terminator t, PorcEClosure computation) {
 	    t.checkLive();
+	    // TODO: PERFORMANCE: Give Spawn a call node attached to the closure. Then have runtime.spawn throw a ControlFlowException if we have stack space and then we will call the continuation using the call node.
 	    runtime.spawn(c, computation);
 	    return PorcEUnit.SINGLETON;
 	}

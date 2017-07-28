@@ -232,6 +232,9 @@ final class CounterNested(execution: PorcEExecution, parent: Counter, haltContin
    */
   override def onContextHalted(): Unit = {
     if (!isDiscorporated) {
+      // TODO: PERFORMANCE: Instead of scheduling here consider notifying the caller to haltToken to invoke the closure. It's likely it would be a stable node which could be called directly.
+      //   The tricky part will be handling the cases where instead of being called from a Truffle node we are called from the runtime.
+      //   Maybe we shouldn't call from the runtime. Or maybe we need two ways to halt a token. One which schedules the handler and one which direct calls it.
       // Token: from parent
       execution.runtime.scheduleOrCall(parent, () => {
         haltContinuation.callFromRuntime()

@@ -9,6 +9,7 @@ import orc.run.porce.runtime.Counter;
 public class HaltToken extends Expression {
 	@Specialization
 	public PorcEUnit run(Counter counter) {
+		// TODO: PERFORMANCE: Figure out a way to have haltToken return a closure to call. This could be passed to a call node which could efficiently invoke it here.
 		counter.haltToken();
 		return PorcEUnit.SINGLETON;
 	}

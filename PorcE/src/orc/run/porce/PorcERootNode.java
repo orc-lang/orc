@@ -3,7 +3,8 @@ package orc.run.porce;
 import static com.oracle.truffle.api.CompilerDirectives.SLOWPATH_PROBABILITY;
 import static com.oracle.truffle.api.CompilerDirectives.injectBranchProbability;
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.CompilerDirectives.*;
+import static com.oracle.truffle.api.CompilerDirectives.*;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -54,13 +55,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode {
 			InternalPorcEError.capturedLengthError(capturedSlots.length, captureds.length);
 		}
 		
-		// TODO: PERFORMANCE: Evaluate using specialized Variable nodes which know which kind of value they are loading (mainly 
+		// FIXME: PERFORMANCE: Evaluate using specialized Variable nodes which know which kind of value they are loading (mainly 
 		//    closed, but also argument) and load the value directly to avoid these transfers here. The captured look-up could even
-		//    profile and specialize on the specific captured variable array. 
-		//    This could use an assumption to invalidate the specializations if the same function is instantiated again with a 
-		//    different context. This would require a good way to check that the contexts were the same since multiple 
-		//    instantiations of the same function may end up with the same context even if their declarations where running
-		//    in different contexts.
+		//    profile and specialize on the specific captured variable array. This would eliminate all of these loops.
 
 		// Load all the arguments into the frame.
 		for (int i = 0; i < argumentSlots.length; i++) {
@@ -76,6 +73,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode {
 			Object ret = body.execute(frame);
 			return ret;
 		} catch(KilledException | HaltException e) {
+			transferToInterpreter();
 			Logger.log(Level.WARNING, () -> "Caught " + e + " from root node.", e);
 			return PorcEUnit.SINGLETON;
 		}

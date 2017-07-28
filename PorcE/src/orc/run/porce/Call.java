@@ -32,6 +32,8 @@ public abstract class Call extends Expression {
 	// http://cesquivias.github.io/blog/2015/01/08/writing-a-language-in-truffle-part-3-making-my-language-much-faster/#making-function-calls-faster
 
 	// FIXME: PERFORMANCE: Implement polymorphic inline cache for invokers check with canInvoke.
+	
+	// TODO: The specialization of the call nodes may be simpler if we split 
 
 	@Child
 	protected Expression target;

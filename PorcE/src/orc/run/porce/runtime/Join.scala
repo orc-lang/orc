@@ -41,6 +41,9 @@ abstract class Join(inValues: Array[AnyRef]) {
   protected var nUnbound = new AtomicInteger(inValues.size)
   // The array of values that have already been bound.
   // TODO: PERFORMANCE: Could this be the same array as inValues and we just overwrite values as we get them?
+  // TODO: PERFORMANCE: This should have one blank spot at the beginning so that the array can be reused for the continuation call with the initial argument filled with the closure.
+  //    The above two optimizations are NOT mutually exclusive. They can both be applied if the Force node knows to allocate the extra slot.
+  //    These will be easiest to implement when I'm reworking Join to use specializable nodes for each element.
   val values = Array.ofDim[AnyRef](inValues.size)
   // The flag saying if we have already halted.
   protected val halted = new AtomicBoolean(false)

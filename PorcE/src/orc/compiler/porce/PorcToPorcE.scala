@@ -49,6 +49,7 @@ class PorcToPorcE {
       case porc.PorcUnit.Z() =>
         porce.Argument.createPorcUnit()
       case Zipper(x: porc.Variable, p) =>
+        // FIXME: PERFORMANCE: Change this to create specialized variable nodes for: Local (let), Argument, and Closure context.
         val slot = ctx.descriptor.findFrameSlot(x)
         porce.Argument.createVariable(slot)
       case porc.Sequence.Z(es) =>
@@ -65,6 +66,10 @@ class PorcToPorcE {
           implicit val ctx = oldCtx.copy(descriptor = descriptor)
           
           val argSlots = args.map(lookupVariable(_))
+          
+          // TODO: Pass in read nodes instead of slots.
+          // TODO: Eliminate capturing slots. 
+          
           val capturingSlots = capturedVars.map(lookupVariable)
           val newBody = transform(body)
           porce.Continuation.create(argSlots.toArray, capturedSlots.toArray, capturingSlots.toArray, descriptor, newBody)
@@ -108,16 +113,19 @@ class PorcToPorcE {
       case porc.Spawn.Z(c, t, _, comp) =>
         porce.Spawn.create(transform(c), transform(t), transform(comp), ctx.runtime)
       case porc.Resolve.Z(p, c, t, futures) =>
+        // TODO: PERFORMANCE: Instead of building a single node, build a sequence of nodes: create Join, check futures and register with join as needed, start join if anything was registered.
+        //  The nodes that process and register values can specialize based on the state of the future they receive.
         porce.Resolve.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.runtime)
       case porc.Force.Z(p, c, t, futures) =>
+        // TODO: PERFORMANCE: Instead of building a single node, build a sequence of nodes: create Join, check futures and register with join as needed, start join if anything was registered.
+        //  The nodes that process and register values can specialize based on the state of the future they receive.
         porce.Force.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.runtime)
       case porc.SetDiscorporate.Z(c) =>
         porce.SetDiscorporate.create(transform(c))        
       case porc.TryOnException.Z(b, h) =>
         porce.TryOnException.create(transform(b), transform(h))
       case porc.TryFinally.Z(b, h) =>
-        porce.TryFinally.create(transform(b), transform(h))    
-        
+        porce.TryFinally.create(transform(b), transform(h))        
       case porc.IfLenientMethod.Z(arg, l, r) =>
         porce.IfLenientMethod.create(transform(arg), transform(l), transform(r))      
       case porc.GetField.Z(o, f) =>
@@ -142,6 +150,8 @@ class PorcToPorcE {
     def process(arguments: Seq[porc.Variable]) = {
       val descriptor = new FrameDescriptor()
       implicit val ctx = oldCtx.copy(descriptor = descriptor)
+      // TODO: Pass in read nodes instead of slots.
+      // TODO: Eliminate capturing slots. 
       val scopeCapturedSlots = (scopeCapturedVars ++ recCapturedVars).map(lookupVariable(_))
       assert(scopeCapturedSlots.map(_.getIdentifier()) == scopeCapturingSlots.map(_.getIdentifier()) ++ recCapturedVars)
       val argSlots = arguments.map(lookupVariable(_))
