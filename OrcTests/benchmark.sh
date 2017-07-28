@@ -16,7 +16,7 @@ fi
 NORMALJAVA=java
 
 CPUS=8
-NRUNS=15
+NRUNS=25
 TIMEOUT=60
 
 BATCHNAME="$(hostname)_$(date +"%Y%m%d-%H%M")"
@@ -29,6 +29,7 @@ sleep 2
 
 #                  "porcegraalO3:$GRAALJAVA:orc:porc:3" \
 for config in "porceinterpO3:$NORMALJAVA:orc:porc:3"   \
+                  "porceinterpO2:$NORMALJAVA:orc:porc:2"   \
                   "token:$NORMALJAVA:orc:token:3"    \
                   "scala:$NORMALJAVA:scala:token:3"; do
     IFS=':' read -r -a configs <<< "$config"
@@ -38,13 +39,15 @@ for config in "porceinterpO3:$NORMALJAVA:orc:porc:3"   \
     BACKEND="${configs[3]}"
     OPT="${configs[4]}"
     
-    echo "Options: -O $OPT -S $SET -B $BACKEND -t $TIMEOUT -c $CPUS -r $NRUNS -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv"
-
     cd $ROOTDIR/OrcTests
+
+    echo "$config" > $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log    
+    echo "Options: -O $OPT -S $SET -B $BACKEND -t $TIMEOUT -c $CPUS -r $NRUNS -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv" >> $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log    
+
     echo "Starting $config"
     (time "$JAVA" -classpath "$SCALALIBS:$ORCSCALALIBS:$ORCTESTSLIBS:$PORCELIBS" orc.test.BenchmarkTest \
             -O $OPT -S $SET -B $BACKEND -t $TIMEOUT -c $CPUS -r $NRUNS \
-            -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv 2>&1 | tee $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log) \
+            -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv 2>&1 | tee -a $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log) \
             || exit 2
     echo "Finished $config"
 done
