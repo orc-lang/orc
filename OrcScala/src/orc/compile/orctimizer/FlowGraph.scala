@@ -617,7 +617,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
     * These edges is only added by CallGraph.
     */
   case class FutureValueSourceEdge(from: Node, to: TokenFlowNode) extends Edge {
-    require(from.isInstanceOf[ExitNode] || from.isInstanceOf[ValueNode])
+    require(from.isInstanceOf[ExitNode] || from.isInstanceOf[ValueNode] || from == EverywhereNode)
     
     override def style: String = "dotted"
     override def color: String = "blue"

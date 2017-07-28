@@ -241,7 +241,7 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
   val worstConcreteValueSet: ConcreteValueSet[ObjectValueSet] = ConcreteValueSet[ObjectValueSet](ObjectValueSet(), NodeValueSet[ObjectValueSet](EverywhereNode)) 
   val worstFutureValueSet: FutureValueSet[ObjectValueSet] = FutureValueSet[ObjectValueSet](worstConcreteValueSet, Set[Node](EverywhereNode)) 
   val worstValueSet: FlowValueSet = FlowValueSet(worstFutureValueSet, worstConcreteValueSet)
-  val worstPublicationValueSet: FlowValueSet = FlowValueSet(FutureValueSet(), worstConcreteValueSet)
+  //val worstPublicationValueSet: FlowValueSet = FlowValueSet(FutureValueSet(), worstConcreteValueSet)
 
   type CallLocation = Call.Z
 
@@ -465,7 +465,7 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
           val r = inState flatMap {
             case o: ObjectValue => o.get(f).getOrElse(FlowValueSet())
             case n: NodeValue[_] if n.isInternalMethod.isTrue => FlowValueSet()
-            case _ => worstPublicationValueSet
+            case _ => worstValueSet
           }
           r
         case node @ ExitNode(New.Z(self, _, bindings, _)) =>
