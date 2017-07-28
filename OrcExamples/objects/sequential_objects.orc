@@ -24,15 +24,15 @@ class Safe extends Unsafe {
 (
 val o = new Safe
 
-upto(100) >> o.incr() >> stop |
-upto(100) >> o.read() >(a, b, c) as t> (if a = b && b = c then stop else "Fail " + t)
+upto(1000) >> o.incr() >> stop |
+upto(1000) >> o.read() >(a, b, c) as t> (if a = b && b = c then stop else "Fail " + t)
 )
 |
 {|
 val o = new Unsafe
 
-upto(100) >> o.incr() >> stop |
-upto(100) >> o.read() >(a, b, c) as t> (if a = b && b = c then stop else "Fail " + t)
+upto(1000) >> o.incr() >> stop |
+upto(1000) >> o.read() >(a, b, c) as t> (if a = b && b = c then stop else "Fail " + t)
 |} >> "Unsafe failed"
 
 {-
