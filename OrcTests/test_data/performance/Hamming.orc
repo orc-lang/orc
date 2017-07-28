@@ -39,7 +39,7 @@ class UniqueMerge {
     def f((mi, mv, i) :: (Integer, Top, Integer), v) = 
       if (if mv /= null then v >= mv else false) then (mi, mv, i+1) else (i, v, i+1)
     val (mi, mv, _) = foldl(f, (-1,Null(),0), arrayToList(tops))
-    --Println("Filled" + arrayToList(tops)) >> 
+    --Println("Filled " + arrayToList(tops)) >> 
     joinMap({ _ >i> (if( tops(i)? = mv ) then 
     		  tops(i) := Null()
     		else
@@ -63,7 +63,7 @@ def takeN(n, chan) =
     cnt.onZero() >> c.getAll() |
    	repeat({ chan.get() >x> c.put(x) >> cnt.dec() }) >> stop
   ) #
-  (l >> c.close() >> l)
+  (l  >> c.closeD() >> l)
 
 def makeChannels[A](n :: Integer) = collect({ upto(n) >> Channel[A]() })
 
@@ -78,7 +78,7 @@ Trans({ _*5 }, x5.get, x5'.put) >> stop |
 
 Println(takeN(400, out')) >>
 -- The getAll is required because there may be values in the channel and that will cause close to block.
-each(chans) >c> (c.getAll() >> stop | c.close()) >> stop
+each(chans) >c> c.closeD() >> stop
 
 |
 out.put(1) >> stop
