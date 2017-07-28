@@ -372,15 +372,13 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           case NodeValue(EverywhereNode) => true
           case _ => false
         })
-        if (hasLenient && hasStrict) {
-          None
-        } else if (hasLenient && !hasStrict) {
+        if (hasLenient && !hasStrict) {
           Some(f.value)
         } else if (!hasLenient && hasStrict) {
-          //Logger.info(s"Choosing R: $vs")
           Some(g.value)
         } else {
-          throw new AssertionError(s"Found neither lenient nor strict: $vs\n$e")
+          // If either both are available or neither then just leave this as is.
+          None
         }
       case _ => None
     }
