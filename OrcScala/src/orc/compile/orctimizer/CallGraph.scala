@@ -60,11 +60,6 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
 
    ⊤ is a value representing that the value could be anything (including values that do no appear in the program).
 
-   TODO: It would be possible to extend this analysis differentiate between any value at all (⊤) and only values not in the program.
-         This would be useful when using the inverse of this relation since any ⊤ site would call every target in the program.
-   TODO: This could incorporate Orc types (runtime types). This would enable nice general information and work well with site
-         metadata.
-
    */
 
   val graph: FlowGraph = rootgraph.combinedGraph
@@ -241,7 +236,6 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
   val worstConcreteValueSet: ConcreteValueSet[ObjectValueSet] = ConcreteValueSet[ObjectValueSet](ObjectValueSet(), NodeValueSet[ObjectValueSet](EverywhereNode)) 
   val worstFutureValueSet: FutureValueSet[ObjectValueSet] = FutureValueSet[ObjectValueSet](worstConcreteValueSet, Set[Node](EverywhereNode)) 
   val worstValueSet: FlowValueSet = FlowValueSet(worstFutureValueSet, worstConcreteValueSet)
-  //val worstPublicationValueSet: FlowValueSet = FlowValueSet(FutureValueSet(), worstConcreteValueSet)
 
   type CallLocation = Call.Z
 
@@ -316,9 +310,6 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
       }
     }
 
-    // TODO: PERFORMANCE: The filter operations are actually costing a notable amount of time. We may need to build an index or something.
-    //          Should be able to implement a mutable subclass of GraphDataProvider and use it's indexing support and accessors.
-    
     def valueInputs(node: Node): Seq[Edge] = {
       node.inEdgesOf[ValueEdge].toSeq ++ node.inEdgesOf[AfterEdge].toSeq ++ additionalEdges.NodeAdds(node).inEdges.toSeq
     }
@@ -341,8 +332,6 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
       def entryState(n: ExitNode) = {
         states(EntryNode(n.location))
       }
-      //def inStateWorst = states.inStateProcessed[ValueEdge, State](MaximumBoundedSet(), s => s, combine _)
-      //def inStateUse = states.inStateReduced[UseEdge](combine _)
 
       ifDebugNode(node) {
         Logger.fine(s"Processing node: $node @ ${node match { case n: WithSpecificAST => n.location; case n => n.ast}}\n$inState\n${inputs(node).map(_.edge)}")
@@ -415,7 +404,6 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
 
           sources foreach { s =>
             addEdge(FutureValueSourceEdge(s, entry))
-            //addEdge(FutureValueSourceEdge(s, exit))
           }
         case _ =>
           ()
@@ -453,10 +441,6 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
           })
           
           val nonMethods = inState.filter(v => !isMethod(v) && !isObjectWithApply(v))
-          /*
-          val nonMethodSet = if(nonMethods.nonEmpty) nonMethods ++ worstValueSet else initialState
-          val nonMethodValues = nonMethodSet.values ++ nonMethodSet.futures.content
-          */
           val nonMethodValues: ConcreteValueSet[ObjectValueSet] = if(nonMethods.nonEmpty) NodeValue[ObjectValueSet](node).set.values else ConcreteValueSet()
           val futureSource: Set[Node] = if(nonMethods.nonEmpty) Set(inNode) else Set()
           
@@ -469,37 +453,30 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
           }
           r
         case node @ ExitNode(New.Z(self, _, bindings, _)) =>
-          val structs = ObjectValue.buildStructures(node) { (field, inNode, refObject) =>
+          val structs = ObjectValue.buildStructures(node) { (field, inNode) =>
             field match {
-              case f@FieldFuture(expr) =>
-                val vs = states(inNode).view.map({
+              case FieldFuture(expr) =>
+                val (vs, oss) = states(inNode).view.map({
                   case f: FutureValue[_] =>
                     throw new AssertionError("Futures should never be inside futures")
-                  case o@ObjectValue(nw, structs) =>
-                    // This cannot be combined into the next case because refObject has side effects.
-                    refObject(o).set
                   case e =>
                     e.set.toField
-                })
+                }).unzip
                 val v = vs.fold(FieldValueSet())(_ union _)
-                
-                FieldValueSet(FutureValueSet(v.values, Set(inNode)), ConcreteValueSet())
-              case f@FieldArgument(a) =>
-                val r = states(inNode).view.map({
-                  case e: FutureValue[_] =>
-                    // FIXME: This will cause errors if this contains any object which is converted.
-                    e.set.toField
-                  case o@ObjectValue(nw, structs) =>
-                    // This cannot be combined into the next case because refObject has side effects.
-                    refObject(o).set
-                  case e =>
-                    e.set.toField
-                }).fold(FieldValueSet())(_ union _)
-                
-                r
+                val os = oss.fold(ObjectStructureMap())(_ merge _)
+
+                assert(v.futures.isEmpty)
+
+                (FieldValueSet(FutureValueSet(v.values, Set(inNode)), ConcreteValueSet()), os)
+              case FieldArgument(a) =>
+                val (vs, oss) = states(inNode).view.map(_.set.toField).unzip
+                val r = vs.fold(FieldValueSet())(_ union _)
+                val os = oss.fold(ObjectStructureMap())(_ merge _)
+
+                (r, os)
             }
           }
-          
+
           ObjectValue(node, structs).set
         case EntryNode(e @ Call.Z(target, args, _)) =>
           // Compute the possible values for external calls, this is combined with internal information in the ExitNode(Call) case.

@@ -20,8 +20,42 @@ import orc.values.sites.{ Site => ExtSite }
 import orc.values.sites.{ InvokerMethod => ExtInvokerMethod }
 import scala.collection.mutable
 import orc.util.{ Ternary, TUnknown, TTrue, TFalse }
+import scala.collection.TraversableOnce
 
 object CallGraphValues {
+
+  /** An object structure represented as mapping from fields to the values those fields can take on.
+    */
+  type ObjectStructure = Map[Field, FieldValueSet]
+  object ObjectStructure {
+    def apply(): ObjectStructure = {
+      Map()
+    }
+  }
+
+  /** A map of construction sites (New nodes) to object structures describing those objects.
+    */
+  type ObjectStructureMap = Map[Node, ObjectStructure]
+  object ObjectStructureMap {
+    def apply(pairs: (Node, ObjectStructure)*): ObjectStructureMap = {
+      Map(pairs: _*)
+    }
+  }
+
+  implicit class ObjectStructureMapAdds(self: ObjectStructureMap) {
+    private def mergeMaps[K, V](m1: Map[K, V], m2: Map[K, V])(f: (V, V) => V): Map[K, V] = {
+      m1 ++ m2.map { case (k, v) => k -> m1.get(k).map(f(v, _)).getOrElse(v) }
+    }
+
+    def merge(other: ObjectStructureMap): ObjectStructureMap = {
+      mergeMaps(self, other) { (s1, s2) =>
+        mergeMaps(s1, s2) { _ union _ }
+      }
+    }
+  }
+
+  /** A constructor (factory) object to build empty sets of objects.
+    */
   trait EmptySetConstructor[T <: AnyValueSet[T, T] with ObjectSet[T]] {
     def apply(): T
   }
@@ -63,46 +97,23 @@ object CallGraphValues {
       *
       * @param processField A function which takes a FieldValue, the node that provides the value for this field, and a function to convert objects to references.
       */
-    def buildStructures(node: Node)(processField: (FieldValue, Node, (ObjectValue) => ObjectRef) => FieldValueSet): Map[Node, ObjectStructure] = {
+    def buildStructures(node: Node)(processField: (FieldValue, Node) => (FieldValueSet, ObjectStructureMap)): Map[Node, ObjectStructure] = {
       val ExitNode(New.Z(self, _, bindings, _)) = node
 
-      val additionalStructures = mutable.Map[Node, ObjectStructure]()
-
-      def addStructure(root: Node, struct: ObjectStructure) = {
-        val existing = additionalStructures.get(root)
-        val newStruct = existing match {
-          case Some(existing) =>
-            for ((field, value) <- struct) yield {
-              (field, existing(field) union value)
-            }
-          case None =>
-            struct
-        }
-        additionalStructures += root -> newStruct
-      }
-
-      def refObject(o: ObjectValue): ObjectRef = {
-        for ((root, struct) <- o.structures) {
-          addStructure(root, struct)
-        }
-        ObjectRef(o.valueSource)
-      }
+      var additionalStructures = ObjectStructureMap()
 
       val struct: ObjectStructure = (for ((field, content) <- bindings) yield {
-        val contentRepr = content match {
-          case f @ FieldFuture.Z(expr) =>
-            val inNode = ExitNode(expr)
-            processField(f.value, inNode, refObject)
-          case f @ FieldArgument.Z(a) =>
-            val inNode = ValueNode(a)
-            processField(f.value, inNode, refObject)
+        val inNode = content match {
+          case FieldFuture.Z(expr) => ExitNode(expr)
+          case FieldArgument.Z(a) => ValueNode(a)
         }
+        val (contentRepr, os) = processField(content.value, inNode)
+        additionalStructures = additionalStructures merge os
         (field -> contentRepr)
       }).toMap
 
-      addStructure(node, struct)
+      additionalStructures = additionalStructures merge ObjectStructureMap(node -> struct)
 
-      // Logger.fine(s"Building SFO for: $nw ;;; $field = $fv ;;; Structs = $additionalStructures")
       val structs = additionalStructures.toMap
       structs
     }
@@ -222,11 +233,10 @@ object CallGraphValues {
       */
     def toFlow(structures: Map[Node, ObjectStructure]): FlowVariant
 
-    // FIXME: Add callback or return value which specifies ObjectValues which were converted.
     /** Get a reference without structure for this object set.
       */
-    def toField: FieldVariant
-    
+    def toField: (FieldVariant, Map[Node, ObjectStructure])
+
     override def toString() = s"$productPrefix(${toSet.mkString(", ")})"
   }
 
@@ -238,8 +248,8 @@ object CallGraphValues {
     * @param values the set of values which this can be. If `values` is empty then this cannot be a bare value.
     *
     */
-  case class ValueSet[ObjectSetType <: ObjectSet[ObjectSetType]](futures: FutureValueSet[ObjectSetType], values: ConcreteValueSet[ObjectSetType]) 
-        extends AnyValueSet[ValueSet[ObjectSetType], ObjectSetType] {
+  case class ValueSet[ObjectSetType <: ObjectSet[ObjectSetType]](futures: FutureValueSet[ObjectSetType], values: ConcreteValueSet[ObjectSetType])
+    extends AnyValueSet[ValueSet[ObjectSetType], ObjectSetType] {
     type Member = Value[ObjectSetType]
     type FlowVariant = FlowValueSet
     type FieldVariant = FieldValueSet
@@ -259,8 +269,10 @@ object CallGraphValues {
     def toFlow(structures: Map[Node, ObjectStructure]): FlowValueSet = {
       FlowValueSet(futures.toFlow(structures), values.toFlow(structures))
     }
-    def toField: FieldValueSet = {
-      FieldValueSet(futures.toField, values.toField)
+    def toField: (FieldValueSet, ObjectStructureMap) = {
+      val (futuresField, futuresOS) = futures.toField
+      val (valuesField, valuesOS) = values.toField
+      (FieldValueSet(futuresField, valuesField), futuresOS merge valuesOS)
     }
 
     def toSet = futures.toSet ++ values.toSet
@@ -298,8 +310,8 @@ object CallGraphValues {
     * This cannot hold futures.
     *
     */
-  case class ConcreteValueSet[ObjectSetType <: ObjectSet[ObjectSetType]: EmptySetConstructor](objects: ObjectSetType, nodeValues: NodeValueSet[ObjectSetType]) 
-        extends AnyValueSet[ConcreteValueSet[ObjectSetType], ObjectSetType] {
+  case class ConcreteValueSet[ObjectSetType <: ObjectSet[ObjectSetType]: EmptySetConstructor](objects: ObjectSetType, nodeValues: NodeValueSet[ObjectSetType])
+    extends AnyValueSet[ConcreteValueSet[ObjectSetType], ObjectSetType] {
     type Member = Value[ObjectSetType]
     type FlowVariant = ConcreteValueSet[ObjectValueSet]
     type FieldVariant = ConcreteValueSet[ObjectRefSet]
@@ -320,8 +332,10 @@ object CallGraphValues {
       ConcreteValueSet[ObjectValueSet](objects.toFlow(structures), nodeValues.toFlow(structures))
 
     }
-    def toField: ConcreteValueSet[ObjectRefSet] = {
-      ConcreteValueSet[ObjectRefSet](objects.toField, nodeValues.toField)
+    def toField: (ConcreteValueSet[ObjectRefSet], ObjectStructureMap) = {
+      val (objectsField, objectsOS) = objects.toField
+      val (nodesField, nodesOS) = nodeValues.toField
+      (ConcreteValueSet[ObjectRefSet](objectsField, nodesField), objectsOS merge nodesOS)
     }
 
     def toSet = objects.toSet.toSet[Value[ObjectSetType]] ++ nodeValues.toSet
@@ -348,14 +362,14 @@ object CallGraphValues {
 
   /** A set of futures represented as a set of potential content values and a set of future expressions that build the futures.
     */
-  case class FutureValueSet[ObjectSetType <: ObjectSet[ObjectSetType]: EmptySetConstructor](content: ConcreteValueSet[ObjectSetType], valueSources: Set[Node]) 
-        extends AnyValueSet[FutureValueSet[ObjectSetType], ObjectSetType] {
-    require(if(valueSources.isEmpty) content.isEmpty else true)
-    
+  case class FutureValueSet[ObjectSetType <: ObjectSet[ObjectSetType]: EmptySetConstructor](content: ConcreteValueSet[ObjectSetType], valueSources: Set[Node])
+    extends AnyValueSet[FutureValueSet[ObjectSetType], ObjectSetType] {
     type Member = FutureValue[ObjectSetType]
     type FlowVariant = FutureValueSet[ObjectValueSet]
     type FieldVariant = FutureValueSet[ObjectRefSet]
     type ObjectSetT = ObjectSetType
+
+    require(if (valueSources.isEmpty) content.isEmpty else true)
 
     def subsetOf(o: FutureValueSet[ObjectSetType]): Boolean = {
       content.subsetOf(o.content) &&
@@ -368,8 +382,9 @@ object CallGraphValues {
     def toFlow(structures: Map[Node, ObjectStructure]): FutureValueSet[ObjectValueSet] = {
       FutureValueSet[ObjectValueSet](content.toFlow(structures), valueSources)
     }
-    def toField: FutureValueSet[ObjectRefSet] = {
-      FutureValueSet[ObjectRefSet](content.toField, valueSources)
+    def toField: (FutureValueSet[ObjectRefSet], ObjectStructureMap) = {
+      val (contentField, contentOS) = content.toField
+      (FutureValueSet[ObjectRefSet](contentField, valueSources), contentOS)
     }
 
     def toSet = valueSources.map(FutureValue(content, _))
@@ -385,7 +400,7 @@ object CallGraphValues {
 
     def filter(f: Value[ObjectSetType] => Boolean): FutureValueSet[ObjectSetType] = {
       val srcs = valueSources.filter(src => f(FutureValue(content, src)))
-      FutureValueSet[ObjectSetType](if(srcs.nonEmpty) content else ConcreteValueSet[ObjectSetType](), srcs)
+      FutureValueSet[ObjectSetType](if (srcs.nonEmpty) content else ConcreteValueSet[ObjectSetType](), srcs)
     }
   }
 
@@ -400,8 +415,8 @@ object CallGraphValues {
     * @param valueSources The sources which provide values to this set.
     * 	The nodes must all be one of: ConstantNode, MethodNode, ExitNode for a external Call, or VariableNode which is the argument to a method (if the callers are not known).
     */
-  case class NodeValueSet[ObjectSetType <: ObjectSet[ObjectSetType]: EmptySetConstructor](values: Set[NodeValue[ObjectSetType]]) 
-        extends AnyValueSet[NodeValueSet[ObjectSetType], ObjectSetType] {
+  case class NodeValueSet[ObjectSetType <: ObjectSet[ObjectSetType]: EmptySetConstructor](values: Set[NodeValue[ObjectSetType]])
+    extends AnyValueSet[NodeValueSet[ObjectSetType], ObjectSetType] {
     type Member = NodeValue[ObjectSetType]
     type FlowVariant = NodeValueSet[ObjectValueSet]
     type FieldVariant = NodeValueSet[ObjectRefSet]
@@ -415,12 +430,12 @@ object CallGraphValues {
     def union(o: NodeValueSet[ObjectSetType]): NodeValueSet[ObjectSetType] = {
       NodeValueSet(values.union(o.values))
     }
-    
+
     def toFlow(structures: Map[Node, ObjectStructure]): NodeValueSet[ObjectValueSet] = {
       NodeValueSet[ObjectValueSet](values.map(n => NodeValue[ObjectValueSet](n.valueSource)))
     }
-    def toField: NodeValueSet[ObjectRefSet] = {
-      NodeValueSet[ObjectRefSet](values.map(n => NodeValue[ObjectRefSet](n.valueSource)))
+    def toField: (NodeValueSet[ObjectRefSet], ObjectStructureMap) = {
+      (NodeValueSet[ObjectRefSet](values.map(n => NodeValue[ObjectRefSet](n.valueSource))), ObjectStructureMap())
     }
 
     def toSet = values
@@ -467,10 +482,6 @@ object CallGraphValues {
     }
   }
 
-  /** An object structure represented as mapping from fields to the values those fields can take on.
-    */
-  type ObjectStructure = Map[Field, FieldValueSet]
-
   /** Base of object representations
     */
   trait ObjectSet[T <: AnyValueSet[T, T] with ObjectSet[T]] extends AnyValueSet[T, T] {
@@ -511,28 +522,21 @@ object CallGraphValues {
 
     def subsetOf(o: ObjectValueSet): Boolean = {
       valueSources.subsetOf(o.valueSources) &&
-      // TODO: This is concerning since we are letting the subset dictate which objects will be compared. 
+        // TODO: This is concerning since we are letting the subset dictate which objects will be compared. 
         (structures.keySet forall { r =>
           o.structures.contains(r) && structureSubsetOf(structures(r), o.structures(r))
         })
     }
 
-    private def mergeMaps[K, V](m1: Map[K, V], m2: Map[K, V])(f: (V, V) => V): Map[K, V] = {
-      m1 ++ m2.map { case (k, v) => k -> m1.get(k).map(f(v, _)).getOrElse(v) }
-    }
-    private def mergeStructuress(a: Map[Node, ObjectStructure], b: Map[Node, ObjectStructure]) = {
-      mergeMaps(a, b) { (s1, s2) =>
-        mergeMaps(s1, s2) { _ union _ }
-      }
-    }
-
     def union(o: ObjectValueSet): ObjectValueSet = {
-      ObjectValueSet(valueSources.union(o.valueSources), mergeStructuress(structures, o.structures))
+      ObjectValueSet(valueSources.union(o.valueSources), structures merge o.structures)
     }
 
-    def toField = ObjectRefSet(valueSources)
+    def toField: (ObjectRefSet, ObjectStructureMap) = {
+      (ObjectRefSet(valueSources), structures)
+    }
     def toFlow(structures: Map[Node, ObjectStructure]) = {
-      ObjectValueSet(valueSources, mergeStructuress(structures, this.structures))
+      ObjectValueSet(valueSources, structures merge this.structures)
     }
 
     def toSet = valueSources.map(ObjectValue(_, structures)).toSet
@@ -549,16 +553,6 @@ object CallGraphValues {
     def filter(f: Value[ObjectValueSet] => Boolean): ObjectValueSet = {
       ObjectValueSet(valueSources.filter(r => f(ObjectValue(r, structures))), structures)
     }
-    
-    /*
-    override def equals(o: Any) = o match {
-      case ObjectValueSet(oSrcs, oStructs) => {
-        valueSources == oSrcs &&
-          (oStructs.keySet == structures.keySet)
-      }
-      case _ => false
-    }
-    */
   }
 
   object ObjectValueSet extends EmptySetConstructor[ObjectValueSet] {
@@ -585,7 +579,9 @@ object CallGraphValues {
       ObjectRefSet(valueSources.union(o.valueSources))
     }
 
-    def toField = this
+    def toField: (ObjectRefSet, ObjectStructureMap) = {
+      (this, ObjectStructureMap())
+    }
     def toFlow(structures: Map[Node, ObjectStructure]) = {
       ObjectValueSet(valueSources, structures)
     }
@@ -612,69 +608,3 @@ object CallGraphValues {
     }
   }
 }
-
-
-  /*
-
-  object ObjectHandlingInstance extends ObjectHandling {
-    type NodeT = Node
-    type StoredValueT = BoundedSet[FieldContent]
-    type ResultValueT = BoundedSet[FlowValue]
-
-    val ObjectValueReified = implicitly[ClassTag[ObjectValue]]
-    val ObjectRefReified = implicitly[ClassTag[ObjectRef]]
-
-    case class ObjectRef(root: NodeT) extends FieldFutureContent with ObjectRefBase {
-      def subsetOf(o: Value): Boolean = o match {
-        case ObjectRefValue(`root`) => true
-        case _ => false
-      }
-    }
-    object ObjectRef extends ObjectRefCompanion
-    val ObjectRefCompanion = ObjectRef
-
-    case class ObjectValue(root: Node, structures: Map[Node, ObjectStructure]) extends
-      FlowValue with FutureContent with SetValue with super.ObjectValueBase {
-
-      private def structureToString(t: (Node, ObjectStructure), prefix: String): String = {
-        val (n, struct) = t
-        def pf(t: (Field, StoredValueT)) = {
-          val (f, v) = t
-          s"$prefix |   $f -> $v"
-        }
-        s"$prefix$n ==>${if (struct.nonEmpty) "\n" else ""}${struct.map(pf).mkString("\n")}"
-      }
-
-      override def toString() = {
-        s"ObjectValue($root,\n${structures.map(structureToString(_, "      ")).mkString("\n  ")})"
-        //s"ObjectValue($root, ...)"
-      }
-
-      def derefStoredValue(s: BoundedSet[FieldContent]): BoundedSet[FlowValue] = s flatMap[FlowValue] {
-        case v: FlowValue =>
-          BoundedSet(v)
-        case FieldFutureValue(v, s) =>
-          BoundedSet(FutureValue(derefFieldFutureContent(v.map(x=>x)), s))
-        case ObjectRef(i) =>
-          BoundedSet(lookupObject(i))
-      }
-      def derefFieldFutureContent(s: BoundedSet[FieldFutureContent]): BoundedSet[FutureContent] = s map[FutureContent] {
-        case ObjectRef(i) =>
-          lookupObject(i)
-        case v: FutureContent =>
-          v
-      }
-
-      def copy(root: FlowGraph.Node, structs: Map[Node, ObjectStructure]): ObjectValue = {
-        ObjectValue(root, structs)
-      }
-
-      def subsetOf(o: Value): Boolean = o match {
-        case o: ObjectValue => super[ObjectValueBase].subsetOf(o)
-        case _ => false
-      }
-    }
-
-    object ObjectValue extends ObjectValueCompanion
-  }
-  */
