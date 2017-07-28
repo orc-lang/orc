@@ -28,6 +28,7 @@ class PorcToPorcE {
   val fieldOrderCache = mutable.HashMap[Set[Field], Seq[Field]]()
   
   private def normalizeFieldOrder(s: Iterable[Field]) = {
+    // TODO: PERFORMANCE: If we could somehow combine the field lists for classes in the same heirachy (or simply used in the same places) we could avoid the need for as many PICs.
     fieldOrderCache.getOrElseUpdate(s.toSet, s.toSeq.sortBy(_.name))
   }
 

@@ -25,18 +25,17 @@ public class GetMethod extends Expression {
 	public Object execute(VirtualFrame frame) {
 		final Object obj = object.execute(frame);
 
-		Accessor accessor = getAccessorWithBoundary(obj);
 		// FIXME: PERFORMANCE: Cache accessor and validate with accessor.canGet. With polymorphic cache.
-
-		if (accessor instanceof ErrorAccessor) {
-			return obj;
-		} else {
-			try {
+		try {
+			Accessor accessor = getAccessorWithBoundary(obj);
+			if (accessor instanceof ErrorAccessor) {
+				return obj;
+			} else {
 				return accessWithBoundary(accessor, obj);
-			} catch (Exception e) {
-				execution.get().notifyOrc(new CaughtEvent(e));
-				throw HaltException.SINGLETON();
 			}
+		} catch (Exception e) {
+			execution.get().notifyOrc(new CaughtEvent(e));
+			throw HaltException.SINGLETON();
 		}
 	}
 

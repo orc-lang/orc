@@ -25,10 +25,9 @@ public class GetField extends Expression {
 	public Object execute(VirtualFrame frame) {
 		final Object obj = object.execute(frame);
 
-		Accessor accessor = getAccessorWithBoundary(obj);
 		// FIXME: PERFORMANCE: Cache accessor and validate with accessor.canGet. With polymorphic cache.
-
 		try {
+			Accessor accessor = getAccessorWithBoundary(obj);
 			return accessWithBoundary(accessor, obj);
 		} catch (Exception e) {
 			execution.get().notifyOrc(new CaughtEvent(e));
