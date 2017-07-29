@@ -224,8 +224,40 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   val EtaReduce = Opt("eta-reduce") {
-    case (Continuation.Z(formals, CallContinuation.Z(t, args)), a) if args == formals =>
+    case (Continuation.Z(formals, CallContinuation.Z(t, args)), a) if args.map(_.value) == formals =>
       t.value
+    case (Continuation.Z(formals,
+      TryOnException.Z(CallContinuation.Z(p, args), _)
+      ), a) if args.map(_.value) == formals =>
+      p.value
+  }
+
+  /** Transform this pattern:
+    * ```
+    * λ(v...).
+    *   let comp = λ().
+    *       P (v...) in
+    *   try
+    *     spawn_must C T comp_668
+    *   catch
+    *     ...
+    * ```
+    * into
+    * ```
+    * P
+    * ```
+    *
+    * This is safe since the stack will not grow since we have actually eliminated the call entirely and don't need the trampoline here.
+    */
+  val EtaSpawnReduce = Opt("eta-spawn-reduce") {
+    case (Continuation.Z(formals,
+      Let.Z(comp, Continuation.Z(Seq(),
+        CallContinuation.Z(p, args)
+        ),
+        TryOnException.Z(Spawn.Z(_, _, _, compRef), _)
+        )
+      ), a) if args.map(_.value) == formals && comp == compRef.value =>
+      p.value
   }
 
   val VarLetElim = Opt("var-let-elim") {
@@ -285,7 +317,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
    */
 
 */
-  val allOpts = List[Optimization](InlineLet, EtaReduce, TryCatchElim, TryFinallyElim)
+  val allOpts = List[Optimization](InlineLet, EtaReduce, TryCatchElim, TryFinallyElim, EtaSpawnReduce)
 
   val opts = allOpts.filter { o =>
     val b = co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -304,7 +336,7 @@ object Optimizer {
     }
   }
   */
-  
+
   object :::> {
     def unapply(e: PorcAST.Z): Option[(Expression, Expression)] = e match {
       case Sequence.Z(e :: l) =>
@@ -329,10 +361,10 @@ object Optimizer {
         val LetStack(bindings, b1) = ss
         //Logger.fine(s"unpacked sequence: $s $ss $bindings $b1")
         Some(((None, s) +: bindings, b1))
-      case s => 
+      case s =>
         Some((Seq(), s))
     }
-    
+
     def apply(bindings: Seq[(Option[Variable], Expression)], b: Expression) = {
       bindings.foldRight(b)((bind, b) => {
         bind match {
@@ -352,11 +384,6 @@ object Optimizer {
   }
 
   /*
-  val EtaSpawnReduce = Opt("eta-spawn-reduce") {
-    case (ContinuationIn(formal, _, SpawnIn(_, _, CallIn((t: Var) in ctx, arg, _))), a) if arg == formal && ctx(t).isInstanceOf[DefArgumentBound] =>
-      t
-  }
-
   val LetElim = Opt("let-elim") {
     //case (LetIn(x, v, b), a) if !b.freevars.contains(x) && a(v).doesNotThrowHalt && a(v).sideEffectFree => b
     case (LetIn(x, ContinuationIn(_, _, _), b), a) if !b.freevars.contains(x) => b
