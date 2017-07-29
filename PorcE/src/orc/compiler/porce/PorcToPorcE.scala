@@ -76,7 +76,9 @@ class PorcToPorcE {
       case porc.Sequence.Z(es) =>
         porce.Sequence.create(es.map(transform(_)).toArray)
       case porc.Let.Z(x, v, body) =>
-        porce.Let.create(lookupVariable(x), transform(v), transform(body))
+        porce.Sequence.create(Array(
+            porce.Write.Local.create(lookupVariable(x), transform(v)),
+            transform(body)))
       case porc.Continuation.Z(args, body) =>
         val descriptor = new FrameDescriptor()
         val oldCtx = ctx
