@@ -9,15 +9,18 @@ import orc.FutureBound
 import orc.FutureUnbound
 import orc.FutureStopped
 import java.util.concurrent.atomic.AtomicBoolean
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 trait PorcERuntimeOperations {
   this: PorcERuntime =>
 
+  @TruffleBoundary(allowInlining = true)
   def spawn(c: Counter, computation: PorcEClosure): Unit = {
     scheduleOrCall(c, () => computation.callFromRuntime())
     // TODO: PERFORMANCE: Allowing run here is a critical optimization. Even with a small depth limit (32) this can give a factor of 6.
   }
       
+  @TruffleBoundary(allowInlining = true)
   def resolve(p: PorcEClosure, c: Counter, t: Terminator, vs: Array[AnyRef]) = {
     t.checkLive()
     val resolver = new Resolve(vs) with Terminatable {
@@ -51,6 +54,7 @@ trait PorcERuntimeOperations {
     *
     * If vs contains a ForcableCallableBase it must have a correct and complete closedValues.
     */
+  @TruffleBoundary(allowInlining = true)
   def force(p: PorcEClosure, c: Counter, t: Terminator, vs: Array[AnyRef]): Unit = {
     assert(vs.length > 0)
     vs.length match {

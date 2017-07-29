@@ -62,16 +62,22 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   val t = new Terminator
 
   def scheduleProgram(prog: PorcEClosure): Unit = {
+    val nStarts = System.getProperty("porce.nStarts", "1").toInt
     // Token: From initial.
-    runtime.schedule(new CounterSchedulable(c) {
-      def run(): Unit = {
-        try {
-          prog.callFromRuntime(p, c, t)
-        } finally {
+    for(_ <- 0 until nStarts) {
+      c.newToken()
+      runtime.schedule(new CounterSchedulable(c) {
+        def run(): Unit = {
           //
+          try {
+            prog.callFromRuntime(p, c, t)
+          } finally {
+            //
+          }
         }
-      }
-    })
+      })
+    }
+    c.haltToken()
     
     /*if(Counter.tracingEnabled) {
       Thread.sleep(5000)

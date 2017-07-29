@@ -148,7 +148,7 @@ abstract class Counter {
    * reaches 0.
    */
   val count = new AtomicInteger(1)
-  
+
   @volatile
   var isDiscorporated = false
 
@@ -167,6 +167,7 @@ abstract class Counter {
    *
    * If we did halt call onContextHalted().
    */
+  @TruffleBoundary(allowInlining = true)
   def haltToken(): Unit = {
     val n = count.decrementAndGet()
     if (Counter.tracingEnabled) {
@@ -187,6 +188,7 @@ abstract class Counter {
   /**
    * Increment the count.
    */
+  @TruffleBoundary(allowInlining = true)
   def newToken(): Unit = {
     val n = count.getAndIncrement()
     if (Counter.tracingEnabled) {

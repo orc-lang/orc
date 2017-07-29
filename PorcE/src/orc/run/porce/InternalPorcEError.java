@@ -2,6 +2,7 @@ package orc.run.porce;
 
 import static com.oracle.truffle.api.CompilerDirectives.*;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 public class InternalPorcEError extends Error {
@@ -19,15 +20,15 @@ public class InternalPorcEError extends Error {
 		super(msg);
 	}
 
+	@TruffleBoundary(allowInlining = true)
 	public static InternalPorcEError typeError(PorcENode n, UnexpectedResultException e) {
-		transferToInterpreter();
-		throw new InternalPorcEError("Received illegal value '" + e.getResult() + "' as some parameter in '" + n + "'.",
+		throw new InternalPorcEError("Received illegal value '" + e.getResult() + "' as some parameter in '" + n.porcNode() + "'.",
 				e);
 	}
 
+	@TruffleBoundary(allowInlining = true)
 	public static InternalPorcEError capturedLengthError(int slotsLen, int capturedsLen) {
-		transferToInterpreter();
 		throw new InternalPorcEError(
-				"captureds array is the wrong length: slots len = " + slotsLen + ", captureds len = " + capturedsLen);
+				"captureds array is the wrong length: expected len = " + slotsLen + ", provided len = " + capturedsLen);
 	}
 }

@@ -1,14 +1,9 @@
 package orc.run.porce;
 
-import static com.oracle.truffle.api.CompilerDirectives.SLOWPATH_PROBABILITY;
-import static com.oracle.truffle.api.CompilerDirectives.injectBranchProbability;
-
 import com.oracle.truffle.api.CompilerDirectives.*;
 import static com.oracle.truffle.api.CompilerDirectives.*;
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 
 import java.util.logging.Level;
@@ -20,6 +15,8 @@ import orc.run.porce.runtime.KilledException;
 import scala.Option;
 
 public class PorcERootNode extends RootNode implements HasPorcNode {
+	private final static boolean assertionsEnabled = false;
+
 	private Option<PorcAST> porcNode = Option.apply(null);
 
 	public void setPorcAST(PorcAST ast) {
@@ -43,13 +40,15 @@ public class PorcERootNode extends RootNode implements HasPorcNode {
 
 	@Override
 	public Object execute(VirtualFrame frame) {
-		Object[] arguments = frame.getArguments();
-		if (injectBranchProbability(SLOWPATH_PROBABILITY, arguments.length != nArguments + 1)) {
-			throwArityException(arguments.length - 1, nArguments);
-		}
-		Object[] captureds = (Object[]) arguments[0];
-		if (injectBranchProbability(SLOWPATH_PROBABILITY, captureds.length != nCaptured)) {
-			InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
+		if (assertionsEnabled) {
+			Object[] arguments = frame.getArguments();
+			if (arguments.length != nArguments + 1) {
+				throwArityException(arguments.length - 1, nArguments);
+			}
+			Object[] captureds = (Object[]) arguments[0];
+			if (captureds.length != nCaptured) {
+				InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
+			}
 		}
 
 		try {

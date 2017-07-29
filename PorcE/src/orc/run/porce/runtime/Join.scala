@@ -84,10 +84,6 @@ abstract class Join(inValues: Array[AnyRef]) {
         join.halt()
       }
     }
-
-    // We can ignore prepareSpawn since all the executions are being performed
-    // in the context of the count held by join.
-    def prepareSpawn(): Unit = {}
   }
 
 

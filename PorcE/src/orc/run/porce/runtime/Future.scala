@@ -16,6 +16,7 @@ import orc.values.{ Format, OrcValue }
 import orc.values.Field
 import orc.FutureState
 import orc.FutureReader
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** A future value that can be bound or unbound or halted.
   *
@@ -37,6 +38,7 @@ final class Future() extends OrcValue with orc.Future {
 
   /** Bind this to a value and call publish and halt on each blocked Blockable.
     */
+  @TruffleBoundary(allowInlining = true)
   def bind(v: AnyRef) = {
     assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
     assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
@@ -62,6 +64,7 @@ final class Future() extends OrcValue with orc.Future {
 
   /** Bind this to stop and call halt on each blocked Blockable.
     */
+  @TruffleBoundary(allowInlining = true)
   def stop() = {
     val done = synchronized {
       if (_state == Unbound) {

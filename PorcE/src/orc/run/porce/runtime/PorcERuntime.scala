@@ -20,6 +20,7 @@ import orc.run.extensions.OrcWithWorkStealingScheduler
 import orc.run.extensions.SupportForRwait
 import orc.run.extensions.SupportForSynchronousExecution
 import orc.run.extensions.SupportForSchedulerUseProfiling
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
     with PorcEInvocationBehavior
@@ -40,6 +41,7 @@ class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
 
   // TODO:PERFORMANCE: f will probably create an extra megamorphic call site. It may be better to have the caller create the CounterSchedulable instance.
   //    This decision should be made along with the decision of whether to actually perform direct calls here.
+	@TruffleBoundary(allowInlining = true)
   def scheduleOrCall(c: Counter, f: () => Unit) = {
     if (PorcERuntime.checkAndImplementStackDepth()) {
       // Call in this stack      
