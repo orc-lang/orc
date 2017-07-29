@@ -7,11 +7,12 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.RootNode;
 
 import orc.ast.porc.PorcAST;
 import orc.run.porce.runtime.PorcEClosure;
 
-public class Continuation extends Expression {
+public class NewContinuation extends Expression {
 	@Children
 	protected final Expression[] capturedVariables;
 	protected RootCallTarget callTarget;
@@ -21,12 +22,8 @@ public class Continuation extends Expression {
 		super.setPorcAST(ast);
 	}
 
-	public Continuation(FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameSlot[] capturingSlots, FrameDescriptor descriptor, Expression body) {
-		this.capturedVariables = new Expression[capturedSlots.length];
-		for (int i = 0; i < capturedSlots.length; i++) {
-			capturedVariables[i] = new Variable(capturedSlots[i]);
-		}
-		PorcERootNode rootNode = new PorcERootNode(argumentSlots, capturingSlots, descriptor, body);
+	public NewContinuation(Expression[] capturedVariables, RootNode rootNode) {
+		this.capturedVariables = capturedVariables;
 		this.callTarget = Truffle.getRuntime().createCallTarget(rootNode);
 	}
 	
@@ -47,10 +44,10 @@ public class Continuation extends Expression {
 			(capturedValues.length > 2 ? capturedValues[2] : null) + ", " +  
 			(capturedValues.length > 3 ? capturedValues[3] : null) + ", " +  
 			(capturedValues.length > 4 ? capturedValues[4] : null));*/
-		return new PorcEClosure(capturedValues, callTarget, false);
+		return new PorcEClosure(capturedValues, callTarget, false, null);
 	}
 
-	public static Continuation create(FrameSlot[] argumentSlots, FrameSlot[] capturedSlots, FrameSlot[] capturingSlots, FrameDescriptor descriptor, Expression body) {
-		return new Continuation(argumentSlots, capturedSlots, capturingSlots, descriptor, body);
+	public static NewContinuation create(Expression[] capturedVariables, RootNode rootNode) {
+		return new NewContinuation(capturedVariables, rootNode);
 	}
 }

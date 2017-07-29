@@ -110,19 +110,23 @@ final case class Let(x: Variable, @subtree v: Expression, @subtree body: Express
 @leaf @transform
 final case class Sequence(@subtree es: Seq[Expression]) extends Expression {
   //assert(!es.isEmpty)
-
-  def simplify = es match {
-    case Seq(e) => e
-    case _ => this
-  }
 }
 object Sequence {
-  def apply(es: Seq[Expression]): Sequence = {
-    new Sequence((es.flatMap {
+  def apply(es: Seq[Expression]): Expression = {
+    val es1 = (es.flatMap {
       case Sequence(fs) => fs
       case PorcUnit() => Seq()
       case e => Seq(e)
-    }).toList)
+    }).toVector
+    
+    es1.size match {
+      case 0 =>
+        PorcUnit()
+      case 1 =>
+        es1.head
+      case _ =>
+        new Sequence(es1)
+    }
   }
 }
 
@@ -132,7 +136,7 @@ final case class Continuation(arguments: Seq[Variable], @subtree body: Expressio
 }
 
 @leaf @transform
-final case class MethodDeclaration(@subtree defs: Seq[Method], @subtree body: Expression) extends Expression {
+final case class MethodDeclaration(@subtree t: Argument, @subtree defs: Seq[Method], @subtree body: Expression) extends Expression {
   override def boundVars: Set[Variable] = defs.map(_.name).toSet
 }
 
@@ -141,7 +145,7 @@ sealed abstract class Method extends PorcAST {
   def name: Variable
   def arguments: Seq[Variable]
   def body: Expression
-  def areArgsLenient: Boolean
+  def isRoutine: Boolean
 
   def allArguments: Seq[Variable]
 
@@ -158,17 +162,19 @@ object Method {
 }
 
 @leaf @transform
-final case class MethodCPS(name: Variable, pArg: Variable, cArg: Variable, tArg: Variable, areArgsLenient: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+final case class MethodCPS(name: Variable, pArg: Variable, cArg: Variable, tArg: Variable, isRoutine: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
   override def allArguments: Seq[Variable] = pArg +: cArg +: tArg +: arguments
 }
 @leaf @transform
-final case class MethodDirect(name: Variable, areArgsLenient: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+final case class MethodDirect(name: Variable, isRoutine: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
   override def allArguments: Seq[Variable] = arguments
 }
 
 /** Call a CPS method.
   *
   * This consumes a token of c when it is called and then returns a token to each call to p which must return that token to its caller.
+  * 
+  * This call will halt if `target` is killed after discorporating.
   */
 @leaf @transform
 final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression

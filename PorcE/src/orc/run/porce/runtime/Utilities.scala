@@ -9,12 +9,12 @@ object Utilities {
   
   def PorcEClosure(r: RootNode): PorcEClosure = {
     val c = Truffle.getRuntime().createCallTarget(r)
-    orc.run.porce.runtime.PorcEClosure.create(emptyArray, c, false) 
+    orc.run.porce.runtime.PorcEClosure.create(emptyArray, c, false, null) 
   }
   
   def isDef(v: AnyRef): Boolean = v match {
     case c: PorcEClosure => {
-      c.areArgsLenient
+      c.isRoutine
     }
     // TODO: Add support for external defs if we every have them supported in the API.
     case _ =>

@@ -380,6 +380,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           // If either both are available or neither then just leave this as is.
           None
         }
+      // TODO: The f == g should actually be equivalence up to local variable renaming.
+      case IfLenientMethod.Z(v, f, g) if f == g =>
+        Some(f.value)
       case _ => None
     }
   }

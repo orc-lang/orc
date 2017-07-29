@@ -4,15 +4,23 @@ import com.oracle.truffle.api.RootCallTarget;
 
 // TODO: Could this usefully be a @ValueType?
 final public class PorcEClosure {
-	final public Object[] capturedValues;
-	final public RootCallTarget body;
-	public final boolean areArgsLenient;
+	public final Object[] capturedValues;
+	public final RootCallTarget body;
+	
+	public final boolean isRoutine;
+	
+	/**
+	 * The terminator in which the closure was created, iff that is also the terminator it will use while executing.
+	 * This is null for closures that will execute in the callers terminator.
+	 */
+	public final Terminator executionTerminator;
 
 	// TODO: PERFORMANCE: Using a frame instead of an array for captured values may perform better. Though that will mainly be true when we start using native values.
-	public PorcEClosure(Object[] capturedValues, RootCallTarget body, boolean areArgsLenient) {
+	public PorcEClosure(Object[] capturedValues, RootCallTarget body, boolean isRoutine, Terminator executionTerminator) {
 		this.capturedValues = capturedValues;
 		this.body = body;
-		this.areArgsLenient = areArgsLenient;
+		this.isRoutine = isRoutine;
+		this.executionTerminator = executionTerminator;
 	}
 	
 	public Object callFromRuntime() {
@@ -35,7 +43,7 @@ final public class PorcEClosure {
 		return body.call(values);
 	}
 	
-	public static PorcEClosure create(Object[] capturedValues, RootCallTarget body, boolean isDef) {
-		return new PorcEClosure(capturedValues, body, isDef);
+	public static PorcEClosure create(Object[] capturedValues, RootCallTarget body, boolean isRoutine, Terminator executionTerminator) {
+		return new PorcEClosure(capturedValues, body, isRoutine, executionTerminator);
 	}
 }

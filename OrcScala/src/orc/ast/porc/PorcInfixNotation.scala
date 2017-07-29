@@ -24,7 +24,7 @@ trait PorcInfixValue {
 }
 trait PorcInfixExpr {
   this: Expression =>
-  def :::(f: Expression): Sequence = Sequence(Seq(f, this))
+  def :::(f: Expression): Expression = Sequence(Seq(f, this))
 }
 
 object PorcInfixNotation {

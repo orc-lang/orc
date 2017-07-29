@@ -94,11 +94,11 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case Continuation.Z(args, b) =>
         val newArgs = args.map(newName)
         Continuation(newArgs, renameVariables(b)(mapping ++ (args zip newArgs)))
-      case MethodDeclaration.Z(methods, b) =>
+      case MethodDeclaration.Z(t, methods, b) =>
         val newMethodNames = methods.map(m => newName(m.name))
         val newMapping = mapping ++ (methods.map(_.name) zip newMethodNames)
         val newMethods = methods.map(m => renameVariables(m)(newMapping))
-        MethodDeclaration(newMethods, renameVariables(b)(newMapping))
+        MethodDeclaration(renameVariables(t), newMethods, renameVariables(b)(newMapping))
       case a: Argument.Z =>
         renameVariables(a)
       case CallContinuation.Z(t, args) =>
@@ -306,12 +306,12 @@ object Optimizer {
   */
   
   object :::> {
-    def unapply(e: PorcAST.Z): Option[(Expression, Sequence)] = e match {
+    def unapply(e: PorcAST.Z): Option[(Expression, Expression)] = e match {
       case Sequence.Z(e :: l) =>
         Some((e.value, Sequence(l.map(_.value))))
       case _ => None
     }
-    def unapply(e: PorcAST): Option[(Expression, Sequence)] = e match {
+    def unapply(e: PorcAST): Option[(Expression, Expression)] = e match {
       case Sequence(e :: l) =>
         Some((e, Sequence(l)))
       case _ => None
@@ -323,11 +323,14 @@ object Optimizer {
       case Let(x, v, b) =>
         val LetStack(bindings, b1) = b
         Some(((Some(x), v) +: bindings, b1))
-      case s :::> ss if !ss.es.isEmpty =>
-        val LetStack(bindings, b1) = ss.simplify
+      case s :::> PorcUnit() =>
+        Some((Seq(), s))
+      case s :::> ss =>
+        val LetStack(bindings, b1) = ss
         //Logger.fine(s"unpacked sequence: $s $ss $bindings $b1")
         Some(((None, s) +: bindings, b1))
-      case _ => Some((Seq(), e))
+      case s => 
+        Some((Seq(), s))
     }
     
     def apply(bindings: Seq[(Option[Variable], Expression)], b: Expression) = {

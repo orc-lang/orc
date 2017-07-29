@@ -294,7 +294,7 @@ class OrctimizerToPorc {
           SetDiscorporate(ctx.c) ::: expression(body)
         else
           expression(body)
-        porc.MethodDeclaration(defs.map(callable(defs.map(_.name), _)).view.force, b)
+        porc.MethodDeclaration(ctx.t, defs.map(callable(defs.map(_.name), _)).view.force, b)
       }
 
       case New.Z(self, _, bindings, _) => {

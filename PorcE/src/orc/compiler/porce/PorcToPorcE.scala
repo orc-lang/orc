@@ -5,8 +5,7 @@ import scala.collection.mutable
 import orc.ast.porc
 import orc.run.porce
 import swivel.Zipper
-import com.oracle.truffle.api.frame.FrameSlotKind
-import com.oracle.truffle.api.frame.FrameDescriptor
+import com.oracle.truffle.api.frame._
 import com.oracle.truffle.api.CallTarget
 import orc.run.porce.runtime.PorcEExecution
 import orc.run.porce.runtime.PorcEClosure
@@ -14,19 +13,29 @@ import orc.compile.Logger
 import orc.values.Field
 import orc.run.porce.runtime.PorcEExecutionHolder
 import orc.run.porce.runtime.PorcERuntime
+import com.oracle.truffle.api.Truffle
 
 class PorcToPorcE {
-  case class Context(descriptor: FrameDescriptor, execution: PorcEExecutionHolder, runtime: PorcERuntime)
+  case class Context(
+    descriptor: FrameDescriptor, execution: PorcEExecutionHolder,
+    argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
+    runtime: PorcERuntime)
+
+  object LocalVariables {
+    val MethodGroupClosure = new porc.Variable(Some("MethodGroupClosure"))
+    val Join = new porc.Variable(Some("Join"))
+    val Resolve = new porc.Variable(Some("Resolve"))
+  }
 
   private def lookupVariable(x: porc.Variable)(implicit ctx: Context) =
     ctx.descriptor.findOrAddFrameSlot(x, FrameSlotKind.Object)
-  
+
   private def normalizeOrder(s: TraversableOnce[porc.Variable]) = {
     s.toSeq.sortBy(_.optionalName)
   }
 
   val fieldOrderCache = mutable.HashMap[Set[Field], Seq[Field]]()
-  
+
   private def normalizeFieldOrder(s: Iterable[Field]) = {
     // TODO: PERFORMANCE: If we could somehow combine the field lists for classes in the same heirachy (or simply used in the same places) we could avoid the need for as many PICs.
     fieldOrderCache.getOrElseUpdate(s.toSet, s.toSeq.sortBy(_.name))
@@ -36,23 +45,34 @@ class PorcToPorcE {
     normalizeOrder(s).map(lookupVariable(_))
   }
 
-  def apply(e: porc.MethodCPS, execution: PorcEExecutionHolder, runtime: PorcERuntime): PorcEClosure = {
+  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder, runtime: PorcERuntime): PorcEClosure = {
     val descriptor = new FrameDescriptor()
-    implicit val ctx = Context(descriptor = descriptor, execution = execution, runtime = runtime)
-    val m = transform(e.toZipper(), Seq(), Seq())
-    m.getClosure(Array[AnyRef]())
+    implicit val ctx = Context(descriptor = descriptor, execution = execution, argumentVariables = Seq(m.pArg, m.cArg, m.tArg), closureVariables = Seq(), runtime = runtime)
+    val newBody = transform(m.body.toZipper())
+    val rootNode = porce.PorcERootNode.create(descriptor, newBody, 3, 0)
+    val callTarget = Truffle.getRuntime().createCallTarget(rootNode);
+    val closure = new PorcEClosure(Array(), callTarget, true, null);
+    closure
+  }
+
+  def transform(x: porc.Variable)(implicit ctx: Context): porce.Expression = {
+    if (ctx.argumentVariables.contains(x)) {
+      porce.Read.Argument.create(ctx.argumentVariables.indexOf(x))
+    } else if (ctx.closureVariables.contains(x)) {
+      porce.Read.Closure.create(ctx.closureVariables.indexOf(x))
+    } else {
+      porce.Read.Local.create(lookupVariable(x))
+    }
   }
 
   def transform(e: porc.Expression.Z)(implicit ctx: Context): porce.Expression = {
     val res = e match {
       case porc.Constant.Z(v) =>
-        porce.Argument.createConstant(v)
+        porce.Read.Constant.create(v)
       case porc.PorcUnit.Z() =>
-        porce.Argument.createPorcUnit()
+        porce.Read.Constant.create(porce.PorcEUnit.SINGLETON)
       case Zipper(x: porc.Variable, p) =>
-        // FIXME: PERFORMANCE: Change this to create specialized variable nodes for: Local (let), Argument, and Closure context.
-        val slot = ctx.descriptor.findFrameSlot(x)
-        porce.Argument.createVariable(slot)
+        transform(x)
       case porc.Sequence.Z(es) =>
         porce.Sequence.create(es.map(transform(_)).toArray)
       case porc.Let.Z(x, v, body) =>
@@ -61,19 +81,17 @@ class PorcToPorcE {
         val descriptor = new FrameDescriptor()
         val oldCtx = ctx
         val capturedVars = normalizeOrder(e.freeVars)
-        val capturedSlots = capturedVars.map(lookupVariable)
-        
+        val capturingExprs = capturedVars.map(transform(_)).toArray
+
         {
-          implicit val ctx = oldCtx.copy(descriptor = descriptor)
-          
-          val argSlots = args.map(lookupVariable(_))
-          
+          implicit val ctx = oldCtx.copy(descriptor = descriptor, closureVariables = capturedVars, argumentVariables = args)
+
           // TODO: Pass in read nodes instead of slots.
           // TODO: Eliminate capturing slots. 
-          
-          val capturingSlots = capturedVars.map(lookupVariable)
+
           val newBody = transform(body)
-          porce.Continuation.create(argSlots.toArray, capturedSlots.toArray, capturingSlots.toArray, descriptor, newBody)
+          val rootNode = porce.PorcERootNode.create(descriptor, newBody, args.size, capturedVars.size);
+          porce.NewContinuation.create(capturingExprs, rootNode)
         }
       case porc.CallContinuation.Z(target, arguments) =>
         porce.Call.InternalOnly.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
@@ -81,18 +99,24 @@ class PorcToPorcE {
         porce.Call.CPS.create(transform(target), (p +: c +: t +: arguments).map(transform(_)).toArray, ctx.execution.newRef())
       case porc.MethodDirectCall.Z(isExt, target, arguments) =>
         porce.Call.Direct.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
-      case porc.MethodDeclaration.Z(methods, body) =>
+      case porc.MethodDeclaration.Z(t, methods, body) =>
+        val closure = lookupVariable(LocalVariables.MethodGroupClosure)
+
         val recCapturedVars = normalizeOrder(methods.map(_.name)).view.force
         val scopeCapturedVars = normalizeOrder(methods.flatMap(m => m.body.freeVars -- m.allArguments).toSet -- recCapturedVars)
+        val allCapturedVars = scopeCapturedVars ++ recCapturedVars
 
-        //Logger.fine(s"Converting decl group $recCapturedVars with:\nscopeCapturedVars = $scopeCapturedVars")
-        
+        val scopeCapturedReads = scopeCapturedVars.map(transform(_))
+
+        val constructClosure = porce.Write.Local.create(closure,
+          porce.MethodDeclaration.NewMethodClosure.create(transform(t), scopeCapturedReads.toArray, recCapturedVars.size))
+
         val methodsOrdered = methods.sortBy(_.name.optionalName)
-        val newMethods = methodsOrdered.map(transform(_, scopeCapturedVars, recCapturedVars))
-        
         assert(methodsOrdered.map(_.name) == recCapturedVars)
-                
-        porce.MethodDeclaration.create(newMethods.toArray, transform(body))
+
+        val newMethods = methodsOrdered.zipWithIndex.map({ case (m, i) => transform(m, i, closure, allCapturedVars, scopeCapturedVars.size) })
+
+        porce.Sequence.create((constructClosure +: newMethods :+ transform(body)).toArray)
       case porc.NewFuture.Z() =>
         porce.NewFuture.create()
       case porc.NewCounter.Z(p, h) =>
@@ -122,17 +146,17 @@ class PorcToPorcE {
         //  The nodes that process and register values can specialize based on the state of the future they receive.
         porce.Force.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.runtime)
       case porc.SetDiscorporate.Z(c) =>
-        porce.SetDiscorporate.create(transform(c))        
+        porce.SetDiscorporate.create(transform(c))
       case porc.TryOnException.Z(b, h) =>
         porce.TryOnException.create(transform(b), transform(h))
       case porc.TryFinally.Z(b, h) =>
-        porce.TryFinally.create(transform(b), transform(h))        
+        porce.TryFinally.create(transform(b), transform(h))
       case porc.IfLenientMethod.Z(arg, l, r) =>
-        porce.IfLenientMethod.create(transform(arg), transform(l), transform(r))      
+        porce.IfLenientMethod.create(transform(arg), transform(l), transform(r))
       case porc.GetField.Z(o, f) =>
-        porce.GetField.create(transform(o), f, ctx.execution.newRef())      
+        porce.GetField.create(transform(o), f, ctx.execution.newRef())
       case porc.GetMethod.Z(o) =>
-        porce.GetMethod.create(transform(o), ctx.execution.newRef())      
+        porce.GetMethod.create(transform(o), ctx.execution.newRef())
       case porc.New.Z(bindings) =>
         val newBindings = bindings.mapValues(transform(_)).view.force
         val fieldOrdering = normalizeFieldOrder(bindings.keys)
@@ -143,25 +167,24 @@ class PorcToPorcE {
     res.setPorcAST(e.value)
     res
   }
-  
-  def transform(m: porc.Method.Z, scopeCapturedVars: Seq[porc.Variable], recCapturedVars: Seq[porc.Variable])(implicit ctx: Context): porce.Method = { 
+
+  def transform(m: porc.Method.Z, index: Int, closureSlot: FrameSlot, closureVariables: Seq[porc.Variable], methodOffset: Int)(implicit ctx: Context): porce.Expression = {
     val oldCtx = ctx
-    val scopeCapturingSlots = scopeCapturedVars.map(lookupVariable(_))
-    
+
     def process(arguments: Seq[porc.Variable]) = {
       val descriptor = new FrameDescriptor()
-      implicit val ctx = oldCtx.copy(descriptor = descriptor)
-      // TODO: Pass in read nodes instead of slots.
-      // TODO: Eliminate capturing slots. 
-      val scopeCapturedSlots = (scopeCapturedVars ++ recCapturedVars).map(lookupVariable(_))
-      assert(scopeCapturedSlots.map(_.getIdentifier()) == scopeCapturingSlots.map(_.getIdentifier()) ++ recCapturedVars)
-      val argSlots = arguments.map(lookupVariable(_))
+      implicit val ctx = oldCtx.copy(descriptor = descriptor, closureVariables = closureVariables, argumentVariables = arguments)
+
       val newBody = transform(m.body)
-      //Logger.fine(s"Converting decl ${m.name} with:\ncapturingSlots = $scopeCapturingSlots\ncapturedSlots = $scopeCapturedSlots\nargSlots = $argSlots\n$descriptor")
-      porce.Method.create(oldCtx.descriptor.findOrAddFrameSlot(m.name), 
-          argSlots.toArray, scopeCapturedSlots.toArray, scopeCapturingSlots.toArray, descriptor, m.value.areArgsLenient, newBody)
-    }  
-    
+      val methodSlot = oldCtx.descriptor.findOrAddFrameSlot(m.name)
+      val rootNode = porce.PorcERootNode.create(descriptor, newBody, arguments.size, closureVariables.size)
+      val readClosure = porce.Read.Local.create(closureSlot)
+
+      val newMethod = porce.MethodDeclaration.NewMethod.create(readClosure, methodOffset + index, rootNode, m.value.isRoutine)
+
+      porce.Write.Local.create(methodSlot, newMethod)
+    }
+
     val res = m match {
       case porc.MethodDirect.Z(name, _, arguments, body) =>
         process(arguments)
