@@ -29,24 +29,24 @@ abstract class JoinBase extends Blocker {
   val runtime: OrcRuntime
 
   val items = new Array[Binding](params.size)
-  var state: JoinState = JoinInProgress(params.size)
+  var state: JoinState = JoinState.InProgress(params.size)
 
   override def toString = super.toString + s"(state=$state, waiter=$waiter, ${params.mkString("[", ",", "]")}, ${items.mkString("[", ",", "]")})"
 
   def set(index: Int, arg: Binding) = synchronized {
     assert(items(index) == null)
     state match {
-      case JoinInProgress(n) if (n > 0) => {
+      case JoinState.InProgress(n) if (n > 0) => {
         items(index) = arg
-        state = JoinInProgress(n - 1)
+        state = JoinState.InProgress(n - 1)
       }
-      case JoinHalted => {}
+      case JoinState.Halted => {}
       case _ => throw new AssertionError("Erroneous state transition in Join")
     }
     // If we just finished filling everything in then go to Complete state
     state match {
-      case JoinInProgress(0) => {
-        state = JoinComplete
+      case JoinState.InProgress(0) => {
+        state = JoinState.Complete
         runtime.stage(waiter)
       }
       case _ => {}
@@ -70,7 +70,7 @@ abstract class JoinBase extends Blocker {
       }
     } else {
       assert(params.isEmpty)
-      state = JoinComplete
+      state = JoinState.Complete
       runtime.stage(waiter)
     }
   }
@@ -81,20 +81,20 @@ abstract class JoinBase extends Blocker {
 class Join(val params: List[Binding], val waiter: Blockable, val runtime: OrcRuntime) extends JoinBase {
   def halt(index: Int) = synchronized {
     state match {
-      case JoinInProgress(_) => {
-        state = JoinHalted
+      case JoinState.InProgress(_) => {
+        state = JoinState.Halted
         runtime.stage(waiter)
       }
-      case JoinHalted => {}
-      case JoinComplete => throw new AssertionError("Erroneous state transition in Join")
+      case JoinState.Halted => {}
+      case JoinState.Complete => throw new AssertionError("Erroneous state transition in Join")
     }
   }
 
   def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'Join_check) {
     synchronized { state } match {
-      case JoinInProgress(_) => throw new AssertionError(s"Spurious check on Join: $this")
-      case JoinHalted => t.awakeStop()
-      case JoinComplete =>
+      case JoinState.InProgress(_) => throw new AssertionError(s"Spurious check on Join: $this")
+      case JoinState.Halted => t.awakeStop()
+      case JoinState.Complete =>
         val values = items.toList.map(_.asInstanceOf[BoundValue].v)
         t.awakeTerminalValue(values) // The checking entity must expect a list
     }
@@ -106,9 +106,9 @@ class NonhaltingJoin(val params: List[Binding], val waiter: Blockable, val runti
 
   def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'NonhaltingJoin_check) {
     synchronized { state } match {
-      case JoinInProgress(_) => throw new AssertionError("Spurious check on Join")
-      case JoinHalted => throw new AssertionError("NonhaltingJoin halted")
-      case JoinComplete => t.awakeTerminalValue(items.toList) // The checking entity must expect a List[Binding]
+      case JoinState.InProgress(_) => throw new AssertionError("Spurious check on Join")
+      case JoinState.Halted => throw new AssertionError("NonhaltingJoin halted")
+      case JoinState.Complete => t.awakeTerminalValue(items.toList) // The checking entity must expect a List[Binding]
     }
   }
 }
@@ -142,7 +142,10 @@ class JoinItem(source: JoinBase, index: Int) extends Blockable {
   }
 }
 
-sealed abstract class JoinState
-case class JoinInProgress(remaining: Int) extends JoinState
-case object JoinComplete extends JoinState
-case object JoinHalted extends JoinState
+abstract sealed class JoinState()
+
+object JoinState {
+  case class InProgress(remaining: Int) extends JoinState()
+  case object Complete extends JoinState()
+  case object Halted extends JoinState()
+}

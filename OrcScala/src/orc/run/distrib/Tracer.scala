@@ -53,16 +53,16 @@ object Tracer {
   orc.util.Tracer.registerEventTypeId(OrcEventSend, "EventSnd")
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
-  final val traceTokenMigration = true
+  final val traceTokenMigration = false
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
-  final val traceGroupMessaging = true
+  final val traceGroupMessaging = false
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
-  final val traceFutureRemoteReads = true
+  final val traceFutureRemoteReads = false
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
-  final val traceEventNotifications = true
+  final val traceEventNotifications = false
 
   @inline
   def getRuntimeId(runtime: OrcRuntime) = runtime.asInstanceOf[DOrcRuntime].runtimeId

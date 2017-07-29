@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
 
 import orc.error.OrcException
@@ -33,7 +34,7 @@ import orc.Handle
 abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   // This is the only Blocker that can produce exceptions.
 
-  protected var state: CallState = CallInProgress(List())
+  protected var state: CallState = CallState.InProgress(List())
   protected var quiescent = false
 
   // a mechanism to delay schedule of caller until later without holding the lock.
@@ -75,7 +76,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 
   /* Returns true if the state transition was made,
    * false otherwise (e.g. if the handle was already in a final state)
-   * 
+   *
    * Should always be called with the monitor on this held.
    */
   protected def setState(newState: CallState): Boolean = {
@@ -96,20 +97,20 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   }
 
   def publishNonterminal(v: AnyRef) = synchronized {
-    setState(CallInProgress(v +: state.publications))
+    setState(CallState.InProgress(v +: state.publications))
   }
   def halt() = synchronized {
-    // A second call to this can occur because we are trying to halt a handle for an OrcSite call. 
+    // A second call to this can occur because we are trying to halt a handle for an OrcSite call.
     // And it's idempotent, so it shouldn't matter.
-    //assert(state.isInstanceOf[CallInProgress] || state == CallWasKilled, state.toString)
-    setState(CallHalted(state.publications))
+    //assert(state.isInstanceOf[CallState.InProgress] || state == CallState.WasKilled, state.toString)
+    setState(CallState.Halted(state.publications))
   }
   def discorporate() = synchronized {
-    assert(state.isInstanceOf[CallInProgress] || state == CallWasKilled, state.toString)
+    assert(state.isInstanceOf[CallState.InProgress] || state == CallState.WasKilled, state.toString)
     caller.discorporate()
   }
   def halt(e: OrcException) = synchronized {
-    setState(CallRaisedException(e))
+    setState(CallState.RaisedException(e))
   }
 
   def callSitePosition = caller.sourcePosition
@@ -123,11 +124,11 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 
   def setQuiescent() = synchronized {
     state match {
-      case CallInProgress(_) if !quiescent => {
+      case CallState.InProgress(_) if !quiescent => {
         quiescent = true
         caller.setQuiescent()
       }
-      case CallWasKilled => {}
+      case CallState.WasKilled => {}
       case _ => throw new AssertionError(s"Handle.setQuiescent in bad state: state=$state, quiescent=$quiescent")
     }
   }
@@ -135,7 +136,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
   def isLive = synchronized { !state.isFinal }
 
   def kill(): Unit = synchronized {
-    setState(CallWasKilled)
+    setState(CallState.WasKilled)
   }
 
   def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'CallHandle_check) {
@@ -151,11 +152,11 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
     }
 
     st match {
-      case CallInProgress(Nil) => { throw new AssertionError("Spurious check of call handle. " + this) }
-      case CallInProgress(_) => {} // Already handled fully by parts above and below
-      case CallHalted(_) => { t.halt() }
-      case CallRaisedException(e) => { t.awakeException(e) } // t !! e
-      case CallWasKilled => {}
+      case CallState.InProgress(Nil) => { throw new AssertionError("Spurious check of call handle. " + this) }
+      case CallState.InProgress(_) => {} // Already handled fully by parts above and below
+      case CallState.Halted(_) => { t.halt() }
+      case CallState.RaisedException(e) => { t.awakeException(e) } // t !! e
+      case CallState.WasKilled => {}
     }
 
     synchronized {
@@ -170,7 +171,7 @@ abstract class CallHandle(val caller: Token) extends Handle with Blocker {
 }
 
 /** Possible states of a CallHandle */
-sealed abstract class CallState {
+protected abstract sealed class CallState() {
   val isFinal: Boolean
   // The publications that have not been read in reverse order
   val publications: Seq[AnyRef] = Nil
@@ -178,16 +179,18 @@ sealed abstract class CallState {
   def withoutPublications: CallState = this
 }
 
-sealed abstract class NonterminalCallState extends CallState { val isFinal = false }
-case class CallInProgress(_publications: Seq[AnyRef]) extends NonterminalCallState {
-  override val publications = _publications
-  override def withoutPublications = copy(Nil)
-}
+protected object CallState {
+  abstract sealed class NonterminalCallState() extends CallState() { val isFinal = false }
+  case class InProgress(_publications: Seq[AnyRef]) extends NonterminalCallState() {
+    override val publications = _publications
+    override def withoutPublications = copy(Nil)
+  }
 
-sealed abstract class TerminalCallState extends CallState { val isFinal = true }
-case class CallRaisedException(e: OrcException) extends TerminalCallState
-case class CallHalted(_publications: Seq[AnyRef]) extends TerminalCallState {
-  override val publications = _publications
-  override def withoutPublications = copy(Nil)
+  abstract sealed class TerminalCallState extends CallState() { val isFinal = true }
+  case class RaisedException(e: OrcException) extends TerminalCallState()
+  case class Halted(_publications: Seq[AnyRef]) extends TerminalCallState() {
+    override val publications = _publications
+    override def withoutPublications = copy(Nil)
+  }
+  case object WasKilled extends TerminalCallState()
 }
-case object CallWasKilled extends TerminalCallState

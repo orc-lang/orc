@@ -10,10 +10,8 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
-package orc.run.core
 
-import orc.Schedulable
-import orc.StoppedFuture
+package orc.run.core
 
 /** A GraftGroup is the group associated with expression g in val x = g # f.
   *
@@ -24,7 +22,7 @@ import orc.StoppedFuture
   * @author dkitchin, amp
   */
 class GraftGroup(parent: Group) extends {
-  var state: GraftGroupState = ValueUnknown
+  var state: GraftGroupState = GraftGroupState.ValueUnknown
   private var _future: Future = new LocalFuture(parent.runtime)
 } with Subgroup(parent) {
   override def toString = super.toString + s"(state=${state}, ${_future})"
@@ -43,7 +41,7 @@ class GraftGroup(parent: Group) extends {
   def binding = synchronized {
     if (_future ne null)
       BoundReadable(_future)
-    else if (state == ValueSilent)
+    else if (state == GraftGroupState.ValueSilent)
       BoundStop
     else
       throw new AssertionError(s"Requesting binding for bound graft group. This should not be possible. This must be a threading issue. $this")
@@ -52,8 +50,8 @@ class GraftGroup(parent: Group) extends {
   // Publishing is idempotent
   override def publish(t: Token, v: Option[AnyRef]) = synchronized {
     state match {
-      case ValueUnknown => {
-        state = ValuePublished
+      case GraftGroupState.ValueUnknown => {
+        state = GraftGroupState.ValuePublished
         // There should be no situations in which v is None. Just let it crash if it's not.
         _future.bind(v.get)
         // Clear the reference to the future so that it can be collected even if this group still exists.
@@ -67,13 +65,13 @@ class GraftGroup(parent: Group) extends {
 
   override def onHalt() = synchronized {
     state match {
-      case ValueUnknown => {
-        state = ValueSilent
+      case GraftGroupState.ValueUnknown => {
+        state = GraftGroupState.ValueSilent
         parent.remove(this)
         _future.stop()
         _future = null
       }
-      case ValuePublished => {
+      case GraftGroupState.ValuePublished => {
         parent.remove(this)
       }
       case _ => {}
@@ -82,11 +80,11 @@ class GraftGroup(parent: Group) extends {
 
   def onDiscorporate() = synchronized {
     state match {
-      case ValueUnknown => {
+      case GraftGroupState.ValueUnknown => {
         parent.discorporate(this)
         _future = null
       }
-      case ValuePublished => {
+      case GraftGroupState.ValuePublished => {
         parent.discorporate(this)
       }
       case _ => {}
@@ -98,8 +96,8 @@ class GraftGroup(parent: Group) extends {
   override def kill() = {
     synchronized {
       state match {
-        case ValueUnknown => {
-          state = ValueSilent
+        case GraftGroupState.ValueUnknown => {
+          state = GraftGroupState.ValueSilent
           _future.stop()
           _future = null
         }
@@ -111,7 +109,9 @@ class GraftGroup(parent: Group) extends {
 }
 
 /** Possible states of a GraftGroup */
-sealed abstract class GraftGroupState
-case object ValueUnknown extends GraftGroupState
-case object ValuePublished extends GraftGroupState
-case object ValueSilent extends GraftGroupState
+abstract sealed class GraftGroupState()
+object GraftGroupState {
+  case object ValueUnknown extends GraftGroupState()
+  case object ValuePublished extends GraftGroupState()
+  case object ValueSilent extends GraftGroupState()
+}

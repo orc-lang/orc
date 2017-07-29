@@ -15,7 +15,7 @@ package orc.run.distrib
 
 import orc.ast.AST
 import orc.ast.oil.nameless.{ Def, Expression }
-import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundStop, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, Future, FutureFrame, Group, GroupFrame, Live, LocalFuture, Publishing, SequenceFrame, Token, TokenState, VirtualClock }
+import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundStop, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, Future, FutureFrame, Group, GroupFrame, LocalFuture, SequenceFrame, Token, TokenState, VirtualClock }
 
 /** Replacement for a Token for use in serialization.
   *
@@ -65,7 +65,7 @@ class TokenReplacement(token: Token, tokenProxyId: DOrcExecution#GroupProxyId, d
     val _node = AstNodeIndexing.lookupNodeInTree(newGroup.execution.node, astNodeIndex).asInstanceOf[Expression]
     val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.unmarshalFrame(dorcExecution, origin, stackTop) }
 
-    new MigratedToken(_node, _stack, env.toList map { _.unmarshalBinding(dorcExecution, origin) }, newGroup, None /* clock */, Live, debugId)
+    new MigratedToken(_node, _stack, env.toList map { _.unmarshalBinding(dorcExecution, origin) }, newGroup, None /* clock */, TokenState.Live, debugId)
   }
 
 }
@@ -85,7 +85,7 @@ class PublishingTokenReplacement(token: Token, tokenProxyId: DOrcExecution#Group
     val _v = pubValue.map(dorcExecution.unmarshalValue(_))
 
     //FIXME: Hack: push a GroupFrame to compensate for the one consumed incorrectly by publishing through the GroupProxy
-    new MigratedToken(_node, GroupFrame(_stack), env.toList map { _.unmarshalBinding(dorcExecution, origin) }, newGroup, None /*clock*/ , Publishing(_v), debugId)
+    new MigratedToken(_node, GroupFrame(_stack), env.toList map { _.unmarshalBinding(dorcExecution, origin) }, newGroup, None /*clock*/ , TokenState.Publishing(_v), debugId)
   }
 
 }
