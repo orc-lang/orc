@@ -61,5 +61,11 @@ public abstract class PorcENode extends Node implements HasPorcNode {
 		return PorcETypesGen.expectPorcEObject(execute(frame));
 	}
 	
-	
+	@Override
+	protected void onReplace(Node newNode, CharSequence reason) {
+		if(newNode instanceof PorcENode && porcNode().isDefined()) {
+			((PorcENode)newNode).setPorcAST(porcNode().get());
+		}
+		super.onReplace(newNode, reason);
+	}
 }

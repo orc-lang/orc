@@ -96,7 +96,7 @@ class PorcToPorcE {
           porce.NewContinuation.create(capturingExprs, rootNode)
         }
       case porc.CallContinuation.Z(target, arguments) =>
-        porce.Call.InternalOnly.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
+        porce.InternalCall.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
       case porc.MethodCPSCall.Z(isExt, target, p, c, t, arguments) =>
         porce.Call.CPS.create(transform(target), (p +: c +: t +: arguments).map(transform(_)).toArray, ctx.execution.newRef())
       case porc.MethodDirectCall.Z(isExt, target, arguments) =>
