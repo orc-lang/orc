@@ -1,2 +1,5 @@
-/bin/
-/.apt_generated/
+bin/
+.apt_generated/
+dumps/
+benchmark-localconfig.sh
+.cache-main

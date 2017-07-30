@@ -1,4 +1,4 @@
 <factorypath>
-    <factorypathentry kind="EXTJAR" id="/home/amp/shared/graalvm/graalvm-0.24/lib/truffle/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="/home/amp/shared/graalvm/graalvm-0.24/lib/truffle/truffle-api.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="GRAALVM_JRE/lib/truffle/truffle-api.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="GRAALVM_JRE/lib/truffle/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>
