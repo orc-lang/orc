@@ -10,12 +10,13 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
 
+import scala.annotation.tailrec
 import scala.collection.immutable.Traversable
 
 import orc.ast.oil.nameless.Expression
-import scala.annotation.tailrec
 
 /** A stack frame.
   *
@@ -24,7 +25,7 @@ import scala.annotation.tailrec
   *
   * @author dkitchin
   */
-sealed trait Frame extends Traversable[Frame] {
+abstract sealed trait Frame extends Traversable[Frame] {
   def apply(t: Token, v: Option[AnyRef]): Unit
 }
 

@@ -126,9 +126,9 @@ final class Future() extends OrcValue with orc.Future {
 
   def get(): FutureState = {
     synchronized { _state } match {
-      case Unbound => orc.FutureUnbound
-      case Bound => orc.FutureBound(_value)
-      case Halt => orc.FutureStopped
+      case Unbound => orc.FutureState.Unbound
+      case Bound => orc.FutureState.Bound(_value)
+      case Halt => orc.FutureState.Stopped
     }
   }
 }

@@ -10,12 +10,11 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
 
-import orc.OrcRuntime
+import orc.{ FutureReader, FutureState, OrcRuntime }
 import orc.values.{ Format, OrcValue }
-import orc.FutureState
-import orc.FutureReader
 
 /** Interface for futures.
   *
@@ -139,9 +138,9 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
   
   def get(): FutureState = {
     synchronized { _state } match {
-      case Unbound => orc.FutureUnbound
-      case Bound => orc.FutureBound(_value)
-      case Halt => orc.FutureStopped
+      case Unbound => FutureState.Unbound
+      case Bound => FutureState.Bound(_value)
+      case Halt => FutureState.Stopped
     }
   }
 

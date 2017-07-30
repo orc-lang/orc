@@ -4,9 +4,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicBoolean
 import orc.FutureReader
 import orc.run.porce.Logger
-import orc.FutureBound
-import orc.FutureStopped
-import orc.FutureUnbound
 
 // TODO: Try to remove redundency between this and Join.
 
@@ -56,10 +53,10 @@ abstract class Resolve(inValues: Array[AnyRef]) {
     for (v <- inValues) v match {
       case f: Future => {
         f.get() match {
-          case FutureBound(_) | FutureStopped => {
+          case orc.FutureState.Bound(_) | orc.FutureState.Stopped => {
             nNonFutures += 1
           }
-          case FutureUnbound => {
+          case orc.FutureState.Unbound => {
             Logger.finest(s"$resolve: Resolve joining on $f")
             val e = new JoinElement()
             f.read(e)

@@ -1,8 +1,21 @@
+//
+// PrettyPrintInterpolator.scala -- Scala classes PrettyPrintInterpolator, FragmentAppender, and StringBuilderWrapper
+// Project OrcScala
+//
+// Created by amp on Mar 14, 2017.
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.util
 
-import scala.language.implicitConversions
 import java.util.regex.Pattern
-import scala.annotation.tailrec
+
+import scala.language.implicitConversions
 
 class StringBuilderWrapper(sb: StringBuilder)(implicit interp: PrettyPrintInterpolator) {
   import interp._
@@ -96,7 +109,7 @@ class StringBuilderWrapper(sb: StringBuilder)(implicit interp: PrettyPrintInterp
 }
 
 object StringBuilderWrapper {
-  sealed abstract class State
+  abstract sealed class State
 
   case object Passthrough extends State
   case object EatWhiteSpace extends State
@@ -160,8 +173,8 @@ class PrettyPrintInterpolator {
   //val indentTable = Array.tabulate(64)(indentLevel => "\n" + (" " * (indentStep * indentLevel)))
 
   abstract class Interpolator(val sc: StringContext) {
-    import StringContext._
     import sc._
+    import scala.StringContext._
 
     def pp(args: (() => Any)*): FragmentAppender = new FragmentAppender((sb: StringBuilderWrapper) => {
       checkLengths(args)

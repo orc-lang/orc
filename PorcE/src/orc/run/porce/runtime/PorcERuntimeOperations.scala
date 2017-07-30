@@ -5,9 +5,6 @@ import com.oracle.truffle.api.frame.VirtualFrame
 import orc.run.porce.PorcEUnit
 import orc.FutureReader
 import orc.run.porce.Logger
-import orc.FutureBound
-import orc.FutureUnbound
-import orc.FutureStopped
 import java.util.concurrent.atomic.AtomicBoolean
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
@@ -89,15 +86,15 @@ trait PorcERuntimeOperations {
     v match {
       case f: orc.Future => {
         f.get() match {
-          case FutureBound(v) => {
+          case orc.FutureState.Bound(v) => {
             // TODO: This should use a call node somehow. Without that this cannot be inlined I think.
             p.callFromRuntime(v)
           }
-          case FutureStopped => {
+          case orc.FutureState.Stopped => {
             // Do nothing p will never be called.
             c.haltToken()
           }
-          case FutureUnbound => {
+          case orc.FutureState.Unbound => {
             f.read(new PCTFutureReader(p, c, t))
           }
         }

@@ -10,17 +10,18 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
 
 /** @author dkitchin
   */
-sealed abstract class Binding
+abstract sealed class Binding()
 
 /**  */
-case class BoundValue(v: AnyRef) extends Binding
+case class BoundValue(v: AnyRef) extends Binding()
 
 /**  */
-case class BoundReadable(c: ReadableBlocker) extends Binding
+case class BoundReadable(c: ReadableBlocker) extends Binding()
 
 /**  */
-case object BoundStop extends Binding
+case object BoundStop extends Binding()

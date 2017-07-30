@@ -13,9 +13,6 @@ package orc.run.porce.runtime
 
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
 import orc.FutureReader
-import orc.FutureBound
-import orc.FutureStopped
-import orc.FutureUnbound
 import orc.run.porce.Logger
 
 /** Join a number of futures by blocking on all of them simultaneously.
@@ -100,15 +97,15 @@ abstract class Join(inValues: Array[AnyRef]) {
     for ((v, i) <- inValues.zipWithIndex) v match {
       case f: orc.Future => {
         f.get() match {
-          case FutureBound(v) => {
+          case orc.FutureState.Bound(v) => {
             values(i) = v
             nNonFutures += 1
           }
-          case FutureStopped => {
+          case orc.FutureState.Stopped => {
             // TODO: PERFORMANCE: Could break iteration here.
             halted = true
           }
-          case FutureUnbound => {
+          case orc.FutureState.Unbound => {
             Logger.finest(s"$join: Join joining on $f")
             // Force f so it will bind the correct index.
             val e = new JoinElement(i)

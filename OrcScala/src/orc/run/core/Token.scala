@@ -13,19 +13,15 @@
 
 package orc.run.core
 
-import orc.{ CaughtEvent, OrcEvent, OrcRuntime, Schedulable, FutureReader }
+import orc.{ CaughtEvent, ErrorAccessor, FutureState, OrcEvent, OrcRuntime, Schedulable, StoppedFuture }
 import orc.ast.oil.nameless._
-import orc.ast.oil.nameless.Site
 import orc.error.OrcException
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, DoesNotHaveMembersException, NoSuchMemberException, StackLimitReachedError, TokenException }
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, DoesNotHaveMembersException, JavaStackLimitReachedError, NoSuchMemberException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
 import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
-import orc.values.{ Field, OrcObject, OrcRecord, Signal }
+import orc.values.{ Field, OrcObject, Signal }
 import orc.values.sites.TotalSite
-import orc.error.runtime.JavaStackLimitReachedError
-import orc.StoppedFuture
-import orc.ErrorAccessor
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -58,6 +54,7 @@ class Token protected (
   protected var state: TokenState,
   val debugId: Long)
   extends GroupMember with Schedulable with Blockable with Resolver {
+  import TokenState._
 
   /** Convenience constructor with defaults  */
   protected def this(
@@ -66,7 +63,7 @@ class Token protected (
     env: List[Binding] = Nil,
     group: Group,
     clock: Option[VirtualClock] = None,
-    state: TokenState = Live) = {
+    state: TokenState = TokenState.Live) = {
     this(node, stack, env, group, clock, state, Token.getNextTokenDebugId(group.runtime))
   }
 
@@ -521,19 +518,19 @@ class Token protected (
           None
         case a =>
           Some(a.get(target))
-      }      
+      }
     } catch {
       case _: DoesNotHaveMembersException | _: NoSuchMemberException =>
         Logger.fine(s"Call target $target provided an accessor which immediately failed. This is a major performance problem due to .apply checks. Fix the Accessor computation code for this value.")
         None
     }
-    
+
     target match {
       case c: Closure => {
         functionCall(c.code, c.context, params)
       }
       case o if applyValue.isDefined => {
-        resolvePossibleFuture(applyValue.get) { 
+        resolvePossibleFuture(applyValue.get) {
           makeCall(_, params)
         }
       }
@@ -611,8 +608,8 @@ class Token protected (
           throw new Error(s"WTF: $v")
       }
     }
-    
-    
+
+
     val self = new OrcObject()
 
     Logger.fine(s"Instantiating class: ${bindings}")
@@ -710,7 +707,7 @@ class Token protected (
     //Logger.check(isRunning.compareAndSet(true, false) || state == Killed || Token.isRunningAlreadyCleared.get, s"${System.nanoTime().toHexString}: Failed to clear running: $this")
     super.resolveOptional(b)(k)
   }
-    
+
   protected def resolvePossibleFuture(v: AnyRef)(k: AnyRef => Unit) {
     v match {
       case f: orc.Future =>
@@ -721,21 +718,21 @@ class Token protected (
         k(v)
     }
   }
-  
+
   protected def resolve(f: orc.Future)(k: AnyRef => Unit) {
     resolveOptional(f) {
       case Some(v) => k(v)
       case None => halt()
     }
   }
-  
+
   protected def resolveOptional(f: orc.Future)(k: Option[AnyRef] => Unit) {
     f.get() match {
-      case orc.FutureBound(v) =>
+      case FutureState.Bound(v) =>
         k(Some(v))
-      case orc.FutureStopped => 
+      case FutureState.Stopped =>
         k(None)
-      case orc.FutureUnbound => {
+      case FutureState.Unbound => {
         pushContinuation(k)
         val h = new TokenFutureReader(this)
         blockOn(h)
@@ -994,65 +991,67 @@ object Token {
 }
 
 /** Supertype of TokenStates */
-sealed abstract class TokenState {
+abstract sealed class TokenState() {
   val isLive: Boolean
 }
 
-/** Token is ready to make progress */
-case object Live extends TokenState {
-  val isLive = true
-}
+object TokenState {
+  /** Token is ready to make progress */
+  case object Live extends TokenState() {
+    val isLive = true
+  }
 
-/** Token is propagating a published value */
-case class Publishing(v: Option[AnyRef]) extends TokenState {
-  val isLive = true
-}
+  /** Token is propagating a published value */
+  case class Publishing(v: Option[AnyRef]) extends TokenState() {
+    val isLive = true
+  }
 
-/** Token is waiting on another task */
-case class Blocked(blocker: Blocker) extends TokenState {
-  val isLive = true
-  override def toString() = s"$productPrefix($blocker : ${blocker.getClass.getSimpleName})"
-}
+  /** Token is waiting on another task */
+  case class Blocked(blocker: Blocker) extends TokenState() {
+    val isLive = true
+    override def toString() = s"$productPrefix($blocker : ${blocker.getClass.getSimpleName})"
+  }
 
-/** Token has been told to suspend, but it's still in the scheduler queue */
-case class Suspending(prevState: TokenState) extends TokenState {
-  val isLive = prevState.isLive
-}
+  /** Token has been told to suspend, but it's still in the scheduler queue */
+  case class Suspending(prevState: TokenState) extends TokenState() {
+    val isLive = prevState.isLive
+  }
 
-/** Suspended Tokens must be re-scheduled upon resume */
-case class Suspended(prevState: TokenState) extends TokenState {
-  val isLive = prevState.isLive
-}
+  /** Suspended Tokens must be re-scheduled upon resume */
+  case class Suspended(prevState: TokenState) extends TokenState() {
+    val isLive = prevState.isLive
+  }
 
-/** Token halted itself */
-case object Halted extends TokenState {
-  val isLive = false
-}
+  /** Token halted itself */
+  case object Halted extends TokenState() {
+    val isLive = false
+  }
 
-/** Token killed by engine */
-case object Killed extends TokenState {
-  val isLive = false
+  /** Token killed by engine */
+  case object Killed extends TokenState() {
+    val isLive = false
+  }
 }
 
 /** Supertype of TokenExecStates.
   *
   * These are not actually used or stored other than for tracing.
   */
-sealed abstract class TokenExecState
+abstract sealed class TokenExecState()
 
 object TokenExecState {
   /** Token is executing on some thread */
-  case object Running extends TokenExecState
+  case object Running extends TokenExecState()
 
   /** Token is scheduled to execute */
-  case object Scheduled extends TokenExecState
+  case object Scheduled extends TokenExecState()
 
   /** Token is waiting or blocked on some event.
     *
     * That event will trigger the token to be scheduled.
     */
-  case object DoneRunning extends TokenExecState
+  case object DoneRunning extends TokenExecState()
 
   /** Token has been killed */
-  case object Killed extends TokenExecState
+  case object Killed extends TokenExecState()
 }

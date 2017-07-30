@@ -42,7 +42,7 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
   val clock: Option[VirtualClock])
   extends Schedulable
   with Blockable {
-  import ResolvableCollection._
+  import ResolvableCollectionState._
 
   /** Execution of a ResolvableCollection cannot indefinitely block the executing thread. */
   override val nonblocking = true
@@ -63,7 +63,7 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
 
   def buildMember(i: Int): Member
 
-  //def buildFuture(i: Int): Future = new LocalFuture(runtime) 
+  //def buildFuture(i: Int): Future = new LocalFuture(runtime)
 
   /** Create all the closures. They forward most of their methods here.
     */
@@ -77,9 +77,9 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
   /** Get the context used by all of the closures in this group.
     */
   def context = _context
-  /* 
+  /*
    * This should be safe without locking because the change is still atomic (pointer assignment)
-   * and getting the old version doesn't actually hurt anything. It just slows down the 
+   * and getting the old version doesn't actually hurt anything. It just slows down the
    * evaluation of the token that got it because it will have to resolve the future versions
    * of things.
    */
@@ -99,11 +99,11 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
   /** Execute the resolution process of this Closure. This should be called by the scheduler.
     */
   override def run(): Unit = orc.util.Profiler.measureInterval(0L, 'ResolvableCollection_run) {
-    // This synchronized may not be needed since we only change state from within this method which is 
+    // This synchronized may not be needed since we only change state from within this method which is
     // only called when this is scheduled which can only happen once (from the join).
     synchronized { state } match {
       case Started => {
-        // We can safely read _lexicalContext without a lock because it is only written from the Blocked 
+        // We can safely read _lexicalContext without a lock because it is only written from the Blocked
         // state which we cannot reach until after the join is started.
         val join = new NonhaltingJoin(_lexicalContext, this, runtime)
         join.join()
@@ -157,9 +157,10 @@ abstract class ResolvableCollection[T, +Member <: ResolvableCollectionMember[T]]
   }
 }
 
-object ResolvableCollection {
-  sealed abstract class ResolvableCollectionState
-  case class Blocked(blocker: Blocker) extends ResolvableCollectionState
-  case object Resolved extends ResolvableCollectionState
-  case object Started extends ResolvableCollectionState
+abstract sealed class ResolvableCollectionState()
+
+object ResolvableCollectionState {
+  case class Blocked(blocker: Blocker) extends ResolvableCollectionState()
+  case object Resolved extends ResolvableCollectionState()
+  case object Started extends ResolvableCollectionState()
 }

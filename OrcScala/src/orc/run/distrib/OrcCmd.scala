@@ -21,13 +21,13 @@ import orc.{ OrcEvent, OrcExecutionOptions }
   *
   * @author jthywiss
   */
-sealed abstract class OrcCmd() extends Serializable
+abstract sealed class OrcCmd() extends Serializable
 
-sealed trait OrcLeaderToFollowerCmd extends OrcCmd
-sealed trait OrcFollowerToLeaderCmd extends OrcCmd
-sealed trait OrcPeerCmd extends OrcLeaderToFollowerCmd with OrcFollowerToLeaderCmd
+abstract sealed trait OrcLeaderToFollowerCmd extends OrcCmd
+abstract sealed trait OrcFollowerToLeaderCmd extends OrcCmd
+abstract sealed trait OrcPeerCmd extends OrcLeaderToFollowerCmd with OrcFollowerToLeaderCmd
 
-sealed abstract class OrcPeerCmdInExecutionContext(executionId: DOrcExecution#ExecutionId) extends OrcPeerCmd {
+abstract sealed class OrcPeerCmdInExecutionContext(executionId: DOrcExecution#ExecutionId) extends OrcPeerCmd {
   val xid = new ExecutionContextSerializationMarker(executionId)
 }
 

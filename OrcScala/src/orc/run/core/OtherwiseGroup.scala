@@ -18,7 +18,7 @@ package orc.run.core
   */
 class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Blocker {
 
-  var state: OtherwiseGroupState = LeftSideUnknown(t)
+  var state: OtherwiseGroupState = OtherwiseGroupState.LeftSideUnknown(t)
 
   t.blockOn(this)
 
@@ -27,9 +27,9 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
   override def publish(t: Token, v: Option[AnyRef]) {
     synchronized {
       state match {
-        case LeftSideUnknown(r) => { state = LeftSidePublished; runtime.stage(r) }
-        case LeftSidePublished => { /* Left side publication is idempotent */ }
-        case LeftSideSilent => { throw new AssertionError("publication from silent f in f;g") }
+        case OtherwiseGroupState.LeftSideUnknown(r) => { state = OtherwiseGroupState.LeftSidePublished; runtime.stage(r) }
+        case OtherwiseGroupState.LeftSidePublished => { /* Left side publication is idempotent */ }
+        case OtherwiseGroupState.LeftSideSilent => { throw new AssertionError("publication from silent f in f;g") }
       }
     }
     t.migrate(parent).publish(v)
@@ -38,9 +38,9 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
   override def onHalt() {
     synchronized {
       state match {
-        case LeftSideUnknown(r) => { state = LeftSideSilent; runtime.stage(r) }
-        case LeftSidePublished => { /* Halting after publication does nothing */ }
-        case LeftSideSilent => { throw new AssertionError(s"halt of silent f in f;g: $this") }
+        case OtherwiseGroupState.LeftSideUnknown(r) => { state = OtherwiseGroupState.LeftSideSilent; runtime.stage(r) }
+        case OtherwiseGroupState.LeftSidePublished => { /* Halting after publication does nothing */ }
+        case OtherwiseGroupState.LeftSideSilent => { throw new AssertionError(s"halt of silent f in f;g: $this") }
       }
     }
     parent.remove(this)
@@ -49,13 +49,13 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
   def onDiscorporate() {
     synchronized {
       state match {
-        case LeftSideUnknown(r) => {
+        case OtherwiseGroupState.LeftSideUnknown(r) => {
           // forcably discorporate the token we were holding on to.
           // The token has never run, but is also not truely halted, so discorporate don't kill.
           r.discorporate()
         }
-        case LeftSidePublished => { /* Halting after publication does nothing */ }
-        case LeftSideSilent => { throw new AssertionError("discorporate of silent f in f;g") }
+        case OtherwiseGroupState.LeftSidePublished => { /* Halting after publication does nothing */ }
+        case OtherwiseGroupState.LeftSideSilent => { throw new AssertionError("discorporate of silent f in f;g") }
       }
     }
     parent.discorporate(this)
@@ -64,9 +64,9 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
   override def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'OtherwiseGroup_check) {
     synchronized {
       state match {
-        case LeftSidePublished => { t.halt() }
-        case LeftSideSilent => { t.awake() }
-        case LeftSideUnknown(_) => { throw new AssertionError("Spurious check") }
+        case OtherwiseGroupState.LeftSidePublished => { t.halt() }
+        case OtherwiseGroupState.LeftSideSilent => { t.awake() }
+        case OtherwiseGroupState.LeftSideUnknown(_) => { throw new AssertionError("Spurious check") }
       }
     }
   }
@@ -74,7 +74,10 @@ class OtherwiseGroup(parent: Group, t: Token) extends Subgroup(parent) with Bloc
 }
 
 /** Possible states of an OtherwiseGroup */
-sealed abstract class OtherwiseGroupState
-case class LeftSideUnknown(r: Token) extends OtherwiseGroupState
-case object LeftSidePublished extends OtherwiseGroupState
-case object LeftSideSilent extends OtherwiseGroupState
+abstract sealed class OtherwiseGroupState()
+
+object OtherwiseGroupState {
+  case class LeftSideUnknown(r: Token) extends OtherwiseGroupState()
+  case object LeftSidePublished extends OtherwiseGroupState()
+  case object LeftSideSilent extends OtherwiseGroupState()
+}

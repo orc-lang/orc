@@ -41,7 +41,9 @@ trait LocationPolicy {
   def permittedLocations(runtime: DOrcRuntime): Set[PeerLocation]
 }
 
-trait MigrationDecision
-case object Copy extends MigrationDecision
-case object Move extends MigrationDecision
-case object Remote extends MigrationDecision
+abstract sealed trait MigrationDecision
+object MigrationDecision {
+  case object Copy extends MigrationDecision
+  case object Move extends MigrationDecision
+  case object Remote extends MigrationDecision
+}

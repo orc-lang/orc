@@ -59,19 +59,18 @@ trait FutureReader {
 
 /** The state of a Future.
   */
-sealed abstract class FutureState
+abstract sealed class FutureState()
 
-/** The future is currently not resolved.
-  */
-final case object FutureUnbound extends FutureState
+object FutureState {
+  /** The future is currently not resolved. */
+  final case object Unbound extends FutureState()
 
-/** The future is resolved to stop.
-  */
-final case object FutureStopped extends FutureState
+  /** The future is resolved to stop. */
+  final case object Stopped extends FutureState()
 
-/** The future is bound to a specific value.
-  */
-final case class FutureBound(value: AnyRef) extends FutureState
+  /** The future is bound to a specific value. */
+  final case class Bound(value: AnyRef) extends FutureState()
+}
 
 /** An interface for futures or future wrappers from other systems.
   *
@@ -95,14 +94,14 @@ trait Future {
 }
 
 object StoppedFuture extends Future {
-  def get() = FutureStopped
+  def get() = FutureState.Stopped
   def read(reader: FutureReader) = {
     reader.halt()
   }
 }
 
 case class BoundFuture(v: AnyRef) extends Future {
-  def get() = FutureBound(v)
+  def get() = FutureState.Bound(v)
   def read(reader: FutureReader) = {
     reader.publish(v)
   }

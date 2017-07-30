@@ -36,13 +36,13 @@ object Tracer {
   orc.util.Tracer.registerEventTypeId(JavaReturn, "JavaRetn")
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
-  final val traceTokenState = true
+  final val traceTokenState = false
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
   final val traceTokenScheduling = false
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
-  final val traceJavaCall = true
+  final val traceJavaCall = false
 
   @inline
   def traceTokenCreation(token: Token, newState: TokenState) {
@@ -65,7 +65,7 @@ object Tracer {
       case _ => 0xdeadbeef
     }
   }
-  
+
   @inline
   def traceJavaCall(h: orc.Handle) {
     // FIXME: Remove the need for cast so these don't crash on runtimes that don't use ExternalSiteCallHandle.
@@ -79,13 +79,13 @@ object Tracer {
   }
 
   private def tokenStateIdFor(ts: TokenState) = ts match {
-    case Live => 1L
-    case _: Publishing => 2L
-    case _: Blocked => 3L
-    case _: Suspending => 4L
-    case _: Suspended => 5L
-    case Halted => 6L
-    case Killed => 7L
+    case TokenState.Live => 1L
+    case _: TokenState.Publishing => 2L
+    case _: TokenState.Blocked => 3L
+    case _: TokenState.Suspending => 4L
+    case _: TokenState.Suspended => 5L
+    case TokenState.Halted => 6L
+    case TokenState.Killed => 7L
   }
 
   private val tokenStateNameMap = Map(
