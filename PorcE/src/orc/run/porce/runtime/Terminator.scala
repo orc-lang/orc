@@ -113,6 +113,8 @@ class Terminator extends Terminatable {
   }
 }
 
+// FIXME: PERFORMANCE: Merge all Terminators into one final class. It makes the type checks faster at runtime.
+
 /** A termination tracker which adds itself as a child of parent.
   *
   * @author amp

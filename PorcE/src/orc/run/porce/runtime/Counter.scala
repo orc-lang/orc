@@ -31,6 +31,7 @@ object Counter {
   // Due to inlining, changing this will likely require a full rebuild.
   val tracingEnabled = false
 
+  /*
   val liveCounters = new LinkedBlockingDeque[Counter]()
 
   def exceptionString(e: Exception) = {
@@ -108,12 +109,14 @@ object Counter {
       liveCounters.remove(c)
     }
   }
+  */
 }
 
 /**
  * @author amp
  */
 abstract class Counter {
+  /*
   @elidable(elidable.ASSERTION)
   val log = if (Counter.tracingEnabled) new LinkedBlockingDeque[Exception]() else null
 
@@ -147,16 +150,18 @@ abstract class Counter {
    * This functions similarly to a reference count and this halts when count
    * reaches 0.
    */
-  val count = new AtomicInteger(1)
+  private val count = new AtomicInteger(1)
 
   @volatile
   var isDiscorporated = false
 
+  @TruffleBoundary(allowInlining = true)
   def setDiscorporate() = {
     assert(count.get() > 0)
     isDiscorporated = true
   }
 
+  @TruffleBoundary(allowInlining = true)
   def discorporateToken() = {
     setDiscorporate()
     haltToken()
@@ -170,6 +175,7 @@ abstract class Counter {
   @TruffleBoundary(allowInlining = true)
   def haltToken(): Unit = {
     val n = count.decrementAndGet()
+    /*
     if (Counter.tracingEnabled) {
       logChange(s"- Down to $n")
       if (n < 0) {
@@ -177,10 +183,13 @@ abstract class Counter {
       }
       assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
     }
+    */
     if (n == 0) {
+      /*
       if (Counter.tracingEnabled) {
         Counter.removeCounter(this)
       }
+      */
       onContextHalted()
     }
   }
@@ -191,6 +200,7 @@ abstract class Counter {
   @TruffleBoundary(allowInlining = true)
   def newToken(): Unit = {
     val n = count.getAndIncrement()
+    /*
     if (Counter.tracingEnabled) {
       logChange(s"+ Up from $n")
       if (n <= 0) {
@@ -198,6 +208,7 @@ abstract class Counter {
       }
       assert(n > 0, s"Spawning is not allowed once we go to zero count. No zombies allowed!!! $this")
     }
+    */
   }
 
   /**
@@ -224,6 +235,8 @@ abstract class CounterNestedBase(val parent: Counter) extends Counter {
     s"${super.toString()}($parent)"
   }
 }
+
+// FIXME: PERFORMANCE: Merge all counters into one final class. It makes the type checks faster at runtime.
 
 /**
  * @author amp
