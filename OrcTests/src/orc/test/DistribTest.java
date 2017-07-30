@@ -22,8 +22,8 @@ import junit.framework.Test;
  */
 public class DistribTest {
 
-  public static Test suite() {
-    /* Just a Java shim to keep JUnit from being confused by Scala. */
-    return DistribTestCase.buildSuite();
-  }
+    public static Test suite() {
+        /* Just a Java shim to keep JUnit from being confused by Scala. */
+        return DistribTestCase.buildSuite();
+    }
 }

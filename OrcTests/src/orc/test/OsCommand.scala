@@ -1,6 +1,6 @@
 //
 // OsCommand.scala -- Scala objects OsCommand and OsType, and class OsCommandResult
-// Project OrcScala
+// Project OrcTests
 //
 // Created by jthywiss on Jul 18, 2017.
 //
@@ -16,7 +16,7 @@ package orc.test
 import java.io.ByteArrayOutputStream
 import java.nio.charset.{ Charset, StandardCharsets }
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.seqAsJavaListConverter
 
 /** Utility methods to invoke commands of the underlying OS.
   *
@@ -104,13 +104,12 @@ end tell
         getResultFrom(Seq("START", escapeStringForWindowsCmd(windowTitle), "%COMSPEC%", "/C") ++ commandsAsArgs)
         /* TODO: Test and fix string escaping */
       }
-      case _=> throw new NotImplementedError("Don't know how to open a new shell window with this desktop environment manager")
+      case _ => throw new NotImplementedError("Don't know how to open a new shell window with this desktop environment manager")
     }
   }
 }
 
 case class OsCommandResult(val exitValue: Int, val stdout: String, val stderr: String)
-
 
 abstract sealed trait DesktopType
 object DesktopType {
