@@ -44,8 +44,9 @@ class DistribTestCase extends OrcTestCase {
       case ce: CompilationException => throw new AssertionError(ce.getMessageAndDiagnostics())
     } finally {
       println()
+      Thread.sleep(500 /*ms*/)
       stopFollowers()
-      Thread.sleep(1000 /*ms*/)
+      Thread.sleep(500 /*ms*/)
       println()
     }
   }
@@ -91,16 +92,12 @@ class DistribTestCase extends OrcTestCase {
         if (lsofResult.exitValue == 0) {
           println(s"Terminating follower $followerNumber on port $port")
           OsCommand.getResultFrom(Seq("kill", lsofResult.stdout.stripLineEnd))
-        } else {
-          (s"Unable to terminate follower $followerNumber on port $port")
         }
       } else {
         val sshAddress = bindings.followerSockets.get(followerNumber - 1).getHostString
         val termResult = OsCommand.getResultFrom(Seq("ssh", sshAddress, "PID=`lsof -t -a -i:"+port+" -sTCP:LISTEN` && kill $PID"))
         if (termResult.exitValue == 0) {
           println(s"Terminated follower $followerNumber on $sshAddress:$port")
-        } else {
-          println(s"Unable to terminate follower $followerNumber on $sshAddress:$port")
         }
       }
     }
