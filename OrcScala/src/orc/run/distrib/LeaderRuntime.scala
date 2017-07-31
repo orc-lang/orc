@@ -126,7 +126,13 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
         }
         Logger.info(s"Stopped reading events from ${followerLocation.connection.socket}")
         runtimeLocationMap.remove(followerRuntimeId)
-        followerEntries foreach { _._2.send(RemovePeerCmd(followerRuntimeId)) }
+        followerEntries foreach { fe =>
+          try {
+            fe._2.send(RemovePeerCmd(followerRuntimeId))
+          } catch {
+            case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore send RemovePeerCmd failures at this point */
+          }
+        }
         programs.values foreach { _.notifyOrc(FollowerConnectionClosedEvent(followerLocation)) }
       }
     }
@@ -164,8 +170,14 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   }
 
   override def stop() = {
-    followerEntries foreach { e =>
-      followerEntries foreach { _._2.send(RemovePeerCmd(e._1)) }
+    followerEntries foreach { subjectFE =>
+      followerEntries foreach { recipientFE =>
+        try {
+          recipientFE._2.send(RemovePeerCmd(subjectFE._1))
+        } catch {
+          case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore send RemovePeerCmd failures at this point */
+        }
+      }
     }
     followerEntries foreach { e =>
       runtimeLocationMap.remove(e._1)

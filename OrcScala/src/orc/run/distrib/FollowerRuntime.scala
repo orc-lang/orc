@@ -31,6 +31,7 @@ import orc.util.CmdLineParser
   */
 class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocketAddress) extends DOrcRuntime(runtimeId, s"dOrc $runtimeId @ ${listenAddress.toString()}") {
 
+  protected var listener: RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd] = null
   protected var boundListenAddress: InetSocketAddress = null
   protected val runtimeLocationMap = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcRuntime#RuntimeId, PeerLocation]())
 
@@ -43,7 +44,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
     runtimeLocationMap.put(runtimeId, here)
 
-    val listener = new RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd](listenAddress)
+    listener = new RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd](listenAddress)
     boundListenAddress = new InetSocketAddress(listener.serverSocket.getInetAddress, listener.serverSocket.getLocalPort)
     try {
       while (!listener.serverSocket.isClosed()) {
@@ -53,6 +54,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         MessageProcessorThread(newConn).start()
 
       }
+    } catch {
+      case se: SocketException if (se.getMessage == "Socket closed") => /* Ignore */
     } finally {
       runtimeLocationMap.valuesIterator.foreach {
         _ match {
@@ -266,14 +269,16 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   def removePeer(peerRuntimeId: DOrcRuntime#RuntimeId) {
     Logger.entering(getClass.getName, "removePeer", Seq(peerRuntimeId.toString))
     if (peerRuntimeId == runtimeId) {
-      runtimeLocationMap.valuesIterator.foreach {
-        _ match {
-          case a: ClosableConnection => a.close()
-          case _ => /* Ignore */
-        }
+      /* If the leader sends RemovePeer with our ID, we shutdown */
+      Logger.fine("Closing listen socket")
+      listener.close()
+    } else {
+      runtimeLocationMap.remove(peerRuntimeId) match {
+        case Some(removedLocation: LeaderLocation) => /* leave leader connection open */
+        case Some(removedLocation: ClosableConnection) => removedLocation.abort()
+        case _ => /* Nothing to do */
       }
     }
-    runtimeLocationMap.remove(peerRuntimeId)
   }
 
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcFollowerExecution])
@@ -283,7 +288,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
     assert(programs.isEmpty) /* For now */
     if (programs.isEmpty) {
-      Logger.fine(s"starting scheduler")
+      Logger.fine("starting scheduler")
       startScheduler(options)
     }
 
