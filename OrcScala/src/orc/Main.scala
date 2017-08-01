@@ -124,6 +124,7 @@ object Main {
       val oldLoggers = orcLogger.getHandlers()
       val logHandler = new java.util.logging.ConsoleHandler()
       logHandler.setLevel(logLevel)
+      logHandler.setFormatter(orc.util.SyslogishFormatter)
       orcLogger.addHandler(logHandler)
       orcLogger.warning(s"No log handler found for 'orc' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records. The old handlers are: ${oldLoggers.toSeq}")
     }
@@ -146,7 +147,7 @@ object Main {
         val oldFormatter = handler.getFormatter()
         val formatter = new Formatter() {
           override def format(record: LogRecord) = {
-            val tid = record.getThreadID()
+            val threadId = record.getThreadID()
             val stack = {
               val frames = (Thread.currentThread().getStackTrace().toVector.drop(2)
                 .dropWhile(!_.getClassName().startsWith("orc"))
@@ -157,7 +158,7 @@ object Main {
               }
               sb.toString
             }
-            oldFormatter.format(record).stripSuffix("\n") + s" tid=$tid\n$stack"
+            oldFormatter.format(record).stripLineEnd + s" threadID=threadId\n$stack"
           }
         }
         handler.setFormatter(formatter)

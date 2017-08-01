@@ -196,7 +196,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 }
 
 class FollowerLocation(val runtimeId: DOrcRuntime#RuntimeId, val connection: RuntimeConnection[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd]) extends Location[OrcLeaderToFollowerCmd] {
-  override def toString = f"${getClass.getName}(runtimeId=$runtimeId%#x)"
+  override def toString = s"${getClass.getName}(runtimeId=$runtimeId)"
 
   override def send(message: OrcLeaderToFollowerCmd) = connection.send(message)
   override def sendInContext(execution: DOrcExecution)(message: OrcLeaderToFollowerCmd) = connection.sendInContext(execution, this)(message)

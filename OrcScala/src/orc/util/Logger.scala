@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.util
 
 import java.io.{ PrintWriter, StringWriter }
@@ -170,8 +171,8 @@ object SyslogishFormatter extends Formatter {
       sb.append('-')
     }
 
-    sb.append(" [thread 0x")
-    sb.append(record.getThreadID().toHexString)
+    sb.append(" [thread ")
+    sb.append(record.getThreadID())
     sb.append("]: ")
 
     sb.append(record.getLevel().getLocalizedName())

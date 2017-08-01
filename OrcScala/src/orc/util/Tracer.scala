@@ -102,18 +102,18 @@ object Tracer {
     def dump(a: Appendable) = Tracer synchronized {
       /* Convention: synchronize on System.out during output of block */
       System.out synchronized {
-        a.append(f"Trace Buffer: begin: Java thread ID $javaThreadId%#x, ${nextWriteIndex.toString} entries\n")
-        a.append(f"-----Time-(ms)-----  -----Time-(ns)-----  ThreadID  -Token/Group-ID-  EvntType  ------From------  -------To-------\n")
+        a.append(s"Trace Buffer: begin: Java thread ID $javaThreadId, ${nextWriteIndex.toString} entries\n")
+        a.append(s"-----Time-(ms)-----  -----Time-(ns)-----  -----Thread-ID-----  -Token/Group-ID-  EvntType  ------From------  -------To-------\n")
 
         for (i <- 0 to nextWriteIndex - 1) {
           if (!onlyDumpSelectedLocations || selectedLocations.contains(locationIds(i))) {
             val eventTypeName = eventTypeNameMap(typeIds(i))
                 val prettyFromArg = eventPrettyprintFromArg(typeIds(i))(fromArgs(i))
                 val prettyToArg = eventPrettyprintToArg(typeIds(i))(toArgs(i))
-                a.append(f"${millitimes(i)}%19d  ${nanotimes(i)}%19d  $javaThreadId%8x  ${locationIds(i)}%016x  ${eventTypeName}  ${prettyFromArg}%16s  ${prettyToArg}%16s\n")
+                a.append(f"${millitimes(i)}%19d  ${nanotimes(i)}%19d  $javaThreadId%19d  ${locationIds(i)}%016x  ${eventTypeName}  ${prettyFromArg}%16s  ${prettyToArg}%16s\n")
           }
         }
-        a.append(f"Trace Buffer: end: Java thread ID $javaThreadId%#x\n")
+        a.append(s"Trace Buffer: end: Java thread ID $javaThreadId\n")
       }
     }
 
