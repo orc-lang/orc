@@ -20,6 +20,6 @@ afold(reducingOperation, mappedList)
 )
 
 {-
-OUTPUT:
+xOUTPUT:
 1650
 -}

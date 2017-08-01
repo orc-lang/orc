@@ -35,7 +35,7 @@ class DistribTestCase extends OrcTestCase {
     startFollowers()
     println("\n==== Starting " + orcFile + " ====")
     try {
-      val actual = OrcForTesting.compileAndRun(orcFile.getPath(), OrcTestCase.TESTING_TIMEOUT, bindings)
+      val actual = OrcForTesting.compileAndRun(orcFile.getPath(), 200 /*s*/, bindings)
       if (!expecteds.contains(actual)) {
         throw new AssertionError("Unexpected output:\n" + actual)
       }
@@ -118,6 +118,16 @@ object DistribTestCase {
       //          (hostname,    port,  workingDir,     classPath,     jvmOptions)
       FollowerSpec("localhost", 36721, dOrcWorkingDir, dOrcClassPath, jvmOpts),
       FollowerSpec("localhost", 36722, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36723, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36724, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36725, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36726, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36727, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36728, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36729, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36730, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36731, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      FollowerSpec("localhost", 36732, dOrcWorkingDir, dOrcClassPath, jvmOpts),
       )
   
   def buildSuite() = {

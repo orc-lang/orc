@@ -29,7 +29,7 @@ abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site wit
     try {
       h.publish(evaluate(args, h))
     } catch {
-      case (e: OrcException) => h !! e
+      case (e: OrcException) => h.halt(e)
     }
   }
 
@@ -41,10 +41,19 @@ abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site wit
   override def permittedLocations(runtime: DOrcRuntime) = Set(runtime.locationForRuntimeId(locationNum))
 }
 
-class Location0PinnedTupleConstructor extends LocationPinnedTupleConstructor(0) { }
-class Location1PinnedTupleConstructor extends LocationPinnedTupleConstructor(1) { }
-class Location2PinnedTupleConstructor extends LocationPinnedTupleConstructor(2) { }
-
+class Location0PinnedTupleConstructor extends LocationPinnedTupleConstructor(0) {}
+class Location1PinnedTupleConstructor extends LocationPinnedTupleConstructor(1) {}
+class Location2PinnedTupleConstructor extends LocationPinnedTupleConstructor(2) {}
+class Location3PinnedTupleConstructor extends LocationPinnedTupleConstructor(3) {}
+class Location4PinnedTupleConstructor extends LocationPinnedTupleConstructor(4) {}
+class Location5PinnedTupleConstructor extends LocationPinnedTupleConstructor(5) {}
+class Location6PinnedTupleConstructor extends LocationPinnedTupleConstructor(6) {}
+class Location7PinnedTupleConstructor extends LocationPinnedTupleConstructor(7) {}
+class Location8PinnedTupleConstructor extends LocationPinnedTupleConstructor(8) {}
+class Location9PinnedTupleConstructor extends LocationPinnedTupleConstructor(9) {}
+class Location10PinnedTupleConstructor extends LocationPinnedTupleConstructor(10) {}
+class Location11PinnedTupleConstructor extends LocationPinnedTupleConstructor(11) {}
+class Location12PinnedTupleConstructor extends LocationPinnedTupleConstructor(12) {}
 
 /** An Orc tuple which has a location policy that only permits a given
   * location.
