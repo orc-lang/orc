@@ -208,19 +208,18 @@ trait GroupProxyManager { self: DOrcExecution =>
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
       runtime.schedule(new Schedulable { def run() = { g.halt() } })
-      proxiedGroupMembers.remove(groupMemberProxyId)
     } else {
-      Logger.fine(s"halt group member proxy on unknown group member proxy $groupMemberProxyId")
+      Logger.fine(f"Halt group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }
   }
 
   def discorporateGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
-      runtime.schedule(new Schedulable { def run() = { g.halt() } })
+      runtime.schedule(new Schedulable { def run() = { g.discorporate() } })
       proxiedGroupMembers.remove(groupMemberProxyId)
     } else {
-      Logger.fine(s"halt group member proxy on unknown group member proxy $groupMemberProxyId")
+      Logger.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }
   }
 
@@ -235,7 +234,7 @@ trait GroupProxyManager { self: DOrcExecution =>
       runtime.schedule(new Schedulable { def run() = { g.kill() } })
       proxiedGroups.remove(proxyId)
     } else {
-      Logger.fine(s"kill group on unknown group $proxyId")
+      Logger.fine(f"Kill group on unknown group $proxyId%#x")
     }
   }
 }
