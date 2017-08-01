@@ -199,13 +199,14 @@ is much more efficient than <code>foldl</code> or <code>foldr</code>.
 @implementation
 --}
 def afold[A](lambda (A, A) :: A, List[A]) :: A
+def afold(f, []) = stop
 def afold(f, [x]) = x
-{- Here's the interesting part -}
 def afold(f, xs) =
   def afold'(List[A]) :: List[A]
   def afold'([]) = []
   def afold'([x]) = [x]
   def afold'(x:y:xs) = f(x,y):afold'(xs)
+  xs >> -- stop when xs is stop
   afold(f, afold'(xs))
 
 
