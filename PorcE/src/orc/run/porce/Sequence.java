@@ -7,6 +7,8 @@ import java.util.List;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 
+import orc.ast.porc.PorcAST;
+
 public class Sequence extends Expression {
 	@Children
 	protected final Expression[] exprs;
@@ -54,5 +56,15 @@ public class Sequence extends Expression {
 		} else {
 			return new Sequence(l.toArray(new Expression[l.size()]));
 		}
+	}
+	
+	public void setPorcAST(PorcAST ast) {
+		getChildren().forEach((n) -> {
+			if(n instanceof Expression) {
+				Expression e = (Expression) n;
+				if (e.porcNode().isEmpty())
+					e.setPorcAST(ast);
+			}
+		});
 	}
 }
