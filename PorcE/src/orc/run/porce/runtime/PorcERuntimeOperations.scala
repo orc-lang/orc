@@ -47,6 +47,7 @@ trait PorcERuntimeOperations {
     }
   }
   
+  /*
   /** Force a list of values: forcing futures and resolving closures.
     *
     * If vs contains a ForcableCallableBase it must have a correct and complete closedValues.
@@ -104,72 +105,41 @@ trait PorcERuntimeOperations {
       }
     }
   }
+  */
   
-  private final def schedulePublish(p: PorcEClosure, c: Counter, v: Array[AnyRef]) = {
+  final def schedulePublish(p: PorcEClosure, c: Counter, v: Array[AnyRef]) = {
     scheduleOrCall(c, () => { 
       p.callFromRuntimeVarArgs(v)
     })
   }
 
-  private final class PCTJoin(p: PorcEClosure, c: Counter, t: Terminator, vs: Array[AnyRef])
-      extends Join(vs) with Terminatable {
-    
-    // TODO: PERFORMANCE: Ideally we could delay this add until we know we will actually be blocking.
-    t.addChild(this)
+  /*
+  */
+}
 
-    Logger.finer(s"Spawn for PCJoin $this (${vs.mkString(", ")})")
-
-    def done(): Unit = {
-      Logger.finer(s"Done for $this")
+final class PCTFutureReader(p: PorcEClosure, c: Counter, t: Terminator, runtime: PorcERuntime) extends FutureReader with Terminatable {
+  // The flag saying if we have already halted.
+  protected var halted = new AtomicBoolean(false)
+  
+  t.addChild(this)
+  
+  def publish(v: AnyRef): Unit = {
+    if (halted.compareAndSet(false, true)) {
       t.removeChild(this)
-      // Token: Pass to p.
-      schedulePublish(p, c, values)
+      // Token: pass to p
+      runtime.schedulePublish(p, c, Array(v))
     }
-    def halt(): Unit = {
-      Logger.finer(s"Halt for $this")
-      t.removeChild(this)
-      // Token: Remove token passed in.
-      c.haltToken()
-    }
-
-    def kill(): Unit = {
-      if (halted.compareAndSet(false, true)) {
-        // This join has been killed
-        halt()
-      }
-    }
-
-    /*
-    override def toString(): String = {
-      s"PCTJoin@${hashCode().formatted("%08x")}(${halted.get()}, $nUnbound, ${vs.toSeq}, ${values.toSeq})"
-    }
-    */
   }
   
-  private final class PCTFutureReader(p: PorcEClosure, c: Counter, t: Terminator) extends FutureReader with Terminatable {
-    // The flag saying if we have already halted.
-    protected var halted = new AtomicBoolean(false)
-    
-    t.addChild(this)
-    
-    def publish(v: AnyRef): Unit = {
-      if (halted.compareAndSet(false, true)) {
-        t.removeChild(this)
-        // Token: pass to p
-        schedulePublish(p, c, Array(v))
-      }
+  def halt(): Unit = {
+    if (halted.compareAndSet(false, true)) {
+      t.removeChild(this)
+      c.haltToken() // Token: from c.
     }
-    
-    def halt(): Unit = {
-      if (halted.compareAndSet(false, true)) {
-        t.removeChild(this)
-        c.haltToken() // Token: from c.
-      }
-    }
+  }
 
-    def kill(): Unit = {
-      // This join has been killed
-      halt()
-    }
+  def kill(): Unit = {
+    // This join has been killed
+    halt()
   }
 }

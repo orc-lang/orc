@@ -93,6 +93,7 @@ final class Future() extends OrcValue with orc.Future {
     *
     * Return true if the value was already available.
     */
+  @TruffleBoundary(allowInlining = true)
   def read(blocked: FutureReader): Unit = {
     val st = synchronized {
       _state match {
@@ -125,11 +126,15 @@ final class Future() extends OrcValue with orc.Future {
   }
 
   def get(): FutureState = {
-    synchronized { _state } match {
+    getInternal() match {
       case Unbound => orc.FutureState.Unbound
       case Bound => orc.FutureState.Bound(_value)
       case Halt => orc.FutureState.Stopped
     }
+  }
+  
+  def getInternal(): Int = {
+    synchronized { _state }
   }
 }
 

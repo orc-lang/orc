@@ -14,153 +14,188 @@ package orc.run.porce.runtime
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
 import orc.FutureReader
 import orc.run.porce.Logger
+import sun.misc.Unsafe
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
-/** Join a number of futures by blocking on all of them simultaneously.
-  *
-  * This is analogous to orc.run.core.Join.
-  *
-  * @param inValues a list of value which may contain futures. All the futures in this array will be blocked on.
-  *
-  * This class must be subclassed to implement halt and done.
-  *
-  * @author amp
-  */
-abstract class Join(inValues: Array[AnyRef]) {
+/**
+ * Join a number of futures by blocking on all of them simultaneously.
+ *
+ * This is analogous to orc.run.core.Join.
+ *
+ * @param inValues a list of value which may contain futures. All the futures in this array will be blocked on.
+ *
+ * This class must be subclassed to implement halt and done.
+ *
+ * @author amp
+ */
+final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val values: Array[AnyRef], runtime: PorcERuntime) extends Terminatable {
   join =>
-  /* This does not do real halts or spawns. Instead it assumes it can spawn
-   * if needed and will always call halt or done (but not both) when it is
-   * completed.
-   */
 
-  require(inValues.size > 0, "Join must have at least one argument. Check before call.")
+  require(values.size > 1, "Join must have at least one argument. Check before call.")
 
   // The number of unbound values in values.
-  protected var nUnbound = new AtomicInteger(inValues.size)
-  // The array of values that have already been bound.
-  // TODO: PERFORMANCE: Could this be the same array as inValues and we just overwrite values as we get them?
-  // TODO: PERFORMANCE: This should have one blank spot at the beginning so that the array can be reused for the continuation call with the initial argument filled with the closure.
-  //    The above two optimizations are NOT mutually exclusive. They can both be applied if the Force node knows to allocate the extra slot.
-  //    These will be easiest to implement when I'm reworking Join to use specializable nodes for each element.
-  val values = Array.ofDim[AnyRef](inValues.size)
+  protected var nUnbound = new AtomicInteger(values.size - 1)
   // The flag saying if we have already halted.
   protected val halted = new AtomicBoolean(false)
 
-  /** A Blockable that binds a specific element of values in publish().
-    */
-  final private class JoinElement(i: Int) extends FutureReader {
-    /** The flag used to make sure publish/halt is only called once.
-      */
+  /**
+   * A FutureReader that binds a specific element of values in publish().
+   */
+  final private class JoinElement(i: Int, f: orc.Future) extends FutureReader {
+    /**
+     * The flag used to make sure publish/halt is only called once.
+     */
     var bound = new AtomicBoolean(false)
 
-    /** Bind value i to v if this is not yet bound.
-      *
-      * If join has not halted we bind and check if we are done.
-      */
+    /**
+     * Start blocking on the future.
+     *
+     */
+    def start() = {
+      f.read(this)
+    }
+
+    /**
+     * Bind value i to v if this is not yet bound.
+     *
+     * If join has not halted we bind and check if we are done.
+     */
     def publish(v: AnyRef): Unit = if (bound.compareAndSet(false, true)) {
-      Logger.finest(s"$join: Join joined to $v ($i)")
+      //Logger.finest(s"$join: Join joined to $v ($i)")
       // Check if we are halted then bind. This is an optimization since
       // nUnbound can never reach 0 if we halted.
       if (!join.halted.get()) {
         // Bind the value (this is not synchronized because checkComplete
         // will cause the read of it, enforcing the needed ordering).
-        values(i) = v
+        values(i + 1) = v
         // TODO: Does this write need to be volatile?
         // Now decrement the number of unbound values and see if we are done.
         join.checkComplete(join.nUnbound.decrementAndGet())
       }
     }
 
-    /** Halt the whole join if it has not yet been halted and this has not yet
-      * been bound.
-      */
+    /**
+     * Halt the whole join if it has not yet been halted and this has not yet
+     * been bound.
+     */
     def halt(): Unit = if (bound.compareAndSet(false, true)) {
-      Logger.finest(s"$join: Join halted ($i)")
+      //Logger.finest(s"$join: Join halted ($i)")
       // Halt if we have not already halted.
-      if (join.halted.compareAndSet(false, true)) {
-        //Logger.finest(s"Finished join with halt")
-        join.halt()
-      }
+      join.halt()
     }
   }
 
-
-  final def apply(): Array[AnyRef] = {
-    // TODO: PERFORMANCE: It would probably perform slightly better to move this into an object method which only creates the actual join object if it is actually needed.
-    //    The above would also enable reusing the incoming array in more cases.
-    
-    
-    //Logger.finest(s"Starting join with: ${inValues.mkString(", ")}")
-    
-    // Start all the required forces.
-    var nNonFutures = 0
-    var halted = false
-    for ((v, i) <- inValues.zipWithIndex) v match {
-      case f: orc.Future => {
-        f.get() match {
-          case orc.FutureState.Bound(v) => {
-            values(i) = v
-            nNonFutures += 1
-          }
-          case orc.FutureState.Stopped => {
-            // TODO: PERFORMANCE: Could break iteration here.
-            halted = true
-          }
-          case orc.FutureState.Unbound => {
-            Logger.finest(s"$join: Join joining on $f")
-            // Force f so it will bind the correct index.
-            val e = new JoinElement(i)
-            f.read(e)
-          }
+  @TruffleBoundary(allowInlining = true)
+  def force(i: Int, f: orc.Future) = {
+    //Logger.fine(s"Forcing $i $f")
+    if (!join.halted.get()) {
+      f.get() match {
+        case orc.FutureState.Bound(v) => {
+          set(i, v)
+        }
+        case orc.FutureState.Stopped => {
+          halted.set(true)
+        }
+        case orc.FutureState.Unbound => {
+          // Store a JoinElement in the array so it can be started later.
+          values(i + 1) = new JoinElement(i, f)
         }
       }
-      case _ => {
-        // v is not a future so just bind it.
-        values(i) = v
-        nNonFutures += 1
-      }
     }
-    
-    // Now decrement the unbound count by the number of non-futures we found.
-    // And maybe finish immediately.
-    if (halted) {
-      if (join.halted.compareAndSet(false, true)) {
-        return Join.HaltSentinel
-      }
-    } else if (nNonFutures > 0) {
-      // Don't do this if it will not change the value. Otherwise this could
-      // cause multiple calls to done.
-      if (nUnbound.addAndGet(-nNonFutures) == 0 && join.halted.compareAndSet(false, true)) {
-        return values
-      }
-    }
-    return null
   }
 
-  /** Check if we are done by looking at n which must be the current number of
-    * unbound values.
-    */
+  def set(i: Int, v: AnyRef) = {
+    //Logger.fine(s"Setting $i $v")
+    // v is not a future so just bind it.
+    values(i + 1) = v
+    nUnbound.decrementAndGet()
+  }
+
+  def isResolved() = {
+    nUnbound.get() == 0
+  }
+
+  def isHalted() = {
+    halted.get()
+  }
+
+  def isBlocked() = {
+    nUnbound.get() > 0 && !halted.get()
+  }
+
+  @TruffleBoundary(allowInlining = true)
+  def finish() = {
+    //Logger.fine(s"Finishing $this with: ${values.mkString(", ")}")
+    
+    assert(isBlocked())
+
+    t.addChild(this)
+
+    var i = 1
+    while (i < values.length) {
+      values(i) match {
+        case p: JoinElement =>
+          p.start()
+        case _ =>
+          {}
+      }
+      i += 1
+    }
+  }
+
+  /**
+   * Check if we are done by looking at n which must be the current number of
+   * unbound values.
+   */
   private final def checkComplete(n: Int): Unit = {
     assert(n >= 0, n)
     if (n == 0 && halted.compareAndSet(false, true)) {
-      Logger.finest(s"$join: Join finished with: ${values.mkString(", ")}")
+      //Logger.finest(s"$join: Join finished with: ${values.mkString(", ")}")
       done()
     }
   }
 
-  /** Handle a successful completion.
-    *
-    * This should use values to get the bound values.
-    */
-  def done(): Unit
+  /**
+   * Handle a successful completion.
+   *
+   * This should use values to get the bound values.
+   */
+  def done(): Unit = {
+    Logger.finer(s"Done for $this with: ${values.mkString(", ")}")
+    t.removeChild(this)
+    // Token: Pass to p.
+    runtime.scheduleOrCall(c, () => { 
+      p.callFromRuntimeArgArray(values)
+    })
+  }
 
-  /** Handle a halting case.
-    *
-    * values will not be completely bound.
-    */
-  def halt(): Unit
+  /**
+   * Handle a halting case.
+   *
+   * values will not be completely bound.
+   */
+  def halt(): Unit = {
+    if (halted.compareAndSet(false, true)) {
+      Logger.finer(s"Halt for $this")
+      t.removeChild(this)
+      // Token: Remove token passed in.
+      c.haltToken()
+    }
+  }
+
+  /**
+   * Handle being killed by the terminator.
+   */
+  def kill(): Unit = {
+    // This join has been killed
+    halt()
+  }
 }
 
-
 object Join {
-  val HaltSentinel = Array[AnyRef]()
+  val unsafe = {
+    val theUnsafe = classOf[Unsafe].getDeclaredField("theUnsafe");
+    theUnsafe.setAccessible(true);
+    theUnsafe.get(null).asInstanceOf[Unsafe];  
+  }
 }

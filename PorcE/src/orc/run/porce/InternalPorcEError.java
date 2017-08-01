@@ -1,7 +1,5 @@
 package orc.run.porce;
 
-import static com.oracle.truffle.api.CompilerDirectives.*;
-
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 

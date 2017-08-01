@@ -22,7 +22,12 @@ final public class PorcEClosure {
 		this.isRoutine = isRoutine;
 		this.executionTerminator = executionTerminator;
 	}
-	
+
+	public Object callFromRuntimeArgArray(Object[] values) {
+		values[0] = capturedValues;
+		return body.call(values);
+	}
+
 	public Object callFromRuntime() {
 		return body.call((Object)capturedValues);
 	}

@@ -32,6 +32,7 @@ public class Read {
 		}
 
 		public Object execute(VirtualFrame frame) {
+			// TODO: Change to getObject
 			Object value = frame.getValue(slot);
 			return value;
 		}

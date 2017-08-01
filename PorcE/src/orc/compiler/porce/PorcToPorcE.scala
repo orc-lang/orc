@@ -56,13 +56,15 @@ class PorcToPorcE {
   }
 
   def transform(x: porc.Variable)(implicit ctx: Context): porce.Expression = {
-    if (ctx.argumentVariables.contains(x)) {
+    val res = if (ctx.argumentVariables.contains(x)) {
       porce.Read.Argument.create(ctx.argumentVariables.indexOf(x))
     } else if (ctx.closureVariables.contains(x)) {
       porce.Read.Closure.create(ctx.closureVariables.indexOf(x))
     } else {
       porce.Read.Local.create(lookupVariable(x))
     }
+    res.setPorcAST(x)
+    res
   }
 
   def transform(e: porc.Expression.Z)(implicit ctx: Context): porce.Expression = {
@@ -87,10 +89,7 @@ class PorcToPorcE {
 
         {
           implicit val ctx = oldCtx.copy(descriptor = descriptor, closureVariables = capturedVars, argumentVariables = args)
-
-          // TODO: Pass in read nodes instead of slots.
-          // TODO: Eliminate capturing slots. 
-
+          
           val newBody = transform(body)
           val rootNode = porce.PorcERootNode.create(descriptor, newBody, args.size, capturedVars.size);
           porce.NewContinuation.create(capturingExprs, rootNode)
@@ -143,10 +142,19 @@ class PorcToPorcE {
         // TODO: PERFORMANCE: Instead of building a single node, build a sequence of nodes: create Join, check futures and register with join as needed, start join if anything was registered.
         //  The nodes that process and register values can specialize based on the state of the future they receive.
         porce.Resolve.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.runtime)
+      case porc.Force.Z(p, c, t, Seq(future)) =>
+        // Special optimized case for only one future.
+        porce.Force.SingleFuture.create(transform(p), transform(c), transform(t), transform(future), ctx.execution.newRef())
       case porc.Force.Z(p, c, t, futures) =>
-        // TODO: PERFORMANCE: Instead of building a single node, build a sequence of nodes: create Join, check futures and register with join as needed, start join if anything was registered.
-        //  The nodes that process and register values can specialize based on the state of the future they receive.
-        porce.Force.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.runtime)
+        val join = lookupVariable(LocalVariables.Join)
+        val newJoin = porce.Write.Local.create(join,
+            porce.Force.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
+        val processors = futures.zipWithIndex.map { p =>
+          val (f, i) = p
+          porce.Force.Future.create(porce.Read.Local.create(join), transform(f), i)
+        }
+        val finishJoin = porce.Force.Finish.create(porce.Read.Local.create(join), ctx.execution.newRef())
+        porce.Sequence.create((newJoin +: processors :+ finishJoin).toArray)
       case porc.SetDiscorporate.Z(c) =>
         porce.SetDiscorporate.create(transform(c))
       case porc.TryOnException.Z(b, h) =>
