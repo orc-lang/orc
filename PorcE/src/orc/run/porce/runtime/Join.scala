@@ -30,22 +30,71 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
  */
 final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val values: Array[AnyRef], runtime: PorcERuntime) extends Terminatable {
   join =>
+    
+  import Join._
 
   require(values.size > 1, "Join must have at least one argument. Check before call.")
 
-  // The number of unbound values in values.
-  protected var nUnbound = new AtomicInteger(values.size - 1)
-  // The flag saying if we have already halted.
-  protected val halted = new AtomicBoolean(false)
+  /**
+   * The state of this join.
+   * 
+   * This encodes both the number of remaining values to finish and if this join has halted.
+   * 
+   * This should never be accessed directly. Use the update methods.
+   */
+  protected var state: Int = values.size - 1
+  
+  @inline
+  protected def decrementUnboundST(): Unit = {
+    state -= 1
+  }
+  
+  @inline
+  protected def setHaltedST(): Unit = {
+    state = -1
+  }
+  
+  @inline
+  protected def setHaltedMT(): Boolean = {
+    unsafe.getAndSetInt(this, joinStateOffset, -1) >= 0
+  }
+  
+  @inline
+  protected def isHaltedFN(): Boolean = {
+    state < 0
+  }
+  
+  @inline
+  protected def isHaltedST(): Boolean = {
+    state < 0
+  }
+  
+  @inline
+  protected def decrementUnboundMT(): Int = {
+    unsafe.getAndAddInt(this, joinStateOffset, -1) - 1
+  }
+  
+  @inline
+  protected def getUnboundMT(): Int = {
+    unsafe.getIntVolatile(this, joinStateOffset)
+  }
+  
+  @inline
+  protected def getUnboundST(): Int = {
+    state
+  }
 
   /**
    * A FutureReader that binds a specific element of values in publish().
+   * 
+   * All methods are called in the multi-threaded phase.
    */
   final private class JoinElement(i: Int, f: orc.Future) extends FutureReader {
     /**
      * The flag used to make sure publish/halt is only called once.
      */
     var bound = new AtomicBoolean(false)
+    // TODO: PERFORMANCE: This could be replaces with a CAS directly into the values array, replacing this with the value.
 
     /**
      * Start blocking on the future.
@@ -62,16 +111,12 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
      */
     def publish(v: AnyRef): Unit = if (bound.compareAndSet(false, true)) {
       //Logger.finest(s"$join: Join joined to $v ($i)")
-      // Check if we are halted then bind. This is an optimization since
-      // nUnbound can never reach 0 if we halted.
-      if (!join.halted.get()) {
-        // Bind the value (this is not synchronized because checkComplete
-        // will cause the read of it, enforcing the needed ordering).
-        values(i + 1) = v
-        // TODO: Does this write need to be volatile?
-        // Now decrement the number of unbound values and see if we are done.
-        join.checkComplete(join.nUnbound.decrementAndGet())
-      }
+      // Bind the value (this is not synchronized because checkComplete
+      // will cause the read of it, enforcing the needed ordering).
+      values(i + 1) = v
+      // TODO: Does this write need to be volatile?
+      // Now decrement the number of unbound values and see if we are done.
+      join.checkComplete(decrementUnboundMT())
     }
 
     /**
@@ -85,16 +130,21 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     }
   }
 
+  /**
+   * Add a future to force to the Join.
+   * 
+   * This should only be called in single-threaded mode.
+   */
   @TruffleBoundary(allowInlining = true)
   def force(i: Int, f: orc.Future) = {
-    //Logger.fine(s"Forcing $i $f")
-    if (!join.halted.get()) {
+    //Logger.fine(s"Forcing $i $f ($state)")
+    if (!isHaltedST()) {
       f.get() match {
         case orc.FutureState.Bound(v) => {
           set(i, v)
         }
         case orc.FutureState.Stopped => {
-          halted.set(true)
+          setHaltedST()
         }
         case orc.FutureState.Unbound => {
           // Store a JoinElement in the array so it can be started later.
@@ -104,33 +154,60 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     }
   }
 
+  /**
+   * Set a value to a specific value.
+   * 
+   * This should only be called in single-threaded mode.
+   */
   def set(i: Int, v: AnyRef) = {
-    //Logger.fine(s"Setting $i $v")
+    //Logger.fine(s"Setting $i $v ($state)")
     // v is not a future so just bind it.
     values(i + 1) = v
-    nUnbound.decrementAndGet()
+    decrementUnboundST()
   }
 
+  /**
+   * Is this fully resolved to values.
+   * 
+   * This should only be called in single-threaded mode.
+   */
   def isResolved() = {
-    nUnbound.get() == 0
+    getUnboundST() == 0
   }
 
+  /**
+   * Is this halted because some value halted.
+   * 
+   * This should only be called in single-threaded mode.
+   */
   def isHalted() = {
-    halted.get()
+    isHaltedST()
   }
 
+  /**
+   * Is this waiting for a value.
+   * 
+   * This should only be called in single-threaded mode.
+   */
   def isBlocked() = {
-    nUnbound.get() > 0 && !halted.get()
+    getUnboundST() > 0
   }
 
+  /**
+   * Finish setting up this. After finish() is called this is in multi-threaded mode.
+   * 
+   * This should only be called in single-threaded mode.
+   */
   @TruffleBoundary(allowInlining = true)
   def finish() = {
-    //Logger.fine(s"Finishing $this with: ${values.mkString(", ")}")
+    //Logger.fine(s"Finishing $this with: $state ${values.mkString(", ")}")
     
     assert(isBlocked())
+    
+    unsafe.storeFence()
 
     t.addChild(this)
-
+    
     var i = 1
     while (i < values.length) {
       values(i) match {
@@ -146,10 +223,11 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
   /**
    * Check if we are done by looking at n which must be the current number of
    * unbound values.
+   * 
+   * This may be called in multi-threaded mode.
    */
   private final def checkComplete(n: Int): Unit = {
-    assert(n >= 0, n)
-    if (n == 0 && halted.compareAndSet(false, true)) {
+    if (n == 0 && setHaltedMT()) {
       //Logger.finest(s"$join: Join finished with: ${values.mkString(", ")}")
       done()
     }
@@ -159,9 +237,11 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
    * Handle a successful completion.
    *
    * This should use values to get the bound values.
+   * 
+   * This may be called in multi-threaded mode.
    */
   def done(): Unit = {
-    Logger.finer(s"Done for $this with: ${values.mkString(", ")}")
+    Logger.finer(s"Done for $this with: $state ${values.mkString(", ")}")
     t.removeChild(this)
     // Token: Pass to p.
     runtime.scheduleOrCall(c, () => { 
@@ -173,10 +253,12 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
    * Handle a halting case.
    *
    * values will not be completely bound.
+   * 
+   * This may be called in multi-threaded mode.
    */
   def halt(): Unit = {
-    if (halted.compareAndSet(false, true)) {
-      Logger.finer(s"Halt for $this")
+    if (setHaltedMT()) {
+      Logger.finer(s"Halt for $state $this")
       t.removeChild(this)
       // Token: Remove token passed in.
       c.haltToken()
@@ -185,6 +267,8 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
 
   /**
    * Handle being killed by the terminator.
+   * 
+   * This may be called in multi-threaded mode.
    */
   def kill(): Unit = {
     // This join has been killed
@@ -197,5 +281,9 @@ object Join {
     val theUnsafe = classOf[Unsafe].getDeclaredField("theUnsafe");
     theUnsafe.setAccessible(true);
     theUnsafe.get(null).asInstanceOf[Unsafe];  
+  }
+  
+  val joinStateOffset = {
+    unsafe.objectFieldOffset(classOf[Join].getDeclaredField("state"))
   }
 }
