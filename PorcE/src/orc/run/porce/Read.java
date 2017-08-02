@@ -1,6 +1,7 @@
 package orc.run.porce;
 
 import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class Read {
@@ -32,8 +33,12 @@ public class Read {
 		}
 
 		public Object execute(VirtualFrame frame) {
-			// TODO: Change to getObject
-			Object value = frame.getValue(slot);
+			Object value;
+			try {
+				value = frame.getObject(slot);
+			} catch (FrameSlotTypeException e) {
+				throw InternalPorcEError.typeError(this, e);
+			}
 			return value;
 		}
 
