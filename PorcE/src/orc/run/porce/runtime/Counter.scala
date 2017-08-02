@@ -115,7 +115,7 @@ object Counter {
 /**
  * @author amp
  */
-abstract class Counter {
+final class Counter(runtime: PorcERuntime, parent: Counter, haltContinuation: PorcEClosure) {
   /*
   @elidable(elidable.ASSERTION)
   val log = if (Counter.tracingEnabled) new LinkedBlockingDeque[Exception]() else null
@@ -214,49 +214,23 @@ abstract class Counter {
   /**
    * Called when this whole context has halted.
    */
-  def onContextHalted(): Unit
-}
-
-/**
- * @author amp
- */
-abstract class CounterNestedBase(val parent: Counter) extends Counter {
-  /**
-   * Called when this whole context has halted.
-   */
   def onContextHalted(): Unit = {
-    if (isDiscorporated)
-      parent.setDiscorporate()
-    // Token: from parent
-    parent.haltToken()
-  }
-
-  override def toString() = {
-    s"${super.toString()}($parent)"
-  }
-}
-
-// FIXME: PERFORMANCE: Merge all counters into one final class. It makes the type checks faster at runtime.
-
-/**
- * @author amp
- */
-final class CounterNested(execution: PorcEExecution, parent: Counter, haltContinuation: PorcEClosure) extends CounterNestedBase(parent) {
-  /**
-   * Called when this whole context has halted.
-   */
-  override def onContextHalted(): Unit = {
-    if (!isDiscorporated) {
+    // Call the haltContinuation if either we didn't discorporate or we don't have a parent and are therefor at the top-level.
+    if (!isDiscorporated || parent == null) {
       // TODO: PERFORMANCE: Instead of scheduling here consider notifying the caller to haltToken to invoke the closure. It's likely it would be a stable node which could be called directly.
       //   The tricky part will be handling the cases where instead of being called from a Truffle node we are called from the runtime.
       //   Maybe we shouldn't call from the runtime. Or maybe we need two ways to halt a token. One which schedules the handler and one which direct calls it.
       // Token: from parent
-      execution.runtime.scheduleOrCall(parent, () => {
+      runtime.scheduleOrCall(parent, () => {
         haltContinuation.callFromRuntime()
       })
       // Not calling super since the token has already been given away.
     } else {
-      super.onContextHalted()
+      if (parent != null) { 
+        parent.setDiscorporate()
+        // Token: from parent
+        parent.haltToken()
+      }
     }
   }
 }

@@ -20,8 +20,14 @@ public class InternalPorcEError extends Error {
 
 	@TruffleBoundary(allowInlining = true)
 	public static InternalPorcEError typeError(PorcENode n, UnexpectedResultException e) {
-		throw new InternalPorcEError("Received illegal value '" + e.getResult() + "' as some parameter in '" + n.porcNode() + "'.",
-				e);
+		throw new InternalPorcEError(
+				"Received illegal value '" + e.getResult() + "' as some parameter in '" + n.porcNode() + "'.", e);
+	}
+
+	@TruffleBoundary
+	public static InternalPorcEError typeError(PorcENode n, Exception e) {
+		throw new InternalPorcEError(
+				"Received illegal value '" + e + "' as some parameter in '" + n.porcNode() + "'.",	e);
 	}
 
 	@TruffleBoundary(allowInlining = true)

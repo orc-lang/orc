@@ -44,20 +44,23 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       }      
     })
   }
-
-  val c: Counter = new Counter {
-    /** When we halt stop the scheduler and notify anyone who cares.
-      */
-    def onContextHalted(): Unit = {
-      // Runs regardless of discorporation.
-      Logger.fine("Top level context complete.")
-      runtime.removeRoot(PorcEExecution.this)
-      PorcEExecution.this.synchronized {
-        PorcEExecution.this._isDone = true
-        PorcEExecution.this.notifyAll()
-      }
-    }
+  
+  val haltContinuation: PorcEClosure = {
+    Utilities.PorcEClosure(new RootNode(null) {
+      def execute(frame: VirtualFrame): Object = {
+        // Runs regardless of discorporation.
+        Logger.fine("Top level context complete.")
+        runtime.removeRoot(PorcEExecution.this)
+        PorcEExecution.this.synchronized {
+          PorcEExecution.this._isDone = true
+          PorcEExecution.this.notifyAll()
+        }
+        PorcEUnit.SINGLETON
+      }      
+    })
   }
+
+  val c: Counter = new Counter(runtime, null, haltContinuation)
 
   val t = new Terminator
 

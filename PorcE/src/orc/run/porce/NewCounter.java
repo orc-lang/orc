@@ -4,7 +4,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import orc.run.porce.runtime.Counter;
-import orc.run.porce.runtime.CounterNested;
 import orc.run.porce.runtime.PorcEExecutionRef;
 
 public class NewCounter extends Expression {
@@ -26,7 +25,7 @@ public class NewCounter extends Expression {
 	
 	public Counter executeCounter(VirtualFrame frame) {
 		try {
-			return new CounterNested(execution.get(), parent.executeCounter(frame), haltContinuation.executePorcEClosure(frame));
+			return new Counter(execution.get().runtime(), parent.executeCounter(frame), haltContinuation.executePorcEClosure(frame));
 		} catch (UnexpectedResultException e) {
 			throw new Error(e);
 		}
