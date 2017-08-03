@@ -21,8 +21,9 @@ GRAALJAVA="$GRAALHOME/bin/java $GRAALARGS"
 NORMALJAVA=java
 
 CPUS=8
-NRUNS=25
-TIMEOUT=15
+NRUNS_GRAAL=100
+NRUNS_OTHER=50
+TIMEOUT=10
 
 BATCHNAME="$(hostname)_$(date +"%Y%m%d-%H%M")"
 
@@ -31,12 +32,11 @@ echo "NOTE: Don't forget to set CPUs to a fixed frequency!"
 sleep 2
 
 for config in     \
-                  "porceinterpO2%$NORMALJAVA%orc%porc%2" \
                   "porcegraalO2%$GRAALJAVA%orc%porc%2"   \
-                  "porceinterpO3%$NORMALJAVA%orc%porc%3" \
                   "porcegraalO3%$GRAALJAVA%orc%porc%3"   \
+                  "scala%$NORMALJAVA%scala%scala%3"      \
                   "token%$NORMALJAVA%orc%token%3"        \
-                  "scala%$NORMALJAVA%scala%token%3"      ; do
+                  ; do
     IFS='%' read -r -a configs <<< "$config"
     NAME="${configs[0]}"
     JAVA="${configs[1]}"
@@ -45,6 +45,13 @@ for config in     \
     OPT="${configs[4]}"
     
     cd $ROOTDIR/OrcTests
+    
+    case "$BACKEND" in
+    	*porc*)
+	    	NRUNS=$NRUNS_GRAAL;;
+    	*)
+	    	NRUNS=$NRUNS_OTHER;;
+    esac
 
     echo "$config" > $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log    
     echo "Options: -O $OPT -S $SET -B $BACKEND -t $TIMEOUT -c $CPUS -r $NRUNS -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv" >> $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log    
