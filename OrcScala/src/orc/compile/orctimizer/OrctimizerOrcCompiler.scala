@@ -240,6 +240,8 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       else
         ast
 
+      porc.Statistics(e.body)
+        
       e
     }
   }

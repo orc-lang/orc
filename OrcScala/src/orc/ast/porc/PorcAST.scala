@@ -144,9 +144,9 @@ final case class MethodDeclaration(@subtree t: Argument, @subtree defs: Seq[Meth
 @branch @replacement[Method]
 sealed abstract class Method extends PorcAST {
   def name: Variable
+  def isRoutine: Boolean
   def arguments: Seq[Variable]
   def body: Expression
-  def isRoutine: Boolean
 
   def allArguments: Seq[Variable]
 
@@ -154,11 +154,32 @@ sealed abstract class Method extends PorcAST {
 }
 
 object Method {
+  def unapply(m: Method): Option[(Variable, Boolean, Seq[Variable], Expression)] = m match {
+    case MethodCPS(n, _, _, _, i, a, b) =>
+      Some((n, i, a, b))
+    case MethodDirect(n, i, a, b) =>
+      Some((n, i, a, b))
+    case _ =>
+      None
+  }
+  
   class Z {
     def name: Variable
+    def isRoutine: Boolean
     def arguments: Seq[Variable]
     def allArguments: Seq[Variable] = value.allArguments
     def body: Expression.Z
+  }
+
+  object Z {
+    def unapply(m: Method.Z): Option[(Variable, Boolean, Seq[Variable], Expression.Z)] = m match {
+      case MethodCPS.Z(n, _, _, _, i, a, b) =>
+        Some((n, i, a, b))
+      case MethodDirect.Z(n, i, a, b) =>
+        Some((n, i, a, b))
+      case _ =>
+        None
+    }
   }
 }
 
