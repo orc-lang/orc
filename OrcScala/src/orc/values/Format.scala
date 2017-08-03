@@ -47,7 +47,7 @@ object Format {
   def formatSequence(vs: Seq[_]) =
     vs match {
       case Nil => ""
-      case _ => (vs map { formatValue }) reduceRight { _ + ", " + _ }
+      case _ => (vs map { formatValue }).mkString(", ")
     }
 
   def unparseString(s: String) = {
