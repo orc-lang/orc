@@ -3,21 +3,16 @@ package orc.run.porce;
 import java.util.concurrent.locks.Lock;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import orc.CaughtEvent;
-import orc.DirectInvoker;
 import orc.ErrorInvoker;
 import orc.Invoker;
 import orc.error.runtime.ExceptionHaltException;
 import orc.error.runtime.HaltException;
-import orc.run.porce.InternalCall.Specific;
-import orc.run.porce.InternalCall.Universal;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PCTHandle;
 import orc.run.porce.runtime.PorcEClosure;
@@ -64,19 +59,19 @@ class ExternalCPSCallBase extends CallBase {
 		return getInvokerWithBoundary(getRuntime(), t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true)
+	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object t,
 			final Object[] argumentValues) {
 		return runtime.getInvoker(t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true)
+	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	protected static boolean canInvokeWithBoundary(final Invoker invoker, final Object t,
 			final Object[] argumentValues) {
 		return invoker.canInvoke(t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true)
+	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	protected static void invokeWithBoundary(final Invoker invoker, final PCTHandle handle, final Object t,
 			final Object[] argumentValues) {
 		invoker.invoke(handle, t, argumentValues);
@@ -116,7 +111,7 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 				lock.unlock();
 			}
 		} catch (Exception e) {
-			execution.get().notifyOrc(new CaughtEvent(e));
+			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 			replaceWithUniversal();
 			throw HaltException.SINGLETON();
 		}
@@ -175,10 +170,10 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 				try {
 					invokeWithBoundary(invoker, handle, t, argumentValues);
 				} catch (ExceptionHaltException e) {
-					execution.get().notifyOrc(new CaughtEvent(e.getCause()));
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 				} catch (HaltException e) {
 				} catch (Exception e) {
-					execution.get().notifyOrc(new CaughtEvent(e));
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 					throw HaltException.SINGLETON();
 				}
 			} else {
@@ -212,10 +207,10 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 				Invoker invoker = getInvokerWithBoundary(t, argumentValues);
 				invokeWithBoundary(invoker, handle, t, argumentValues);
 			} catch (ExceptionHaltException e) {
-				execution.get().notifyOrc(new CaughtEvent(e.getCause()));
+				execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 			} catch (HaltException e) {
 			} catch (Exception e) {
-				execution.get().notifyOrc(new CaughtEvent(e));
+				execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 				throw HaltException.SINGLETON();
 			}
 		}

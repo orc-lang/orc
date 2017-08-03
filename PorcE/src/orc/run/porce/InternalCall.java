@@ -47,6 +47,7 @@ public class InternalCall extends CallBase {
 				cacheSize++;
 				n = new Specific((Expression) target.copy(), t, copyExpressionArray(arguments), (CallBase) this.copy(),
 						execution);
+				//Logger.info(() -> "Replaced " + this + " with " + n);
 				replace(n, "Speculate on target closure.");
 			} else {
 				n = new Universal(target, arguments, execution);

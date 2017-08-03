@@ -30,17 +30,17 @@ public class GetField extends Expression {
 			Accessor accessor = getAccessorWithBoundary(obj);
 			return accessWithBoundary(accessor, obj);
 		} catch (Exception e) {
-			execution.get().notifyOrc(new CaughtEvent(e));
+			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 			throw HaltException.SINGLETON();
 		}
 	}
 
-	@TruffleBoundary
+	@TruffleBoundary(throwsControlFlowException = true)
 	protected Accessor getAccessorWithBoundary(final Object t) {
 		return execution.get().runtime().getAccessor(t, field);
 	}
 	
-	@TruffleBoundary(allowInlining = true)
+	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	private static Object accessWithBoundary(final Accessor accessor, final Object obj) {
 		return accessor.get(obj);
 	}

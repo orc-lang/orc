@@ -43,7 +43,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
   }
 
   def notifyOrc(event: OrcEvent): Unit = {
-    execution.notifyOrc(event)
+    execution.notifyOrcWithBoundary(event)
   }
 
   // TODO: Support VTime

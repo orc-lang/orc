@@ -39,19 +39,19 @@ class ExternalDirectCallBase extends CallBase {
 		return (DirectInvoker) getInvokerWithBoundary(getRuntime(), t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true)
+	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object t,
 			final Object[] argumentValues) {
 		return runtime.getInvoker(t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true)
+	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	protected static boolean canInvokeWithBoundary(final Invoker invoker, final Object t,
 			final Object[] argumentValues) {
 		return invoker.canInvoke(t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true)
+	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object t,
 			final Object[] argumentValues) {
 		return invoker.invokeDirect(t, argumentValues);
@@ -91,7 +91,7 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
 				lock.unlock();
 			}
 		} catch (Exception e) {
-			execution.get().notifyOrc(new CaughtEvent(e));
+			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 			replaceWithUniversal();
 			throw HaltException.SINGLETON();
 		}
@@ -140,17 +140,19 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
 			Object[] argumentValues = buildArgumentValues(frame);
 
 			if (canInvokeWithBoundary(invoker, t, argumentValues)) {
+				Object r;
 				try {
-					return invokeDirectWithBoundary(invoker, t, argumentValues);
+					r = invokeDirectWithBoundary(invoker, t, argumentValues);
 				} catch (ExceptionHaltException e) {
-					execution.get().notifyOrc(new CaughtEvent(e.getCause()));
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 					throw HaltException.SINGLETON();
 				} catch (HaltException e) {
 					throw e;
 				} catch (Exception e) {
-					execution.get().notifyOrc(new CaughtEvent(e));
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 					throw HaltException.SINGLETON();
 				}
+				return r;
 			} else {
 				return notMatched.execute(frame);
 			}
@@ -176,19 +178,19 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
 				DirectInvoker invoker = getInvokerWithBoundary(t, argumentValues);
 				return invokeDirectWithBoundary(invoker, t, argumentValues);
 			} catch (ExceptionHaltException e) {
-				execution.get().notifyOrc(new CaughtEvent(e.getCause()));
+				execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 				throw HaltException.SINGLETON();
 			} catch (HaltException e) {
 				throw e;
 			} catch (Exception e) {
-				execution.get().notifyOrc(new CaughtEvent(e));
+				execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 				throw HaltException.SINGLETON();
 			}
 		}
 
 		@Override
 		public NodeCost getCost() {
-			return NodeCost.MEGAMORPHIC;
+			return NodeCost.POLYMORPHIC;
 		}
 	}
 }

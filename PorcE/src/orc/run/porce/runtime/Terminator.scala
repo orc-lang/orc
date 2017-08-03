@@ -33,7 +33,7 @@ trait Terminatable {
 class Terminator extends Terminatable {
   private[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
   
-  @TruffleBoundary(allowInlining=true)
+  @TruffleBoundary
   def addChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig == null) {
@@ -58,7 +58,7 @@ class Terminator extends Terminatable {
     }
   }
   
-  @TruffleBoundary(allowInlining=true)
+  @TruffleBoundary
   def removeChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig != null) {
@@ -72,7 +72,7 @@ class Terminator extends Terminatable {
 
   /** Check that this context is live and throw KilledException if it is not.
     */
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
   def checkLive(): Unit = {
     if (!isLive()) {
       throw KilledException.SINGLETON
@@ -91,7 +91,7 @@ class Terminator extends Terminatable {
     *
     * This will throw KilledException if the terminator has already been killed otherwise it will just return to allow handling.
     */
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary(throwsControlFlowException = true)
   def kill(): Unit = {
     // First, swap in null as the children set.
     val cs = children.getAndSet(null)
@@ -123,7 +123,6 @@ final class TerminatorNested(parent: Terminator) extends Terminator {
   //Logger.info(s"$this($parent)")
   parent.addChild(this)
   
-  @TruffleBoundary(allowInlining = true)
   override def kill(): Unit = {
     // FIXME: MEMORYLEAK: This is not actually enough. We actually need to detect halting of the elements in this terminators.... I think Counters and Terminators need to be connected.
     // Specifically this will be a problem if an expression halts without publishing inside a terminator. The optimizer will remove this for statically known cases.
