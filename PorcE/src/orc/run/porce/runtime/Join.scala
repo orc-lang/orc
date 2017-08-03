@@ -33,7 +33,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     
   import Join._
 
-  require(values.size > 1, "Join must have at least one argument. Check before call.")
+  //require(values.length > 1, "Join must have at least one argument. Check before call.")
 
   /**
    * The state of this join.
@@ -42,7 +42,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
    * 
    * This should never be accessed directly. Use the update methods.
    */
-  protected var state: Int = values.size - 1
+  protected var state: Int = values.length - 1
   
   @inline
   protected def decrementUnboundST(): Unit = {
@@ -136,17 +136,41 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
    * This should only be called in single-threaded mode.
    */
   @TruffleBoundary(allowInlining = true)
+  def force(i: Int, f: orc.run.porce.runtime.Future) = {
+    //Logger.fine(s"Forcing $i $f ($state)")
+    if (!isHaltedST()) {
+      f.getInternal() match {
+        case FutureConstants.Bound => {
+          set(i, f._value)
+        }
+        case FutureConstants.Halt => {
+          setHaltedST()
+        }
+        case FutureConstants.Unbound => {
+          // Store a JoinElement in the array so it can be started later.
+          values(i + 1) = new JoinElement(i, f)
+        }
+      }
+    }
+  }
+  
+  /**
+   * Add a future to force to the Join.
+   * 
+   * This should only be called in single-threaded mode.
+   */
+  @TruffleBoundary(allowInlining = true)
   def force(i: Int, f: orc.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
     if (!isHaltedST()) {
       f.get() match {
-        case orc.FutureState.Bound(v) => {
-          set(i, v)
+        case s: orc.FutureState.Bound => {
+          set(i, s.value)
         }
-        case orc.FutureState.Stopped => {
+        case FutureConstants.Orc_Stopped => {
           setHaltedST()
         }
-        case orc.FutureState.Unbound => {
+        case FutureConstants.Orc_Unbound => {
           // Store a JoinElement in the array so it can be started later.
           values(i + 1) = new JoinElement(i, f)
         }
@@ -198,7 +222,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
    * 
    * This should only be called in single-threaded mode.
    */
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary
   def finish() = {
     //Logger.fine(s"Finishing $this with: $state ${values.mkString(", ")}")
     

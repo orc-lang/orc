@@ -132,12 +132,12 @@ public class Force {
 		@Specialization
 		public PorcEUnit porceFuture(VirtualFrame frame, PorcEExecutionRef execution, PorcEClosure p, Counter c, Terminator t, orc.run.porce.runtime.Future future) {
 	        int state = future.getInternal();
-	        if (state == orc.run.porce.runtime.Future.Bound()) {
+	        if (state == orc.run.porce.runtime.FutureConstants.Bound) {
 				initializeCall(execution);
 				call.execute(frame, p, new Object[] { null, future._value() });
-	        } else if (state == orc.run.porce.runtime.Future.Halt()) {
+	        } else if (state == orc.run.porce.runtime.FutureConstants.Halt) {
 		        c.haltToken();
-	        } else if (state == orc.run.porce.runtime.Future.Unbound()) {
+	        } else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
 	        	future.read(new orc.run.porce.runtime.PCTFutureReader(p, c, t, execution.get().runtime()));
 	        }
 			return PorcEUnit.SINGLETON;
@@ -149,9 +149,9 @@ public class Force {
 	        if (state instanceof orc.FutureState.Bound) {
 				initializeCall(execution);
 				call.execute(frame, p, new Object[] { null, ((orc.FutureState.Bound)state).value() });
-	        } else if (state == orc.FutureState.Stopped$.MODULE$) {
+	        } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
 		        c.haltToken();
-	        } else if (state == orc.FutureState.Unbound$.MODULE$) {
+	        } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
 	        	future.read(new orc.run.porce.runtime.PCTFutureReader(p, c, t, execution.get().runtime()));
 	        }
 	        /*

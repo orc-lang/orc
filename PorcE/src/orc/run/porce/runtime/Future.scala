@@ -27,7 +27,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
   * extra couple of pointers.
   */
 final class Future() extends OrcValue with orc.Future {
-  import Future._
+  import FutureConstants._
 
   // TODO: PERFORMANCE: _value and _state could be combined by replacing the states with AnyRef objects and any other object is a bound value.
   //       Even _blocked could be combined in by having a specially wrapped List as the Unbound state. This would put allocations back on the some of the hot paths.
@@ -136,10 +136,4 @@ final class Future() extends OrcValue with orc.Future {
   def getInternal(): Int = {
     synchronized { _state }
   }
-}
-
-object Future {
-  val Unbound = 0
-  val Bound = 1
-  val Halt = 2
 }

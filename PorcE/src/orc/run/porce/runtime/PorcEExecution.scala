@@ -27,7 +27,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   runtime.installHandlers(this)
 
-	@TruffleBoundary(allowInlining = true)
+	@TruffleBoundary
   def notifyOrcWithBoundary(e: OrcEvent) = {
     notifyOrc(e)
   }

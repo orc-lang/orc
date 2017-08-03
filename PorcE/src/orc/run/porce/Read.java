@@ -13,7 +13,6 @@ public class Read {
 
 		public Constant(Object value) {
 			this.value = value;
-			// TODO Auto-generated constructor stub
 		}
 
 		public Object execute(VirtualFrame frame) {
@@ -74,6 +73,7 @@ public class Read {
 		}
 
 		public Object execute(VirtualFrame frame) {
+			// TODO: PERFORMANCE: Storing the closure in a frame slot would save an indexed load per node.
 			Object value = ((Object[]) frame.getArguments()[0])[index];
 			return value;
 		}

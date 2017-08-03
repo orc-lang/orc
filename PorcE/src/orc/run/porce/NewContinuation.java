@@ -15,8 +15,7 @@ import orc.run.porce.runtime.PorcEClosure;
 public class NewContinuation extends Expression {
 	@Children
 	protected final Expression[] capturedVariables;
-	// TODO: Make this final.
-	protected RootCallTarget callTarget;
+	protected final RootCallTarget callTarget;
 	
 	public void setPorcAST(PorcAST ast) {
 		((PorcERootNode)callTarget.getRootNode()).setPorcAST(ast);
