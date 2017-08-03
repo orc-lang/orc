@@ -91,17 +91,16 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
    */
   final private class JoinElement(i: Int, f: orc.Future) extends FutureReader {
     /**
-     * The flag used to make sure publish/halt is only called once.
-     */
-    var bound = new AtomicBoolean(false)
-    // TODO: PERFORMANCE: This could be replaces with a CAS directly into the values array, replacing this with the value.
-
-    /**
      * Start blocking on the future.
      *
      */
     def start() = {
       f.read(this)
+    }
+    
+    @inline
+    private def elementOffset = {
+      Unsafe.ARRAY_OBJECT_BASE_OFFSET + Unsafe.ARRAY_OBJECT_INDEX_SCALE * (i + 1)
     }
 
     /**
@@ -109,24 +108,24 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
      *
      * If join has not halted we bind and check if we are done.
      */
-    def publish(v: AnyRef): Unit = if (bound.compareAndSet(false, true)) {
-      //Logger.finest(s"$join: Join joined to $v ($i)")
-      // Bind the value (this is not synchronized because checkComplete
-      // will cause the read of it, enforcing the needed ordering).
-      values(i + 1) = v
-      // TODO: Does this write need to be volatile?
-      // Now decrement the number of unbound values and see if we are done.
-      join.checkComplete(decrementUnboundMT())
+    def publish(v: AnyRef): Unit = {
+      // Bind the value, if the array slot is is still this.
+      if (unsafe.compareAndSwapObject(values, elementOffset, this, v)) {
+        // Now decrement the number of unbound values and see if we are done.
+        join.checkComplete(decrementUnboundMT())
+      }
     }
 
     /**
      * Halt the whole join if it has not yet been halted and this has not yet
      * been bound.
      */
-    def halt(): Unit = if (bound.compareAndSet(false, true)) {
-      //Logger.finest(s"$join: Join halted ($i)")
-      // Halt if we have not already halted.
-      join.halt()
+    def halt(): Unit = {
+      if (unsafe.compareAndSwapObject(values, elementOffset, this, null)) {
+        //Logger.finest(s"$join: Join halted ($i)")
+        // Halt if we have not already halted.
+        join.halt()
+      }
     }
   }
 
@@ -228,7 +227,9 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     
     assert(isBlocked())
     
-    unsafe.storeFence()
+    // This fence is needed because we are doing non-atomic accesses before this call, but 
+    // after this we may have updates or reads from other threads.
+    unsafe.fullFence()
 
     t.addChild(this)
     
