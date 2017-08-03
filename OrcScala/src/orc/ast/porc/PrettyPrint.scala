@@ -19,7 +19,7 @@ import orc.util.FragmentAppender
 
 /** @author amp
   */
-class PrettyPrint {
+class PrettyPrint(includeNestedCode: Boolean = true) {
   class MyPrettyPrintInterpolator extends PrettyPrintInterpolator {
     implicit def implicitInterpolator(sc: StringContext) = new MyInterpolator(sc)
     class MyInterpolator(sc: StringContext) extends Interpolator(sc) {
@@ -34,6 +34,13 @@ class PrettyPrint {
 
   def tag(ast: PorcAST, s: FragmentAppender): FragmentAppender = s // pp"${ast.number.map(_ + ": ").getOrElse("")}$s"
 
+  def nestedCode(ast: PorcAST): FragmentAppender = {
+     if (includeNestedCode)
+       reduce(ast)
+     else
+       pp"[...]"
+  }
+  
   def reduce(ast: PorcAST): FragmentAppender = {
     tag(ast,
       ast match {
@@ -42,10 +49,10 @@ class PrettyPrint {
 
         case Let(x, v, b) => pp"let $x = $StartIndent$v$EndIndent in\n$b"
         case MethodDeclaration(t, l, b) => pp"def($t) $StartIndent${FragmentAppender.mkString(l.map(reduce), ";\n")}$EndIndent in\n$b"
-        case MethodCPS(name, p, c, t, isDef, args, body) => pp"cps${if (isDef) "_d" else "_s"} $name ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
-        case MethodDirect(name, isDef, args, body) => pp"direct${if (isDef) "_d" else "_s"} $name (${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n$body$EndIndent"
+        case MethodCPS(name, p, c, t, isDef, args, body) => pp"cps${if (isDef) "_d" else "_s"} $name ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n${nestedCode(body)}$EndIndent"
+        case MethodDirect(name, isDef, args, body) => pp"direct${if (isDef) "_d" else "_s"} $name (${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n${nestedCode(body)}$EndIndent"
 
-        case Continuation(args, b) => pp"\u03BB(${args.map(reduce(_)).mkString(", ")}).$StartIndent\n$b$EndIndent"
+        case Continuation(args, b) => pp"\u03BB(${args.map(reduce(_)).mkString(", ")}).$StartIndent\n${nestedCode(b)}$EndIndent"
 
         case CallContinuation(t, args) => pp"$t (${args.map(reduce(_)).mkString(", ")})"
         case MethodCPSCall(isExt, target, p, c, t, args) => pp"call cps $isExt $target ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")})"

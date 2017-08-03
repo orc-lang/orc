@@ -53,6 +53,7 @@ abstract class Transform extends TransformFunction {
 @root @transform[Transform]
 sealed abstract class PorcAST extends ASTForSwivel with Product {
   def prettyprint() = (new PrettyPrint()).reduce(this).toString()
+  def prettyprintWithoutNested() = (new PrettyPrint(false)).reduce(this).toString()
   override def toString() = prettyprint()
 
   def boundVars: Set[Variable] = Set()
