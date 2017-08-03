@@ -57,14 +57,4 @@ public class Sequence extends Expression {
 			return new Sequence(l.toArray(new Expression[l.size()]));
 		}
 	}
-	
-	public void setPorcAST(PorcAST ast) {
-		getChildren().forEach((n) -> {
-			if(n instanceof Expression) {
-				Expression e = (Expression) n;
-				if (e.porcNode().isEmpty())
-					e.setPorcAST(ast);
-			}
-		});
-	}
 }

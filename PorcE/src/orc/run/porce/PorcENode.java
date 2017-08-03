@@ -21,6 +21,13 @@ public abstract class PorcENode extends Node implements HasPorcNode {
 	
 	public void setPorcAST(PorcAST ast) {
 		porcNode = Option.apply(ast);
+		getChildren().forEach((n) -> {
+			if(n instanceof PorcENode) {
+				Expression e = (Expression) n;
+				if (e.porcNode().isEmpty())
+					e.setPorcAST(ast);
+			}
+		});
 	}
 	
 	public Option<PorcAST> porcNode() {

@@ -188,6 +188,7 @@ class PorcToPorcE {
       val newBody = transform(m.body)
       val methodSlot = oldCtx.descriptor.findOrAddFrameSlot(m.name)
       val rootNode = porce.PorcERootNode.create(descriptor, newBody, arguments.size, closureVariables.size)
+      rootNode.setPorcAST(m.value)
       val readClosure = porce.Read.Local.create(closureSlot)
 
       val newMethod = porce.MethodDeclaration.NewMethod.create(readClosure, methodOffset + index, rootNode, m.value.isRoutine)
