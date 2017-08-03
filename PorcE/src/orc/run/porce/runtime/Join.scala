@@ -140,15 +140,15 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     //Logger.fine(s"Forcing $i $f ($state)")
     if (!isHaltedST()) {
       f.getInternal() match {
-        case FutureConstants.Bound => {
-          set(i, f._value)
-        }
         case FutureConstants.Halt => {
           setHaltedST()
         }
         case FutureConstants.Unbound => {
           // Store a JoinElement in the array so it can be started later.
           values(i + 1) = new JoinElement(i, f)
+        }
+        case v => {
+          set(i, v)
         }
       }
     }

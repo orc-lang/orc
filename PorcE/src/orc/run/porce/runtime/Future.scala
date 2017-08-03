@@ -17,6 +17,7 @@ import orc.values.Field
 import orc.FutureState
 import orc.FutureReader
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import java.util.ArrayList
 
 /** A future value that can be bound or unbound or halted.
   *
@@ -29,23 +30,20 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 final class Future() extends OrcValue with orc.Future {
   import FutureConstants._
 
-  // TODO: PERFORMANCE: _value and _state could be combined by replacing the states with AnyRef objects and any other object is a bound value.
-  //       Even _blocked could be combined in by having a specially wrapped List as the Unbound state. This would put allocations back on the some of the hot paths.
-  var _state = Unbound
-  var _value: AnyRef = null  
-  // TODO: PERFORMANCE: An expanding array may perform quite a bit better since the adding a blocker would generally not need allocation (except when the array needs to expand).
-  var _blocked: List[FutureReader] = Nil
+  // TODO: PERFORMANCE: Using an ArrayList here forces the use of a lock. Ideally we would avoid that. However, it would be quite a lot of work and may not gain much. Profile first.
+  
+  private var _state: AnyRef = Unbound
+  private var _blocked: ArrayList[FutureReader] = new ArrayList()
 
   /** Bind this to a value and call publish and halt on each blocked Blockable.
     */
   @TruffleBoundary(allowInlining = true)
   def bind(v: AnyRef) = {
-    assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
-    assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
+    //assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
+    //assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
     val done = synchronized {
-      if (_state == Unbound) {
-        _state = Bound
-        _value = v
+      if (_state eq Unbound) {
+        _state = v
         //Logger.finest(s"$this bound to $v")
         true
       } else {
@@ -55,9 +53,7 @@ final class Future() extends OrcValue with orc.Future {
     // We can access and clear _blocked without the lock because we are in a
     // state that cannot change again.
     if (done) {
-      for (blocked <- _blocked) {
-        blocked.publish(v)
-      }
+      _blocked.forEach(_.publish(v))
       _blocked = null
     }
   }
@@ -67,7 +63,7 @@ final class Future() extends OrcValue with orc.Future {
   @TruffleBoundary(allowInlining = true)
   def stop() = {
     val done = synchronized {
-      if (_state == Unbound) {
+      if (_state eq Unbound) {
         _state = Halt
         //Logger.finest(s"$this halted")
         true
@@ -78,9 +74,7 @@ final class Future() extends OrcValue with orc.Future {
     // We can access and clear _blocked without the lock because we are in a
     // state that cannot change again.
     if (done) {
-      for (blocked <- _blocked) {
-        blocked.halt()
-      }
+      _blocked.forEach(_.halt())
       _blocked = null
     }
   }
@@ -98,7 +92,7 @@ final class Future() extends OrcValue with orc.Future {
     val st = synchronized {
       _state match {
         case Unbound => {
-          _blocked ::= blocked
+          _blocked.add(blocked)
         }
         case _ => {}
       }
@@ -106,34 +100,42 @@ final class Future() extends OrcValue with orc.Future {
     }
 
     st match {
-      case Bound => {
-        blocked.publish(_value)
+      case Unbound => {
+        // Don't do anything.
       }
       case Halt => {
         blocked.halt()
       }
-      case _ => {
+      case v => {
+        blocked.publish(v)
       }
     }
   }
 
   override def toOrcSyntax() = {
-    synchronized { _state } match {
-      case Bound => s"<${Format.formatValue(_value)}>"
-      case Halt => "<$stop$>"
+    getInternal() match {
       case Unbound => "<$unbound$>"
+      case Halt => "<$stop$>"
+      case v => s"<${Format.formatValue(v)}>"
     }
   }
 
   def get(): FutureState = {
     getInternal() match {
       case Unbound => orc.FutureState.Unbound
-      case Bound => orc.FutureState.Bound(_value)
       case Halt => orc.FutureState.Stopped
+      case v => orc.FutureState.Bound(v)
     }
   }
   
-  def getInternal(): Int = {
-    synchronized { _state }
+  /** Get the state of this future.
+   *  
+   *  The state may change at any time. However, Unbound is the only state
+   *  that is not stable, so if Halt or a value is returned it will not
+   *  change.
+   * 
+   */
+  def getInternal(): AnyRef = {
+    _state
   }
 }

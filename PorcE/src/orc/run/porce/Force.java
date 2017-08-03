@@ -131,14 +131,15 @@ public class Force {
 		
 		@Specialization
 		public PorcEUnit porceFuture(VirtualFrame frame, PorcEExecutionRef execution, PorcEClosure p, Counter c, Terminator t, orc.run.porce.runtime.Future future) {
-	        int state = future.getInternal();
-	        if (state == orc.run.porce.runtime.FutureConstants.Bound) {
-				initializeCall(execution);
-				call.execute(frame, p, new Object[] { null, future._value() });
-	        } else if (state == orc.run.porce.runtime.FutureConstants.Halt) {
+	        Object state = future.getInternal();
+	        if (state == orc.run.porce.runtime.FutureConstants.Halt) {
 		        c.haltToken();
 	        } else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
 	        	future.read(new orc.run.porce.runtime.PCTFutureReader(p, c, t, execution.get().runtime()));
+	        } else {
+	        	initializeCall(execution);
+	        	assert !(state instanceof orc.run.porce.runtime.FutureConstants.Sentinal);
+				call.execute(frame, p, new Object[] { null, state });
 	        }
 			return PorcEUnit.SINGLETON;
 		}
@@ -154,12 +155,6 @@ public class Force {
 	        } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
 	        	future.read(new orc.run.porce.runtime.PCTFutureReader(p, c, t, execution.get().runtime()));
 	        }
-	        /*
-			count++;
-			if (count > 100000 && count % 10000 == 0) {
-				Logger.info(() -> "SingleFuture count = " + count);
-			}
-			*/
 			return PorcEUnit.SINGLETON;
 		}
 
