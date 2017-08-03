@@ -8,10 +8,10 @@ import orc.CaughtEvent
 import orc.compile.parse.OrcSourceRange
 import orc.OrcRuntime
 
-final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator) extends Handle with Terminatable {
+final class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator) extends AtomicBoolean with Handle with Terminatable {
+  // The value stored in the AtomicBoolean is a flag saying if we have already halted.
+
   val runtime = execution.runtime
-  // TODO:PERFORMANCE: Use unsafe if this becomes a bottleneck.
-  val halted = new AtomicBoolean(false)
 
   t.addChild(this)
 
@@ -26,7 +26,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
     */
   override def publish(v: AnyRef) = {
     // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
-    if (halted.compareAndSet(false, true)) {
+    if (compareAndSet(false, true)) {
       // Token: Pass token to p.
       runtime.scheduleOrCall(c, () => p.callFromRuntime(v))
       t.removeChild(this)
@@ -36,7 +36,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
   def kill(): Unit = halt()
 
   def halt(): Unit = {
-    if (halted.compareAndSet(false, true)) {
+    if (compareAndSet(false, true)) {
       c.haltToken() // Token: Taken from passed in c.
       t.removeChild(this)
     }
@@ -65,7 +65,7 @@ final class PCTHandle(val execution: PorcEExecution, val p: PorcEClosure, val c:
   def callSitePosition: Option[OrcSourceRange] = None
 
   def discorporate(): Unit = {
-    if (halted.compareAndSet(false, true)) {
+    if (compareAndSet(false, true)) {
       c.discorporateToken() // Token: Taken from passed in c.
       t.removeChild(this)
     }

@@ -115,7 +115,7 @@ object Counter {
 /**
  * @author amp
  */
-final class Counter(runtime: PorcERuntime, parent: Counter, haltContinuation: PorcEClosure) {
+final class Counter(runtime: PorcERuntime, parent: Counter, haltContinuation: PorcEClosure) extends AtomicInteger(1) {
   /*
   @elidable(elidable.ASSERTION)
   val log = if (Counter.tracingEnabled) new LinkedBlockingDeque[Exception]() else null
@@ -144,20 +144,20 @@ final class Counter(runtime: PorcERuntime, parent: Counter, haltContinuation: Po
   }
   // */
 
-  /**
-   * The number of executions that are either running or pending.
+  /*
+   * The AtomicInteger we derive from is the number of executions that are 
+   * either running or pending.
    *
    * This functions similarly to a reference count and this halts when count
    * reaches 0.
    */
-  private val count = new AtomicInteger(1)
 
   @volatile
   var isDiscorporated = false
 
   @TruffleBoundary(allowInlining = true)
   def setDiscorporate() = {
-    assert(count.get() > 0)
+    //assert(get() > 0)
     isDiscorporated = true
   }
 
@@ -174,7 +174,7 @@ final class Counter(runtime: PorcERuntime, parent: Counter, haltContinuation: Po
    */
   @TruffleBoundary(allowInlining = true)
   def haltToken(): Unit = {
-    val n = count.decrementAndGet()
+    val n = decrementAndGet()
     /*
     if (Counter.tracingEnabled) {
       logChange(s"- Down to $n")
@@ -199,7 +199,7 @@ final class Counter(runtime: PorcERuntime, parent: Counter, haltContinuation: Po
    */
   @TruffleBoundary(allowInlining = true)
   def newToken(): Unit = {
-    val n = count.getAndIncrement()
+    val n = getAndIncrement()
     /*
     if (Counter.tracingEnabled) {
       logChange(s"+ Up from $n")

@@ -13,8 +13,8 @@ import orc.ErrorInvoker;
 import orc.Invoker;
 import orc.error.runtime.ExceptionHaltException;
 import orc.error.runtime.HaltException;
+import orc.run.porce.runtime.CPSCallResponseHandler;
 import orc.run.porce.runtime.Counter;
-import orc.run.porce.runtime.PCTHandle;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
@@ -72,7 +72,7 @@ class ExternalCPSCallBase extends CallBase {
 	}
 
 	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
-	protected static void invokeWithBoundary(final Invoker invoker, final PCTHandle handle, final Object t,
+	protected static void invokeWithBoundary(final Invoker invoker, final CPSCallResponseHandler handle, final Object t,
 			final Object[] argumentValues) {
 		invoker.invoke(handle, t, argumentValues);
 	}
@@ -165,7 +165,7 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 				Terminator term = executeT(frame);
 
 				// Token: Passed to handle from arguments.
-				final PCTHandle handle = new PCTHandle(execution.get(), pub, counter, term);
+				final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term);
 
 				try {
 					invokeWithBoundary(invoker, handle, t, argumentValues);
@@ -201,7 +201,7 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 			Terminator term = executeT(frame);
 
 			// Token: Passed to handle from arguments.
-			final PCTHandle handle = new PCTHandle(execution.get(), pub, counter, term);
+			final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term);
 
 			try {
 				Invoker invoker = getInvokerWithBoundary(t, argumentValues);

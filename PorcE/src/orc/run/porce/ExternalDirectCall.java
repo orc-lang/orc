@@ -7,7 +7,6 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import orc.CaughtEvent;
 import orc.DirectInvoker;
@@ -15,14 +14,8 @@ import orc.ErrorInvoker;
 import orc.Invoker;
 import orc.error.runtime.ExceptionHaltException;
 import orc.error.runtime.HaltException;
-import orc.run.porce.ExternalCPSCall.Specific;
-import orc.run.porce.ExternalCPSCall.Universal;
-import orc.run.porce.runtime.Counter;
-import orc.run.porce.runtime.PCTHandle;
-import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
-import orc.run.porce.runtime.Terminator;
 
 class ExternalDirectCallBase extends CallBase {
 	public ExternalDirectCallBase(Expression target, Expression[] arguments, PorcEExecutionRef execution) {

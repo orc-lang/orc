@@ -135,7 +135,7 @@ public class Force {
 	        if (state == orc.run.porce.runtime.FutureConstants.Halt) {
 		        c.haltToken();
 	        } else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
-	        	future.read(new orc.run.porce.runtime.PCTFutureReader(p, c, t, execution.get().runtime()));
+	        	future.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
 	        } else {
 	        	initializeCall(execution);
 	        	assert !(state instanceof orc.run.porce.runtime.FutureConstants.Sentinal);
@@ -153,7 +153,7 @@ public class Force {
 	        } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
 		        c.haltToken();
 	        } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
-	        	future.read(new orc.run.porce.runtime.PCTFutureReader(p, c, t, execution.get().runtime()));
+	        	future.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
 	        }
 			return PorcEUnit.SINGLETON;
 		}

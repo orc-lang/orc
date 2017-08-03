@@ -34,7 +34,7 @@ class PorcEClosureInvoker(val closure: PorcEClosure) extends Invoker {
   }
 
   def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]) = {
-    val handle = h.asInstanceOf[PCTHandle]
+    val handle = h.asInstanceOf[CPSCallResponseHandler]
     val args = Array.ofDim[AnyRef](arguments.length + 3)
     args(0) = handle.p
     args(1) = handle.c
