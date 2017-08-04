@@ -59,6 +59,7 @@ class AnalysisResults(cache: AnalysisCache, e: Expression.Z) {
   val publications: PublicationCountAnalysis = cache.get(PublicationCountAnalysis)((e, None))
   val effectsAnalysis: EffectAnalysis = cache.get(EffectAnalysis)((e, None))
   val delays: DelayAnalysis = cache.get(DelayAnalysis)((e, None))
+  val forces: ForceAnalysis = cache.get(ForceAnalysis)((e, None))
 
   private val exprMapping = mutable.HashMap[HashFirstEquality[Expression.Z], Expression.Z]()
   private val varMapping = mutable.HashMap[ValueNode, ValueNode]()
@@ -302,22 +303,17 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       o.value
   }
 
-  /*
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
-    import a.ImplicitResults._
     e match {
-      case FutureAt(x, ForceAt((y: BoundVar) in ctx, true), r) =>
-        def successRes = Some(r.subst(y, x))
-        ctx(y) match {
-          case Bindings.FutureBound(ctx, _) => successRes
-          case b if isClosureBinding(b) => successRes
-          case Bindings.ArgumentBound(ctx, _, _) => successRes
-          case _ => None
-        }
+      case Branch.Z(Future.Z(e), x, f) =>
+        val fforces = a.forces(f)
+        if(fforces.contains(x) && a.publicationsOf(e) <= 1)
+          Some(Branch(e.value, x, f.value))
+        else
+          None
       case _ => None
     }
   }
-  */
 
   val ForceElim = OptFull("force-elim") { (e, a) =>
     import orc.compile.orctimizer.CallGraphValues._
@@ -799,7 +795,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 }
 
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
-  val allOpts = List(BranchElim, TrimElim, UnusedFutureElim, StopEquiv, 
+  val allOpts = List(FutureForceElim, BranchElim, TrimElim, UnusedFutureElim, StopEquiv, 
       IfDefElim, ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant, 
       FutureElim, GetMethodElim)
   /*
