@@ -54,15 +54,15 @@ for config in     \
     esac
 
     echo "$config" > $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log    
-    echo "Options: -O $OPT -S $SET -B $BACKEND -t $TIMEOUT -c $CPUS -r $NRUNS -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv" >> $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log    
-
+    echo "Options: -O $OPT -S $SET -B $BACKEND -t $TIMEOUT -c $CPUS -r $NRUNS -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv" >> $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log
+    echo "Options: -O $OPT -S $SET -B $BACKEND -t $TIMEOUT -c $CPUS -r $NRUNS -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv" 
     echo "Starting $(echo "$config" | tr "%" " ")"
     echo "Benchmark data: $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv"
     echo "Run log: $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log"
     echo 
     (time $JAVA -Xbootclasspath/a:"$GRAALBOOTLIBS" -classpath "$SCALALIBS:$ORCSCALALIBS:$ORCTESTSLIBS:$PORCELIBS" orc.test.BenchmarkTest \
             -O $OPT -S $SET -B $BACKEND -t $TIMEOUT -c $CPUS -r $NRUNS \
-            -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv 2>&1 | tee -a $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log) \
+            -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv >> $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log 2>&1) \
             || exit 2
     echo "Finished $(echo "$config" | tr "%" " ")"
 done
