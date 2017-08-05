@@ -20,13 +20,12 @@ import orc.compile.AnalysisCache
 import scala.reflect.ClassTag
 import orc.compile.flowanalysis.LatticeValue
 import orc.compile.flowanalysis.GraphDataProvider
-import orc.compile.flowanalysis.Analyzer
+import orc.compile.flowanalysis.{Analyzer, AnalyzerEdgeCache}
 import FlowGraph.{ Node, Edge }
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
-import orc.ast.orctimizer.named.Future
-import orc.ast.orctimizer.named.IfLenientMethod
+import orc.ast.orctimizer.named._
 import orc.util.{ TTrue, TFalse, TUnknown }
 
 sealed abstract class Delay {
@@ -83,7 +82,8 @@ case class IndefiniteDelay() extends Delay {
 
 class DelayAnalysis(
   val results: Map[Expression.Z, DelayAnalysis.DelayInfo],
-  graph: GraphDataProvider[Node, Edge])
+  entryNodes: Map[Node, DelayAnalysis.DelayInfo],
+  graph: CallGraph)
   extends DebuggableGraphDataProvider[Node, Edge] {
   import FlowGraph._
   import DelayAnalysis._
@@ -102,6 +102,56 @@ class DelayAnalysis(
       case None =>
         Logger.finest(s"The node $e does not appear in the analysis results. Using top.")
         DelayAnalysis.worstState
+    }
+  }
+  
+  object NodeInformation {
+    implicit final class DelayAnalysis_TokenFlowNodeAdds(val node: TokenFlowNode) {
+      import graph.NodeInformation._
+      
+      private def entryExit(entry: => DelayInfo, exit: => DelayInfo): DelayInfo = node match {
+        case _: EntryNode => entry
+        case _: ExitNode => exit
+      }
+  
+      def delay: DelayInfo = {
+        node.location match {
+          case Call.Z(target, args, _) => {
+            val (extPubs, intPubs, otherPubs) = target.byCallTargetCases(
+              externals = { vs =>
+                // FIXME: Update to use compile time "invoker" API once available. This will avoid problems of too specific results since the Site assumes a specific arity, etc.
+                vs.collect({
+                  case site: orc.values.sites.SpecificArity =>
+                    if (args.size == site.arity) {
+                      DelayInfo(Delay(site.timeToPublish), Delay(site.timeToHalt))
+                    } else {
+                      bestState
+                    }
+                  case site: orc.values.sites.Site =>
+                    DelayInfo(Delay(site.timeToPublish), Delay(site.timeToHalt))
+                  case _ =>
+                    bestState
+                }).reduce(_ combineOneOf _)
+              }, internals = { vs =>
+                bestState
+              }, others = { vs =>
+                worstState
+              })
+  
+            //Logger.info(s"Handling call to ${node} ${target.value}: ${(extPubs, intPubs, otherPubs)}")
+  
+            applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combineOneOf _))(_ combineOneOf _).getOrElse(worstState)
+          }
+          case Stop.Z() =>
+            DelayInfo(IndefiniteDelay(), ComputationDelay())
+          case Resolve.Z(_, _) =>
+            entryExit(entryNodes.getOrElse(node, worstState), bestState)
+          case ast @ Force.Z(_, _, _) =>
+            entryExit(entryNodes.getOrElse(node, worstState), bestState)
+          case _ =>
+            bestState
+        }
+      }
     }
   }
 
@@ -127,10 +177,19 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
     val a = new DelayAnalyzer(cg)
     val res = a()
 
-    new DelayAnalysis(res collect { case (ExitNode(e), r) => (e, r) }, cg)
+    new DelayAnalysis(res collect { case (ExitNode(e), r) => (e, r) }, res collect { case (n@EntryNode(_), r) => (n, r) }, cg)
   }
 
+  def applyOrOverride[T](a: Option[T], b: Option[T])(f: (T, T) => T): Option[T] =
+    (a, b) match {
+      case (Some(a), Some(b)) => Some(f(a, b))
+      case (None, Some(b)) => Some(b)
+      case (Some(a), None) => Some(a)
+      case (None, None) => None
+    }
+
   val worstState: DelayInfo = DelayInfo(IndefiniteDelay(), IndefiniteDelay())
+  val bestState: DelayInfo = DelayInfo(ComputationDelay(), ComputationDelay())
 
   case class DelayInfo(maxFirstPubDelay: Delay, maxHaltDelay: Delay) {
     def combineAllOf(o: DelayInfo): DelayInfo = {
@@ -147,8 +206,10 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
     }
   }
 
-  class DelayAnalyzer(graph: CallGraph) extends Analyzer {
+  class DelayAnalyzer(graph: CallGraph) extends Analyzer with AnalyzerEdgeCache {
     import graph._
+    import graph.NodeInformation._
+
     type NodeT = Node
     type EdgeT = Edge
     type StateT = DelayInfo
@@ -159,25 +220,17 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
 
     val initialState: DelayInfo = DelayInfo(ComputationDelay(), ComputationDelay())
 
-    def inputs(node: Node): collection.Seq[ConnectedNode] = {
+    def inputsCompute(node: Node): collection.Seq[ConnectedNode] = {
       node.inEdgesOf[HappensBeforeEdge].toSeq.map(e => ConnectedNode(e, e.from)) ++
         node.inEdgesOf[FutureValueSourceEdge].toSeq.map(e => ConnectedNode(e, e.from)) ++
         node.inEdgesOf[ValueEdge].toSeq.filter(_.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.from))
     }
 
-    def outputs(node: Node): collection.Seq[ConnectedNode] = {
+    def outputsCompute(node: Node): collection.Seq[ConnectedNode] = {
       node.outEdgesOf[HappensBeforeEdge].toSeq.map(e => ConnectedNode(e, e.to)) ++
         node.outEdgesOf[FutureValueSourceEdge].toSeq.map(e => ConnectedNode(e, e.to)) ++
         node.outEdgesOf[ValueEdge].toSeq.filter(_.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.to))
     }
-
-    def applyOrOverride[T](a: Option[T], b: Option[T])(f: (T, T) => T): Option[T] =
-      (a, b) match {
-        case (Some(a), Some(b)) => Some(f(a, b))
-        case (None, Some(b)) => Some(b)
-        case (Some(a), None) => Some(a)
-        case (None, None) => None
-      }
 
     def transfer(node: Node, old: DelayInfo, states: States): (DelayInfo, Seq[Node]) = {
       lazy val inStateAllOf = states.inStateReduced[TransitionEdge](_ combineAllOf _)
@@ -193,17 +246,17 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
           ast match {
             case Resolve.Z(_, _) =>
               val inState = states.inStateProcessed[FutureValueSourceEdge, Delay](
-                  ComputationDelay(),
-                  v => v.maxFirstPubDelay min v.maxHaltDelay,
-                  _ max _)
+                ComputationDelay(),
+                v => v.maxFirstPubDelay min v.maxHaltDelay,
+                _ max _)
               // We know the future binding must have started before the force starts.
               // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
               DelayInfo(inState, inState)
-            case ast@Force.Z(_, _, _) =>
+            case ast @ Force.Z(_, _, _) =>
               val inState = states.inStateProcessed[FutureValueSourceEdge, DelayInfo](
-                  initialState,
-                  v => DelayInfo(v.maxFirstPubDelay, v.maxFirstPubDelay min v.maxHaltDelay),
-                  _ combineOneOf _)
+                initialState,
+                v => DelayInfo(v.maxFirstPubDelay, v.maxFirstPubDelay min v.maxHaltDelay),
+                _ combineOneOf _)
               // We know the future binding must have started before the force starts.
               // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
               //Logger.info(s"Force-Entry: ${node}    $inState\n${inputs(node).map(_.node.toString.take(100))}\n${outputs(node).map(_.node.toString.take(100))}")
@@ -219,7 +272,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
               val inStateValue = states.inStateReduced[ValueEdge](_ combineAllOf _)
               DelayInfo(ComputationDelay(), inStateValue.maxHaltDelay)
             case Call.Z(target, args, _) => {
-              val (extPubs, intPubs, otherPubs) = graph.byCallTargetCases(target)(
+              val (extPubs, intPubs, otherPubs) = target.byCallTargetCases(
                 externals = { vs =>
                   // FIXME: Update to use compile time "invoker" API once available. This will avoid problems of too specific results since the Site assumes a specific arity, etc.
                   vs.collect({
@@ -239,14 +292,14 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
                 })
 
               //Logger.info(s"Handling call to ${node} ${target.value}: ${(extPubs, intPubs, otherPubs)}")
-                
+
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combineOneOf _))(_ combineOneOf _).getOrElse(worstState)
             }
             case IfLenientMethod.Z(v, l, r) => {
-              graph.byIfLenientCases(v)(
-                  left = states(ExitNode(l)),
-                  right = states(ExitNode(r)),
-                  both = inStateOneOf)
+              v.byIfLenientCases(
+                left = states(ExitNode(l)),
+                right = states(ExitNode(r)),
+                both = inStateOneOf)
             }
             case Trim.Z(_) =>
               DelayInfo(inStateAllOf.maxFirstPubDelay, inStateAllOf.maxFirstPubDelay min inStateAllOf.maxHaltDelay)
@@ -263,7 +316,7 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
               DelayInfo(lState.maxFirstPubDelay max (lState.maxHaltDelay + rState.maxFirstPubDelay), lState.maxHaltDelay + rState.maxHaltDelay)
             case Stop.Z() =>
               DelayInfo(IndefiniteDelay(), ComputationDelay())
-            case ast@Force.Z(_, _, _) =>
+            case ast @ Force.Z(_, _, _) =>
               // We know the future binding must have started before the force starts.
               // TODO: We could track other forces and the like to bound this tighter based on the fact we know it was already forced or something that depends on it was already forced.
               //Logger.info(s"Force-Exit: ${node}    $inStateEntryExit, $inStateAllOf")
@@ -276,8 +329,8 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
             case Branch.Z(_, _, _) =>
               // This is for the branch after edges from L-exit to exit
               val inStateAfter = states.inStateReduced[CombinatorInternalOrderEdge](_ combineAllOf _)
-              DelayInfo(inStateAllOf.maxFirstPubDelay + inStateAfter.maxFirstPubDelay, 
-                  inStateAllOf.maxHaltDelay + inStateAfter.maxHaltDelay)
+              DelayInfo(inStateAllOf.maxFirstPubDelay + inStateAfter.maxFirstPubDelay,
+                inStateAllOf.maxHaltDelay + inStateAfter.maxHaltDelay)
             case _: BoundVar.Z | Parallel.Z(_, _) | Constant.Z(_) |
               DeclareMethods.Z(_, _) | DeclareType.Z(_, _, _) | HasType.Z(_, _) =>
               inStateAllOf

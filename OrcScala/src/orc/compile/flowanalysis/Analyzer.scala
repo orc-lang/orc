@@ -273,3 +273,21 @@ abstract class Analyzer {
   def transfer(node: NodeT, old: StateT, states: States): (StateT, Seq[NodeT])
   def moreCompleteOrEqual(a: StateT, b: StateT): Boolean
 }
+
+trait AnalyzerEdgeCache extends Analyzer {
+    val inputsCache = collection.mutable.HashMap[NodeT, Seq[ConnectedNode]]()
+    
+    def inputsCompute(node: NodeT): collection.Seq[ConnectedNode]
+    
+    final def inputs(node: NodeT): collection.Seq[ConnectedNode] = {
+      inputsCache.getOrElseUpdate(node, inputsCompute(node))
+    }
+
+    val outputsCache = collection.mutable.HashMap[NodeT, Seq[ConnectedNode]]()
+
+    def outputsCompute(node: NodeT): collection.Seq[ConnectedNode]
+    
+    final def outputs(node: NodeT): collection.Seq[ConnectedNode] = {
+      outputsCache.getOrElseUpdate(node, outputsCompute(node))
+    }
+}

@@ -20,7 +20,7 @@ import orc.compile.AnalysisRunner
 import orc.compile.AnalysisCache
 import orc.compile.flowanalysis.LatticeValue
 import orc.compile.flowanalysis.GraphDataProvider
-import orc.compile.flowanalysis.Analyzer
+import orc.compile.flowanalysis.{Analyzer, AnalyzerEdgeCache}
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import FlowGraph.{Node, Edge}
 import orc.util.DotUtils.DotAttributes
@@ -96,8 +96,10 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
     }
   }
 
-  class DelayAnalyzer(graph: CallGraph) extends Analyzer {
+  class DelayAnalyzer(graph: CallGraph) extends Analyzer with AnalyzerEdgeCache {
     import graph._
+    import graph.NodeInformation._
+    
     type NodeT = Node
     type EdgeT = Edge
     type StateT = EffectInfo
@@ -112,7 +114,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
 
     val initialState: EffectInfo = EffectInfo(false, false)
 
-    def inputs(node: Node): collection.Seq[ConnectedNode] = {
+    def inputsCompute(node: Node): collection.Seq[ConnectedNode] = {
       node match {
         case n: ExitNode =>
           node.inEdgesOf[HappensBeforeEdge].toSeq.filter(_.to.isInstanceOf[ExitNode]).map(e => ConnectedNode(e, e.from)) ++
@@ -123,7 +125,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
       }
     }
 
-    def outputs(node: Node): collection.Seq[ConnectedNode] = {
+    def outputsCompute(node: Node): collection.Seq[ConnectedNode] = {
       node match {
         case n: ExitNode =>
           node.outEdgesOf[HappensBeforeEdge].toSeq.filter(_.to.isInstanceOf[ExitNode]).map(e => ConnectedNode(e, e.to)) ++        
@@ -152,7 +154,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
             case Future.Z(_) =>
               inState
             case Call.Z(target, args, _) => {
-              val (extPubs, intPubs, otherPubs) = graph.byCallTargetCases(target)(
+              val (extPubs, intPubs, otherPubs) = target.byCallTargetCases(
                 externals = { vs =>
                   // FIXME: Update to use compile time "invoker" API once available. This will avoid problems of too specific results since the Site assumes a specific arity, etc.
                   vs.collect({
@@ -173,7 +175,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combine _))(_ combine _).getOrElse(worstState)
             }
             case IfLenientMethod.Z(v, l, r) => {
-              graph.byIfLenientCases(v)(
+              v.byIfLenientCases(
                   left = states(ExitNode(l)),
                   right = states(ExitNode(r)),
                   both = inState)

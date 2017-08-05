@@ -598,7 +598,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
    *  Every AST node is associated with such an edge.
    */
   case class EntryExitEdge(val ast: Expression.Z) extends AfterEdge {
-    override def style: String = "invis" // "dashed"
+    override def style: String = "dashed"
     override def color: String = "lavender"
     override def label = ""
     

@@ -20,21 +20,22 @@ import orc.compile.AnalysisRunner
 import orc.compile.AnalysisCache
 import orc.compile.flowanalysis.LatticeValue
 import orc.compile.flowanalysis.GraphDataProvider
-import orc.compile.flowanalysis.Analyzer
+import orc.compile.flowanalysis.{Analyzer, AnalyzerEdgeCache}
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import FlowGraph.{ Node, Edge }
 import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
+import orc.compile.orctimizer.FlowGraph.TokenFlowNode
+import orc.compile.orctimizer.FlowGraph.EntryExitEdge
 
 class ForceAnalysis(
   val results: Map[Expression.Z, Set[BoundVar]],
   graph: GraphDataProvider[Node, Edge])
   extends DebuggableGraphDataProvider[Node, Edge] {
   import FlowGraph._
-  import EffectAnalysis._
 
-  def edges = graph.edges
-  def nodes = graph.nodes
+  val edges = graph.edges.filter({ case e: HappensBeforeEdge => true; case _ => false })
+  val nodes = edges.flatMap(e => Set(e.from, e.to))
   def exit = graph.exit
   def entry = graph.entry
 
@@ -44,6 +45,18 @@ class ForceAnalysis(
     results.getOrElse(e, Set())
   }
 
+  override def computedNodeDotAttributes(n: Node): DotAttributes = {
+    (n match {
+      case EntryNode(n) =>
+        results.get(n)
+      case _ =>
+        None
+    }) match {
+      case Some(s) =>
+        Map("label" -> s"${n.label}\n${s.mkString(", ")}")
+      case None => Map()
+    }
+  }
 }
 
 object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), ForceAnalysis] {
@@ -53,32 +66,57 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
     val cg = cache.get(CallGraph)(params)
     val effects = cache.get(EffectAnalysis)(params)
     val delay = cache.get(DelayAnalysis)(params)
-    val a = new DelayAnalyzer(cg, effects, delay)
+    val initial = cg.nodes.collect({ case VariableNode(x, _) => x }).toSet
+    val a = new DelayAnalyzer(initial, cg, effects, delay)
     val res = a()
+    
 
-    new ForceAnalysis(res collect { case (EntryNode(e), r) => (e, r) }, cg)
+    val r = new ForceAnalysis(res collect { case (EntryNode(e), r) if r.nonEmpty => (e, r) }, cg)
+    
+    /*
+    println("=============== force results ---")
+    def shortString(o: AnyRef) = s"'${o.toString().replace('\n', ' ').take(30)}'"
+    println(r.results.par.map(p => s"${shortString(p._1.value)}\t----=========--> ${p._2}").seq.mkString("\n"))
+		*/
+
+    r
   }
 
   val worstState: DelayAnalyzer#StateT = Set()
 
-  class DelayAnalyzer(graph: CallGraph, effects: EffectAnalysis, delay: DelayAnalysis) extends Analyzer {
+  class DelayAnalyzer(val initialState: Set[BoundVar], graph: CallGraph, effects: EffectAnalysis, delay: DelayAnalysis) extends Analyzer with AnalyzerEdgeCache {
     import graph._
+    import graph.NodeInformation._
+    import delay.NodeInformation._
+    
     type NodeT = Node
     type EdgeT = Edge
     type StateT = Set[BoundVar]
 
     def initialNodes: collection.Seq[Node] = {
-      Seq(graph.exit)
+      nodesBy({
+        case n: ExitNode if inputs(n).isEmpty =>
+          n
+      }).toSeq
     }
 
-    val initialState = Set()
-
-    def inputs(node: Node): collection.Seq[ConnectedNode] = {
-      node.outEdgesOf[HappensBeforeEdge].toSeq.map(e => ConnectedNode(e, e.to))
+    def edgePredicate(e: Edge): Boolean = {
+      e match {
+        case EntryExitEdge(ast: Call.Z) =>
+          val (a, b, c) = ast.target.byCallTargetCases(_ => true, _ => false, _ => true)
+          Seq(a, b, c).flatten.reduce(_ || _)
+        case EntryExitEdge(ast) =>
+          false
+        case _ => true
+      }
+    }
+    
+    def inputsCompute(node: Node): collection.Seq[ConnectedNode] = {
+      node.outEdgesOf[HappensBeforeEdge].filter(edgePredicate).toSeq.map(e => ConnectedNode(e, e.to))
     }
 
-    def outputs(node: Node): collection.Seq[ConnectedNode] = {
-      node.inEdgesOf[HappensBeforeEdge].toSeq.map(e => ConnectedNode(e, e.from))
+    def outputsCompute(node: Node): collection.Seq[ConnectedNode] = {
+      node.inEdgesOf[HappensBeforeEdge].filter(edgePredicate).toSeq.map(e => ConnectedNode(e, e.from))
     }
 
     def transfer(node: Node, old: StateT, states: States): (StateT, Seq[Node]) = {
@@ -86,33 +124,42 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
 
       // TODO: This can probably be much tighter. Notably the delay and effect analysis are not actually the correct info since they are for whole expressions.
       val killAll = node match {
-        case node @ ExitNode(ast) =>
+        case n: ExitNode if inputs(n).isEmpty =>
+          // The initial nodes all have empty output. Unless they gen of course.
+          true
+        case node: TokenFlowNode =>
+          node.effects || 
+            (node.delay.maxFirstPubDelay > ComputationDelay()) ||
+            (node.delay.maxHaltDelay > ComputationDelay())
+          /*
           effects.effects(ast) ||
             (delay.delayOf(ast).maxFirstPubDelay > ComputationDelay()) ||
             (delay.delayOf(ast).maxHaltDelay > ComputationDelay())
         case node @ EntryNode(ast) =>
-          effects.effects(ast) ||
-            (delay.delayOf(ast).maxFirstPubDelay > ComputationDelay()) ||
-            (delay.delayOf(ast).maxHaltDelay > ComputationDelay())
+          effects.effects(ast)
         case _ =>
           false
+          */
       }
 
       lazy val gen: StateT = node match {
         case node @ EntryNode(ast) =>
           import orc.ast.orctimizer.named._
           ast match {
-            // TODO: How to we propagate this information through value edges? This is important to allow the information to propagate through branch and even objects.
+            // TODO: How do we propagate this information through value edges? This is important to allow the information to propagate through branch and even objects.
             case Force.Z(_, vs, _) =>
               vs.collect({
                 case x: BoundVar.Z =>
                   x.value
               }).toSet
+              // TODO: Handle resolves. They need to be a little different though since for Resolve a single halt will not halt the entire thing.
+              /*
             case Resolve.Z(vs, _) =>
               vs.collect({
                 case x: BoundVar.Z =>
                   x.value
               }).toSet
+              */
             case _ =>
               Set()
           }
@@ -126,12 +173,16 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
         inState ++ gen
       }
 
-      //Logger.fine(s"$node: $killAll $gen state $state")
+      /*Logger.fine(s"""$node: killAll = $killAll gen = $gen
+    ins = ${inputs(node).size} ${inputs(node).map(_.node)}
+    inState = ${inState.size} ${inState.take(10)}
+    state = ${state.size} ${state.take(10)}""")
+    */
 
       (state, Nil)
     }
 
-    def moreCompleteOrEqual(a: StateT, b: StateT): Boolean = b subsetOf a
+    def moreCompleteOrEqual(a: StateT, b: StateT): Boolean = a subsetOf b
   }
 }
 

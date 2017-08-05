@@ -110,74 +110,7 @@ class CallGraph(rootgraph: FlowGraph) extends DebuggableGraphDataProvider[Node, 
     }
   }
   
-  def targetsFromValue(targets: FlowValueSet): FlowValueSet = CallGraph.targetsFromValue(targets)
-  
-  @inline
-  final def byCallTargetCases[A, B, C](target: Argument.Z)(externals: Set[AnyRef] => A, 
-      internals: Set[Method.Z] => B, others: Set[CallGraphValues.Value[ObjectValueSet]] => C): (Option[A], Option[B], Option[C]) = {
-    val possibleV = valuesOf(ValueNode(target))
-    
-    val extPubs = if(possibleV.exists({
-      case n: NodeValue[_] => n.isExternalMethod.isTrue
-      case _ => false
-    })) {
-      val vs = possibleV.toSet.collect {
-        case n @ NodeValue(ConstantNode(Constant(site), _)) if n.isExternalMethod.isTrue => site
-      }
-      assert(vs.nonEmpty, s"Failed to get externals: $possibleV")
-      Some(externals(vs))
-    } else {
-      None
-    }
-    
-    val intPubs = if(possibleV.exists({
-      case n: NodeValue[_] => n.isInternalMethod.isTrue
-      case _ => false
-    })) {
-      val vs = possibleV.toSet.collect {
-        case NodeValue(MethodNode(m, _)) => m
-      }
-      assert(vs.nonEmpty, s"Failed to get internals: $possibleV")
-      Some(internals(vs))
-    } else {
-      None
-    }
-    
-    val otherPubs = if(possibleV.exists({
-      case n: NodeValue[_] if n.isMethod => false
-      case _ => true
-    })) {
-      val vs = possibleV.toSet.flatMap({
-        case n: NodeValue[_] if n.isMethod => None
-        case v => Some(v)
-      })
-      assert(vs.nonEmpty, s"Failed to get others: $possibleV")
-      Some(others(vs))
-    } else {
-      None
-    }
-    
-    (extPubs, intPubs, otherPubs)
-  }
-  
-  @inline
-  final def byIfLenientCases[T](v: Argument.Z)(left: => T, right: => T, both: => T) = {
-    val possibleV = valuesOf(ValueNode(v))
-
-    val isDef = possibleV.view.map({
-      case NodeValue(MethodNode(_: Routine.Z, _)) => TTrue
-      case _ => TFalse
-    }).fold(TUnknown)(_ union _)
-
-    isDef match {
-      case TTrue =>
-        left
-      case TFalse =>
-        right
-      case TUnknown =>
-        both
-    }
-  }
+  object NodeInformation extends ValueBasedNodeInformation(this)
     
   override def graphLabel: String = "Call Graph"
 

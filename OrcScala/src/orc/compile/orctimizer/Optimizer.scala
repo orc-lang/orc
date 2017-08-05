@@ -55,11 +55,11 @@ object HashFirstEquality {
 }
 
 class AnalysisResults(cache: AnalysisCache, e: Expression.Z) {
-  val callgraph: CallGraph = cache.get(CallGraph)((e, None))
-  val publications: PublicationCountAnalysis = cache.get(PublicationCountAnalysis)((e, None))
-  val effectsAnalysis: EffectAnalysis = cache.get(EffectAnalysis)((e, None))
-  val delays: DelayAnalysis = cache.get(DelayAnalysis)((e, None))
-  val forces: ForceAnalysis = cache.get(ForceAnalysis)((e, None))
+  lazy val callgraph: CallGraph = cache.get(CallGraph)((e, None))
+  lazy val publications: PublicationCountAnalysis = cache.get(PublicationCountAnalysis)((e, None))
+  lazy val effectsAnalysis: EffectAnalysis = cache.get(EffectAnalysis)((e, None))
+  lazy val delays: DelayAnalysis = cache.get(DelayAnalysis)((e, None))
+  lazy val forces: ForceAnalysis = cache.get(ForceAnalysis)((e, None))
 
   private val exprMapping = mutable.HashMap[HashFirstEquality[Expression.Z], Expression.Z]()
   private val varMapping = mutable.HashMap[ValueNode, ValueNode]()
@@ -307,11 +307,18 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     e match {
       case Branch.Z(Future.Z(e), x, f) =>
         val fforces = a.forces(f)
-        if(fforces.contains(x) && a.publicationsOf(e) <= 1)
+        val publications = a.publicationsOf(e)
+        if(fforces.contains(x) && publications <= 1)
           Some(Branch(e.value, x, f.value))
-        else
+        else {
+          //Logger.info(s"Failed to apply future-force-elim $fforces $publications\nfuture { ${e.value.toString.take(100)} }\n>$x>\n${f.value.toString.take(100)}")
           None
-      case _ => None
+        }
+      case Branch.Z(e, x, f) => 
+        //Logger.info(s"Failed to apply future-force-elim\n${e.value}\n>$x>\n${f.value}")
+        None
+      case _ => 
+        None
     }
   }
 
@@ -353,8 +360,11 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val IfDefElim = OptFull("ifdef-elim") { (e, a) =>
     import orc.compile.orctimizer.CallGraphValues._
     e match {
+      // TODO: The f == g should actually be equivalence up to local variable renaming.
+      case IfLenientMethod.Z(v, f, g) if f.value == g.value =>
+        Some(f.value)
       case IfLenientMethod.Z(v, f, g) =>
-        val vs = a.callgraph.targetsFromValue(a.valuesOf(v)).toSet
+        val vs = CallGraph.targetsFromValue(a.valuesOf(v)).toSet
         val hasLenient = vs.exists(_ match {
           case NodeValue(MethodNode(_: Routine.Z, _)) => true
           case NodeValue(ExitNode(_: Call.Z)) => true
@@ -376,9 +386,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           // If either both are available or neither then just leave this as is.
           None
         }
-      // TODO: The f == g should actually be equivalence up to local variable renaming.
-      case IfLenientMethod.Z(v, f, g) if f == g =>
-        Some(f.value)
       case _ => None
     }
   }

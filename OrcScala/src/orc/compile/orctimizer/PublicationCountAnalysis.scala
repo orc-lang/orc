@@ -91,6 +91,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
   class PublicationCountAnalyzer(graph: CallGraph) extends Analyzer {
     import graph._
     import FlowGraph._
+    import graph.NodeInformation._
 
     type NodeT = Node
     type EdgeT = Edge
@@ -155,7 +156,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
             case Future.Z(_) =>
               onePublication
             case Call.Z(target, args, _) => {
-              val (extPubs, intPubs, otherPubs) = graph.byCallTargetCases(target)(
+              val (extPubs, intPubs, otherPubs) = target.byCallTargetCases(
                 externals = { vs =>
                   vs.collect({
                     // FIXME: Update to use compile time "invoker" API once available. This will avoid problems of too specific results since the Site assumes a specific arity, etc.
@@ -177,7 +178,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
               applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ union _))(_ union _).getOrElse(Range(0, None))
             }
             case IfLenientMethod.Z(v, l, r) => {
-              graph.byIfLenientCases(v)(
+              v.byIfLenientCases(
                   left = states(ExitNode(l)),
                   right = states(ExitNode(r)),
                   both = inStateTokenOneOf)
