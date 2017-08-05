@@ -107,7 +107,7 @@ object JavaCall {
       val invocable = selectMethod(cls, methodName, argClss)
       new InvocableInvoker(invocable, cls, argClss) {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-          cls.isInstance(target) && valuesHaveType(arguments, argClss)
+          cls == target.getClass() && valuesHaveType(arguments, argClss)
         }
       }
     }
@@ -227,7 +227,7 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
       if (theObject == null && !invocable.isStatic) {
         throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
       }
-      val finalArgs = if (invocable.isVarArgs) {
+      val finalArgs = if (invocable.isVarArgs) {        
         // Group var args into nested array argument.
         val nNormalArgs = invocable.getParameterTypes().size - 1
         val (normalArgs, varArgs) = (arguments.take(nNormalArgs), arguments.drop(nNormalArgs))
@@ -241,6 +241,7 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
 
         convertedNormalArgs :+ varArgArray
       } else {
+        // TODO: PERFORMANCE: It may be worth it to replace all these java collections calls with some optimized loops. I know it's terrible, but this is on the path for EVERY java call
         val convertedArgs = (arguments, invocable.getParameterTypes()).zipped.map(orc2java(_, _))
         convertedArgs
       }
@@ -273,13 +274,19 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
       val invocable = selectMethod(javaClass, memberName, argClss)
       new InvocableInvoker(invocable, javaClass, argClss) {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-          target.isInstanceOf[JavaMemberProxy] &&
-            targetCls.isInstance(target.asInstanceOf[JavaMemberProxy].theObject) &&
-            valuesHaveType(arguments, argumentClss)
+          target match {
+            case p: JavaMemberProxy =>
+              p.javaClass == javaClass && 
+                p.memberName == memberName &&
+                valuesHaveType(arguments, argumentClss)
+            case _ => false
+          }
         }
         override def invoke(h: Handle, theObject: AnyRef, arguments: Array[AnyRef]): Unit = {
           super.invoke(h, theObject.asInstanceOf[JavaMemberProxy].theObject, arguments)
         }
+  
+        override def toString() = s"<Member Invoker>($javaClass.$memberName)"
       }
     } catch {
       case _: NoSuchMethodException | _: MethodTypeMismatchException =>
