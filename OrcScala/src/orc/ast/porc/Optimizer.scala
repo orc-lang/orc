@@ -213,14 +213,14 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   val TryCatchElim = Opt("try-catch-elim") {
     // TODO: Figure out why this is taking multiple passes to finish. This should eliminate all excess onHalted expressions in one pass.
-    case (TryOnException.Z(Zipper(LetStack(bindings, TryOnException(b, h1)), _), h2), a) if h1 == h2.value =>
-      TryOnException(LetStack(bindings, b), h2.value)
+    case (TryOnException.Z(Zipper(BindingSequence(bindings, TryOnException(b, h1)), _), h2), a) if h1 == h2.value =>
+      TryOnException(BindingSequence(bindings, b), h2.value)
   }
 
   val TryFinallyElim = Opt("try-finally-elim") {
     // TODO: Figure out why this is taking multiple passes to finish. This should eliminate all excess onHalted expressions in one pass.
-    case (TryFinally.Z(Zipper(LetStack(bindings, TryFinally(b, h1)), _), h2), a) if h1 == h2.value =>
-      TryFinally(LetStack(bindings, b), h2.value)
+    case (TryFinally.Z(Zipper(BindingSequence(bindings, TryFinally(b, h1)), _), h2), a) if h1 == h2.value =>
+      TryFinally(BindingSequence(bindings, b), h2.value)
   }
 
   val EtaReduce = Opt("eta-reduce") {
@@ -349,29 +349,43 @@ object Optimizer {
       case _ => None
     }
   }
+  
+  sealed abstract class BindingStatement {
+  }
+  
+  object BindingStatement {
+    case class MethodDeclaration(t: Argument, meths: Seq[Method]) extends BindingStatement
+    case class Let(x: Variable, e: Expression) extends BindingStatement
+    case class Statement(e: Expression) extends BindingStatement
+  }
 
-  object LetStack {
-    def unapply(e: PorcAST): Some[(Seq[(Option[Variable], Expression)], PorcAST)] = e match {
+  object BindingSequence {
+    def unapply(e: PorcAST): Some[(Seq[BindingStatement], PorcAST)] = e match {
       case Let(x, v, b) =>
-        val LetStack(bindings, b1) = b
-        Some(((Some(x), v) +: bindings, b1))
+        val BindingSequence(bindings, b1) = b
+        Some((BindingStatement.Let(x, v) +: bindings, b1))
+      case MethodDeclaration(t, meths, b) =>
+        val BindingSequence(bindings, b1) = b
+        Some((BindingStatement.MethodDeclaration(t, meths)  +: bindings, b1))
       case s :::> PorcUnit() =>
         Some((Seq(), s))
       case s :::> ss =>
-        val LetStack(bindings, b1) = ss
+        val BindingSequence(bindings, b1) = ss
         //Logger.fine(s"unpacked sequence: $s $ss $bindings $b1")
-        Some(((None, s) +: bindings, b1))
+        Some((BindingStatement.Statement(s) +: bindings, b1))
       case s =>
         Some((Seq(), s))
     }
 
-    def apply(bindings: Seq[(Option[Variable], Expression)], b: Expression) = {
+    def apply(bindings: Seq[BindingStatement], b: Expression) = {
       bindings.foldRight(b)((bind, b) => {
         bind match {
-          case (Some(x), v) =>
+          case BindingStatement.Let(x, v) =>
             Let(x, v, b)
-          case (None, v) =>
-            v ::: b
+          case BindingStatement.MethodDeclaration(t, meths) =>
+            MethodDeclaration(t, meths, b)
+          case BindingStatement.Statement(s) =>
+            s ::: b
         }
       })
     }
@@ -390,6 +404,7 @@ object Optimizer {
     case (LetIn(x, TupleElem(_, _) in _, b), a) if !b.freevars.contains(x) => b
     case (LetIn(x, v, b), a) if !b.freevars.contains(x) => v ::: b
   }
+  
   val DefElim = Opt("def-elim") {
     case (DefDeclarationIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
   }

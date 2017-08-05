@@ -146,6 +146,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
 
         //println("=============== force results ---")
         //println(forces.results.par.map(p => s"${shortString(p._1.value)}\t----=========--> ${p._2}").seq.mkString("\n"))
+        //forces.debugShow()
 
         //System.exit(0)
       }
@@ -210,9 +211,10 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     val phaseName = "porc-optimize"
     override def apply(co: CompilerOptions) = { ast =>
       val maxPasses = co.options.optimizationFlags("porc:max-passes").asInt(5)
+      val analyzer = new Analyzer
+      val optimizer = Optimizer(co)
 
       def opt(prog: MethodCPS, pass: Int): MethodCPS = {
-        val analyzer = new Analyzer
         val stats = Map(
           "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
           "spawns" -> Analysis.count(prog, _.isInstanceOf[Spawn]),
@@ -225,7 +227,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         def s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $s")
 
-        val optimizer = Optimizer(co)
         val prog1 = optimizer(prog, analyzer).asInstanceOf[MethodCPS]
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
