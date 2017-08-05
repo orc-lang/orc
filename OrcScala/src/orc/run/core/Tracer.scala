@@ -68,13 +68,11 @@ object Tracer {
 
   @inline
   def traceJavaCall(h: orc.Handle) {
-    // FIXME: Remove the need for cast so these don't crash on runtimes that don't use ExternalSiteCallHandle.
     if (traceJavaCall) orc.util.Tracer.trace(JavaCall, getHandleDebugId(h), 0L, 0L)
   }
 
   @inline
   def traceJavaReturn(h: orc.Handle) {
-    // FIXME: Remove the need for cast so these don't crash on runtimes that don't use ExternalSiteCallHandle.
     if (traceJavaCall) orc.util.Tracer.trace(JavaReturn, getHandleDebugId(h), 0L, 0L)
   }
 
