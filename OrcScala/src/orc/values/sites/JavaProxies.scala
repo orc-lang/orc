@@ -229,11 +229,11 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
       }
       val finalArgs = if (invocable.isVarArgs) {        
         // Group var args into nested array argument.
-        val nNormalArgs = invocable.getParameterTypes().size - 1
+        val nNormalArgs = invocable.getParameterTypes.size - 1
         val (normalArgs, varArgs) = (arguments.take(nNormalArgs), arguments.drop(nNormalArgs))
-        val convertedNormalArgs = (normalArgs, invocable.getParameterTypes()).zipped.map(orc2java(_, _))
+        val convertedNormalArgs = (normalArgs, invocable.getParameterTypes).zipped.map(orc2java(_, _))
 
-        val varargType = invocable.getParameterTypes().last.getComponentType()
+        val varargType = invocable.getParameterTypes.last.getComponentType()
         val convertedVarArgs = varArgs.map(orc2java(_, varargType))
         // The vararg array needs to have the correct dynamic type so we create it using reflection.
         val varArgArray = JavaArray.newInstance(varargType, varArgs.size).asInstanceOf[Array[Object]]
@@ -242,10 +242,11 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
         convertedNormalArgs :+ varArgArray
       } else {
         // TODO: PERFORMANCE: It may be worth it to replace all these java collections calls with some optimized loops. I know it's terrible, but this is on the path for EVERY java call
-        val convertedArgs = (arguments, invocable.getParameterTypes()).zipped.map(orc2java(_, _))
+        // IT might be good to optimize the vararg case above as well, but it's much less of a hot path and it would be harder to optimizer.
+        val convertedArgs = (arguments, invocable.getParameterTypes).zipped.map(orc2java(_, _))
         convertedArgs
       }
-      Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName(), invocable.getParameterTypes().toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
+      Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
       h.publish(java2orc(invocable.invoke(theObject, finalArgs.toArray)))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())

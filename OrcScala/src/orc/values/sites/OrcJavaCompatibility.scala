@@ -72,10 +72,10 @@ object OrcJavaCompatibility {
   // Java Method and Constructor do NOT have a decent supertype, so we wrap them here
   // to at least share an common invocation method.  Ugh.
   abstract class Invocable {
-    def getParameterTypes(): Array[java.lang.Class[_]]
-    def isStatic: Boolean
-    def isVarArgs: Boolean
-    def getName(): String
+    val getParameterTypes: Array[java.lang.Class[_]]
+    val isStatic: Boolean
+    val isVarArgs: Boolean
+    val getName: String
     def invoke(obj: Object, args: Array[Object]): Object
   }
 
@@ -91,18 +91,18 @@ object OrcJavaCompatibility {
   }
 
   case class InvocableMethod(method: JavaMethod) extends Invocable {
-    def getParameterTypes(): Array[java.lang.Class[_]] = method.getParameterTypes
-    def isStatic = Modifier.isStatic(method.getModifiers())
-    def isVarArgs = method.isVarArgs()
-    def getName(): String = method.getName()
+    val getParameterTypes: Array[java.lang.Class[_]] = method.getParameterTypes
+    val isStatic = Modifier.isStatic(method.getModifiers())
+    val isVarArgs = method.isVarArgs()
+    val getName: String = method.getName()
     def invoke(obj: Object, args: Array[Object]): Object = method.invoke(obj, args: _*)
   }
 
   case class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
-    def getParameterTypes(): Array[java.lang.Class[_]] = ctor.getParameterTypes
-    def isStatic = true
-    def isVarArgs = ctor.isVarArgs()
-    def getName(): String = ctor.getName()
+    val getParameterTypes: Array[java.lang.Class[_]] = ctor.getParameterTypes
+    val isStatic = true
+    val isVarArgs = ctor.isVarArgs()
+    val getName: String = ctor.getName()
     def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
   }
 
