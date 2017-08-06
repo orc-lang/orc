@@ -31,6 +31,7 @@ import orc.values.HasMembers;
  *
  * @author dkitchin
  */
+@Deprecated
 public abstract class DotSite extends SiteAdaptor implements HasMembers {
 
     Map<String, Object> methodMap;

@@ -27,6 +27,7 @@ import orc.values.Field;
  *
  * @author dkitchin
  */
+@Deprecated
 public class Args implements Serializable {
     private static final long serialVersionUID = -5096125972360848153L;
 

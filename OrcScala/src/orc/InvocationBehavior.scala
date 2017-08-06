@@ -18,7 +18,7 @@ import orc.values.Field
 
 /** An action class implementing invocation for specific target and argument types.
   *
-  * The fundemental difference between an Invoker and Accessor is that an accessor can return a future
+  * The fundamental difference between an Invoker and Accessor is that an accessor can return a future
   * for later forcing, where as an Invoker allows blocking during the call itself. These APIs are
   * mutually encodable, however this encoding would have a significant performance cost.
   * 

@@ -22,6 +22,7 @@ import orc.compile.typecheck.Typeloader
   *
   * @author dkitchin
   */
+@deprecated("Use Scala API directly.", "3.0")
 object Types {
 
   def top = Top
