@@ -110,6 +110,20 @@ class Logger(name: String) {
   */
 object SyslogishFormatter extends Formatter {
 
+  private val appName = {
+    /* Based on Sun JVM monitoring tools' heuristic */
+    val commandProperty = System.getProperty("sun.java.command")
+    if (commandProperty == null || commandProperty.isEmpty()) {
+      "-"
+    } else {
+      val firstSpace = if (commandProperty.contains(" ")) commandProperty.indexOf(" ") else commandProperty.length
+      val lastFileSep = commandProperty.lastIndexOf(java.io.File.separator, firstSpace - 1)
+      val mainClass = commandProperty.substring(lastFileSep + 1, firstSpace)
+      val lastDot = mainClass.lastIndexOf(".")
+      mainClass.substring(lastDot + 1)
+    }
+  }
+
   protected val lineSeparator = System.getProperty("line.separator")
   private val timestamp = new GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.ROOT)
 
@@ -151,7 +165,10 @@ object SyslogishFormatter extends Formatter {
       sb.append('0')
     }
     sb.append(timestamp.get(Calendar.MILLISECOND))
-    sb.append("Z - "); /* No app name in plain Java */
+    sb.append("Z ")
+
+    sb.append(appName)
+    sb.append(' ')
 
     if (record.getSourceClassName() != null && !record.getSourceClassName().isEmpty()) {
       sb.append(record.getSourceClassName())
