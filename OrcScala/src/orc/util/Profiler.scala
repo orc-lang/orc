@@ -118,17 +118,17 @@ object Profiler {
         }
       }
 
-      /* Convention: synchronize on System.out during output of block */
-      System.out synchronized {
-        System.out.append(s"Profiling Accumulators: begin, ${sumMap.size} entries\n")
-        System.out.append("Interval-Type".padTo(intervalTypeColWidth, '-'))
-        System.out.append("\t-------Count--------\t--Accum.-Time-(ns)--\n")
+      /* Convention: synchronize on System.err during output of block */
+      System.err synchronized {
+        System.err.append(s"Profiling Accumulators: begin, ${sumMap.size} entries\n")
+        System.err.append("Interval-Type".padTo(intervalTypeColWidth, '-'))
+        System.err.append("\t-------Count--------\t--Accum.-Time-(ns)--\n")
 
         for (e <- sumMap) {
-          System.out.append(e._1.name.padTo(intervalTypeColWidth, ' '))
-          System.out.append(f"\t${e._2(0)}%20d\t${e._2(1)}%20d\n")
+          System.err.append(e._1.name.padTo(intervalTypeColWidth, ' '))
+          System.err.append(f"\t${e._2(0)}%20d\t${e._2(1)}%20d\n")
         }
-        System.out.append(f"Profiling Accumulators: end\n")
+        System.err.append(f"Profiling Accumulators: end\n")
       }
     }
 
