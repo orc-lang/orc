@@ -55,7 +55,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
       }
     } catch {
-      case se: SocketException if (se.getMessage == "Socket closed") => /* Ignore */
+      case se: SocketException if se.getMessage == "Socket closed" => /* Ignore */
+      case se: SocketException if se.getMessage == "Connection reset" => /* Ignore */
     } finally {
       runtimeLocationMap.valuesIterator.foreach {
         _ match {
@@ -338,7 +339,7 @@ object FollowerRuntime {
     val logLevel = java.util.logging.Level.parse(frOptions.logLevel)
     setupLogging(orcLogger, logLevel)
 
-    new FollowerRuntime(frOptions.runtimeId, new InetSocketAddress("localhost", frOptions.port)).listen()
+    new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
   }
 
   def setupLogging(orcLogger: java.util.logging.Logger, logLevel: java.util.logging.Level) {
@@ -375,16 +376,16 @@ class FollowerRuntimeCmdLineOptions() extends CmdLineParser {
   private var runtimeId_ = 0
   def logLevel: String = logLevel_
   def logLevel_=(newVal: String): Unit = logLevel_ = newVal
-  private var port_ = 0
-  def port: Int = port_
-  def port_=(newVal: Int): Unit = port_ = newVal
+  private var socket_ : InetSocketAddress = null
+  def socket: InetSocketAddress = socket_
+  def socket_=(newVal: InetSocketAddress): Unit = socket_ = newVal
   private var logLevel_ = "INFO"
   def runtimeId: Int = runtimeId_
   def runtimeId_=(newVal: Int): Unit = runtimeId_ = newVal
 
   IntOprd(() => runtimeId, runtimeId = _, position = 0, argName = "runtime-id", required = true, usage = "d-Orc runtime (follower) ID")
 
-  IntOprd(() => port, port = _, position = 1, argName = "port", required = true, usage = "Local port to listen on")
+  SocketOprd(() => socket, socket = _, position = 1, argName = "socket", required = true, usage = "Local socket (host:port) to listen on")
 
   StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL")
 }

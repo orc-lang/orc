@@ -39,6 +39,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
       ois.readObject().asInstanceOf[R]
     } catch {
       case e: SocketException if e.getMessage == "Socket closed" => throw new EOFException()
+      case e: SocketException if e.getMessage == "Connection reset" => throw new EOFException()
     }
     SocketObjectConnectionLogger.finest(s"SocketObjectConnection.receive: Received $obj on $socket")
     obj
