@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.util
 
 import java.io.File
@@ -156,6 +157,30 @@ trait CmdLineParser {
     def setValue(value: String) { setter(value.split(File.pathSeparator).map(new File(_))) }
   }
 
+  private def oprdString2socket(s: String, argName: String) = {
+    val lastColon = s.lastIndexOf(":")
+    if (lastColon < 0) {
+      throw new UnrecognizedCmdLineOprdException("expecting host:port", argName, s, CmdLineParser.this)
+    }
+    try {
+      new InetSocketAddress(s.substring(0, lastColon), s.substring(lastColon + 1).toInt)
+    } catch {
+      case _: NumberFormatException => throw new UnrecognizedCmdLineOprdException("expecting a decimal integer for port number", argName, s, CmdLineParser.this)
+    }
+  }
+
+  case class SocketOprd(val getter: Function0[InetSocketAddress], val setter: (InetSocketAddress => Unit), override val position: Int, override val argName: String = "SOCKET", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+    extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().getHostString + ":" + getter().getPort }
+    def setValue(value: String) { setter(oprdString2socket(value, argName)) }
+  }
+
+  case class SocketListOprd(val getter: Function0[Seq[InetSocketAddress]], val setter: (Seq[InetSocketAddress] => Unit), override val position: Int, override val argName: String = "SOCKET-LIST", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+    extends CmdLineOprd(position, argName, usage, required, hidden) {
+    def getValue: String = { getter().map( { isa => isa.getHostString + ":" + isa.getPort} ).mkString(",") }
+    def setValue(value: String) { setter(value.split(",").map(oprdString2socket(_, argName))) }
+  }
+
   case class UnitOpt(val getter: Function0[Boolean], val setter: (() => Unit), override val shortName: Char, override val longName: String, override val argName: String = "", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = ""
@@ -236,14 +261,28 @@ trait CmdLineParser {
     def setValue(value: String) { setter(value.split(File.pathSeparator).map(new File(_))) }
   }
 
+  private def optString2socket(s: String, optLongName: String) = {
+    val lastColon = s.lastIndexOf(":")
+    if (lastColon < 0) {
+      throw new UnrecognizedCmdLineOptArgException("expecting host:port", optLongName, s, CmdLineParser.this)
+    }
+    try {
+      new InetSocketAddress(s.substring(0, lastColon), s.substring(lastColon + 1).toInt)
+    } catch {
+      case _: NumberFormatException => throw new UnrecognizedCmdLineOptArgException("expecting a decimal integer for port number", optLongName, s, CmdLineParser.this)
+    }
+  }
+
+  case class SocketOpt(val getter: Function0[InetSocketAddress], val setter: (InetSocketAddress => Unit), override val shortName: Char, override val longName: String, override val argName: String = "SOCKET", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+    extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
+    def getValue: String = { getter().getHostString + ":" + getter().getPort }
+    def setValue(value: String) { setter(optString2socket(value, longName)) }
+  }
+
   case class SocketListOpt(val getter: Function0[Seq[InetSocketAddress]], val setter: (Seq[InetSocketAddress] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "SOCKET-LIST", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = { getter().map( { isa => isa.getHostString + ":" + isa.getPort} ).mkString(",") }
-    def setValue(value: String) { setter(value.split(",").map(string2socket(_))) }
-    private def string2socket(s: String) = {
-      val lastColon = s.lastIndexOf(":")
-      new InetSocketAddress(s.substring(0, lastColon), s.substring(lastColon + 1).toInt)
-    }
+    def setValue(value: String) { setter(value.split(",").map(optString2socket(_, longName))) }
   }
 
   ////////
@@ -290,7 +329,7 @@ trait CmdLineParser {
         } else throw new UnrecognizedCmdLineOptException(arg.drop(1), this)
       }
     }
-    if (currOprdIndex <= maxReqOprdIndex) throw new MissingCmdLineOprdsException(recognizedOprds(currOprdIndex).argName, this)
+    if (currOprdIndex <= maxReqOprdIndex) throw new MissingCmdLineOprdException(recognizedOprds(currOprdIndex).argName, this)
     //TODO: Check all req'd opts are present
 
     def setCurrOprd(arg: String) = {
@@ -298,7 +337,7 @@ trait CmdLineParser {
         recognizedOprds(currOprdIndex).setValue(arg)
         currOprdIndex += 1
       } catch {
-        case _: NoSuchElementException => throw new ExtraneousCmdLineOprdsException(arg, this)
+        case _: NoSuchElementException => throw new ExtraneousCmdLineOprdException(arg, this)
       }
     }
     def setLongOpt(arg: String) = {
@@ -324,7 +363,7 @@ trait CmdLineParser {
   }
 
   ////////
-  // Parse method
+  // Compose method
   ////////
 
   def composeCmdLine(): Array[String] = {
@@ -358,8 +397,9 @@ class MultiplyDefinedCmdLineOptError(optName: String) extends Error("Command lin
 ////////
 
 abstract class CmdLineUsageException(msg: String, p: CmdLineParser) extends IllegalArgumentException(msg + "\n" + p.usageString + "\nTry the --help option for more information.")
-class ExtraneousCmdLineOprdsException(val operand: String, p: CmdLineParser) extends CmdLineUsageException("extra operand -- '" + operand + "'", p)
-class MissingCmdLineOprdsException(val argName: String, p: CmdLineParser) extends CmdLineUsageException("missing " + argName + " operand", p)
+class ExtraneousCmdLineOprdException(val operand: String, p: CmdLineParser) extends CmdLineUsageException("extra operand -- '" + operand + "'", p)
+class MissingCmdLineOprdException(val argName: String, p: CmdLineParser) extends CmdLineUsageException("missing " + argName + " operand", p)
+class UnrecognizedCmdLineOprdException(problemDesc: String, val argName: String, oprdArg: String, p: CmdLineParser) extends CmdLineUsageException("unrecognized " + argName + " operand -- " + oprdArg + ": " + problemDesc, p)
 class UnrecognizedCmdLineOptException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("invalid option -- " + optName, p)
 class MissingCmdLineOptException(val optName: String, p: CmdLineParser) extends CmdLineUsageException("missing option -- " + optName, p)
 class ExtraneousCmdLineOptArgException(val optName: String, optArg: String, p: CmdLineParser) extends CmdLineUsageException("option " + optName + " doesn't allow an argument", p)
