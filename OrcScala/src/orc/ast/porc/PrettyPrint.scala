@@ -66,7 +66,9 @@ class PrettyPrint(includeNestedCode: Boolean = true) {
 
         case Spawn(c, t, b, e) => pp"spawn_${ if (b) "must" else "may" } $c $t $e"
 
-        case NewCounter(c, h) => pp"counter $c $h"
+        case NewSimpleCounter(c, h) => pp"counter(simple) $c $h"
+        case NewServiceCounter(c, c2, t) => pp"counter(service) $c $c2 $t"
+        case NewTerminatorCounter(c, t) => pp"counter(terminator) $c $t"
         case HaltToken(c) => pp"haltToken $c"
         case NewToken(c) => pp"newToken $c"
         case SetDiscorporate(c) => pp"setDiscorporate $c"

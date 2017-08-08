@@ -132,8 +132,12 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case TryOnException.Z(b, h) =>
         TryOnException(renameVariables(b), renameVariables(h))
 
-      case NewCounter.Z(b, h) =>
-        NewCounter(renameVariables(b), renameVariables(h))
+      case NewSimpleCounter.Z(b, h) =>
+        NewSimpleCounter(renameVariables(b), renameVariables(h))
+      case NewServiceCounter.Z(c, c2, t) =>
+        NewServiceCounter(renameVariables(c), renameVariables(c2), renameVariables(t))
+      case NewTerminatorCounter.Z(c, t) =>
+        NewTerminatorCounter(renameVariables(c), renameVariables(t))
       case HaltToken.Z(c) =>
         HaltToken(renameVariables(c))
       case NewToken.Z(c) =>

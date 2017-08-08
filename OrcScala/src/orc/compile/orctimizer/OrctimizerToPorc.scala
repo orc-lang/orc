@@ -92,7 +92,7 @@ class OrctimizerToPorc {
         })
         let(
           (cr, crImpl),
-          (newC, porc.NewCounter(ctx.c, cr)),
+          (newC, porc.NewSimpleCounter(ctx.c, cr)),
           (newP, porc.Continuation(Seq(v), {
             porc.Bind(fut, v) :::
               porc.HaltToken(newC)
@@ -212,15 +212,26 @@ class OrctimizerToPorc {
         }
       }
       case Trim.Z(f) => {
-        val newT = newVarName("T")
         val newP = newVarName("P")
+        val newC = newVarName("Ct")
+        val newT = newVarName("T")
         val v = newVarName()
-        // FIXME: This probably needs to have a counter for every terminator to kill the terminator when it's empty. Without this terminators can collect in each others lists.
+
         let((newT, porc.NewTerminator(ctx.t)),
-          (newP, porc.Continuation(Seq(v), catchExceptions(porc.Kill(newT) ::: ctx.p(v))))) {
+          (newC, porc.NewTerminatorCounter(ctx.c, newT)),
+          (newP, porc.Continuation(Seq(v),
+              // FIXME: Audit.
+              porc.TryOnException({
+                porc.Kill(newT) ::: 
+                porc.HaltToken(newC) :::
+                ctx.p(v)
+              }, {
+                porc.HaltToken(newC)
+              })))) {
+            implicit val ctx = oldCtx.copy(t = newT, c = newC, p = newP)
             // TODO: Is this correct? Can a Trim halt and need to inform the enclosing scope?
             catchExceptions {
-              expression(f)(ctx.copy(t = newT, p = newP))
+              expression(f)
             }
           }
       }
@@ -281,7 +292,7 @@ class OrctimizerToPorc {
         let(
           (flag, newFlag()),
           (cr, crImpl)) {
-            let((newC, porc.NewCounter(ctx.c, cr))) {
+            let((newC, porc.NewSimpleCounter(ctx.c, cr))) {
               cl
             }
           }
@@ -352,26 +363,44 @@ class OrctimizerToPorc {
   }
 
   def callable(recursiveGroup: Seq[BoundVar], d: Method.Z)(implicit ctx: ConversionContext): porc.Method = {
+    import porc.PorcInfixNotation._
+    
     val oldCtx = ctx
-    val newP = newVarName("P")
-    val newC = newVarName("C")
-    val newT = newVarName("T")
+    val argP = newVarName("P")
+    val argC = newVarName("C")
+    val argT = newVarName("T")
     val Method.Z(f, formals, body, _, _, _) = d
     val args = formals.map(lookup)
     val name = lookup(f)
-    val (bodyT, bodyPrefix) = d match {
-      case _: Routine.Z =>
-        (newT, porc.PorcUnit())
-      case _: Service.Z =>
-        (ctx.t, porc.CheckKilled(ctx.t))
-    }
+    
     val newBody = {
-      implicit val ctx = oldCtx.copy(p = newP, c = newC, t = bodyT, recursives = oldCtx.recursives ++ recursiveGroup)
-      catchExceptions {
-        bodyPrefix ::: expression(body)
-      }
+      catchExceptions({
+        d match {
+          case _: Routine.Z => {
+            implicit val ctx = oldCtx.copy(p = argP, c = argC, t = argT, recursives = oldCtx.recursives ++ recursiveGroup)
+            expression(body)
+          }
+          case _: Service.Z => {
+            val newC = newVarName("Cs")
+            val newP = newVarName("P")
+            val v = newVarName("v")
+            implicit val ctx = oldCtx.copy(p = newP, c = newC, t = oldCtx.t, recursives = oldCtx.recursives ++ recursiveGroup)
+            porc.CheckKilled(ctx.t) :::
+              // FIXME: Audit.
+              let((newC, porc.NewServiceCounter(argC, oldCtx.c, ctx.t)),
+                (newP, porc.Continuation(Seq(v), {
+                    porc.NewToken(argC) :::
+                    porc.HaltToken(ctx.c) :::
+                    argP(v)
+                }))) {
+                  expression(body)
+                }
+          }
+        }
+      })(oldCtx.copy(c = argC))
     }
-    d.value ->> porc.MethodCPS(name, newP, newC, newT, d.isInstanceOf[Routine.Z], args, newBody)
+    
+    d.value ->> porc.MethodCPS(name, argP, argC, argT, d.isInstanceOf[Routine.Z], args, newBody)
   }
 
   private def newFlag(): MethodDirectCall = {

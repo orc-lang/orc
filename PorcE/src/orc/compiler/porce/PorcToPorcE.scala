@@ -120,8 +120,12 @@ class PorcToPorcE {
         porce.Sequence.create((constructClosure +: newMethods :+ transform(body)).toArray)
       case porc.NewFuture.Z() =>
         porce.NewFuture.create()
-      case porc.NewCounter.Z(p, h) =>
-        porce.NewCounter.create(ctx.execution.newRef(), transform(p), transform(h))
+      case porc.NewSimpleCounter.Z(p, h) =>
+        porce.NewCounter.Simple.create(ctx.runtime, transform(p), transform(h))
+      case porc.NewServiceCounter.Z(p, p2, t) =>
+        porce.NewCounter.Service.create(ctx.runtime, transform(p), transform(p2), transform(t))
+      case porc.NewTerminatorCounter.Z(p, t) =>
+        porce.NewCounter.Terminator.create(ctx.runtime, transform(p), transform(t))
       case porc.NewTerminator.Z(p) =>
         porce.NewTerminator.create(transform(p))
       case porc.NewToken.Z(c) =>

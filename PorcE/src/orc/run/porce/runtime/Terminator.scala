@@ -111,8 +111,6 @@ class Terminator extends Terminatable {
   }
 }
 
-// FIXME: PERFORMANCE: Merge all Terminators into one final class. It makes the type checks faster at runtime.
-
 /** A termination tracker which adds itself as a child of parent.
   *
   * @author amp
@@ -122,8 +120,6 @@ final class TerminatorNested(parent: Terminator) extends Terminator {
   parent.addChild(this)
   
   override def kill(): Unit = {
-    // FIXME: MEMORYLEAK: This is not actually enough. We actually need to detect halting of the elements in this terminators.... I think Counters and Terminators need to be connected.
-    // Specifically this will be a problem if an expression halts without publishing inside a terminator. The optimizer will remove this for statically known cases.
     parent.removeChild(this)
     super.kill()
   }

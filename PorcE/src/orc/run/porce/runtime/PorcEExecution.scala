@@ -11,6 +11,7 @@ import orc.run.porce.Logger
 import com.oracle.truffle.api.CallTarget
 import orc.Schedulable
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import java.util.logging.Level
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit) extends ExecutionRoot with EventHandler {
   private var _isDone = false
@@ -44,23 +45,22 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       }      
     })
   }
-  
-  val haltContinuation: PorcEClosure = {
-    Utilities.PorcEClosure(new RootNode(null) {
-      def execute(frame: VirtualFrame): Object = {
-        // Runs regardless of discorporation.
-        Logger.fine("Top level context complete.")
-        runtime.removeRoot(PorcEExecution.this)
-        PorcEExecution.this.synchronized {
-          PorcEExecution.this._isDone = true
-          PorcEExecution.this.notifyAll()
-        }
-        PorcEUnit.SINGLETON
-      }      
-    })
-  }
 
-  val c: Counter = new Counter(runtime, null, haltContinuation)
+  val c: Counter = new Counter {
+    def onResurrect() = {
+      throw new AssertionError("The top-level counter can never be resurrected.")
+    }
+    
+    def onHalt(): Unit = {
+      // Runs regardless of discorporation.
+      Logger.fine("Top level context complete.")
+      runtime.removeRoot(PorcEExecution.this)
+      PorcEExecution.this.synchronized {
+        PorcEExecution.this._isDone = true
+        PorcEExecution.this.notifyAll()
+      }
+    }
+  }
 
   val t = new Terminator
 
@@ -82,7 +82,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
     c.haltToken()
     
-    /*if(Counter.tracingEnabled) {
+    /*if(CounterConstants.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       Thread.sleep(5000)
       Counter.report()
     }*/

@@ -237,8 +237,33 @@ final case class CheckKilled(@subtree t: Argument) extends Expression
   *
   * This consumes a token of parentC and then returns it to the halt handler.
   */
+@branch
+sealed abstract class NewCounter extends Expression {
+}
+
+object NewCounter {
+  def unapply(o: NewCounter): Boolean = {
+    o != null
+  }
+
+  class Z {
+  }
+  
+  object Z {
+    def unapply(o: NewCounter.Z): Boolean = {
+      o != null
+    }
+  }
+}
+
 @leaf @transform
-final case class NewCounter(@subtree parentC: Argument, @subtree haltHandler: Argument) extends Expression
+final case class NewSimpleCounter(@subtree parentC: Argument, @subtree haltHandler: Argument) extends NewCounter
+@leaf @transform
+final case class NewServiceCounter(@subtree callingC: Argument, @subtree containingC: Argument, @subtree t: Argument) extends NewCounter
+@leaf @transform
+final case class NewTerminatorCounter(@subtree parentC: Argument, @subtree t: Argument) extends NewCounter
+
+
 /** Add a new token to a counter.
   */
 @leaf @transform
