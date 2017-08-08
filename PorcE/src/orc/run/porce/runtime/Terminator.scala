@@ -40,13 +40,15 @@ class Terminator extends Terminatable {
       child.kill()
     } else {
       orig.add(child)
-      
+
+      // This commented code should be enabled to run terminator_leak.orc
       /*
       val s = orig.size()
       if(s > 2000 && (s % 1000) == 0) {
-        Logger.warning(s"ADDING: You may be leaking Terminatables: $this size=$s\nThis terminatable is $child\n----\n${orig.asScala.take(1000).mkString("\n")}")
+        // \n----\n${orig.asScala.take(1000).mkString("\n")}
+        Logger.warning(s"ADDING: You may be leaking Terminatables: $this size=$s, adding $child")
       }
-      */
+      // */
       
       // Check for kill again.
       // The .add and .get here race against .getAndSet and iteration in kill().
@@ -62,10 +64,6 @@ class Terminator extends Terminatable {
   def removeChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig != null) {
-      /*val s = orig.size()
-      if(s > 10000 && (s % 2000) == 0) {
-        Logger.warning(s"REMOVING: You may be leaking Terminatables: $this size=$s\nThis terminatable is $child")
-      }*/
       orig.remove(child)
     }
   }
