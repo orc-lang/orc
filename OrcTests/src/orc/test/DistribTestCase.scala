@@ -1,6 +1,6 @@
 //
 // DistribTestCase.scala -- Scala class DistribTestCase
-// Project project_name
+// Project OrcTests
 //
 // Created by jthywiss on Jul 29, 2017.
 //
@@ -20,7 +20,6 @@ import scala.collection.JavaConverters.seqAsJavaListConverter
 
 import orc.DistributedBackendType
 import orc.error.compiletime.{ CompilationException, FeatureNotSupportedException }
-import orc.script.OrcBindings
 import orc.test.TestUtils.OrcTestCase
 
 import org.junit.Assume
@@ -30,12 +29,22 @@ import org.junit.Assume
   * @author jthywiss
   */
 class DistribTestCase extends OrcTestCase {
+
   @throws(classOf[Throwable])
   override def runTest() {
+    val options = bindings.asInstanceOf[orc.Main.OrcCmdLineOptions]
     startFollowers()
     println("\n==== Starting " + orcFile + " ====")
     try {
-      val actual = OrcForTesting.compileAndRun(orcFile.getPath(), 200 /*s*/, bindings)
+      val followerSockets = options.recognizedLongOpts("follower-sockets").getValue
+      val actual = if (isLocalAddress(InetAddress.getByName(DistribTestCase.leaderSpec.hostname))) {
+        //OrcForTesting.compileAndRun(orcFile.getPath(), 200 /*s*/, bindings)
+        val result = OsCommand.getResultFrom(Seq("java", "-cp", DistribTestCase.leaderSpec.classPath) ++ DistribTestCase.leaderSpec.jvmOptions ++ Seq("orc.Main", "--backend=distrib", s"--follower-sockets=$followerSockets", "--java-stack-trace", orcFile.getPath), directory = new File(DistribTestCase.leaderSpec.workingDir), teeStdOutErr = true)
+        result.stdout
+      } else {
+        val result = OsCommand.getResultFrom(Seq("ssh", DistribTestCase.leaderSpec.hostname, s"cd '${DistribTestCase.leaderSpec.workingDir}' ; java -cp '${DistribTestCase.leaderSpec.classPath}' ${DistribTestCase.leaderSpec.jvmOptions.mkString(" ")} orc.Main --backend=distrib --follower-sockets=$followerSockets --java-stack-trace $orcFile"), teeStdOutErr = true)
+        result.stdout
+      }
       if (!expecteds.contains(actual)) {
         throw new AssertionError("Unexpected output:\n" + actual)
       }
@@ -52,7 +61,7 @@ class DistribTestCase extends OrcTestCase {
   }
 
   def isLocalAddress(address: InetAddress) = {
-    address.isLoopbackAddress || address.isAnyLocalAddress ||
+    address == null || address.isLoopbackAddress || address.isAnyLocalAddress ||
       (try {
         val x = NetworkInterface.getByInetAddress(address) != null
         x
@@ -71,13 +80,13 @@ class DistribTestCase extends OrcTestCase {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
         Seq(
             Seq("cd", followerSpec.workingDir),
-            Seq("java", "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq("orc.run.distrib.FollowerRuntime", followerNumber.toString, followerSpec.port.toString),
+            Seq("java", "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq("orc.run.distrib.FollowerRuntime", followerNumber.toString, followerSpec.hostname+":"+followerSpec.port),
         )
       } else {
         val sshAddress = bindings.followerSockets.get(followerNumber - 1).getHostString
         println(s"Launching follower $followerNumber on $sshAddress:${followerSpec.port}")
         /* FIXME: Escape strings for shell */
-        Seq(Seq("ssh", sshAddress, s"cd '${followerSpec.workingDir}' ; java -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} orc.run.distrib.FollowerRuntime $followerNumber ${followerSpec.port}"))
+        Seq(Seq("ssh", sshAddress, s"cd '${followerSpec.workingDir}' ; java -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} orc.run.distrib.FollowerRuntime $followerNumber ${followerSpec.hostname}:${followerSpec.port}"))
       }
       OsCommand.newTerminalWindowWith(commandSeq, s"Follower $followerNumber", 42, 132)
     }
@@ -107,31 +116,61 @@ class DistribTestCase extends OrcTestCase {
 
 object DistribTestCase {
   
-  val dOrcWorkingDir = new File("test_data/distrib").getCanonicalPath
+  case class DOrcRuntimePlacement(hostname: String, port: Int, workingDir: String, classPath:String, jvmOptions: Seq[String]) { }
+
+//  val orcTestsProjDir = new File(".").getCanonicalPath
+//  val dOrcTestDataDir = new File("test_data/distrib").getCanonicalPath
+//  val orcVersion = orc.Main.versionProperties.getProperty("orc.version")
+//  val dOrcClassPath = new File(s"../OrcScala/build/orc-${orcVersion}.jar").getCanonicalPath + ":" + new File("../OrcScala/lib").getCanonicalPath + "/*"
+//  val jvmOpts = Seq("-Dsun.io.serialization.extendedDebugInfo=true")
+//
+//  val leaderSpec = 
+//      DOrcRuntimePlacement("localhost", 0, orcTestsProjDir, dOrcClassPath, jvmOpts)
+//
+//  val followerSpecs = Seq(
+//      //                  (hostname,    port,  workingDir,      classPath,     jvmOptions)
+//      DOrcRuntimePlacement("localhost", 36721, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36722, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36723, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36724, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36725, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36726, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36727, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36728, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36729, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36730, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36731, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      DOrcRuntimePlacement("localhost", 36732, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+//      )
+
+  val orcTestsProjDir = "/u/jthywiss/dorc-test/OrcTests"
+  val dOrcTestDataDir = "/u/jthywiss/dorc-test/OrcTests/test_data/distrib"
   val orcVersion = orc.Main.versionProperties.getProperty("orc.version")
-  val dOrcClassPath = new File(s"../OrcScala/build/orc-${orcVersion}.jar").getCanonicalPath + ":" + new File("../OrcScala/lib").getCanonicalPath + "/*"
+  val dOrcClassPath = s"/u/jthywiss/dorc-test/OrcScala/build/orc-${orcVersion}.jar:/u/jthywiss/dorc-test/OrcScala/lib/*"
   val jvmOpts = Seq("-Dsun.io.serialization.extendedDebugInfo=true")
 
-  case class FollowerSpec(hostname: String, port: Int, workingDir: String, classPath:String, jvmOptions: Seq[String]) { }
+  val leaderSpec = 
+      DOrcRuntimePlacement("the-professor.cs.utexas.edu", 0, orcTestsProjDir, dOrcClassPath, jvmOpts)
 
   val followerSpecs = Seq(
-      //          (hostname,    port,  workingDir,     classPath,     jvmOptions)
-      FollowerSpec("localhost", 36721, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36722, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36723, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36724, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36725, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36726, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36727, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36728, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36729, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36730, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36731, dOrcWorkingDir, dOrcClassPath, jvmOpts),
-      FollowerSpec("localhost", 36732, dOrcWorkingDir, dOrcClassPath, jvmOpts),
+      //                  (hostname,    port,  workingDir,     classPath,     jvmOptions)
+      DOrcRuntimePlacement("gilligan.cs.utexas.edu", 36721, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("gilligan.cs.utexas.edu", 36722, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("ginger.cs.utexas.edu", 36723, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("ginger.cs.utexas.edu", 36724, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("lovey.cs.utexas.edu", 36725, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("lovey.cs.utexas.edu", 36726, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("mary-ann.cs.utexas.edu", 36727, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("mary-ann.cs.utexas.edu", 36728, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("skipper.cs.utexas.edu", 36729, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("skipper.cs.utexas.edu", 36730, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("thurston-howell-iii.cs.utexas.edu", 36731, dOrcTestDataDir, dOrcClassPath, jvmOpts),
+      DOrcRuntimePlacement("thurston-howell-iii.cs.utexas.edu", 36732, dOrcTestDataDir, dOrcClassPath, jvmOpts),
       )
-  
+
+
   def buildSuite() = {
-    val bindings = new OrcBindings()
+    val bindings = new orc.Main.OrcCmdLineOptions()
     bindings.backend = DistributedBackendType
     bindings.followerSockets = (followerSpecs map { fs => new InetSocketAddress(fs.hostname, fs.port)}).asJava
     bindings.showJavaStackTrace = true
