@@ -135,7 +135,7 @@ abstract class Analyzer {
             val oldState = states.getOrElse(node, initialState)
             val (newState, newNodes) = transfer(node, oldState, new States(node, states))
             val retroactiveWork = newNodes.filter(n => inputs(n).map(_.node).exists(states.contains(_)))
-            val newStates = if (states.contains(node) && oldState == newState) {
+            val newStates = if (oldState == newState && states.contains(node)) {
               retroactiveWork.foreach(smartEnqueue)
               states
             } else {

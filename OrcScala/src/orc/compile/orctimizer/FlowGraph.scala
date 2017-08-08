@@ -422,7 +422,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
    */
   sealed class VariableNode(val ast: BoundVar, val binder: NamedAST.Z) extends Node with ValueNode with Product {
     //assert(binder.parents.tail.count(_.boundVars contains ast) == 0)
-    require(binder.boundVars contains ast)
+    //require(binder.boundVars contains ast)
 
     override def toString() = {
       //s"$productPrefix(${shortString(ast)}#${ast.asInstanceOf[AnyRef].hashCode().formatted("%x")}${System.identityHashCode(ast).formatted("%x")}, ${binder.value})"
@@ -451,7 +451,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
   }
   object VariableNode {
     def apply(ast: BoundVar, path: Seq[NamedAST.Z]): VariableNode = {
-      assert(path.count(_.boundVars contains ast) <= 1)
+      //assert(path.count(_.boundVars contains ast) <= 1)
       VariableNode(ast, path.find(_.boundVars contains ast).getOrElse(
         throw new IllegalArgumentException(s"$ast should be a variable bound on the path:\n${path.head}")))
     }

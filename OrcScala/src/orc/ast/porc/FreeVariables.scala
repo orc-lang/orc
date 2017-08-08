@@ -23,8 +23,10 @@ trait FreeVariables {
     val s = mutable.Set[Variable]()
     (new Transform {
       override def onArgument = {
-        case v: Variable.Z if !v.contextBoundVars.contains(v.value) =>
-          s += v.value
+        case v: Variable.Z =>
+          if (!v.contextBoundVars.contains(v.value)) {
+            s += v.value
+          }
           v.value
       }
     })(this.toZipper())

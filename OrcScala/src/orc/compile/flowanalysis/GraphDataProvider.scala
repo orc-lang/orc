@@ -24,7 +24,7 @@ trait GraphDataProvider[Node, Edge <: EdgeBase[Node]] {
     for (e <- edges) {
       m += (e.from -> (m.getOrElse(e.from, Set[Edge]()) + e))
     }
-    m
+    collection.immutable.HashMap() ++ m
   }
   
   protected[this] lazy val edgeToIndex: collection.Map[Node, Set[Edge]] = {
@@ -32,7 +32,7 @@ trait GraphDataProvider[Node, Edge <: EdgeBase[Node]] {
     for (e <- edges) {
       m += (e.to -> (m.getOrElse(e.to, Set[Edge]()) + e))
     }
-    m
+    collection.immutable.HashMap() ++ m
   }
 
   def nodesOf[T <: Node: ClassTag] = {
@@ -49,11 +49,19 @@ trait GraphDataProvider[Node, Edge <: EdgeBase[Node]] {
     def inEdges = edgeToIndex.getOrElse(n, Set())
     def outEdgesOf[T <: Edge: ClassTag] = {
       val TType = implicitly[ClassTag[T]]
-      edgeFromIndex.getOrElse(n, Set()).collect { case TType(e) => e }
+      edgeFromIndex.
+        getOrElse(n, Set()).
+        collect { 
+          case TType(e) => e 
+        }
     }
     def inEdgesOf[T <: Edge: ClassTag] = {
       val TType = implicitly[ClassTag[T]]
-      edgeToIndex.getOrElse(n, Set()).collect { case TType(e) => e }
+      edgeToIndex.
+        getOrElse(n, Set()).
+        collect { 
+          case TType(e) => e 
+        }
     }
   }
 }
