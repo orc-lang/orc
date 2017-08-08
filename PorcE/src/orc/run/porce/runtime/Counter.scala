@@ -361,7 +361,13 @@ final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, termin
       } else {
         if(state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.WasKilled)) {
           parent.haltToken()
-          terminator.kill()
+          try {
+            // Just make sure terminator is killed. If it already was ignore the exception.
+            terminator.kill()
+          } catch {
+            case _: KilledException =>
+              () 
+          }
         }
       }
   }
