@@ -18,7 +18,7 @@ public abstract class GetField extends Expression {
 	protected final Field field;
 	protected final PorcEExecutionRef execution;
 
-	public GetField(Field field, PorcEExecutionRef execution) {
+	protected GetField(Field field, PorcEExecutionRef execution) {
 		this.field = field;
 		this.execution = execution;
 	}

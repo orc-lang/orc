@@ -21,7 +21,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode {
 
 	public void setPorcAST(PorcAST ast) {
 		porcNode = Option.apply(ast);
-		Logger.finer(() -> {
+		Logger.fine(() -> {
 			PorcAST body = null; 
 			if (ast instanceof orc.ast.porc.Continuation)
 				body = ((orc.ast.porc.Continuation)ast).body();
