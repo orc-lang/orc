@@ -82,10 +82,6 @@ public class Force {
 				call = insert(InternalArgArrayCall.create(execution));
 			}
 			call.execute(frame, join.p(), join.values());
-			/*
-			 * count++; if (count > 10000 && count % 1000 == 0) { Logger.info(()
-			 * -> "Finish count = " + count); }
-			 */
 			return PorcEUnit.SINGLETON;
 		}
 
@@ -163,28 +159,6 @@ public class Force {
 			
 			return PorcEUnit.SINGLETON;
 		}
-
-		/*
-		 * @Specialization public PorcEUnit porceFuture(VirtualFrame frame,
-		 * PorcEExecutionRef execution, PorcEClosure p, Counter c, Terminator t,
-		 * orc.run.porce.runtime.Future future) { Object state =
-		 * future.getInternal(); if (state ==
-		 * orc.run.porce.runtime.FutureConstants.Halt) { c.haltToken(); } else
-		 * if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
-		 * future.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t,
-		 * execution.get().runtime())); } else {
-		 * InternalPorcEError.unreachable(this); } return PorcEUnit.SINGLETON; }
-		 * 
-		 * @Specialization(replaces = { "porceFuture" }) public Object
-		 * future(VirtualFrame frame, PorcEExecutionRef execution, PorcEClosure
-		 * p, Counter c, Terminator t, orc.Future future) { FutureState state =
-		 * future.get(); if (state instanceof orc.FutureState.Bound) {
-		 * InternalPorcEError.unreachable(this); } else if (state ==
-		 * orc.run.porce.runtime.FutureConstants.Orc_Stopped) { c.haltToken(); }
-		 * else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound)
-		 * { future.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t,
-		 * execution.get().runtime())); } return PorcEUnit.SINGLETON; }
-		 */
 
 		private void initializeCall(PorcEExecutionRef execution) {
 			if (call == null) {

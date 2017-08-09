@@ -123,7 +123,7 @@ abstract class Counter extends AtomicInteger(1) {
   val log = if (tracingEnabled) new LinkedBlockingDeque[Exception]() else null
 
   @elidable(elidable.ASSERTION)
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary
   private final def logChange(s: => String) = {
     if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       val stack = Counter.getPorcStackTrace().map(n => {
@@ -134,9 +134,11 @@ abstract class Counter extends AtomicInteger(1) {
       log.add(new Exception(s"$s in Porc stack:\n$stack"))
     }
   }
-  logChange(s"Init to 1")
-
-  Counter.addCounter(this)
+  
+  if (tracingEnabled) {
+    logChange(s"Init to 1")
+    Counter.addCounter(this)
+  }
   // */
 
   /*
@@ -157,13 +159,11 @@ abstract class Counter extends AtomicInteger(1) {
   @volatile
   var isDiscorporated = false
 
-  @TruffleBoundary(allowInlining = true)
   final def setDiscorporate() = {
     //assert(get() > 0)
     isDiscorporated = true
   }
 
-  @TruffleBoundary(allowInlining = true)
   final def discorporateToken() = {
     setDiscorporate()
     haltToken()
@@ -174,7 +174,6 @@ abstract class Counter extends AtomicInteger(1) {
    *
    * If we did halt call onContextHalted().
    */
-  @TruffleBoundary(allowInlining = true)
   final def haltToken(): Unit = {
     val n = decrementAndGet()
     if (tracingEnabled) {
@@ -185,38 +184,47 @@ abstract class Counter extends AtomicInteger(1) {
       assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
     }
     if (n == 0) {
-      if(tracingEnabled) {
-        Logger.fine(s"Halted $this")
-        Counter.report()
-      }
-      if (!isDiscorporated && tracingEnabled) {
+      doHalt()
+    }
+  }
+  
+  @TruffleBoundary(allowInlining = true)
+  private final def doHalt() = {
+    if(tracingEnabled) {
+      Logger.fine(s"Halted $this")
+      Counter.report()
+      if (!isDiscorporated) {
         Counter.removeCounter(this)
       }
-      onHalt()
     }
+    onHalt()
   }
 
   /**
    * Increment the count.
    */
-  @TruffleBoundary(allowInlining = true)
   final def newToken(): Unit = {
     val n = getAndIncrement()
-    if (n == 0) {
-      if (tracingEnabled) {
-        Logger.fine(s"Resurrected $this")
-        Counter.report()
-        assert(isDiscorporated)
-      }
-      Counter.addCounter(this)
-      onResurrect()
-    }
     if (tracingEnabled) {
       logChange(s"+ Up from $n")
       assert(n >= 0, s"Spawning is not allowed once we go to zero count. No zombies allowed!!! $this")
     }
+    if (n == 0) {
+      doResurrect()
+    }
   }
-  
+
+  @TruffleBoundary(allowInlining = true)
+  private final def doResurrect() = {
+    if (tracingEnabled) {
+      Counter.addCounter(this)
+      Logger.fine(s"Resurrected $this")
+      Counter.report()
+      assert(isDiscorporated)
+    }
+    onResurrect()
+  }
+
   override def toString(): String = {
     val n = getClass.getSimpleName
     val h = System.identityHashCode(this)

@@ -70,7 +70,6 @@ class Terminator extends Terminatable {
 
   /** Check that this context is live and throw KilledException if it is not.
     */
-  @TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
   def checkLive(): Unit = {
     if (!isLive()) {
       throw KilledException.SINGLETON
@@ -80,7 +79,6 @@ class Terminator extends Terminatable {
   /** Return true if this context is still live (has not been killed or halted
     * naturally).
     */
-  @TruffleBoundary(allowInlining = true)
   def isLive(): Boolean = {
     children.get() != null
   }
