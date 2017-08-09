@@ -124,7 +124,7 @@ public class InternalCall extends CallBase {
 
 		@Override
 		public NodeCost getCost() {
-			return NodeCost.MEGAMORPHIC;
+			return NodeCost.POLYMORPHIC;
 		}
 	}
 

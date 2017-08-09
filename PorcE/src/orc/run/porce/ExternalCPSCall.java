@@ -7,8 +7,11 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import orc.CaughtEvent;
+import orc.DirectInvoker;
 import orc.ErrorInvoker;
 import orc.Invoker;
 import orc.error.runtime.ExceptionHaltException;
@@ -59,13 +62,13 @@ class ExternalCPSCallBase extends CallBase {
 		return getInvokerWithBoundary(getRuntime(), t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	@TruffleBoundary(allowInlining = true)
 	protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object t,
 			final Object[] argumentValues) {
 		return runtime.getInvoker(t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	@TruffleBoundary(allowInlining = true)
 	protected static boolean canInvokeWithBoundary(final Invoker invoker, final Object t,
 			final Object[] argumentValues) {
 		return invoker.canInvoke(t, argumentValues);
@@ -75,6 +78,12 @@ class ExternalCPSCallBase extends CallBase {
 	protected static void invokeWithBoundary(final Invoker invoker, final CPSCallResponseHandler handle, final Object t,
 			final Object[] argumentValues) {
 		invoker.invoke(handle, t, argumentValues);
+	}
+	
+	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object t,
+			final Object[] argumentValues) {
+		return invoker.invokeDirect(t, argumentValues);
 	}
 }
 
@@ -101,8 +110,13 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 			try {
 				if (!(invoker instanceof ErrorInvoker) && cacheSize < cacheMaxSize) {
 					cacheSize++;
-					n = new Specific((Expression) target.copy(), invoker, copyExpressionArray(arguments),
-							(CallBase) this.copy(), execution);
+					if (invoker instanceof DirectInvoker) {
+						n = new SpecificDirect((Expression) target.copy(), (DirectInvoker)invoker, copyExpressionArray(arguments),
+								(CallBase) this.copy(), execution);
+					} else {
+						n = new Specific((Expression) target.copy(), invoker, copyExpressionArray(arguments),
+								(CallBase) this.copy(), execution);
+					}
 					replace(n, "Speculate on target closure.");
 				} else {
 					n = replaceWithUniversal();
@@ -126,8 +140,8 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 	}
 
 	private static CallBase findCacheRoot(CallBase n) {
-		if (n.getParent() instanceof Specific) {
-			return findCacheRoot((Specific) n.getParent());
+		if (n.getParent() instanceof Specific || n.getParent() instanceof SpecificDirect) {
+			return findCacheRoot((CallBase) n.getParent());
 		} else {
 			return n;
 		}
@@ -187,9 +201,58 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 		}
 	}
 
+	public static class SpecificDirect extends ExternalCPSCallBase {
+		private final DirectInvoker invoker;
+
+		@Child
+		protected Expression notMatched;
+		@Child
+		protected InternalArgArrayCallBase callP;
+
+		public SpecificDirect(Expression target, DirectInvoker invoker, Expression[] arguments, Expression notMatched,
+				PorcEExecutionRef execution) {
+			super(target, arguments, execution);
+			this.invoker = invoker;
+			this.notMatched = notMatched;
+			this.callP = new InternalArgArrayCall(execution);
+		}
+
+		public void executePorcEUnit(VirtualFrame frame) {
+			Object t = executeTargetObject(frame);
+			Object[] argumentValues = buildArgumentValues(frame);
+
+			if (canInvokeWithBoundary(invoker, t, argumentValues)) {
+				PorcEClosure pub = executeP(frame);
+
+				try {
+					Object v = invokeDirectWithBoundary(invoker, t, argumentValues);
+					callP.execute(frame, pub, new Object[] { null, v });
+				} catch (ExceptionHaltException e) {
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+				} catch (HaltException e) {
+				} catch (Exception e) {
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+					throw HaltException.SINGLETON();
+				}
+			} else {
+				notMatched.execute(frame);
+			}
+		}
+
+		@Override
+		public NodeCost getCost() {
+			return NodeCost.POLYMORPHIC;
+		}
+	}
+
 	public static class Universal extends ExternalCPSCallBase {
+		@Child
+		protected InternalArgArrayCallBase callP;
+		private final ConditionProfile profile = ConditionProfile.createBinaryProfile();
+		
 		public Universal(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 			super(target, arguments, execution);
+			this.callP = new InternalArgArrayCall(execution);
 		}
 
 		public void executePorcEUnit(VirtualFrame frame) {
@@ -205,7 +268,12 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 
 			try {
 				Invoker invoker = getInvokerWithBoundary(t, argumentValues);
-				invokeWithBoundary(invoker, handle, t, argumentValues);
+				if (profile.profile(invoker instanceof DirectInvoker)) {
+					Object v = invokeDirectWithBoundary((DirectInvoker) invoker, t, argumentValues);
+					callP.execute(frame, pub, new Object[] { null, v });
+				} else {
+					invokeWithBoundary(invoker, handle, t, argumentValues);
+				}
 			} catch (ExceptionHaltException e) {
 				execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 			} catch (HaltException e) {
@@ -217,7 +285,7 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 
 		@Override
 		public NodeCost getCost() {
-			return NodeCost.MEGAMORPHIC;
+			return NodeCost.POLYMORPHIC;
 		}
 	}
 }

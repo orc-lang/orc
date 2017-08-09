@@ -35,4 +35,10 @@ public class InternalPorcEError extends Error {
 		throw new InternalPorcEError(
 				"captureds array is the wrong length: expected len = " + slotsLen + ", provided len = " + capturedsLen);
 	}
+
+	@TruffleBoundary
+	public static InternalPorcEError unreachable(PorcENode n) {
+		throw new InternalPorcEError(
+				"Code should be unreachable in " + n.porcNode() + "'.");
+	}
 }

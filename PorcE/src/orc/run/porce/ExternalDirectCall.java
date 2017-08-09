@@ -32,13 +32,13 @@ class ExternalDirectCallBase extends CallBase {
 		return (DirectInvoker) getInvokerWithBoundary(getRuntime(), t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	@TruffleBoundary(allowInlining = true)
 	protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object t,
 			final Object[] argumentValues) {
 		return runtime.getInvoker(t, argumentValues);
 	}
 
-	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	@TruffleBoundary(allowInlining = true)
 	protected static boolean canInvokeWithBoundary(final Invoker invoker, final Object t,
 			final Object[] argumentValues) {
 		return invoker.canInvoke(t, argumentValues);

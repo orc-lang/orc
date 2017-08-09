@@ -139,7 +139,7 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
 
 		@Override
 		public NodeCost getCost() {
-			return NodeCost.MEGAMORPHIC;
+			return NodeCost.POLYMORPHIC;
 		}
 	}
 
