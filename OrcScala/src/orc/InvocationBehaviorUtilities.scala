@@ -77,7 +77,7 @@ case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker {
   }
 }
 
-/** A invoker sentinel representing the fact that target is not callable.
+/** A invoker sentinel representing the fact that arguments are not valid for this call.
 	*/
 case class IllegalArgumentInvoker(target: AnyRef, arguments: Array[AnyRef]) extends ErrorInvoker {
   @throws[IllegalArgumentException]
@@ -113,5 +113,18 @@ case class DoesNotHaveMembersAccessor(target: AnyRef) extends ErrorAccessor {
 
   def canGet(target: AnyRef): Boolean = {
     this.target == target
+  }
+}
+
+/** A accessor sentinel representing the fact that the class does not have members.
+	*/
+case class ClassDoesNotHaveMembersAccessor(targetCls: Class[_]) extends ErrorAccessor {
+  @throws[DoesNotHaveMembersException]
+  def get(target: AnyRef): AnyRef = {
+    throw new DoesNotHaveMembersException(target)
+  }
+
+  def canGet(target: AnyRef): Boolean = {
+    targetCls.isInstance(target)
   }
 }
