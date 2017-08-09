@@ -29,10 +29,14 @@ public class GetMethod extends Expression {
 	}
 
 	// TODO: PERFORMANCE: If I allow caching errors this could do a lot better by caching the error to optimize for the no .apply case.
-	@Specialization(guards = { "isNotError(accessor)", "canGetWithBoundary(accessor, obj)" }, limit = "getMaxCacheSize()")
+	@Specialization(guards = { "canGetWithBoundary(accessor, obj)" }, limit = "getMaxCacheSize()")
 	public Object cachedAccessor(Object obj, @Cached("getAccessorWithBoundary(obj)") Accessor accessor) {
 		try {
-			return accessWithBoundary(accessor, obj);
+			if (accessor instanceof ErrorAccessor) {
+				return obj;
+			} else {
+				return accessWithBoundary(accessor, obj);
+			}
 		} catch (Exception e) {
 			CompilerDirectives.transferToInterpreter();
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
@@ -56,7 +60,7 @@ public class GetMethod extends Expression {
 		}
 	}
 
-	@TruffleBoundary(throwsControlFlowException = true)
+	@TruffleBoundary
 	protected Accessor getAccessorWithBoundary(final Object t) {
 		return execution.get().runtime().getAccessor(t, field);
 	}
@@ -66,7 +70,7 @@ public class GetMethod extends Expression {
 		return accessor.get(obj);
 	}
 
-	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	@TruffleBoundary(allowInlining = true)
 	protected static boolean canGetWithBoundary(final Accessor accessor, final Object obj) {
 		return accessor.canGet(obj);
 	}

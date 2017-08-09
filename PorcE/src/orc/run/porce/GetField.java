@@ -46,7 +46,7 @@ public abstract class GetField extends Expression {
 		}
 	}
 
-	@TruffleBoundary(throwsControlFlowException = true)
+	@TruffleBoundary
 	protected Accessor getAccessorWithBoundary(final Object t) {
 		return execution.get().runtime().getAccessor(t, field);
 	}
@@ -56,7 +56,7 @@ public abstract class GetField extends Expression {
 		return accessor.get(obj);
 	}
 
-	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	@TruffleBoundary(allowInlining = true)
 	protected static boolean canGetWithBoundary(final Accessor accessor, final Object obj) {
 		return accessor.canGet(obj);
 	}
