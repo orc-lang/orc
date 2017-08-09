@@ -7,6 +7,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 import orc.CaughtEvent;
 import orc.DirectInvoker;
@@ -18,6 +19,9 @@ import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
 
 class ExternalDirectCallBase extends CallBase {
+	@CompilerDirectives.CompilationFinal
+	protected final BranchProfile[] exceptionProfiles = new BranchProfile[] { BranchProfile.create(), BranchProfile.create(), BranchProfile.create() };
+	
 	public ExternalDirectCallBase(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 		super(target, arguments, execution);
 	}
@@ -137,11 +141,14 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
 				try {
 					r = invokeDirectWithBoundary(invoker, t, argumentValues);
 				} catch (ExceptionHaltException e) {
+					exceptionProfiles[0].enter();
 					execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 					throw HaltException.SINGLETON();
 				} catch (HaltException e) {
+					exceptionProfiles[1].enter();
 					throw e;
 				} catch (Exception e) {
+					exceptionProfiles[2].enter();
 					execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 					throw HaltException.SINGLETON();
 				}
@@ -171,11 +178,14 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
 				DirectInvoker invoker = getInvokerWithBoundary(t, argumentValues);
 				return invokeDirectWithBoundary(invoker, t, argumentValues);
 			} catch (ExceptionHaltException e) {
+				exceptionProfiles[0].enter();
 				execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 				throw HaltException.SINGLETON();
 			} catch (HaltException e) {
+				exceptionProfiles[1].enter();
 				throw e;
 			} catch (Exception e) {
+				exceptionProfiles[2].enter();
 				execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 				throw HaltException.SINGLETON();
 			}

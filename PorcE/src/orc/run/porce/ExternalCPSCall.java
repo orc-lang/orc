@@ -23,7 +23,10 @@ import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.Terminator;
 
-class ExternalCPSCallBase extends CallBase {
+abstract class ExternalCPSCallBase extends CallBase {
+	@CompilerDirectives.CompilationFinal(dimensions = 1)
+	protected final BranchProfile[] exceptionProfiles = new BranchProfile[] { BranchProfile.create(), BranchProfile.create(), BranchProfile.create() };
+	
 	public ExternalCPSCallBase(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 		super(target, arguments, execution);
 	}
@@ -184,9 +187,12 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 				try {
 					invokeWithBoundary(invoker, handle, t, argumentValues);
 				} catch (ExceptionHaltException e) {
+					exceptionProfiles[0].enter();
 					execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 				} catch (HaltException e) {
+					exceptionProfiles[1].enter();
 				} catch (Exception e) {
+					exceptionProfiles[2].enter();
 					execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 					throw HaltException.SINGLETON();
 				}
@@ -223,15 +229,22 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 
 			if (canInvokeWithBoundary(invoker, t, argumentValues)) {
 				PorcEClosure pub = executeP(frame);
+				Counter counter = executeC(frame);
 
 				try {
 					Object v = invokeDirectWithBoundary(invoker, t, argumentValues);
 					callP.execute(frame, pub, new Object[] { null, v });
 				} catch (ExceptionHaltException e) {
+					exceptionProfiles[0].enter();
 					execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+					counter.haltToken();
 				} catch (HaltException e) {
+					exceptionProfiles[1].enter();
+					counter.haltToken();
 				} catch (Exception e) {
+					exceptionProfiles[2].enter();
 					execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+					counter.haltToken();
 					throw HaltException.SINGLETON();
 				}
 			} else {
@@ -249,6 +262,8 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 		@Child
 		protected InternalArgArrayCallBase callP;
 		private final ConditionProfile profile = ConditionProfile.createBinaryProfile();
+		@CompilerDirectives.CompilationFinal(dimensions = 1)
+		protected final BranchProfile[] exceptionProfiles2 = new BranchProfile[] { BranchProfile.create(), BranchProfile.create(), BranchProfile.create() };
 		
 		public Universal(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 			super(target, arguments, execution);
@@ -266,20 +281,37 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 			// Token: Passed to handle from arguments.
 			final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term);
 
-			try {
-				Invoker invoker = getInvokerWithBoundary(t, argumentValues);
-				if (profile.profile(invoker instanceof DirectInvoker)) {
+			Invoker invoker = getInvokerWithBoundary(t, argumentValues);
+			if (profile.profile(invoker instanceof DirectInvoker)) {
+				try {
 					Object v = invokeDirectWithBoundary((DirectInvoker) invoker, t, argumentValues);
 					callP.execute(frame, pub, new Object[] { null, v });
-				} else {
-					invokeWithBoundary(invoker, handle, t, argumentValues);
+				} catch (ExceptionHaltException e) {
+					exceptionProfiles[0].enter();
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+					counter.haltToken();
+				} catch (HaltException e) {
+					exceptionProfiles[1].enter();
+					counter.haltToken();
+				} catch (Exception e) {
+					exceptionProfiles[2].enter();
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+					counter.haltToken();
+					throw HaltException.SINGLETON();
 				}
-			} catch (ExceptionHaltException e) {
-				execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
-			} catch (HaltException e) {
-			} catch (Exception e) {
-				execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
-				throw HaltException.SINGLETON();
+			} else {
+				try {
+					invokeWithBoundary(invoker, handle, t, argumentValues);
+				} catch (ExceptionHaltException e) {
+					exceptionProfiles2[0].enter();
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+				} catch (HaltException e) {
+					exceptionProfiles2[1].enter();
+				} catch (Exception e) {
+					exceptionProfiles2[2].enter();
+					execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+					throw HaltException.SINGLETON();
+				}
 			}
 		}
 
