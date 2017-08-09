@@ -14,6 +14,7 @@ import site Location10PinnedTuple = "orc.run.distrib.Location10PinnedTupleConstr
 import site Location11PinnedTuple = "orc.run.distrib.Location11PinnedTupleConstructor"
 import site Location12PinnedTuple = "orc.run.distrib.Location12PinnedTupleConstructor"
 {-
+-- Dummies for local testing
 def Location0PinnedTuple(x,y) = (x,y)
 def Location1PinnedTuple(x,y) = (x,y)
 def Location2PinnedTuple(x,y) = (x,y)
@@ -66,34 +67,39 @@ def wordCount(line) =
   wordCount'(wb, line)
 
 def mapOperation(shard) =
-  readFile(shard(0))  >lines>
-  map(wordCount, lines) 
+  collect(
+    { signals(10) >>
+      each(shard(0)) >filename>
+      readFile(filename)  >lines>
+      map(wordCount, lines)
+    }
+  )
 
-def combineOperation(xs) = foldl1((+), xs)
+def combineOperation(xs) = afold((+), concat(xs))
 
 def reduceOperation(x, y) = x + y
 
 [
-  Location1PinnedTuple("holmes_test_data/adventure-1.txt", 1),
-  Location2PinnedTuple("holmes_test_data/adventure-2.txt", 2),
-  Location3PinnedTuple("holmes_test_data/adventure-3.txt", 3),
-  Location4PinnedTuple("holmes_test_data/adventure-4.txt", 4),
-  Location5PinnedTuple("holmes_test_data/adventure-5.txt", 5),
-  Location6PinnedTuple("holmes_test_data/adventure-6.txt", 6),
-  Location7PinnedTuple("holmes_test_data/adventure-7.txt", 7),
-  Location8PinnedTuple("holmes_test_data/adventure-8.txt", 8),
-  Location9PinnedTuple("holmes_test_data/adventure-9.txt", 9),
-  Location10PinnedTuple("holmes_test_data/adventure-10.txt", 10),
-  Location11PinnedTuple("holmes_test_data/adventure-11.txt", 11),
-  Location12PinnedTuple("holmes_test_data/adventure-12.txt", 12)
+  Location1PinnedTuple(["holmes_test_data/adventure-1.txt"], 1),
+  Location2PinnedTuple(["holmes_test_data/adventure-2.txt"], 2),
+  Location3PinnedTuple(["holmes_test_data/adventure-3.txt"], 3),
+  Location4PinnedTuple(["holmes_test_data/adventure-4.txt"], 4),
+  Location5PinnedTuple(["holmes_test_data/adventure-5.txt"], 5),
+  Location6PinnedTuple(["holmes_test_data/adventure-6.txt"], 6),
+  Location7PinnedTuple(["holmes_test_data/adventure-7.txt"], 7),
+  Location8PinnedTuple(["holmes_test_data/adventure-8.txt"], 8),
+  Location9PinnedTuple(["holmes_test_data/adventure-9.txt"], 9),
+  Location10PinnedTuple(["holmes_test_data/adventure-10.txt"], 10),
+  Location11PinnedTuple(["holmes_test_data/adventure-11.txt"], 11),
+  Location12PinnedTuple(["holmes_test_data/adventure-12.txt"], 12)
 ] >inputList>
 
 
 map(mapOperation, inputList)  >mappedList>
 map(combineOperation, mappedList)  >combinedList>
-foldl1(reduceOperation, combinedList)
+afold(reduceOperation, combinedList)
 
 {-
 OUTPUT:
-104484
+1044840
 -}
