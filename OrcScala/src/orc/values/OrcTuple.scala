@@ -16,11 +16,44 @@ import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException
 import orc.run.distrib.DOrcMarshalingReplacement
 import orc.util.ArrayExtensions.Array1
 import orc.values.sites.{ NonBlockingSite, PartialSite, UntypedSite }
+import orc.values.sites.{ InvokerMethod, AccessorValue }
+import orc.IllegalArgumentInvoker
+import orc.OnlyDirectInvoker
+import orc.ClassDoesNotHaveMembersAccessor
 
 /** @author dkitchin
   */
-case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement {
+case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorValue with PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement {
   assert(values.length > 1)
+  
+  def getInvoker(args: Array[AnyRef]) = {
+    args match {
+      case Array1(bi: BigInt) => {
+        val size = values.length
+        
+        new OnlyDirectInvoker {
+          def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+            (target, args) match { 
+              case (t: OrcTuple, Array1(bi: BigInt)) =>
+                t.values.length == size
+              case _ =>
+                false
+            }
+          }
+        
+          def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+            target.asInstanceOf[OrcTuple].values(arguments(0).asInstanceOf[BigInt].intValue())
+          }
+        }
+      }
+      case _ =>
+        IllegalArgumentInvoker(this, args)
+    }
+  }
+  
+  def getAccessor(f: Field) = {
+    ClassDoesNotHaveMembersAccessor(classOf[OrcTuple])
+  }
 
   def evaluate(args: Array[AnyRef]) =
     args match {

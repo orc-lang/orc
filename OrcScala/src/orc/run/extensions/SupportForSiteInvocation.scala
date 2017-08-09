@@ -38,8 +38,15 @@ trait SupportForSiteInvocation extends InvocationBehavior {
     target match {
       case m: InvokerMethod =>
         m.getInvoker(arguments) match {
-          case _: ErrorInvoker =>
-            super.getInvoker(target, arguments)
+          case ei: ErrorInvoker =>
+            val i = super.getInvoker(target, arguments)
+            i match {
+              case _: ErrorInvoker =>
+                // If the super also provides an error then use our error instead since it's probably more detailed.
+                ei
+              case _ =>
+                i
+            }
           case i =>
             i
         }
@@ -56,8 +63,15 @@ trait SupportForSiteInvocation extends InvocationBehavior {
     target match {
       case m: AccessorValue =>
         m.getAccessor(field) match {
-          case _: ErrorAccessor =>
-            super.getAccessor(target, field)
+          case ea: ErrorAccessor =>
+            val a = super.getAccessor(target, field)
+            a match {
+              case _: ErrorAccessor =>
+                // If the super also provides an error then use our error instead since it's probably more detailed.
+                ea
+              case _ =>
+                a
+            }
           case i =>
             i
         }
