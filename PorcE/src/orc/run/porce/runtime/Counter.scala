@@ -206,8 +206,8 @@ abstract class Counter extends AtomicInteger(1) {
       if (tracingEnabled) {
         Logger.fine(s"Resurrected $this")
         Counter.report()
+        assert(isDiscorporated)
       }
-      assert(isDiscorporated)
       Counter.addCounter(this)
       onResurrect()
     }
@@ -240,9 +240,11 @@ abstract class Counter extends AtomicInteger(1) {
  * 
  */
 final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContinuation: PorcEClosure) extends Counter {
-  require(runtime != null)
-  require(parent != null)
-  require(haltContinuation != null)
+  if (CounterConstants.tracingEnabled) {    
+    require(runtime != null)
+    require(parent != null)
+    require(haltContinuation != null)
+  }
   
   def onResurrect() = {
     parent.newToken()
@@ -273,10 +275,12 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
  *  
  */
 final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, val parentContaining: Counter, terminator: Terminator) extends Counter with Terminatable {
-  require(runtime != null)
-  require(terminator != null)
-  require(parentCalling != null)
-  require(parentContaining != null)
+  if (CounterConstants.tracingEnabled) {    
+    require(runtime != null)
+    require(terminator != null)
+    require(parentCalling != null)
+    require(parentContaining != null)
+  }
   
   /** True if this counter has tokens from it's parents.
    */
@@ -330,9 +334,11 @@ final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, va
  *  
  */
 final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, terminator: Terminator) extends Counter with Terminatable {
-  require(runtime != null)
-  require(terminator != null)
-  require(parent != null)
+  if (CounterConstants.tracingEnabled) {    
+    require(runtime != null)
+    require(terminator != null)
+    require(parent != null)
+  }
   
   /** True if this counter has tokens from it's parents.
    */

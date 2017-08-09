@@ -4,5 +4,5 @@ public class PorcEUnit {
 	private PorcEUnit() {
 	}
 	
-	public static PorcEUnit SINGLETON = new PorcEUnit();
+	public static final PorcEUnit SINGLETON = new PorcEUnit();
 }

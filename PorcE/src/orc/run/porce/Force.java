@@ -6,10 +6,8 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.IndirectCallNode;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.nodes.ControlFlowException;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 import orc.FutureState;
 import orc.run.porce.runtime.Counter;
@@ -17,7 +15,6 @@ import orc.run.porce.runtime.Join;
 import orc.run.porce.runtime.Terminator;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
-import orc.run.porce.runtime.PorcERuntime;
 
 public class Force {
 	public static boolean isNonFuture(Object v) {
@@ -44,7 +41,7 @@ public class Force {
 	@NodeChild(value = "join", type = Expression.class)
 	@NodeChild(value = "future", type = Expression.class)
 	@NodeField(name = "index", type = int.class)
-	@ImportStatic({Force.class})
+	@ImportStatic({ Force.class })
 	public static class Future extends Expression {
 		@Specialization(guards = { "isNonFuture(future)" })
 		public PorcEUnit nonFuture(int index, Join join, Object future) {
@@ -52,7 +49,8 @@ public class Force {
 			return PorcEUnit.SINGLETON;
 		}
 
-		// TODO: PERFORMANCE: It may be worth playing with specializing by future states. Futures that are always bound may be common.
+		// TODO: PERFORMANCE: It may be worth playing with specializing by
+		// future states. Futures that are always bound may be common.
 		@Specialization
 		public PorcEUnit porceFuture(int index, Join join, orc.run.porce.runtime.Future future) {
 			join.force(index, future);
@@ -76,7 +74,7 @@ public class Force {
 		volatile static int count = 0;
 		@Child
 		InternalArgArrayCallBase call = null;
-		
+
 		@Specialization(guards = { "join.isResolved()" })
 		public PorcEUnit resolved(VirtualFrame frame, PorcEExecutionRef execution, Join join) {
 			if (call == null) {
@@ -85,11 +83,9 @@ public class Force {
 			}
 			call.execute(frame, join.p(), join.values());
 			/*
-			count++;
-			if (count > 10000 && count % 1000 == 0) {
-				Logger.info(() -> "Finish count = " + count);
-			}
-			*/
+			 * count++; if (count > 10000 && count % 1000 == 0) { Logger.info(()
+			 * -> "Finish count = " + count); }
+			 */
 			return PorcEUnit.SINGLETON;
 		}
 
@@ -109,54 +105,86 @@ public class Force {
 			return ForceFactory.FinishNodeGen.create(join, execution);
 		}
 	}
-	
+
 	@NodeChild(value = "p", type = Expression.class)
 	@NodeChild(value = "c", type = Expression.class)
 	@NodeChild(value = "t", type = Expression.class)
 	@NodeChild(value = "future", type = Expression.class)
 	@NodeField(name = "execution", type = PorcEExecutionRef.class)
-	@ImportStatic({Force.class})
+	@ImportStatic({ Force.class })
 	public static abstract class SingleFuture extends Expression {
 		volatile static int count = 0;
-		
+
 		@Child
-		InternalArgArrayCallBase call = null;
-		
-		@Specialization(guards = { "isNonFuture(future)" })
-		public Object nonFuture(VirtualFrame frame, PorcEExecutionRef execution, PorcEClosure p, Counter c, Terminator t, Object future) {
-			initializeCall(execution);
-			call.execute(frame, p, new Object[] { null, future });
-			return PorcEUnit.SINGLETON;
-		}
-		
+		protected InternalArgArrayCallBase call = null;
+		private final BranchProfile boundPorcEFuture = BranchProfile.create();
+		private final BranchProfile unboundPorcEFuture = BranchProfile.create();
+		private final BranchProfile boundOrcFuture = BranchProfile.create();
+
 		@Specialization
-		public PorcEUnit porceFuture(VirtualFrame frame, PorcEExecutionRef execution, PorcEClosure p, Counter c, Terminator t, orc.run.porce.runtime.Future future) {
-	        Object state = future.getInternal();
-	        if (state == orc.run.porce.runtime.FutureConstants.Halt) {
-		        c.haltToken();
-	        } else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
-	        	future.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
-	        } else {
-	        	initializeCall(execution);
-	        	assert !(state instanceof orc.run.porce.runtime.FutureConstants.Sentinal);
-				call.execute(frame, p, new Object[] { null, state });
-	        }
-			return PorcEUnit.SINGLETON;
-		}
-		
-		@Specialization(replaces = { "porceFuture" })
-		public Object future(VirtualFrame frame, PorcEExecutionRef execution, PorcEClosure p, Counter c, Terminator t, orc.Future future) {
-	        FutureState state = future.get();
-	        if (state instanceof orc.FutureState.Bound) {
+		public Object run(VirtualFrame frame, PorcEExecutionRef execution, PorcEClosure p, Counter c, Terminator t,
+				Object future) {
+			Object v = null;
+			if (!(future instanceof orc.Future)) {
+				v = future;
+			} else if (future instanceof orc.run.porce.runtime.Future) {
+				boundPorcEFuture.enter();
+				Object state = ((orc.run.porce.runtime.Future) future).getInternal();
+				if (state != orc.run.porce.runtime.FutureConstants.Halt
+						&& state != orc.run.porce.runtime.FutureConstants.Unbound) {
+					v = state;
+				} else {
+					// TODO: PERFORMANCE: It might be very useful to "forgive" a few hits on this branch, to allow futures that are initially unbound, but then bound for the rest of the run.
+					unboundPorcEFuture.enter();
+					if (state == orc.run.porce.runtime.FutureConstants.Halt) {
+						c.haltToken();
+					} else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
+						((orc.run.porce.runtime.Future) future)
+								.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
+					}
+				}
+			} else if (future instanceof orc.Future) {
+				boundOrcFuture.enter();
+				FutureState state = ((orc.Future) future).get();
+				if (state instanceof orc.FutureState.Bound) {
+					v = ((orc.FutureState.Bound) state).value();
+				} else if (state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
+					c.haltToken();
+				} else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
+					((orc.Future) future)
+							.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
+				}
+			}
+
+			if (v != null) {
 				initializeCall(execution);
-				call.execute(frame, p, new Object[] { null, ((orc.FutureState.Bound)state).value() });
-	        } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
-		        c.haltToken();
-	        } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
-	        	future.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
-	        }
+				call.execute(frame, p, new Object[] { null, v });
+			}
+			
 			return PorcEUnit.SINGLETON;
 		}
+
+		/*
+		 * @Specialization public PorcEUnit porceFuture(VirtualFrame frame,
+		 * PorcEExecutionRef execution, PorcEClosure p, Counter c, Terminator t,
+		 * orc.run.porce.runtime.Future future) { Object state =
+		 * future.getInternal(); if (state ==
+		 * orc.run.porce.runtime.FutureConstants.Halt) { c.haltToken(); } else
+		 * if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
+		 * future.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t,
+		 * execution.get().runtime())); } else {
+		 * InternalPorcEError.unreachable(this); } return PorcEUnit.SINGLETON; }
+		 * 
+		 * @Specialization(replaces = { "porceFuture" }) public Object
+		 * future(VirtualFrame frame, PorcEExecutionRef execution, PorcEClosure
+		 * p, Counter c, Terminator t, orc.Future future) { FutureState state =
+		 * future.get(); if (state instanceof orc.FutureState.Bound) {
+		 * InternalPorcEError.unreachable(this); } else if (state ==
+		 * orc.run.porce.runtime.FutureConstants.Orc_Stopped) { c.haltToken(); }
+		 * else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound)
+		 * { future.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t,
+		 * execution.get().runtime())); } return PorcEUnit.SINGLETON; }
+		 */
 
 		private void initializeCall(PorcEExecutionRef execution) {
 			if (call == null) {
@@ -165,7 +193,8 @@ public class Force {
 			}
 		}
 
-		public static SingleFuture create(Expression p, Expression c, Expression t, Expression future, PorcEExecutionRef execution) {
+		public static SingleFuture create(Expression p, Expression c, Expression t, Expression future,
+				PorcEExecutionRef execution) {
 			return ForceFactory.SingleFutureNodeGen.create(p, c, t, future, execution);
 		}
 	}
