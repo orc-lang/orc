@@ -5,7 +5,7 @@ import orc.NoSuchMemberAccessor;
 import orc.values.Field;
 import orc.values.sites.AccessorValue;
 
-public class PorcEObject implements AccessorValue {
+public final class PorcEObject implements AccessorValue {
 	public final Field[] fieldNames;
 	public final Object[] fieldValues;
 

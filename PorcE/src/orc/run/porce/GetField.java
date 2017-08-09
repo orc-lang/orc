@@ -1,35 +1,46 @@
 package orc.run.porce;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
 
 import orc.Accessor;
 import orc.CaughtEvent;
+import orc.ErrorAccessor;
 import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.values.Field;
 
-public class GetField extends Expression {
-	protected final PorcEExecutionRef execution;
+@NodeChild(value = "object", type = Expression.class) 
+public abstract class GetField extends Expression {
 	protected final Field field;
+	protected final PorcEExecutionRef execution;
 
-	@Child
-	protected Expression object;
-
-	public GetField(Expression object, Field field, PorcEExecutionRef execution) {
-		this.object = object;
+	public GetField(Field field, PorcEExecutionRef execution) {
 		this.field = field;
 		this.execution = execution;
 	}
 
-	public Object execute(VirtualFrame frame) {
-		final Object obj = object.execute(frame);
+	@Specialization(guards = { "isNotError(accessor)", "canGetWithBoundary(accessor, obj)" }, limit = "getMaxCacheSize()")
+	public Object cachedAccessor(Object obj, @Cached("getAccessorWithBoundary(obj)") Accessor accessor) {
+		try {
+			return accessWithBoundary(accessor, obj);
+		} catch (Exception e) {
+			CompilerDirectives.transferToInterpreter();
+			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+			throw HaltException.SINGLETON();
+		}
+	}
 
-		// FIXME: PERFORMANCE: Cache accessor and validate with accessor.canGet. With polymorphic cache.
+	@Specialization(replaces = { "cachedAccessor" })
+	public Object slowPath(Object obj) {
 		try {
 			Accessor accessor = getAccessorWithBoundary(obj);
 			return accessWithBoundary(accessor, obj);
 		} catch (Exception e) {
+			CompilerDirectives.transferToInterpreter();
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 			throw HaltException.SINGLETON();
 		}
@@ -41,11 +52,24 @@ public class GetField extends Expression {
 	}
 	
 	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
-	private static Object accessWithBoundary(final Accessor accessor, final Object obj) {
+	protected static Object accessWithBoundary(final Accessor accessor, final Object obj) {
 		return accessor.get(obj);
 	}
 
+	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	protected static boolean canGetWithBoundary(final Accessor accessor, final Object obj) {
+		return accessor.canGet(obj);
+	}
+	
+	protected static boolean isNotError(final Accessor accessor) {
+		return !(accessor instanceof ErrorAccessor);
+	}
+	
+	protected static int getMaxCacheSize() {
+		return SpecializationConfiguration.GetFieldMaxCacheSize;
+	}
+
 	public static GetField create(Expression object, Field field, PorcEExecutionRef execution) {
-		return new GetField(object, field, execution);
+		return GetFieldNodeGen.create(field, execution, object);
 	}
 }
