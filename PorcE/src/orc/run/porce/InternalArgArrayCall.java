@@ -61,7 +61,7 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
 			if (cacheSize < cacheMaxSize) {
 				cacheSize++;
 				n = new Specific(t, (InternalArgArrayCallBase) this.copy(), execution);
-				replace(n, "Speculate on target closure.");
+				replace(n, "InternalArgArrayCall: Speculate on target closure.");
 			} else {
 				n = new Universal(new InternalArgArrayCallBase(execution) {
 					@Override

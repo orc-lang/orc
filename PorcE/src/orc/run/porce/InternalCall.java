@@ -48,7 +48,7 @@ public class InternalCall extends CallBase {
 				n = new Specific((Expression) target.copy(), t, copyExpressionArray(arguments), (CallBase) this.copy(),
 						execution);
 				//Logger.info(() -> "Replaced " + this + " with " + n);
-				replace(n, "Speculate on target closure.");
+				replace(n, "InternalCall: Speculate on target closure.");
 			} else {
 				n = new Universal(target, arguments, execution);
 				findCacheRoot(this).replace(n, "Closure cache too large. Falling back to universal invocation.");

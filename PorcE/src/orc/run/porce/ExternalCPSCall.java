@@ -120,7 +120,7 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 						n = new Specific((Expression) target.copy(), invoker, copyExpressionArray(arguments),
 								(CallBase) this.copy(), execution);
 					}
-					replace(n, "Speculate on target closure.");
+					replace(n, "ExternalCPSCall: Speculate on target invoker.");
 				} else {
 					n = replaceWithUniversal();
 				}

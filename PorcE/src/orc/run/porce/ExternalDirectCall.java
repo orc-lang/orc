@@ -80,7 +80,7 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
 					cacheSize++;
 					n = new Specific((Expression) target.copy(), invoker, copyExpressionArray(arguments),
 							(CallBase) this.copy(), execution);
-					replace(n, "Speculate on target closure.");
+					replace(n, "ExternalDirectCall: Speculate on target invoker.");
 				} else {
 					n = replaceWithUniversal();
 				}
