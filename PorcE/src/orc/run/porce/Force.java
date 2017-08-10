@@ -116,45 +116,59 @@ public class Force {
 		private final BranchProfile boundPorcEFuture = BranchProfile.create();
 		private final BranchProfile unboundPorcEFuture = BranchProfile.create();
 		private final BranchProfile boundOrcFuture = BranchProfile.create();
+		
+		@SuppressWarnings("serial")
+		private static final class ValueAvailable extends ControlFlowException {
+			public final Object value;
+
+			public ValueAvailable(Object value) {
+				this.value = value;
+			}
+		}
 
 		@Specialization
 		public Object run(VirtualFrame frame, PorcEExecutionRef execution, PorcEClosure p, Counter c, Terminator t,
 				Object future) {
-			Object v = null;
-			if (!(future instanceof orc.Future)) {
-				v = future;
-			} else if (future instanceof orc.run.porce.runtime.Future) {
-				boundPorcEFuture.enter();
-				Object state = ((orc.run.porce.runtime.Future) future).getInternal();
-				if (state != orc.run.porce.runtime.FutureConstants.Halt
-						&& state != orc.run.porce.runtime.FutureConstants.Unbound) {
-					v = state;
-				} else {
-					// TODO: PERFORMANCE: It might be very useful to "forgive" a few hits on this branch, to allow futures that are initially unbound, but then bound for the rest of the run.
-					unboundPorcEFuture.enter();
-					if (state == orc.run.porce.runtime.FutureConstants.Halt) {
-						c.haltToken();
-					} else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
-						((orc.run.porce.runtime.Future) future)
-								.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
+			try {
+				if (isNonFuture(future)) {
+					throw new ValueAvailable(future);
+				} else if (future instanceof orc.run.porce.runtime.Future) {
+					boundPorcEFuture.enter();
+					Object state = ((orc.run.porce.runtime.Future) future).getInternal();
+					if (!(state instanceof orc.run.porce.runtime.FutureConstants.Sentinal)) {
+						throw new ValueAvailable(state);
+					} else {
+						// TODO: PERFORMANCE: It might be very useful to "forgive" a few hits on this branch, to allow futures that are initially unbound, but then bound for the rest of the run.
+						unboundPorcEFuture.enter();
+						assert state instanceof orc.run.porce.runtime.FutureConstants.Sentinal;
+						if (state == orc.run.porce.runtime.FutureConstants.Halt) {
+							c.haltToken();
+						} else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
+							((orc.run.porce.runtime.Future) future)
+									.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
+						} else {
+							InternalPorcEError.unreachable(this);
+						}
 					}
+				} else if (future instanceof orc.Future) {
+					boundOrcFuture.enter();
+					FutureState state = ((orc.Future) future).get();
+					if (state instanceof orc.FutureState.Bound) {
+						throw new ValueAvailable(((orc.FutureState.Bound) state).value());
+					} else if (state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
+						c.haltToken();
+					} else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
+						((orc.Future) future)
+								.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
+					} else {
+						InternalPorcEError.unreachable(this);
+					}
+				} else {
+					InternalPorcEError.unreachable(this);
 				}
-			} else if (future instanceof orc.Future) {
-				boundOrcFuture.enter();
-				FutureState state = ((orc.Future) future).get();
-				if (state instanceof orc.FutureState.Bound) {
-					v = ((orc.FutureState.Bound) state).value();
-				} else if (state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
-					c.haltToken();
-				} else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
-					((orc.Future) future)
-							.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
-				}
-			}
-
-			if (v != null) {
+			} catch(ValueAvailable e) {
 				initializeCall(execution);
-				call.execute(frame, p, new Object[] { null, v });
+				call.execute(frame, p, new Object[] { null, e.value });
 			}
 			
 			return PorcEUnit.SINGLETON;
