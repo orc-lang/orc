@@ -15,7 +15,7 @@ PORCELIBS=$ROOTDIR/PorcE/bin
 #:$GRAALHOME/lib/truffle/tuffle-api.jar:$GRAALHOME/lib/jvmci/graal.jar
 
 GRAALBOOTLIBS="$GRAALHOME/lib/boot/graal-sdk.jar:$GRAALHOME/lib/truffle/truffle-api.jar:$GRAALHOME/lib/jvmci/graal.jar" 
-GRAALARGS="-XX:-UseJVMCIClassLoader"
+GRAALARGS="-XX:-UseJVMCIClassLoader -XX:-UseJVMCICompiler"
 
 GRAALJAVA="$GRAALHOME/bin/java $GRAALARGS"
 NORMALJAVA=java
