@@ -14,10 +14,11 @@ import orc.run.porce.runtime.Terminator;
 @NodeChild(value="t", type=Expression.class)
 @NodeChild(value="computation", type=Expression.class)
 public abstract class Spawn extends Expression {
+	// TODO: PERFORMANCE: Track the runtime of the spawned closure in the interpreter. Then if it is below some constant (1ms say) call it directly if the stack is not too deep.
+	
 	@Specialization
-	public PorcEUnit spawnBindFuture(PorcERuntime runtime, Counter c, Terminator t, PorcEClosure computation) {
+	public PorcEUnit spawn(PorcERuntime runtime, Counter c, Terminator t, PorcEClosure computation) {
 	    t.checkLive();
-	    // TODO: PERFORMANCE: Give Spawn a call node attached to the closure. Then have runtime.spawn throw a ControlFlowException if we have stack space and then we will call the continuation using the call node.
 	    runtime.spawn(c, computation);
 	    return PorcEUnit.SINGLETON;
 	}

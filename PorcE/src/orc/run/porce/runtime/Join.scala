@@ -100,6 +100,8 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     
     @inline
     private def elementOffset = {
+      //assert((i+1) < values.length)
+      //assert(values.getClass == classOf[Array[AnyRef]])
       Unsafe.ARRAY_OBJECT_BASE_OFFSET + Unsafe.ARRAY_OBJECT_INDEX_SCALE * (i + 1)
     }
 

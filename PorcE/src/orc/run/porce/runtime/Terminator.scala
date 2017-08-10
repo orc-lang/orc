@@ -72,7 +72,7 @@ class Terminator extends Terminatable {
     */
   def checkLive(): Unit = {
     if (!isLive()) {
-      throw KilledException.SINGLETON
+      throw new KilledException()
     }
   }
 
@@ -87,7 +87,6 @@ class Terminator extends Terminatable {
     *
     * This will throw KilledException if the terminator has already been killed otherwise it will just return to allow handling.
     */
-  @TruffleBoundary(throwsControlFlowException = true)
   def kill(): Unit = {
     // First, swap in null as the children set.
     val cs = children.getAndSet(null)
@@ -95,17 +94,22 @@ class Terminator extends Terminatable {
     // See description of ordering in addChild().
     if (cs != null) {
       // If we were the first to kill and it succeeded
-      for (c <- cs.asScala) {
-        try {
-          c.kill()
-        } catch {
-          case _: KilledException => {}
-        }
-      }
+      doKills(cs)
     } else {
       // If it was already killed
-      throw KilledException.SINGLETON
+      throw new KilledException()
     }
+  }
+
+  @TruffleBoundary
+  def doKills(cs: java.util.concurrent.ConcurrentHashMap.KeySetView[Terminatable, java.lang.Boolean]) = {
+    cs.forEach((c) =>
+      try {
+        c.kill()
+      } catch {
+        case _: KilledException => {}
+      }
+    )
   }
 }
 
