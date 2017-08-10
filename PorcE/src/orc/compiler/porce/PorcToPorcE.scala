@@ -143,9 +143,16 @@ class PorcToPorcE {
       case porc.Spawn.Z(c, t, _, comp) =>
         porce.Spawn.create(transform(c), transform(t), transform(comp), ctx.runtime)
       case porc.Resolve.Z(p, c, t, futures) =>
-        // TODO: PERFORMANCE: Instead of building a single node, build a sequence of nodes: create Join, check futures and register with join as needed, start join if anything was registered.
-        //  The nodes that process and register values can specialize based on the state of the future they receive.
-        porce.Resolve.create(transform(p), transform(c), transform(t), futures.map(transform).toArray, ctx.runtime)
+        // Due to not generally being on as hot of paths we do not have a single value version of Resolve. It could easily be created if needed.
+        val join = lookupVariable(LocalVariables.Join)
+        val newJoin = porce.Write.Local.create(join,
+            porce.Resolve.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
+        val processors = futures.zipWithIndex.map { p =>
+          val (f, i) = p
+          porce.Resolve.Future.create(porce.Read.Local.create(join), transform(f), i)
+        }
+        val finishJoin = porce.Resolve.Finish.create(porce.Read.Local.create(join), ctx.execution.newRef())
+        porce.Sequence.create((newJoin +: processors :+ finishJoin).toArray)
       case porc.Force.Z(p, c, t, Seq(future)) =>
         // Special optimized case for only one future.
         porce.Force.SingleFuture.create(transform(p), transform(c), transform(t), transform(future), ctx.execution.newRef())
