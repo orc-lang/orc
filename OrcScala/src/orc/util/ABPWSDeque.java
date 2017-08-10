@@ -28,10 +28,10 @@ public final class ABPWSDeque<T> {
   // age contains a 16-bit top field followed by a 48-bit tag.
   private volatile long       age   = 0;
   private volatile int        bot   = 0;
-  private Object[]            deq;
+  private final Object[]      deq;
 
-  private static Unsafe       U;
-  private static long         AGE;
+  private static final Unsafe       U;
+  private static final long         AGE;
 
   static {
     // initialize field offsets for CAS
