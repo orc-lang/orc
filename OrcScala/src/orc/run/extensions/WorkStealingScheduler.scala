@@ -21,28 +21,64 @@ import orc.run.Orc
 import orc.util.ABPWSDeque
 import java.util.logging.Level
 
-/**
- *
- * @author amp
- */
+/** @param monitorInterval The interval at which the monitor thread runs and checks that the thread pool is the correct size.
+  * @param goalExtraThreads The ideal number of extra idle threads that the pool should contain.
+  * @param workerQueueLength The length of the queues maintained by the threads. If this is too small the threads will overflow their queues frequently, if this is too large it will waste memory.
+  *
+  * @author amp
+  */
 class SimpleWorkStealingScheduler(
   maxSiteThreads: Int,
-  val monitorInterval: Int = 10,
+  val monitorInterval: Int = 25,
   val goalExtraThreads: Int = 0,
   val workerQueueLength: Int = 1024) {
   schedulerThis =>
+
   val nCores = Runtime.getRuntime().availableProcessors()
+
+  /** The minimum number of worker threads.
+    */
   val minWorkers = math.max(4, nCores * 2)
+  /** The maximum number of worker threads.
+    */
   val maxWorkers = minWorkers + maxSiteThreads
+  /** The maximum amount of time (ms) to wait between attempts to steal work.
+    */
   val maxStealWait = 20
+  /** The ideal number of active (non-blocked) worker threads.
+    */
   val goalUsableThreads = minWorkers + goalExtraThreads
-  val maxUsableThreads = goalUsableThreads * 2
+  /** The maximum number of active we should have.
+    */
+  val maxUsableThreads = (goalUsableThreads * 1.1 + 0.5).toInt
+  /** The interval (ms) between thread statistics dumps.
+    */
   val dumpInterval = -1 // 2000
+  /** The number of elements to evict from the local queue when it overflows.
+    *
+    * This number should be fairly large to amortize the cost of eviction.
+    */
   val itemsToEvictOnOverflow = workerQueueLength / 2
   
-  /** The average period of taking new work from another queue even if this thread has work. 
-   * 
-   */
+  /** The time (ms) that the pool must be underprovisioned before it should add a worker thread.
+    */
+  val underprovisioningGracePeriod: Int = 2 * 1000
+  /** The time (ms) that the pool must be overprovisioned before it should remove a worker thread.
+    */
+  val overprovisioningGracePeriod: Int = 10 * 1000
+
+  /** The minimum amount of time (ms) between adding one new thread and adding the next new thread.
+    */
+  val threadAddMinPeriod: Int = 250
+  /** The minimum amount of time (ms) between removing one thread and removing another.
+    *
+    * This is value may be undershot slightly due to how this is implemented.
+    */
+  val threadRemoveMinPeriod: Int = 250
+
+  /** The average period of taking new work from another queue even if this thread has work.
+    *
+    */
   val newWorkPeriod = -1 // 100000
 
   require(maxSiteThreads >= 0)
@@ -77,33 +113,60 @@ class SimpleWorkStealingScheduler(
   class Monitor extends Thread("Monitor") {
     override def run() = {
       var lastDumpTime = System.currentTimeMillis()
+      var beginTimeOverprovisioned = lastDumpTime
+      var beginTimeUnderprovisioned = lastDumpTime
       while (!isSchedulerShuttingDown) {
         val ws = currentWorkers
         val nw = ws.size
-
-        // Count a thread as working if it is executing a potentially blocking task and is RUNNABLE
+        
         val nBlocked = ws.count(t => {
-          t.isPotentiallyBlocked && t.getState != Thread.State.RUNNABLE
+          val state = t.getState
+          if (t.isInternallyBlocked) {
+            false
+          } else if (t.isPotentiallyBlocked) {
+            state != Thread.State.RUNNABLE
+          } else {
+            state != Thread.State.RUNNABLE && state != Thread.State.BLOCKED && state != Thread.State.NEW
+          }
         })
 
+        val currentTime = System.currentTimeMillis()
         val nUsableWorkers = nw - nBlocked
 
         if (nUsableWorkers < goalUsableThreads && nWorkers < maxWorkers) {
-          Logger.fine(s"Starting new worker due to: nWorkers = $nw nUsableWorkers=$nUsableWorkers goalUsableThreads=$goalUsableThreads nBlocked=$nBlocked")
-          addWorker()
-        }
-        if (nUsableWorkers > maxUsableThreads && nWorkers > minWorkers) {
-          Logger.fine(s"Stopping worker due to: nWorkers = $nw nUsableWorkers=$nUsableWorkers maxUsableThreads=$maxUsableThreads")
-          schedulerThis.synchronized {
-            val i = currentWorkers.indexWhere(_.atRemovalSafePoint)
-            if(i >= 0)
-              removeWorker(i)
+          // If we have been overprovisioned by at least the grace period start killing threads.
+          if (currentTime - beginTimeUnderprovisioned > underprovisioningGracePeriod) {
+            Logger.fine(s"Starting new worker due to: nWorkers = $nw nUsableWorkers=$nUsableWorkers goalUsableThreads=$goalUsableThreads nBlocked=$nBlocked")
+            addWorker()
+            // Step the beginTimeOverprovisioned forward by an amount so we don't kill a lot of threads all at once.
+            beginTimeUnderprovisioned += threadAddMinPeriod
           }
+        } else {
+          // If we are not overprovisioned reset the beginTime for it.
+          beginTimeUnderprovisioned = currentTime
+        }
+
+        if (nUsableWorkers > maxUsableThreads && nWorkers > minWorkers) {
+          // If we have been overprovisioned by at least the grace period start killing threads.
+          if (currentTime - beginTimeOverprovisioned > overprovisioningGracePeriod) {
+            schedulerThis.synchronized {
+              val i = currentWorkers.indexWhere(_.atRemovalSafePoint)
+              if (i >= 0) {
+                Logger.fine(s"Stopping worker $i due to: nWorkers = $nw nUsableWorkers=$nUsableWorkers maxUsableThreads=$maxUsableThreads")
+                removeWorker(i)
+              }
+            }
+            // Step the beginTimeOverprovisioned forward by an amount so we don't kill a lot of threads all at once.
+            beginTimeOverprovisioned += threadRemoveMinPeriod
+          }
+        } else {
+          // If we are not overprovisioned reset the beginTime for it.
+          beginTimeOverprovisioned = currentTime
         }
 
         if (dumpInterval > 0 && lastDumpTime + dumpInterval <= System.currentTimeMillis()) {
           dumpStats()
-          lastDumpTime = System.currentTimeMillis()
+          lastDumpTime = currentTime
         }
 
         try {
@@ -122,6 +185,7 @@ class SimpleWorkStealingScheduler(
 
     //@volatile
     var isPotentiallyBlocked = false
+    var isInternallyBlocked = true
 
     @volatile
     private[SimpleWorkStealingScheduler] var isShuttingDown = false
@@ -139,10 +203,9 @@ class SimpleWorkStealingScheduler(
       while (!isSchedulerShuttingDown && !isShuttingDown) {
         val t = next()
         if (t != null) {
+          isInternallyBlocked = false
           // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_beforeExecute) 
-          {
-            beforeExecute(this, t)
-          }
+          beforeExecute(this, t)
           try {
             // val tClassName = t.getClass.getSimpleName
             // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, Symbol(tClassName+"_run *")) 
@@ -159,18 +222,15 @@ class SimpleWorkStealingScheduler(
                 }
               }
             }
-            
+
             // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) 
-            {
-              afterExecute(this, t, null)
-            }
+            afterExecute(this, t, null)
           } catch {
             case ex: Exception =>
               // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) 
-              {
-                afterExecute(this, t, ex)
-              }
+              afterExecute(this, t, ex)
           }
+          isInternallyBlocked = true
         }
       }
     }
@@ -220,19 +280,19 @@ class SimpleWorkStealingScheduler(
       // An XORShift PRNG
       // This RNG does not pass statistical tests, but that doesn't matter for what we need.
       var x = prngState
-    	x ^= x << 13
-    	x ^= x >>> 17
-    	x ^= x << 5
-    	prngState = x
-    	x
+      x ^= x << 13
+      x ^= x >>> 17
+      x ^= x << 5
+      prngState = x
+      x
     }
-    
+
     //@inline
     private[this] def next(): Schedulable = {
       val getNewWork = newWorkPeriod > 0 && {
         (getLocalRandomNumber() % newWorkPeriod) == 0
       }
-        
+
       var t: Schedulable = null
 
       // To make sure that the inlining works, make sure these functions do not capture any values from their scope.
@@ -244,7 +304,7 @@ class SimpleWorkStealingScheduler(
           t
         }
       }
-      
+
       @inline
       def stealWork(t: Schedulable): Schedulable = {
         if (t == null) {
@@ -258,7 +318,7 @@ class SimpleWorkStealingScheduler(
           t
         }
       }
-      
+
       // If we are getting new work, then first try to steal then get from our queue if that doesn't work. Otherwise, try in the other order.
       if (getNewWork) {
         newWorks += 1
@@ -268,8 +328,7 @@ class SimpleWorkStealingScheduler(
         t = ourWork(t)
         t = stealWork(t)
       }
-      
-      
+
       if (t == null) {
         stealFailures += 1
         stealFailureRunLength += 1
