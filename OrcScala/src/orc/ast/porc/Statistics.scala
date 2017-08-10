@@ -12,6 +12,8 @@
 //
 package orc.ast.porc
 
+import orc.util.AutoFileDataOutput
+
 object Statistics {
   /** Collect the direct nodes in `ast`.
    *  
@@ -42,8 +44,8 @@ object Statistics {
   
   val tags = Set(
       classOf[HaltToken] -> 'ExecutionControl,
-      classOf[NewCounter] -> 'ExecutionControl,
       classOf[NewToken] -> 'ExecutionControl,
+      classOf[NewCounter] -> 'ExecutionControl,
       classOf[NewTerminator] -> 'ExecutionControl,
       classOf[CheckKilled] -> 'ExecutionControl,
       classOf[Kill] -> 'ExecutionControl,
@@ -73,8 +75,13 @@ object Statistics {
   }
   
   def apply(ast: PorcAST) = {
+    val dataout = new AutoFileDataOutput("porc_statistics", true)
+    
+    val rootdatalogger = dataout.logger(Seq("program" -> ast.sourceTextRange.toString))
     val m = collect(ast.toZipper)
     for((a, direct) <- m) {
+      val datalogger = rootdatalogger.subLogger(Seq("closure" -> a.value.prettyprintWithoutNested().take(100).replace("\n", " ").replace("\t", " ")))
+      
       //println(direct.map(_.value.prettyprintWithoutNested()).mkString("=======\n","\n---\n","\n======="))
       val counts = count(direct)
       //println(counts)
@@ -82,6 +89,12 @@ object Statistics {
       val dataFlow = counts('DataFlow)
       val execution = counts('ExecutionControl)
       val nonfree = counts('All) - counts('Free)
+      
+      datalogger.log("computation", computation)
+      datalogger.log("dataFlow", dataFlow)
+      datalogger.log("executionControl", execution)
+      datalogger.log("nonfree", nonfree)
+      
       Logger.fine(s"""
         |${a.value.prettyprintWithoutNested()}
         |-------
@@ -89,5 +102,7 @@ object Statistics {
         |computation fract = ${percent(computation.toFloat / nonfree)}, data flow fract = ${percent(dataFlow.toFloat / nonfree)}, work fract = ${percent((dataFlow.toFloat + computation) / nonfree)}
       """.stripMargin.stripLineEnd)
     }
+    
+    dataout.close()
   }
 }
