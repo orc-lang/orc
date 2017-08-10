@@ -28,7 +28,6 @@ public class GetMethod extends Expression {
 		return obj;
 	}
 
-	// TODO: PERFORMANCE: If I allow caching errors this could do a lot better by caching the error to optimize for the no .apply case.
 	@Specialization(guards = { "canGetWithBoundary(accessor, obj)" }, limit = "getMaxCacheSize()")
 	public Object cachedAccessor(Object obj, @Cached("getAccessorWithBoundary(obj)") Accessor accessor) {
 		try {

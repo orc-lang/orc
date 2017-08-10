@@ -27,4 +27,8 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, runti
     // This join has been killed
     halt()
   }
+  
+  override def toString() = {
+    s"SingleFutureReader@${hashCode().formatted("%x")}(${get()})"
+  }
 }

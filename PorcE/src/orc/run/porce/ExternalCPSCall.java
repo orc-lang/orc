@@ -278,9 +278,6 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 			Counter counter = executeC(frame);
 			Terminator term = executeT(frame);
 
-			// Token: Passed to handle from arguments.
-			final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term);
-
 			Invoker invoker = getInvokerWithBoundary(t, argumentValues);
 			if (profile.profile(invoker instanceof DirectInvoker)) {
 				try {
@@ -300,6 +297,9 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 					throw HaltException.SINGLETON();
 				}
 			} else {
+				// Token: Passed to handle from arguments.
+				final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term);
+
 				try {
 					invokeWithBoundary(invoker, handle, t, argumentValues);
 				} catch (ExceptionHaltException e) {
