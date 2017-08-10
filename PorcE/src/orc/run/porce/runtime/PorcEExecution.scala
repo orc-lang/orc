@@ -82,9 +82,9 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
     c.haltToken()
     
-    /*if(CounterConstants.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
-      Thread.sleep(5000)
+    if(CounterConstants.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
+      Thread.sleep(10000)
       Counter.report()
-    }*/
+    }
   }
 }

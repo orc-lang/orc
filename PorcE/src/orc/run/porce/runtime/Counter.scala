@@ -69,7 +69,7 @@ object Counter {
     b.result()
   }
 
-  val leavesOnly = false
+  val leavesOnly = true
 
   @TruffleBoundary
   def report() = {
@@ -191,8 +191,8 @@ abstract class Counter extends AtomicInteger(1) {
   @TruffleBoundary(allowInlining = true)
   private final def doHalt() = {
     if(tracingEnabled) {
-      Logger.fine(s"Halted $this")
-      Counter.report()
+      //Logger.fine(s"Halted $this")
+      //Counter.report()
       if (!isDiscorporated) {
         Counter.removeCounter(this)
       }
@@ -219,7 +219,7 @@ abstract class Counter extends AtomicInteger(1) {
     if (tracingEnabled) {
       Counter.addCounter(this)
       Logger.fine(s"Resurrected $this")
-      Counter.report()
+      //Counter.report()
       assert(isDiscorporated)
     }
     onResurrect()
