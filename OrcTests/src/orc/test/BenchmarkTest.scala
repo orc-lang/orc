@@ -230,12 +230,13 @@ object BenchmarkTest {
           write(RunData.header)
         }
         println("Running each test once to warm up the VM")
+        val bindings = makeBindings(config.optLevel, config.backend)
         for ((testname, file) <- orcTests) {
-          val result = runTest(testname, file, makeBindings(config.optLevel, config.backend))(config.oneRun)
+          val result = runTest(testname, file, bindings)(config.oneRun)
           result foreach { d => write(d.toString()) }
         }
         for ((testname, file) <- orcTests) {
-          val result = runTest(testname, file, makeBindings(config.optLevel, config.backend))
+          val result = runTest(testname, file, bindings)
           result foreach { d => write(d.toString()) }
         }
       case ScalaBenchmarkSet =>
@@ -286,7 +287,6 @@ object BenchmarkTest {
       try {
         SynchronousThreadExec(s"Benchmark $testname $i", config.timeout * 1000L, {
           print(s"$i:")
-          System.gc()
           if (timedout >= config.timeoutLimit) {
             println(s" run SKIPPING DUE TO TOO MANY TIMEOUTS")
             genData(config.timeout.toDouble, 0.0)
@@ -313,16 +313,16 @@ object BenchmarkTest {
         RunData(bindings.backend.toString(), orcVersion, testname, git.getLastRev(file), config.config, config.cpus.size, compTime, runTime, cpuTime)
       }
 
-      System.gc()
       val (compTime, _, code) = time {
         compileCode(file, bindings)
       }
-      System.gc()
       val ress = runCode(code)
       assert(ress.nonEmpty, s"$testname should use 'benchmark({ ... })'")
-      ress map { t =>
-        genData(Some(compTime), t.runTime, t.cpuTime)
-      }
+      val firstRun = ress.head
+      // FIXME: HACK: I'm just assuming that no PorcE compile can take less than 1 second.
+      genData(if (compTime > 1) Some(compTime) else None, firstRun.runTime, firstRun.cpuTime) +: (ress.tail map { t =>
+        genData(None, t.runTime, t.cpuTime)
+      })
     } catch {
       case _: TimeoutException =>
         println(s"$testname TIMED OUT")
