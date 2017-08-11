@@ -171,7 +171,7 @@ class OrctimizerToPorc {
             killCheck :::
             porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).view.force)
           } else {
-            // For possibly recusive functions spawn before calling and spawn before passing on the publication.
+            // For possibly recursive functions spawn before calling and spawn before passing on the publication.
             // This provides trampolining.
             val newP = newVarName("P")
             val v = newVarName("temp")

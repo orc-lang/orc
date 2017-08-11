@@ -28,6 +28,7 @@ import orc.ast.hasAutomaticVariableName
 import scala.PartialFunction
 import swivel.TransformFunction
 import orc.util.Ternary
+import orc.ast.hasOptionalVariableName
 
 abstract class Transform extends TransformFunction {
   def onExpression: PartialFunction[Expression.Z, Expression] = {
@@ -104,8 +105,12 @@ final class Variable(val optionalName: Option[String] = None) extends Argument w
 final case class CallContinuation(@subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression
 
 @leaf @transform
-final case class Let(x: Variable, @subtree v: Expression, @subtree body: Expression) extends Expression {
+final case class Let(x: Variable, @subtree v: Expression, @subtree body: Expression) extends Expression with hasOptionalVariableName {
   override def boundVars: Set[Variable] = Set(x)
+  
+  transferOptionalVariableName(x, this)
+  // Set the name of the value to be the same as this. (HACK? This is a bit odd, but I think it makes sense.)
+  transferOptionalVariableName(this, v)
 }
 
 @leaf @transform
@@ -132,7 +137,7 @@ object Sequence {
 }
 
 @leaf @transform
-final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression {
+final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression with hasOptionalVariableName {
   override def boundVars: Set[Variable] = arguments.toSet
 }
 
@@ -142,7 +147,7 @@ final case class MethodDeclaration(@subtree t: Argument, @subtree defs: Seq[Meth
 }
 
 @branch @replacement[Method]
-sealed abstract class Method extends PorcAST {
+sealed abstract class Method extends PorcAST with hasOptionalVariableName {
   def name: Variable
   def isRoutine: Boolean
   def arguments: Seq[Variable]
@@ -151,6 +156,8 @@ sealed abstract class Method extends PorcAST {
   def allArguments: Seq[Variable]
 
   override def boundVars: Set[Variable] = allArguments.toSet
+  
+  transferOptionalVariableName(name, this)
 }
 
 object Method {
