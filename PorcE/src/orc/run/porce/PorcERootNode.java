@@ -21,18 +21,28 @@ public class PorcERootNode extends RootNode implements HasPorcNode {
 
 	public void setPorcAST(PorcAST ast) {
 		porcNode = Option.apply(ast);
-		Logger.fine(() -> {
-			PorcAST body = null; 
-			if (ast instanceof orc.ast.porc.Continuation)
-				body = ((orc.ast.porc.Continuation)ast).body();
-			if (ast instanceof orc.ast.porc.Method)
-				body = ((orc.ast.porc.Method)ast).body();
-			return this + ":\n" + (body != null ? body.prettyprintWithoutNested() : "");
-		});
+		//Logger.fine(() -> this + " is " + getName());
 	}
 
 	public Option<PorcAST> porcNode() {
 		return porcNode;
+	}
+	
+	public String getName() {
+		String name = "<no AST>";
+		scala.Option<PorcAST> optAst = porcNode();
+		if (optAst.isDefined()) {
+			PorcAST ast = optAst.get();
+			name = "<N/A>";
+			if (ast instanceof orc.ast.hasOptionalVariableName) {
+				scala.Option<String> optName = ((orc.ast.hasOptionalVariableName)ast).optionalVariableName();
+				if(optName.isDefined())
+					name = optName.get();
+				else
+					name = "<unset>";
+			}
+		}
+		return name;
 	}
 
 	protected @Child Expression body;
@@ -76,5 +86,10 @@ public class PorcERootNode extends RootNode implements HasPorcNode {
 
 	public static PorcERootNode create(FrameDescriptor descriptor, Expression body, int nArguments, int nCaptured) {
 		return new PorcERootNode(descriptor, body, nArguments, nCaptured);
+	}
+	
+	@Override
+	public String toString() {
+		return "PorcE." + getName();
 	}
 }
