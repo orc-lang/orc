@@ -98,6 +98,8 @@ class Terminator extends Terminatable {
     *
     * @return True iff the caller should call `k`; False iff the kill process will handle calling `k` or if it should not be called at all. 
     * This return value allows the caller to call `k` more efficient (allowing inlining).
+    * 
+    * This needs to be thread-safe and idempotent.
     */
   def kill(k: PorcEClosure): Boolean = {
     // First, swap in null as the children set.
@@ -114,6 +116,10 @@ class Terminator extends Terminatable {
     }
   }
 
+  /** Kill the expressions under this terminator.
+    * 
+    * This needs to be thread-safe and idempotent.
+    */
   def kill(): Unit = {
     kill(null)
   }
