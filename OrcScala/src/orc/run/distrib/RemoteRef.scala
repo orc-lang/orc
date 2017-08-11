@@ -15,14 +15,11 @@ package orc.run.distrib
 
 import java.util.concurrent.atomic.AtomicLong
 
-import orc.OrcRuntime
-import orc.run.core.{ Blockable, Blocker }
-
 /** A reference to a value or future at another Location.
   *
   * @author jthywiss
   */
-trait RemoteRef extends Blocker {
+trait RemoteRef {
   type RemoteRefId = Long
   val remoteRefId: RemoteRefId
   // Possible enhancements:
@@ -71,8 +68,6 @@ class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) ext
   def marshal(): RemoteObjectRefReplacement = {
     RemoteObjectRefReplacement(remoteRefId)
   }
-
-  override def check(t: Blockable): Unit = ???
 }
 
 /** A serialization replacement for a RemoteObjectRef.
