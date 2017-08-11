@@ -9,18 +9,11 @@ final public class PorcEClosure {
 	
 	public final boolean isRoutine;
 	
-	/**
-	 * The terminator in which the closure was created, iff that is also the terminator it will use while executing.
-	 * This is null for closures that will execute in the callers terminator.
-	 */
-	public final Terminator executionTerminator;
-
 	// TODO: PERFORMANCE: Using a frame instead of an array for captured values may perform better. Though that will mainly be true when we start using native values.
 	public PorcEClosure(Object[] capturedValues, RootCallTarget body, boolean isRoutine, Terminator executionTerminator) {
 		this.capturedValues = capturedValues;
 		this.body = body;
 		this.isRoutine = isRoutine;
-		this.executionTerminator = executionTerminator;
 	}
 
 	public Object callFromRuntimeArgArray(Object[] values) {
