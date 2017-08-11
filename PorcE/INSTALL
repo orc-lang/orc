@@ -4,7 +4,7 @@
                    The University of Texas at Austin
 
 
-                 INSTALL for PorcE Truffle Interpereter
+                 INSTALL for PorcE Truffle Interpreter
 
 
 Overview
@@ -53,7 +53,7 @@ Launch instructions
 2. Set:
     * Name: PorcE [or your choice]
     * Project: PorcE
-    * Main class to  orc.Main".
+    * Main class: orc.Main
 2. In the JRE tab, ensure that the project JRE is set to your new graalvm JRE.
 3. Set the command line arguments as needed to launch the Orc program you need.
 
