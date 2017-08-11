@@ -69,16 +69,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     // Token: From initial.
     for(_ <- 0 until nStarts) {
       c.newToken()
-      runtime.schedule(new CounterSchedulable(c) {
-        def run(): Unit = {
-          //
-          try {
-            prog.callFromRuntime(p, c, t)
-          } finally {
-            //
-          }
-        }
-      })
+      runtime.schedule(CallClosureSchedulable.varArgs(prog, Array(null, p, c, t)))
     }
     c.haltToken()
     

@@ -39,19 +39,6 @@ class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   }
   def addRoot(root: ExecutionRoot) = roots.add(root)
 
-  // TODO:PERFORMANCE: f will probably create an extra megamorphic call site. It may be better to have the caller create the CounterSchedulable instance.
-  //    This decision should be made along with the decision of whether to actually perform direct calls here.
-	@TruffleBoundary(allowInlining = true)
-  def scheduleOrCall(c: Counter, f: () => Unit) = {
-    if (PorcERuntime.checkAndImplementStackDepth()) {
-      // Call in this stack      
-      f()
-    } else {
-      // Schedule/trampoline
-      schedule(new CounterSchedulableFunc(c, f))
-    }
-  }
-
   def beforeExecute(): Unit = {
     PorcERuntime.resetStackDepth()
   }

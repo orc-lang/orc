@@ -20,7 +20,7 @@ class InternalCallBase extends CallBase {
 
 	protected Object[] buildArgumentValues(VirtualFrame frame, PorcEClosure t) {
 		Object[] argumentValues = new Object[arguments.length + 1];
-		argumentValues[0] = t.capturedValues;
+		argumentValues[0] = t.environment;
 		executeArguments(argumentValues, 1, 0, frame);
 		return argumentValues;
 	}

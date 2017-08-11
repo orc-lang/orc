@@ -19,7 +19,7 @@ object CallClosureSchedulable {
   /** Create a schedulable which will call `closure` with no arguments.
     */
   def apply(closure: PorcEClosure): CallClosureSchedulable = {
-    varArgs(closure, Array.emptyObjectArray)
+    varArgs(closure, null)
   }
   
   /** Create a schedulable which will call `closure` the given argument.
@@ -51,6 +51,9 @@ object CallClosureSchedulable {
 
 final class CallClosureSchedulable private (closure: PorcEClosure, arguments: Array[AnyRef]) extends Schedulable {
   def run(): Unit = {
-    closure.callFromRuntimeArgArray(arguments)
+    if(arguments == null)
+      closure.callFromRuntime()
+    else
+      closure.callFromRuntimeArgArray(arguments)
   }  
 }

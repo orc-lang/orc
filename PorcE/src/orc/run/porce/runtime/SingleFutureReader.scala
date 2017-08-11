@@ -12,7 +12,7 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, runti
     if (compareAndSet(false, true)) {
       t.removeChild(this)
       // Token: pass to p
-      runtime.schedulePublish(p, c, Array(v))
+      runtime.schedule(CallClosureSchedulable(p, v))
     }
   }
   

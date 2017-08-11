@@ -44,7 +44,7 @@ public class NewContinuation extends Expression {
 			(capturedValues.length > 2 ? capturedValues[2] : null) + ", " +  
 			(capturedValues.length > 3 ? capturedValues[3] : null) + ", " +  
 			(capturedValues.length > 4 ? capturedValues[4] : null));*/
-		return new PorcEClosure(capturedValues, callTarget, false, null);
+		return new PorcEClosure(capturedValues, callTarget, false);
 	}
 
 	public static NewContinuation create(Expression[] capturedVariables, RootNode rootNode) {
