@@ -39,6 +39,9 @@ abstract class InternalArgArrayCallBase extends Expression {
 		}
 	}
 
+	public static InternalArgArrayCallBase create(PorcEExecutionRef execution) {
+		return InternalArgArrayCall.create(execution);
+	}
 }
 
 public class InternalArgArrayCall extends InternalArgArrayCallBase {

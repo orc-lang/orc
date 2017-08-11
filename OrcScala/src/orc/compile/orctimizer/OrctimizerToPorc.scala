@@ -213,6 +213,7 @@ class OrctimizerToPorc {
       }
       case Trim.Z(f) => {
         val newP = newVarName("P")
+        val newK = newVarName("K")
         val newC = newVarName("Ct")
         val newT = newVarName("T")
         val v = newVarName()
@@ -220,14 +221,11 @@ class OrctimizerToPorc {
         let((newT, porc.NewTerminator(ctx.t)),
           (newC, porc.NewTerminatorCounter(ctx.c, newT)),
           (newP, porc.Continuation(Seq(v),
-              // FIXME: Audit.
-              porc.TryOnException({
-                porc.Kill(newT) ::: 
-                porc.HaltToken(newC) :::
-                ctx.p(v)
-              }, {
-                porc.HaltToken(newC)
-              })))) {
+            let((newK, porc.Continuation(Seq(),
+              ctx.p(v)))) {
+              porc.Kill(newT, newK) ::: 
+              porc.HaltToken(newC)
+            }))) {
             implicit val ctx = oldCtx.copy(t = newT, c = newC, p = newP)
             // TODO: Is this correct? Can a Trim halt and need to inform the enclosing scope?
             catchExceptions {

@@ -21,7 +21,7 @@ import orc.run.porce.Logger
 trait Terminatable {
   /** Kill this terminatable.
    *
-   *  This method must be idempotent to multiple concurrent calls.
+   *  This method must be idempotent and thread-safe, since it may be called times multiple concurrently.
    */
   def kill(): Unit
 }
@@ -31,10 +31,15 @@ trait Terminatable {
   * @author amp
   */
 class Terminator extends Terminatable {
-  private[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
+  protected[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
   
+  /** Add a child to this terminator.
+   *  
+   *  All children are notified (with a kill() call) when the terminator is killed. child.kill may 
+   *  be called during the call to addChild.
+   */
   @TruffleBoundary
-  def addChild(child: Terminatable): Unit = {
+  final def addChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig == null) {
       child.kill()
@@ -60,8 +65,12 @@ class Terminator extends Terminatable {
     }
   }
   
+  /** Remove a child to this terminator.
+   *  
+   *  This is important due to memory management.
+   */
   @TruffleBoundary
-  def removeChild(child: Terminatable): Unit = {
+  final def removeChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig != null) {
       orig.remove(child)
@@ -70,7 +79,7 @@ class Terminator extends Terminatable {
 
   /** Check that this context is live and throw KilledException if it is not.
     */
-  def checkLive(): Unit = {
+  final def checkLive(): Unit = {
     if (!isLive()) {
       throw new KilledException()
     }
@@ -79,15 +88,18 @@ class Terminator extends Terminatable {
   /** Return true if this context is still live (has not been killed or halted
     * naturally).
     */
-  def isLive(): Boolean = {
+  final def isLive(): Boolean = {
     children.get() != null
   }
 
   /** Kill the expressions under this terminator.
+    *  
+    * @param k The continuation to call if this is the first kill. `k` may be `null`, meaning that the continuation is a no-op.
     *
-    * This will throw KilledException if the terminator has already been killed otherwise it will just return to allow handling.
+    * @return True iff the caller should call `k`; False iff the kill process will handle calling `k` or if it should not be called at all. 
+    * This return value allows the caller to call `k` more efficient (allowing inlining).
     */
-  def kill(): Unit = {
+  def kill(k: PorcEClosure): Boolean = {
     // First, swap in null as the children set.
     val cs = children.getAndSet(null)
     // Next, process cs if needed.
@@ -95,14 +107,19 @@ class Terminator extends Terminatable {
     if (cs != null) {
       // If we were the first to kill and it succeeded
       doKills(cs)
+      true
     } else {
       // If it was already killed
-      throw new KilledException()
+      false
     }
   }
 
+  def kill(): Unit = {
+    kill(null)
+  }
+
   @TruffleBoundary
-  def doKills(cs: java.util.concurrent.ConcurrentHashMap.KeySetView[Terminatable, java.lang.Boolean]) = {
+  protected final def doKills(cs: java.util.concurrent.ConcurrentHashMap.KeySetView[Terminatable, java.lang.Boolean]) = {
     cs.forEach((c) =>
       try {
         c.kill()
@@ -121,8 +138,8 @@ final class TerminatorNested(parent: Terminator) extends Terminator {
   //Logger.info(s"$this($parent)")
   parent.addChild(this)
   
-  override def kill(): Unit = {
+  override def kill(k: PorcEClosure): Boolean = {
     parent.removeChild(this)
-    super.kill()
+    super.kill(k)
   }
 }

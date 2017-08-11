@@ -1,10 +1,10 @@
 //
-// StandardOrcRuntime.scala -- Scala class StandardOrcRuntime
-// Project OrcScala
+// PorcERuntime.scala -- Scala class PorcERuntime
+// Project PorcE
 //
-// Created by dkitchin on Jun 24, 2010.
+// Created by amp on Aug 03, 2017.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
