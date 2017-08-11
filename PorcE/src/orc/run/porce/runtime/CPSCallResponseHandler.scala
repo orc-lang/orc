@@ -17,7 +17,7 @@ final class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcECl
 
   def publishNonterminal(v: AnyRef): Unit = {
     c.newToken() // Token: Passed to p.
-    runtime.scheduleOrCall(c, () => p.callFromRuntime(v))
+    runtime.schedule(CallClosureSchedulable(p, v))
   }
 
   /** Handle a site call publication.
@@ -28,7 +28,7 @@ final class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcECl
     // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
     if (compareAndSet(false, true)) {
       // Token: Pass token to p.
-      runtime.scheduleOrCall(c, () => p.callFromRuntime(v))
+      runtime.schedule(CallClosureSchedulable(p, v))
       t.removeChild(this)
     }
   }

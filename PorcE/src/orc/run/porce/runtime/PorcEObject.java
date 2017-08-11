@@ -6,6 +6,8 @@ import orc.values.Field;
 import orc.values.sites.AccessorValue;
 
 public final class PorcEObject implements AccessorValue {
+	// FIXME: DORC: Add marsheling support.
+	
 	public final Field[] fieldNames;
 	public final Object[] fieldValues;
 

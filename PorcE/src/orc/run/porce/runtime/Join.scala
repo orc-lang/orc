@@ -271,9 +271,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     Logger.finer(s"Done for $this with: $state ${values.mkString(", ")}")
     t.removeChild(this)
     // Token: Pass to p.
-    runtime.scheduleOrCall(c, () => { 
-      p.callFromRuntimeArgArray(values)
-    })
+    runtime.schedule(CallClosureSchedulable.varArgs(p, values))
   }
 
   /**

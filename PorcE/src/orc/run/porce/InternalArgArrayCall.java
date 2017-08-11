@@ -103,7 +103,7 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
 
 		public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
 			if (target instanceof PorcEClosure && expectedTarget.body == ((PorcEClosure)target).body) {
-				arguments[0] = ((PorcEClosure)target).capturedValues;
+				arguments[0] = ((PorcEClosure)target).environment;
 				return callNode.call(arguments);
 			} else {
 				return notMatched.execute(frame, target, arguments);
@@ -130,7 +130,7 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
 
 		public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
 			if (target instanceof PorcEClosure) {
-				arguments[0] = ((PorcEClosure)target).capturedValues;
+				arguments[0] = ((PorcEClosure)target).environment;
 				return callNode.call(((PorcEClosure)target).body, arguments);
 			} else {
 				return notMatched.execute(frame, target, arguments);

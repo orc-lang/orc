@@ -9,7 +9,7 @@ object Utilities {
   
   def PorcEClosure(r: RootNode): PorcEClosure = {
     val c = Truffle.getRuntime().createCallTarget(r)
-    orc.run.porce.runtime.PorcEClosure.create(emptyArray, c, false, null) 
+    new orc.run.porce.runtime.PorcEClosure(emptyArray, c, false) 
   }
   
   def isDef(v: AnyRef): Boolean = v match {

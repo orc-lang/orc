@@ -120,11 +120,11 @@ abstract class Counter extends AtomicInteger(1) {
   import CounterConstants._
   
   @elidable(elidable.ASSERTION)
-  val log = if (tracingEnabled) new LinkedBlockingDeque[Exception]() else null
+  private val log = if (tracingEnabled) new LinkedBlockingDeque[Exception]() else null
 
   @elidable(elidable.ASSERTION)
   @TruffleBoundary
-  private final def logChange(s: => String) = {
+  protected final def logChange(s: => String) = {
     if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       val stack = Counter.getPorcStackTrace().map(n => {
         val rangeStr = n.sourceTextRange.map(_.lineContentWithCaret).getOrElse("")
@@ -233,6 +233,8 @@ abstract class Counter extends AtomicInteger(1) {
     
   /**
    * Called when this whole context has halted.
+   * 
+   * This needs to be thread-safe.
    */
   def onHalt(): Unit
   
@@ -240,6 +242,8 @@ abstract class Counter extends AtomicInteger(1) {
    * Called when this context is resurrected and becomes alive again.
    * 
    * This counter is being resurrected, so we need a new token from the parent.
+   * 
+   * This needs to be thread-safe.
    */
   def onResurrect(): Unit
 }
@@ -266,9 +270,7 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
       //   Maybe we need two ways to halt a token. One which schedules the handler and one which direct calls it.
       
       // Token: from parent
-      runtime.scheduleOrCall(parent, () => {
-        haltContinuation.callFromRuntime()
-      })
+      runtime.schedule(CallClosureSchedulable(haltContinuation))
     } else {
       parent.setDiscorporate()
       // Token: from parent

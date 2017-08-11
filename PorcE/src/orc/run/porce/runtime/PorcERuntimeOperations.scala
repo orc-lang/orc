@@ -9,13 +9,6 @@ trait PorcERuntimeOperations {
 
   @TruffleBoundary
   def spawn(c: Counter, computation: PorcEClosure): Unit = {
-    scheduleOrCall(c, () => computation.callFromRuntime())
-    // TODO: PERFORMANCE: Allowing run here is a critical optimization. Even with a small depth limit (32) this can give a factor of 6.
-  }
-    
-  final def schedulePublish(p: PorcEClosure, c: Counter, v: Array[AnyRef]) = {
-    scheduleOrCall(c, () => { 
-      p.callFromRuntimeVarArgs(v)
-    })
+    schedule(CallClosureSchedulable(computation))
   }
 }
