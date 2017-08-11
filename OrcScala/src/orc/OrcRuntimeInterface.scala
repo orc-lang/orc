@@ -42,17 +42,21 @@ trait FutureReader {
     *
     * The value may not be another Future.
     *
-    * onBound must execute quickly as the time this takes to execute will delay
+    * `publish` must execute quickly as the time this takes to execute will delay
     * the execution of the binder of the future. The implementation may block on
     * locks if needed, but the lock latency should be as short as possible.
+    * 
+    * `publish` must be thread-safe.
     */
   def publish(v: AnyRef): Unit
 
   /** Called if the future is bound to stop.
     *
-    * onHalted must execute quickly as the time this takes to execute will delay
+    * `halt` must execute quickly as the time this takes to execute will delay
     * the execution of the binder of the future. The implementation may block on
     * locks if needed, but the lock latency should be as short as possible.
+    * 
+    * `halt` must be thread-safe.
     */
   def halt(): Unit
 }
