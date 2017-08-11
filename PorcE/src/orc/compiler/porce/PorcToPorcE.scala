@@ -51,7 +51,7 @@ class PorcToPorcE {
     val newBody = transform(m.body.toZipper())
     val rootNode = porce.PorcERootNode.create(descriptor, newBody, 3, 0)
     val callTarget = Truffle.getRuntime().createCallTarget(rootNode);
-    val closure = new PorcEClosure(Array(), callTarget, true, null);
+    val closure = new PorcEClosure(Array(), callTarget, true);
     closure
   }
 
