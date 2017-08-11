@@ -283,8 +283,8 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
             case _ => false
           }
         }
-        override def invoke(h: Handle, theObject: AnyRef, arguments: Array[AnyRef]): Unit = {
-          super.invoke(h, theObject.asInstanceOf[JavaMemberProxy].theObject, arguments)
+        override def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+          super.invoke(h, target.asInstanceOf[JavaMemberProxy].theObject, arguments)
         }
   
         override def toString() = s"<Member Invoker>($javaClass.$memberName)"
@@ -308,8 +308,8 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
           }
         }
         def get(target: AnyRef): AnyRef = {
-          Logger.finer(s"Getting field ($theObject: $javaClass).$memberName.read")
-          new JavaArrayLengthPseudofield(theObject.asInstanceOf[Array[Any]])
+          Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName.read")
+          new JavaArrayLengthPseudofield(target.asInstanceOf[JavaMemberProxy].theObject.asInstanceOf[Array[Any]])
         }
       }
     } else if (javaField.isEmpty) {
@@ -324,16 +324,16 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
           }
         }
         def get(target: AnyRef): AnyRef = {
-          val value = jf.get(theObject)
+          val value = jf.get(target.asInstanceOf[JavaMemberProxy].theObject)
           lazy val valueCls = value.getClass()
-          Logger.finer(s"Getting field ($theObject: $javaClass).$memberName = $value ($jf)")
+          Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
           import JavaCall._
           // TODO:PERFORMANCE: The hasMember checks on value will actually be quite expensive. However for these semantics they are required. Maybe we could change the semantics. Or maybe I've missed a way to implement it so that all reflection is JIT time constant.
           submemberName match {
             case "read" if value == null || !valueCls.hasInstanceMember("read") =>
-              new JavaFieldDerefSite(theObject, jf)
+              new JavaFieldDerefSite(target.asInstanceOf[JavaMemberProxy].theObject, jf)
             case "write" if value == null || !valueCls.hasInstanceMember("write") =>
-              new JavaFieldAssignSite(theObject, jf)
+              new JavaFieldAssignSite(target.asInstanceOf[JavaMemberProxy].theObject, jf)
             case _ if value == null =>
               throw new NoSuchMemberException(value, submemberName)
             case _ =>
