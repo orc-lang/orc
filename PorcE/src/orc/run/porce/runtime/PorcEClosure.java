@@ -2,7 +2,6 @@ package orc.run.porce.runtime;
 
 import com.oracle.truffle.api.RootCallTarget;
 
-// TODO: Could this usefully be a @ValueType?
 final public class PorcEClosure {
 	public final Object[] environment;
 	public final RootCallTarget body;

@@ -34,6 +34,10 @@ public class Call extends Expression {
 		// TODO: PERFORMANCE: Even in the single type cache situation arguments
 		// and target get re-executed at each level. The optimizer might get rid
 		// of it, but that need to be verified.
+		
+		// Fixing both above cases will be easiest by converting all the call code 
+		// to use the DSL (for caching and other things) and "execute..." methods 
+		// which the DSL can generate.
 
 		if (profiler.profile(isInternal(target.execute(frame)))) {
 			return internalCall.execute(frame);

@@ -295,14 +295,12 @@ final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, va
   init()
 
   private def init() = {
-    // FIXME: Audit.
     terminator.addChild(this)
     // Token: We were not passed a token for parentContaining so we need to get one.
     parentContaining.newToken()
   }
 
   def onResurrect() = {
-    // FIXME: Audit.
     if (haveTokens.compareAndSet(false, true)) {
       parentCalling.newToken()
       init()
@@ -310,7 +308,6 @@ final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, va
   }
 
   private def haltParentToken() = {
-    // FIXME: Audit.
     if (haveTokens.compareAndSet(true, false)) {
       terminator.removeChild(this)
       // Token: We were passed a token at creation
@@ -356,7 +353,6 @@ final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, termin
   }
 
   def onResurrect() = {
-    // FIXME: Audit.
     if (state.compareAndSet(CounterTerminator.HasNoTokens, CounterTerminator.HasTokens)) {
       parent.newToken()
       init()
@@ -364,7 +360,6 @@ final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, termin
   }
 
   def onHalt(): Unit = {
-    // FIXME: Audit.
     if (isDiscorporated) {
       if (state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.HasNoTokens)) {
         parent.discorporateToken()
@@ -384,7 +379,6 @@ final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, termin
   }
 
   def kill() = {
-    // FIXME: Audit.
     if (state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.WasKilled)) {
       // Do nothing.
       // The token we have is passed to the invoker of terminator.kill()
