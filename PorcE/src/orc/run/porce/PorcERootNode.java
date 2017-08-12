@@ -8,13 +8,14 @@ import com.oracle.truffle.api.nodes.RootNode;
 
 import java.util.logging.Level;
 
+import orc.ast.ASTWithIndex;
 import orc.ast.porc.PorcAST;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.KilledException;
 import scala.Option;
 
-public class PorcERootNode extends RootNode implements HasPorcNode {
+public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 	private final static boolean assertionsEnabled = false;
 
 	private Option<PorcAST> porcNode = Option.apply(null);
@@ -43,6 +44,10 @@ public class PorcERootNode extends RootNode implements HasPorcNode {
 			}
 		}
 		return name;
+	}
+	
+	public int getId() {
+		return (int) ((ASTWithIndex)porcNode().get()).optionalIndex().get();		
 	}
 
 	protected @Child Expression body;

@@ -1,5 +1,5 @@
 //
-// PorcEProvided.scala -- Traits in PorcE to support DOrc
+// RemoteObjectManager.scala -- Traits for object and id handling in PorcE/DOrc.
 // Project PorcE
 //
 // Created by amp on Aug 11, 2017.

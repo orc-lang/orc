@@ -31,12 +31,11 @@ import orc.run.porce.Logger
 class PorcEBackend extends PorcBackend {
   def createRuntime(options: OrcExecutionOptions): Runtime[MethodCPS] = new PorcERuntime("PorcE on Truffles") with Runtime[MethodCPS] {
     startScheduler(options)
-    val translator = new PorcToPorcE
     
     //val cache = new collection.mutable.HashMap[MethodCPS, (PorcEExecutionHolder, PorcEClosure)]()
     
     private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecution = synchronized {
-      val execution = new PorcEExecution(this, k)
+      val translator = new PorcToPorcE
       /*val porceAst = cache.get(ast) match {
         case Some((holder, porceAst)) => {
           if(holder.setExecution(execution)) {
@@ -57,10 +56,11 @@ class PorcEBackend extends PorcBackend {
         }
       }
 	    */
+      val execution = new PorcEExecution(this, k)
       val executionHolder = new PorcEExecutionHolder(execution)
-      val porceAst = translator(ast, executionHolder, this)
+      val (porceAst, map) = translator(ast, executionHolder, this)
       addRoot(execution)
-      execution.scheduleProgram(porceAst)
+      execution.scheduleProgram(porceAst, map)
       execution
     }
 
