@@ -41,7 +41,7 @@ object Counter {
     s.dropWhile(_ != ':').drop(1)
   }
 
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   def getPorcStackTrace(): Seq[porc.PorcAST] = {
     var b = Seq.newBuilder[porc.PorcAST]
     def appendIfPorc(n: TruffleNode) = n match {
@@ -71,7 +71,7 @@ object Counter {
 
   val leavesOnly = true
 
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   def report() = {
     if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       import scala.collection.JavaConverters._
@@ -96,7 +96,7 @@ object Counter {
   }
 
   @elidable(elidable.ASSERTION)
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   def addCounter(c: Counter) = {
     if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       liveCounters.add(c)
@@ -104,7 +104,7 @@ object Counter {
   }
 
   @elidable(elidable.ASSERTION)
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   def removeCounter(c: Counter) = {
     if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       liveCounters.remove(c)
@@ -123,7 +123,7 @@ abstract class Counter extends AtomicInteger(1) {
   private val log = if (tracingEnabled) new LinkedBlockingDeque[Exception]() else null
 
   @elidable(elidable.ASSERTION)
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   protected final def logChange(s: => String) = {
     if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       val stack = Counter.getPorcStackTrace().map(n => {
@@ -188,7 +188,7 @@ abstract class Counter extends AtomicInteger(1) {
     }
   }
   
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary(allowInlining = true) @noinline
   private final def doHalt() = {
     if(tracingEnabled) {
       //Logger.fine(s"Halted $this")
@@ -214,7 +214,7 @@ abstract class Counter extends AtomicInteger(1) {
     }
   }
 
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary(allowInlining = true) @noinline
   private final def doResurrect() = {
     if (tracingEnabled) {
       Counter.addCounter(this)

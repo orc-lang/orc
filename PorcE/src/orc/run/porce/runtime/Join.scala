@@ -136,7 +136,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
    * 
    * This should only be called in single-threaded mode.
    */
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary(allowInlining = true) @noinline
   def force(i: Int, f: orc.run.porce.runtime.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
     if (!isHaltedST()) {
@@ -160,7 +160,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
    * 
    * This should only be called in single-threaded mode.
    */
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary(allowInlining = true) @noinline
   def force(i: Int, f: orc.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
     if (!isHaltedST()) {
@@ -223,7 +223,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
    * 
    * This should only be called in single-threaded mode.
    */
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   def finish() = {
     //Logger.fine(s"Finishing $this with: $state ${values.mkString(", ")}")
     

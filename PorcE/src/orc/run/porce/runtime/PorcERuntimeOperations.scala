@@ -7,7 +7,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 trait PorcERuntimeOperations {
   this: PorcERuntime =>
 
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   def spawn(c: Counter, computation: PorcEClosure): Unit = {
     schedule(CallClosureSchedulable(computation))
   }

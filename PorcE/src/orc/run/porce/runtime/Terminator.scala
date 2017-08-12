@@ -38,7 +38,7 @@ class Terminator extends Terminatable {
    *  All children are notified (with a kill() call) when the terminator is killed. child.kill may 
    *  be called during the call to addChild.
    */
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   final def addChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig == null) {
@@ -69,7 +69,7 @@ class Terminator extends Terminatable {
    *  
    *  This is important due to memory management.
    */
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   final def removeChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig != null) {
@@ -124,7 +124,7 @@ class Terminator extends Terminatable {
     kill(null)
   }
 
-  @TruffleBoundary
+  @TruffleBoundary @noinline
   protected final def doKills(cs: java.util.concurrent.ConcurrentHashMap.KeySetView[Terminatable, java.lang.Boolean]) = {
     cs.forEach((c) =>
       try {
