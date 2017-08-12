@@ -29,7 +29,5 @@ import orc.error.OrcException
 /* The first behavior in the trait list will be tried last */
 trait PorcEInvocationBehavior extends InvocationBehavior
   with ErrorOnUndefinedInvocation
-  with SupportForPorcEClosure
-  with SupportForApply
   with SupportForJavaObjectInvocation
   with SupportForSiteInvocation
