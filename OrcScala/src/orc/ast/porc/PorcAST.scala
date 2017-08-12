@@ -29,6 +29,7 @@ import scala.PartialFunction
 import swivel.TransformFunction
 import orc.util.Ternary
 import orc.ast.hasOptionalVariableName
+import orc.ast.ASTWithIndex
 
 abstract class Transform extends TransformFunction {
   def onExpression: PartialFunction[Expression.Z, Expression] = {
@@ -137,7 +138,7 @@ object Sequence {
 }
 
 @leaf @transform
-final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression with hasOptionalVariableName {
+final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression with hasOptionalVariableName with ASTWithIndex {
   override def boundVars: Set[Variable] = arguments.toSet
 }
 
@@ -147,7 +148,7 @@ final case class MethodDeclaration(@subtree t: Argument, @subtree defs: Seq[Meth
 }
 
 @branch @replacement[Method]
-sealed abstract class Method extends PorcAST with hasOptionalVariableName {
+sealed abstract class Method extends PorcAST with hasOptionalVariableName with ASTWithIndex {
   def name: Variable
   def isRoutine: Boolean
   def arguments: Seq[Variable]

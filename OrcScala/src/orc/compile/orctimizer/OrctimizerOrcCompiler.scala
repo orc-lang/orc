@@ -251,6 +251,16 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     }
   }
 
+  
+  val indexPorc = new CompilerPhase[CompilerOptions, porc.MethodCPS, porc.MethodCPS] {
+    import orc.ast.porc._
+    val phaseName = "porc-index"
+    override def apply(co: CompilerOptions) = { ast =>
+      IndexAST(ast)
+      ast
+    }
+  }
+  
   def nullOutput[T >: Null] = new CompilerPhase[CompilerOptions, T, T] {
     val phaseName = "nullOutput"
     override def apply(co: CompilerOptions) =
@@ -288,5 +298,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       clearCachePhase >>>
       outputIR(8) >>>
       optimizePorc.timePhase >>>
+      indexPorc.timePhase >>>
       outputIR(9)
 }
