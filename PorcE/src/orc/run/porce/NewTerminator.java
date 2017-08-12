@@ -17,7 +17,7 @@ public class NewTerminator extends Expression {
 	public Object execute(VirtualFrame frame) {
 		return executeTerminator(frame);
 	}
-	
+
 	public Terminator executeTerminator(VirtualFrame frame) {
 		try {
 			return new TerminatorNested(parent.executeTerminator(frame));
@@ -25,7 +25,7 @@ public class NewTerminator extends Expression {
 			throw new Error(e);
 		}
 	}
-	
+
 	public static NewTerminator create(Expression parent) {
 		return new NewTerminator(parent);
 	}

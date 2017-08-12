@@ -17,21 +17,20 @@ import com.oracle.truffle.api.Truffle
 import orc.run.porce.distrib.CallTargetManager
 import orc.run.porce.HasId
 
-class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit) 
-    extends ExecutionRoot with EventHandler with CallTargetManager {
+class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
+  extends ExecutionRoot with EventHandler with CallTargetManager {
   val truffleRuntime = Truffle.getRuntime()
-  
+
   private var _isDone = false
 
-  /**
-   * Block until this context halts.
-   */
+  /** Block until this context halts.
+    */
   def waitForHalt(): Unit = {
     synchronized {
       while (!_isDone) wait()
     }
   }
-  
+
   def isDone = PorcEExecution.this.synchronized { _isDone }
 
   runtime.installHandlers(this)
@@ -50,13 +49,13 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       c.haltToken()
       PorcEUnit.SINGLETON
     }
-    
+
     def getId() = -1
   }
 
   val pCallTarget = truffleRuntime.createCallTarget(pRootNode)
 
-  val p: PorcEClosure = new orc.run.porce.runtime.PorcEClosure(Array.emptyObjectArray, pCallTarget, false) 
+  val p: PorcEClosure = new orc.run.porce.runtime.PorcEClosure(Array.emptyObjectArray, pCallTarget, false)
 
   val c: Counter = new Counter {
     def onResurrect() = {
@@ -97,7 +96,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   // FIXME: PERFORMANCE: This should really be an Array. However that would require more work to get right. So I'll do it if it's needed.
   val callTargetMap = collection.mutable.HashMap[Int, RootCallTarget]()
-  
+
   protected def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
     require(!callTargetMap.contains(-1))
     this.callTargetMap ++= callTargetMap
@@ -111,7 +110,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
         throw new IllegalArgumentException(s"callTargetToId only accepts CallTargets which reference a RootNode implementing HasId. Received $callTarget")
     }
   }
-  
+
   def idToCallTarget(id: Int): RootCallTarget = {
     callTargetMap(id)
   }

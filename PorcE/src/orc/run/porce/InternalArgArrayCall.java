@@ -17,19 +17,19 @@ import orc.run.porce.runtime.PorcEExecutionRef;
 
 abstract class InternalArgArrayCallBase extends Expression {
 	protected final PorcEExecutionRef execution;
-	
+
 	public InternalArgArrayCallBase(PorcEExecutionRef execution) {
 		this.execution = execution;
 	}
-	
+
 	@Override
 	public Object execute(VirtualFrame frame) {
 		CompilerDirectives.bailout("InternalArgArrayCall cannot be executed this way.");
 		throw new IllegalStateException("InternalArgArrayCall cannot be executed this way.");
 	}
-	
+
 	public abstract Object execute(VirtualFrame frame, Object target, Object[] arguments);
-	
+
 	protected static InternalArgArrayCallBase findCacheRoot(InternalArgArrayCallBase n) {
 		CompilerAsserts.neverPartOfCompilation();
 		if (n.getParent() instanceof InternalArgArrayCallBase) {
@@ -105,8 +105,8 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
 		}
 
 		public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
-			if (target instanceof PorcEClosure && expectedTarget.body == ((PorcEClosure)target).body) {
-				arguments[0] = ((PorcEClosure)target).environment;
+			if (target instanceof PorcEClosure && expectedTarget.body == ((PorcEClosure) target).body) {
+				arguments[0] = ((PorcEClosure) target).environment;
 				return callNode.call(arguments);
 			} else {
 				return notMatched.execute(frame, target, arguments);
@@ -133,8 +133,8 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
 
 		public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
 			if (target instanceof PorcEClosure) {
-				arguments[0] = ((PorcEClosure)target).environment;
-				return callNode.call(((PorcEClosure)target).body, arguments);
+				arguments[0] = ((PorcEClosure) target).environment;
+				return callNode.call(((PorcEClosure) target).body, arguments);
 			} else {
 				return notMatched.execute(frame, target, arguments);
 			}

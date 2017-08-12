@@ -19,7 +19,7 @@ public class TryOnException extends Expression {
 	public void executePorcEUnit(VirtualFrame frame) {
 		try {
 			body.executePorcEUnit(frame);
-		} catch(HaltException | KilledException e) {
+		} catch (HaltException | KilledException e) {
 			handler.executePorcEUnit(frame);
 		}
 	}

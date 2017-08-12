@@ -70,7 +70,7 @@ final class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcECl
       t.removeChild(this)
     }
   }
-  
+
   override def toString() = {
     s"CPSCallResponseHandler@${hashCode().formatted("%x")}(${get()})"
   }

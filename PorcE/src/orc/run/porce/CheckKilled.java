@@ -12,7 +12,7 @@ public class CheckKilled extends Expression {
 		terminator.checkLive();
 		return PorcEUnit.SINGLETON;
 	}
-	
+
 	public static CheckKilled create(Expression parent) {
 		return CheckKilledNodeGen.create(parent);
 	}

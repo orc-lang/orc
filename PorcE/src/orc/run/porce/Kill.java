@@ -17,16 +17,16 @@ public class Kill extends Expression {
 	public Kill(PorcEExecutionRef execution) {
 		this.execution = execution;
 	}
-	
+
 	@Specialization
 	public PorcEUnit run(VirtualFrame frame, Terminator terminator, PorcEClosure continuation, @Cached("create(execution)") InternalArgArrayCallBase callNode) {
 		if(terminator.kill(continuation)) {
 			callNode.execute(frame, continuation, new Object[] { null });
 		}
-			
+
 		return PorcEUnit.SINGLETON;
 	}
-	
+
 	public static Kill create(Expression terminator, Expression continuation, PorcEExecutionRef execution) {
 		return KillNodeGen.create(execution, terminator, continuation);
 	}

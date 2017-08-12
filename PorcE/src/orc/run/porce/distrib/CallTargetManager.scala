@@ -18,7 +18,7 @@ import com.oracle.truffle.api.RootCallTarget
 /** The interface to map RootCallTargets to/from Ints for serialization.
   *
   * PorcEExecution implements this trait.
-  * 
+  *
   * @author amp
   */
 trait CallTargetManager {

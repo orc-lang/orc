@@ -13,7 +13,7 @@ public class HaltToken extends Expression {
 		counter.haltToken();
 		return PorcEUnit.SINGLETON;
 	}
-	
+
 	public static HaltToken create(Expression parent) {
 		return HaltTokenNodeGen.create(parent);
 	}

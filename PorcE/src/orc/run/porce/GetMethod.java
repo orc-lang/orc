@@ -14,7 +14,7 @@ import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.values.Field;
 
-@NodeChild(value = "object", type = Expression.class) 
+@NodeChild(value = "object", type = Expression.class)
 public class GetMethod extends Expression {
 	protected final PorcEExecutionRef execution;
 	protected static final Field field = Field.create("apply");
@@ -22,7 +22,7 @@ public class GetMethod extends Expression {
 	protected GetMethod(PorcEExecutionRef execution) {
 		this.execution = execution;
 	}
-	
+
 	@Specialization
 	public Object closure(PorcEClosure obj) {
 		return obj;
@@ -63,7 +63,7 @@ public class GetMethod extends Expression {
 	protected Accessor getAccessorWithBoundary(final Object t) {
 		return execution.get().runtime().getAccessor(t, field);
 	}
-	
+
 	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	protected static Object accessWithBoundary(final Accessor accessor, final Object obj) {
 		return accessor.get(obj);
@@ -73,11 +73,11 @@ public class GetMethod extends Expression {
 	protected static boolean canGetWithBoundary(final Accessor accessor, final Object obj) {
 		return accessor.canGet(obj);
 	}
-	
+
 	protected static boolean isNotError(final Accessor accessor) {
 		return !(accessor instanceof ErrorAccessor);
 	}
-	
+
 	protected static int getMaxCacheSize() {
 		return SpecializationConfiguration.GetFieldMaxCacheSize;
 	}

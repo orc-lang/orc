@@ -31,7 +31,7 @@ final class Future() extends OrcValue with orc.Future {
   import FutureConstants._
 
   // TODO: PERFORMANCE: Using an ArrayList here forces the use of a lock. Ideally we would avoid that. However, it would be quite a lot of work and may not gain much. Profile first.
-  
+
   private var _state: AnyRef = Unbound
   private var _blocked: ArrayList[FutureReader] = new ArrayList()
 
@@ -127,14 +127,14 @@ final class Future() extends OrcValue with orc.Future {
       case v => orc.FutureState.Bound(v)
     }
   }
-  
+
   /** Get the state of this future.
-   *  
-   *  The state may change at any time. However, Unbound is the only state
-   *  that is not stable, so if Halt or a value is returned it will not
-   *  change.
-   * 
-   */
+    *
+    * The state may change at any time. However, Unbound is the only state
+    * that is not stable, so if Halt or a value is returned it will not
+    * change.
+    *
+    */
   def getInternal(): AnyRef = {
     _state
   }

@@ -11,12 +11,12 @@ public class Write {
 		private final FrameSlot slot;
 		@Child
 		protected Expression value;
-		
+
 		protected Local(FrameSlot slot, Expression value) {
 			this.slot = slot;
 			this.value = value;
 		}
-		
+
 		public Object execute(VirtualFrame frame) {
 			frame.setObject(slot, value.execute(frame));
 			return value;

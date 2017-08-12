@@ -46,9 +46,9 @@ class PorcToPorcE {
   private def normalizeOrderAndLookup(s: TraversableOnce[porc.Variable])(implicit ctx: Context) = {
     normalizeOrder(s).map(lookupVariable(_))
   }
-  
+
   val closureMap = mutable.HashMap[Int, RootCallTarget]()
-  
+
   def makeCallTarget(root: porce.PorcERootNode): RootCallTarget = {
     require(root.porcNode().isDefined, s"$root")
     require(root.porcNode().get.isInstanceOf[ASTWithIndex], s"${root.porcNode().get}")
@@ -93,8 +93,8 @@ class PorcToPorcE {
         porce.Sequence.create(es.map(transform(_)).toArray)
       case porc.Let.Z(x, v, body) =>
         porce.Sequence.create(Array(
-            porce.Write.Local.create(lookupVariable(x), transform(v)),
-            transform(body)))
+          porce.Write.Local.create(lookupVariable(x), transform(v)),
+          transform(body)))
       case porc.Continuation.Z(args, body) =>
         val descriptor = new FrameDescriptor()
         val oldCtx = ctx
@@ -103,7 +103,7 @@ class PorcToPorcE {
 
         {
           implicit val ctx = oldCtx.copy(descriptor = descriptor, closureVariables = capturedVars, argumentVariables = args)
-          
+
           val newBody = transform(body)
           val rootNode = porce.PorcERootNode.create(descriptor, newBody, args.size, capturedVars.size)
           rootNode.setPorcAST(e.value)
@@ -162,7 +162,7 @@ class PorcToPorcE {
         // Due to not generally being on as hot of paths we do not have a single value version of Resolve. It could easily be created if needed.
         val join = lookupVariable(LocalVariables.Join)
         val newJoin = porce.Write.Local.create(join,
-            porce.Resolve.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
+          porce.Resolve.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
         val processors = futures.zipWithIndex.map { p =>
           val (f, i) = p
           porce.Resolve.Future.create(porce.Read.Local.create(join), transform(f), i)
@@ -175,7 +175,7 @@ class PorcToPorcE {
       case porc.Force.Z(p, c, t, futures) =>
         val join = lookupVariable(LocalVariables.Join)
         val newJoin = porce.Write.Local.create(join,
-            porce.Force.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
+          porce.Force.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
         val processors = futures.zipWithIndex.map { p =>
           val (f, i) = p
           porce.Force.Future.create(porce.Read.Local.create(join), transform(f), i)
@@ -217,7 +217,7 @@ class PorcToPorcE {
       val rootNode = porce.PorcERootNode.create(descriptor, newBody, arguments.size, closureVariables.size)
       rootNode.setPorcAST(m.value)
       val readClosure = porce.Read.Local.create(closureSlot)
-      
+
       makeCallTarget(rootNode)
 
       val newMethod = porce.MethodDeclaration.NewMethod.create(readClosure, methodOffset + index, rootNode, m.value.isRoutine)

@@ -18,22 +18,22 @@ import orc.ast.porc.PorcAST;
 @TypeSystemReference(PorcETypes.class)
 public abstract class PorcENode extends Node implements HasPorcNode {
 	private Option<PorcAST> porcNode = Option.apply(null);
-	
+
 	public void setPorcAST(PorcAST ast) {
 		porcNode = Option.apply(ast);
 		getChildren().forEach((n) -> {
-			if(n instanceof PorcENode) {
+			if (n instanceof PorcENode) {
 				Expression e = (Expression) n;
 				if (e.porcNode().isEmpty())
 					e.setPorcAST(ast);
 			}
 		});
 	}
-	
+
 	public Option<PorcAST> porcNode() {
 		return porcNode;
 	}
-	
+
 	public Object execute(VirtualFrame frame) {
 		executePorcEUnit(frame);
 		return PorcEUnit.SINGLETON;
@@ -43,35 +43,30 @@ public abstract class PorcENode extends Node implements HasPorcNode {
 		execute(frame);
 	}
 
-	public PorcEClosure executePorcEClosure(VirtualFrame frame)
-			throws UnexpectedResultException {
+	public PorcEClosure executePorcEClosure(VirtualFrame frame) throws UnexpectedResultException {
 		return PorcETypesGen.expectPorcEClosure(execute(frame));
 	}
 
-	public Counter executeCounter(VirtualFrame frame)
-			throws UnexpectedResultException {
+	public Counter executeCounter(VirtualFrame frame) throws UnexpectedResultException {
 		return PorcETypesGen.expectCounter(execute(frame));
 	}
 
-	public Terminator executeTerminator(VirtualFrame frame)
-			throws UnexpectedResultException {
+	public Terminator executeTerminator(VirtualFrame frame) throws UnexpectedResultException {
 		return PorcETypesGen.expectTerminator(execute(frame));
 	}
 
-	public orc.Future executeFuture(VirtualFrame frame)
-			throws UnexpectedResultException {
+	public orc.Future executeFuture(VirtualFrame frame) throws UnexpectedResultException {
 		return PorcETypesGen.expectFuture(execute(frame));
 	}
 
-	public PorcEObject executePorcEObject(VirtualFrame frame)
-			throws UnexpectedResultException {
+	public PorcEObject executePorcEObject(VirtualFrame frame) throws UnexpectedResultException {
 		return PorcETypesGen.expectPorcEObject(execute(frame));
 	}
-	
+
 	@Override
 	protected void onReplace(Node newNode, CharSequence reason) {
-		if(newNode instanceof PorcENode && porcNode().isDefined()) {
-			((PorcENode)newNode).setPorcAST(porcNode().get());
+		if (newNode instanceof PorcENode && porcNode().isDefined()) {
+			((PorcENode) newNode).setPorcAST(porcNode().get());
 		}
 		super.onReplace(newNode, reason);
 	}

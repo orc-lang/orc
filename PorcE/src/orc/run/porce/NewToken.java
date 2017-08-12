@@ -12,7 +12,7 @@ public class NewToken extends Expression {
 		counter.newToken();
 		return PorcEUnit.SINGLETON;
 	}
-	
+
 	public static NewToken create(Expression parent) {
 		return NewTokenNodeGen.create(parent);
 	}

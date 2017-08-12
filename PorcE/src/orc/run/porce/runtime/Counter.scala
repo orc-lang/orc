@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 object Counter {
   import CounterConstants._
-  
+
   val liveCounters = ConcurrentHashMap.newKeySet[Counter]()
 
   def exceptionString(e: Exception) = {
@@ -113,12 +113,12 @@ object Counter {
 }
 
 /** A counter which tracks an executing part of the program.
- *  
- * @author amp
- */
+  *
+  * @author amp
+  */
 abstract class Counter extends AtomicInteger(1) {
   import CounterConstants._
-  
+
   @elidable(elidable.ASSERTION)
   private val log = if (tracingEnabled) new LinkedBlockingDeque[Exception]() else null
 
@@ -134,7 +134,7 @@ abstract class Counter extends AtomicInteger(1) {
       log.add(new Exception(s"$s in Porc stack:\n$stack"))
     }
   }
-  
+
   if (tracingEnabled) {
     logChange(s"Init to 1")
     Counter.addCounter(this)
@@ -169,11 +169,10 @@ abstract class Counter extends AtomicInteger(1) {
     haltToken()
   }
 
-  /**
-   * Decrement the count and check for overall halting.
-   *
-   * If we did halt call onContextHalted().
-   */
+  /** Decrement the count and check for overall halting.
+    *
+    * If we did halt call onContextHalted().
+    */
   final def haltToken(): Unit = {
     val n = decrementAndGet()
     if (tracingEnabled) {
@@ -187,10 +186,10 @@ abstract class Counter extends AtomicInteger(1) {
       doHalt()
     }
   }
-  
+
   @TruffleBoundary(allowInlining = true) @noinline
   private final def doHalt() = {
-    if(tracingEnabled) {
+    if (tracingEnabled) {
       //Logger.fine(s"Halted $this")
       //Counter.report()
       if (!isDiscorporated) {
@@ -200,9 +199,8 @@ abstract class Counter extends AtomicInteger(1) {
     onHalt()
   }
 
-  /**
-   * Increment the count.
-   */
+  /** Increment the count.
+    */
   final def newToken(): Unit = {
     val n = getAndIncrement()
     if (tracingEnabled) {
@@ -230,45 +228,43 @@ abstract class Counter extends AtomicInteger(1) {
     val h = System.identityHashCode(this)
     f"$n%s@$h%x"
   }
-    
-  /**
-   * Called when this whole context has halted.
-   * 
-   * This needs to be thread-safe.
-   */
+
+  /** Called when this whole context has halted.
+    *
+    * This needs to be thread-safe.
+    */
   def onHalt(): Unit
-  
-  /**
-   * Called when this context is resurrected and becomes alive again.
-   * 
-   * This counter is being resurrected, so we need a new token from the parent.
-   * 
-   * This needs to be thread-safe.
-   */
+
+  /** Called when this context is resurrected and becomes alive again.
+    *
+    * This counter is being resurrected, so we need a new token from the parent.
+    *
+    * This needs to be thread-safe.
+    */
   def onResurrect(): Unit
 }
 
 /** A Counter which forwards it's halting to a parent Counter and executes a closure on halt.
- * 
- */
+  *
+  */
 final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContinuation: PorcEClosure) extends Counter {
-  if (CounterConstants.tracingEnabled) {    
+  if (CounterConstants.tracingEnabled) {
     require(runtime != null)
     require(parent != null)
     require(haltContinuation != null)
   }
-  
+
   def onResurrect() = {
     parent.newToken()
   }
-  
+
   def onHalt(): Unit = {
     // Call the haltContinuation if we didn't discorporate.
     if (!isDiscorporated) {
       // TODO: PERFORMANCE: Instead of scheduling here consider notifying the caller to haltToken to invoke the closure. It's likely it would be a stable node which could be called directly.
       //   The tricky part will be handling the cases where instead of being called from a Truffle node we are called from the runtime.
       //   Maybe we need two ways to halt a token. One which schedules the handler and one which direct calls it.
-      
+
       // Token: from parent
       runtime.schedule(CallClosureSchedulable(haltContinuation))
     } else {
@@ -280,42 +276,42 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
 }
 
 /** A counter which always stays alive long enough to detect kills.
- *  
- *  This is specifically designed to handle calls into a Service methods.
- *  
- */
+  *
+  * This is specifically designed to handle calls into a Service methods.
+  *
+  */
 final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, val parentContaining: Counter, terminator: Terminator) extends Counter with Terminatable {
-  if (CounterConstants.tracingEnabled) {    
+  if (CounterConstants.tracingEnabled) {
     require(runtime != null)
     require(terminator != null)
     require(parentCalling != null)
     require(parentContaining != null)
   }
-  
+
   /** True if this counter has tokens from it's parents.
-   */
+    */
   private val haveTokens = new AtomicBoolean(true)
-  
+
   init()
-  
+
   private def init() = {
     // FIXME: Audit.
     terminator.addChild(this)
     // Token: We were not passed a token for parentContaining so we need to get one.
     parentContaining.newToken()
   }
-  
+
   def onResurrect() = {
     // FIXME: Audit.
-    if(haveTokens.compareAndSet(false, true)) {
+    if (haveTokens.compareAndSet(false, true)) {
       parentCalling.newToken()
       init()
     }
   }
-  
+
   private def haltParentToken() = {
     // FIXME: Audit.
-    if(haveTokens.compareAndSet(true, false)) {
+    if (haveTokens.compareAndSet(true, false)) {
       terminator.removeChild(this)
       // Token: We were passed a token at creation
       parentCalling.haltToken()
@@ -323,7 +319,7 @@ final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, va
       parentContaining.haltToken()
     }
   }
-  
+
   def onHalt(): Unit = {
     if (!isDiscorporated) {
       haltParentToken()
@@ -331,66 +327,65 @@ final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, va
       // If we would discorporate instead just wait and see if a kill comes.
     }
   }
-  
+
   def kill() = {
     haltParentToken()
   }
 }
 
-
 /** A counter which kills the terminator when it halts.
- *  
- *  This is specifically designed to make sure terminators do not become garbage when there body halts.
- *  
- */
+  *
+  * This is specifically designed to make sure terminators do not become garbage when there body halts.
+  *
+  */
 final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, terminator: Terminator) extends Counter with Terminatable {
-  if (CounterConstants.tracingEnabled) {    
+  if (CounterConstants.tracingEnabled) {
     require(runtime != null)
     require(terminator != null)
     require(parent != null)
   }
-  
+
   /** True if this counter has tokens from it's parents.
-   */
+    */
   private val state = new AtomicInteger(CounterTerminator.HasTokens)
 
   init()
-  
+
   private def init() = {
     terminator.addChild(this)
   }
-  
+
   def onResurrect() = {
     // FIXME: Audit.
-    if(state.compareAndSet(CounterTerminator.HasNoTokens, CounterTerminator.HasTokens)) {
+    if (state.compareAndSet(CounterTerminator.HasNoTokens, CounterTerminator.HasTokens)) {
       parent.newToken()
       init()
     }
   }
-  
+
   def onHalt(): Unit = {
     // FIXME: Audit.
-      if (isDiscorporated) {
-        if(state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.HasNoTokens)) {
-            parent.discorporateToken()
-        }
-      } else {
-        if(state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.WasKilled)) {
-          parent.haltToken()
-          try {
-            // Just make sure terminator is killed. If it already was ignore the exception.
-            terminator.kill()
-          } catch {
-            case _: KilledException =>
-              () 
-          }
+    if (isDiscorporated) {
+      if (state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.HasNoTokens)) {
+        parent.discorporateToken()
+      }
+    } else {
+      if (state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.WasKilled)) {
+        parent.haltToken()
+        try {
+          // Just make sure terminator is killed. If it already was ignore the exception.
+          terminator.kill()
+        } catch {
+          case _: KilledException =>
+            ()
         }
       }
+    }
   }
-  
+
   def kill() = {
     // FIXME: Audit.
-    if(state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.WasKilled)) {
+    if (state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.WasKilled)) {
       // Do nothing.
       // The token we have is passed to the invoker of terminator.kill()
     }

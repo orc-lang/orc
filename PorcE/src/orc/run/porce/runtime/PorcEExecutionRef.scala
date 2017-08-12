@@ -6,13 +6,13 @@ import com.oracle.truffle.api.nodes.InvalidAssumptionException
 
 class PorcEExecutionHolder(exec: PorcEExecution) {
   holder =>
-    
+
   val assumption = new CyclicAssumption("Execution not changed")
-  
+
   private[this] var execution = exec
-    
+
   def setExecution(e: PorcEExecution): Boolean = {
-    if(execution.isDone) {
+    if (execution.isDone) {
       synchronized {
         assumption.invalidate()
         execution = e
@@ -21,14 +21,14 @@ class PorcEExecutionHolder(exec: PorcEExecution) {
     } else {
       false
     }
-  }    
+  }
 
   private class PorcEExecutionRefImpl extends PorcEExecutionRef {
     @CompilerDirectives.CompilationFinal
     private[this] var executionCache = holder.execution
     @CompilerDirectives.CompilationFinal
     private[this] var assumptionCache = holder.assumption.getAssumption()
-    
+
     def get() = {
       try {
         assumptionCache.check()
@@ -44,7 +44,7 @@ class PorcEExecutionHolder(exec: PorcEExecution) {
       }
     }
   }
-  
+
   def newRef(): PorcEExecutionRef = {
     new PorcEExecutionRefImpl
   }

@@ -16,9 +16,9 @@ public class NewContinuation extends Expression {
 	@Children
 	protected final Expression[] capturedVariables;
 	protected final RootCallTarget callTarget;
-	
+
 	public void setPorcAST(PorcAST ast) {
-		((PorcERootNode)callTarget.getRootNode()).setPorcAST(ast);
+		((PorcERootNode) callTarget.getRootNode()).setPorcAST(ast);
 		super.setPorcAST(ast);
 	}
 
@@ -26,11 +26,11 @@ public class NewContinuation extends Expression {
 		this.capturedVariables = capturedVariables;
 		this.callTarget = Truffle.getRuntime().createCallTarget(rootNode);
 	}
-	
+
 	public CallTarget getCallTarget() {
 		return callTarget;
 	}
-	
+
 	@ExplodeLoop
 	public Object execute(VirtualFrame frame) {
 		Object[] capturedValues = new Object[capturedVariables.length];

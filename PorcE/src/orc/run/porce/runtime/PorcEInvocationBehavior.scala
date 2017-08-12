@@ -33,6 +33,6 @@ trait PorcEInvocationBehavior extends InvocationBehavior
   with SupportForApply
   with SupportForJavaObjectInvocation
   with SupportForSiteInvocation
-  
+
 // TODO: PERFORMANCE: Make an extension to Invoker that can provide PorcE Nodes including both the check and the calls. 
 // These nodes could then be included in a poly-cache and could directly call PorcE closures and other Truffle stuff.

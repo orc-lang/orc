@@ -15,17 +15,16 @@ package orc.run.porce
 import java.util.logging.Level
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
-/**
- * Logger for the orc.run.porce subsystem
- * 
- * The wrappers are rewrapped here to mark them as truffle partial evaluation boundaries. This
- * is important since partial evaluation going into the logger would be a total waste.
- * 
- * @author jthywiss
- */
+/** Logger for the orc.run.porce subsystem
+  *
+  * The wrappers are rewrapped here to mark them as truffle partial evaluation boundaries. This
+  * is important since partial evaluation going into the logger would be a total waste.
+  *
+  * @author jthywiss
+  */
 object Logger {
   private val underlying = new orc.util.Logger("orc.run.porce")
-  
+
   val julLogger = underlying.julLogger
 
   @TruffleBoundary @noinline
@@ -66,7 +65,7 @@ object Logger {
   final def finer(msg: => String): Unit = underlying.finer(msg)
   @TruffleBoundary @noinline
   final def finest(msg: => String): Unit = underlying.finest(msg)
-  
+
   @TruffleBoundary @noinline
   final def check(assertion: Boolean, message: => Any) = underlying.check(assertion, message)
 }

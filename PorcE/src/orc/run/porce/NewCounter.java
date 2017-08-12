@@ -12,7 +12,7 @@ import orc.run.porce.runtime.PorcERuntime;
 public abstract class NewCounter extends Expression {
 	@Child
 	protected Expression parent;
-	
+
 	protected final PorcERuntime runtime;
 
 	public NewCounter(PorcERuntime runtime, Expression parent) {
@@ -26,7 +26,6 @@ public abstract class NewCounter extends Expression {
 
 	public abstract Counter executeCounter(VirtualFrame frame);
 
-	
 	public final static class Simple extends NewCounter {
 		@Child
 		protected Expression haltContinuation;
@@ -35,20 +34,20 @@ public abstract class NewCounter extends Expression {
 			super(runtime, parent);
 			this.haltContinuation = haltContinuation;
 		}
-		
+
 		public Counter executeCounter(VirtualFrame frame) {
 			try {
 				return new CounterNested(runtime, parent.executeCounter(frame), haltContinuation.executePorcEClosure(frame));
 			} catch (UnexpectedResultException e) {
 				throw InternalPorcEError.typeError(this, e);
 			}
-		}		
-		
+		}
+
 		public static NewCounter create(PorcERuntime runtime, Expression parent, Expression haltContinuation) {
 			return new Simple(runtime, parent, haltContinuation);
 		}
 	}
-	
+
 	public final static class Service extends NewCounter {
 		@Child
 		protected Expression parentContaining;
@@ -60,7 +59,7 @@ public abstract class NewCounter extends Expression {
 			this.parentContaining = parentContaining;
 			this.terminator = terminator;
 		}
-		
+
 		public Counter executeCounter(VirtualFrame frame) {
 			try {
 				return new CounterService(runtime, parent.executeCounter(frame), parentContaining.executeCounter(frame), terminator.executeTerminator(frame));
@@ -73,7 +72,7 @@ public abstract class NewCounter extends Expression {
 			return new Service(runtime, parentCalling, parentContaining, haltContinuation);
 		}
 	}
-	
+
 	public final static class Terminator extends NewCounter {
 		@Child
 		protected Expression terminator;
@@ -82,15 +81,15 @@ public abstract class NewCounter extends Expression {
 			super(runtime, parent);
 			this.terminator = terminator;
 		}
-		
+
 		public Counter executeCounter(VirtualFrame frame) {
 			try {
 				return new CounterTerminator(runtime, parent.executeCounter(frame), terminator.executeTerminator(frame));
 			} catch (UnexpectedResultException e) {
 				throw InternalPorcEError.typeError(this, e);
 			}
-		}		
-		
+		}
+
 		public static NewCounter create(PorcERuntime runtime, Expression parent, Expression haltContinuation) {
 			return new Terminator(runtime, parent, haltContinuation);
 		}

@@ -39,7 +39,6 @@ public class InternalPorcEError extends Error {
 
 	public static InternalPorcEError unreachable(PorcENode n) {
 		CompilerDirectives.transferToInterpreter();
-		throw new InternalPorcEError(
-				"Code should be unreachable in " + n.porcNode() + "'.");
+		throw new InternalPorcEError("Code should be unreachable in " + n.porcNode() + "'.");
 	}
 }

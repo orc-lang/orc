@@ -20,9 +20,9 @@ import orc.run.porce.Logger
 
 trait Terminatable {
   /** Kill this terminatable.
-   *
-   *  This method must be idempotent and thread-safe, since it may be called times multiple concurrently.
-   */
+    *
+    * This method must be idempotent and thread-safe, since it may be called times multiple concurrently.
+    */
   def kill(): Unit
 }
 
@@ -32,12 +32,12 @@ trait Terminatable {
   */
 class Terminator extends Terminatable {
   protected[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
-  
+
   /** Add a child to this terminator.
-   *  
-   *  All children are notified (with a kill() call) when the terminator is killed. child.kill may 
-   *  be called during the call to addChild.
-   */
+    *
+    * All children are notified (with a kill() call) when the terminator is killed. child.kill may
+    * be called during the call to addChild.
+    */
   @TruffleBoundary @noinline
   final def addChild(child: Terminatable): Unit = {
     val orig = children.get()
@@ -54,7 +54,7 @@ class Terminator extends Terminatable {
         Logger.warning(s"ADDING: You may be leaking Terminatables: $this size=$s, adding $child")
       }
       // */
-      
+
       // Check for kill again.
       // The .add and .get here race against .getAndSet and iteration in kill().
       // However, this .get here will always return null if iteration will not observe the .add.
@@ -64,11 +64,11 @@ class Terminator extends Terminatable {
       }
     }
   }
-  
+
   /** Remove a child to this terminator.
-   *  
-   *  This is important due to memory management.
-   */
+    *
+    * This is important due to memory management.
+    */
   @TruffleBoundary @noinline
   final def removeChild(child: Terminatable): Unit = {
     val orig = children.get()
@@ -93,12 +93,12 @@ class Terminator extends Terminatable {
   }
 
   /** Kill the expressions under this terminator.
-    *  
+    *
     * @param k The continuation to call if this is the first kill. `k` may be `null`, meaning that the continuation is a no-op.
     *
-    * @return True iff the caller should call `k`; False iff the kill process will handle calling `k` or if it should not be called at all. 
+    * @return True iff the caller should call `k`; False iff the kill process will handle calling `k` or if it should not be called at all.
     * This return value allows the caller to call `k` more efficient (allowing inlining).
-    * 
+    *
     * This needs to be thread-safe and idempotent.
     */
   def kill(k: PorcEClosure): Boolean = {
@@ -117,7 +117,7 @@ class Terminator extends Terminatable {
   }
 
   /** Kill the expressions under this terminator.
-    * 
+    *
     * This needs to be thread-safe and idempotent.
     */
   def kill(): Unit = {
@@ -131,8 +131,7 @@ class Terminator extends Terminatable {
         c.kill()
       } catch {
         case _: KilledException => {}
-      }
-    )
+      })
   }
 }
 
@@ -143,7 +142,7 @@ class Terminator extends Terminatable {
 final class TerminatorNested(parent: Terminator) extends Terminator {
   //Logger.info(s"$this($parent)")
   parent.addChild(this)
-  
+
   override def kill(k: PorcEClosure): Boolean = {
     parent.removeChild(this)
     super.kill(k)

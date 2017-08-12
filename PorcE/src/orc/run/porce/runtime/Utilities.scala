@@ -6,12 +6,12 @@ import java.util.Arrays
 
 object Utilities {
   private val emptyArray = Array[AnyRef]()
-  
+
   def PorcEClosure(r: RootNode): PorcEClosure = {
     val c = Truffle.getRuntime().createCallTarget(r)
-    new orc.run.porce.runtime.PorcEClosure(emptyArray, c, false) 
+    new orc.run.porce.runtime.PorcEClosure(emptyArray, c, false)
   }
-  
+
   def isDef(v: AnyRef): Boolean = v match {
     case c: PorcEClosure => {
       c.isRoutine

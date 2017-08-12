@@ -13,7 +13,7 @@ import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.values.Field;
 
-@NodeChild(value = "object", type = Expression.class) 
+@NodeChild(value = "object", type = Expression.class)
 public abstract class GetField extends Expression {
 	protected final Field field;
 	protected final PorcEExecutionRef execution;
@@ -50,7 +50,7 @@ public abstract class GetField extends Expression {
 	protected Accessor getAccessorWithBoundary(final Object t) {
 		return execution.get().runtime().getAccessor(t, field);
 	}
-	
+
 	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	protected static Object accessWithBoundary(final Accessor accessor, final Object obj) {
 		return accessor.get(obj);
@@ -60,11 +60,11 @@ public abstract class GetField extends Expression {
 	protected static boolean canGetWithBoundary(final Accessor accessor, final Object obj) {
 		return accessor.canGet(obj);
 	}
-	
+
 	protected static boolean isNotError(final Accessor accessor) {
 		return !(accessor instanceof ErrorAccessor);
 	}
-	
+
 	protected static int getMaxCacheSize() {
 		return SpecializationConfiguration.GetFieldMaxCacheSize;
 	}

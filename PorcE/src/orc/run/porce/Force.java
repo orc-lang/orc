@@ -116,7 +116,7 @@ public class Force {
 		private final BranchProfile boundPorcEFuture = BranchProfile.create();
 		private final BranchProfile unboundPorcEFuture = BranchProfile.create();
 		private final BranchProfile boundOrcFuture = BranchProfile.create();
-		
+
 		@SuppressWarnings("serial")
 		private static final class ValueAvailable extends ControlFlowException {
 			public final Object value;
@@ -144,8 +144,8 @@ public class Force {
 						if (state == orc.run.porce.runtime.FutureConstants.Halt) {
 							c.haltToken();
 						} else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
-							((orc.run.porce.runtime.Future) future)
-									.read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
+							((orc.run.porce.runtime.Future) future).read(
+									new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
 						} else {
 							InternalPorcEError.unreachable(this);
 						}
@@ -166,11 +166,11 @@ public class Force {
 				} else {
 					InternalPorcEError.unreachable(this);
 				}
-			} catch(ValueAvailable e) {
+			} catch (ValueAvailable e) {
 				initializeCall(execution);
 				call.execute(frame, p, new Object[] { null, e.value });
 			}
-			
+
 			return PorcEUnit.SINGLETON;
 		}
 

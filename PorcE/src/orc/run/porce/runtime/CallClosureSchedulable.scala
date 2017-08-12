@@ -21,13 +21,13 @@ object CallClosureSchedulable {
   def apply(closure: PorcEClosure): CallClosureSchedulable = {
     varArgs(closure, null)
   }
-  
+
   /** Create a schedulable which will call `closure` the given argument.
     */
   def apply(closure: PorcEClosure, arg1: AnyRef): CallClosureSchedulable = {
     varArgs(closure, Array(null, arg1))
   }
-  
+
   /** Create a schedulable which will call `closure` with the given arguments as a normal array.
     *
     * This method has to allocate a new array to perform the call. Use `.varArgs` if you can
@@ -38,7 +38,7 @@ object CallClosureSchedulable {
     System.arraycopy(arguments, 0, args, 1, arguments.length)
     varArgs(closure, args)
   }
-  
+
   /** Create a schedulable which will call `closure` the given specially formatted arguments array.
     *
     * The `arguments` array must have `null` as it element 0 and then all the arguments as
@@ -51,9 +51,9 @@ object CallClosureSchedulable {
 
 final class CallClosureSchedulable private (closure: PorcEClosure, arguments: Array[AnyRef]) extends Schedulable {
   def run(): Unit = {
-    if(arguments == null)
+    if (arguments == null)
       closure.callFromRuntime()
     else
       closure.callFromRuntimeArgArray(arguments)
-  }  
+  }
 }

@@ -5,9 +5,9 @@ import orc.FutureReader
 
 final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, runtime: PorcERuntime) extends AtomicBoolean with FutureReader with Terminatable {
   // The value stored in the AtomicBoolean is a flag saying if we have already halted.
-  
+
   t.addChild(this)
-  
+
   def publish(v: AnyRef): Unit = {
     if (compareAndSet(false, true)) {
       t.removeChild(this)
@@ -15,7 +15,7 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, runti
       runtime.schedule(CallClosureSchedulable(p, v))
     }
   }
-  
+
   def halt(): Unit = {
     if (compareAndSet(false, true)) {
       t.removeChild(this)
@@ -27,7 +27,7 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, runti
     // This join has been killed
     halt()
   }
-  
+
   override def toString() = {
     s"SingleFutureReader@${hashCode().formatted("%x")}(${get()})"
   }

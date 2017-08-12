@@ -82,7 +82,7 @@ abstract class ExternalCPSCallBase extends CallBase {
 			final Object[] argumentValues) {
 		invoker.invoke(handle, t, argumentValues);
 	}
-	
+
 	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
 	protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object t,
 			final Object[] argumentValues) {
@@ -114,8 +114,8 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
 				if (!(invoker instanceof ErrorInvoker) && cacheSize < cacheMaxSize) {
 					cacheSize++;
 					if (invoker instanceof DirectInvoker) {
-						n = new SpecificDirect((Expression) target.copy(), (DirectInvoker)invoker, copyExpressionArray(arguments),
-								(CallBase) this.copy(), execution);
+						n = new SpecificDirect((Expression) target.copy(), (DirectInvoker) invoker,
+								copyExpressionArray(arguments), (CallBase) this.copy(), execution);
 					} else {
 						n = new Specific((Expression) target.copy(), invoker, copyExpressionArray(arguments),
 								(CallBase) this.copy(), execution);

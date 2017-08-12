@@ -55,7 +55,7 @@ class AccessThenInvoker(val accessor: Accessor, val runtime: InvocationBehavior)
           h.halt(new JavaException(e))
       }
     }
-    
+
     val applyValue = accessor.get(target)
     applyValue match {
       case f: orc.Future =>

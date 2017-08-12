@@ -25,7 +25,7 @@ trait SupportForPorcEClosure extends InvocationBehavior {
       case _ =>
         super.getInvoker(target, arguments)
     }
-  }  
+  }
 }
 
 class PorcEClosureInvoker(val closure: PorcEClosure) extends Invoker {

@@ -10,7 +10,7 @@ public class NewObject extends Expression {
 	@Children
 	protected final Expression[] expressions;
 	private final Field[] fields;
-	
+
 	public NewObject(Field[] fields, Expression[] expressions) {
 		this.fields = fields;
 		this.expressions = expressions;
@@ -28,7 +28,7 @@ public class NewObject extends Expression {
 		}
 		return new PorcEObject(fields, values);
 	}
-	
+
 	public static NewObject create(Field[] fields, Expression[] expressions) {
 		return new NewObject(fields, expressions);
 	}
