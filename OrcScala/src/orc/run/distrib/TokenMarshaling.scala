@@ -165,7 +165,7 @@ object TokenFieldMarshaling {
   def marshalClosureGroup(cg: ClosureGroup, execution: DOrcExecution, destination: PeerLocation) = {
     assert(cg.isResolved, "Closure group must be resolved")
 
-    Logger.fine("Creating new CGR for " + cg + ": " + (cg.definitions map { _.optionalVariableName.getOrElse("") }).mkString(","))
+    //Logger.fine("Creating new CGR for " + cg + ": " + (cg.definitions map { _.optionalVariableName.getOrElse("") }).mkString(","))
     val defNodesIndicies = cg.definitions map { AstNodeIndexing.nodeIndexInTree(_, execution.node).get }
     val lexicalContext = (cg.lexicalContext map marshalBinding(execution, destination)).toArray
     val cgr = new ClosureGroupReplacement(defNodesIndicies, lexicalContext)

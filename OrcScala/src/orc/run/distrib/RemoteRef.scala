@@ -93,7 +93,7 @@ trait RemoteObjectManager { self: DOrcExecution =>
   protected val remotedObjectUpdateLock = new Object()
 
   def remoteIdForObject(obj: AnyRef): RemoteObjectRef#RemoteRefId = {
-    Logger.entering(getClass.getName, "idForObject", Seq(obj))
+    //Logger.entering(getClass.getName, "idForObject", Seq(obj))
     obj match {
       case ro: RemoteObjectRef => ro.remoteRefId
       case _ => remotedObjectUpdateLock synchronized {
