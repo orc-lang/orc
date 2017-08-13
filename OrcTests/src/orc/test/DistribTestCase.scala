@@ -171,7 +171,7 @@ object DistribTestCase {
 
   def buildSuite() = {
     val bindings = new orc.Main.OrcCmdLineOptions()
-    bindings.backend = DistributedBackendType
+    bindings.backend = orc.BackendType.fromString("distrib")
     bindings.followerSockets = (followerSpecs map { fs => new InetSocketAddress(fs.hostname, fs.port)}).asJava
     bindings.showJavaStackTrace = true
     TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), classOf[DistribTestCase], bindings, new File("test_data/distrib"))

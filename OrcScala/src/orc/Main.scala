@@ -222,7 +222,7 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
     backend = BackendType.fromStringOption(arg) match {
       case Some(b) => b
       case None => throw new UnrecognizedCmdLineOptArgException(s"""Backend "${arg}" does not exist or is not supported.""", "backend", arg, this)
-    }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed values: " + BackendType.knownBackendNames.mkString(", ") + ". Default is \"token\".")
+    }, ' ', "backend", usage = "Set the backend to use for compilation and execution. Allowed values: " + BackendType.backendTypes.map(_.id).mkString(", ") + ". Default is \"token\".")
 
   StringListOpt(() => optimizationOptions.asScala, oo => optimizationOptions = oo.asJava, ' ', "opt-opt", separator = ",",
     usage = "Provide option for use by the optimizers separated by commas. Options in the form '[optimizer-name]' and '-[optimizer-name]=off' enable and disable optimizers. Other options are arbitrary key-value pairs used by the optimizer (the value defaults to 'true').")

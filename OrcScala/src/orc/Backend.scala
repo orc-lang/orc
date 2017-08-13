@@ -20,23 +20,42 @@ import orc.error.compiletime.{ CompilationException, CompileLogger, ExceptionCol
 import orc.error.loadtime.LoadingException
 import orc.error.runtime.ExecutionException
 import orc.progress.{ NullProgressMonitor, ProgressMonitor }
+import java.util.ServiceLoader
 
 /** An enumeration over the supported backends.
   */
-sealed trait BackendType {
-  def newBackend(): Backend[_]
+abstract class BackendType {
+  type CompiledCode
+  
+  def name: String
+  final def id: String = name.toLowerCase()
+  def newBackend(): Backend[CompiledCode]
+  override def toString = name
 }
 
 object BackendType {
-  private val stringToBackendType = Map[String, BackendType](
-    TokenInterpreterBackend.toString -> TokenInterpreterBackend,
-    DistributedBackendType.toString -> DistributedBackendType,
-    PorcCompilerBackend.toString -> PorcCompilerBackend)
+  private val serviceLoader: ServiceLoader[BackendType] = ServiceLoader.load(classOf[BackendType])
+  
+  val backendTypes: Iterable[BackendType] = {
+    import collection.JavaConverters._
+    serviceLoader.iterator().asScala.toSeq.reverse
+  }
 
-  def knownBackendNames = stringToBackendType.keys
+  private val stringToBackendType: Map[String, BackendType] = {
+    backendTypes.foldLeft(Map[String, BackendType]()) { (map, typ) =>
+      if(map contains typ.id) {
+        Logger.warning(s"Ignoring backend ${typ.getClass.getCanonicalName} (defined in ${typ.getClass.getClassLoader}), because the backend id ${typ.id} is already used by ${map(typ.id).getClass.getCanonicalName} (defined in ${map(typ.id).getClass.getClassLoader}).")
+        map
+      } else {
+        map + (typ.id -> typ)
+      }
+    }
+  }
 
-  def fromString(s: String) = {
-    fromStringOption(s).getOrElse(TokenInterpreterBackend)
+  def fromString(s: String): BackendType = {
+    fromStringOption(s).getOrElse {
+      throw new IllegalArgumentException(s"""Backend "${s}" does not exist or is not supported.""")
+    }
   }
   def fromStringOption(s: String) = {
     stringToBackendType.get(s.toLowerCase)
@@ -44,31 +63,19 @@ object BackendType {
 }
 
 /** The standard token interpreter's BackendType. */
-case object TokenInterpreterBackend extends BackendType {
-  override val toString = "token"
-  override def newBackend(): Backend[Expression] = new StandardBackend()
+case class TokenInterpreterBackend() extends BackendType {
+  type CompiledCode = Expression
+  
+  val name = "token"
+  def newBackend(): Backend[Expression] = new StandardBackend()
 }
 
 /** The Distributed Orc BackendType. */
-case object DistributedBackendType extends BackendType {
-  override val toString = "distrib"
-  override def newBackend(): Backend[Expression] = new DistributedBackend()
-}
-
-/** The target based on the Orctimizer and Porc.
-  */
-case object PorcCompilerBackend extends BackendType {
-  override val toString = "porc"
-  override def newBackend(): Backend[orc.ast.porc.MethodCPS] = {
-    // FIXME: This hack is to allow OrcScala to build and work without the Truffle dependencies in PorcE.
-    try {
-      val cls = Class.forName("orc.PorcEBackend").asSubclass(classOf[PorcBackend])
-      cls.newInstance()
-    } catch {
-      case e: ClassNotFoundException =>
-        throw new Error("To use the Porc (PorcE) backend you must have the PorcE project on the classpath.", e)
-    }
-  }
+case class DistributedBackendType() extends BackendType {
+  type CompiledCode = Expression
+  
+  val name = "distrib"
+  def newBackend(): Backend[Expression] = new DistributedBackend()
 }
 
 /** This represents an abstract Orc compiler. It generates an opaque code object that can be

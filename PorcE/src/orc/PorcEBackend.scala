@@ -20,7 +20,13 @@ import orc.run.porce.runtime.PorcEExecution
 import orc.run.porce.runtime.PorcEExecutionRef
 import orc.run.porce.runtime.PorcEExecutionHolder
 import orc.run.porce.runtime.PorcEClosure
-import orc.run.porce.Logger
+
+case class PorcEBackendType() extends BackendType {
+  type CompiledCode = MethodCPS
+  
+  val name = "porc"
+  def newBackend(): Backend[MethodCPS] = new PorcEBackend()
+}
 
 /** A backend implementation using the Orctimizer and Porc compilers.
   *
@@ -28,7 +34,7 @@ import orc.run.porce.Logger
   *
   * @author amp
   */
-class PorcEBackend extends PorcBackend {
+case class PorcEBackend() extends PorcBackend {
   def createRuntime(options: OrcExecutionOptions): Runtime[MethodCPS] = new PorcERuntime("PorcE on Truffles") with Runtime[MethodCPS] {
     startScheduler(options)
 

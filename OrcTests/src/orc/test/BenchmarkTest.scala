@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat
 import java.io.OutputStreamWriter
 import java.io.FileOutputStream
 import orc.util.SynchronousThreadExec
-import orc.TokenInterpreterBackend
 import java.util.Properties
 import java.io.FileInputStream
 import java.lang.management.ManagementFactory
@@ -167,7 +166,7 @@ object BenchmarkTest {
     }
 
     implicit val config = processArgs(args, BenchmarkConfig(OrcBenchmarkSet,
-      0 until osmxbean.getAvailableProcessors, TokenInterpreterBackend, 0,
+      0 until osmxbean.getAvailableProcessors, BackendType.fromString("token"), 0,
       new File(s"benchmark-${dateFormatter.format(new Date())}.csv")))
 
     // generate a single row for the configuration.
