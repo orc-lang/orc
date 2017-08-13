@@ -199,7 +199,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     val phaseName = "to-porc"
     override def apply(co: CompilerOptions) =
       { ast =>
-        val translator = new OrctimizerToPorc()
+        val translator = new OrctimizerToPorc(co)
         val res = translator(ast, cache)
         porc.VariableChecker(res.toZipper(), co)
         res

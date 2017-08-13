@@ -27,13 +27,15 @@ import orc.compile.AnalysisCache
 import orc.compile.Logger
 import orc.util.{ Ternary, TUnknown, TTrue, TFalse }
 import orc.ast.porc.PorcUnit
+import orc.compile.CompilerOptions
+import orc.ast.porc.MethodCPSCall
 
 case class ConversionContext(p: porc.Variable, c: porc.Variable, t: porc.Variable, recursives: Set[BoundVar], callgraph: CallGraph, effects: EffectAnalysis) {
 }
 
 /** @author amp
   */
-class OrctimizerToPorc {
+class OrctimizerToPorc(co: CompilerOptions) {
   def apply(prog: Expression, cache: AnalysisCache): porc.MethodCPS = {
     val z = prog.toZipper()
     val callgraph: CallGraph = cache.get(CallGraph)((z, None))
@@ -46,6 +48,8 @@ class OrctimizerToPorc {
     val body = expression(z)
     prog ->> porc.MethodCPS(newVarName("Prog"), newP, newC, newT, false, Nil, body)
   }
+  
+  val useDirectCalls = co.options.optimizationFlags("porc:directcalls").asBool(true)
 
   val vars: mutable.Map[BoundVar, porc.Variable] = new mutable.HashMap()
   val usedNames: mutable.Set[String] = new mutable.HashSet()
@@ -166,7 +170,7 @@ class OrctimizerToPorc {
         //       unrolling. Can we avoid the need for the spawn in P.
         // TODO: Consider a hybrid approach which allows a few direct calls and then bounces. Maybe back these semantics into spawn.
 
-        if (!isDirect) {
+        if (!useDirectCalls || !isDirect) {
           if (isNotRecursive) { 
             killCheck :::
             porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).view.force)
@@ -266,10 +270,16 @@ class OrctimizerToPorc {
           val v = newVarName()
           let(
             (newP, porc.Continuation(Seq(v), {
-              setFlag(flag) :::
-                porc.NewToken(ctx.c) :::
-                porc.HaltToken(newC) :::
-                ctx.p(v)
+              val newP2 = newVarName("P")
+              val v2 = newVarName()
+              let(
+                (newP2, porc.Continuation(Seq(v2), {
+                  porc.NewToken(ctx.c) :::
+                    porc.HaltToken(newC) :::
+                    ctx.p(v)
+                }))) {
+                  setFlag(newP2, ctx.c, ctx.t, flag)
+                }
             }))) {
               // Move into ctx with new C and P
               implicit val ctx = oldCtx.copy(p = newP, c = newC)
@@ -282,8 +292,16 @@ class OrctimizerToPorc {
           // Here we branch on flag using the Halted exception.
           // We halt the token if we never passed it to right.
           catchExceptions {
-            publishIfNotSet(flag) :::
-              expression(right)
+            val newP2 = newVarName("P")
+            val v2 = newVarName()
+            let(
+              (newP2, porc.Continuation(Seq(v2), {
+                catchExceptions {
+                  expression(right)
+                }
+              }))) {
+                publishIfNotSet(newP2, ctx.c, ctx.t, flag)
+              }
           }
         })
 
@@ -401,14 +419,26 @@ class OrctimizerToPorc {
     d.value ->> porc.MethodCPS(name, argP, argC, argT, d.isInstanceOf[Routine.Z], args, newBody)
   }
 
-  private def newFlag(): MethodDirectCall = {
+  private def newFlag(): porc.Expression = {
     MethodDirectCall(true, porc.Constant(NewFlag), List())
   }
-  private def setFlag(flag: porc.Variable): MethodDirectCall = {
-    MethodDirectCall(true, porc.Constant(SetFlag), List(flag))
+  private def setFlag(p: porc.Variable, c: porc.Variable, t: porc.Variable, flag: porc.Variable): porc.Expression = {
+    import porc.PorcInfixNotation._
+    if(useDirectCalls) {
+      MethodDirectCall(true, porc.Constant(SetFlag), List(flag)) :::
+      p()
+    } else {
+      MethodCPSCall(true, porc.Constant(SetFlag), p, c, t, List(flag))
+    }
   }
-  private def publishIfNotSet(flag: porc.Variable): MethodDirectCall = {
-    MethodDirectCall(true, porc.Constant(PublishIfNotSet), List(flag))
+  private def publishIfNotSet(p: porc.Variable, c: porc.Variable, t: porc.Variable, flag: porc.Variable): porc.Expression = {
+    import porc.PorcInfixNotation._
+    if(useDirectCalls) {
+      MethodDirectCall(true, porc.Constant(PublishIfNotSet), List(flag)) :::
+      p()
+    } else {
+      MethodCPSCall(true, porc.Constant(PublishIfNotSet), p, c, t, List(flag))
+    }
   }
 
 }
