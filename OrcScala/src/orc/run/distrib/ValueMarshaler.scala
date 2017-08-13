@@ -46,7 +46,7 @@ trait ValueMarshaler { self: DOrcExecution =>
   }
 
   def marshalValue(destination: PeerLocation)(value: AnyRef): AnyRef = {
-    Logger.finest(s"marshalValue: $value:${value.getClass.getCanonicalName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
+    //Logger.finest(s"marshalValue: $value:${value.getClass.getCanonicalName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
 
     val replacedValue = value match {
       /* keep in sync with cases in marshalValueWouldReplace */
@@ -69,7 +69,7 @@ trait ValueMarshaler { self: DOrcExecution =>
       case mn: DOrcMarshalingNotifications => mn.marshaled()
       case _ => { /* Nothing to do */ }
     }
-    Logger.finest(s"marshalValue($destination)($value)=$marshaledValue")
+    //Logger.finest(s"marshalValue($destination)($value)=$marshaledValue")
     assert((marshaledValue != value) == marshalValueWouldReplace(destination)(value))
     marshaledValue
   }

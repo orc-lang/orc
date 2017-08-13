@@ -4,8 +4,11 @@
                    The University of Texas at Austin
 
 
-                 INSTALL for PorcE Truffle Interpereter
+                 INSTALL for PorcE Truffle Interpreter
 
+
+Overview
+--------
 
 This project contain a Truffle-based interpreter for Orc. Truffle and 
 associated technologies are also called, variously, GraalVM, Polyglot, and 
@@ -21,32 +24,40 @@ Java 9. For the moment, here are instructions on how to install a GraalVM that
 can run PorcE and how to connect it to this project. In addition, there are 
 instructions for setting up a launch configuration for PorcE.
 
-Setup instructions:
+Setup instructions
+------------------
 
 1. Download GraalVM 0.26 from 
    http://www.oracle.com/technetwork/oracle-labs/program-languages/downloads/index.html 
    (requires login) and unpack it to $UNPACK (any directory). You will need to replace 
    "$UNPACK" with the absolute path you unpacked to in all the further instructions.
-2. Add $UNPACK/graalvm-0.26/jre (NOT the root graalvm-0.26 directory) as a JRE in Eclipse.
-3. Edit the new JRE by adding two jars to JRE System Libraries:
+2. Add a new JRE in Eclipse (Eclipse Preferences -> Java / Installed JREs -> Add),
+   type "Standard VM".
+3. Set:
+    * JRE home: $UNPACK/graalvm-0.26/jre (NOT the root graalvm-0.26 directory)
+    * JRE name: graalvm-0.26
+    * Default VM arguments: -XX:-UseJVMCIClassLoader
+4. Under JRE system libraries, Add External JARs:
     * $UNPACK/graalvm-0.26/jre/lib/truffle/truffle-api.jar
     * $UNPACK/graalvm-0.26/jre/lib/jvmci/graal.jar
-4. Add "-XX:-UseJVMCIClassLoader" to Default VM Arguments.
-5. Add a Classpath Variable (Workspace Preferences -> Java -> Build Path -> Classpath 
+5. Add a Classpath Variable (Eclipse Preferences -> Java -> Build Path -> Classpath 
    Variables) named GRAALVM_JRE and set it to "$UNPACK/graalvm-0.26/jre". This allows
    PorcE to find the annotation processor used by the Truffle code.
-5. Set this new JRE as the JRE for the PorcE project.
+6. Rebuild the PorcE project.
 
-Launch instructions:
+Launch instructions
+-------------------
 
-1. Create a launch configuration and set the project to PorcE and the main class to 
-   "orc.Main".
-2. In the JRE tab, select Alterative JRE and your new graalvm JRE.
+1. Create a new run configuration (Run -> Run Configurations) of type Java
+   Application.
+2. Set:
+    * Name: PorcE [or your choice]
+    * Project: PorcE
+    * Main class: orc.Main
+2. In the JRE tab, ensure that the project JRE is set to your new graalvm JRE.
 3. Set the command line arguments as needed to launch the Orc program you need.
 
-Running PorcE from the Orc Eclipse plugin is unsupported for now.
+Running PorcE from the Orc Eclipse plug-in is unsupported for now.
 
-NOTE:
 
-All of this will change when a Java 9 preview with Graal support is released.
- 
+NOTE:  All of this will change when a Java 9 preview with Graal support is released.

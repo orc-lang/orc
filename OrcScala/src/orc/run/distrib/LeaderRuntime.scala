@@ -181,7 +181,11 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     }
     followerEntries foreach { e =>
       runtimeLocationMap.remove(e._1)
-      e._2.connection.socket.shutdownOutput()
+      try {
+        e._2.connection.socket.shutdownOutput()
+      } catch {
+        case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore shutdownOutput failures at this point */
+      }
     }
     super.stop()
   }
