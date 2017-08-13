@@ -16,6 +16,7 @@ import orc.run.porce.runtime.PorcERuntime
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.RootCallTarget
 import orc.ast.ASTWithIndex
+import orc.util.{ TTrue, TUnknown, TFalse }
 
 class PorcToPorcE {
   case class Context(
@@ -113,9 +114,29 @@ class PorcToPorcE {
       case porc.CallContinuation.Z(target, arguments) =>
         porce.InternalCall.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
       case porc.MethodCPSCall.Z(isExt, target, p, c, t, arguments) =>
-        porce.Call.CPS.create(transform(target), (p +: c +: t +: arguments).map(transform(_)).toArray, ctx.execution.newRef())
+        val newTarget = transform(target)
+        val newArguments = (p +: c +: t +: arguments).map(transform(_)).toArray
+        val exec = ctx.execution.newRef()
+        isExt match {
+          case TTrue =>
+            porce.ExternalCPSCall.create(newTarget, newArguments, exec)
+          case TFalse =>
+            porce.InternalCall.create(newTarget, newArguments, exec)
+          case TUnknown =>
+            porce.Call.CPS.create(newTarget, newArguments, exec)
+        }
       case porc.MethodDirectCall.Z(isExt, target, arguments) =>
-        porce.Call.Direct.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
+        val newTarget = transform(target)
+        val newArguments = arguments.map(transform(_)).toArray
+        val exec = ctx.execution.newRef()
+        isExt match {
+          case TTrue =>
+            porce.ExternalDirectCall.create(newTarget, newArguments, exec)
+          case TFalse =>
+            porce.InternalCall.create(newTarget, newArguments, exec)
+          case TUnknown =>
+            porce.Call.Direct.create(newTarget, newArguments, exec)
+        }
       case porc.MethodDeclaration.Z(t, methods, body) =>
         val closure = lookupVariable(LocalVariables.MethodGroupClosure)
 
