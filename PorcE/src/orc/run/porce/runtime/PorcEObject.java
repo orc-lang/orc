@@ -2,16 +2,20 @@ package orc.run.porce.runtime;
 
 import orc.Accessor;
 import orc.NoSuchMemberAccessor;
+import orc.run.distrib.DOrcMarshalingReplacement;
 import orc.values.Field;
 import orc.values.sites.AccessorValue;
+import scala.Function1;
 
-public final class PorcEObject implements AccessorValue {
+public final class PorcEObject implements AccessorValue, DOrcMarshalingReplacement {
 	// FIXME: DORC: Add marsheling support.
 
 	public final Field[] fieldNames;
 	public final Object[] fieldValues;
 
-	// TODO: PERFORMANCE: Using a frame instead of an array for field values may perform better. Though that will mainly be true when we start using native values.
+	// TODO: PERFORMANCE: Using a frame instead of an array for field values may
+	// perform better. Though that will mainly be true when we start using
+	// native values.
 	public PorcEObject(Field[] fieldNames, Object[] fieldValues) {
 		assert fieldNames.length == fieldValues.length;
 
@@ -39,5 +43,21 @@ public final class PorcEObject implements AccessorValue {
 			}
 		}
 		return new NoSuchMemberAccessor(this, field.name());
+	}
+
+	public boolean isReplacementNeededForMarshaling(Function1<Object, Object> marshalValueWouldReplace) {
+		return JavaMarshalingUtilities.existsMarshalValueWouldReplace(fieldValues, marshalValueWouldReplace);
+	}
+
+	public Object replaceForMarshaling(Function1<Object, Object> marshaler) {
+		return new PorcEObject(fieldNames, JavaMarshalingUtilities.mapMarshaler(fieldValues, marshaler));
+	}
+
+	public boolean isReplacementNeededForUnmarshaling(Function1<Object, Object> unmarshalValueWouldReplace) {
+		return JavaMarshalingUtilities.existsMarshalValueWouldReplace(fieldValues, unmarshalValueWouldReplace);
+	}
+
+	public Object replaceForUnmarshaling(Function1<Object, Object> unmarshaler) {
+		return new PorcEObject(fieldNames, JavaMarshalingUtilities.mapMarshaler(fieldValues, unmarshaler));
 	}
 }
