@@ -1,6 +1,6 @@
 //
 // NoLocationAvailable.scala -- Scala class NoLocationAvailable
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Dec 29, 2015.
 //
@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import orc.error.runtime.TokenException
 

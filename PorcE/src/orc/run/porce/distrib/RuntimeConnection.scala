@@ -1,6 +1,6 @@
 //
 // RuntimeConnection.scala -- Scala classes RuntimeConnection, RuntimeConnectionListener, ExecutionContextSerializationMarker, RuntimeConnectionInputStream, RuntimeConnectionOutputStream, and ClosureReplacement; and objects RuntimeConnectionInitiator and ClosureReplacement
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Jul 12, 2017.
 //
@@ -11,12 +11,11 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import java.io.{ IOException, InputStream, ObjectInputStream, ObjectOutputStream, ObjectStreamException, OutputStream }
 import java.net.{ InetAddress, InetSocketAddress, Socket }
 
-import orc.run.core.{ Closure, ClosureGroup }
 import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
 
 /** A connection between DOrcRuntimes.  Extends SocketObjectConnection to
@@ -194,8 +193,8 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
         assert(xm.executionId == currExecution.get.executionId)
         obj
       }
-      case c: Closure => replaceClosure(c)
-      case cg: ClosureGroup => replaceClosureGroup(cg)
+      //case c: Closure => replaceClosure(c)
+      //case cg: ClosureGroup => replaceClosureGroup(cg)
       case _ => super.replaceObject(obj)
     }
   }
@@ -215,24 +214,24 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
     currDestination = None
   }
 
-  def replaceClosure(c: Closure) = ClosureReplacement(c)
+  //def replaceClosure(c: Closure) = ClosureReplacement(c)
 
-  def replaceClosureGroup(cg: ClosureGroup) = {
-    TokenFieldMarshaling.marshalClosureGroup(cg, currExecution.get, currDestination.get)
-  }
+  //def replaceClosureGroup(cg: ClosureGroup) = {
+  //  TokenFieldMarshaling.marshalClosureGroup(cg, currExecution.get, currDestination.get)
+  //}
 
 }
 
 
-/** Replacement for a Closure for use in serialization.
-  *
-  * @author jthywiss
-  */
-protected case class ClosureReplacement(index: Int, closureGroup: ClosureGroup) {
-  @throws(classOf[ObjectStreamException])
-  protected def readResolve(): AnyRef = new Closure(index, closureGroup)
-}
-
-protected object ClosureReplacement {
-  def apply(c: Closure) = new ClosureReplacement(c.index, c.closureGroup)
-}
+///** Replacement for a Closure for use in serialization.
+//  *
+//  * @author jthywiss
+//  */
+//protected case class ClosureReplacement(index: Int, closureGroup: ClosureGroup) {
+//  @throws(classOf[ObjectStreamException])
+//  protected def readResolve(): AnyRef = new Closure(index, closureGroup)
+//}
+//
+//protected object ClosureReplacement {
+//  def apply(c: Closure) = new ClosureReplacement(c.index, c.closureGroup)
+//}

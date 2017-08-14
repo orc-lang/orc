@@ -1,6 +1,6 @@
 //
 // OrcCmd.scala -- Scala trait OrcCmd and its subclasses
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Dec 21, 2015.
 //
@@ -11,11 +11,12 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import java.net.InetSocketAddress
 
 import orc.{ OrcEvent, OrcExecutionOptions }
+import orc.ast.porc.MethodCPS
 
 /** Command sent to dOrc runtime engines.
   *
@@ -50,8 +51,8 @@ case class RemovePeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId) extends OrcLeader
 ////////
 
 /** Prepare for execution in the given Orc program AST */
-case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programOil: String, options: OrcExecutionOptions) extends OrcLeaderToFollowerCmd {
-  override def toString(): String = s"${getClass.getSimpleName}($executionId,...programOil..,$options)"
+case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programAst: MethodCPS, options: OrcExecutionOptions) extends OrcLeaderToFollowerCmd {
+  override def toString(): String = s"${getClass.getSimpleName}($executionId,...programAst..,$options)"
 }
 
 /** No further execution in this executionId, program AST can be discarded  */

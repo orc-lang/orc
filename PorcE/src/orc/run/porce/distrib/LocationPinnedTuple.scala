@@ -1,6 +1,6 @@
 //
 // LocationPinnedTuple.scala -- Scala classes LocationPinnedTupleConstructor and LocationPinnedTuple
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Jun 27, 2017.
 //
@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import orc.Handle
 import orc.error.OrcException

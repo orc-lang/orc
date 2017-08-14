@@ -23,7 +23,6 @@ import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.nameless.Expression
 import orc.ast.oil.xml.OrcXML
 import orc.error.runtime.ExecutionException
-import orc.run.core.Token
 import orc.util.LatchingSignal
 
 /** Orc runtime engine leading a dOrc cluster.
@@ -71,9 +70,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     installHandlers(root)
     roots.add(root)
 
-    /* Initial program token */
-    val t = new Token(programAst, root)
-    schedule(t)
+    root.runProgram()
 
     Logger.exiting(getClass.getName, "run")
   }

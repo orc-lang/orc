@@ -135,12 +135,12 @@ public class Force {
 				} else if (future instanceof orc.run.porce.runtime.Future) {
 					boundPorcEFuture.enter();
 					Object state = ((orc.run.porce.runtime.Future) future).getInternal();
-					if (!(state instanceof orc.run.porce.runtime.FutureConstants.Sentinal)) {
+					if (!(state instanceof orc.run.porce.runtime.FutureConstants.Sentinel)) {
 						throw new ValueAvailable(state);
 					} else {
 						// TODO: PERFORMANCE: It might be very useful to "forgive" a few hits on this branch, to allow futures that are initially unbound, but then bound for the rest of the run.
 						unboundPorcEFuture.enter();
-						assert state instanceof orc.run.porce.runtime.FutureConstants.Sentinal;
+						assert state instanceof orc.run.porce.runtime.FutureConstants.Sentinel;
 						if (state == orc.run.porce.runtime.FutureConstants.Halt) {
 							c.haltToken();
 						} else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {

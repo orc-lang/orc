@@ -1,6 +1,6 @@
 //
 // DOrcExecution.scala -- Scala classes DOrcExecution, DOrcLeaderExecution, and DOrcFollowerExecution
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Dec 29, 2015.
 //
@@ -11,11 +11,13 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import orc.{ OrcEvent, OrcExecutionOptions }
-import orc.ast.oil.nameless.Expression
-import orc.run.core.Execution
+import orc.run.porce.runtime.PorcEExecution
+import orc.ast.porc.MethodCPS
+import orc.run.porce.runtime.PorcEExecutionHolder
+import orc.compiler.porce.PorcToPorcE
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -35,17 +37,27 @@ import orc.run.core.Execution
 abstract class DOrcExecution(
     val executionId: DOrcExecution#ExecutionId,
     val followerExecutionNum: Int,
-    node: Expression,
+    programAst: MethodCPS,
     options: OrcExecutionOptions,
     eventHandler: OrcEvent => Unit,
     override val runtime: DOrcRuntime)
-  extends Execution(node, options, eventHandler, runtime)
+  extends PorcEExecution(/* node, options,*/ runtime, eventHandler)
   with ValueLocator
   with ValueMarshaler
   with GroupProxyManager
   with RemoteFutureManager
   with RemoteObjectManager
   with RemoteRefIdManager {
+
+  //TODO: Can PorcToPorcE be an object?
+  //TODO: Is PorcEExecutionHolder superfluous now?
+  //TODO: Why does the PorcToPorcE translator need a runtime reference, especially since it already has this execution?
+  val (programPorceAst, programCallTargetMap) = new PorcToPorcE().apply(programAst, new PorcEExecutionHolder(this), runtime)
+
+  //TODO: Move to superclass
+  def runProgram() {
+      scheduleProgram(programPorceAst, programCallTargetMap)
+  }
 
   type ExecutionId = String
 
@@ -85,7 +97,7 @@ object DOrcExecution {
   */
 class DOrcLeaderExecution(
   executionId: DOrcExecution#ExecutionId,
-  programAst: Expression,
+  programAst: MethodCPS,
   options: OrcExecutionOptions,
   eventHandler: OrcEvent => Unit,
   runtime: LeaderRuntime)
@@ -106,7 +118,7 @@ class DOrcLeaderExecution(
 class DOrcFollowerExecution(
   executionId: DOrcExecution#ExecutionId,
   followerExecutionNum: Int,
-  programAst: Expression,
+  programAst: MethodCPS,
   options: OrcExecutionOptions,
   eventHandler: OrcEvent => Unit,
   runtime: FollowerRuntime)

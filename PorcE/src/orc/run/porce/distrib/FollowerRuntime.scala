@@ -1,6 +1,6 @@
 //
 // FollowerRuntime.scala -- Scala classes FollowerRuntime, LeaderLocation, and PeerLocationImpl; and trait ClosableConnection
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Dec 21, 2015.
 //
@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import java.io.{ EOFException, IOException }
 import java.net.{ InetSocketAddress, SocketException }
@@ -24,6 +24,8 @@ import scala.xml.XML
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.xml.OrcXML
 import orc.util.CmdLineParser
+import orc.ast.porc.MethodCPS
+import orc.run.porce.runtime.PorcEExecutionHolder
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -284,7 +286,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcFollowerExecution])
 
-  def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programOil: String, options: OrcExecutionOptions) {
+  def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programAst: MethodCPS, options: OrcExecutionOptions) {
     Logger.entering(getClass.getName, "loadProgram")
 
     assert(programs.isEmpty) /* For now */
@@ -293,12 +295,10 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
       startScheduler(options)
     }
 
-    val programAst = OrcXML.xmlToAst(XML.loadString(programOil))
-    val root = new DOrcFollowerExecution(executionId, runtimeId, programAst, options, sendEvent(leaderLocation, executionId, DOrcExecution.noGroupProxyId), this)
-    installHandlers(root)
+    val followerExecution = new DOrcFollowerExecution(executionId, runtimeId, programAst, options, sendEvent(leaderLocation, executionId, DOrcExecution.noGroupProxyId), this)
 
-    programs.put(executionId, root)
-    roots.add(root)
+    installHandlers(followerExecution)
+    addRoot(followerExecution)
   }
 
   def unloadProgram(executionId: DOrcExecution#ExecutionId) {
@@ -306,8 +306,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     programs.remove(executionId) match {
       case None => Logger.warning(s"Received unload for unknown (or previously unloaded) execution $executionId")
       case Some(removedExecution) =>
-        if (!removedExecution.members.isEmpty) {
-          Logger.fine(s"Unloaded $executionId with ${removedExecution.members.size} group members still in execution")
+        if (!removedExecution.isDone) {
+          Logger.fine(s"Unloaded $executionId with group members still in execution")
         }
     }
 

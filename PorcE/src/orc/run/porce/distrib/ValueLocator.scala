@@ -1,6 +1,6 @@
 //
 // ValueLocator.scala -- Scala traits ValueLocator, Location, LocationPolicy, and MigrationDecision
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Dec 28, 2015.
 //
@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 /** Given an Orc value, find the locations for that value.
   *

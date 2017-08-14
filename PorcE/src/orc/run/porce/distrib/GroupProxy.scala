@@ -1,6 +1,6 @@
 //
 // GroupProxy.scala -- Scala classes RemoteGroupProxy and RemoteGroupMembersProxy, and trait GroupProxyManager
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Dec 25, 2015.
 //
@@ -11,10 +11,9 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import orc.{ CaughtEvent, OrcEvent, Schedulable }
-import orc.run.core.{ Execution, Group, GroupMember, Token }
 
 /** Proxy for a group the resides on a remote dOrc node.
   * RemoteGroupProxy is created locally when a token has been migrated from

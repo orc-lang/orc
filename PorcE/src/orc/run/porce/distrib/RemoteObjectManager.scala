@@ -13,16 +13,9 @@
 
 package orc.run.porce.distrib
 
-import com.oracle.truffle.api.RootCallTarget
-
-import orc.run.porce.runtime.Terminator
-import orc.run.porce.runtime.Counter
-import orc.run.porce.runtime.PorcEExecution
-import orc.run.distrib.RemoteObjectRef
-import orc.run.distrib.RemoteRef
 import java.util.concurrent.atomic.AtomicLong
-import orc.run.distrib.PeerLocation
-import orc.run.porce.PorcERootNode
+
+import orc.run.porce.runtime.{ Counter, PorcEExecution, Terminator }
 
 /** A utility class to store a bidirectional mapping between object and Id.
   *

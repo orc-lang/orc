@@ -1,5 +1,5 @@
 //
-// CallTargetManager.scala -- Trait CallTargetManager
+// CallTargetManager.scala -- Scala trait CallTargetManager
 // Project PorcE
 //
 // Created by amp on Aug 11, 2017.

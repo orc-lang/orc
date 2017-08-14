@@ -1,6 +1,6 @@
 //
 // ValueMarshaler.scala -- Scala traits ValueMarshaler, DOrcMarshalingNotifications, and DOrcMarshalingReplacement
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Mar 3, 2017.
 //
@@ -11,11 +11,9 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import scala.collection.mutable.WeakHashMap
-
-import orc.run.core.Closure
 
 /** A mix-in to marshal and unmarshal Orc program values.
   *
@@ -40,7 +38,6 @@ trait ValueMarshaler { self: DOrcExecution =>
       case null => false
       case ro: RemoteObjectRef => true
       case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => false
-      case c: Closure if self.permittedLocations(c).contains(destination) => false
       case _ /* Cannot be marshaled to this destination */ => true
     }
   }
@@ -60,7 +57,6 @@ trait ValueMarshaler { self: DOrcExecution =>
       case null => null
       case ro: RemoteObjectRef => ro.marshal()
       case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => v
-      case c: Closure if self.permittedLocations(c).contains(destination) => c
       case v /* Cannot be marshaled to this destination */ => {
         new RemoteObjectRef(self.remoteIdForObject(v)).marshal()
       }

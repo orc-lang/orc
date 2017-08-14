@@ -1,6 +1,6 @@
 //
 // Tracer.scala -- Scala object Tracer
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Feb 21, 2017.
 //
@@ -11,11 +11,11 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import orc.OrcRuntime
 
-/** Tracer utility for orc.run.distrib package. 
+/** Tracer utility for orc.run.porce.distrib package. 
   *
   * @see orc.util.Tracer
   * @author jthywiss

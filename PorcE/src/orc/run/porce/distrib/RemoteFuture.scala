@@ -1,6 +1,6 @@
 //
 // RemoteFuture.scala -- Scala classes RemoteFuture and RemoteFutureReader, and trait RemoteFutureManager
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Jan 13, 2016.
 //
@@ -11,16 +11,15 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
-import orc.error.OrcException
-import orc.run.core.{ Blockable, Blocker, Execution, Future, LocalFuture }
+import orc.{ Future, FutureReader }
 
 /** A reference to an GraftGroup value at another Location.
   *
   * @author jthywiss
   */
-class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends LocalFuture(execution.runtime) with RemoteRef {
+class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends orc.run.porce.runtime.Future() with RemoteRef {
   override type RemoteRefId = Long
 
   override def toString = super.toString + f"(remoteRefId=$remoteRefId%#x)"
@@ -32,7 +31,7 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
   *
   * @author jthywiss
   */
-class RemoteFutureReader(val fut: Future, val execution: Execution, futureId: RemoteFutureRef#RemoteRefId) extends Blockable {
+class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId: RemoteFutureRef#RemoteRefId) extends FutureReader {
 
   protected val readerLocations = new scala.collection.mutable.HashSet[PeerLocation]()
 
@@ -49,33 +48,14 @@ class RemoteFutureReader(val fut: Future, val execution: Execution, futureId: Re
     readers
   }
 
-  override def awakeNonterminalValue(v: AnyRef) = synchronized {
-    throw new AssertionError("awakeNonterminalValue called on RemoteFutureReader (This is an interpreter bug).")
+  override def publish(v: AnyRef) = synchronized {
+    //Logger.entering(getClass.getName, "publish")
+    execution.sendFutureResult(getAndClearReaders(), futureId, Some(v))
   }
 
-  override def awakeTerminalValue(v: AnyRef) = synchronized {
-    //Logger.entering(getClass.getName, "awakeNonterminalValue")
-    val dorcExecution = execution.asInstanceOf[DOrcExecution]
-    dorcExecution.sendFutureResult(getAndClearReaders(), futureId, Some(v))
-  }
-
-  override def awakeStop() = synchronized {
-    //Logger.entering(getClass.getName, "awakeStop")
-    val dorcExecution = execution.asInstanceOf[DOrcExecution]
-    dorcExecution.sendFutureResult(getAndClearReaders(), futureId, None)
-  }
-
-  override def awakeException(e: OrcException) = throw new AssertionError(s"RemoteFutureReader.awakeException($e) called; Futures don't call this on their blockables")
-
-  override def blockOn(b: Blocker) = {}
-
-  override def setQuiescent(): Unit = throw new AssertionError("RemoteFutureReader.setQuiescent() called; Futures don't call this on their blockables")
-
-  override def unsetQuiescent(): Unit = throw new AssertionError("RemoteFutureReader.unsetQuiescent() called; Futures don't call this on their blockables")
-
-  override def run() {
-    //Logger.entering(getClass.getName, "run")
-    fut.check(this)
+  override def halt() = synchronized {
+    //Logger.entering(getClass.getName, "halt")
+    execution.sendFutureResult(getAndClearReaders(), futureId, None)
   }
 
 }

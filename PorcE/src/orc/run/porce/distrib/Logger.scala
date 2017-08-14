@@ -1,6 +1,6 @@
 //
 // Logger.scala -- Scala object Logger
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Nov 14, 2015.
 //
@@ -11,13 +11,13 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 /** Logger for the orc.lib.dorc subsystem.
   *
   * @author jthywiss
   */
-object Logger extends orc.util.Logger("orc.run.distrib") {
+object Logger extends orc.util.Logger("orc.run.porce.distrib") {
   Logger.julLogger.setUseParentHandlers(false)
   Logger.julLogger.setLevel(java.util.logging.Level.FINEST)
   val ch = new java.util.logging.ConsoleHandler()

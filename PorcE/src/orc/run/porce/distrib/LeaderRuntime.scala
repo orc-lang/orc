@@ -1,6 +1,6 @@
 //
 // LeaderRuntime.scala -- Scala classes LeaderRuntime, FollowerLocation, and FollowerConnectionClosedEvent
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Dec 21, 2015.
 //
@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import java.io.EOFException
 import java.net.InetSocketAddress
@@ -20,10 +20,10 @@ import scala.collection.JavaConverters.{ asScalaBufferConverter, mapAsScalaConcu
 import scala.util.control.NonFatal
 
 import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
-import orc.ast.oil.nameless.Expression
-import orc.ast.oil.xml.OrcXML
+import orc.ast.porc.MethodCPS
+import orc.compiler.porce.PorcToPorcE
 import orc.error.runtime.ExecutionException
-import orc.run.core.Token
+import orc.run.porce.runtime.PorcEExecutionHolder
 import orc.util.LatchingSignal
 
 /** Orc runtime engine leading a dOrc cluster.
@@ -53,27 +53,25 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcLeaderExecution])
 
-  override def run(programAst: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
+  override def run(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     val followers = Map(options.followerSockets.asScala.toSeq.zipWithIndex.map( { case (s, i) => (i+1, s) } ): _*)
     connectToFollowers(followers)
 
-    val programOil = OrcXML.astToXml(programAst).toString
     val thisExecutionId = DOrcExecution.freshExecutionId()
 
     Logger.fine(s"starting scheduler")
     startScheduler(options: OrcExecutionOptions)
 
-    val root = new DOrcLeaderExecution(thisExecutionId, programAst, options, { e => handleExecutionEvent(thisExecutionId, e); eventHandler(e) }, this)
-    programs.put(thisExecutionId, root)
+    val leaderExecution = new DOrcLeaderExecution(thisExecutionId, programAst, options, { e => handleExecutionEvent(thisExecutionId, e); eventHandler(e) }, this)
 
-    followerEntries foreach { _._2.send(LoadProgramCmd(thisExecutionId, programOil, options)) }
+    programs.put(thisExecutionId, leaderExecution)
 
-    installHandlers(root)
-    roots.add(root)
+    followerEntries foreach { _._2.send(LoadProgramCmd(thisExecutionId, programAst, options)) }
 
-    /* Initial program token */
-    val t = new Token(programAst, root)
-    schedule(t)
+    installHandlers(leaderExecution)
+    addRoot(leaderExecution)
+
+    leaderExecution.runProgram()
 
     Logger.exiting(getClass.getName, "run")
   }
@@ -140,7 +138,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   @throws(classOf[ExecutionException])
   @throws(classOf[InterruptedException])
-  override def runSynchronous(programAst: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
+  override def runSynchronous(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     synchronized {
       if (runSyncThread != null) throw new IllegalStateException("runSynchronous on an engine that is already running synchronously")
       runSyncThread = Thread.currentThread()

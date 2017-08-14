@@ -1,6 +1,6 @@
 //
 // TokenMarshaling.scala -- Scala class TokenReplacement and its auxiliary classes
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Dec 26, 2015.
 //
@@ -11,11 +11,8 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
-import orc.ast.AST
-import orc.ast.oil.nameless.{ Def, Expression }
-import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundStop, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, Future, FutureFrame, Group, GroupFrame, LocalFuture, SequenceFrame, Token, TokenState, VirtualClock }
 
 /** Replacement for a Token for use in serialization.
   *

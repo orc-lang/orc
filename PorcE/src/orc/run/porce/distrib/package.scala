@@ -1,5 +1,5 @@
 //
-// package.scala -- orc.run.porce.distrib, but really just for developer documentation.
+// package.scala -- Scala package object for package orc.run.porce.distrib
 // Project PorcE
 //
 // Created by amp on Aug 11, 2017.
@@ -83,5 +83,5 @@ package orc.run.porce
  */
 
 package object distrib {
-
+  type PeerLocation = Location[OrcPeerCmd]
 }

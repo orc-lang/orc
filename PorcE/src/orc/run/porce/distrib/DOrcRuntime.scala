@@ -1,6 +1,6 @@
 //
 // DOrcRuntime.scala -- Scala class DOrcRuntime
-// Project OrcScala
+// Project ProcE
 //
 // Created by jthywiss on Dec 29, 2015.
 //
@@ -11,12 +11,13 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.porce.distrib
 
 import scala.collection.JavaConversions.collectionAsScalaIterable
 
 import orc.run.StandardOrcRuntime
 import orc.run.extensions.SupportForDOrc
+import orc.run.porce.runtime.PorcERuntime
 
 /** Distributed Orc (dOrc) Runtime Engine.
   *
@@ -26,7 +27,7 @@ import orc.run.extensions.SupportForDOrc
   *
   * @author jthywiss
   */
-abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String) extends StandardOrcRuntime(engineInstanceName) with SupportForDOrc {
+abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String) extends PorcERuntime(engineInstanceName) with SupportForDOrc {
 
   /* For now, runtime IDs and Execution follower numbers are the same.  When
    * we host more than one execution in an engine, they will be different. */

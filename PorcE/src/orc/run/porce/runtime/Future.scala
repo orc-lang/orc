@@ -27,7 +27,7 @@ import java.util.ArrayList
   * in the critical paths. The trade off is that Future contains an
   * extra couple of pointers.
   */
-final class Future() extends OrcValue with orc.Future {
+class Future() extends OrcValue with orc.Future {
   import FutureConstants._
 
   // TODO: PERFORMANCE: Using an ArrayList here forces the use of a lock. Ideally we would avoid that. However, it would be quite a lot of work and may not gain much. Profile first.
