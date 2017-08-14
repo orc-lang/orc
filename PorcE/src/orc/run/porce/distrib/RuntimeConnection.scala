@@ -171,9 +171,9 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
     currExecution = None
   }
 
-  def resolveClosureGroup(cgr: ClosureGroupReplacement) = {
-    cgr.unmarshalClosureGroup(currExecution.get, currOrigin.get)
-  }
+  //def resolveClosureGroup(cgr: ClosureGroupReplacement) = {
+  //  cgr.unmarshalClosureGroup(currExecution.get, currOrigin.get)
+  //}
 
 }
 

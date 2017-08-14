@@ -60,7 +60,7 @@ class PorcToPorcE() {
     require(root.porcNode().isDefined, s"$root")
     require(root.porcNode().get.isInstanceOf[ASTWithIndex], s"${root.porcNode().get}")
     require(root.porcNode().get.asInstanceOf[ASTWithIndex].optionalIndex.isDefined, s"${root.porcNode().get}")
-    val callTarget = Truffle.getRuntime().createCallTarget(root)
+    val callTarget = root.getCallTarget()
     closureMap += (root.getId() -> callTarget)
     callTarget
   }

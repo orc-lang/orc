@@ -259,8 +259,21 @@ final case class MethodDirect(name: Variable, isRoutine: Boolean, arguments: Seq
   * This call will halt if `target` is killed after discorporating.
   */
 @leaf @transform
-final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression {
+final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression with ASTWithIndex {
   require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+  
+  @throws[IOException]
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
+    out.writeObject(optionalIndex)
+  }
+  
+  @throws[IOException]
+  @throws[ClassNotFoundException]
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    optionalIndex = in.readObject().asInstanceOf[Option[Int]]
+  }
 }
 @leaf @transform
 final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression {
