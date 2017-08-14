@@ -17,8 +17,14 @@ import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.RootCallTarget
 import orc.ast.ASTWithIndex
 import orc.util.{ TTrue, TUnknown, TFalse }
+ 
+object PorcToPorcE {
+  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
+    new PorcToPorcE()(m, execution)
+  }
+}
 
-class PorcToPorcE {
+class PorcToPorcE() {
   case class Context(
     descriptor: FrameDescriptor, execution: PorcEExecutionHolder,
     argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
@@ -59,9 +65,14 @@ class PorcToPorcE {
     callTarget
   }
 
-  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder, runtime: PorcERuntime): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
+  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
     val descriptor = new FrameDescriptor()
-    implicit val ctx = Context(descriptor = descriptor, execution = execution, argumentVariables = Seq(m.pArg, m.cArg, m.tArg), closureVariables = Seq(), runtime = runtime)
+    implicit val ctx = Context(
+      descriptor = descriptor,
+      execution = execution,
+      argumentVariables = Seq(m.pArg, m.cArg, m.tArg),
+      closureVariables = Seq(),
+      runtime = execution.newRef().get().runtime)
     val newBody = transform(m.body.toZipper())
     val rootNode = porce.PorcERootNode.create(descriptor, newBody, 3, 0)
     rootNode.setPorcAST(m)

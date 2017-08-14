@@ -49,10 +49,7 @@ abstract class DOrcExecution(
   with RemoteObjectManager
   with RemoteRefIdManager {
 
-  //TODO: Can PorcToPorcE be an object?
-  //TODO: Is PorcEExecutionHolder superfluous now?
-  //TODO: Why does the PorcToPorcE translator need a runtime reference, especially since it already has this execution?
-  val (programPorceAst, programCallTargetMap) = new PorcToPorcE().apply(programAst, new PorcEExecutionHolder(this), runtime)
+  val (programPorceAst, programCallTargetMap) = PorcToPorcE(programAst, new PorcEExecutionHolder(this))
 
   //TODO: Move to superclass
   def runProgram() {

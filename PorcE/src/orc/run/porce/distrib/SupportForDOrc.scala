@@ -68,6 +68,11 @@ class DOrcInvoker(target: AnyRef, arguments: Array[AnyRef], localInvoker: Invoke
 
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     //TODO: Capture target && arguments weakly?
+    //   amp: This would actually be complicated potentially have a large performance 
+    //        penalty since it would require that we use truffle Assumptions to invalidate
+    //        the compiled code, then update and recompile it. 
+    //        The caches are limited to a small number of elements (less than 10), so I 
+    //        don't think we can leak much.
     this.target == target && this.arguments == arguments && localInvoker.canInvoke(target, arguments)
   }
 

@@ -41,7 +41,6 @@ case class PorcEBackend() extends PorcBackend {
     //val cache = new collection.mutable.HashMap[MethodCPS, (PorcEExecutionHolder, PorcEClosure)]()
 
     private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecution = synchronized {
-      val translator = new PorcToPorcE
       /*val porceAst = cache.get(ast) match {
         case Some((holder, porceAst)) => {
           if(holder.setExecution(execution)) {
@@ -64,7 +63,7 @@ case class PorcEBackend() extends PorcBackend {
 	    */
       val execution = new PorcEExecution(this, k)
       val executionHolder = new PorcEExecutionHolder(execution)
-      val (porceAst, map) = translator(ast, executionHolder, this)
+      val (porceAst, map) = PorcToPorcE(ast, executionHolder)
       addRoot(execution)
       execution.scheduleProgram(porceAst, map)
       execution

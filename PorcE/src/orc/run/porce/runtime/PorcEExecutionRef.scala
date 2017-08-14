@@ -4,6 +4,7 @@ import com.oracle.truffle.api.utilities.CyclicAssumption
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.nodes.InvalidAssumptionException
 
+// TODO: Remove this. It is only needed if we want to be able to run the same PorcE AST in multiple executions and that is probably not needed.
 class PorcEExecutionHolder(exec: PorcEExecution) {
   holder =>
 
