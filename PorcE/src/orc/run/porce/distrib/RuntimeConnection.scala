@@ -17,6 +17,7 @@ import java.io.{ IOException, InputStream, ObjectInputStream, ObjectOutputStream
 import java.net.{ InetAddress, InetSocketAddress, Socket }
 
 import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
+import com.oracle.truffle.api.RootCallTarget
 
 /** A connection between DOrcRuntimes.  Extends SocketObjectConnection to
   * provide extra serialization support for Orc/dOrc values.
@@ -145,8 +146,10 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
         currExecution = Some((currExecutionLookup.get)(xm.executionId))
         obj
       }
-      /* ClosureReplacement: see ClosureReplacement.readResolve() */
-      case cgr: ClosureGroupReplacement => resolveClosureGroup(cgr)
+      case RootCallTargetReplacement(index) =>
+        currExecution.get.idToCallTarget(index)
+      ///* ClosureReplacement: see ClosureReplacement.readResolve() */
+      //case cgr: ClosureGroupReplacement => resolveClosureGroup(cgr)
       case _ => super.resolveObject(obj)
     }
   }
@@ -193,6 +196,8 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
         assert(xm.executionId == currExecution.get.executionId)
         obj
       }
+      case ct: RootCallTarget =>
+        RootCallTargetReplacement(currExecution.get.callTargetToId(ct))
       //case c: Closure => replaceClosure(c)
       //case cg: ClosureGroup => replaceClosureGroup(cg)
       case _ => super.replaceObject(obj)
@@ -222,6 +227,7 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
 
 }
 
+protected final case class RootCallTargetReplacement(index: Int)
 
 ///** Replacement for a Closure for use in serialization.
 //  *
