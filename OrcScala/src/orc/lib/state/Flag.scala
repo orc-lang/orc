@@ -34,16 +34,18 @@ import orc.values.sites.NonBlockingSite
 import orc.values.sites.Effects
 import orc.values.sites.EffectFreeSite
 
+// It is critical that this stays non-serializable so that DOrc cannot copy it.
 final class Flag {
-  val _value = new AtomicBoolean(false)
+  @volatile
+  var _value = false
 
   @inline
   def set(): Unit = {
-    _value.set(true)
+    _value = true
   }
 
   @inline
-  def get() = _value.get()
+  def get() = _value
 
   override def toString = s"<Flag: ${get()}>"
 }
