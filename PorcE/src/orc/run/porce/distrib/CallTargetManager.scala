@@ -14,6 +14,7 @@
 package orc.run.porce.distrib
 
 import com.oracle.truffle.api.RootCallTarget
+import orc.run.porce.runtime.CallRecord
 
 /** The interface to map RootCallTargets to/from Ints for serialization.
   *
@@ -24,4 +25,6 @@ import com.oracle.truffle.api.RootCallTarget
 trait CallTargetManager {
   def callTargetToId(callTarget: RootCallTarget): Int
   def idToCallTarget(id: Int): RootCallTarget
+
+  def invokeCallRecord(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit
 }

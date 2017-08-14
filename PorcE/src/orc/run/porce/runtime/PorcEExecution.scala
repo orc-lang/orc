@@ -16,6 +16,7 @@ import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
 import orc.run.porce.distrib.CallTargetManager
 import orc.run.porce.HasId
+import orc.run.porce.InvokeCallRecordRootNode
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager {
@@ -113,5 +114,12 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   def idToCallTarget(id: Int): RootCallTarget = {
     callTargetMap(id)
+  }
+  
+  val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
+
+  def invokeCallRecord(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    val callTarget = callSiteMap.computeIfAbsent(callRecord.callSiteId, (_) => new InvokeCallRecordRootNode(arguments.length, this).getCallTarget())
+    callTarget.call(Array(null, target) ++: arguments)
   }
 }

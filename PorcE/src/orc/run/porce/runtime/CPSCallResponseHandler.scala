@@ -7,8 +7,9 @@ import orc.error.OrcException
 import orc.CaughtEvent
 import orc.compile.parse.OrcSourceRange
 import orc.OrcRuntime
+import orc.run.porce.distrib.DOrcMarshalingReplacement
 
-final class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator) extends AtomicBoolean with Handle with Terminatable {
+final class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator, val callSiteId: Int) extends AtomicBoolean with Handle with Terminatable {
   // The value stored in the AtomicBoolean is a flag saying if we have already halted.
 
   val runtime = execution.runtime
@@ -70,8 +71,36 @@ final class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcECl
       t.removeChild(this)
     }
   }
+  
+  def callRecord = new CallRecord(p, c, t, callSiteId)
 
   override def toString() = {
     s"CPSCallResponseHandler@${hashCode().formatted("%x")}(${get()})"
   }
+}
+
+class CallRecord private (p_ : AnyRef, c_ : AnyRef, t_ : AnyRef, val callSiteId: Int) extends DOrcMarshalingReplacement with Serializable {
+  def this(p: PorcEClosure, c: Counter, t: Terminator, callSiteId: Int) = {
+    this(p: AnyRef, c: AnyRef, t: AnyRef, callSiteId)
+  }
+  
+  override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean = {
+    marshalValueWouldReplace(p_) || marshalValueWouldReplace(c_) || marshalValueWouldReplace(t_) 
+  }
+
+  override def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef = {
+    new CallRecord(marshaler(p_), marshaler(c_), marshaler(t_), callSiteId) 
+  }
+
+  override def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean = {
+    unmarshalValueWouldReplace(p_) || unmarshalValueWouldReplace(c_) || unmarshalValueWouldReplace(t_) 
+  }
+
+  override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef) = {
+    new CallRecord(unmarshaler(p_), unmarshaler(c_), unmarshaler(t_), callSiteId) 
+  }
+  
+  def p: PorcEClosure = p_.asInstanceOf[PorcEClosure]
+  def c: Counter = c_.asInstanceOf[Counter]
+  def t: Terminator = t_.asInstanceOf[Terminator]
 }
