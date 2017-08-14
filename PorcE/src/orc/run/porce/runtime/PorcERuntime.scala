@@ -24,11 +24,10 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   with PorcEInvocationBehavior
-  // with SupportForPorcEClosure
   with PorcEWithWorkStealingScheduler
   with SupportForRwait
   with SupportForSynchronousExecution
-  with PorcERuntimeOperations // with SupportForSchedulerUseProfiling 
+  // with SupportForSchedulerUseProfiling 
   {
 
   override def removeRoot(arg: ExecutionRoot) = synchronized {
@@ -39,11 +38,17 @@ class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   def addRoot(root: ExecutionRoot) = roots.add(root)
 
   def beforeExecute(): Unit = {
-    PorcERuntime.resetStackDepth()
+    //PorcERuntime.resetStackDepth()
+  }
+  
+  @TruffleBoundary @noinline
+  def spawn(c: Counter, computation: PorcEClosure): Unit = {
+    schedule(CallClosureSchedulable(computation))
   }
 }
 
 object PorcERuntime {
+  /*
   val stackDepthThreadLocal = new ThreadLocal[Int]() {
     override def initialValue() = {
       0
@@ -69,15 +74,5 @@ object PorcERuntime {
   }
 
   val maxStackDepth = -1 // 24
+  */
 }
-
-/*
-trait SupportForPorcEClosure extends InvocationBehavior {
-  abstract override def getInvoker(target: AnyRef, arguments: Array[AnyRef]): Invoker = {
-    
-  }
-  
-  abstract override def getAccessor(target: AnyRef, field: Field): Accessor = {
-  }
-}
-*/ 
