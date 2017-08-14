@@ -92,27 +92,27 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         val newX = newName(x)
         Let(newX, renameVariables(v), renameVariables(b)(mapping + ((x, newX))))
       case Continuation.Z(args, b) =>
-        val newArgs = args.map(newName)
+        val newArgs = args.map(newName).view.force
         Continuation(newArgs, renameVariables(b)(mapping ++ (args zip newArgs)))
       case MethodDeclaration.Z(t, methods, b) =>
         val newMethodNames = methods.map(m => newName(m.name))
         val newMapping = mapping ++ (methods.map(_.name) zip newMethodNames)
-        val newMethods = methods.map(m => renameVariables(m)(newMapping))
+        val newMethods = methods.map(m => renameVariables(m)(newMapping)).view.force
         MethodDeclaration(renameVariables(t), newMethods, renameVariables(b)(newMapping))
       case a: Argument.Z =>
         renameVariables(a)
       case CallContinuation.Z(t, args) =>
-        CallContinuation(renameVariables(t), args.map(renameVariables))
+        CallContinuation(renameVariables(t), args.map(renameVariables).view.force)
       case Force.Z(p, c, t, futs) =>
-        Force(renameVariables(p), renameVariables(c), renameVariables(t), futs.map(renameVariables))
+        Force(renameVariables(p), renameVariables(c), renameVariables(t), futs.map(renameVariables).view.force)
       case Resolve.Z(p, c, t, futs) =>
-        Resolve(renameVariables(p), renameVariables(c), renameVariables(t), futs.map(renameVariables))
+        Resolve(renameVariables(p), renameVariables(c), renameVariables(t), futs.map(renameVariables).view.force)
       case Sequence.Z(exprs) =>
         Sequence(exprs.map(renameVariables))
       case MethodCPSCall.Z(external, target, p, c, t, args) =>
-        MethodCPSCall(external, renameVariables(target), renameVariables(p), renameVariables(c), renameVariables(t), args.map(renameVariables))
+        MethodCPSCall(external, renameVariables(target), renameVariables(p), renameVariables(c), renameVariables(t), args.map(renameVariables).view.force)
       case MethodDirectCall.Z(external, target, args) =>
-        MethodDirectCall(external, renameVariables(target), args.map(renameVariables))
+        MethodDirectCall(external, renameVariables(target), args.map(renameVariables).view.force)
       case IfLenientMethod.Z(a, left, right) =>
         IfLenientMethod(renameVariables(a), renameVariables(left), renameVariables(right))
       case GetField.Z(o, f) =>

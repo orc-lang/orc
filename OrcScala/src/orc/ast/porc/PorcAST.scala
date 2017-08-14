@@ -103,7 +103,9 @@ final class Variable(val optionalName: Option[String] = None) extends Argument w
 }
 
 @leaf @transform
-final case class CallContinuation(@subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression
+final case class CallContinuation(@subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+}
 
 @leaf @transform
 final case class Let(x: Variable, @subtree v: Expression, @subtree body: Expression) extends Expression with hasOptionalVariableName {
@@ -116,7 +118,7 @@ final case class Let(x: Variable, @subtree v: Expression, @subtree body: Express
 
 @leaf @transform
 final case class Sequence(@subtree es: Seq[Expression]) extends Expression {
-  //assert(!es.isEmpty)
+  require(!es.isInstanceOf[collection.TraversableView[_, _]])
 }
 object Sequence {
   def apply(es: Seq[Expression]): Expression = {
@@ -139,6 +141,7 @@ object Sequence {
 
 @leaf @transform
 final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression with hasOptionalVariableName with ASTWithIndex {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
   override def boundVars: Set[Variable] = arguments.toSet
 }
 
@@ -193,10 +196,12 @@ object Method {
 
 @leaf @transform
 final case class MethodCPS(name: Variable, pArg: Variable, cArg: Variable, tArg: Variable, isRoutine: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
   override def allArguments: Seq[Variable] = pArg +: cArg +: tArg +: arguments
 }
 @leaf @transform
 final case class MethodDirect(name: Variable, isRoutine: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
   override def allArguments: Seq[Variable] = arguments
 }
 
@@ -207,9 +212,13 @@ final case class MethodDirect(name: Variable, isRoutine: Boolean, arguments: Seq
   * This call will halt if `target` is killed after discorporating.
   */
 @leaf @transform
-final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression
+final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+}
 @leaf @transform
-final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression
+final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+}
 
 @leaf @transform
 final case class IfLenientMethod(@subtree argument: Argument, @subtree left: Expression, @subtree right: Expression) extends Expression
@@ -306,7 +315,9 @@ final case class BindStop(@subtree future: Argument) extends Expression
   * This consumes a token of c and passes it to p and finally removes it.
   */
 @leaf @transform
-final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression
+final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression {
+  require(!futures.isInstanceOf[collection.TraversableView[_, _]])
+}
 /** Resolve a sequence of futures.
   *
   * This calls p when every future is either stopped or resolved to a value.
@@ -314,4 +325,6 @@ final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: A
   * This consumes a token of c and passes it to p and finally removes it.
   */
 @leaf @transform
-final case class Resolve(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression
+final case class Resolve(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression {
+  require(!futures.isInstanceOf[collection.TraversableView[_, _]])
+}
