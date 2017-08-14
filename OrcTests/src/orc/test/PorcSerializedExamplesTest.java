@@ -14,9 +14,7 @@ package orc.test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.lang.reflect.Field;
 
-import orc.ast.oil.nameless.Expression;
 import orc.script.OrcBindings;
 import orc.script.OrcScriptEngine;
 import orc.test.TestUtils.OrcTestCase;
@@ -46,14 +44,16 @@ public class PorcSerializedExamplesTest {
         public void runTest() throws Throwable {
             System.out.println("\n==== Starting " + orcFile + " ====");
             final OrcScriptEngine<Object>.OrcCompiledScript compiledScript = OrcForTesting.compile(orcFile.getPath(), bindings);
+            @SuppressWarnings("unchecked")
             final OrcScriptEngine<Object> engine = (OrcScriptEngine<Object>) compiledScript.getEngine();
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             engine.save(compiledScript, out);
             out.close();
+            byte[] data = out.toByteArray();
+            System.out.println("Serialized size = " + data.length + " bytes");
             
-            
-            final OrcScriptEngine<Object>.OrcCompiledScript compiledScriptAfter = engine.loadDirectly(new ByteArrayInputStream(out.toByteArray()));
+            final OrcScriptEngine<Object>.OrcCompiledScript compiledScriptAfter = engine.loadDirectly(new ByteArrayInputStream(data));
 
             // Execution
             final String actual = OrcForTesting.run(compiledScriptAfter, TESTING_TIMEOUT);
@@ -62,19 +62,4 @@ public class PorcSerializedExamplesTest {
             }
         }
     }
-
-    static Expression getAstRoot(final OrcScriptEngine<Object>.OrcCompiledScript compiledScript) throws SecurityException, NoSuchFieldException, IllegalAccessException {
-        // Violate access controls of OrcCompiledScript.astRoot field
-        final Field codeField = compiledScript.getClass().getDeclaredField("code");
-        codeField.setAccessible(true);
-        return (Expression) codeField.get(compiledScript);
-    }
-
-    static void setAstRoot(final OrcScriptEngine<Object>.OrcCompiledScript compiledScript, final Expression astRoot) throws SecurityException, NoSuchFieldException, IllegalAccessException {
-        // Violate access controls of OrcCompiledScript.astRoot field
-        final Field codeField = compiledScript.getClass().getDeclaredField("code");
-        codeField.setAccessible(true);
-        codeField.set(compiledScript, astRoot);
-    }
-
 }
