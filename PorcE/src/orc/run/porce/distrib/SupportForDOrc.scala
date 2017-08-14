@@ -16,13 +16,12 @@ package orc.run.porce.distrib
 import orc.{ Handle, Invoker }
 import orc.run.Orc
 
-/** SupportForDOrc adds facilities for distributed Orc calls to an Orc runtime engine
+/** Adds facilities for distributed Orc calls to an Orc runtime engine.
   *
   * @author jthywiss
   */
 trait SupportForDOrc extends Orc {
   override def getInvoker(target: AnyRef, arguments: Array[AnyRef]) = {
-    //TODO: When we allow "moves" of values, i.e. currentLocations set can drop locations, then this needs to be reworked
     if (!target.isInstanceOf[RemoteRef] && !arguments.exists(_.isInstanceOf[RemoteRef]) &&
       !target.isInstanceOf[LocationPolicy] && !arguments.exists(_.isInstanceOf[LocationPolicy])) {
       /* Assumption: PorcE will get a new invoker later if this call site is later
