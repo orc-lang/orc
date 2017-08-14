@@ -1,6 +1,6 @@
 //
 // Logger.scala -- Scala object Logger
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Nov 14, 2015.
 //

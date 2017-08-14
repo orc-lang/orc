@@ -1,6 +1,6 @@
 //
 // GroupProxy.scala -- Scala classes RemoteGroupProxy and RemoteGroupMembersProxy, and trait GroupProxyManager
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Dec 25, 2015.
 //

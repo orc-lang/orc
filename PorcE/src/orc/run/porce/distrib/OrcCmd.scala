@@ -1,6 +1,6 @@
 //
 // OrcCmd.scala -- Scala trait OrcCmd and its subclasses
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Dec 21, 2015.
 //

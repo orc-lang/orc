@@ -1,6 +1,6 @@
 //
 // RemoteFuture.scala -- Scala classes RemoteFuture and RemoteFutureReader, and trait RemoteFutureManager
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Jan 13, 2016.
 //

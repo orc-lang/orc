@@ -1,6 +1,6 @@
 //
 // DOrcRuntime.scala -- Scala class DOrcRuntime
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Dec 29, 2015.
 //

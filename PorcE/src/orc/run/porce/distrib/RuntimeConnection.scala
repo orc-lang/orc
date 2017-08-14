@@ -1,6 +1,6 @@
 //
 // RuntimeConnection.scala -- Scala classes RuntimeConnection, RuntimeConnectionListener, ExecutionContextSerializationMarker, RuntimeConnectionInputStream, RuntimeConnectionOutputStream, and ClosureReplacement; and objects RuntimeConnectionInitiator and ClosureReplacement
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Jul 12, 2017.
 //

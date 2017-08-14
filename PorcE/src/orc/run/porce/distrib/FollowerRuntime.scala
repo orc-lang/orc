@@ -1,6 +1,6 @@
 //
 // FollowerRuntime.scala -- Scala classes FollowerRuntime, LeaderLocation, and PeerLocationImpl; and trait ClosableConnection
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Dec 21, 2015.
 //

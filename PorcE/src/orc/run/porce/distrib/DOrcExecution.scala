@@ -1,6 +1,6 @@
 //
 // DOrcExecution.scala -- Scala classes DOrcExecution, DOrcLeaderExecution, and DOrcFollowerExecution
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Dec 29, 2015.
 //

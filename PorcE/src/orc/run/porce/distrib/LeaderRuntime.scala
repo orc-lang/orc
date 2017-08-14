@@ -1,6 +1,6 @@
 //
 // LeaderRuntime.scala -- Scala classes LeaderRuntime, FollowerLocation, and FollowerConnectionClosedEvent
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Dec 21, 2015.
 //

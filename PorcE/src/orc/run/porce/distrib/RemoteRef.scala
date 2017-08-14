@@ -1,6 +1,6 @@
 //
 // RemoteRef.scala -- Scala traits RemoteRef and RemoteRefIdManager
-// Project ProcE
+// Project PorcE
 //
 // Created by jthywiss on Jan 5, 2016.
 //
