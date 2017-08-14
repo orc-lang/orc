@@ -22,6 +22,11 @@ import orc.progress.ProgressMonitor
 import orc.run.StandardOrcRuntime
 import orc.compile.orctimizer.PorcOrcCompiler
 import orc.ast.porc.MethodCPS
+import java.io.ObjectOutputStream
+import java.io.ObjectInputStream
+import orc.error.loadtime.LoadingException
+import orc.error.loadtime.DeserializationTypeException
+import java.io.IOException
 
 /** A backend implementation using the Orctimizer and Porc compilers.
   *
@@ -39,7 +44,29 @@ abstract class PorcBackend extends Backend[MethodCPS] {
 
 
   // NOTE: If needed we could implement an XML serializer for Porc. We could also make things even simpler by just using java serialization here.
-  val serializer: Option[CodeSerializer[MethodCPS]] = None
+  val serializer: Option[CodeSerializer[MethodCPS]] = Some(new CodeSerializer[MethodCPS] {   
+    /** Generate a serialized form from <code>code</code>.
+      */
+    def serialize(code: MethodCPS, out: java.io.OutputStream): Unit = {
+      val oout = new ObjectOutputStream(out)
+      oout.writeObject(code)
+    }
+  
+    /** Take a serialized form and rebuild the original compiled code object.
+      */
+    @throws(classOf[LoadingException])
+    def deserialize(in: java.io.InputStream): MethodCPS = {
+      val oin = new ObjectInputStream(in)
+      val o = oin.readObject()
+      o match {
+        case m: MethodCPS =>
+          m
+        case _ =>
+          throw new DeserializationTypeException("Loaded data was of the incorrect format.")
+      }
+    }
+  })
+
 
   def createRuntime(options: OrcExecutionOptions): Runtime[MethodCPS]
 }

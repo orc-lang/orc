@@ -15,6 +15,7 @@ package orc.script;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -329,6 +330,13 @@ public class OrcScriptEngine<CompiledCode> extends AbstractScriptEngine implemen
      */
     public OrcCompiledScript loadDirectly(final InputStream in) throws LoadingException {
         return new OrcCompiledScript(getBackend().serializer().get().deserialize(in));
+    }
+
+    /**
+     * Serialize a script to an output stream.
+     */
+    public void save(final OrcCompiledScript script, final OutputStream out) throws LoadingException {
+        getBackend().serializer().get().serialize(script.code, out);
     }
 
     /**

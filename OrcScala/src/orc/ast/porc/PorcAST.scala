@@ -30,6 +30,7 @@ import swivel.TransformFunction
 import orc.util.Ternary
 import orc.ast.hasOptionalVariableName
 import orc.ast.ASTWithIndex
+import java.io.IOException
 
 abstract class Transform extends TransformFunction {
   def onExpression: PartialFunction[Expression.Z, Expression] = {
@@ -82,11 +83,31 @@ object Expression {
 @branch
 sealed abstract class Argument extends Expression with PorcInfixValue with PrecomputeHashcode
 @leaf @transform
-final case class Constant(v: AnyRef) extends Argument
+final case class Constant(v: AnyRef) extends Argument {
+  @throws[IOException]
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
+    out.writeObject(orc.ast.oil.xml.OrcXML.anyToXML(v))
+  }
+  
+  @throws[IOException]
+  @throws[ClassNotFoundException]
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
+    Constant.setVDuringDeserialize(this, orc.ast.oil.xml.OrcXML.anyRefFromXML(in.readObject().asInstanceOf[xml.Node]))
+  }
+}
+object Constant {
+  private val vField = classOf[Constant].getDeclaredField("v")
+  vField.setAccessible(true)
+  private def setVDuringDeserialize(c: Constant, v: AnyRef) = {
+    vField.set(c, v)
+  }
+}
+
+
 @leaf @transform
 final case class PorcUnit() extends Argument
 @leaf @transform
-final class Variable(val optionalName: Option[String] = None) extends Argument with hasAutomaticVariableName {
+final class Variable(val optionalName: Option[String] = None) extends Argument with hasAutomaticVariableName with Serializable {
   optionalVariableName = optionalName
   autoName("pv")
 
@@ -143,6 +164,19 @@ object Sequence {
 final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression with hasOptionalVariableName with ASTWithIndex {
   require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
   override def boundVars: Set[Variable] = arguments.toSet
+  
+  @throws[IOException]
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
+    out.writeObject(optionalIndex)
+  }
+  
+  @throws[IOException]
+  @throws[ClassNotFoundException]
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    optionalIndex = in.readObject().asInstanceOf[Option[Int]]
+  }
 }
 
 @leaf @transform
@@ -151,7 +185,7 @@ final case class MethodDeclaration(@subtree t: Argument, @subtree defs: Seq[Meth
 }
 
 @branch @replacement[Method]
-sealed abstract class Method extends PorcAST with hasOptionalVariableName with ASTWithIndex {
+sealed abstract class Method extends PorcAST with hasOptionalVariableName with ASTWithIndex with Serializable {
   def name: Variable
   def isRoutine: Boolean
   def arguments: Seq[Variable]
@@ -162,6 +196,19 @@ sealed abstract class Method extends PorcAST with hasOptionalVariableName with A
   override def boundVars: Set[Variable] = allArguments.toSet
   
   transferOptionalVariableName(name, this)
+  
+  @throws[IOException]
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
+    out.writeObject(optionalIndex)
+  }
+  
+  @throws[IOException]
+  @throws[ClassNotFoundException]
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    optionalIndex = in.readObject().asInstanceOf[Option[Int]]
+  }
 }
 
 object Method {
