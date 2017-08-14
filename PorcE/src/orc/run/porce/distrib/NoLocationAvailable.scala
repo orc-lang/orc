@@ -19,4 +19,4 @@ import orc.error.runtime.TokenException
   *
   * @author jthywiss
   */
-class NoLocationAvailable(vals: List[AnyRef]) extends TokenException("No common location for " + vals)
+class NoLocationAvailable(vals: Seq[AnyRef]) extends TokenException("No common location for " + vals)
