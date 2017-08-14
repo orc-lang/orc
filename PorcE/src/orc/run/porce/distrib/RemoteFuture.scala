@@ -64,7 +64,8 @@ class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId
   *
   * @author jthywiss
   */
-trait RemoteFutureManager { self: DOrcExecution =>
+trait RemoteFutureManager {
+  self: DOrcExecution =>
 
   // These two maps are inverses of each other (sorta)
   protected val servingLocalFutures = new java.util.concurrent.ConcurrentHashMap[Future, RemoteFutureRef#RemoteRefId]

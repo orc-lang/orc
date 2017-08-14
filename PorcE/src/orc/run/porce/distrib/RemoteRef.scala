@@ -32,7 +32,8 @@ trait RemoteRef {
   *
   * @author jthywiss
   */
-trait RemoteRefIdManager { self: DOrcExecution =>
+trait RemoteRefIdManager {
+  self: DOrcExecution =>
 
   private val remoteRefIdCounter = new AtomicLong(followerExecutionNum.toLong << 32)
 
@@ -85,7 +86,8 @@ case class RemoteObjectRefReplacement(remoteRefId: RemoteObjectRef#RemoteRefId) 
 //  *
 //  * @author jthywiss
 //  */
-//trait RemoteObjectManager { self: DOrcExecution =>
+//trait RemoteObjectManager {
+//  self: DOrcExecution =>
 //
 //  // These two maps are inverses of each other
 //  protected val remotedObjects = new java.util.concurrent.ConcurrentHashMap[AnyRef, RemoteObjectRef#RemoteRefId]

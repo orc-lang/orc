@@ -131,7 +131,8 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
   *
   * @author jthywiss
   */
-trait GroupProxyManager { self: DOrcExecution =>
+trait GroupProxyManager {
+  self: DOrcExecution =>
   type GroupProxyId = Long
 
   protected val proxiedGroups = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupProxy]

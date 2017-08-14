@@ -27,7 +27,8 @@ import scala.collection.mutable.WeakHashMap
   *
   * @author jthywiss
   */
-trait ValueMarshaler { self: DOrcExecution =>
+trait ValueMarshaler {
+  self: DOrcExecution =>
 
   def marshalValueWouldReplace(destination: PeerLocation)(value: AnyRef): Boolean = {
     value match {
@@ -48,7 +49,7 @@ trait ValueMarshaler { self: DOrcExecution =>
     val replacedValue = value match {
       /* keep in sync with cases in marshalValueWouldReplace */
       //FIXME: Handle circular references
-      case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForMarshaling(marshalValueWouldReplace(destination)(_))  => dmr.replaceForMarshaling(marshalValue(destination)(_))
+      case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForMarshaling(marshalValueWouldReplace(destination)(_)) => dmr.replaceForMarshaling(marshalValue(destination)(_))
       case st: scala.collection.Traversable[AnyRef] => st.map(marshalValue(destination)(_)) //FIXME:Scala-specific, generalize
       case v => v
     }
@@ -72,7 +73,7 @@ trait ValueMarshaler { self: DOrcExecution =>
 
   private val knownGoodSerializables = new WeakHashMap[java.io.Serializable, Unit]()
   private val knownBadSerializables = new WeakHashMap[java.io.Serializable, Unit]()
-  private val nullOos = new RuntimeConnectionOutputStream(new java.io.OutputStream { def write(b: Int) {} } )
+  private val nullOos = new RuntimeConnectionOutputStream(new java.io.OutputStream { def write(b: Int) {} })
   /** Many, many objects violate the java.io.Serializable interface by
     * implementing Serializable, but then holding references to
     * non-Serializable values without using any of the compensating
@@ -120,7 +121,7 @@ trait ValueMarshaler { self: DOrcExecution =>
   }
 
   private def isAlwaysSerializable(v: java.io.Serializable): Boolean =
-      v == null || v.isInstanceOf[Class[_]] || v.isInstanceOf[String] || v.getClass.isPrimitive || v.getClass.isEnum ||
+    v == null || v.isInstanceOf[Class[_]] || v.isInstanceOf[String] || v.getClass.isPrimitive || v.getClass.isEnum ||
       (v.getClass.isArray && v.getClass.getComponentType.isPrimitive)
 
   def unmarshalValueWouldReplace(value: AnyRef): Boolean = {
