@@ -15,6 +15,7 @@ package orc.run.porce.distrib
 
 import orc.{ Handle, Invoker }
 import orc.run.Orc
+import orc.run.porce.runtime.CPSCallResponseHandler
 
 /** Adds facilities for distributed Orc calls to an Orc runtime engine.
   *
@@ -35,13 +36,14 @@ trait SupportForDOrc extends Orc {
 
 class DOrcInvoker(target: AnyRef, arguments: Array[AnyRef], localInvoker: Invoker) extends Invoker {
 
-  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]) {
+  def invoke(callResponseReceiver: Handle, target: AnyRef, arguments: Array[AnyRef]) {
 
     def pickLocation(ls: Set[PeerLocation]) = ls.head
 
     //Logger.entering(getClass.getName, "invoke", Seq(target.getClass.getName, target, arguments))
 
-    val dOrcExecution: DOrcExecution = ???
+    //TODO: These are safe casts, but it's ugly.  Should there be a nice interface here?  Don't want to expose Execution on the orc.Handle interface, though.
+    val dOrcExecution: DOrcExecution = callResponseReceiver.asInstanceOf[CPSCallResponseHandler].execution.asInstanceOf[DOrcExecution]
 
     val intersectLocs = (arguments map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(target)) { _ & _ }
     if (!(intersectLocs contains dOrcExecution.runtime.here)) {
@@ -60,20 +62,14 @@ class DOrcInvoker(target: AnyRef, arguments: Array[AnyRef], localInvoker: Invoke
       }
       orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
       val destination = pickLocation(candidateDestinations)
-      dOrcExecution.sendToken(this, destination)
+      dOrcExecution.sendToken(???, destination)
     } else {
-      localInvoker.invoke(h, target, arguments)
+      localInvoker.invoke(callResponseReceiver, target, arguments)
     }
   }
 
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    //TODO: Capture target && arguments weakly?
-    //   amp: This would actually be complicated potentially have a large performance 
-    //        penalty since it would require that we use truffle Assumptions to invalidate
-    //        the compiled code, then update and recompile it. 
-    //        The caches are limited to a small number of elements (less than 10), so I 
-    //        don't think we can leak much.
-    this.target == target && this.arguments == arguments && localInvoker.canInvoke(target, arguments)
+    localInvoker.canInvoke(target, arguments)
   }
 
 }
