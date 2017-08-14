@@ -38,7 +38,7 @@ class Future() extends OrcValue with orc.Future {
   /** Bind this to a value and call publish and halt on each blocked Blockable.
     */
   @TruffleBoundary(allowInlining = true) @noinline
-  def bind(v: AnyRef) = {
+  final def bind(v: AnyRef) = {
     //assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
     //assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
     val done = synchronized {
@@ -61,7 +61,7 @@ class Future() extends OrcValue with orc.Future {
   /** Bind this to stop and call halt on each blocked Blockable.
     */
   @TruffleBoundary(allowInlining = true) @noinline
-  def stop() = {
+  final def stop() = {
     val done = synchronized {
       if (_state eq Unbound) {
         _state = Halt
@@ -88,7 +88,7 @@ class Future() extends OrcValue with orc.Future {
     * Return true if the value was already available.
     */
   @TruffleBoundary(allowInlining = true) @noinline
-  def read(blocked: FutureReader): Unit = {
+  final def read(blocked: FutureReader): Unit = {
     val st = synchronized {
       _state match {
         case Unbound => {
@@ -120,7 +120,7 @@ class Future() extends OrcValue with orc.Future {
     }
   }
 
-  def get(): FutureState = {
+  final def get(): FutureState = {
     getInternal() match {
       case Unbound => orc.FutureState.Unbound
       case Halt => orc.FutureState.Stopped
@@ -135,7 +135,7 @@ class Future() extends OrcValue with orc.Future {
     * change.
     *
     */
-  def getInternal(): AnyRef = {
+  final def getInternal(): AnyRef = {
     _state
   }
 }
