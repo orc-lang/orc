@@ -11,3 +11,4 @@
 #
 
 orc.PorcEBackendType
+orc.PorcEDistributedBackendType
