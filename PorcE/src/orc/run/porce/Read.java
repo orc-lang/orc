@@ -15,7 +15,8 @@ public class Read {
 			this.value = value;
 		}
 
-		public Object execute(VirtualFrame frame) {
+		@Override
+        public Object execute(VirtualFrame frame) {
 			return value;
 		}
 
@@ -31,7 +32,8 @@ public class Read {
 			this.slot = slot;
 		}
 
-		public Object execute(VirtualFrame frame) {
+		@Override
+        public Object execute(VirtualFrame frame) {
 			Object value;
 			try {
 				value = frame.getObject(slot);
@@ -54,7 +56,8 @@ public class Read {
 			this.index = index;
 		}
 
-		public Object execute(VirtualFrame frame) {
+		@Override
+        public Object execute(VirtualFrame frame) {
 			Object value = frame.getArguments()[index];
 			return value;
 		}
@@ -72,7 +75,8 @@ public class Read {
 			this.index = index;
 		}
 
-		public Object execute(VirtualFrame frame) {
+		@Override
+        public Object execute(VirtualFrame frame) {
 			// TODO: PERFORMANCE: Storing the closure in a frame slot would save an indexed load per node.
 			Object value = ((Object[]) frame.getArguments()[0])[index];
 			return value;

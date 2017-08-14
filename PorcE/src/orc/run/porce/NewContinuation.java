@@ -31,7 +31,8 @@ public class NewContinuation extends Expression {
 		return callTarget;
 	}
 
-	@ExplodeLoop
+	@Override
+    @ExplodeLoop
 	public Object execute(VirtualFrame frame) {
 		Object[] capturedValues = new Object[capturedVariables.length];
 		for (int i = 0; i < capturedVariables.length; i++) {

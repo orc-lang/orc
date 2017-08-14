@@ -16,11 +16,13 @@ public class NewObject extends Expression {
 		this.expressions = expressions;
 	}
 
-	public Object execute(VirtualFrame frame) {
+	@Override
+    public Object execute(VirtualFrame frame) {
 		return executePorcEObject(frame);
 	}
 
-	@ExplodeLoop
+	@Override
+    @ExplodeLoop
 	public PorcEObject executePorcEObject(VirtualFrame frame) {
 		Object[] values = new Object[expressions.length];
 		for (int i = 0; i < expressions.length; i++) {

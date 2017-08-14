@@ -34,7 +34,8 @@ public class InternalCall extends CallBase {
 		super(target, arguments, execution);
 	}
 
-	public Object execute(VirtualFrame frame) {
+	@Override
+    public Object execute(VirtualFrame frame) {
 		CompilerDirectives.transferToInterpreterAndInvalidate();
 
 		PorcEClosure t = executeTargetClosure(frame);
@@ -91,7 +92,8 @@ public class InternalCall extends CallBase {
 			this.callNode = Truffle.getRuntime().createDirectCallNode(expectedTarget.body);
 		}
 
-		public Object execute(VirtualFrame frame) {
+		@Override
+        public Object execute(VirtualFrame frame) {
 			PorcEClosure t = executeTargetClosure(frame);
 			if (expectedTarget.body == t.body) {
 				Object[] argumentValues = buildArgumentValues(frame, t);
@@ -116,7 +118,8 @@ public class InternalCall extends CallBase {
 			this.callNode = Truffle.getRuntime().createIndirectCallNode();
 		}
 
-		public Object execute(VirtualFrame frame) {
+		@Override
+        public Object execute(VirtualFrame frame) {
 			PorcEClosure t = executeTargetClosure(frame);
 			Object[] argumentValues = buildArgumentValues(frame, t);
 			return callNode.call(t.body, argumentValues);

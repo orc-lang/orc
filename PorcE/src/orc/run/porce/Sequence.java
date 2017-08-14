@@ -17,7 +17,8 @@ public class Sequence extends Expression {
 		this.exprs = exprs;
 	}
 
-	@ExplodeLoop
+	@Override
+    @ExplodeLoop
 	public Object execute(VirtualFrame frame) {
 		for (int i = 0; i < exprs.length - 1; i++) {
 			Expression expr = exprs[i];

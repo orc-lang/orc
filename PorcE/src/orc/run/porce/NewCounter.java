@@ -20,11 +20,13 @@ public abstract class NewCounter extends Expression {
 		this.parent = parent;
 	}
 
-	public Object execute(VirtualFrame frame) {
+	@Override
+    public Object execute(VirtualFrame frame) {
 		return executeCounter(frame);
 	}
 
-	public abstract Counter executeCounter(VirtualFrame frame);
+	@Override
+    public abstract Counter executeCounter(VirtualFrame frame);
 
 	public final static class Simple extends NewCounter {
 		@Child
@@ -35,7 +37,8 @@ public abstract class NewCounter extends Expression {
 			this.haltContinuation = haltContinuation;
 		}
 
-		public Counter executeCounter(VirtualFrame frame) {
+		@Override
+        public Counter executeCounter(VirtualFrame frame) {
 			try {
 				return new CounterNested(runtime, parent.executeCounter(frame), haltContinuation.executePorcEClosure(frame));
 			} catch (UnexpectedResultException e) {
@@ -60,7 +63,8 @@ public abstract class NewCounter extends Expression {
 			this.terminator = terminator;
 		}
 
-		public Counter executeCounter(VirtualFrame frame) {
+		@Override
+        public Counter executeCounter(VirtualFrame frame) {
 			try {
 				return new CounterService(runtime, parent.executeCounter(frame), parentContaining.executeCounter(frame), terminator.executeTerminator(frame));
 			} catch (UnexpectedResultException e) {
@@ -82,7 +86,8 @@ public abstract class NewCounter extends Expression {
 			this.terminator = terminator;
 		}
 
-		public Counter executeCounter(VirtualFrame frame) {
+		@Override
+        public Counter executeCounter(VirtualFrame frame) {
 			try {
 				return new CounterTerminator(runtime, parent.executeCounter(frame), terminator.executeTerminator(frame));
 			} catch (UnexpectedResultException e) {

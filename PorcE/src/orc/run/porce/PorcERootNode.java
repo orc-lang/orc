@@ -25,11 +25,13 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 		// Logger.fine(() -> this + " is " + getName());
 	}
 
-	public Option<PorcAST> porcNode() {
+	@Override
+    public Option<PorcAST> porcNode() {
 		return porcNode;
 	}
 
-	public String getName() {
+	@Override
+    public String getName() {
 		String name = "<no AST>";
 		scala.Option<PorcAST> optAst = porcNode();
 		if (optAst.isDefined()) {

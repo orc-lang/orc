@@ -42,7 +42,8 @@ public class MethodDeclaration {
 			this.nMethods = nMethods;
 		}
 
-		@ExplodeLoop
+		@Override
+        @ExplodeLoop
 		public Object execute(VirtualFrame frame) {
 			Object[] capturedValues = new Object[capturedExprs.length + nMethods];
 			for (int i = 0; i < capturedExprs.length; i++) {

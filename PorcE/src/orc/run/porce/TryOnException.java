@@ -16,7 +16,8 @@ public class TryOnException extends Expression {
 		this.handler = handler;
 	}
 
-	public void executePorcEUnit(VirtualFrame frame) {
+	@Override
+    public void executePorcEUnit(VirtualFrame frame) {
 		try {
 			body.executePorcEUnit(frame);
 		} catch (HaltException | KilledException e) {

@@ -24,7 +24,8 @@ public class Call extends Expression {
 		this.externalCall = externalCall;
 	}
 
-	public Object execute(VirtualFrame frame) {
+	@Override
+    public Object execute(VirtualFrame frame) {
 		// TODO: PERFORMANCE: This will execute the target an extra time for
 		// every call. If we could replace this call with the chain directly
 		// that would be better.

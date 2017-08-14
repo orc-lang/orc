@@ -17,7 +17,8 @@ public class Write {
 			this.value = value;
 		}
 
-		public Object execute(VirtualFrame frame) {
+		@Override
+        public Object execute(VirtualFrame frame) {
 			frame.setObject(slot, value.execute(frame));
 			return value;
 		}

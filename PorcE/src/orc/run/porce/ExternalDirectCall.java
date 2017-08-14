@@ -63,7 +63,8 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
 		super(target, arguments, execution);
 	}
 
-	public Object execute(VirtualFrame frame) {
+	@Override
+    public Object execute(VirtualFrame frame) {
 		CompilerDirectives.transferToInterpreterAndInvalidate();
 
 		Object t = executeTargetObject(frame);
@@ -132,7 +133,8 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
 			this.notMatched = notMatched;
 		}
 
-		public Object execute(VirtualFrame frame) {
+		@Override
+        public Object execute(VirtualFrame frame) {
 			Object t = executeTargetObject(frame);
 			Object[] argumentValues = buildArgumentValues(frame);
 
@@ -169,7 +171,8 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
 			super(target, arguments, execution);
 		}
 
-		@ExplodeLoop
+		@Override
+        @ExplodeLoop
 		public Object execute(VirtualFrame frame) {
 			Object t = executeTargetObject(frame);
 			Object[] argumentValues = buildArgumentValues(frame);

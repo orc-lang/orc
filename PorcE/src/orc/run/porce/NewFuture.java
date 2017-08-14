@@ -3,11 +3,13 @@ package orc.run.porce;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class NewFuture extends Expression {
-	public Object execute(VirtualFrame frame) {
+	@Override
+    public Object execute(VirtualFrame frame) {
 		return executeFuture(frame);
 	}
 
-	public orc.Future executeFuture(VirtualFrame frame) {
+	@Override
+    public orc.Future executeFuture(VirtualFrame frame) {
 		return new orc.run.porce.runtime.Future();
 	}
 

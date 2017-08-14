@@ -30,7 +30,8 @@ public abstract class PorcENode extends Node implements HasPorcNode {
 		});
 	}
 
-	public Option<PorcAST> porcNode() {
+	@Override
+    public Option<PorcAST> porcNode() {
 		return porcNode;
 	}
 

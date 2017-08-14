@@ -52,7 +52,8 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
 	private int cacheSize = 0;
 	private static int cacheMaxSize = 4;
 
-	public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
+	@Override
+    public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
 		CompilerDirectives.transferToInterpreterAndInvalidate();
 
 		PorcEClosure t = (PorcEClosure) target;
@@ -104,7 +105,8 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
 			this.expectedTarget = expectedTarget;
 		}
 
-		public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
+		@Override
+        public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
 			if (target instanceof PorcEClosure && expectedTarget.body == ((PorcEClosure) target).body) {
 				arguments[0] = ((PorcEClosure) target).environment;
 				return callNode.call(arguments);
@@ -131,7 +133,8 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
 			this.callNode = Truffle.getRuntime().createIndirectCallNode();
 		}
 
-		public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
+		@Override
+        public Object execute(VirtualFrame frame, Object target, Object[] arguments) {
 			if (target instanceof PorcEClosure) {
 				arguments[0] = ((PorcEClosure) target).environment;
 				return callNode.call(((PorcEClosure) target).body, arguments);

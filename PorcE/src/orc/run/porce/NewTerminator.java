@@ -14,11 +14,13 @@ public class NewTerminator extends Expression {
 		this.parent = parent;
 	}
 
-	public Object execute(VirtualFrame frame) {
+	@Override
+    public Object execute(VirtualFrame frame) {
 		return executeTerminator(frame);
 	}
 
-	public Terminator executeTerminator(VirtualFrame frame) {
+	@Override
+    public Terminator executeTerminator(VirtualFrame frame) {
 		try {
 			return new TerminatorNested(parent.executeTerminator(frame));
 		} catch (UnexpectedResultException e) {
