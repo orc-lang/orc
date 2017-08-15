@@ -45,7 +45,7 @@ public abstract class CallBase extends Expression {
         }
         final Node p = e.getParent();
         if (p instanceof CallBase) {
-            return ((CallBase) e).getCallSiteId();
+            return ((CallBase) p).getCallSiteId();
         }
         return -1;
     }

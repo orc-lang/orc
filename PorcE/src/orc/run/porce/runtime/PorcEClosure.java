@@ -13,11 +13,18 @@ final public class PorcEClosure implements DOrcMarshalingReplacement {
     public final boolean isRoutine;
 
     // TODO: PERFORMANCE: Using a frame instead of an array for captured values may perform better. Though that will mainly be true when we start using native values.
-    public PorcEClosure(final Object[] environment, final RootCallTarget body, final boolean isRoutine) {
-        this.environment = environment;
-        this.body = body;
-        this.isRoutine = isRoutine;
-    }
+	public PorcEClosure(final Object[] environment, final RootCallTarget body, final boolean isRoutine) {
+		if (body == null) {
+			throw new IllegalArgumentException("body == null");
+		}
+		if (environment == null) {
+			throw new IllegalArgumentException("environment == null");
+		}
+
+		this.environment = environment;
+		this.body = body;
+		this.isRoutine = isRoutine;
+	}
 
     public Object callFromRuntimeArgArray(final Object[] values) {
         values[0] = environment;
@@ -47,9 +54,6 @@ final public class PorcEClosure implements DOrcMarshalingReplacement {
         return body.call(values);
     }
 
-    // FIXME: Add special case for RootCallTarget in RuntimeConnectionInputStream. That cannot be handled here since even if we had the execution we cannot store the Int index in the field of type RootCallTarget.
-    //     A different replacement type could get around that, but that is not how the replacement API is designed to work.
-
     @Override
     public boolean isReplacementNeededForMarshaling(final Function1<Object, Object> marshalValueWouldReplace) {
         return JavaMarshalingUtilities.existsMarshalValueWouldReplace(environment, marshalValueWouldReplace);
@@ -67,6 +71,6 @@ final public class PorcEClosure implements DOrcMarshalingReplacement {
 
     @Override
     public Object replaceForUnmarshaling(final Function1<Object, Object> unmarshaler) {
-        return new PorcEClosure(JavaMarshalingUtilities.mapMarshaler(environment, unmarshaler), body, isRoutine);
-    }
+		return new PorcEClosure(JavaMarshalingUtilities.mapMarshaler(environment, unmarshaler), body, isRoutine);
+	}
 }
