@@ -40,7 +40,7 @@ public abstract class CallBase extends Expression {
 		if (e instanceof HasPorcNode && ((HasPorcNode) e).porcNode().isDefined()) {
 			PorcAST ast = ((HasPorcNode) e).porcNode().get();
 			if (ast instanceof ASTWithIndex && ((ASTWithIndex) ast).optionalIndex().isDefined()) {
-				return ((ASTWithIndex) ast).optionalIndex().get();
+				return (Integer) ((ASTWithIndex) ast).optionalIndex().get();
 			}
 		}
 		Node p = e.getParent();
