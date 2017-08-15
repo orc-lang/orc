@@ -1,26 +1,19 @@
 package orc.run.porce.runtime
 
-import orc.OrcEvent
-import orc.ExecutionRoot
-import orc.run.core.EventHandler
-import com.oracle.truffle.api.nodes.RootNode
-import com.oracle.truffle.api.frame.VirtualFrame
-import orc.PublishedEvent
-import orc.run.porce.PorcEUnit
-import orc.run.porce.Logger
-import com.oracle.truffle.api.CallTarget
-import orc.Schedulable
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import java.util.logging.Level
-import com.oracle.truffle.api.RootCallTarget
-import com.oracle.truffle.api.Truffle
-import orc.run.porce.distrib.CallTargetManager
-import orc.run.porce.HasId
-import orc.run.porce.InvokeCallRecordRootNode
-import orc.run.porce.distrib.SupportForNondistributedOrc
+
+import com.oracle.truffle.api.{ RootCallTarget, Truffle }
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.nodes.RootNode
+
+import orc.{ ExecutionRoot, OrcEvent, PublishedEvent }
+import orc.run.core.EventHandler
+import orc.run.porce.{ HasId, InvokeCallRecordRootNode, Logger, PorcEUnit }
+import orc.run.porce.distrib.{ CallTargetManager, NoInvocationInterception }
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
-  extends ExecutionRoot with EventHandler with CallTargetManager with SupportForNondistributedOrc {
+  extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
   val truffleRuntime = Truffle.getRuntime()
 
   private var _isDone = false
