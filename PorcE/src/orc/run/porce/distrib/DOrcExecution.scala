@@ -18,7 +18,7 @@ import com.oracle.truffle.api.RootCallTarget
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.porc.MethodCPS
 import orc.compiler.porce.PorcToPorcE
-import orc.run.porce.runtime.{ PorcEClosure, PorcEExecution, PorcEExecutionHolder }
+import orc.run.porce.runtime.{ PorcEClosure, PorcEExecution, PorcEExecutionWithLaunch, PorcEExecutionHolder }
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -52,11 +52,6 @@ abstract class DOrcExecution(
   with RemoteRefIdManager {
 
   val (programPorceAst, programCallTargetMap) = PorcToPorcE(programAst, new PorcEExecutionHolder(this))
-
-  //TODO: Move to superclass
-  def runProgram() {
-      scheduleProgram(programPorceAst, programCallTargetMap)
-  }
 
   type ExecutionId = String
 
@@ -100,7 +95,12 @@ class DOrcLeaderExecution(
   options: OrcExecutionOptions,
   eventHandler: OrcEvent => Unit,
   runtime: LeaderRuntime)
-  extends DOrcExecution(executionId, 0, programAst, options, eventHandler, runtime) {
+  extends DOrcExecution(executionId, 0, programAst, options, eventHandler, runtime) with PorcEExecutionWithLaunch {
+  
+  //TODO: Move to superclass
+  def runProgram() {
+      scheduleProgram(programPorceAst, programCallTargetMap)
+  }
 
   override def notifyOrc(event: OrcEvent) {
     super.notifyOrc(event)
@@ -122,16 +122,4 @@ class DOrcFollowerExecution(
   eventHandler: OrcEvent => Unit,
   runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
-
-  /* Follower executions should not publish at the top level */
-  /* TODO: Refactor PorcEExecution to reflect this */
-  override val pRootNode = null
-  override val pCallTarget = null
-  override val p = null
-  override val c = null
-  override val t = null
-  override def scheduleProgram(prog: PorcEClosure, callTargetMap: collection.Map[Int, RootCallTarget]): Unit = {
-    throw new AssertionError("scheduleProgram called on DOrcFollowerExecution")
-  }
-
 }

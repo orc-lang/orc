@@ -13,6 +13,9 @@ class PorcEExecutionHolder(exec: PorcEExecution) {
   private[this] var execution = exec
 
   def setExecution(e: PorcEExecution): Boolean = {
+    // FIXME: Reimplement or remove PorcEExecutionHolder entirely.
+    ???
+    /*
     if (execution.isDone) {
       synchronized {
         assumption.invalidate()
@@ -22,6 +25,7 @@ class PorcEExecutionHolder(exec: PorcEExecution) {
     } else {
       false
     }
+    */
   }
 
   private class PorcEExecutionRefImpl extends PorcEExecutionRef {

@@ -20,6 +20,7 @@ import orc.run.porce.runtime.PorcEExecution
 import orc.run.porce.runtime.PorcEExecutionRef
 import orc.run.porce.runtime.PorcEExecutionHolder
 import orc.run.porce.runtime.PorcEClosure
+import orc.run.porce.runtime.PorcEExecutionWithLaunch
 
 case class PorcEBackendType() extends BackendType {
   type CompiledCode = MethodCPS
@@ -40,7 +41,7 @@ case class PorcEBackend() extends PorcBackend {
 
     //val cache = new collection.mutable.HashMap[MethodCPS, (PorcEExecutionHolder, PorcEClosure)]()
 
-    private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecution = synchronized {
+    private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecutionWithLaunch = synchronized {
       /*val porceAst = cache.get(ast) match {
         case Some((holder, porceAst)) => {
           if(holder.setExecution(execution)) {
@@ -61,7 +62,7 @@ case class PorcEBackend() extends PorcBackend {
         }
       }
 	    */
-      val execution = new PorcEExecution(this, k)
+      val execution = new PorcEExecution(this, k) with PorcEExecutionWithLaunch
       val executionHolder = new PorcEExecutionHolder(execution)
       val (porceAst, map) = PorcToPorcE(ast, executionHolder)
       addRoot(execution)

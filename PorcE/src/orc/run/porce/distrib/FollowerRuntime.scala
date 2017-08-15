@@ -305,9 +305,10 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     programs.remove(executionId) match {
       case None => Logger.warning(s"Received unload for unknown (or previously unloaded) execution $executionId")
       case Some(removedExecution) =>
-        if (!removedExecution.isDone) {
-          Logger.fine(s"Unloaded $executionId with group members still in execution")
-        }
+        // FIXME: Figure out how to implement this warning. Currently there is no way to tell if a follower execution is completed since it doesn't have a single root counter.
+        //if (!removedExecution.isDone) {
+        //  Logger.fine(s"Unloaded $executionId with group members still in execution")
+        //}
     }
 
     assert(programs.isEmpty) /* For now */

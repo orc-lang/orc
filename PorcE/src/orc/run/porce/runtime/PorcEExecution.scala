@@ -16,6 +16,46 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
   val truffleRuntime = Truffle.getRuntime()
 
+  runtime.installHandlers(this)
+  
+  @TruffleBoundary @noinline
+  def notifyOrcWithBoundary(e: OrcEvent) = {
+    notifyOrc(e)
+  }
+
+  /// CallTargetManager Implementation
+
+  // FIXME: PERFORMANCE: This should really be an Array. However that would require more work to get right. So I'll do it if it's needed.
+  val callTargetMap = collection.mutable.HashMap[Int, RootCallTarget]()
+
+  protected def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
+    require(!callTargetMap.contains(-1))
+    this.callTargetMap ++= callTargetMap
+  }
+
+  def callTargetToId(callTarget: RootCallTarget): Int = {
+    callTarget.getRootNode() match {
+      case r: HasId => r.getId()
+      case _ =>
+        throw new IllegalArgumentException(s"callTargetToId only accepts CallTargets which reference a RootNode implementing HasId. Received $callTarget")
+    }
+  }
+
+  def idToCallTarget(id: Int): RootCallTarget = {
+    callTargetMap(id)
+  }
+
+  val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
+
+  def invokeCallRecord(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    val callTarget = callSiteMap.computeIfAbsent(callRecord.callSiteId, (_) => new InvokeCallRecordRootNode(arguments.length, this).getCallTarget())
+    callTarget.call(Array(null, target) ++: arguments)
+  }
+}
+
+trait PorcEExecutionWithLaunch extends PorcEExecution {
+  execution =>
+  
   private var _isDone = false
 
   /** Block until this context halts.
@@ -26,14 +66,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
   }
 
-  def isDone = PorcEExecution.this.synchronized { _isDone }
-
-  runtime.installHandlers(this)
-
-  @TruffleBoundary @noinline
-  def notifyOrcWithBoundary(e: OrcEvent) = {
-    notifyOrc(e)
-  }
+  def isDone = execution.synchronized { _isDone }
 
   val pRootNode = new RootNode(null) with HasId {
     def execute(frame: VirtualFrame): Object = {
@@ -60,10 +93,10 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     def onHalt(): Unit = {
       // Runs regardless of discorporation.
       Logger.fine("Top level context complete.")
-      runtime.removeRoot(PorcEExecution.this)
-      PorcEExecution.this.synchronized {
-        PorcEExecution.this._isDone = true
-        PorcEExecution.this.notifyAll()
+      runtime.removeRoot(execution)
+      execution.synchronized {
+        execution._isDone = true
+        execution.notifyAll()
       }
     }
   }
@@ -85,35 +118,10 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       Thread.sleep(10000)
       Counter.report()
     }
-  }
-
-  /// CallTargetManager Implementation
-
-  // FIXME: PERFORMANCE: This should really be an Array. However that would require more work to get right. So I'll do it if it's needed.
-  val callTargetMap = collection.mutable.HashMap[Int, RootCallTarget]()
-
-  protected def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
-    require(!callTargetMap.contains(-1))
-    this.callTargetMap ++= callTargetMap
+  } 
+  
+  protected override def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
+    super.setCallTargetMap(callTargetMap)
     this.callTargetMap += (-1 -> pCallTarget)
-  }
-
-  def callTargetToId(callTarget: RootCallTarget): Int = {
-    callTarget.getRootNode() match {
-      case r: HasId => r.getId()
-      case _ =>
-        throw new IllegalArgumentException(s"callTargetToId only accepts CallTargets which reference a RootNode implementing HasId. Received $callTarget")
-    }
-  }
-
-  def idToCallTarget(id: Int): RootCallTarget = {
-    callTargetMap(id)
-  }
-
-  val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
-
-  def invokeCallRecord(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-    val callTarget = callSiteMap.computeIfAbsent(callRecord.callSiteId, (_) => new InvokeCallRecordRootNode(arguments.length, this).getCallTarget())
-    callTarget.call(Array(null, target) ++: arguments)
   }
 }
