@@ -14,6 +14,7 @@
 package orc.run.porce.distrib
 
 import orc.run.porce.runtime.PorcERuntime
+import orc.ast.porc.MethodCPS
 
 /** Distributed Orc (dOrc) Runtime Engine.
   *
@@ -24,6 +25,8 @@ import orc.run.porce.runtime.PorcERuntime
   * @author jthywiss
   */
 abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String) extends PorcERuntime(engineInstanceName) {
+  
+  type ProgramAST = MethodCPS
 
   /* For now, runtime IDs and Execution follower numbers are the same.  When
    * we host more than one execution in an engine, they will be different. */

@@ -16,8 +16,6 @@ package orc.run.porce.distrib
 import java.net.InetSocketAddress
 
 import orc.{ OrcEvent, OrcExecutionOptions }
-import orc.ast.porc.MethodCPS
-import orc.run.porce.runtime.CallRecord
 
 /** Command sent to dOrc runtime engines.
   *
@@ -52,7 +50,7 @@ case class RemovePeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId) extends OrcLeader
 ////////
 
 /** Prepare for execution in the given Orc program AST */
-case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programAst: MethodCPS, options: OrcExecutionOptions) extends OrcLeaderToFollowerCmd {
+case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions) extends OrcLeaderToFollowerCmd {
   override def toString(): String = s"${getClass.getSimpleName}($executionId,...programAst..,$options)"
 }
 
@@ -84,13 +82,13 @@ case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime#RuntimeId, receivi
 ////////
 
 /** Execute this token */
-case class MigrateCallCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, callRecord: CallRecord, callTarget: AnyRef, callArguments: Array[AnyRef]) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = s"${getClass.getSimpleName}($executionId, $callRecord)"
+case class MigrateCallCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, movedCall: CallMemento) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = s"${getClass.getSimpleName}($executionId, $movedCall)"
 }
 
 /** This token has published in the given group */
-case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, publishedValue: AnyRef) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x, $publishedValue)"
+case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, publication: PublishMemento) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x, $publication)"
 }
 
 /** Kill the given group */

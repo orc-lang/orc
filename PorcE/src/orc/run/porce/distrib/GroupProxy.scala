@@ -14,8 +14,7 @@
 package orc.run.porce.distrib
 
 import orc.Schedulable
-import orc.run.porce.runtime.{ CallClosureSchedulable, CallRecord, Counter, PorcEClosure, Terminatable, Terminator }
-import orc.run.porce.runtime.CPSCallResponseHandler
+import orc.run.porce.runtime.{ CPSCallResponseHandler, CallClosureSchedulable, Counter, PorcEClosure, Terminatable, Terminator }
 
 /** Proxy for a group the resides on a remote dOrc node.
   * RemoteGroupProxy is created locally when a token has been migrated from
@@ -154,11 +153,11 @@ trait GroupProxyManager {
   protected val proxiedGroups = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupProxy]
   protected val proxiedGroupMembers = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupMembersProxy]
 
-  def sendCall(callHandler: CPSCallResponseHandler, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
-    Logger.fine(s"sendCall $callHandler, $callTarget, $callArguments, $destination")
-    val publicationContinuation = callHandler.p
-    val enclosingCounter = callHandler.c
-    val enclosingTerminator = callHandler.t
+  def sendCall(callContext: CPSCallResponseHandler, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
+    Logger.fine(s"sendCall $callContext, $callTarget, $callArguments, $destination")
+    val publicationContinuation = callContext.p
+    val enclosingCounter = callContext.c
+    val enclosingTerminator = callContext.t
 
     val proxyId = enclosingTerminator match {
       case tp: RemoteGroupProxy#TerminatorProxy => tp.remoteGroupProxy.remoteProxyId
@@ -168,16 +167,17 @@ trait GroupProxyManager {
     proxiedGroupMembers.put(proxyId, rmtProxy)
 
     enclosingTerminator.addChild(rmtProxy)
-    enclosingTerminator.removeChild(callHandler)
+    enclosingTerminator.removeChild(callContext)
 
     /* Counter is correct as is, since we're swapping this call with its proxy. */
 
-    Tracer.traceCallSend(proxyId, self.runtime.here, destination)
+    val callMemento = CallMemento(callSiteId = callContext.callSiteId, callSitePosition = callContext.callSitePosition, target = callTarget, arguments = callArguments)
 
-    destination.sendInContext(self)(MigrateCallCmd(executionId, proxyId, callHandler.callRecord, callTarget, callArguments))
+    Tracer.traceCallSend(proxyId, self.runtime.here, destination)
+    destination.sendInContext(self)(MigrateCallCmd(executionId, proxyId, callMemento))
   }
 
-  def receiveCall(origin: PeerLocation, proxyId: DOrcExecution#GroupProxyId, movedCall: CallRecord, callTarget: AnyRef, callArguments: Array[AnyRef]): Unit = {
+  def receiveCall(origin: PeerLocation, proxyId: DOrcExecution#GroupProxyId, callMemento: CallMemento): Unit = {
     val lookedUpProxyGroupMember = proxiedGroupMembers.get(proxyId)
     val (proxyPublicationContinuation: PorcEClosure, proxyCounter: Counter, proxyTerminator: Terminator) = lookedUpProxyGroupMember match {
       case null => { /* Not a token we've seen before */
@@ -188,9 +188,9 @@ trait GroupProxyManager {
       case gmp => (gmp.publicationContinuation, gmp.enclosingCounter, gmp.enclosingTerminator)
     }
 
-    val callInvoker = new Schedulable { def run(): Unit = { self.invokeCallRecord(movedCall.callSiteId, proxyPublicationContinuation, proxyCounter, proxyTerminator, callTarget, callArguments) } }
+    val callInvoker = new Schedulable { def run(): Unit = { self.invokeCallTarget(callMemento.callSiteId, proxyPublicationContinuation, proxyCounter, proxyTerminator, callMemento.target, callMemento.arguments) } }
     proxyCounter.newToken()
-    //invokeCallRecord adds an appropriate child the proxyTerminator
+    //invokeCallTarget adds an appropriate child the proxyTerminator
 
     if (lookedUpProxyGroupMember != null) {
       /* We have a RemoteGroupMembersProxy already for this proxyId,
@@ -208,17 +208,17 @@ trait GroupProxyManager {
   def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(publishedValue: AnyRef): Unit = {
     Logger.fine(s"sendPublish: publish by proxyId $proxyId")
     Tracer.tracePublishSend(proxyId, self.runtime.here, destination)
-    destination.sendInContext(self)(PublishGroupCmd(executionId, proxyId, publishedValue))
+    destination.sendInContext(self)(PublishGroupCmd(executionId, proxyId, PublishMemento(publishedValue)))
   }
 
-  def publishInGroup(origin: PeerLocation, groupMemberProxyId: GroupProxyId, publishedValue: AnyRef): Unit = {
-    Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishedValue))
+  def publishInGroup(origin: PeerLocation, groupMemberProxyId: GroupProxyId, publication: PublishMemento): Unit = {
+    Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publication))
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
       Tracer.tracePublishReceive(groupMemberProxyId, origin, self.runtime.here)
-      runtime.schedule(CallClosureSchedulable(g.publicationContinuation, publishedValue))
+      runtime.schedule(CallClosureSchedulable(g.publicationContinuation, publication.publishedValue))
     } else {
-      throw new AssertionError(f"Publish by unknown group member proxy $groupMemberProxyId%#x, value=$publishedValue")
+      throw new AssertionError(f"Publish by unknown group member proxy $groupMemberProxyId%#x, value=${publication.publishedValue}")
     }
   }
 

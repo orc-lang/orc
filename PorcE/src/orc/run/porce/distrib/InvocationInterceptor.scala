@@ -13,8 +13,7 @@
 
 package orc.run.porce.distrib
 
-import orc.run.porce.runtime.{ CallRecord, PorcEExecution }
-import orc.run.porce.runtime.CPSCallResponseHandler
+import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEExecution }
 
 /** Provides a "hook" to intercept external calls from an Execution.
   *

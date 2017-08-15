@@ -13,12 +13,10 @@
 
 package orc.run.porce.distrib
 
-import com.oracle.truffle.api.RootCallTarget
-
 import orc.{ OrcEvent, OrcExecutionOptions }
-import orc.ast.porc.MethodCPS
+import orc.compile.parse.OrcSourceRange
 import orc.compiler.porce.PorcToPorcE
-import orc.run.porce.runtime.{ PorcEClosure, PorcEExecution, PorcEExecutionWithLaunch, PorcEExecutionHolder }
+import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch }
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -38,7 +36,7 @@ import orc.run.porce.runtime.{ PorcEClosure, PorcEExecution, PorcEExecutionWithL
 abstract class DOrcExecution(
     val executionId: DOrcExecution#ExecutionId,
     val followerExecutionNum: Int,
-    programAst: MethodCPS,
+    programAst: DOrcRuntime#ProgramAST,
     options: OrcExecutionOptions,
     eventHandler: OrcEvent => Unit,
     override val runtime: DOrcRuntime)
@@ -91,7 +89,7 @@ object DOrcExecution {
   */
 class DOrcLeaderExecution(
   executionId: DOrcExecution#ExecutionId,
-  programAst: MethodCPS,
+  programAst: DOrcRuntime#ProgramAST,
   options: OrcExecutionOptions,
   eventHandler: OrcEvent => Unit,
   runtime: LeaderRuntime)
@@ -117,9 +115,16 @@ class DOrcLeaderExecution(
 class DOrcFollowerExecution(
   executionId: DOrcExecution#ExecutionId,
   followerExecutionNum: Int,
-  programAst: MethodCPS,
+  programAst: DOrcRuntime#ProgramAST,
   options: OrcExecutionOptions,
   eventHandler: OrcEvent => Unit,
   runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
 }
+
+case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], target: AnyRef, arguments: Array[AnyRef]) extends Serializable {
+  def this(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]) {
+    this(callSiteId = callHandler.callSiteId, callSitePosition = callHandler.callSitePosition, target = target, arguments = arguments)
+  }
+}
+case class PublishMemento(publishedValue: AnyRef) extends Serializable

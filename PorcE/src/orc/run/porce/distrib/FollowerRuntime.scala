@@ -21,7 +21,6 @@ import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
 
 import orc.{ OrcEvent, OrcExecutionOptions }
-import orc.ast.porc.MethodCPS
 import orc.util.CmdLineParser
 
 /** Orc runtime engine running as part of a dOrc cluster.
@@ -156,8 +155,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case AddPeerCmd(peerRuntimeId, peerListenAddress) => addPeer(peerRuntimeId, peerListenAddress)
           case RemovePeerCmd(peerRuntimeId) => removePeer(peerRuntimeId)
           case LoadProgramCmd(xid, oil, options) => loadProgram(leaderLocation, xid, oil, options)
-          case MigrateCallCmd(xid, gmpid, movedCall, target, args) => programs(xid).receiveCall(leaderLocation, gmpid, movedCall, target, args)
-          case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(leaderLocation, gmpid, t)
+          case MigrateCallCmd(xid, gmpid, movedCall) => programs(xid).receiveCall(leaderLocation, gmpid, movedCall)
+          case PublishGroupCmd(xid, gmpid, pub) => programs(xid).publishInGroup(leaderLocation, gmpid, pub)
           case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
           case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
           case DiscorporateGroupMemberProxyCmd(xid, gmpid) => programs(xid).discorporateGroupMemberProxy(gmpid)
@@ -191,8 +190,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         }
         Logger.finest(s"Read ${msg}")
         msg match {
-          case MigrateCallCmd(xid, gmpid, movedCall, target, args) => programs(xid).receiveCall(peerLocation, gmpid, movedCall, target, args)
-          case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(peerLocation, gmpid, t)
+          case MigrateCallCmd(xid, gmpid, movedCall) => programs(xid).receiveCall(peerLocation, gmpid, movedCall)
+          case PublishGroupCmd(xid, gmpid, pub) => programs(xid).publishInGroup(peerLocation, gmpid, pub)
           case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
           case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
           case DiscorporateGroupMemberProxyCmd(xid, gmpid) => programs(xid).discorporateGroupMemberProxy(gmpid)
@@ -285,7 +284,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcFollowerExecution])
 
-  def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programAst: MethodCPS, options: OrcExecutionOptions): Unit = {
+  def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions): Unit = {
     Logger.entering(getClass.getName, "loadProgram")
 
     assert(programs.isEmpty) /* For now */
