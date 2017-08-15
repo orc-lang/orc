@@ -29,6 +29,14 @@ case class PorcEDistributedBackendType() extends BackendType {
   * @author amp, jthywiss
   */
 class PorcEDistributedBackend extends PorcBackend {
+  override def modifyCompilationOptions(options: OrcCompilationOptions): OrcCompilationOptions = {
+    val oos = options.optimizationOptions
+    oos.add("porc:directcalls=false")
+    options.optimizationOptions = oos
+    
+    options
+  }
+  
   def createRuntime(options: OrcExecutionOptions): Runtime[MethodCPS] = new LeaderRuntime() with Runtime[MethodCPS] {
     def run(ast: MethodCPS, k: orc.OrcEvent => Unit): Unit = run(ast, k, options)
     def runSynchronous(ast: MethodCPS, k: orc.OrcEvent => Unit): Unit = runSynchronous(ast, k, options)
