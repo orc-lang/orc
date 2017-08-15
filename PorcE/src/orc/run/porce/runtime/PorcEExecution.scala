@@ -47,9 +47,9 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
 
-  def invokeCallRecord(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-    val callTarget = callSiteMap.computeIfAbsent(callRecord.callSiteId, (_) => new InvokeCallRecordRootNode(arguments.length, this).getCallTarget())
-    callTarget.call(Array(null, target) ++: arguments)
+  def invokeCallRecord(callSiteId: Int, p: PorcEClosure, c: Counter, t: Terminator, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    val callTarget = callSiteMap.computeIfAbsent(callSiteId, (_) => new InvokeCallRecordRootNode(arguments.length + 3, this).getCallTarget())
+    callTarget.call(Array(Array.emptyObjectArray, target, p, c, t) ++: arguments)
   }
 }
 
