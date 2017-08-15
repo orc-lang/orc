@@ -18,6 +18,7 @@ import java.util.{ Calendar, GregorianCalendar, Locale, TimeZone }
 import java.util.logging.{ Formatter, Level, LogRecord }
 
 import scala.annotation.elidable
+import java.lang.management.ManagementFactory
 
 /** A Scala wrapper around java.util.logging.Logger
   * <p>
@@ -188,7 +189,9 @@ object SyslogishFormatter extends Formatter {
       sb.append('-')
     }
 
-    sb.append(" [thread ")
+    sb.append(" [vm ")
+    sb.append(ManagementFactory.getRuntimeMXBean().getName())
+    sb.append(", thread ")
     sb.append(record.getThreadID())
     sb.append("]: ")
 
