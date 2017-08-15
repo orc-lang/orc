@@ -10,4 +10,5 @@ import orc.run.porce.runtime.Terminator;
 
 @TypeSystem({ PorcEUnit.class, PorcEClosure.class, Counter.class, Terminator.class, Future.class, PorcEObject.class })
 public class PorcETypes {
+    /* Using Truffle's default TypeCheck and TypeCast implementations. */
 }

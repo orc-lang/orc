@@ -37,10 +37,10 @@ public abstract class CallBase extends Expression {
     }
 
     private int findCallSiteId(final Expression e) {
-        if (e instanceof HasPorcNode && ((HasPorcNode) e).porcNode().isDefined()) {
+        if (e.porcNode().isDefined()) {
             final PorcAST ast = ((HasPorcNode) e).porcNode().get();
             if (ast instanceof ASTWithIndex && ((ASTWithIndex) ast).optionalIndex().isDefined()) {
-                return (Integer) ((ASTWithIndex) ast).optionalIndex().get();
+                return ((Integer) ((ASTWithIndex) ast).optionalIndex().get()).intValue();
             }
         }
         final Node p = e.getParent();

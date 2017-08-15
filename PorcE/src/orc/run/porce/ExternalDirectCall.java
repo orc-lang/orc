@@ -19,7 +19,7 @@ import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
 
 class ExternalDirectCallBase extends CallBase {
-    @CompilerDirectives.CompilationFinal
+    @CompilerDirectives.CompilationFinal(dimensions = 1)
     protected final BranchProfile[] exceptionProfiles = new BranchProfile[] { BranchProfile.create(), BranchProfile.create(), BranchProfile.create() };
 
     public ExternalDirectCallBase(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {

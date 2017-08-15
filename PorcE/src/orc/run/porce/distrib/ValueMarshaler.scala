@@ -30,12 +30,12 @@ import scala.collection.mutable.WeakHashMap
 trait ValueMarshaler {
   self: DOrcExecution =>
 
-  def marshalValueWouldReplace(destination: PeerLocation)(value: AnyRef): Boolean = {
+  def marshalValueWouldReplace(destination: PeerLocation)(value: Any): Boolean = {
     value match {
       /* keep in sync with cases in marshalValue */
       //FIXME: Handle circular references
       case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForMarshaling(marshalValueWouldReplace(destination)(_)) => true
-      case st: scala.collection.Traversable[AnyRef] if st.exists(marshalValueWouldReplace(destination)(_)) => true //FIXME:Scala-specific, generalize
+      case st: scala.collection.Traversable[Any] if st.exists(marshalValueWouldReplace(destination)(_)) => true //FIXME:Scala-specific, generalize
       case null => false
       case ro: RemoteObjectRef => true
       case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => false
@@ -50,7 +50,10 @@ trait ValueMarshaler {
       /* keep in sync with cases in marshalValueWouldReplace */
       //FIXME: Handle circular references
       case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForMarshaling(marshalValueWouldReplace(destination)(_)) => dmr.replaceForMarshaling(marshalValue(destination)(_))
-      case st: scala.collection.Traversable[AnyRef] => st.map(marshalValue(destination)(_)) //FIXME:Scala-specific, generalize
+      case st: scala.collection.Traversable[Any] => st.map(_ match { //FIXME:Scala-specific, generalize
+        case o: AnyRef => marshalValue(destination)(o)
+        case x => x
+      } )
       case v => v
     }
     val marshaledValue = replacedValue match {
@@ -124,13 +127,13 @@ trait ValueMarshaler {
     v == null || v.isInstanceOf[Class[_]] || v.isInstanceOf[String] || v.getClass.isPrimitive || v.getClass.isEnum ||
       (v.getClass.isArray && v.getClass.getComponentType.isPrimitive)
 
-  def unmarshalValueWouldReplace(value: AnyRef): Boolean = {
+  def unmarshalValueWouldReplace(value: Any): Boolean = {
     value match {
       /* keep in sync with cases in unmarshalValue */
       case rrr: RemoteObjectRefReplacement => true
       //FIXME: Handle circular references
       case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace(_)) => true
-      case st: scala.collection.Traversable[AnyRef] if st.exists(unmarshalValueWouldReplace(_)) => true //FIXME:Scala-specific, generalize
+      case st: scala.collection.Traversable[Any] if st.exists(unmarshalValueWouldReplace(_)) => true //FIXME:Scala-specific, generalize
       case _ => false
     }
   }
@@ -145,7 +148,10 @@ trait ValueMarshaler {
       /* keep in sync with cases in unmarshalValueWouldReplace */
       //FIXME: Handle circular references
       case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace(_)) => dmr.replaceForUnmarshaling(unmarshalValue(_))
-      case st: scala.collection.Traversable[AnyRef] => st.map(unmarshalValue(_)) //FIXME:Scala-specific, generalize
+      case st: scala.collection.Traversable[Any] => st.map(_ match { //FIXME:Scala-specific, generalize
+        case o: AnyRef => unmarshalValue(o)
+        case x => x
+      })
       case v => v
     }
     replacedValue match {

@@ -160,10 +160,10 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
         case s: orc.FutureState.Bound => {
           set(i, s.value)
         }
-        case FutureConstants.Orc_Stopped => {
+        case orc.FutureState.Stopped => {
           setHaltedST()
         }
-        case FutureConstants.Orc_Unbound => {
+        case orc.FutureState.Unbound => {
           // Store a JoinElement in the array so it can be started later.
           values(i + 1) = new JoinElement(i, f)
         }
@@ -225,7 +225,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     var i = 1
     while (i < values.length) {
       values(i) match {
-        case p: JoinElement =>
+        case p: Join#JoinElement =>
           p.start()
         case _ =>
           {}

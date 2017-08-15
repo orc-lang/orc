@@ -53,7 +53,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     @Override
     public int getId() {
-        return (int) ((ASTWithIndex) porcNode().get()).optionalIndex().get();
+        return ((Integer) ((ASTWithIndex) porcNode().get()).optionalIndex().get()).intValue();
     }
 
     protected @Child Expression body;

@@ -67,7 +67,7 @@ public class InternalArgArrayCall extends InternalArgArrayCallBase {
             } else {
                 n = new Universal(new InternalArgArrayCallBase(execution) {
                     @Override
-                    public Object execute(final VirtualFrame frame, final Object target, final Object[] arguments) {
+                    public Object execute(final VirtualFrame _frame, final Object _target, final Object[] _arguments) {
                         CompilerDirectives.transferToInterpreter();
                         throw new AssertionError("This node should never be reached.");
                     }
