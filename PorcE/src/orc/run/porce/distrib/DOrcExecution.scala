@@ -58,7 +58,7 @@ abstract class DOrcExecution(
   def locationForFollowerNum(followerNum: DOrcRuntime#RuntimeId): PeerLocation = runtime.locationForRuntimeId(followerNum)
 
   private val hereSet: Set[PeerLocation] = Set(runtime.here)
-  override def currentLocations(v: Any) = {
+  override def currentLocations(v: Any): Set[PeerLocation] = {
     val cl = v match {
       //TODO: Replace this with location tracking
       case plp: LocationPolicy => plp.permittedLocations(runtime)

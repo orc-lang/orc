@@ -166,7 +166,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     }
   }
 
-  override def stop() = {
+  override def stop(): Unit = {
     followerEntries foreach { subjectFE =>
       followerEntries foreach { recipientFE =>
         try {

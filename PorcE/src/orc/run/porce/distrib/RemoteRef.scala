@@ -77,7 +77,7 @@ class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) ext
   */
 case class RemoteObjectRefReplacement(remoteRefId: RemoteObjectRef#RemoteRefId) {
   override def toString = this.productPrefix + "(0x" + remoteRefId.toHexString + ")"
-  def unmarshal(rmtObjMgr: RemoteObjectManager) = {
+  def unmarshal(rmtObjMgr: RemoteObjectManager): AnyRef = {
     rmtObjMgr.localObjectForRemoteId(remoteRefId).getOrElse(new RemoteObjectRef(remoteRefId))
   }
 }

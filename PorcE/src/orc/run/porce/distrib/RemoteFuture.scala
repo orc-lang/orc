@@ -75,7 +75,7 @@ trait RemoteFutureManager {
   protected val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureRef]
   protected val waitingReadersUpdateLock = new Object()
 
-  def ensureFutureIsRemotelyAccessibleAndGetId(fut: Future) = {
+  def ensureFutureIsRemotelyAccessibleAndGetId(fut: Future): RemoteFutureRef#RemoteRefId = {
     //Logger.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
     fut match {
       case rfut: RemoteFutureRef => rfut.remoteRefId
@@ -93,7 +93,7 @@ trait RemoteFutureManager {
     }
   }
 
-  def futureForId(futureId: RemoteFutureRef#RemoteRefId) = {
+  def futureForId(futureId: RemoteFutureRef#RemoteRefId): Future = {
     if (homeLocationForRemoteFutureId(futureId) == runtime.asInstanceOf[DOrcRuntime].here) {
       servingRemoteFutures.get(futureId).fut
     } else {

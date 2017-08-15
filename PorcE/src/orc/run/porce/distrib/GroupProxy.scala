@@ -49,7 +49,7 @@ class RemoteGroupProxy(
       onDiscorporateFunc()
     }
 
-    override def onResurrect() = {
+    override def onResurrect(): Unit = {
       //Logger.entering(getClass.getName, "onResurrect")
       onResurrectFunc()
     }
@@ -77,7 +77,7 @@ class RemoteGroupProxy(
   }
 
   ///* PorcE doesn't do notification at the group level. Hrmpf. */
-  //override def notifyOrc(event: OrcEvent) = {
+  //override def notifyOrc(event: OrcEvent): Unit {
   //  Logger.entering(getClass.getName, "notifyOrc", Seq(event))
   //  execution.notifyOrc(event)
   //  Logger.exiting(getClass.getName, "notifyOrc")
@@ -176,7 +176,7 @@ trait GroupProxyManager {
       case gmp => (gmp.publicationContinuation, gmp.enclosingCounter, gmp.enclosingTerminator)
     }
 
-    val callInvoker = new Schedulable { def run() = { self.invokeCallRecord(movedCall, callTarget, callArguments) } }
+    val callInvoker = new Schedulable { def run(): Unit = { self.invokeCallRecord(movedCall, callTarget, callArguments) } }
     enclosingCounter.newToken()
     enclosingTerminator.addChild(???)
 
@@ -224,7 +224,7 @@ trait GroupProxyManager {
   def haltGroupMemberProxy(groupMemberProxyId: GroupProxyId): Unit = {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
-      runtime.schedule(new Schedulable { def run() = { g.halt() } })
+      runtime.schedule(new Schedulable { def run(): Unit = { g.halt() } })
     } else {
       Logger.fine(f"Halt group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }
@@ -233,7 +233,7 @@ trait GroupProxyManager {
   def discorporateGroupMemberProxy(groupMemberProxyId: GroupProxyId): Unit = {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
-      runtime.schedule(new Schedulable { def run() = { g.discorporate() } })
+      runtime.schedule(new Schedulable { def run(): Unit = { g.discorporate() } })
       proxiedGroupMembers.remove(groupMemberProxyId)
     } else {
       Logger.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
@@ -257,7 +257,7 @@ trait GroupProxyManager {
   def killGroupProxy(proxyId: GroupProxyId): Unit = {
     val g = proxiedGroups.get(proxyId)
     if (g != null) {
-      runtime.schedule(new Schedulable { def run() = { g.terminator.kill() } })
+      runtime.schedule(new Schedulable { def run(): Unit = { g.terminator.kill() } })
       proxiedGroups.remove(proxyId)
     } else {
       Logger.fine(f"Kill group on unknown group $proxyId%#x")

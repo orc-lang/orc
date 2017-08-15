@@ -81,7 +81,7 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
   */
 class RuntimeConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) extends ConnectionListener[R, S](bindSockAddr) {
 
-  override def acceptConnection() = {
+  override def acceptConnection(): RuntimeConnection[R, S] = {
     val acceptedSocket = serverSocket.accept()
     Logger.finer(s"${Console.GREEN}RuntimeConnectionListener accepted $acceptedSocket${Console.RESET}")
     SocketObjectConnection.configSocket(acceptedSocket)
@@ -99,7 +99,7 @@ class RuntimeConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) extends
   */
 object RuntimeConnectionInitiator {
 
-  def apply[R, S](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null) = {
+  def apply[R, S](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null): RuntimeConnection[R, S] = {
     val socket = new Socket()
     SocketObjectConnection.configSocket(socket)
     if (localSockAddr != null) {

@@ -261,7 +261,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     Logger.exiting(getClass.getName, "addPeer")
   }
 
-  protected def shouldOpen(peerListenAddress: InetSocketAddress) = {
+  protected def shouldOpen(peerListenAddress: InetSocketAddress): Boolean = {
     /* Convention: Peer with "lower" address initiates connection */
     val bla = (boundListenAddress.getAddress.getAddress map { _.toInt }) :+ boundListenAddress.getPort
     val pla = (peerListenAddress.getAddress.getAddress map { _.toInt }) :+ peerListenAddress.getPort
