@@ -156,14 +156,14 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
   def force(i: Int, f: orc.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
     if (!isHaltedST()) {
-      f.get() match {
+      (f.get(): @unchecked) match {
         case s: orc.FutureState.Bound => {
           set(i, s.value)
         }
-        case orc.FutureState.Stopped => {
+        case FutureConstants.Orc_Stopped => {
           setHaltedST()
         }
-        case orc.FutureState.Unbound => {
+        case FutureConstants.Orc_Unbound => {
           // Store a JoinElement in the array so it can be started later.
           values(i + 1) = new JoinElement(i, f)
         }

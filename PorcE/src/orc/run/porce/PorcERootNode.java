@@ -80,6 +80,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             }
         }
 
+		// TODO: PERFORMANCE: Implement some form of TCO which generates a loop for 
+		// self-tail calls by actually calling the body repeatedly.
+		
         try {
             final Object ret = body.execute(frame);
             return ret;
