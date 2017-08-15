@@ -44,7 +44,10 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     runtimeLocationMap.put(0, here)
     followers foreach { f => runtimeLocationMap.put(f._1, new FollowerLocation(f._1, RuntimeConnectionInitiator[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](f._2))) }
 
-    followerEntries foreach { e => new ReceiveThread(e._1, e._2).start() }
+    followerEntries foreach { e => 
+      e._2.send(DOrcConnectionHeader(runtimeId, e._1))
+      new ReceiveThread(e._1, e._2).start()
+    }
     followerEntries foreach { e =>
       followerEntries foreach { _._2.send(AddPeerCmd(e._1, followers(e._1))) }
     }
@@ -91,7 +94,6 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     extends Thread(f"dOrc leader receiver for $followerRuntimeId%#x @ ${followerLocation.connection.socket}") {
     override def run(): Unit = {
       try {
-        followerLocation.send(DOrcConnectionHeader(runtimeId, followerRuntimeId))
         Logger.info(s"Reading events from ${followerLocation.connection.socket}")
         while (!followerLocation.connection.closed && !followerLocation.connection.socket.isInputShutdown) {
           val msg = try {

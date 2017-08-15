@@ -25,7 +25,7 @@ class CompilerConfigurationException(val message: String)
   *
   * @author amp
   */
-final class CompilerFlagValue(name: String, val s: Option[String]) {
+final class CompilerFlagValue(name: String, val s: Option[String]) extends Serializable {
   def parseFlexibleBoolean(s: String) = {
     if (s.equalsIgnoreCase("true") || s.equalsIgnoreCase("on") || s.equalsIgnoreCase("yes"))
       true
