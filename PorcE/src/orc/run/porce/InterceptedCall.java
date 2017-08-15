@@ -13,15 +13,15 @@ public class InterceptedCall extends CallBase {
 		super(target, arguments, execution);
 	}
 
-	public Object executeWithValues(final VirtualFrame frame, final Object target, final Object[] arguments) {
-		final PorcEClosure pub = (PorcEClosure) arguments[0];
-		final Counter counter = (Counter) arguments[1];
-		final Terminator term = (Terminator) arguments[2];
+	public Object executeWithValues(final VirtualFrame frame, final Object newTarget, final Object[] newArguments) {
+		final PorcEClosure pub = (PorcEClosure) newArguments[0];
+		final Counter counter = (Counter) newArguments[1];
+		final Terminator term = (Terminator) newArguments[2];
 
 		// Token: Passed to handle from arguments.
 		final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term, getCallSiteId());
 
-		execution.get().invokeIntercepted(handle, target, buildArgumentValues(arguments));
+		execution.get().invokeIntercepted(handle, newTarget, buildArgumentValues(newArguments));
 		return PorcEUnit.SINGLETON;
 	}
 
@@ -34,9 +34,9 @@ public class InterceptedCall extends CallBase {
 		return executeWithValues(frame, targetValue, argumentValues);
 	}
 
-	protected Object[] buildArgumentValues(final Object[] arguments) {
-		final Object[] argumentValues = new Object[arguments.length - 3];
-		System.arraycopy(arguments, 3, argumentValues, 0, argumentValues.length);
+	protected Object[] buildArgumentValues(final Object[] newArguments) {
+		final Object[] argumentValues = new Object[newArguments.length - 3];
+		System.arraycopy(newArguments, 3, argumentValues, 0, argumentValues.length);
 		return argumentValues;
 	}
 

@@ -89,6 +89,7 @@ public abstract class Call extends CallBase {
     public static class Direct {
         public static Call create(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
             return new Call(target, arguments, execution) {
+                @Override
                 protected CallBase makeExternalCall() {
                        return ExternalDirectCall.create((Expression) target.copy(), CallBase.copyExpressionArray(arguments), execution);
                 }
@@ -99,6 +100,7 @@ public abstract class Call extends CallBase {
    public static class CPS {
        public static Call create(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
             return new Call(target, arguments, execution) {
+                @Override
                 protected CallBase makeExternalCall() {
                        return ExternalCPSCall.create((Expression) target.copy(), CallBase.copyExpressionArray(arguments), execution);
                 }
