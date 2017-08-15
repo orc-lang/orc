@@ -227,6 +227,8 @@ class OrctimizerToPorc(co: CompilerOptions) {
           (newP, porc.Continuation(Seq(v),
             let((newK, porc.Continuation(Seq(),
               ctx.p(v)))) {
+              // FIXME: This is an ordering bug. If calling newK is delayed then then halt will happen before p is called. This will destroy the token that was passed to K too soon.
+              //     This will need to be fixed by either passing newC to kill (and hard wiring the handling) or providing a second continuation to handle the non-killed case.
               porc.Kill(newT, newK) ::: 
               porc.HaltToken(newC)
             }))) {
