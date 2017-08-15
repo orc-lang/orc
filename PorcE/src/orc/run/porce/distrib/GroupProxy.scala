@@ -188,10 +188,9 @@ trait GroupProxyManager {
       case gmp => (gmp.publicationContinuation, gmp.enclosingCounter, gmp.enclosingTerminator)
     }
 
-    val callRecord = new CallRecord(proxyPublicationContinuation, proxyCounter, proxyTerminator, movedCall.callSitePosition, movedCall.callSiteId)
-    val callInvoker = new Schedulable { def run(): Unit = { self.invokeCallRecord(callRecord, callTarget, callArguments) } }
+    val callInvoker = new Schedulable { def run(): Unit = { self.invokeCallRecord(movedCall.callSiteId, proxyPublicationContinuation, proxyCounter, proxyTerminator, callTarget, callArguments) } }
     proxyCounter.newToken()
-    proxyTerminator.addChild(???)
+    //invokeCallRecord adds an appropriate child the proxyTerminator
 
     if (lookedUpProxyGroupMember != null) {
       /* We have a RemoteGroupMembersProxy already for this proxyId,
