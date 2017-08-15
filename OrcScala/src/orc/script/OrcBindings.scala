@@ -73,7 +73,7 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     putInt("orc.optimizationLevel", newVal)
     optimizationLevelFlagsCache = null
   }
-  def optimizationOptions: java.util.List[String] = getStringList("orc.optimizationOptions", List().asJava, ",")
+  def optimizationOptions: java.util.List[String] = getStringList("orc.optimizationOptions", new java.util.ArrayList(), ",")
   def optimizationOptions_=(v: java.util.List[String]) = putStringList("orc.optimizationOptions", v, ",")
 
   def parseOptimizationOptionLine(s: String) = {
@@ -293,11 +293,11 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     }
   }
 
-  def getStringList(key: String, default: java.util.List[String], separator: String = File.pathSeparator): java.util.List[String] = {
+  def getStringList(key: String, default: => java.util.List[String], separator: String = File.pathSeparator): java.util.List[String] = {
     val value = get(key)
     value match {
       case s: String if (s.length == 0) => new java.util.ArrayList[String](0)
-      case s: String => java.util.Arrays.asList(s.split(separator): _*)
+      case s: String => new java.util.ArrayList[String](java.util.Arrays.asList(s.split(separator): _*))
       case _ => default
     }
   }

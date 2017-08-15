@@ -38,10 +38,11 @@ abstract class PorcBackend extends Backend[MethodCPS] {
   lazy val compiler: Compiler[MethodCPS] = new PorcOrcCompiler() with Compiler[MethodCPS] {
     def compile(source: OrcInputContext, options: OrcCompilationOptions,
       compileLogger: CompileLogger, progress: ProgressMonitor): MethodCPS = {
-      this(source, options, compileLogger, progress)
+      this(source, modifyCompilationOptions(options), compileLogger, progress)
     }
   }
-
+  
+  protected def modifyCompilationOptions(options: OrcCompilationOptions): OrcCompilationOptions = options
 
   // NOTE: If needed we could implement an XML serializer for Porc. We could also make things even simpler by just using java serialization here.
   val serializer: Option[CodeSerializer[MethodCPS]] = Some(new CodeSerializer[MethodCPS] {   
