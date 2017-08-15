@@ -17,7 +17,7 @@ import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.RootCallTarget
 import orc.ast.ASTWithIndex
 import orc.util.{ TTrue, TUnknown, TFalse }
- 
+
 object PorcToPorcE {
   def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
     new PorcToPorcE()(m, execution)

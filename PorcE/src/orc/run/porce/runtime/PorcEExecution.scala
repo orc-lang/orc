@@ -109,7 +109,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   def idToCallTarget(id: Int): RootCallTarget = {
     callTargetMap(id)
   }
-  
+
   val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
 
   def invokeCallRecord(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = {

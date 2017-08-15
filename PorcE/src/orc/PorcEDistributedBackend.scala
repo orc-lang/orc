@@ -19,11 +19,10 @@ import orc.ast.porc.MethodCPS
 
 case class PorcEDistributedBackendType() extends BackendType {
   type CompiledCode = MethodCPS
-  
+
   val name = "porc-distrib"
   def newBackend(): Backend[MethodCPS] = new PorcEDistributedBackend()
 }
-
 
 /** A backend implementation using the dOrc interpreter.
   *

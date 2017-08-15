@@ -48,7 +48,7 @@ final class ObjectIdMapping[T >: Null](idManager: RemoteRefIdManager) {
 
 /** The manager for remote object references that is mixed into the DOrcExecution.
   */
-trait RemoteObjectManager  {
+trait RemoteObjectManager {
   this: DOrcExecution =>
 
   type RemoteRefId = RemoteRef#RemoteRefId

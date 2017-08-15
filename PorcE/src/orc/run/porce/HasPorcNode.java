@@ -1,8 +1,10 @@
+
 package orc.run.porce;
 
-import orc.ast.porc.PorcAST;
 import scala.Option;
 
+import orc.ast.porc.PorcAST;
+
 public interface HasPorcNode {
-	public Option<PorcAST> porcNode();
+    public Option<PorcAST> porcNode();
 }

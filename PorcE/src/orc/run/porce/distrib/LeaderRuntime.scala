@@ -52,7 +52,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcLeaderExecution])
 
   /*override*/ def run(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
-    val followers = Map(options.followerSockets.asScala.toSeq.zipWithIndex.map( { case (s, i) => (i+1, s) } ): _*)
+    val followers = Map(options.followerSockets.asScala.toSeq.zipWithIndex.map({ case (s, i) => (i + 1, s) }): _*)
     connectToFollowers(followers)
 
     val thisExecutionId = DOrcExecution.freshExecutionId()
@@ -136,8 +136,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   }
 
   @throws(classOf[ExecutionException])
-  @throws(classOf[InterruptedException])
-  /*override*/ def runSynchronous(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
+  @throws(classOf[InterruptedException]) /*override*/
+  def runSynchronous(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     synchronized {
       if (runSyncThread != null) throw new IllegalStateException("runSynchronous on an engine that is already running synchronously")
       runSyncThread = Thread.currentThread()

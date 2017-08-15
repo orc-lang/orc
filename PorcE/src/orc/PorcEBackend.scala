@@ -23,7 +23,7 @@ import orc.run.porce.runtime.PorcEClosure
 
 case class PorcEBackendType() extends BackendType {
   type CompiledCode = MethodCPS
-  
+
   val name = "porc"
   def newBackend(): Backend[MethodCPS] = new PorcEBackend()
 }

@@ -34,14 +34,14 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
   override def receive(): R = {
     val obj = super.receive()
     Logger.finest(s"${Console.BLUE}RuntimeConnection.receive: Received $obj on $socket${Console.RESET}")
-    EventCounter.count(/*'receive*/ Symbol("recv "+obj.getClass.getName))
+    EventCounter.count( /*'receive*/ Symbol("recv " + obj.getClass.getName))
     obj
   }
 
   override def send(obj: S) {
     Logger.finest(s"${Console.RED}RuntimeConnection.send: Sending $obj on $socket${Console.RESET}")
     super.send(obj)
-    EventCounter.count(/*'send*/ Symbol("send "+obj.getClass.getName))
+    EventCounter.count( /*'send*/ Symbol("send " + obj.getClass.getName))
   }
 
   def receiveInContext(executionLookup: (DOrcExecution#ExecutionId) => DOrcExecution, origin: PeerLocation)(): R = ois synchronized {
@@ -73,7 +73,6 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
   }
 
 }
-
 
 /** Listens for incoming dOrc RuntimeConnections.  Extends ConnectionListener
   * to provide extra serialization support for Orc/dOrc values.
@@ -117,7 +116,6 @@ object RuntimeConnectionInitiator {
 
 }
 
-
 /** Marks the execution ID in an OrcPeerCmd so that RuntimeConnection can
   * recognize it during deserialization.
   *
@@ -128,7 +126,6 @@ object RuntimeConnectionInitiator {
   * @author jthywiss
   */
 class ExecutionContextSerializationMarker(val executionId: DOrcExecution#ExecutionId) extends Serializable
-
 
 /** Deserializes Orc/dOrc values previously written using an
   * RuntimeConnectionOutputStream.  Extends ObjectInputStream to
@@ -177,7 +174,6 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
   //}
 
 }
-
 
 /** Writes Orc/dOrc values to an OutputStream.  The values can be read
   * (reconstituted) using an RuntimeConnectionInputStream.  Extends

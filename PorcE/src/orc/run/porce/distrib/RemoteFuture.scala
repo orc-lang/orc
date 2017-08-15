@@ -118,7 +118,7 @@ trait RemoteFutureManager {
   }
 
   def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
-    Logger.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x"+futureId.toHexString, value))
+    Logger.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x" + futureId.toHexString, value))
     readers foreach { reader =>
       val mv = value.map(self.marshalValue(reader)(_))
       Tracer.traceFutureResultSend(futureId, self.runtime.here, reader)
