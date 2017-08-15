@@ -37,7 +37,7 @@ trait RemoteRefIdManager {
 
   private val remoteRefIdCounter = new AtomicLong(followerExecutionNum.toLong << 32)
 
-  protected def freshRemoteRefId() = remoteRefIdCounter.getAndIncrement()
+  protected def freshRemoteRefId(): RemoteObjectRef#RemoteRefId = remoteRefIdCounter.getAndIncrement()
 
   protected def homeLocationForRemoteRef(id: RemoteRef#RemoteRefId): PeerLocation = {
     val followerNum = id.asInstanceOf[Long] >> 32
@@ -51,9 +51,9 @@ trait RemoteRefIdManager {
   def freshRemoteObjectId(): RemoteObjectRef#RemoteRefId = freshRemoteRefId()
   def freshRemoteFutureId(): RemoteFutureRef#RemoteRefId = freshRemoteRefId()
 
-  def homeLocationForGroupProxyId(id: GroupProxyId) = homeLocationForRemoteRef(id)
-  def homeLocationForRemoteObjectId(id: RemoteObjectRef#RemoteRefId) = homeLocationForRemoteRef(id)
-  def homeLocationForRemoteFutureId(id: RemoteFutureRef#RemoteRefId) = homeLocationForRemoteRef(id)
+  def homeLocationForGroupProxyId(id: GroupProxyId): PeerLocation = homeLocationForRemoteRef(id)
+  def homeLocationForRemoteObjectId(id: RemoteObjectRef#RemoteRefId): PeerLocation = homeLocationForRemoteRef(id)
+  def homeLocationForRemoteFutureId(id: RemoteFutureRef#RemoteRefId): PeerLocation = homeLocationForRemoteRef(id)
 
 }
 
@@ -64,7 +64,7 @@ trait RemoteRefIdManager {
 class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
   override type RemoteRefId = Long
 
-  override def toString = super.toString + f"(remoteRefId=$remoteRefId%#x)"
+  override def toString: String = super.toString + f"(remoteRefId=$remoteRefId%#x)"
 
   def marshal(): RemoteObjectRefReplacement = {
     RemoteObjectRefReplacement(remoteRefId)
@@ -76,7 +76,7 @@ class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) ext
   * @author jthywiss
   */
 case class RemoteObjectRefReplacement(remoteRefId: RemoteObjectRef#RemoteRefId) {
-  override def toString = this.productPrefix + "(0x" + remoteRefId.toHexString + ")"
+  override def toString: String = this.productPrefix + "(0x" + remoteRefId.toHexString + ")"
   def unmarshal(rmtObjMgr: RemoteObjectManager): AnyRef = {
     rmtObjMgr.localObjectForRemoteId(remoteRefId).getOrElse(new RemoteObjectRef(remoteRefId))
   }

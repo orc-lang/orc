@@ -36,7 +36,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
   override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
 
-  override def allLocations = runtimeLocationMap.values.toSet
+  override def allLocations: Set[PeerLocation] = runtimeLocationMap.values.toSet
 
   def listen(): Unit = {
     Logger.info(s"Listening on $listenAddress")
@@ -321,10 +321,10 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   val here = Here
 
   object Here extends PeerLocation {
-    override def toString = s"${getClass.getName}(runtimeId=$runtimeId)"
-    override def send(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
-    override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
-    override def runtimeId = FollowerRuntime.this.runtimeId
+    override def toString: String = s"${getClass.getName}(runtimeId=$runtimeId)"
+    override def send(message: OrcPeerCmd): Unit = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd): Unit = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def runtimeId: DOrcRuntime#RuntimeId = FollowerRuntime.this.runtimeId
   }
 
 }
@@ -396,17 +396,17 @@ trait ClosableConnection {
 }
 
 class LeaderLocation(val runtimeId: DOrcRuntime#RuntimeId, val connection: RuntimeConnection[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd]) extends Location[OrcFollowerToLeaderCmd] with ClosableConnection {
-  override def toString = s"${getClass.getName}(runtimeId=$runtimeId)"
-  override def send(message: OrcFollowerToLeaderCmd) = connection.send(message)
-  override def sendInContext(execution: DOrcExecution)(message: OrcFollowerToLeaderCmd) = connection.sendInContext(execution, this)(message)
-  override def close() = connection.close()
-  override def abort() = connection.abort()
+  override def toString: String = s"${getClass.getName}(runtimeId=$runtimeId)"
+  override def send(message: OrcFollowerToLeaderCmd): Unit = connection.send(message)
+  override def sendInContext(execution: DOrcExecution)(message: OrcFollowerToLeaderCmd): Unit = connection.sendInContext(execution, this)(message)
+  override def close(): Unit = connection.close()
+  override def abort(): Unit = connection.abort()
 }
 
 class PeerLocationImpl(val runtimeId: DOrcRuntime#RuntimeId, val connection: RuntimeConnection[OrcPeerCmd, OrcPeerCmd]) extends PeerLocation with ClosableConnection {
-  override def toString = s"${getClass.getName}(runtimeId=$runtimeId)"
-  override def send(message: OrcPeerCmd) = connection.send(message)
-  override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd) = connection.sendInContext(execution, this)(message)
-  override def close() = connection.close()
-  override def abort() = connection.abort()
+  override def toString: String = s"${getClass.getName}(runtimeId=$runtimeId)"
+  override def send(message: OrcPeerCmd): Unit = connection.send(message)
+  override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd): Unit = connection.sendInContext(execution, this)(message)
+  override def close(): Unit = connection.close()
+  override def abort(): Unit = connection.abort()
 }

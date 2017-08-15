@@ -81,7 +81,7 @@ abstract class DOrcExecution(
 }
 
 object DOrcExecution {
-  def freshExecutionId() = java.util.UUID.randomUUID().toString
+  def freshExecutionId(): String = java.util.UUID.randomUUID().toString
   val noGroupProxyId: DOrcExecution#GroupProxyId = 0L
 }
 

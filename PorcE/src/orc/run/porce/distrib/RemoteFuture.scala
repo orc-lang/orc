@@ -22,7 +22,7 @@ import orc.{ Future, FutureReader }
 class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends orc.run.porce.runtime.Future() with RemoteRef {
   override type RemoteRefId = Long
 
-  override def toString = super.toString + f"(remoteRefId=$remoteRefId%#x)"
+  override def toString: String = super.toString + f"(remoteRefId=$remoteRefId%#x)"
 
   execution.sendReadFuture(remoteRefId)
 }
@@ -35,25 +35,25 @@ class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId
 
   protected val readerLocations = new scala.collection.mutable.HashSet[PeerLocation]()
 
-  def addReader(l: PeerLocation) = synchronized {
+  def addReader(l: PeerLocation): Unit = synchronized {
     readerLocations += l
     if (readerLocations.size == 1) {
       fut.read(this)
     }
   }
 
-  protected def getAndClearReaders() = synchronized {
+  protected def getAndClearReaders(): List[PeerLocation] = synchronized {
     val readers = readerLocations.toList
     readerLocations.clear()
     readers
   }
 
-  override def publish(v: AnyRef) = synchronized {
+  override def publish(v: AnyRef): Unit = synchronized {
     //Logger.entering(getClass.getName, "publish")
     execution.sendFutureResult(getAndClearReaders(), futureId, Some(v))
   }
 
-  override def halt() = synchronized {
+  override def halt(): Unit = synchronized {
     //Logger.entering(getClass.getName, "halt")
     execution.sendFutureResult(getAndClearReaders(), futureId, None)
   }

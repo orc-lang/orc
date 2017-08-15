@@ -38,7 +38,7 @@ abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site wit
     new LocationPinnedTuple(loc, args)
   }
 
-  override def permittedLocations(runtime: DOrcRuntime) = Set(runtime.locationForRuntimeId(locationNum))
+  override def permittedLocations(runtime: DOrcRuntime): Set[PeerLocation] = Set(runtime.locationForRuntimeId(locationNum))
 }
 
 class Location0PinnedTupleConstructor extends LocationPinnedTupleConstructor(0) {}
@@ -62,5 +62,5 @@ class Location12PinnedTupleConstructor extends LocationPinnedTupleConstructor(12
   */
 class LocationPinnedTuple(l: PeerLocation, args: Array[AnyRef]) extends OrcTuple(args) with LocationPolicy {
   private val permittedLocationSet = Set(l)
-  override def permittedLocations(runtime: DOrcRuntime) = permittedLocationSet
+  override def permittedLocations(runtime: DOrcRuntime): Set[PeerLocation] = permittedLocationSet
 }

@@ -53,7 +53,7 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
     }
   }
 
-  def sendInContext(execution: DOrcExecution, destination: PeerLocation)(obj: S) = oos synchronized {
+  def sendInContext(execution: DOrcExecution, destination: PeerLocation)(obj: S): Unit = oos synchronized {
     oos.setContext(execution, destination)
     try {
       send(obj)
@@ -236,5 +236,5 @@ protected final case class RootCallTargetReplacement(index: Int)
 //}
 //
 //protected object ClosureReplacement {
-//  def apply(c: Closure) = new ClosureReplacement(c.index, c.closureGroup)
+//  def apply(c: Closure): ClosureReplacement = new ClosureReplacement(c.index, c.closureGroup)
 //}

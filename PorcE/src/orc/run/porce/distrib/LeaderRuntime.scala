@@ -30,14 +30,15 @@ import orc.util.LatchingSignal
   */
 class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
-  protected val runtimeLocationMap = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcRuntime#RuntimeId, FollowerLocation]())
+  protected val runtimeLocationMap: scala.collection.mutable.Map[Int, FollowerLocation] =
+    mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcRuntime#RuntimeId, FollowerLocation]())
 
-  protected def followerLocations = runtimeLocationMap.values.filterNot({ _ == here }).asInstanceOf[Iterable[FollowerLocation]]
-  protected def followerEntries = runtimeLocationMap.filterNot({ _._2 == here })
+  protected def followerLocations: Iterable[FollowerLocation] = runtimeLocationMap.values.filterNot({ _ == here }).asInstanceOf[Iterable[FollowerLocation]]
+  protected def followerEntries: scala.collection.mutable.Map[Int, FollowerLocation] = runtimeLocationMap.filterNot({ _._2 == here })
 
   override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
 
-  override def allLocations = runtimeLocationMap.values.toSet
+  override def allLocations: Set[PeerLocation] = runtimeLocationMap.values.toSet
 
   protected def connectToFollowers(followers: Map[Int, InetSocketAddress]): Unit = {
     runtimeLocationMap.put(0, here)
@@ -190,17 +191,17 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   val here = Here
 
   object Here extends FollowerLocation(0, null) {
-    override def send(message: OrcLeaderToFollowerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
-    override def sendInContext(execution: DOrcExecution)(message: OrcLeaderToFollowerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def send(message: OrcLeaderToFollowerCmd): Unit = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def sendInContext(execution: DOrcExecution)(message: OrcLeaderToFollowerCmd): Unit = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
   }
 
 }
 
 class FollowerLocation(val runtimeId: DOrcRuntime#RuntimeId, val connection: RuntimeConnection[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd]) extends Location[OrcLeaderToFollowerCmd] {
-  override def toString = s"${getClass.getName}(runtimeId=$runtimeId)"
+  override def toString: String = s"${getClass.getName}(runtimeId=$runtimeId)"
 
-  override def send(message: OrcLeaderToFollowerCmd) = connection.send(message)
-  override def sendInContext(execution: DOrcExecution)(message: OrcLeaderToFollowerCmd) = connection.sendInContext(execution, this)(message)
+  override def send(message: OrcLeaderToFollowerCmd): Unit = connection.send(message)
+  override def sendInContext(execution: DOrcExecution)(message: OrcLeaderToFollowerCmd): Unit = connection.sendInContext(execution, this)(message)
 }
 
 case class FollowerConnectionClosedEvent(location: FollowerLocation) extends OrcEvent
