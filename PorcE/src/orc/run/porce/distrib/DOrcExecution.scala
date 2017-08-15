@@ -42,6 +42,7 @@ abstract class DOrcExecution(
     eventHandler: OrcEvent => Unit,
     override val runtime: DOrcRuntime)
   extends PorcEExecution(/* node, options,*/ runtime, eventHandler)
+  with SupportForDOrc
   with ValueLocator
   with ValueMarshaler
   with GroupProxyManager

@@ -16,60 +16,89 @@ package orc.run.porce.distrib
 import orc.{ Handle, Invoker }
 import orc.run.Orc
 import orc.run.porce.runtime.CPSCallResponseHandler
+import com.oracle.truffle.api.nodes.ControlFlowException
+import orc.run.porce.runtime.CallRecord
+import orc.run.porce.runtime.PorcEExecution
 
-/** Adds facilities for distributed Orc calls to an Orc runtime engine.
+/** Adds facilities for distributed Orc calls to an Orc execution.
   *
-  * @author jthywiss
+  * @author amp
   */
-trait SupportForDOrc extends Orc {
-  override def getInvoker(target: AnyRef, arguments: Array[AnyRef]) = {
-    if (!target.isInstanceOf[RemoteRef] && !arguments.exists(_.isInstanceOf[RemoteRef]) &&
-      !target.isInstanceOf[LocationPolicy] && !arguments.exists(_.isInstanceOf[LocationPolicy])) {
-      /* Assumption: PorcE will get a new invoker later if this call site is later
-       * used with target or an arg that is a RemoteRef or has a LocationPolicy. */
-      super.getInvoker(target, arguments)
-    } else {
-      new DOrcInvoker(target, arguments, super.getInvoker(target, arguments))
-    }
-  }
+trait DistributionSupport {
+  this: PorcEExecution =>
+    
+  /** Return true iff the invocation is distributed.
+    *
+    * This call must be as fast as possible since it is called before every external call.
+    */
+  def isDistributedInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean
+
+  /** Invoke an call remotely as needed by the target and arguments.
+    *
+    * This will only be called if `isDistributedInvocation(target, arguments)` is true.
+    */
+  def invokeDistributed(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit
 }
 
-class DOrcInvoker(target: AnyRef, arguments: Array[AnyRef], localInvoker: Invoker) extends Invoker {
+/** Implement no distributed calls at all. 
+  *
+  * @author amp
+  */
+trait SupportForNondistributedOrc extends DistributionSupport {
+  this: PorcEExecution =>
+    
+  def isDistributedInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = false
+  def invokeDistributed(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = ???
+}
 
-  def invoke(callResponseReceiver: Handle, target: AnyRef, arguments: Array[AnyRef]) {
+/** Adds real implementations of distributed Orc calls to an Orc execution.
+  *
+  * @author jthywiss, amp
+  */
+trait SupportForDOrc extends DistributionSupport {
+  this: DOrcExecution =>
+    
+  def isDistributedInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    // WARNING: Contains return!!!
+    
+    // TODO: PERFORMANCE: This would probably gain a lot by specializing on the number of arguments. That will probably require a simpler structure for the loops.
+    if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
+      return true
+    } else {
+      val here = runtime.here
+      for (v <- arguments.view :+ target) {
+        if (v.isInstanceOf[LocationPolicy] && !currentLocations(v).contains(here)) {
+          return true
+        }
+      }
+      
+      return false
+    }
+  }
 
+  def invokeDistributed(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]) {
     def pickLocation(ls: Set[PeerLocation]) = ls.head
 
     //Logger.entering(getClass.getName, "invoke", Seq(target.getClass.getName, target, arguments))
-
-    //TODO: These are safe casts, but it's ugly.  Should there be a nice interface here?  Don't want to expose Execution on the orc.Handle interface, though.
-    val dOrcExecution: DOrcExecution = callResponseReceiver.asInstanceOf[CPSCallResponseHandler].execution.asInstanceOf[DOrcExecution]
-
-    val intersectLocs = (arguments map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(target)) { _ & _ }
-    if (!(intersectLocs contains dOrcExecution.runtime.here)) {
-      orc.run.distrib.Logger.finest(s"siteCall($target,$arguments): intersection of current locations=$intersectLocs")
-      val candidateDestinations = {
-        if (intersectLocs.nonEmpty) {
-          intersectLocs
+    
+    // TODO: If this every turns out to be a performance issue I suspect a bloom-filter-optimized set would help.
+    val intersectLocs = (arguments map currentLocations).fold(currentLocations(target)) { _ & _ }
+    require(!(intersectLocs contains runtime.here))
+    orc.run.distrib.Logger.finest(s"siteCall($target,$arguments): intersection of current locations=$intersectLocs")
+    val candidateDestinations = {
+      if (intersectLocs.nonEmpty) {
+        intersectLocs
+      } else {
+        val intersectPermittedLocs = (arguments map permittedLocations).fold(permittedLocations(target)) { _ & _ }
+        if (intersectPermittedLocs.nonEmpty) {
+          intersectPermittedLocs
         } else {
-          val intersectPermittedLocs = (arguments map dOrcExecution.permittedLocations).fold(dOrcExecution.permittedLocations(target)) { _ & _ }
-          if (intersectPermittedLocs.nonEmpty) {
-            intersectPermittedLocs
-          } else {
-            throw new NoLocationAvailable(target +: arguments.toSeq)
-          }
+          throw new NoLocationAvailable(target +: arguments.toSeq)
         }
       }
-      orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
-      val destination = pickLocation(candidateDestinations)
-      dOrcExecution.sendToken(???, destination)
-    } else {
-      localInvoker.invoke(callResponseReceiver, target, arguments)
     }
+    orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
+    val destination = pickLocation(candidateDestinations)
+    sendToken(???, destination)
   }
-
-  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    localInvoker.canInvoke(target, arguments)
-  }
-
 }

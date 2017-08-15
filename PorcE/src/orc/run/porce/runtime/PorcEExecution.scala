@@ -17,9 +17,10 @@ import com.oracle.truffle.api.Truffle
 import orc.run.porce.distrib.CallTargetManager
 import orc.run.porce.HasId
 import orc.run.porce.InvokeCallRecordRootNode
+import orc.run.porce.distrib.SupportForNondistributedOrc
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
-  extends ExecutionRoot with EventHandler with CallTargetManager {
+  extends ExecutionRoot with EventHandler with CallTargetManager with SupportForNondistributedOrc {
   val truffleRuntime = Truffle.getRuntime()
 
   private var _isDone = false
