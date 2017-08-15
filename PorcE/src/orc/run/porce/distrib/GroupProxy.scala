@@ -36,8 +36,14 @@ class RemoteGroupProxy(
   val counter = new CounterProxy()
   val terminator = new TerminatorProxy()
 
+  def kill(): Unit = {
+    //Logger.entering(getClass.getName, "kill")
+    /* All RemoteGroupProxy kills come from the remote side */
+    terminator.kill()
+  }
+
   class CounterProxy() extends Counter() {
-    def remoteGroupProxy = RemoteGroupProxy.this
+    def remoteGroupProxy: RemoteGroupProxy = RemoteGroupProxy.this
 
     override def onHalt(): Unit = {
       //Logger.entering(getClass.getName, "onHalt")
@@ -57,21 +63,12 @@ class RemoteGroupProxy(
   }
 
   class TerminatorProxy() extends Terminator() {
-    def remoteGroupProxy = RemoteGroupProxy.this
+    def remoteGroupProxy: RemoteGroupProxy = RemoteGroupProxy.this
 
     override def kill(k: PorcEClosure): Boolean = {
-      // First, swap in null as the children set.
-      val cs = children.getAndSet(null)
-      // Next, process cs if needed.
-      // See description of ordering in addChild().
-      if (cs != null) {
-        // If we were the first to kill and it succeeded
-        doKills(cs)
-        true
-      } else {
-        // If it was already killed
-        false
-      }
+      //Logger.entering(getClass.getName, "kill")
+      /* All RemoteGroupProxy kills come from the remote side */
+      super.kill(k)
     }
 
   }
@@ -96,9 +93,10 @@ class RemoteGroupProxy(
   */
 class RemoteGroupMembersProxy(val thisProxyId: DOrcExecution#GroupProxyId, val publicationContinuation: PorcEClosure, val enclosingCounter: Counter, val enclosingTerminator: Terminator, sendKillFunc: () => Unit) extends Terminatable {
   private var alive = true
+  private var discorporated = false
 
-  /** Remote group members all halted, so halt this. */
-  def halt() = synchronized {
+  /** Remote group members all halted, so notify parent that we've halted. */
+  def notifyParentOfHalt(): Unit = synchronized {
     //Logger.entering(getClass.getName, "halt")
     if (alive) {
       alive = false
@@ -106,17 +104,30 @@ class RemoteGroupMembersProxy(val thisProxyId: DOrcExecution#GroupProxyId, val p
     }
   }
 
-  /** Remote group members all halted, but there was discorporates, so discorporate this. */
-  def discorporate() = synchronized {
+  /** Remote group members all halted, but there was discorporates, so so notify parent that we've discorporated. */
+  def notifyParentOfDiscorporate(): Unit = synchronized {
     //Logger.entering(getClass.getName, "discorporate")
-    if (alive) {
-      alive = false
+    if (!discorporated && alive) {
+      discorporated = true
       enclosingCounter.discorporateToken()
+    } else {
+      throw new IllegalStateException(s"RemoteGroupMembersProxy.notifyParentOfDiscorporate when alive=$alive, discorporated=$discorporated")
     }
   }
 
-  /** The group is killing its members; pass it on. */
-  override def kill() = synchronized {
+  /** Remote group had only discorporated members, but now has a new member, so notify parent that we've resurrected. */
+  def notifyParentOfResurrect(): Unit = synchronized {
+    //Logger.entering(getClass.getName, "resurrect")
+    if (discorporated && alive) {
+      discorporated = false
+      enclosingCounter.newToken()
+    } else {
+      throw new IllegalStateException(s"RemoteGroupMembersProxy.notifyParentOfResurrect when alive=$alive, discorporated=$discorporated")
+    }
+  }
+
+  /** The parent group is killing its members; pass it on to the remote group proxy. */
+  override def kill(): Unit = synchronized {
     //Logger.entering(getClass.getName, "kill")
     if (alive) {
       alive = false
@@ -127,7 +138,7 @@ class RemoteGroupMembersProxy(val thisProxyId: DOrcExecution#GroupProxyId, val p
   }
 
   ///* PorcE doesn't do notification at the group level. Hrmpf. */
-  //override def notifyOrc(event: OrcEvent) = execution.notifyOrc(event)
+  //override def notifyOrc(event: OrcEvent): Unit = execution.notifyOrc(event)
 
 }
 
@@ -224,7 +235,7 @@ trait GroupProxyManager {
   def haltGroupMemberProxy(groupMemberProxyId: GroupProxyId): Unit = {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
-      runtime.schedule(new Schedulable { def run(): Unit = { g.halt() } })
+      runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfHalt() } })
     } else {
       Logger.fine(f"Halt group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }
@@ -233,7 +244,7 @@ trait GroupProxyManager {
   def discorporateGroupMemberProxy(groupMemberProxyId: GroupProxyId): Unit = {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
-      runtime.schedule(new Schedulable { def run(): Unit = { g.discorporate() } })
+      runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfDiscorporate() } })
       proxiedGroupMembers.remove(groupMemberProxyId)
     } else {
       Logger.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
@@ -243,7 +254,7 @@ trait GroupProxyManager {
   def resurrectGroupMemberProxy(groupMemberProxyId: GroupProxyId): Unit = {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
-      g.enclosingCounter.newToken()
+      runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfResurrect() } })
     } else {
       Logger.fine(f"Resurrect group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }
@@ -257,7 +268,7 @@ trait GroupProxyManager {
   def killGroupProxy(proxyId: GroupProxyId): Unit = {
     val g = proxiedGroups.get(proxyId)
     if (g != null) {
-      runtime.schedule(new Schedulable { def run(): Unit = { g.terminator.kill() } })
+      runtime.schedule(new Schedulable { def run(): Unit = { g.kill() } })
       proxiedGroups.remove(proxyId)
     } else {
       Logger.fine(f"Kill group on unknown group $proxyId%#x")
