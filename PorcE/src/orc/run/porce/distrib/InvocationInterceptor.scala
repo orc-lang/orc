@@ -43,7 +43,9 @@ trait NoInvocationInterception extends InvocationInterceptor {
   this: PorcEExecution =>
 
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = false
-  override def invokeIntercepted(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = ???
+  override def invokeIntercepted(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    throw new AssertionError("invokeIntercepted called when shouldInterceptInvocation=false")
+  }
 }
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.

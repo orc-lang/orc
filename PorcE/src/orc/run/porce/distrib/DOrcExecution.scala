@@ -18,7 +18,7 @@ import com.oracle.truffle.api.RootCallTarget
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.porc.MethodCPS
 import orc.compiler.porce.PorcToPorcE
-import orc.run.porce.runtime.{ Counter, PorcEClosure, PorcEExecution, PorcEExecutionHolder }
+import orc.run.porce.runtime.{ PorcEClosure, PorcEExecution, PorcEExecutionHolder }
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -127,9 +127,11 @@ class DOrcFollowerExecution(
   /* TODO: Refactor PorcEExecution to reflect this */
   override val pRootNode = null
   override val pCallTarget = null
-  override val p: PorcEClosure = null
-  override val c: Counter = null
+  override val p = null
+  override val c = null
   override val t = null
-  override def scheduleProgram(prog: PorcEClosure, callTargetMap: collection.Map[Int, RootCallTarget]): Unit = ???
+  override def scheduleProgram(prog: PorcEClosure, callTargetMap: collection.Map[Int, RootCallTarget]): Unit = {
+    throw new AssertionError("scheduleProgram called on DOrcFollowerExecution")
+  }
 
 }
