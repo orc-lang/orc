@@ -21,7 +21,7 @@ public class InterceptedCall extends CallBase {
 		// Token: Passed to handle from arguments.
 		final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term, getCallSiteId());
 
-		execution.get().invokeIntercepted(handle.callRecord(), target, buildArgumentValues(arguments));
+		execution.get().invokeIntercepted(handle, target, buildArgumentValues(arguments));
 		return PorcEUnit.SINGLETON;
 	}
 

@@ -146,8 +146,6 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
       }
       case RootCallTargetReplacement(index) =>
         currExecution.get.idToCallTarget(index)
-      ///* ClosureReplacement: see ClosureReplacement.readResolve() */
-      //case cgr: ClosureGroupReplacement => resolveClosureGroup(cgr)
       case _ => super.resolveObject(obj)
     }
   }
@@ -168,10 +166,6 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
     currOrigin = None
     currExecution = None
   }
-
-  //def resolveClosureGroup(cgr: ClosureGroupReplacement) = {
-  //  cgr.unmarshalClosureGroup(currExecution.get, currOrigin.get)
-  //}
 
 }
 
@@ -195,8 +189,6 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
       }
       case ct: RootCallTarget =>
         RootCallTargetReplacement(currExecution.get.callTargetToId(ct))
-      //case c: Closure => replaceClosure(c)
-      //case cg: ClosureGroup => replaceClosureGroup(cg)
       case _ => super.replaceObject(obj)
     }
   }
@@ -216,25 +208,6 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
     currDestination = None
   }
 
-  //def replaceClosure(c: Closure) = ClosureReplacement(c)
-
-  //def replaceClosureGroup(cg: ClosureGroup) = {
-  //  TokenFieldMarshaling.marshalClosureGroup(cg, currExecution.get, currDestination.get)
-  //}
-
 }
 
 protected final case class RootCallTargetReplacement(index: Int)
-
-///** Replacement for a Closure for use in serialization.
-//  *
-//  * @author jthywiss
-//  */
-//protected case class ClosureReplacement(index: Int, closureGroup: ClosureGroup) {
-//  @throws(classOf[ObjectStreamException])
-//  protected def readResolve(): AnyRef = new Closure(index, closureGroup)
-//}
-//
-//protected object ClosureReplacement {
-//  def apply(c: Closure): ClosureReplacement = new ClosureReplacement(c.index, c.closureGroup)
-//}

@@ -14,6 +14,7 @@
 package orc.run.porce.distrib
 
 import orc.run.porce.runtime.{ CallRecord, PorcEExecution }
+import orc.run.porce.runtime.CPSCallResponseHandler
 
 /** Provides a "hook" to intercept external calls from an Execution.
   *
@@ -32,7 +33,7 @@ trait InvocationInterceptor {
     *
     * This will only be called if `shouldInterceptInvocation(target, arguments)` is true.
     */
-  def invokeIntercepted(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit
+  def invokeIntercepted(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]): Unit
 }
 
 /** Intercept no external calls at all.
@@ -43,7 +44,7 @@ trait NoInvocationInterception extends InvocationInterceptor {
   this: PorcEExecution =>
 
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = false
-  override def invokeIntercepted(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  override def invokeIntercepted(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     throw new AssertionError("invokeIntercepted called when shouldInterceptInvocation=false")
   }
 }
@@ -74,7 +75,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     }
   }
 
-  override def invokeIntercepted(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  override def invokeIntercepted(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     def pickLocation(ls: Set[PeerLocation]) = ls.head
 
     //Logger.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target, arguments))
@@ -97,6 +98,6 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     }
     orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
     val destination = pickLocation(candidateDestinations)
-    sendCall(callRecord, target, arguments, destination)
+    sendCall(callHandler, target, arguments, destination)
   }
 }
