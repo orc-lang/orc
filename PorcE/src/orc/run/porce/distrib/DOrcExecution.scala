@@ -13,11 +13,12 @@
 
 package orc.run.porce.distrib
 
+import com.oracle.truffle.api.RootCallTarget
+
 import orc.{ OrcEvent, OrcExecutionOptions }
-import orc.run.porce.runtime.PorcEExecution
 import orc.ast.porc.MethodCPS
-import orc.run.porce.runtime.PorcEExecutionHolder
 import orc.compiler.porce.PorcToPorcE
+import orc.run.porce.runtime.{ Counter, PorcEClosure, PorcEExecution, PorcEExecutionHolder }
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -122,6 +123,13 @@ class DOrcFollowerExecution(
   runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
 
-  override def onHalt() { /* Group halts are not significant here, disregard */ }
+  /* Follower executions should not publish at the top level */
+  /* TODO: Refactor PorcEExecution to reflect this */
+  override val pRootNode = null
+  override val pCallTarget = null
+  override val p: PorcEClosure = null
+  override val c: Counter = null
+  override val t = null
+  override def scheduleProgram(prog: PorcEClosure, callTargetMap: collection.Map[Int, RootCallTarget]): Unit = ???
 
 }

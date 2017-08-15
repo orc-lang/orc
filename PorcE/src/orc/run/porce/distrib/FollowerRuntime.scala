@@ -19,13 +19,10 @@ import java.util.logging.Level
 
 import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
-import scala.xml.XML
 
 import orc.{ OrcEvent, OrcExecutionOptions }
-import orc.ast.oil.xml.OrcXML
-import orc.util.CmdLineParser
 import orc.ast.porc.MethodCPS
-import orc.run.porce.runtime.PorcEExecutionHolder
+import orc.util.CmdLineParser
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -159,11 +156,12 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case AddPeerCmd(peerRuntimeId, peerListenAddress) => addPeer(peerRuntimeId, peerListenAddress)
           case RemovePeerCmd(peerRuntimeId) => removePeer(peerRuntimeId)
           case LoadProgramCmd(xid, oil, options) => loadProgram(leaderLocation, xid, oil, options)
-          case HostTokenCmd(xid, movedToken) => programs(xid).hostToken(leaderLocation, movedToken)
+          case MigrateCallCmd(xid, gmpid, movedCall, target, args) => programs(xid).receiveCall(leaderLocation, gmpid, movedCall, target, args)
           case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(leaderLocation, gmpid, t)
           case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
           case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
           case DiscorporateGroupMemberProxyCmd(xid, gmpid) => programs(xid).discorporateGroupMemberProxy(gmpid)
+          case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
           case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)
           case UnloadProgramCmd(xid) => unloadProgram(xid)
@@ -193,11 +191,12 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         }
         Logger.finest(s"Read ${msg}")
         msg match {
-          case HostTokenCmd(xid, movedToken) => programs(xid).hostToken(peerLocation, movedToken)
+          case MigrateCallCmd(xid, gmpid, movedCall, target, args) => programs(xid).receiveCall(peerLocation, gmpid, movedCall, target, args)
           case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(peerLocation, gmpid, t)
           case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
           case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
           case DiscorporateGroupMemberProxyCmd(xid, gmpid) => programs(xid).discorporateGroupMemberProxy(gmpid)
+          case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
           case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)
           case EOF => { Logger.fine(s"EOF, aborting peerLocation"); peerLocation.connection.abort() }

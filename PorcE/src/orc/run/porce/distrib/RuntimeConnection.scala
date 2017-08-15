@@ -13,11 +13,12 @@
 
 package orc.run.porce.distrib
 
-import java.io.{ IOException, InputStream, ObjectInputStream, ObjectOutputStream, ObjectStreamException, OutputStream }
+import java.io.{ IOException, InputStream, ObjectInputStream, ObjectOutputStream, OutputStream }
 import java.net.{ InetAddress, InetSocketAddress, Socket }
 
-import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
 import com.oracle.truffle.api.RootCallTarget
+
+import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
 
 /** A connection between DOrcRuntimes.  Extends SocketObjectConnection to
   * provide extra serialization support for Orc/dOrc values.

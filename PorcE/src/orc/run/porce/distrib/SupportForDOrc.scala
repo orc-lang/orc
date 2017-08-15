@@ -1,5 +1,5 @@
 //
-// SupportForDOrc.scala -- Scala class SupportForDOrc
+// SupportForDOrc.scala -- Scala traits DistributionSupport, SupportForNondistributedOrc, and SupportForDOrc
 // Project PorcE
 //
 // Created by jthywiss on Dec 21, 2015.
@@ -13,12 +13,7 @@
 
 package orc.run.porce.distrib
 
-import orc.{ Handle, Invoker }
-import orc.run.Orc
-import orc.run.porce.runtime.CPSCallResponseHandler
-import com.oracle.truffle.api.nodes.ControlFlowException
-import orc.run.porce.runtime.CallRecord
-import orc.run.porce.runtime.PorcEExecution
+import orc.run.porce.runtime.{ CallRecord, PorcEExecution }
 
 /** Adds facilities for distributed Orc calls to an Orc execution.
   *
@@ -26,7 +21,7 @@ import orc.run.porce.runtime.PorcEExecution
   */
 trait DistributionSupport {
   this: PorcEExecution =>
-    
+
   /** Return true iff the invocation is distributed.
     *
     * This call must be as fast as possible since it is called before every external call.
@@ -40,27 +35,28 @@ trait DistributionSupport {
   def invokeDistributed(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit
 }
 
-/** Implement no distributed calls at all. 
+/** Implement no distributed calls at all.
   *
   * @author amp
   */
 trait SupportForNondistributedOrc extends DistributionSupport {
   this: PorcEExecution =>
-    
-  def isDistributedInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = false
-  def invokeDistributed(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = ???
+
+  override def isDistributedInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = false
+  override def invokeDistributed(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = ???
 }
 
 /** Adds real implementations of distributed Orc calls to an Orc execution.
   *
-  * @author jthywiss, amp
+  * @author jthywiss
+  * @author amp
   */
 trait SupportForDOrc extends DistributionSupport {
   this: DOrcExecution =>
-    
-  def isDistributedInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+
+  override def isDistributedInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     // WARNING: Contains return!!!
-    
+
     // TODO: PERFORMANCE: This would probably gain a lot by specializing on the number of arguments. That will probably require a simpler structure for the loops.
     if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
       return true
@@ -71,16 +67,16 @@ trait SupportForDOrc extends DistributionSupport {
           return true
         }
       }
-      
+
       return false
     }
   }
 
-  def invokeDistributed(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]) {
+  override def invokeDistributed(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]) {
     def pickLocation(ls: Set[PeerLocation]) = ls.head
 
-    //Logger.entering(getClass.getName, "invoke", Seq(target.getClass.getName, target, arguments))
-    
+    //Logger.entering(getClass.getName, "invokeDistributed", Seq(target.getClass.getName, target, arguments))
+
     // TODO: If this every turns out to be a performance issue I suspect a bloom-filter-optimized set would help.
     val intersectLocs = (arguments map currentLocations).fold(currentLocations(target)) { _ & _ }
     require(!(intersectLocs contains runtime.here))
@@ -99,6 +95,6 @@ trait SupportForDOrc extends DistributionSupport {
     }
     orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
     val destination = pickLocation(candidateDestinations)
-    sendToken(???, destination)
+    sendCall(callRecord, target, arguments, destination)
   }
 }

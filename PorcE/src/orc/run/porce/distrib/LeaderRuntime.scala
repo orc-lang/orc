@@ -21,9 +21,7 @@ import scala.util.control.NonFatal
 
 import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
 import orc.ast.porc.MethodCPS
-import orc.compiler.porce.PorcToPorcE
 import orc.error.runtime.ExecutionException
-import orc.run.porce.runtime.PorcEExecutionHolder
 import orc.util.LatchingSignal
 
 /** Orc runtime engine leading a dOrc cluster.
@@ -53,7 +51,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcLeaderExecution])
 
-  override def run(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
+  /*override*/ def run(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     val followers = Map(options.followerSockets.asScala.toSeq.zipWithIndex.map( { case (s, i) => (i+1, s) } ): _*)
     connectToFollowers(followers)
 
@@ -106,11 +104,12 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
             case NotifyLeaderCmd(xid, event) => LeaderRuntime.this synchronized {
               programs(xid).notifyOrc(event)
             }
-            case HostTokenCmd(xid, movedToken) => programs(xid).hostToken(followerLocation, movedToken)
+            case MigrateCallCmd(xid, gmpid, movedCall, target, args) => programs(xid).receiveCall(followerLocation, gmpid, movedCall, target, args)
             case PublishGroupCmd(xid, gmpid, t) => programs(xid).publishInGroup(followerLocation, gmpid, t)
             case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
             case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
             case DiscorporateGroupMemberProxyCmd(xid, gmpid) => programs(xid).discorporateGroupMemberProxy(gmpid)
+            case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
             case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
             case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)
             case EOF => { Logger.fine(s"EOF, aborting $followerLocation"); followerLocation.connection.abort() }
@@ -138,7 +137,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   @throws(classOf[ExecutionException])
   @throws(classOf[InterruptedException])
-  override def runSynchronous(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
+  /*override*/ def runSynchronous(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     synchronized {
       if (runSyncThread != null) throw new IllegalStateException("runSynchronous on an engine that is already running synchronously")
       runSyncThread = Thread.currentThread()

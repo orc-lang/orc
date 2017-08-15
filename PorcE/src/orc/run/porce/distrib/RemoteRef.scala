@@ -1,5 +1,5 @@
 //
-// RemoteRef.scala -- Scala traits RemoteRef and RemoteRefIdManager
+// RemoteRef.scala -- Scala traits RemoteRef and RemoteRefIdManager, and classes RemoteObjectRef and RemoteObjectRefReplacement
 // Project PorcE
 //
 // Created by jthywiss on Jan 5, 2016.
@@ -81,36 +81,3 @@ case class RemoteObjectRefReplacement(remoteRefId: RemoteObjectRef#RemoteRefId) 
     rmtObjMgr.localObjectForRemoteId(remoteRefId).getOrElse(new RemoteObjectRef(remoteRefId))
   }
 }
-
-///** A mix-in to manage remote object references.
-//  *
-//  * @author jthywiss
-//  */
-//trait RemoteObjectManager {
-//  self: DOrcExecution =>
-//
-//  // These two maps are inverses of each other
-//  protected val remotedObjects = new java.util.concurrent.ConcurrentHashMap[AnyRef, RemoteObjectRef#RemoteRefId]
-//  protected val remotedObjectIds = new java.util.concurrent.ConcurrentHashMap[RemoteObjectRef#RemoteRefId, AnyRef]
-//  protected val remotedObjectUpdateLock = new Object()
-//
-//  def remoteIdForObject(obj: AnyRef): RemoteObjectRef#RemoteRefId = {
-//    //Logger.entering(getClass.getName, "idForObject", Seq(obj))
-//    obj match {
-//      case ro: RemoteObjectRef => ro.remoteRefId
-//      case _ => remotedObjectUpdateLock synchronized {
-//        if (remotedObjects.contains(obj)) {
-//          remotedObjects.get(obj)
-//        } else {
-//          val newObjId = freshRemoteObjectId()
-//          remotedObjects.put(obj, newObjId)
-//          remotedObjectIds.put(newObjId, obj)
-//          newObjId
-//        }
-//      }
-//    }
-//  }
-//
-//  def localObjectForRemoteId(objectId: RemoteObjectRef#RemoteRefId): Option[AnyRef] = Option(remotedObjectIds.get(objectId))
-//
-//}

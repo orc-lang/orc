@@ -1,5 +1,5 @@
 //
-// RemoteObjectManager.scala -- Traits for object and id handling in PorcE/DOrc.
+// RemoteObjectManager.scala -- Scala class ObjectIdMapping and trait RemoteObjectManager
 // Project PorcE
 //
 // Created by amp on Aug 11, 2017.
@@ -13,15 +13,13 @@
 
 package orc.run.porce.distrib
 
-import java.util.concurrent.atomic.AtomicLong
-
-import orc.run.porce.runtime.{ Counter, PorcEExecution, Terminator }
+import orc.run.porce.runtime.{ Counter, Terminator }
 
 /** A utility class to store a bidirectional mapping between object and Id.
   *
   * It provides thread-safe get-or-update operations.
   */
-final class ObjectIdMapping[T >: Null](idManager: RemoteIdManager) {
+final class ObjectIdMapping[T >: Null](idManager: RemoteRefIdManager) {
   // These two maps are inverses of each other
   protected val objectToId = new java.util.concurrent.ConcurrentHashMap[T, java.lang.Long]()
   protected val idToObject = new java.util.concurrent.ConcurrentHashMap[RemoteRef#RemoteRefId, T]()
@@ -36,7 +34,7 @@ final class ObjectIdMapping[T >: Null](idManager: RemoteIdManager) {
         if (id == null) {
           // This is safe since if the value has been set between the get above and this code we will get the existing value here.
           // This is just an optimization to avoid consuming Ids and constantly writing to idToObject.
-          val newObjId = objectToId.computeIfAbsent(obj, _ => idManager.freshRemoteRefId())
+          val newObjId = objectToId.computeIfAbsent(obj, _ => idManager.freshRemoteObjectId())
           idToObject.put(newObjId, obj)
           newObjId
         } else {
@@ -48,32 +46,10 @@ final class ObjectIdMapping[T >: Null](idManager: RemoteIdManager) {
   def objectForId(objectId: RemoteRef#RemoteRefId): Option[T] = Option(idToObject.get(objectId))
 }
 
-/** The manager for remote Ids that is mixed into the PorcEExecution.
+/** The manager for remote object references that is mixed into the DOrcExecution.
   */
-trait RemoteIdManager {
-  this: PorcEExecution =>
-
-  // FIXME: DORC: Implement these somewhere and then make them accessible here.
-  def followerExecutionNum: Int
-  def locationForFollowerNum(followerNum: Int): PeerLocation
-
-  private val remoteRefIdCounter = new AtomicLong(followerExecutionNum.toLong << 32)
-
-  def freshRemoteRefId() = remoteRefIdCounter.getAndIncrement()
-
-  def homeLocationForRemoteRef(id: RemoteRef#RemoteRefId): PeerLocation = {
-    val followerNum = id.asInstanceOf[Long] >> 32
-    assert(followerNum <= Int.MaxValue && followerNum >= Int.MinValue)
-    val home = locationForFollowerNum(followerNum.toInt)
-    assert(home != null, s"homeLocationFor $id should not be null")
-    home
-  }
-}
-
-/** The manager for remote object references that is mixed into the PorcEExecution.
-  */
-trait RemoteObjectManager extends RemoteIdManager {
-  this: PorcEExecution =>
+trait RemoteObjectManager  {
+  this: DOrcExecution =>
 
   type RemoteRefId = RemoteRef#RemoteRefId
 

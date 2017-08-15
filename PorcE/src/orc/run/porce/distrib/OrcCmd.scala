@@ -17,6 +17,7 @@ import java.net.InetSocketAddress
 
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.porc.MethodCPS
+import orc.run.porce.runtime.CallRecord
 
 /** Command sent to dOrc runtime engines.
   *
@@ -82,28 +83,33 @@ case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime#RuntimeId, receivi
 // Moving tokens, reporting group and member status, reading futures
 ////////
 
-/** Execute this token */ 
-case class HostTokenCmd(executionId: DOrcExecution#ExecutionId, movedToken: TokenReplacement) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = s"${getClass.getSimpleName}($executionId, $movedToken)"
+/** Execute this token */
+case class MigrateCallCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, callRecord: CallRecord, callTarget: AnyRef, callArguments: Array[AnyRef]) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = s"${getClass.getSimpleName}($executionId, $callRecord)"
 }
 
-/** This token has published in the given group */ 
-case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, publishingToken: PublishingTokenReplacement) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x, $publishingToken)"
+/** This token has published in the given group */
+case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId, publishedValue: AnyRef) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x, $publishedValue)"
 }
 
-/** Kill the given group */ 
+/** Kill the given group */
 case class KillGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmdInExecutionContext(executionId) {
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupProxyId%#x)"
 }
 
-/** This group member has halted */ 
+/** This group member has halted */
 case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmdInExecutionContext(executionId) {
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x)"
 }
 
-/** This group member has discorporated */ 
+/** This group member has discorporated */
 case class DiscorporateGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x)"
+}
+
+/** This group member has resurrected */
+case class ResurrectGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: DOrcExecution#GroupProxyId) extends OrcPeerCmdInExecutionContext(executionId) {
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x)"
 }
 

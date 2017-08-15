@@ -13,20 +13,18 @@
 
 package orc.run.porce.distrib
 
-import orc.OrcRuntime
-
-/** Tracer utility for orc.run.porce.distrib package. 
+/** Tracer utility for orc.run.porce.distrib package.
   *
   * @see orc.util.Tracer
   * @author jthywiss
   */
 object Tracer {
 
-  final val TokenSend = 11L
-  orc.util.Tracer.registerEventTypeId(TokenSend, "TokSend ")
+  final val CallSend = 11L
+  orc.util.Tracer.registerEventTypeId(CallSend, "CallSend")
 
-  final val TokenReceive = 12L
-  orc.util.Tracer.registerEventTypeId(TokenReceive, "TokRecv ")
+  final val CallReceive = 12L
+  orc.util.Tracer.registerEventTypeId(CallReceive, "CallRecv")
 
   final val PublishSend = 13L
   orc.util.Tracer.registerEventTypeId(PublishSend, "PubSend ")
@@ -65,33 +63,30 @@ object Tracer {
   final val traceEventNotifications = false
 
   @inline
-  def getRuntimeId(runtime: OrcRuntime) = runtime.asInstanceOf[DOrcRuntime].runtimeId
-
-  @inline
-  def traceTokenSend(token: orc.run.core.Token, destination: Location[_]) {
+  def traceCallSend(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(TokenSend, token.debugId, getRuntimeId(token.runtime), destination.runtimeId)
+      orc.util.Tracer.trace(CallSend, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def traceTokenReceive(token: orc.run.core.Token, origin: Location[_]) {
+  def traceCallReceive(groupProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(TokenReceive, token.debugId, origin.runtimeId, getRuntimeId(token.runtime))
+      orc.util.Tracer.trace(CallReceive, groupProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def tracePublishSend(token: orc.run.core.Token, destination: Location[_]) {
+  def tracePublishSend(groupProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(PublishSend, token.debugId, getRuntimeId(token.runtime), destination.runtimeId)
+      orc.util.Tracer.trace(PublishSend, groupProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def tracePublishReceive(token: orc.run.core.Token, origin: Location[_]) {
+  def tracePublishReceive(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(PublishReceive, token.debugId, origin.runtimeId, getRuntimeId(token.runtime))
+      orc.util.Tracer.trace(PublishReceive, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 

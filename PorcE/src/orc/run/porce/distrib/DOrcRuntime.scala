@@ -13,9 +13,6 @@
 
 package orc.run.porce.distrib
 
-import scala.collection.JavaConversions.collectionAsScalaIterable
-
-import orc.run.StandardOrcRuntime
 import orc.run.porce.runtime.PorcERuntime
 
 /** Distributed Orc (dOrc) Runtime Engine.
