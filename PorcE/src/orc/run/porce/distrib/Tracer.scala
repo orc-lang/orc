@@ -63,70 +63,70 @@ object Tracer {
   final val traceEventNotifications = false
 
   @inline
-  def traceCallSend(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
+  def traceCallSend(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceTokenMigration) {
       orc.util.Tracer.trace(CallSend, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def traceCallReceive(groupProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
+  def traceCallReceive(groupProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceTokenMigration) {
       orc.util.Tracer.trace(CallReceive, groupProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def tracePublishSend(groupProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
+  def tracePublishSend(groupProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceTokenMigration) {
       orc.util.Tracer.trace(PublishSend, groupProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def tracePublishReceive(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
+  def tracePublishReceive(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceTokenMigration) {
       orc.util.Tracer.trace(PublishReceive, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def traceKillGroupSend(groupProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
+  def traceKillGroupSend(groupProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceGroupMessaging) {
       orc.util.Tracer.trace(KillGroupSend, groupProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def traceHaltGroupMemberSend(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
+  def traceHaltGroupMemberSend(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceGroupMessaging) {
       orc.util.Tracer.trace(HaltGroupMemberSend, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def traceDiscorporateGroupMemberSend(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]) {
+  def traceDiscorporateGroupMemberSend(groupMemberProxyId: DOrcExecution#GroupProxyId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceGroupMessaging) {
       orc.util.Tracer.trace(DiscorporateGroupMemberSend, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def traceFutureReadSend(futureId: RemoteFutureRef#RemoteRefId, origin: Location[_], destination: Location[_]) {
+  def traceFutureReadSend(futureId: RemoteFutureRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceFutureRemoteReads) {
       orc.util.Tracer.trace(ReadFutureSend, futureId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def traceFutureResultSend(futureId: RemoteFutureRef#RemoteRefId, origin: Location[_], destination: Location[_]) {
+  def traceFutureResultSend(futureId: RemoteFutureRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceFutureRemoteReads) {
       orc.util.Tracer.trace(DeliverFutureResultSend, futureId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def traceOrcEventSend(origin: Location[_], destination: Location[_]) {
+  def traceOrcEventSend(origin: Location[_], destination: Location[_]): Unit = {
     if (traceEventNotifications) {
       orc.util.Tracer.trace(OrcEventSend, 0L, origin.runtimeId, destination.runtimeId)
     }

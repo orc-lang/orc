@@ -76,7 +76,7 @@ trait ValueMarshaler {
 
   private val knownGoodSerializables = new WeakHashMap[java.io.Serializable, Unit]()
   private val knownBadSerializables = new WeakHashMap[java.io.Serializable, Unit]()
-  private val nullOos = new RuntimeConnectionOutputStream(new java.io.OutputStream { def write(b: Int) {} })
+  private val nullOos = new RuntimeConnectionOutputStream(new java.io.OutputStream { def write(b: Int): Unit = {} })
   /** Many, many objects violate the java.io.Serializable interface by
     * implementing Serializable, but then holding references to
     * non-Serializable values without using any of the compensating
@@ -171,8 +171,8 @@ trait ValueMarshaler {
   * @author jthywiss
   */
 trait DOrcMarshalingNotifications {
-  def marshaled() {}
-  def unmarshaled() {}
+  def marshaled(): Unit = {}
+  def unmarshaled(): Unit = {}
 }
 
 /** Orc values implementing this trait will be asked for a marshalable

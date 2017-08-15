@@ -39,7 +39,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   override def allLocations = runtimeLocationMap.values.toSet
 
-  protected def connectToFollowers(followers: Map[Int, InetSocketAddress]) {
+  protected def connectToFollowers(followers: Map[Int, InetSocketAddress]): Unit = {
     runtimeLocationMap.put(0, here)
     followers foreach { f => runtimeLocationMap.put(f._1, new FollowerLocation(f._1, RuntimeConnectionInitiator[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](f._2))) }
 
@@ -51,7 +51,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcLeaderExecution])
 
-  /*override*/ def run(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
+  /*override*/ def run(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions): Unit = {
     val followers = Map(options.followerSockets.asScala.toSeq.zipWithIndex.map({ case (s, i) => (i + 1, s) }): _*)
     connectToFollowers(followers)
 
@@ -74,7 +74,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     Logger.exiting(getClass.getName, "run")
   }
 
-  protected def handleExecutionEvent(executionId: DOrcExecution#ExecutionId, event: OrcEvent) {
+  protected def handleExecutionEvent(executionId: DOrcExecution#ExecutionId, event: OrcEvent): Unit = {
     Logger.fine(s"Execution got $event")
     event match {
       case HaltedOrKilledEvent => {
@@ -88,7 +88,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   protected class ReceiveThread(followerRuntimeId: DOrcRuntime#RuntimeId, followerLocation: FollowerLocation)
     extends Thread(f"dOrc leader receiver for $followerRuntimeId%#x @ ${followerLocation.connection.socket}") {
-    override def run() {
+    override def run(): Unit = {
       try {
         followerLocation.send(DOrcConnectionHeader(runtimeId, followerRuntimeId))
         Logger.info(s"Reading events from ${followerLocation.connection.socket}")
@@ -137,14 +137,14 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   @throws(classOf[ExecutionException])
   @throws(classOf[InterruptedException]) /*override*/
-  def runSynchronous(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
+  def runSynchronous(programAst: MethodCPS, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions): Unit = {
     synchronized {
       if (runSyncThread != null) throw new IllegalStateException("runSynchronous on an engine that is already running synchronously")
       runSyncThread = Thread.currentThread()
     }
 
     val doneSignal = new LatchingSignal()
-    def syncAction(event: OrcEvent) {
+    def syncAction(event: OrcEvent): Unit = {
       event match {
         case FollowerConnectionClosedEvent(_) => { if (followerLocations.isEmpty) doneSignal.signal() }
         case _ => {}

@@ -98,11 +98,11 @@ class DOrcLeaderExecution(
   extends DOrcExecution(executionId, 0, programAst, options, eventHandler, runtime) with PorcEExecutionWithLaunch {
   
   //TODO: Move to superclass
-  def runProgram() {
+  def runProgram(): Unit = {
       scheduleProgram(programPorceAst, programCallTargetMap)
   }
 
-  override def notifyOrc(event: OrcEvent) {
+  override def notifyOrc(event: OrcEvent): Unit = {
     super.notifyOrc(event)
     Logger.info(s"${Console.REVERSED}${event.toString}${Console.RESET}")
   }

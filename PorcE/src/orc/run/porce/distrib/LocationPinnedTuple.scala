@@ -24,7 +24,7 @@ import orc.values.sites.Site
   * @author jthywiss
   */
 abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with LocationPolicy {
-  override def call(args: Array[AnyRef], h: Handle) {
+  override def call(args: Array[AnyRef], h: Handle): Unit = {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
       h.publish(evaluate(args, h))

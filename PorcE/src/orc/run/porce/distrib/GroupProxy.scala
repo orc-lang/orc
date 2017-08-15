@@ -39,12 +39,12 @@ class RemoteGroupProxy(
   class CounterProxy() extends Counter() {
     def remoteGroupProxy = RemoteGroupProxy.this
 
-    override def onHalt() {
+    override def onHalt(): Unit = {
       //Logger.entering(getClass.getName, "onHalt")
       onHaltFunc()
     }
 
-    /*override*/ def onDiscorporate() {
+    /*override*/ def onDiscorporate(): Unit = {
       //Logger.entering(getClass.getName, "onDiscorporate")
       onDiscorporateFunc()
     }
@@ -142,7 +142,7 @@ trait GroupProxyManager {
   protected val proxiedGroups = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupProxy]
   protected val proxiedGroupMembers = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupMembersProxy]
 
-  def sendCall(callRecord: CallRecord, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation) {
+  def sendCall(callRecord: CallRecord, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
     Logger.fine(s"sendCall $callRecord, $callTarget, $callArguments, $destination")
     val publicationContinuation = callRecord.p
     val enclosingCounter = callRecord.c
@@ -165,7 +165,7 @@ trait GroupProxyManager {
     destination.sendInContext(self)(MigrateCallCmd(executionId, proxyId, callRecord, callTarget, callArguments))
   }
 
-  def receiveCall(origin: PeerLocation, proxyId: DOrcExecution#GroupProxyId, movedCall: CallRecord, callTarget: AnyRef, callArguments: Array[AnyRef]) {
+  def receiveCall(origin: PeerLocation, proxyId: DOrcExecution#GroupProxyId, movedCall: CallRecord, callTarget: AnyRef, callArguments: Array[AnyRef]): Unit = {
     val lookedUpProxyGroupMember = proxiedGroupMembers.get(proxyId)
     val (publicationContinuation: PorcEClosure, enclosingCounter: Counter, enclosingTerminator: Terminator) = lookedUpProxyGroupMember match {
       case null => { /* Not a token we've seen before */
@@ -193,35 +193,35 @@ trait GroupProxyManager {
     runtime.schedule(callInvoker)
   }
 
-  def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(publishedValue: AnyRef) {
+  def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(publishedValue: AnyRef): Unit = {
     Logger.fine(s"sendPublish: publish by proxyId $proxyId")
     Tracer.tracePublishSend(proxyId, self.runtime.here, destination)
     destination.sendInContext(self)(PublishGroupCmd(executionId, proxyId, publishedValue))
   }
 
-  def publishInGroup(origin: PeerLocation, groupMemberProxyId: GroupProxyId, publishedValue: AnyRef) {
+  def publishInGroup(origin: PeerLocation, groupMemberProxyId: GroupProxyId, publishedValue: AnyRef): Unit = {
     Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishedValue))
     val publicationContinuation = proxiedGroupMembers.get(groupMemberProxyId).publicationContinuation
     Tracer.tracePublishReceive(groupMemberProxyId, origin, self.runtime.here)
     runtime.schedule(CallClosureSchedulable(publicationContinuation, publishedValue))
   }
 
-  def sendHalt(destination: PeerLocation, groupMemberProxyId: GroupProxyId)() {
+  def sendHalt(destination: PeerLocation, groupMemberProxyId: GroupProxyId)(): Unit = {
     Tracer.traceHaltGroupMemberSend(groupMemberProxyId, self.runtime.here, destination)
     destination.sendInContext(self)(HaltGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
-  def sendDiscorporate(destination: PeerLocation, groupMemberProxyId: GroupProxyId)() {
+  def sendDiscorporate(destination: PeerLocation, groupMemberProxyId: GroupProxyId)(): Unit = {
     Tracer.traceDiscorporateGroupMemberSend(groupMemberProxyId, self.runtime.here, destination)
     destination.sendInContext(self)(DiscorporateGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
-  def sendResurrect(destination: PeerLocation, groupMemberProxyId: GroupProxyId)() {
+  def sendResurrect(destination: PeerLocation, groupMemberProxyId: GroupProxyId)(): Unit = {
     Tracer.traceDiscorporateGroupMemberSend(groupMemberProxyId, self.runtime.here, destination)
     destination.sendInContext(self)(ResurrectGroupMemberProxyCmd(executionId, groupMemberProxyId))
   }
 
-  def haltGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
+  def haltGroupMemberProxy(groupMemberProxyId: GroupProxyId): Unit = {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
       runtime.schedule(new Schedulable { def run() = { g.halt() } })
@@ -230,7 +230,7 @@ trait GroupProxyManager {
     }
   }
 
-  def discorporateGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
+  def discorporateGroupMemberProxy(groupMemberProxyId: GroupProxyId): Unit = {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
       runtime.schedule(new Schedulable { def run() = { g.discorporate() } })
@@ -240,7 +240,7 @@ trait GroupProxyManager {
     }
   }
 
-  def resurrectGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
+  def resurrectGroupMemberProxy(groupMemberProxyId: GroupProxyId): Unit = {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
       g.enclosingCounter.newToken()
@@ -249,12 +249,12 @@ trait GroupProxyManager {
     }
   }
 
-  def sendKill(destination: PeerLocation, proxyId: GroupProxyId)() {
+  def sendKill(destination: PeerLocation, proxyId: GroupProxyId)(): Unit = {
     Tracer.traceKillGroupSend(proxyId, self.runtime.here, destination)
     destination.sendInContext(self)(KillGroupCmd(executionId, proxyId))
   }
 
-  def killGroupProxy(proxyId: GroupProxyId) {
+  def killGroupProxy(proxyId: GroupProxyId): Unit = {
     val g = proxiedGroups.get(proxyId)
     if (g != null) {
       runtime.schedule(new Schedulable { def run() = { g.terminator.kill() } })

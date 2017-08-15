@@ -107,17 +107,17 @@ trait RemoteFutureManager {
     }
   }
 
-  def sendReadFuture(futureId: RemoteFutureRef#RemoteRefId) {
+  def sendReadFuture(futureId: RemoteFutureRef#RemoteRefId): Unit = {
     val homeLocation = homeLocationForRemoteFutureId(futureId)
     Tracer.traceFutureReadSend(futureId, self.runtime.here, homeLocation)
     homeLocation.sendInContext(self)(ReadFutureCmd(executionId, futureId, followerExecutionNum))
   }
 
-  def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: DOrcRuntime#RuntimeId) {
+  def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: DOrcRuntime#RuntimeId): Unit = {
     servingRemoteFutures.get(futureId).addReader(locationForFollowerNum(readerFollowerNum))
   }
 
-  def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
+  def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]): Unit = {
     Logger.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x" + futureId.toHexString, value))
     readers foreach { reader =>
       val mv = value.map(self.marshalValue(reader)(_))
@@ -126,7 +126,7 @@ trait RemoteFutureManager {
     }
   }
 
-  def deliverFutureResult(futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) {
+  def deliverFutureResult(futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]): Unit = {
     val reader = waitingReaders.get(futureId)
     if (reader != null) {
       value match {

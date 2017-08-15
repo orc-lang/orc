@@ -38,7 +38,7 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
     obj
   }
 
-  override def send(obj: S) {
+  override def send(obj: S): Unit = {
     Logger.finest(s"${Console.RED}RuntimeConnection.send: Sending $obj on $socket${Console.RESET}")
     super.send(obj)
     EventCounter.count( /*'send*/ Symbol("send " + obj.getClass.getName))
@@ -62,12 +62,12 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
     }
   }
 
-  override def close() {
+  override def close(): Unit = {
     Logger.finest(s"${Console.GREEN}RuntimeConnection.close on $socket${Console.RESET}")
     super.close()
   }
 
-  override def abort() {
+  override def abort(): Unit = {
     Logger.finest(s"${Console.GREEN}RuntimeConnection.abort on $socket${Console.RESET}")
     super.abort()
   }
@@ -156,13 +156,13 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
   protected var currOrigin: Option[PeerLocation] = None
   protected var currExecution: Option[DOrcExecution] = None
 
-  def setContext(executionLookup: (DOrcExecution#ExecutionId) => DOrcExecution, origin: PeerLocation) {
+  def setContext(executionLookup: (DOrcExecution#ExecutionId) => DOrcExecution, origin: PeerLocation): Unit = {
     assert(currExecutionLookup.isEmpty && currOrigin.isEmpty, s"currExecutionLookup=$currExecutionLookup; currOrigin=$currOrigin")
     currExecutionLookup = Some(executionLookup)
     currOrigin = Some(origin)
   }
 
-  def clearContext() {
+  def clearContext(): Unit = {
     assert(currExecutionLookup.nonEmpty && currOrigin.nonEmpty, s"currExecutionLookup=$currExecutionLookup; currOrigin=$currOrigin")
     currExecutionLookup = None
     currOrigin = None
@@ -204,13 +204,13 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
   protected var currExecution: Option[DOrcExecution] = None
   protected var currDestination: Option[PeerLocation] = None
 
-  def setContext(execution: DOrcExecution, destination: PeerLocation) {
+  def setContext(execution: DOrcExecution, destination: PeerLocation): Unit = {
     assert(currExecution.isEmpty && currDestination.isEmpty, s"currExecution=$currExecution; currDestination=$currDestination")
     currExecution = Some(execution)
     currDestination = Some(destination)
   }
 
-  def clearContext() {
+  def clearContext(): Unit = {
     assert(currExecution.nonEmpty && currDestination.nonEmpty, s"currExecution=$currExecution; currDestination=$currDestination")
     currExecution = None
     currDestination = None

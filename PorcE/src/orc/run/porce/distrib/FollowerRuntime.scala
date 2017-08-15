@@ -38,7 +38,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
   override def allLocations = runtimeLocationMap.values.toSet
 
-  def listen() {
+  def listen(): Unit = {
     Logger.info(s"Listening on $listenAddress")
 
     runtimeLocationMap.put(runtimeId, here)
@@ -73,7 +73,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   protected class MessageProcessorThread[R <: OrcCmd, S <: OrcCmd](connection: RuntimeConnection[R, S], initiatingWithRuntimeId: Option[DOrcRuntime#RuntimeId])
     extends Thread(s"dOrc follower connection with ${connection.socket}") {
 
-    override def run() {
+    override def run(): Unit = {
       Logger.entering(getClass.getName, "run")
       try {
         initiatingWithRuntimeId match {
@@ -138,7 +138,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     def apply(connection: RuntimeConnection[OrcPeerCmd, OrcPeerCmd], initiatingWithRuntimeId: DOrcRuntime#RuntimeId) = new MessageProcessorThread(connection, Some(initiatingWithRuntimeId))
   }
 
-  protected def followLeader(leaderLocation: LeaderLocation) {
+  protected def followLeader(leaderLocation: LeaderLocation): Unit = {
     Logger.entering(getClass.getName, "followLeader")
     try {
       var done = false
@@ -180,7 +180,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     Logger.exiting(getClass.getName, "followLeader")
   }
 
-  protected def communicateWithPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerLocation: PeerLocationImpl) {
+  protected def communicateWithPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerLocation: PeerLocationImpl): Unit = {
     try {
       Logger.info(s"Reading events from ${peerLocation.connection.socket}")
       while (!peerLocation.connection.closed && !peerLocation.connection.socket.isInputShutdown) {
@@ -208,7 +208,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     }
   }
 
-  def sendEvent(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId)(event: OrcEvent) {
+  def sendEvent(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId)(event: OrcEvent): Unit = {
     Logger.entering(getClass.getName, "sendEvent")
     val execution = programs(executionId)
     try {
@@ -232,7 +232,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     Logger.exiting(getClass.getName, "sendEvent")
   }
 
-  def addPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerListenAddress: InetSocketAddress) {
+  def addPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerListenAddress: InetSocketAddress): Unit = {
     Logger.entering(getClass.getName, "addPeer", Seq(peerRuntimeId.toString, peerListenAddress))
     if (peerListenAddress == boundListenAddress || peerRuntimeId == runtimeId) {
       /* Hey, that's me! */
@@ -268,7 +268,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     scala.math.Ordering.Iterable[Int].lt(bla, pla)
   }
 
-  def removePeer(peerRuntimeId: DOrcRuntime#RuntimeId) {
+  def removePeer(peerRuntimeId: DOrcRuntime#RuntimeId): Unit = {
     Logger.entering(getClass.getName, "removePeer", Seq(peerRuntimeId.toString))
     if (peerRuntimeId == runtimeId) {
       /* If the leader sends RemovePeer with our ID, we shutdown */
@@ -285,7 +285,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcFollowerExecution])
 
-  def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programAst: MethodCPS, options: OrcExecutionOptions) {
+  def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programAst: MethodCPS, options: OrcExecutionOptions): Unit = {
     Logger.entering(getClass.getName, "loadProgram")
 
     assert(programs.isEmpty) /* For now */
@@ -300,7 +300,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     addRoot(followerExecution)
   }
 
-  def unloadProgram(executionId: DOrcExecution#ExecutionId) {
+  def unloadProgram(executionId: DOrcExecution#ExecutionId): Unit = {
     Logger.entering(getClass.getName, "unloadProgram", Seq(executionId))
     programs.remove(executionId) match {
       case None => Logger.warning(s"Received unload for unknown (or previously unloaded) execution $executionId")
@@ -331,7 +331,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
 object FollowerRuntime {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     val frOptions = new FollowerRuntimeCmdLineOptions()
     frOptions.parseCmdLine(args)
 
@@ -342,7 +342,7 @@ object FollowerRuntime {
     new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
   }
 
-  def setupLogging(orcLogger: java.util.logging.Logger, logLevel: java.util.logging.Level) {
+  def setupLogging(orcLogger: java.util.logging.Logger, logLevel: java.util.logging.Level): Unit = {
     orcLogger.setLevel(logLevel)
     val testOrcLogRecord = new java.util.logging.LogRecord(logLevel, "")
     testOrcLogRecord.setLoggerName(orcLogger.getName())

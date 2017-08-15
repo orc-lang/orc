@@ -28,8 +28,8 @@ trait ValueLocator {
   * @author jthywiss
   */
 trait Location[-M <: OrcCmd] {
-  def send(message: M)
-  def sendInContext(execution: DOrcExecution)(message: M)
+  def send(message: M): Unit
+  def sendInContext(execution: DOrcExecution)(message: M): Unit
   def runtimeId: DOrcRuntime#RuntimeId
 }
 

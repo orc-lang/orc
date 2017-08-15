@@ -74,7 +74,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     }
   }
 
-  override def invokeIntercepted(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]) {
+  override def invokeIntercepted(callRecord: CallRecord, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     def pickLocation(ls: Set[PeerLocation]) = ls.head
 
     //Logger.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target, arguments))
