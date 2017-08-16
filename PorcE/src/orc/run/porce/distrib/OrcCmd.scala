@@ -82,8 +82,8 @@ case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime#RuntimeId, receivi
 ////////
 
 /** Execute this token */
-case class MigrateCallCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId, movedCall: CallMemento) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = s"${getClass.getSimpleName}($executionId, $movedCall)"
+case class MigrateCallCmd(executionId: DOrcExecution#ExecutionId, tokenId: Long, movedCall: CallMemento) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$tokenId%#x,$movedCall)"
 }
 
 /** This token has published in the given group */

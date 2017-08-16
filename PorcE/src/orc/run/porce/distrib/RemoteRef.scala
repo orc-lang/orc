@@ -88,11 +88,12 @@ class ObjectRemoteRefIdMapping[T >: Null](freshRemoteRefId: () => RemoteRef#Remo
       case ro: RemoteObjectRef =>
         ro.remoteRefId
       case _ =>
-        val id = objectToRemoteId.get(obj)
-        if (id == null) {
+        val id = objectToRemoteId.getOrDefault(obj, 0L)
+        if (id == 0L) {
           // This is safe since if the value has been set between the get above and this code we will get the existing value here.
           // This is just an optimization to avoid consuming IDs and constantly writing to remoteIdToObject.
           val newObjId = objectToRemoteId.computeIfAbsent(obj, _ => freshRemoteRefId())
+          assert(newObjId != 0L)
           remoteIdToObject.put(newObjId, obj)
           newObjId
         } else {

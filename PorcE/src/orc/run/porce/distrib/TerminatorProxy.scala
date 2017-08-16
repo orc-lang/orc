@@ -44,6 +44,7 @@ class RemoteTerminatorProxy(val remoteProxyId: RemoteRef#RemoteRefId) extends Te
 class RemoteTerminatorMembersProxy(
     val thisProxyId: RemoteRef#RemoteRefId,
     val enclosingCounter: Counter,
+    val enclosingTerminator: Terminator,
     sendKillFunc: () => Unit)
   extends Terminatable {
 

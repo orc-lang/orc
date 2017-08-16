@@ -63,16 +63,16 @@ object Tracer {
   final val traceEventNotifications = false
 
   @inline
-  def traceCallSend(groupMemberProxyId: RemoteRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def traceCallSend(tokenId: Long, origin: Location[_], destination: Location[_]): Unit = {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(CallSend, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(CallSend, tokenId, origin.runtimeId, destination.runtimeId)
     }
   }
 
   @inline
-  def traceCallReceive(groupProxyId: RemoteRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def traceCallReceive(tokenId: Long, origin: Location[_], destination: Location[_]): Unit = {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(CallReceive, groupProxyId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(CallReceive, tokenId, origin.runtimeId, destination.runtimeId)
     }
   }
 

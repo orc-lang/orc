@@ -32,12 +32,8 @@ class RemoteCounterProxy(
 
   override def onHalt(): Unit = {
     //Logger.entering(getClass.getName, "onHalt")
+    if (isDiscorporated) onDiscorporateFunc()
     onHaltFunc()
-  }
-
-  override def onDiscorporate(): Unit = {
-    //Logger.entering(getClass.getName, "onDiscorporate")
-    onDiscorporateFunc()
   }
 
   override def onResurrect(): Unit = {
@@ -130,7 +126,6 @@ trait CounterProxyManager {
     val g = proxiedCounterMembers.get(groupMemberProxyId)
     if (g != null) {
       runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfDiscorporate() } })
-      proxiedCounterMembers.remove(groupMemberProxyId)
     } else {
       Logger.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }

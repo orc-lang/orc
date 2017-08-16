@@ -123,9 +123,9 @@ class DOrcFollowerExecution(
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
 }
 
-case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], target: AnyRef, arguments: Array[AnyRef]) extends Serializable {
-  def this(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]) {
-    this(callSiteId = callHandler.callSiteId, callSitePosition = callHandler.callSitePosition, target = target, arguments = arguments)
+case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], counterProxyId: RemoteRef#RemoteRefId, terminatorProxyId: RemoteRef#RemoteRefId, target: AnyRef, arguments: Array[AnyRef]) extends Serializable {
+  def this(callHandler: CPSCallResponseHandler, counterProxyId: RemoteRef#RemoteRefId, terminatorProxyId: RemoteRef#RemoteRefId, target: AnyRef, arguments: Array[AnyRef]) {
+    this(callSiteId = callHandler.callSiteId, callSitePosition = callHandler.callSitePosition, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = target, arguments = arguments)
   }
 }
 case class PublishMemento(publishedValue: AnyRef) extends Serializable

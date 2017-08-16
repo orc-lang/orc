@@ -13,12 +13,10 @@
 
 package orc.run.porce.distrib
 
-import orc.run.porce.runtime.{ CPSCallResponseHandler, InvocationInterceptor }
-import orc.run.porce.runtime.PorcEClosure
-import orc.run.porce.runtime.Counter
-import orc.run.porce.runtime.Terminator
+import java.util.concurrent.atomic.AtomicLong
+
 import orc.Schedulable
-import orc.run.porce.runtime.CallClosureSchedulable
+import orc.run.porce.runtime.{ CPSCallResponseHandler, CallClosureSchedulable, InvocationInterceptor }
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
   *
@@ -72,53 +70,84 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     sendCall(callHandler, target, arguments, destination)
   }
 
+  /* Since we don't have token IDs in PorcE: */
+  private val callCorrelationCounter = new AtomicLong(followerExecutionNum.toLong << 32)
+
   def sendCall(callContext: CPSCallResponseHandler, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
     Logger.fine(s"sendCall $callContext, $callTarget, $callArguments, $destination")
     val publicationContinuation = callContext.p
     val enclosingCounter = callContext.c
     val enclosingTerminator = callContext.t
 
-    val proxyId = enclosingTerminator match {
-      case tp: RemoteGroupProxy => tp.remoteGroupProxy.remoteProxyId
+    val counterProxyId = enclosingCounter match {
+      case cp: RemoteCounterProxy => cp.remoteProxyId
       case _ => freshRemoteRefId()
     }
-    val rmtProxy = new RemoteGroupMembersProxy(proxyId, publicationContinuation, enclosingCounter, enclosingTerminator, () => sendKill(destination, proxyId)())
-    proxiedGroupMembers.put(proxyId, rmtProxy)
+    val rmtCounterMbrProxy = new RemoteCounterMembersProxy(counterProxyId, enclosingCounter)
+    proxiedCounterMembers.put(counterProxyId, rmtCounterMbrProxy)
 
-    enclosingTerminator.addChild(rmtProxy)
-    enclosingTerminator.removeChild(callContext)
+    /* enclosingCounter value is correct as is, since we're swapping this call with its proxy. */
 
-    /* Counter is correct as is, since we're swapping this call with its proxy. */
-
-    val callMemento = CallMemento(callSiteId = callContext.callSiteId, callSitePosition = callContext.callSitePosition, target = callTarget, arguments = callArguments)
-
-    Tracer.traceCallSend(proxyId, self.runtime.here, destination)
-    destination.sendInContext(self)(MigrateCallCmd(executionId, proxyId, callMemento))
-  }
-
-  def receiveCall(origin: PeerLocation, proxyId: RemoteRef#RemoteRefId, callMemento: CallMemento): Unit = {
-    val lookedUpProxyGroupMember = proxiedGroupMembers.get(proxyId)
-    val (proxyPublicationContinuation: PorcEClosure, proxyCounter: Counter, proxyTerminator: Terminator) = lookedUpProxyGroupMember match {
-      case null => { /* Not a token we've seen before */
-        val rgp = new RemoteGroupProxy(proxyId, sendPublish(origin, proxyId)(_), () => sendHalt(origin, proxyId)(), () => sendDiscorporate(origin, proxyId)(), () => sendResurrect(origin, proxyId)())
-        proxiedGroups.put(proxyId, rgp)
-        (rgp.publicationContinuation, rgp.counter, rgp.terminator)
-      }
-      case gmp => (gmp.publicationContinuation, gmp.enclosingCounter, gmp.enclosingTerminator)
+    val terminatorProxyId = enclosingTerminator match {
+      case tp: RemoteTerminatorProxy => tp.remoteProxyId
+      case _ => freshRemoteRefId()
     }
 
-    val callInvoker = new Schedulable { def run(): Unit = { self.invokeCallTarget(callMemento.callSiteId, proxyPublicationContinuation, proxyCounter, proxyTerminator, callMemento.target, callMemento.arguments) } }
+    val rmtTerminatorMbrProxy = new RemoteTerminatorMembersProxy(terminatorProxyId, enclosingCounter, enclosingTerminator, () => sendKill(destination, terminatorProxyId)())
+    proxiedTerminatorMembers.put(terminatorProxyId, rmtTerminatorMbrProxy)
+
+    /* Swap call with rmtTerminatorMbrProxy in enclosingTerminator */
+    enclosingTerminator.addChild(rmtTerminatorMbrProxy)
+    enclosingTerminator.removeChild(callContext)
+
+    val callMemento = new CallMemento(callContext, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = callTarget, arguments = callArguments)
+
+    val callCorrelationId = callCorrelationCounter.getAndIncrement()
+    Tracer.traceCallSend(callCorrelationId, self.runtime.here, destination)
+    destination.sendInContext(self)(MigrateCallCmd(executionId, callCorrelationId, callMemento))
+  }
+
+  def receiveCall(origin: PeerLocation, callCorrelationId: Long, callMemento: CallMemento): Unit = {
+    val lookedUpProxyCounterMember = proxiedCounterMembers.get(callMemento.counterProxyId)
+    val proxyCounter = lookedUpProxyCounterMember match {
+      case null => { /* Not a counter we've seen before */
+        val rcp = new RemoteCounterProxy(callMemento.counterProxyId, () => sendHalt(origin, callMemento.counterProxyId)(), () => sendDiscorporate(origin, callMemento.counterProxyId)(), () => sendResurrect(origin, callMemento.counterProxyId)())
+        proxiedCounters.put(callMemento.counterProxyId, rcp)
+        rcp
+      }
+      case rcmp => rcmp.enclosingCounter
+    }
+
+    val lookedUpProxyTerminatorMember = proxiedTerminatorMembers.get(callMemento.terminatorProxyId)
+    val proxyTerminator = lookedUpProxyTerminatorMember match {
+      case null => { /* Not a terminator we've seen before */
+        val rtp = new RemoteTerminatorProxy(callMemento.terminatorProxyId)
+        proxiedTerminators.put(callMemento.terminatorProxyId, rtp)
+        rtp
+      }
+      case rtmp => rtmp.enclosingTerminator
+    }
+
+    val callInvoker = new Schedulable { def run(): Unit = { self.invokeCallTarget(callMemento.callSiteId, ???, proxyCounter, proxyTerminator, callMemento.target, callMemento.arguments) } }
     proxyCounter.newToken()
     //invokeCallTarget adds an appropriate child the proxyTerminator
 
-    if (lookedUpProxyGroupMember != null) {
-      /* We have a RemoteGroupMembersProxy already for this proxyId,
+    if (lookedUpProxyCounterMember != null) {
+      /* There is a RemoteCounterMembersProxy already for this proxyId,
        * so discard the superfluous one created at the sender. */
-      Tracer.traceHaltGroupMemberSend(proxyId, self.runtime.here, origin)
-      origin.sendInContext(self)(HaltGroupMemberProxyCmd(executionId, proxyId))
+      Tracer.traceHaltGroupMemberSend(callMemento.counterProxyId, self.runtime.here, origin)
+      origin.sendInContext(self)(HaltGroupMemberProxyCmd(executionId, callMemento.counterProxyId))
     }
 
-    Tracer.traceCallReceive(proxyId, origin, self.runtime.here)
+    if (lookedUpProxyTerminatorMember != null) {
+      /* There is a RemoteTerminatorMembersProxy already for this proxyId,
+       * so discard the superfluous one created at the sender. */
+      //Tracer.trace???Send(callMemento.terminatorProxyId, self.runtime.here, origin)
+      //origin.sendInContext(self)(???(executionId, callMemento.terminatorProxyId))
+      ???
+    }
+
+    Tracer.traceCallReceive(callCorrelationId, origin, self.runtime.here)
 
     Logger.fine(s"scheduling $callInvoker")
     runtime.schedule(callInvoker)
@@ -132,10 +161,10 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
   def publishInGroup(origin: PeerLocation, groupMemberProxyId: RemoteRef#RemoteRefId, publication: PublishMemento): Unit = {
     Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publication))
-    val g = proxiedGroupMembers.get(groupMemberProxyId)
+    val g = proxiedTerminatorMembers.get(groupMemberProxyId)
     if (g != null) {
       Tracer.tracePublishReceive(groupMemberProxyId, origin, self.runtime.here)
-      runtime.schedule(CallClosureSchedulable(g.publicationContinuation, publication.publishedValue))
+      runtime.schedule(CallClosureSchedulable(???, publication.publishedValue))
     } else {
       throw new AssertionError(f"Publish by unknown group member proxy $groupMemberProxyId%#x, value=${publication.publishedValue}")
     }

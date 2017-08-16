@@ -1,13 +1,10 @@
 package orc.run.porce.runtime
 
-import orc.Handle
 import java.util.concurrent.atomic.AtomicBoolean
-import orc.OrcEvent
-import orc.error.OrcException
-import orc.CaughtEvent
+
+import orc.{ CaughtEvent, Handle, OrcEvent }
 import orc.compile.parse.OrcSourceRange
-import orc.OrcRuntime
-import orc.run.porce.distrib.DOrcMarshalingReplacement
+import orc.error.OrcException
 
 class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator, val callSiteId: Int) extends AtomicBoolean with Handle with Terminatable {
   // The value stored in the AtomicBoolean is a flag saying if we have already halted.
