@@ -4,7 +4,7 @@ package orc.run.porce.runtime;
 import scala.Function1;
 
 import com.oracle.truffle.api.RootCallTarget;
-import orc.run.distrib.DOrcMarshalingReplacement;
+import orc.run.porce.distrib.DOrcMarshalingReplacement;
 
 final public class PorcEClosure implements DOrcMarshalingReplacement {
     public final Object[] environment;

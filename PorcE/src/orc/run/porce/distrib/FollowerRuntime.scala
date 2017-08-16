@@ -294,8 +294,9 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     }
 
     val followerExecution = new DOrcFollowerExecution(executionId, runtimeId, programAst, options, sendEvent(leaderLocation, executionId, DOrcExecution.noGroupProxyId), this)
-
     installHandlers(followerExecution)
+
+    programs.put(executionId, followerExecution)
     addRoot(followerExecution)
   }
 

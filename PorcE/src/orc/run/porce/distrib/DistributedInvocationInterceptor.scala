@@ -52,7 +52,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     // TODO: If this every turns out to be a performance issue I suspect a bloom-filter-optimized set would help.
     val intersectLocs = (arguments map currentLocations).fold(currentLocations(target)) { _ & _ }
     require(!(intersectLocs contains runtime.here))
-    orc.run.distrib.Logger.finest(s"siteCall($target,$arguments): intersection of current locations=$intersectLocs")
+    Logger.finest(s"siteCall($target,$arguments): intersection of current locations=$intersectLocs")
     val candidateDestinations = {
       if (intersectLocs.nonEmpty) {
         intersectLocs
@@ -65,7 +65,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         }
       }
     }
-    orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
+    Logger.finest(s"candidateDestinations=$candidateDestinations")
     val destination = pickLocation(candidateDestinations)
     sendCall(callHandler, target, arguments, destination)
   }
