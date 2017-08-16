@@ -17,6 +17,7 @@ import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.compile.parse.OrcSourceRange
 import orc.compiler.porce.PorcToPorcE
 import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch }
+import orc.run.porce.runtime.PorcEClosure
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -123,9 +124,9 @@ class DOrcFollowerExecution(
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
 }
 
-case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], counterProxyId: RemoteRef#RemoteRefId, terminatorProxyId: RemoteRef#RemoteRefId, target: AnyRef, arguments: Array[AnyRef]) extends Serializable {
-  def this(callHandler: CPSCallResponseHandler, counterProxyId: RemoteRef#RemoteRefId, terminatorProxyId: RemoteRef#RemoteRefId, target: AnyRef, arguments: Array[AnyRef]) {
-    this(callSiteId = callHandler.callSiteId, callSitePosition = callHandler.callSitePosition, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = target, arguments = arguments)
+case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], publicationContinuation: PorcEClosure, counterProxyId: CounterProxyManager#CounterProxyId, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) extends Serializable {
+  def this(callHandler: CPSCallResponseHandler, counterProxyId: CounterProxyManager#CounterProxyId, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) {
+    this(callSiteId = callHandler.callSiteId, callSitePosition = callHandler.callSitePosition, publicationContinuation = callHandler.p, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = target, arguments = arguments)
   }
 }
 case class PublishMemento(publishedValue: AnyRef) extends Serializable

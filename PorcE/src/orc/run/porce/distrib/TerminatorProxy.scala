@@ -1,5 +1,5 @@
 //
-// TerminatorProxy.scala -- Scala classes RemoteTerminatorProxy and RemoteTerminatorMembersProxy, and trait TerminatorProxyManager
+// TerminatorProxy.scala -- Scala trait TerminatorProxyManager, and classes RemoteTerminatorProxy and RemoteTerminatorMembersProxy 
 // Project PorcE
 //
 // Created by jthywiss on Aug 15, 2017.
@@ -16,72 +16,116 @@ package orc.run.porce.distrib
 import orc.Schedulable
 import orc.run.porce.runtime.{ Counter, PorcEClosure, Terminatable, Terminator }
 
-/** Proxy for a terminator the resides on a remote dOrc node.
-  * RemoteTerminatorProxy is created locally when a token has been migrated from
-  * another node. If the remote terminator is killed, this proxy will
-  * pass the kill on to the local members.
+/** A DOrcExecution mix-in to create and communicate among proxied terminators.
   *
-  * @author jthywiss
-  */
-class RemoteTerminatorProxy(val remoteProxyId: RemoteRef#RemoteRefId) extends Terminator() {
-
-  override def kill(k: PorcEClosure): Boolean = {
-    //Logger.entering(getClass.getName, "kill")
-    /* All RemoteTerminatorProxy kills come from the remote side */
-    super.kill(k)
-  }
-
-}
-
-/** Proxy for one or more remote members of a terminator.
-  * RemoteTerminatorMembersProxy is created when a token is migrated to another node.
-  * As the migrated token continues to execute, this proxy may come to represent
-  * multiple tokens, and/or sub-terminators. If this proxy is killed, it will
-  * pass the kill on to its remote members.
-  *
-  * @author jthywiss
-  */
-class RemoteTerminatorMembersProxy(
-    val thisProxyId: RemoteRef#RemoteRefId,
-    val enclosingCounter: Counter,
-    val enclosingTerminator: Terminator,
-    sendKillFunc: () => Unit)
-  extends Terminatable {
-
-  private var alive = true
-
-  /** The parent terminator is killing its members; pass it on to the remote terminator proxy. */
-  override def kill(): Unit = synchronized {
-    //Logger.entering(getClass.getName, "kill")
-    if (alive) {
-      alive = false
-      sendKillFunc()
-      Logger.finer(s"RemoteTerminatorMembersProxy.kill: enclosingCounter=${enclosingCounter.get}")
-      enclosingCounter.haltToken()
-    }
-  }
-
-}
-
-/** A mix-in to manage proxied terminators.
-  *
+  * @see TerminatorProxyManager#RemoteTerminatorProxy
+  * @see TerminatorProxyManager#RemoteTerminatorMembersProxy
   * @author jthywiss
   */
 trait TerminatorProxyManager {
-  self: DOrcExecution =>
+  execution: DOrcExecution =>
 
-  protected val proxiedTerminators = new java.util.concurrent.ConcurrentHashMap[RemoteRefId, RemoteTerminatorProxy]
-  protected val proxiedTerminatorMembers = new java.util.concurrent.ConcurrentHashMap[RemoteRefId, RemoteTerminatorMembersProxy]
+  type TerminatorProxyId = RemoteRefId
 
-  def sendKill(destination: PeerLocation, proxyId: RemoteRefId)(): Unit = {
-    Tracer.traceKillGroupSend(proxyId, self.runtime.here, destination)
-    destination.sendInContext(self)(KillGroupCmd(executionId, proxyId))
+  /** Proxy for a terminator the resides on a remote dOrc node.
+    * RemoteTerminatorProxy is created locally when a token has been migrated from
+    * another node. If the remote terminator is killed, this proxy will
+    * pass the kill on to the local members.
+    *
+    * @author jthywiss
+    */
+  class RemoteTerminatorProxy private[TerminatorProxyManager] (
+      val remoteProxyId: TerminatorProxyManager#TerminatorProxyId)
+    extends Terminator() {
+  
+    override def kill(k: PorcEClosure): Boolean = {
+      //Logger.entering(getClass.getName, "kill")
+      /* All RemoteTerminatorProxy kills come from the remote side */
+      super.kill(k)
+    }
+  
+  }
+  
+  /** Proxy for one or more remote members of a terminator.
+    * RemoteTerminatorMembersProxy is created when a token is migrated to another node.
+    * As the migrated token continues to execute, this proxy may come to represent
+    * multiple tokens, and/or sub-terminators. If this proxy is killed, it will
+    * pass the kill on to its remote members.
+    *
+    * @author jthywiss
+    */
+  class RemoteTerminatorMembersProxy private[TerminatorProxyManager] (
+      val thisProxyId: TerminatorProxyManager#TerminatorProxyId,
+      val enclosingCounter: Counter,
+      val enclosingTerminator: Terminator,
+      sendKillFunc: (TerminatorProxyManager#TerminatorProxyId) => Unit)
+    extends Terminatable {
+  
+    private var alive = true
+  
+    /** The parent terminator is killing its members; pass it on to the remote terminator proxy. */
+    override def kill(): Unit = synchronized {
+      //Logger.entering(getClass.getName, "kill")
+      if (alive) {
+        alive = false
+        sendKillFunc(thisProxyId)
+        Logger.finer(s"RemoteTerminatorMembersProxy.kill: enclosingCounter=${enclosingCounter.get}")
+        enclosingCounter.haltToken()
+      }
+    }
+  
   }
 
-  def killGroupProxy(proxyId: RemoteRefId): Unit = {
+  protected val proxiedTerminators = new java.util.concurrent.ConcurrentHashMap[TerminatorProxyId, RemoteTerminatorProxy]
+  protected val proxiedTerminatorMembers = new java.util.concurrent.ConcurrentHashMap[TerminatorProxyId, RemoteTerminatorMembersProxy]
+
+  def makeProxyWithinTerminator(enclosingCounter: Counter, enclosingTerminator: Terminator, childTerminable: Terminatable, sendKillFunc: (TerminatorProxyId) => Unit) = {
+    val terminatorProxyId = enclosingTerminator match {
+      case tp: RemoteTerminatorProxy => tp.remoteProxyId
+      case _ => freshRemoteRefId()
+    }
+
+    val rmtTerminatorMbrProxy = new RemoteTerminatorMembersProxy(terminatorProxyId, enclosingCounter, enclosingTerminator, sendKillFunc)
+    proxiedTerminatorMembers.put(terminatorProxyId, rmtTerminatorMbrProxy)
+
+    /* Swap call with rmtTerminatorMbrProxy in enclosingTerminator */
+    enclosingTerminator.addChild(rmtTerminatorMbrProxy)
+    enclosingTerminator.removeChild(childTerminable)
+
+    terminatorProxyId
+  }
+
+  def makeProxyTerminatorFor(terminatorProxyId: TerminatorProxyId): Terminator = {
+    val lookedUpProxyTerminatorMember = proxiedTerminatorMembers.get(terminatorProxyId)
+    val proxyTerminator = lookedUpProxyTerminatorMember match {
+      case null => { /* Not a terminator we've seen before */
+        val rtp = new RemoteTerminatorProxy(terminatorProxyId)
+        proxiedTerminators.put(terminatorProxyId, rtp)
+        rtp
+      }
+      case rtmp => rtmp.enclosingTerminator
+    }
+
+    if (lookedUpProxyTerminatorMember != null) {
+      /* There is a RemoteTerminatorMembersProxy already for this proxyId,
+       * so discard the superfluous one created at the sender. */
+      //Tracer.trace???Send(callMemento.terminatorProxyId, execution.runtime.here, origin)
+      //origin.sendInContext(execution)(???(executionId, callMemento.terminatorProxyId))
+      ???
+    }
+
+    proxyTerminator
+  }
+
+  def sendKill(destination: PeerLocation, proxyId: TerminatorProxyId)(): Unit = {
+    Tracer.traceKillGroupSend(proxyId, execution.runtime.here, destination)
+    destination.sendInContext(execution)(KillGroupCmd(execution.executionId, proxyId))
+  }
+
+  def killGroupProxy(proxyId: TerminatorProxyId): Unit = {
     val g = proxiedTerminators.get(proxyId)
     if (g != null) {
-      runtime.schedule(new Schedulable { def run(): Unit = { g.kill() } })
+      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.kill() } })
       proxiedTerminators.remove(proxyId)
     } else {
       Logger.fine(f"Kill group on unknown group $proxyId%#x")

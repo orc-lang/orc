@@ -15,7 +15,7 @@ package orc.run.porce.distrib
 
 import scala.collection.mutable.WeakHashMap
 
-/** A mix-in to marshal and unmarshal Orc program values.
+/** A DOrcExecution mix-in to marshal and unmarshal Orc program values.
   *
   * When marshaling, if the ValueLocator permits the destination, and the
   * value is Serializable, then the object is OK as-is.  Otherwise, a
