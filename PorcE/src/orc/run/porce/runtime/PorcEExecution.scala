@@ -10,7 +10,7 @@ import com.oracle.truffle.api.nodes.RootNode
 import orc.{ ExecutionRoot, OrcEvent, PublishedEvent }
 import orc.run.core.EventHandler
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, Logger, PorcEUnit }
-import orc.run.porce.distrib.{ CallTargetManager, NoInvocationInterception }
+import orc.run.porce.distrib.CallTargetManager
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {

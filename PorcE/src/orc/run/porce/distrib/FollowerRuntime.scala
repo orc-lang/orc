@@ -207,7 +207,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     }
   }
 
-  def sendEvent(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, groupProxyId: DOrcExecution#GroupProxyId)(event: OrcEvent): Unit = {
+  def sendEvent(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, groupProxyId: RemoteRef#RemoteRefId)(event: OrcEvent): Unit = {
     Logger.entering(getClass.getName, "sendEvent")
     val execution = programs(executionId)
     try {

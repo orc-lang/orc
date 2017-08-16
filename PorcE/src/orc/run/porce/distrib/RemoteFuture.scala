@@ -20,7 +20,6 @@ import orc.{ Future, FutureReader }
   * @author jthywiss
   */
 class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends orc.run.porce.runtime.Future() with RemoteRef {
-  override type RemoteRefId = Long
 
   override def toString: String = super.toString + f"(remoteRefId=$remoteRefId%#x)"
 
@@ -83,7 +82,7 @@ trait RemoteFutureManager {
         if (servingLocalFutures.contains(fut)) {
           servingLocalFutures.get(fut)
         } else {
-          val newFutureId = freshRemoteFutureId()
+          val newFutureId = freshRemoteRefId()
           val newReader = new RemoteFutureReader(fut, this, newFutureId)
           servingLocalFutures.put(fut, newFutureId)
           servingRemoteFutures.put(newFutureId, newReader)
@@ -94,7 +93,7 @@ trait RemoteFutureManager {
   }
 
   def futureForId(futureId: RemoteFutureRef#RemoteRefId): Future = {
-    if (homeLocationForRemoteFutureId(futureId) == runtime.asInstanceOf[DOrcRuntime].here) {
+    if (homeLocationForRemoteRef(futureId) == runtime.asInstanceOf[DOrcRuntime].here) {
       servingRemoteFutures.get(futureId).fut
     } else {
       waitingReadersUpdateLock synchronized {
@@ -108,7 +107,7 @@ trait RemoteFutureManager {
   }
 
   def sendReadFuture(futureId: RemoteFutureRef#RemoteRefId): Unit = {
-    val homeLocation = homeLocationForRemoteFutureId(futureId)
+    val homeLocation = homeLocationForRemoteRef(futureId)
     Tracer.traceFutureReadSend(futureId, self.runtime.here, homeLocation)
     homeLocation.sendInContext(self)(ReadFutureCmd(executionId, futureId, followerExecutionNum))
   }

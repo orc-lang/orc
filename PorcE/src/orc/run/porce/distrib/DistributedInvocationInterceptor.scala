@@ -13,40 +13,12 @@
 
 package orc.run.porce.distrib
 
-import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEExecution }
-
-/** Provides a "hook" to intercept external calls from an Execution.
-  *
-  * @author amp
-  */
-trait InvocationInterceptor {
-  this: PorcEExecution =>
-
-  /** Return true iff the invocation is distributed.
-    *
-    * This call must be as fast as possible since it is called before every external call.
-    */
-  def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean
-
-  /** Invoke an call remotely as needed by the target and arguments.
-    *
-    * This will only be called if `shouldInterceptInvocation(target, arguments)` is true.
-    */
-  def invokeIntercepted(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]): Unit
-}
-
-/** Intercept no external calls at all.
-  *
-  * @author amp
-  */
-trait NoInvocationInterception extends InvocationInterceptor {
-  this: PorcEExecution =>
-
-  override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = false
-  override def invokeIntercepted(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-    throw new AssertionError("invokeIntercepted called when shouldInterceptInvocation=false")
-  }
-}
+import orc.run.porce.runtime.{ CPSCallResponseHandler, InvocationInterceptor }
+import orc.run.porce.runtime.PorcEClosure
+import orc.run.porce.runtime.Counter
+import orc.run.porce.runtime.Terminator
+import orc.Schedulable
+import orc.run.porce.runtime.CallClosureSchedulable
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
   *
@@ -54,7 +26,7 @@ trait NoInvocationInterception extends InvocationInterceptor {
   * @author amp
   */
 trait DistributedInvocationInterceptor extends InvocationInterceptor {
-  this: DOrcExecution =>
+  self: DOrcExecution =>
 
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     // WARNING: Contains return!!!
@@ -98,5 +70,74 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
     val destination = pickLocation(candidateDestinations)
     sendCall(callHandler, target, arguments, destination)
+  }
+
+  def sendCall(callContext: CPSCallResponseHandler, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
+    Logger.fine(s"sendCall $callContext, $callTarget, $callArguments, $destination")
+    val publicationContinuation = callContext.p
+    val enclosingCounter = callContext.c
+    val enclosingTerminator = callContext.t
+
+    val proxyId = enclosingTerminator match {
+      case tp: RemoteGroupProxy => tp.remoteGroupProxy.remoteProxyId
+      case _ => freshRemoteRefId()
+    }
+    val rmtProxy = new RemoteGroupMembersProxy(proxyId, publicationContinuation, enclosingCounter, enclosingTerminator, () => sendKill(destination, proxyId)())
+    proxiedGroupMembers.put(proxyId, rmtProxy)
+
+    enclosingTerminator.addChild(rmtProxy)
+    enclosingTerminator.removeChild(callContext)
+
+    /* Counter is correct as is, since we're swapping this call with its proxy. */
+
+    val callMemento = CallMemento(callSiteId = callContext.callSiteId, callSitePosition = callContext.callSitePosition, target = callTarget, arguments = callArguments)
+
+    Tracer.traceCallSend(proxyId, self.runtime.here, destination)
+    destination.sendInContext(self)(MigrateCallCmd(executionId, proxyId, callMemento))
+  }
+
+  def receiveCall(origin: PeerLocation, proxyId: RemoteRef#RemoteRefId, callMemento: CallMemento): Unit = {
+    val lookedUpProxyGroupMember = proxiedGroupMembers.get(proxyId)
+    val (proxyPublicationContinuation: PorcEClosure, proxyCounter: Counter, proxyTerminator: Terminator) = lookedUpProxyGroupMember match {
+      case null => { /* Not a token we've seen before */
+        val rgp = new RemoteGroupProxy(proxyId, sendPublish(origin, proxyId)(_), () => sendHalt(origin, proxyId)(), () => sendDiscorporate(origin, proxyId)(), () => sendResurrect(origin, proxyId)())
+        proxiedGroups.put(proxyId, rgp)
+        (rgp.publicationContinuation, rgp.counter, rgp.terminator)
+      }
+      case gmp => (gmp.publicationContinuation, gmp.enclosingCounter, gmp.enclosingTerminator)
+    }
+
+    val callInvoker = new Schedulable { def run(): Unit = { self.invokeCallTarget(callMemento.callSiteId, proxyPublicationContinuation, proxyCounter, proxyTerminator, callMemento.target, callMemento.arguments) } }
+    proxyCounter.newToken()
+    //invokeCallTarget adds an appropriate child the proxyTerminator
+
+    if (lookedUpProxyGroupMember != null) {
+      /* We have a RemoteGroupMembersProxy already for this proxyId,
+       * so discard the superfluous one created at the sender. */
+      Tracer.traceHaltGroupMemberSend(proxyId, self.runtime.here, origin)
+      origin.sendInContext(self)(HaltGroupMemberProxyCmd(executionId, proxyId))
+    }
+
+    Tracer.traceCallReceive(proxyId, origin, self.runtime.here)
+
+    Logger.fine(s"scheduling $callInvoker")
+    runtime.schedule(callInvoker)
+  }
+
+  def sendPublish(destination: PeerLocation, proxyId: RemoteRef#RemoteRefId)(publishedValue: AnyRef): Unit = {
+    Logger.fine(s"sendPublish: publish by proxyId $proxyId")
+    Tracer.tracePublishSend(proxyId, self.runtime.here, destination)
+    destination.sendInContext(self)(PublishGroupCmd(executionId, proxyId, PublishMemento(publishedValue)))
+  }
+
+  def publishInGroup(origin: PeerLocation, groupMemberProxyId: RemoteRef#RemoteRefId, publication: PublishMemento): Unit = {
+    Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publication))
+    val g = proxiedGroupMembers.get(groupMemberProxyId)
+    if (g != null) {
+      Tracer.tracePublishReceive(groupMemberProxyId, origin, self.runtime.here)
+      runtime.schedule(CallClosureSchedulable(g.publicationContinuation, publication.publishedValue))
+    } else {
+      throw new AssertionError(f"Publish by unknown group member proxy $groupMemberProxyId%#x, value=${publication.publishedValue}")
+    }
   }
 }

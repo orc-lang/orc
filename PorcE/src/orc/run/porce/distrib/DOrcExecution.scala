@@ -44,7 +44,8 @@ abstract class DOrcExecution(
   with DistributedInvocationInterceptor
   with ValueLocator
   with ValueMarshaler
-  with GroupProxyManager
+  with CounterProxyManager
+  with TerminatorProxyManager
   with RemoteFutureManager
   with RemoteObjectManager
   with RemoteRefIdManager {
@@ -80,7 +81,7 @@ abstract class DOrcExecution(
 
 object DOrcExecution {
   def freshExecutionId(): String = java.util.UUID.randomUUID().toString
-  val noGroupProxyId: DOrcExecution#GroupProxyId = 0L
+  val noGroupProxyId: RemoteRef#RemoteRefId = 0L
 }
 
 /** DOrcExecution in the dOrc LeaderRuntime.  This is the "true" root group.
