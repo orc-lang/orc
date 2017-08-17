@@ -1,8 +1,7 @@
 package orc.run.porce.runtime
 
-import com.oracle.truffle.api.nodes.RootNode
 import com.oracle.truffle.api.Truffle
-import java.util.Arrays
+import com.oracle.truffle.api.nodes.RootNode
 
 object Utilities {
   private val emptyArray = Array[AnyRef]()

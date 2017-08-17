@@ -13,32 +13,19 @@
 
 package orc.lib.net
 
-import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.ServletContextHandler
-import javax.servlet.http.HttpServlet
-import org.eclipse.jetty.servlet.ServletHolder
-import org.eclipse.jetty.util.component.LifeCycle
-import orc.values.sites.TotalSite
-import javax.servlet.Servlet
-import orc.values.sites.Site
-import orc.values.Field
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ArityMismatchException
-import orc.values.sites.TotalSite2
-import scala.reflect.ClassTag
-import orc.values.sites.TotalSite1
-import orc.values.Signal
-import orc.values.sites.Site0
-import orc.error.runtime.UncallableValueException
-import orc.error.runtime.NoSuchMemberException
-import orc.values.sites.TotalSite0
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import java.util.concurrent.ConcurrentLinkedQueue
-import orc.values.OrcTuple
-import javax.servlet.AsyncContext
-import org.eclipse.jetty.servlet.ServletMapping
-import orc.values.HasMembers
+
+import scala.reflect.ClassTag
+
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, NoSuchMemberException, UncallableValueException }
+import orc.values.{ Field, HasMembers, Signal }
+import orc.values.sites.{ Site, Site0, TotalSite, TotalSite0, TotalSite1 }
+
+import javax.servlet.{ AsyncContext, Servlet }
+import javax.servlet.http.{ HttpServlet, HttpServletRequest, HttpServletResponse }
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.servlet.{ ServletContextHandler, ServletHolder, ServletMapping }
+import org.eclipse.jetty.util.component.LifeCycle
 
 trait CastArgumentSupport {
   def castArgument[T <: AnyRef: ClassTag](i: Int, a: AnyRef, typeName: String = null): T = {
@@ -249,8 +236,6 @@ object ServletServer extends TotalSite with CastArgumentSupport {
 
   /** Servlet for testing */
   private class EmbeddedAsyncServlet extends HttpServlet {
-    import javax.servlet.http.HttpServletRequest
-    import javax.servlet.http.HttpServletResponse
     override protected def doGet(req: HttpServletRequest, resp: HttpServletResponse) {
       val ctxt = req.startAsync();
       ctxt.start(new Runnable() {

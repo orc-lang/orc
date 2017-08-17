@@ -1,12 +1,12 @@
 package orc.run.porce.runtime
 
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicBoolean
-import orc.FutureReader
-import orc.run.porce.Logger
-import sun.misc.Unsafe
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import java.util.ArrayList
+import java.util.concurrent.atomic.AtomicBoolean
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+
+import orc.FutureReader
+import sun.misc.Unsafe
 
 // TODO: Try to remove redundency between this and Join.
 

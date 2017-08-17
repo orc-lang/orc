@@ -18,7 +18,6 @@ import java.net.{ InetAddress, InetSocketAddress, NetworkInterface, SocketExcept
 
 import scala.collection.JavaConverters.seqAsJavaListConverter
 
-import orc.DistributedBackendType
 import orc.error.compiletime.{ CompilationException, FeatureNotSupportedException }
 import orc.test.TestUtils.OrcTestCase
 

@@ -2,21 +2,15 @@ package orc.compiler.porce
 
 import scala.collection.mutable
 
-import orc.ast.porc
+import com.oracle.truffle.api.{ RootCallTarget, Truffle }
+import com.oracle.truffle.api.frame.{ FrameDescriptor, FrameSlot, FrameSlotKind }
+
+import orc.ast.{ ASTWithIndex, porc }
 import orc.run.porce
-import swivel.Zipper
-import com.oracle.truffle.api.frame._
-import com.oracle.truffle.api.CallTarget
-import orc.run.porce.runtime.PorcEExecution
-import orc.run.porce.runtime.PorcEClosure
-import orc.compile.Logger
+import orc.run.porce.runtime.{ PorcEClosure, PorcEExecutionHolder, PorcERuntime }
+import orc.util.{ TFalse, TTrue, TUnknown }
 import orc.values.Field
-import orc.run.porce.runtime.PorcEExecutionHolder
-import orc.run.porce.runtime.PorcERuntime
-import com.oracle.truffle.api.Truffle
-import com.oracle.truffle.api.RootCallTarget
-import orc.ast.ASTWithIndex
-import orc.util.{ TTrue, TUnknown, TFalse }
+import swivel.Zipper
 
 object PorcToPorcE {
   def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
@@ -50,9 +44,9 @@ class PorcToPorcE() {
     fieldOrderCache.getOrElseUpdate(s.toSet, s.toSeq.sortBy(_.name))
   }
 
-  private def normalizeOrderAndLookup(s: TraversableOnce[porc.Variable])(implicit ctx: Context) = {
-    normalizeOrder(s).map(lookupVariable(_))
-  }
+  //private def normalizeOrderAndLookup(s: TraversableOnce[porc.Variable])(implicit ctx: Context) = {
+  //  normalizeOrder(s).map(lookupVariable(_))
+  //}
 
   val closureMap = mutable.HashMap[Int, RootCallTarget]()
 

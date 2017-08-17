@@ -11,23 +11,20 @@
 
 package orc.run.porce.runtime
 
-import java.util.concurrent.atomic.AtomicInteger
+import java.io.{ PrintWriter, StringWriter }
+import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingDeque }
+import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
 import java.util.logging.Level
-import java.io.StringWriter
-import java.io.PrintWriter
-import java.util.concurrent.LinkedBlockingDeque
+
 import scala.annotation.elidable
-import orc.run.porce.Logger
+
+import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
-import orc.ast.porc
-import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.FrameInstance
-import orc.run.porce.PorcENode
-import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.nodes.{ Node => TruffleNode }
-import orc.run.porce.HasPorcNode
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.ConcurrentHashMap
+
+import orc.ast.porc
+import orc.run.porce.{ HasPorcNode, Logger }
 
 object Counter {
   import CounterConstants._
@@ -43,7 +40,7 @@ object Counter {
 
   @TruffleBoundary @noinline
   def getPorcStackTrace(): Seq[porc.PorcAST] = {
-    var b = Seq.newBuilder[porc.PorcAST]
+    val b = Seq.newBuilder[porc.PorcAST]
     def appendIfPorc(n: TruffleNode) = n match {
       case n: HasPorcNode =>
         n.porcNode match {

@@ -48,6 +48,6 @@ abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceN
     * We use the least significant 8 bits of the runtime number and the
     * least significant 24 bits of Java's thread ID.
     */
-  override def runtimeDebugThreadId(): Int = runtimeId << 24 | Thread.currentThread().getId.asInstanceOf[Int]
+  override def runtimeDebugThreadId: Int = runtimeId << 24 | Thread.currentThread().getId.asInstanceOf[Int]
 
 }

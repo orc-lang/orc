@@ -11,13 +11,14 @@
 
 package orc.lib.gui
 
-import orc.values.sites.TotalSite
-import orc.values.sites.SpecificArity
-import javax.swing.UIManager
-import scala.collection.JavaConverters._
-import orc.values.Signal
-import ScalaSwingUtils._
+import scala.collection.JavaConverters.asScalaSetConverter
+
 import orc.util.ArrayExtensions.Array1
+import orc.values.Signal
+import orc.values.sites.{ SpecificArity, TotalSite }
+
+import ScalaSwingUtils.onEDTNow
+import javax.swing.UIManager
 
 class SetSwingFontSize extends TotalSite with SpecificArity {
   val arity = 1

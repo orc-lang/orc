@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Dec 16, 2010.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,10 +12,10 @@
 //
 package docgen
 
+import java.io.File
+
 import scala.language.postfixOps
 import scala.util.parsing.combinator.RegexParsers
-import scala.util.parsing.input.Reader
-import java.io.File
 
 /**
   *

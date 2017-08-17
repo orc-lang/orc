@@ -12,10 +12,8 @@
 //
 package orc
 
-import java.io.{ IOException, OutputStreamWriter }
-
-import orc.run.porce.distrib.LeaderRuntime
 import orc.ast.porc.MethodCPS
+import orc.run.porce.distrib.LeaderRuntime
 
 case class PorcEDistributedBackendType() extends BackendType {
   type CompiledCode = MethodCPS

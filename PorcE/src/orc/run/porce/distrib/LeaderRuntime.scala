@@ -138,8 +138,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   }
 
   @throws(classOf[ExecutionException])
-  @throws(classOf[InterruptedException]) /*override*/
-  def runSynchronous(programAst: DOrcRuntime#ProgramAST, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions): Unit = {
+  @throws(classOf[InterruptedException])
+  /*override*/ def runSynchronous(programAst: DOrcRuntime#ProgramAST, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions): Unit = {
     synchronized {
       if (runSyncThread != null) throw new IllegalStateException("runSynchronous on an engine that is already running synchronously")
       runSyncThread = Thread.currentThread()
@@ -155,7 +155,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     }
 
     try {
-      run(programAst, eventHandler, options)
+      run(programAst, syncAction(_), options)
 
       doneSignal.await()
     } finally {

@@ -13,14 +13,11 @@
 
 package orc.run.porce.runtime
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+
 import orc.ExecutionRoot
 import orc.run.Orc
-import orc.run.StandardInvocationBehavior
-import orc.run.extensions.OrcWithWorkStealingScheduler
-import orc.run.extensions.SupportForRwait
-import orc.run.extensions.SupportForSynchronousExecution
-import orc.run.extensions.SupportForSchedulerUseProfiling
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution }
 
 class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   with PorcEInvocationBehavior

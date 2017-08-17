@@ -17,10 +17,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import scala.util.parsing.combinator.Parsers;
 
 import orc.compile.CompilerOptions;
@@ -30,6 +26,10 @@ import orc.compile.parse.OrcProgramParser;
 import orc.error.compiletime.ExceptionCompileLogger;
 import orc.error.compiletime.ParsingException;
 import orc.script.OrcBindings;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * This validates the parser simply by trying to parse everything in the

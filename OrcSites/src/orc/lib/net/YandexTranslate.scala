@@ -12,20 +12,16 @@
 //
 package orc.lib.net
 
-import orc.values.sites._
-import orc.types._
-import orc.values.sites.compatibility.Types
-import java.net.URL
-import java.net.URLEncoder
-import java.net.HttpURLConnection
-import scala.io.Source
-import org.codehaus.jettison.json.JSONObject
+import java.io.{ FileNotFoundException, OutputStreamWriter }
+import java.net.{ HttpURLConnection, URL, URLEncoder }
 import java.util.Properties
-import java.io.FileNotFoundException
-import java.io.OutputStreamWriter
-import org.codehaus.jettison.json.JSONArray
-import orc.lib.web.OrcJSONParser
+
+import scala.io.Source
+
 import orc.util.ArrayExtensions.{ Array1, Array2 }
+import orc.values.sites.{ PartialSite, SpecificArity }
+
+import org.codehaus.jettison.json.JSONObject
 
 class YandexTranslateFactory extends PartialSite with SpecificArity {
   val arity = 1

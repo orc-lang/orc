@@ -1,13 +1,13 @@
 package orc.scalabenchmarks
 
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConverters._
+import java.util.concurrent.{ ConcurrentHashMap, ConcurrentLinkedQueue }
 import java.util.concurrent.atomic.AtomicInteger
-import javax.servlet.http.HttpServlet
+
+import scala.collection.JavaConverters.collectionAsScalaIterableConverter
+
 import orc.lib.net.ServletServer
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+
+import javax.servlet.http.{ HttpServlet, HttpServletRequest, HttpServletResponse }
 
 object ChatServerAsync {
   val orcPage = "<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'><head><title>Orc Language</title></head><body><h2>Orc is ...</h2><p>... a novel language for distributed and concurrent programming which provides uniform access to computational services, including distributed communication and data manipulation, through <span class='highlight'>sites</span>. Using four simple concurrency primitives, the programmer <span class='highlight'>orchestrates</span> the invocation of sites to achieve a goal, while managing timeouts, priorities, and failures.</p></body></html>"
@@ -24,7 +24,7 @@ object ChatServerAsync {
 
   class Room() {
     private val _messages = new ConcurrentLinkedQueue[String]()
-    private var count = new AtomicInteger(0)
+    private val count = new AtomicInteger(0)
 
     def messages: Seq[String] = {
       Thread.sleep(5)

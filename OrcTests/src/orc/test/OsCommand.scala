@@ -65,7 +65,7 @@ object OsCommand {
     b.result().init
   }
 
-  def newTerminalWindowWith(commands: Seq[Seq[String]], windowTitle: String, numRows: Int, numColumns: Int) {
+  def newTerminalWindowWith(commands: Seq[Seq[String]], windowTitle: String, numRows: Int, numColumns: Int): OsCommandResult = {
     DesktopType.get match {
       case DesktopType.MacOS => {
         def escapeStringForAppleScript(s: String) = s.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\"")
@@ -83,6 +83,7 @@ tell application "Terminal"
 end tell
 """
         val res = getResultFrom(Seq("osascript", "-l", "AppleScript", "-"), script)
+        res
       }
       case DesktopType.Gnome => {
         def escapeStringForUnixShell(s: String) = "'" + s.replaceAll("\\\\", "\\\\\\\\").replaceAll("'", "\\\\\'") + "'"

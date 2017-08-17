@@ -12,24 +12,14 @@
 //
 package orc.lib.gui
 
-import java.awt.event.ActionListener
-import java.awt.event.ActionEvent
-import orc.run.extensions.SupportForCallsIntoOrc
-import orc.OrcRuntime
-import orc.values.Field
-import orc.values.sites.Site1
-import orc.values.sites.TypedSite
+import java.awt.event.{ ActionEvent, ActionListener, MouseEvent, MouseListener, WindowFocusListener, WindowListener, WindowStateListener }
+
 import orc.Handle
-import orc.compile.typecheck.Typeloader
-import orc.ast.oil.named.FunctionType
 import orc.error.runtime.ArgumentTypeMismatchException
-import java.awt.event.WindowListener
-import java.awt.event.WindowStateListener
-import java.awt.event.WindowFocusListener
-import java.awt.event.MouseListener
-import java.awt.event.MouseEvent
-import orc.values.HasMembers
 import orc.run.core.ExternalSiteCallHandle
+import orc.run.extensions.SupportForCallsIntoOrc
+import orc.values.{ Field, HasMembers }
+import orc.values.sites.Site1
 
 abstract class ListenerAdapter {
   val deligate: HasMembers

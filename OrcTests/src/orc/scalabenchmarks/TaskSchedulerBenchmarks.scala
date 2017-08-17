@@ -1,25 +1,15 @@
 package orc.scalabenchmarks
 
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
-import scala.concurrent.Promise
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import java.util.Scanner
-import java.util.concurrent.{ ForkJoinPool => JavaForkJoinPool }
-import orc.run.extensions.OrcThreadPoolExecutor
-import java.util.concurrent.TimeoutException
-import java.util.concurrent.ForkJoinPool.ManagedBlocker
-import scala.collection.mutable.ArrayBuffer
-import java.util.concurrent.ConcurrentLinkedDeque
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ThreadLocalRandom
-import scala.collection.JavaConverters._
+import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit, TimeoutException }
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.ArrayBlockingQueue
-import orc.run.extensions.SimpleWorkStealingScheduler
+
+import scala.collection.JavaConverters.mapAsScalaConcurrentMapConverter
+import scala.concurrent.{ Await, Promise }
+import scala.concurrent.duration.Duration
+
 import orc.Schedulable
+import orc.run.extensions.{ OrcThreadPoolExecutor, SimpleWorkStealingScheduler }
 
 //  -XX:StartFlightRecording=delay=2s,dumponexit=true,name=ThreadPoolExecutor_${current_date},filename=ThreadPoolExecutor_${current_date}.jfr,settings=profile
 

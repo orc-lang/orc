@@ -12,12 +12,12 @@
 //
 package orc.run.porce.runtime
 
-import orc.values.{ Format, OrcValue }
-import orc.values.Field
-import orc.FutureState
-import orc.FutureReader
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import java.util.ArrayList
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+
+import orc.{ FutureReader, FutureState }
+import orc.values.{ Format, OrcValue }
 
 /** A future value that can be bound or unbound or halted.
   *

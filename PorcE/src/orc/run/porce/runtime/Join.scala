@@ -11,11 +11,11 @@
 
 package orc.run.porce.runtime
 
-import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+
 import orc.FutureReader
 import orc.run.porce.Logger
 import sun.misc.Unsafe
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** Join a number of futures by blocking on all of them simultaneously.
   *

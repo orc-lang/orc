@@ -11,19 +11,19 @@
 
 package orc.test;
 
+import static org.junit.Assume.assumeNoException;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.FeatureNotSupportedException;
 import orc.script.OrcBindings;
 
-import static org.junit.Assume.*;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public final class TestUtils {
     private TestUtils() {

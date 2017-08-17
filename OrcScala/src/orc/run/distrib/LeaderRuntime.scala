@@ -153,7 +153,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     }
 
     try {
-      run(programAst, eventHandler, options)
+      run(programAst, syncAction(_), options)
 
       doneSignal.await()
     } finally {

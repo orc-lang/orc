@@ -12,14 +12,13 @@
 //
 package orc.lib.gui
 
-import javax.swing.ListModel
-import javax.swing.DefaultListModel
-import orc.run.extensions.SupportForCallsIntoOrc
-import orc.values.Field
 import orc.Handle
-import orc.values.sites.Site1
-import orc.values.HasMembers
 import orc.run.core.ExternalSiteCallHandle
+import orc.run.extensions.SupportForCallsIntoOrc
+import orc.values.{ Field, HasMembers }
+import orc.values.sites.Site1
+
+import javax.swing.DefaultListModel
 
 /** @author amp
   */
@@ -52,7 +51,7 @@ object ToStringAdapter extends Site1 {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
-    val del = arg match {
+    arg match {
       case d: HasMembers => h.publish(new ToStringAdapter(d, execution))
       case o => h.publish(o)
     }

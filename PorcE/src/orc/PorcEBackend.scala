@@ -14,13 +14,8 @@
 package orc
 
 import orc.ast.porc.MethodCPS
-import orc.run.porce.runtime.PorcERuntime
 import orc.compiler.porce.PorcToPorcE
-import orc.run.porce.runtime.PorcEExecution
-import orc.run.porce.runtime.PorcEExecutionRef
-import orc.run.porce.runtime.PorcEExecutionHolder
-import orc.run.porce.runtime.PorcEClosure
-import orc.run.porce.runtime.PorcEExecutionWithLaunch
+import orc.run.porce.runtime.{ PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch, PorcERuntime }
 
 case class PorcEBackendType() extends BackendType {
   type CompiledCode = MethodCPS
