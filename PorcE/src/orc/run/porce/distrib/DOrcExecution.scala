@@ -17,6 +17,11 @@ import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.compile.parse.OrcSourceRange
 import orc.compiler.porce.PorcToPorcE
 import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEClosure, PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch }
+import com.oracle.truffle.api.nodes.RootNode
+import orc.run.porce.HasId
+import com.oracle.truffle.api.frame.VirtualFrame
+import orc.PublishedEvent
+import orc.run.porce.PorcEUnit
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -34,13 +39,13 @@ import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEClosure, PorcEExecut
   * @author jthywiss
   */
 abstract class DOrcExecution(
-    val executionId: DOrcExecution#ExecutionId,
-    val followerExecutionNum: Int,
-    programAst: DOrcRuntime#ProgramAST,
-    options: OrcExecutionOptions,
-    eventHandler: OrcEvent => Unit,
-    override val runtime: DOrcRuntime)
-  extends PorcEExecution(/* node, options,*/ runtime, eventHandler)
+  val executionId: DOrcExecution#ExecutionId,
+  val followerExecutionNum: Int,
+  programAst: DOrcRuntime#ProgramAST,
+  options: OrcExecutionOptions,
+  eventHandler: OrcEvent => Unit,
+  override val runtime: DOrcRuntime)
+  extends PorcEExecution( /* node, options,*/ runtime, eventHandler)
   with DistributedInvocationInterceptor
   with ValueLocator
   with ValueMarshaler
@@ -95,10 +100,10 @@ class DOrcLeaderExecution(
   eventHandler: OrcEvent => Unit,
   runtime: LeaderRuntime)
   extends DOrcExecution(executionId, 0, programAst, options, eventHandler, runtime) with PorcEExecutionWithLaunch {
-  
+
   //TODO: Move to superclass
   def runProgram(): Unit = {
-      scheduleProgram(programPorceAst, programCallTargetMap)
+    scheduleProgram(programPorceAst, programCallTargetMap)
   }
 
   override def notifyOrc(event: OrcEvent): Unit = {
@@ -121,6 +126,34 @@ class DOrcFollowerExecution(
   eventHandler: OrcEvent => Unit,
   runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
+
+  val pRootNode = new RootNode(null) with HasId {
+    def execute(frame: VirtualFrame): Object = {
+      // Skip the first argument since it is our captured value array.
+      val v = frame.getArguments()(1)
+      notifyOrcWithBoundary(PublishedEvent(v))
+      // Token: from initial caller of p.
+      // FIXME: c.haltToken()
+      PorcEUnit.SINGLETON
+    }
+
+    def getId() = -1
+  }
+
+  val pCallTarget = truffleRuntime.createCallTarget(pRootNode)
+
+  protected override def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
+    super.setCallTargetMap(callTargetMap)
+    this.callTargetMap += (-1 -> pCallTarget)
+  }
+
+  {
+    val (_, map) = PorcToPorcE(programAst, new PorcEExecutionHolder(this))
+
+    setCallTargetMap(map)
+
+    Logger.finest(s"Loaded program in follower. CallTagetMap:\n${callTargetMap.mkString("\n")}")
+  }
 }
 
 case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], publicationContinuation: PorcEClosure, counterProxyId: CounterProxyManager#CounterProxyId, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) extends Serializable {

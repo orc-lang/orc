@@ -79,7 +79,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
     val counterProxyId = makeProxyWithinCounter(callContext.c)
 
-    val terminatorProxyId = makeProxyWithinTerminator(callContext.c, callContext.t, callContext, (terminatorProxyId) => sendKill(destination, terminatorProxyId)())
+    val terminatorProxyId = makeProxyWithinTerminator(callContext.t, (terminatorProxyId) => sendKill(destination, terminatorProxyId)())
 
     val callMemento = new CallMemento(callContext, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = callTarget, arguments = callArguments)
 

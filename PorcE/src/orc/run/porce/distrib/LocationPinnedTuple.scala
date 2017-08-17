@@ -23,7 +23,7 @@ import orc.run.porce.runtime.CPSCallResponseHandler
   *
   * @author jthywiss
   */
-abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with LocationPolicy {
+abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with LocationPolicy with Serializable {
   override def call(args: Array[AnyRef], h: Handle): Unit = {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {

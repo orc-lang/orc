@@ -11,7 +11,9 @@ class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcEClosure,
 
   val runtime = execution.runtime
 
-  t.addChild(this)
+  def begin(): Unit = {
+    t.addChild(this)
+  }
 
   final def publishNonterminal(v: AnyRef): Unit = {
     c.newToken() // Token: Passed to p.
@@ -35,7 +37,8 @@ class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcEClosure,
 
   final def halt(): Unit = {
     if (compareAndSet(false, true)) {
-      c.haltToken() // Token: Taken from passed in c.
+      // Token: Taken from passed in c.
+      c.haltToken()
       t.removeChild(this)
     }
   }

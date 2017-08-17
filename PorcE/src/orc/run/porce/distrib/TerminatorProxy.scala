@@ -56,7 +56,6 @@ trait TerminatorProxyManager {
     */
   class RemoteTerminatorMembersProxy private[TerminatorProxyManager] (
       val thisProxyId: TerminatorProxyManager#TerminatorProxyId,
-      val enclosingCounter: Counter,
       val enclosingTerminator: Terminator,
       sendKillFunc: (TerminatorProxyManager#TerminatorProxyId) => Unit)
     extends Terminatable {
@@ -67,10 +66,9 @@ trait TerminatorProxyManager {
     override def kill(): Unit = synchronized {
       //Logger.entering(getClass.getName, "kill")
       if (alive) {
+        Logger.finer(s"RemoteTerminatorMembersProxy.kill")
         alive = false
         sendKillFunc(thisProxyId)
-        Logger.finer(s"RemoteTerminatorMembersProxy.kill: enclosingCounter=${enclosingCounter.get}")
-        enclosingCounter.haltToken()
       }
     }
   
@@ -79,18 +77,17 @@ trait TerminatorProxyManager {
   protected val proxiedTerminators = new java.util.concurrent.ConcurrentHashMap[TerminatorProxyId, RemoteTerminatorProxy]
   protected val proxiedTerminatorMembers = new java.util.concurrent.ConcurrentHashMap[TerminatorProxyId, RemoteTerminatorMembersProxy]
 
-  def makeProxyWithinTerminator(enclosingCounter: Counter, enclosingTerminator: Terminator, childTerminable: Terminatable, sendKillFunc: (TerminatorProxyId) => Unit) = {
+  def makeProxyWithinTerminator(enclosingTerminator: Terminator, sendKillFunc: (TerminatorProxyId) => Unit) = {
     val terminatorProxyId = enclosingTerminator match {
       case tp: RemoteTerminatorProxy => tp.remoteProxyId
       case _ => freshRemoteRefId()
     }
 
-    val rmtTerminatorMbrProxy = new RemoteTerminatorMembersProxy(terminatorProxyId, enclosingCounter, enclosingTerminator, sendKillFunc)
+    val rmtTerminatorMbrProxy = new RemoteTerminatorMembersProxy(terminatorProxyId, enclosingTerminator, sendKillFunc)
     proxiedTerminatorMembers.put(terminatorProxyId, rmtTerminatorMbrProxy)
 
-    /* Swap call with rmtTerminatorMbrProxy in enclosingTerminator */
+    /* Add rmtTerminatorMbrProxy in enclosingTerminator to get killed notifications */
     enclosingTerminator.addChild(rmtTerminatorMbrProxy)
-    enclosingTerminator.removeChild(childTerminable)
 
     terminatorProxyId
   }
@@ -98,20 +95,12 @@ trait TerminatorProxyManager {
   def makeProxyTerminatorFor(terminatorProxyId: TerminatorProxyId): Terminator = {
     val lookedUpProxyTerminatorMember = proxiedTerminatorMembers.get(terminatorProxyId)
     val proxyTerminator = lookedUpProxyTerminatorMember match {
-      case null => { /* Not a terminator we've seen before */
-        val rtp = new RemoteTerminatorProxy(terminatorProxyId)
-        proxiedTerminators.put(terminatorProxyId, rtp)
-        rtp
+      case null => { /* Not a terminator we created at this node */
+        //val rtp = new RemoteTerminatorProxy(terminatorProxyId)
+        //proxiedTerminators.put(terminatorProxyId, rtp)
+        proxiedTerminators.computeIfAbsent(terminatorProxyId, (_) => new RemoteTerminatorProxy(terminatorProxyId))
       }
       case rtmp => rtmp.enclosingTerminator
-    }
-
-    if (lookedUpProxyTerminatorMember != null) {
-      /* There is a RemoteTerminatorMembersProxy already for this proxyId,
-       * so discard the superfluous one created at the sender. */
-      //Tracer.trace???Send(callMemento.terminatorProxyId, execution.runtime.here, origin)
-      //origin.sendInContext(execution)(???(executionId, callMemento.terminatorProxyId))
-      ???
     }
 
     proxyTerminator

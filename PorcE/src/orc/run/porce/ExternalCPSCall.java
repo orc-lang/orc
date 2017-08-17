@@ -178,9 +178,10 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
                 // Token: Passed to handle from arguments.
                 final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term, getCallSiteId());
 
-                try {
-                    invokeWithBoundary(invoker, handle, t, argumentValues);
-                } catch (final ExceptionHaltException e) {
+				try {
+					handle.begin();
+					invokeWithBoundary(invoker, handle, t, argumentValues);
+				} catch (final ExceptionHaltException e) {
                     exceptionProfiles[0].enter();
                     execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
                 } catch (final HaltException e) {
@@ -295,9 +296,10 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
                 // Token: Passed to handle from arguments.
                 final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term, getCallSiteId());
 
-                try {
-                    invokeWithBoundary(invoker, handle, t, argumentValues);
-                } catch (final ExceptionHaltException e) {
+				try {
+					handle.begin();
+					invokeWithBoundary(invoker, handle, t, argumentValues);
+				} catch (final ExceptionHaltException e) {
                     exceptionProfiles2[0].enter();
                     execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
                 } catch (final HaltException e) {

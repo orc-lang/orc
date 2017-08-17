@@ -17,7 +17,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   val truffleRuntime = Truffle.getRuntime()
 
   runtime.installHandlers(this)
-  
+
   @TruffleBoundary @noinline
   def notifyOrcWithBoundary(e: OrcEvent) = {
     notifyOrc(e)
@@ -47,14 +47,16 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
 
   def invokeCallTarget(callSiteId: Int, p: PorcEClosure, c: Counter, t: Terminator, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-    val callTarget = callSiteMap.computeIfAbsent(callSiteId, (_) => new InvokeCallRecordRootNode(arguments.length + 3, this).getCallTarget())
-    callTarget.call(Array(Array.emptyObjectArray, target, p, c, t) ++: arguments)
+    val callTarget = callSiteMap.computeIfAbsent(callSiteId, (_) => truffleRuntime.createCallTarget(new InvokeCallRecordRootNode(arguments.length + 3, this)))
+    val args = Array(Array.emptyObjectArray, target, p, c, t) ++: arguments
+    //Logger.info(s"$callSiteId: $p $c $t $target $arguments => $callTarget(${args.mkString(", ")}")
+    callTarget.call(args: _*)
   }
 }
 
 trait PorcEExecutionWithLaunch extends PorcEExecution {
   execution =>
-  
+
   private var _isDone = false
 
   /** Block until this context halts.
@@ -105,6 +107,8 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
   def scheduleProgram(prog: PorcEClosure, callTargetMap: collection.Map[Int, RootCallTarget]): Unit = {
     setCallTargetMap(callTargetMap)
 
+    Logger.finest(s"Loaded program. CallTagetMap:\n${callTargetMap.mkString("\n")}")
+
     val nStarts = System.getProperty("porce.nStarts", "1").toInt
     // Token: From initial.
     for (_ <- 0 until nStarts) {
@@ -117,8 +121,8 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
       Thread.sleep(10000)
       Counter.report()
     }
-  } 
-  
+  }
+
   protected override def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
     super.setCallTargetMap(callTargetMap)
     this.callTargetMap += (-1 -> pCallTarget)
