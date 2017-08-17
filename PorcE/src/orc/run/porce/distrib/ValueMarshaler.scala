@@ -28,7 +28,7 @@ import scala.collection.mutable.WeakHashMap
   * @author jthywiss
   */
 trait ValueMarshaler {
-  self: DOrcExecution =>
+  execution: DOrcExecution =>
 
   def marshalValueWouldReplace(destination: PeerLocation)(value: Any): Boolean = {
     value match {
@@ -38,7 +38,7 @@ trait ValueMarshaler {
       case st: scala.collection.Traversable[Any] if st.exists(marshalValueWouldReplace(destination)(_)) => true //FIXME:Scala-specific, generalize
       case null => false
       case ro: RemoteObjectRef => true
-      case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => false
+      case v: java.io.Serializable if execution.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => false
       case _ /* Cannot be marshaled to this destination */ => true
     }
   }
@@ -60,9 +60,9 @@ trait ValueMarshaler {
       /* keep in sync with cases in marshalValueWouldReplace */
       case null => null
       case ro: RemoteObjectRef => ro.marshal()
-      case v: java.io.Serializable if self.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => v
+      case v: java.io.Serializable if execution.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => v
       case v /* Cannot be marshaled to this destination */ => {
-        new RemoteObjectRef(self.remoteIdForObject(v)).marshal()
+        new RemoteObjectRef(execution.remoteIdForObject(v)).marshal()
       }
     }
     value match {
@@ -106,7 +106,7 @@ trait ValueMarshaler {
        */
       try {
         nullOos synchronized {
-          nullOos.setContext(self, destination)
+          nullOos.setContext(execution, destination)
           nullOos.writeObject(v)
           nullOos.flush()
           nullOos.clearContext()
@@ -141,7 +141,7 @@ trait ValueMarshaler {
   def unmarshalValue(value: AnyRef): AnyRef = {
     val unmarshaledValue = value match {
       /* keep in sync with cases in unmarshalValueWouldReplace */
-      case rrr: RemoteObjectRefReplacement => rrr.unmarshal(self)
+      case rrr: RemoteObjectRefReplacement => rrr.unmarshal(execution)
       case _ => value
     }
     val replacedValue = unmarshaledValue match {

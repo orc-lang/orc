@@ -1,12 +1,12 @@
 
 package orc.run.porce.runtime;
 
-import scala.Function1;
+import java.io.Serializable;
 
 import com.oracle.truffle.api.RootCallTarget;
-import orc.run.porce.distrib.DOrcMarshalingReplacement;
 
-final public class PorcEClosure implements DOrcMarshalingReplacement {
+final public class PorcEClosure implements Serializable  {
+    private static final long serialVersionUID = 2268182245053983790L;
     public final Object[] environment;
     public final RootCallTarget body;
 
@@ -54,23 +54,4 @@ final public class PorcEClosure implements DOrcMarshalingReplacement {
         return body.call(values);
     }
 
-    @Override
-    public boolean isReplacementNeededForMarshaling(final Function1<Object, Object> marshalValueWouldReplace) {
-        return JavaMarshalingUtilities.existsMarshalValueWouldReplace(environment, marshalValueWouldReplace);
-    }
-
-    @Override
-    public Object replaceForMarshaling(final Function1<Object, Object> marshaler) {
-        return new PorcEClosure(JavaMarshalingUtilities.mapMarshaler(environment, marshaler), body, isRoutine);
-    }
-
-    @Override
-    public boolean isReplacementNeededForUnmarshaling(final Function1<Object, Object> unmarshalValueWouldReplace) {
-        return JavaMarshalingUtilities.existsMarshalValueWouldReplace(environment, unmarshalValueWouldReplace);
-    }
-
-    @Override
-    public Object replaceForUnmarshaling(final Function1<Object, Object> unmarshaler) {
-		return new PorcEClosure(JavaMarshalingUtilities.mapMarshaler(environment, unmarshaler), body, isRoutine);
-	}
 }

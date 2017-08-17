@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 import orc.Schedulable
 import orc.run.porce.runtime.{ CPSCallResponseHandler, CallClosureSchedulable, InvocationInterceptor }
+import orc.run.porce.runtime.PorcEClosure
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
   *
@@ -103,10 +104,10 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     execution.runtime.schedule(callInvoker)
   }
 
-  def sendPublish(destination: PeerLocation, proxyId: RemoteRef#RemoteRefId)(publishedValue: AnyRef): Unit = {
+  def sendPublish(destination: PeerLocation, proxyId: RemoteRef#RemoteRefId)(publicationContinuation: PorcEClosure, publishedValue: AnyRef): Unit = {
     Logger.fine(s"sendPublish: publish by proxyId $proxyId")
     Tracer.tracePublishSend(proxyId, execution.runtime.here, destination)
-    destination.sendInContext(execution)(PublishGroupCmd(execution.executionId, proxyId, PublishMemento(publishedValue)))
+    destination.sendInContext(execution)(PublishGroupCmd(execution.executionId, proxyId, PublishMemento(publicationContinuation, publishedValue)))
   }
 
   def publishInGroup(origin: PeerLocation, groupMemberProxyId: RemoteRef#RemoteRefId, publication: PublishMemento): Unit = {
@@ -114,7 +115,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     val g = proxiedTerminatorMembers.get(groupMemberProxyId)
     if (g != null) {
       Tracer.tracePublishReceive(groupMemberProxyId, origin, execution.runtime.here)
-      execution.runtime.schedule(CallClosureSchedulable(???, publication.publishedValue))
+      execution.runtime.schedule(CallClosureSchedulable(publication.publicationContinuation, publication.publishedValue))
     } else {
       throw new AssertionError(f"Publish by unknown group member proxy $groupMemberProxyId%#x, value=${publication.publishedValue}")
     }

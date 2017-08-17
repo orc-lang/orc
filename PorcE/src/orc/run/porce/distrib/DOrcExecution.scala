@@ -16,8 +16,7 @@ package orc.run.porce.distrib
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.compile.parse.OrcSourceRange
 import orc.compiler.porce.PorcToPorcE
-import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch }
-import orc.run.porce.runtime.PorcEClosure
+import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEClosure, PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch }
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -129,4 +128,5 @@ case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange]
     this(callSiteId = callHandler.callSiteId, callSitePosition = callHandler.callSitePosition, publicationContinuation = callHandler.p, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = target, arguments = arguments)
   }
 }
-case class PublishMemento(publishedValue: AnyRef) extends Serializable
+
+case class PublishMemento(publicationContinuation: PorcEClosure, publishedValue: AnyRef) extends Serializable

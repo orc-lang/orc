@@ -18,6 +18,7 @@ import java.net.{ InetAddress, InetSocketAddress, Socket }
 
 import com.oracle.truffle.api.RootCallTarget
 
+import orc.run.porce.runtime.{ Counter, Terminator }
 import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
 
 /** A connection between DOrcRuntimes.  Extends SocketObjectConnection to
@@ -146,6 +147,8 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
       }
       case RootCallTargetReplacement(index) =>
         currExecution.get.idToCallTarget(index)
+      case CounterReplacement(proxyId) => currExecution.get.makeProxyCounterFor(proxyId, currOrigin.get)
+      case TerminatorReplacement(proxyId) => currExecution.get.makeProxyTerminatorFor(proxyId)
       case _ => super.resolveObject(obj)
     }
   }
@@ -189,6 +192,16 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
       }
       case ct: RootCallTarget =>
         RootCallTargetReplacement(currExecution.get.callTargetToId(ct))
+      case counter: Counter => {
+        val proxyId = currExecution.get.makeProxyWithinCounter(counter)
+        CounterReplacement(proxyId)
+      }
+      case terminator: Terminator => {
+        //FIXME: Need the Terminable in this terminator that is migrating, in order to replace it with the proxy
+        //FIXME: Need the Terminable's enclosing Counter 
+        val proxyId = currExecution.get.makeProxyWithinTerminator(???, terminator, ???, (terminatorProxyId) => currExecution.get.sendKill(currDestination.get, terminatorProxyId)())
+        CounterReplacement(proxyId)
+      }
       case _ => super.replaceObject(obj)
     }
   }
@@ -210,4 +223,8 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
 
 }
 
-protected final case class RootCallTargetReplacement(index: Int)
+private final case class RootCallTargetReplacement(index: Int) extends Serializable
+
+private final case class CounterReplacement(proxyId: CounterProxyManager#CounterProxyId) extends Serializable
+
+private final case class TerminatorReplacement(proxyId: TerminatorProxyManager#TerminatorProxyId) extends Serializable
