@@ -25,7 +25,6 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   /// CallTargetManager Implementation
 
-  // FIXME: PERFORMANCE: This should really be an Array. However that would require more work to get right. So I'll do it if it's needed.
   val callTargetMap = collection.mutable.HashMap[Int, RootCallTarget]()
 
   protected def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {

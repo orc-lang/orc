@@ -16,6 +16,7 @@ package orc.run.porce.runtime
 import java.util.concurrent.atomic.AtomicReference
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import orc.util.Tracer
 
 trait Terminatable {
   /** Kill this terminatable.
@@ -25,11 +26,18 @@ trait Terminatable {
   def kill(): Unit
 }
 
+object Terminator {
+  val TerminatorAddChild = 150L
+  Tracer.registerEventTypeId(TerminatorAddChild, "TrmAddCh", _.formatted("%016x"), _.formatted("%016x"))
+}
+
 /** A termination tracker.
   *
   * @author amp
   */
 class Terminator extends Terminatable {
+  import Terminator._
+
   protected[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
 
   /** Add a child to this terminator.
@@ -43,6 +51,7 @@ class Terminator extends Terminatable {
     if (orig == null) {
       child.kill()
     } else {
+      //Tracer.trace(TerminatorAddChild, hashCode(), child.hashCode(), 0)
       orig.add(child)
 
       // This commented code should be enabled to run terminator_leak.orc
