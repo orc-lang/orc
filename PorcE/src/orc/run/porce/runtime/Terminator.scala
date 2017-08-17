@@ -36,7 +36,7 @@ object Terminator {
   * @author amp
   */
 class Terminator extends Terminatable {
-  import Terminator._
+  //import Terminator._
 
   protected[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
 

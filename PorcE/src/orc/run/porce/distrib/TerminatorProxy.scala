@@ -14,7 +14,7 @@
 package orc.run.porce.distrib
 
 import orc.Schedulable
-import orc.run.porce.runtime.{ Counter, PorcEClosure, Terminatable, Terminator }
+import orc.run.porce.runtime.{ PorcEClosure, Terminatable, Terminator }
 
 /** A DOrcExecution mix-in to create and communicate among proxied terminators.
   *
