@@ -110,7 +110,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
             }
             case MigrateCallCmd(xid, gmpid, movedCall) => programs(xid).receiveCall(followerLocation, gmpid, movedCall)
             case PublishGroupCmd(xid, gmpid, pub) => programs(xid).publishInGroup(followerLocation, gmpid, pub)
-            case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
+            case KilledGroupCmd(xid, gpid) => programs(xid).killedGroupProxy(gpid)
+            case KillingGroupCmd(xid, gpid, killing) => programs(xid).killingGroupProxy(followerLocation, gpid, killing)
             case HaltGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).haltGroupMemberProxy(gmpid, n)
             case DiscorporateGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).discorporateGroupMemberProxy(gmpid, n)
             case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)

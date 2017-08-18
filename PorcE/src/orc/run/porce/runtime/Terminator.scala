@@ -130,6 +130,7 @@ class Terminator extends Terminatable {
     *
     * This needs to be thread-safe and idempotent.
     */
+  // FIXME: Move this method to TerminatorNested. No other terminator needs to be killed.
   def kill(): Unit = {
     kill(null, null)
   }

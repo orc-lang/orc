@@ -16,6 +16,7 @@ package orc.run.porce.distrib
 import orc.Schedulable
 import orc.run.porce.runtime.{ PorcEClosure, Terminatable, Terminator }
 import orc.run.porce.runtime.Counter
+import orc.run.porce.runtime.CallClosureSchedulable
 
 /** A DOrcExecution mix-in to create and communicate among proxied terminators.
   *
@@ -36,17 +37,22 @@ trait TerminatorProxyManager {
     * @author jthywiss
     */
   class RemoteTerminatorProxy private[TerminatorProxyManager] (
-      val remoteProxyId: TerminatorProxyManager#TerminatorProxyId)
+      val remoteProxyId: TerminatorProxyManager#TerminatorProxyId,
+      onKill: (Counter, PorcEClosure) => Unit)
     extends Terminator() {
-  
+
     override def kill(c: Counter, k: PorcEClosure): Boolean = {
-      // TODO: This needs to actually do something with k.
-      // FIXME: When something migrates we need to make sure what counter's token is held 
+      //Logger.info(s"kill on $this")
+      require(c != null)
+      require(k != null)
       //Logger.entering(getClass.getName, "kill")
-      /* All RemoteTerminatorProxy kills come from the remote side */
-      super.kill(c, k)
+      onKill(c, k)
+      false
     }
-  
+    
+    override def kill(): Unit = {
+      super.kill(null, null)
+    }
   }
   
   /** Proxy for one or more remote members of a terminator.
@@ -57,19 +63,20 @@ trait TerminatorProxyManager {
     *
     * @author jthywiss
     */
-  class RemoteTerminatorMembersProxy private[TerminatorProxyManager] (
+  final class RemoteTerminatorMembersProxy private[TerminatorProxyManager] (
       val thisProxyId: TerminatorProxyManager#TerminatorProxyId,
       val enclosingTerminator: Terminator,
       sendKillFunc: (TerminatorProxyManager#TerminatorProxyId) => Unit)
     extends Terminatable {
   
+    // FIXME: PERFORMANCE: Make this an atomic boolean or whatever state is needed. It may not save much, but it cannot be worse than a lock (since the atomic will be a single lock instruction).
     private var alive = true
   
     /** The parent terminator is killing its members; pass it on to the remote terminator proxy. */
     override def kill(): Unit = synchronized {
       //Logger.entering(getClass.getName, "kill")
       if (alive) {
-        Logger.finer(s"RemoteTerminatorMembersProxy.kill")
+        //Logger.finer(s"RemoteTerminatorMembersProxy.kill")
         alive = false
         sendKillFunc(thisProxyId)
       }
@@ -81,7 +88,7 @@ trait TerminatorProxyManager {
   protected val proxiedTerminatorMembers = new java.util.concurrent.ConcurrentHashMap[TerminatorProxyId, RemoteTerminatorMembersProxy]
 
   def makeProxyWithinTerminator(enclosingTerminator: Terminator, sendKillFunc: (TerminatorProxyId) => Unit) = {
-    val terminatorProxyId = enclosingTerminator match {
+    val terminatorProxyId = (enclosingTerminator: @unchecked) match {
       case tp: RemoteTerminatorProxy => tp.remoteProxyId
       case _ => freshRemoteRefId()
     }
@@ -96,13 +103,15 @@ trait TerminatorProxyManager {
     terminatorProxyId
   }
 
-  def makeProxyTerminatorFor(terminatorProxyId: TerminatorProxyId): Terminator = {
+  def makeProxyTerminatorFor(terminatorProxyId: TerminatorProxyId, origin: PeerLocation): Terminator = {
     val lookedUpProxyTerminatorMember = proxiedTerminatorMembers.get(terminatorProxyId)
     val proxyTerminator = lookedUpProxyTerminatorMember match {
       case null => { /* Not a terminator we created at this node */
         //val rtp = new RemoteTerminatorProxy(terminatorProxyId)
         //proxiedTerminators.put(terminatorProxyId, rtp)
-        proxiedTerminators.computeIfAbsent(terminatorProxyId, (_) => new RemoteTerminatorProxy(terminatorProxyId))
+        proxiedTerminators.computeIfAbsent(terminatorProxyId, (_) => {
+          new RemoteTerminatorProxy(terminatorProxyId, sendKilling(origin, terminatorProxyId))
+        })
       }
       case rtmp => rtmp.enclosingTerminator
     }
@@ -110,19 +119,45 @@ trait TerminatorProxyManager {
     proxyTerminator
   }
 
-  def sendKill(destination: PeerLocation, proxyId: TerminatorProxyId)(): Unit = {
+  def sendKilled(destination: PeerLocation, proxyId: TerminatorProxyId)(): Unit = {
     Tracer.traceKillGroupSend(proxyId, execution.runtime.here, destination)
-    destination.sendInContext(execution)(KillGroupCmd(execution.executionId, proxyId))
+    destination.sendInContext(execution)(KilledGroupCmd(execution.executionId, proxyId))
   }
 
-  def killGroupProxy(proxyId: TerminatorProxyId): Unit = {
+  def sendKilling(destination: PeerLocation, proxyId: TerminatorProxyId)(counter: Counter, continuation: PorcEClosure): Unit = {
+    Tracer.traceKillGroupSend(proxyId, execution.runtime.here, destination)
+    val counterProxyId = makeProxyWithinCounter(counter)    
+    destination.sendInContext(execution)(KillingGroupCmd(execution.executionId, proxyId, new KillingMemento(counterProxyId, continuation)))
+  }
+
+  def killedGroupProxy(proxyId: TerminatorProxyId): Unit = {
     // TODO: Does this need to be atomic?
     val g = proxiedTerminators.get(proxyId)
     if (g != null) {
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.kill() } })
       proxiedTerminators.remove(proxyId)
     } else {
-      Logger.fine(f"Kill group on unknown group $proxyId%#x")
+      Logger.fine(f"Kill group on unknown (or already killed) group $proxyId%#x")
+    }
+  }
+  
+  def killingGroupProxy(origin: PeerLocation, proxyId: TerminatorProxyId, killing: KillingMemento): Unit = {
+    val m = proxiedTerminatorMembers.get(proxyId)
+    val proxyCounter = makeProxyCounterFor(killing.counterProxyId, origin)
+    proxyCounter.takeParentToken()
+    if (m != null) {
+      val g = m.enclosingTerminator
+      execution.runtime.schedule(new Schedulable { 
+        def run(): Unit = { 
+          if(g.kill(proxyCounter, killing.continuation)) {
+            runtime.schedule(CallClosureSchedulable(killing.continuation))
+          }
+        } 
+      })
+      proxiedTerminatorMembers.remove(proxyId)
+    } else {
+      // The group will be "unknown" if it has already been killed so we need to halt the counter.
+      proxyCounter.haltToken()
     }
   }
 }

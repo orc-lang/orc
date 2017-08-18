@@ -167,3 +167,5 @@ case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange]
 }
 
 case class PublishMemento(publicationContinuation: PorcEClosure, publishedValue: AnyRef) extends Serializable
+
+case class KillingMemento(counterProxyId: CounterProxyManager#CounterProxyId, continuation: PorcEClosure) extends Serializable

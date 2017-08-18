@@ -152,7 +152,7 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
       case RootCallTargetReplacement(index) =>
         currExecution.get.idToCallTarget(index)
       case CounterReplacement(proxyId) => currExecution.get.makeProxyCounterFor(proxyId, currOrigin.get)
-      case TerminatorReplacement(proxyId) => currExecution.get.makeProxyTerminatorFor(proxyId)
+      case TerminatorReplacement(proxyId) => currExecution.get.makeProxyTerminatorFor(proxyId, currOrigin.get)
       case FutureReplacement(bindingId) => currExecution.get.futureForId(bindingId)
       case _ => super.resolveObject(obj)
     }
@@ -235,7 +235,10 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
         CounterReplacement(proxyId)
       }
       case terminator: Terminator => {
-        val proxyId = currExecution.get.makeProxyWithinTerminator(terminator, (terminatorProxyId) => currExecution.get.sendKill(currDestination.get, terminatorProxyId)())
+        val destination = currDestination.get
+        val execution = currExecution.get
+        val proxyId = currExecution.get.makeProxyWithinTerminator(terminator, 
+            (terminatorProxyId) => execution.sendKilled(destination, terminatorProxyId)())
         TerminatorReplacement(proxyId)
       }
       case future: Future => {

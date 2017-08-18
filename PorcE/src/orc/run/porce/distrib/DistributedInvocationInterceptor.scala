@@ -77,11 +77,9 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   def sendCall(callContext: CPSCallResponseHandler, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
     Logger.fine(s"sendCall $callContext, $callTarget, $callArguments, $destination")
 
-    // FIXME: When something migrates we need to make sure what counter's token is held 
-
     val counterProxyId = makeProxyWithinCounter(callContext.c)
 
-    val terminatorProxyId = makeProxyWithinTerminator(callContext.t, (terminatorProxyId) => sendKill(destination, terminatorProxyId)())
+    val terminatorProxyId = makeProxyWithinTerminator(callContext.t, (terminatorProxyId) => sendKilled(destination, terminatorProxyId)())
 
     val callMemento = new CallMemento(callContext, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = callTarget, arguments = callArguments)
 
@@ -93,10 +91,10 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   def receiveCall(origin: PeerLocation, callCorrelationId: Long, callMemento: CallMemento): Unit = {
     // Token: Pass the token on the remote counter to the proxy counter.
     val proxyCounter = makeProxyCounterFor(callMemento.counterProxyId, origin)
+    // TODO: When we reenable the proxy chain flattening optimization we will need to handle this more carefully because "proxyCounter" here could be a local counter or something else not quite what I am assuming here.    
     proxyCounter.takeParentToken()
-    // FIXME: For proxies we need to tell it takeParentToken
 
-    val proxyTerminator = makeProxyTerminatorFor(callMemento.terminatorProxyId)
+    val proxyTerminator = makeProxyTerminatorFor(callMemento.terminatorProxyId, origin)
 
     val callInvoker = new Schedulable {
       def run(): Unit = {

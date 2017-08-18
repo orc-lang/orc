@@ -87,13 +87,19 @@ case class MigrateCallCmd(executionId: DOrcExecution#ExecutionId, tokenId: Long,
 }
 
 /** This token has published in the given group */
+// TODO: This can probably be removed for PorcE.
 case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId, publication: PublishMemento) extends OrcPeerCmdInExecutionContext(executionId) {
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x, $publication)"
 }
 
-/** Kill the given group */
-case class KillGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: RemoteRef#RemoteRefId) extends OrcPeerCmdInExecutionContext(executionId) {
+/** Kill the given group which has already been killed at it's origin */
+case class KilledGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: RemoteRef#RemoteRefId) extends OrcPeerCmdInExecutionContext(executionId) {
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupProxyId%#x)"
+}
+
+/** Notify the given group that an event has happened that will kill if it is not already dead. */
+case class KillingGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: RemoteRef#RemoteRefId, killing: KillingMemento) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupProxyId%#x,$killing)"
 }
 
 /** This group member has halted */

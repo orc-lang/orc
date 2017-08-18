@@ -32,6 +32,8 @@ trait CounterProxyManager {
     * RemoteCounterProxy is created locally when a token has been migrated from
     * another node. When all local counter members halt, the remote
     * counter will be notified.
+    * 
+    * This counter can maintain multiple parent tokens.
     *
     * @author jthywiss
     */
@@ -73,7 +75,8 @@ trait CounterProxyManager {
      *  caller must provide that token.
      */
     final def takeParentToken(): Unit = {
-      getAndIncrement()
+      val n = incrementAndGet()
+      logChange(s"takeParentToken to $n")
       parentTokens.getAndIncrement()
     }
   }
@@ -86,9 +89,10 @@ trait CounterProxyManager {
     *
     * @author jthywiss
     */
-  class RemoteCounterMembersProxy private[CounterProxyManager] (
+  final class RemoteCounterMembersProxy private[CounterProxyManager] (
       val thisProxyId: CounterProxyManager#CounterProxyId,
       val enclosingCounter: Counter) {
+    // TODO: SAFETY: Are all calls into methods on this object guaranteed to be from the same receiver thread.
     private var alive = true
     private var discorporated = false
   
