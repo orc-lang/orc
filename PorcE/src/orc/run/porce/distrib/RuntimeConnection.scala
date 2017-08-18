@@ -29,7 +29,8 @@ import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
 class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R, S](socket) {
 
   /* Note: Always get output before input */
-  override val oos = new RuntimeConnectionOutputStream(socket.getOutputStream())
+  val cos = new CountingOutputStream(socket.getOutputStream())
+  override val oos = new RuntimeConnectionOutputStream(cos)
   override val ois = new RuntimeConnectionInputStream(socket.getInputStream())
 
   override def receive(): R = {
@@ -41,7 +42,9 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
 
   override def send(obj: S): Unit = {
     Logger.finest(s"${Console.RED}RuntimeConnection.send: Sending $obj on $socket${Console.RESET}")
+    val startCount = cos.bytecount
     super.send(obj)
+    Logger.finest(s"message size = ${cos.bytecount - startCount}")
     EventCounter.count( /*'send*/ Symbol("send " + obj.getClass.getName))
   }
 
@@ -142,6 +145,7 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
   override protected def resolveObject(obj: AnyRef): AnyRef = {
     obj match {
       case xm: ExecutionContextSerializationMarker => {
+        Logger.finest(s"ExecutionContext ${obj.getClass.getName}=$obj, xid=${xm.executionId}")
         currExecution = Some((currExecutionLookup.get)(xm.executionId))
         obj
       }
@@ -149,7 +153,7 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
         currExecution.get.idToCallTarget(index)
       case CounterReplacement(proxyId) => currExecution.get.makeProxyCounterFor(proxyId, currOrigin.get)
       case TerminatorReplacement(proxyId) => currExecution.get.makeProxyTerminatorFor(proxyId)
-      case BoundFutureReplacement(bindingId) => currExecution.get.futureForId(bindingId)
+      case FutureReplacement(bindingId) => currExecution.get.futureForId(bindingId)
       case _ => super.resolveObject(obj)
     }
   }
@@ -171,6 +175,38 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
     currExecution = None
   }
 
+}
+
+/** OutputStream wrapper that counts bytes written to the stream.
+  *
+  * @author jthywiss
+  */
+class CountingOutputStream(out: OutputStream) extends OutputStream {
+  var bytecount: Long = 0L
+
+  @throws(classOf[IOException])
+  override def write(b: Int): Unit = {
+    bytecount += 1
+    out.write(b)
+  }
+
+  @throws(classOf[IOException])
+  override def write(b: Array[Byte]): Unit = {
+    bytecount += b.length
+    out.write(b, 0, b.length)
+  }
+
+  @throws(classOf[IOException])
+  override def write(b: Array[Byte], off: Int, len: Int): Unit = {
+    bytecount += len
+    out.write(b, off, len)
+  }
+
+  @throws(classOf[IOException])
+  override def flush(): Unit = out.flush()
+
+  @throws(classOf[IOException])
+  override def close(): Unit = out.close()
 }
 
 /** Writes Orc/dOrc values to an OutputStream.  The values can be read
@@ -204,7 +240,7 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
       }
       case future: Future => {
         val id = currExecution.get.ensureFutureIsRemotelyAccessibleAndGetId(future)
-        BoundFutureReplacement(id)
+        FutureReplacement(id)
       }
       case _ => super.replaceObject(obj)
     }
@@ -235,4 +271,4 @@ private final case class CounterReplacement(proxyId: CounterProxyManager#Counter
 
 private final case class TerminatorReplacement(proxyId: TerminatorProxyManager#TerminatorProxyId) extends Serializable
 
-private final case class BoundFutureReplacement(bindingId: RemoteFutureRef#RemoteRefId) extends Serializable
+private final case class FutureReplacement(bindingId: RemoteFutureRef#RemoteRefId) extends Serializable
