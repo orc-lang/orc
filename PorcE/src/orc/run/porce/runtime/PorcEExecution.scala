@@ -11,6 +11,8 @@ import orc.{ ExecutionRoot, OrcEvent, PublishedEvent }
 import orc.run.core.EventHandler
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, Logger, PorcEUnit }
 import orc.run.porce.distrib.CallTargetManager
+import java.util.Timer
+import java.util.TimerTask
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -52,6 +54,18 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     //Logger.info(s"$callSiteId: $p $c $t $target $arguments => $callTarget(${args.mkString(", ")}")
     callTarget.call(args: _*)
   }
+  
+  {
+    if (CounterConstants.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
+      val timer = new Timer()
+      timer.schedule(new TimerTask{
+        def run(): Unit = {
+          Counter.report()
+        }
+      }, 10000)
+    }
+  }
+
 }
 
 trait PorcEExecutionWithLaunch extends PorcEExecution {
@@ -116,15 +130,10 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
       runtime.schedule(CallClosureSchedulable.varArgs(prog, Array(null, p, c, t)))
     }
     c.haltToken()
-
-    if (CounterConstants.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
-      Thread.sleep(10000)
-      Counter.report()
-    }
   }
 
   protected override def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
     super.setCallTargetMap(callTargetMap)
     this.callTargetMap += (-1 -> pCallTarget)
-  }
+  }  
 }

@@ -134,7 +134,7 @@ class DOrcFollowerExecution(
       // Skip the first argument since it is our captured value array.
       val v = frame.getArguments()(1)
       notifyOrcWithBoundary(PublishedEvent(v))
-      // Token: from initial caller of p.
+      // Token: from caller of P.
       // FIXME: c.haltToken()
       PorcEUnit.SINGLETON
     }

@@ -84,6 +84,7 @@ trait TerminatorProxyManager {
     }
 
     val rmtTerminatorMbrProxy = new RemoteTerminatorMembersProxy(terminatorProxyId, enclosingTerminator, sendKillFunc)
+    // TODO: Does this need to only set if the key isn't present?
     proxiedTerminatorMembers.put(terminatorProxyId, rmtTerminatorMbrProxy)
 
     /* Add rmtTerminatorMbrProxy in enclosingTerminator to get killed notifications */
@@ -112,6 +113,7 @@ trait TerminatorProxyManager {
   }
 
   def killGroupProxy(proxyId: TerminatorProxyId): Unit = {
+    // TODO: Does this need to be atomic?
     val g = proxiedTerminators.get(proxyId)
     if (g != null) {
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.kill() } })

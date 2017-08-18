@@ -51,6 +51,10 @@ trait CounterProxyManager {
       //Logger.entering(getClass.getName, "onResurrect")
       onResurrectFunc()
     }
+    
+    override def toString(): String = {
+      s"RemoteCounterProxy@$remoteProxyId"
+    }
   
   }
   
@@ -101,29 +105,35 @@ trait CounterProxyManager {
   
   }
 
+  protected val proxiedCountersById = new java.util.concurrent.ConcurrentHashMap[Counter, CounterProxyId]
   protected val proxiedCounters = new java.util.concurrent.ConcurrentHashMap[CounterProxyId, RemoteCounterProxy]
   protected val proxiedCounterMembers = new java.util.concurrent.ConcurrentHashMap[CounterProxyId, RemoteCounterMembersProxy]
 
   def makeProxyWithinCounter(enclosingCounter: Counter): CounterProxyId = {
     val counterProxyId = enclosingCounter match {
       case cp: RemoteCounterProxy => cp.remoteProxyId
-      case _ => freshRemoteRefId()
+      case _ => proxiedCountersById.computeIfAbsent(enclosingCounter, (_) => freshRemoteRefId())
     }
-    val rmtCounterMbrProxy = new RemoteCounterMembersProxy(counterProxyId, enclosingCounter)
-    proxiedCounterMembers.put(counterProxyId, rmtCounterMbrProxy)
+    proxiedCounterMembers.computeIfAbsent(counterProxyId, (_) => {
+      val rmtCounterMbrProxy = new RemoteCounterMembersProxy(counterProxyId, enclosingCounter)
+      Logger.finer(f"Created proxy for $enclosingCounter with id $counterProxyId")
+      rmtCounterMbrProxy
+    })
     
-    /* enclosingCounter value is correct as is, since we're swapping this "token" with its proxy. */
+    /* Token: enclosingCounter value is correct as is, since we're swapping this "token" with its proxy. */
 
-    counterProxyId    
+    counterProxyId
   }
 
   def makeProxyCounterFor(counterProxyId: CounterProxyId, origin: PeerLocation): Counter = {
     val lookedUpProxyCounterMember = proxiedCounterMembers.get(counterProxyId)
     val proxyCounter = lookedUpProxyCounterMember match {
       case null => { /* Not a counter we've seen before */
-        val rcp = new RemoteCounterProxy(counterProxyId, () => execution.sendHalt(origin, counterProxyId)(), () => sendDiscorporate(origin, counterProxyId)(), () => sendResurrect(origin, counterProxyId)())
-        proxiedCounters.put(counterProxyId, rcp)
-        rcp
+        proxiedCounters.computeIfAbsent(counterProxyId, (_) => 
+          new RemoteCounterProxy(counterProxyId, 
+              () => execution.sendHalt(origin, counterProxyId)(), 
+              () => sendDiscorporate(origin, counterProxyId)(), 
+              () => sendResurrect(origin, counterProxyId)()))
       }
       case rcmp => rcmp.enclosingCounter
     }

@@ -84,6 +84,7 @@ trait RemoteFutureManager {
         } else {
           val newFutureId = freshRemoteRefId()
           val newReader = new RemoteFutureReader(fut, this, newFutureId)
+          // TODO: Does this need to be atomic?
           servingLocalFutures.put(fut, newFutureId)
           servingRemoteFutures.put(newFutureId, newReader)
           newFutureId

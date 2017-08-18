@@ -89,18 +89,22 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   }
 
   def receiveCall(origin: PeerLocation, callCorrelationId: Long, callMemento: CallMemento): Unit = {
-
+    // Token: Pass the token on the remote counter to the proxy counter.
     val proxyCounter = makeProxyCounterFor(callMemento.counterProxyId, origin)
 
     val proxyTerminator = makeProxyTerminatorFor(callMemento.terminatorProxyId)
 
-    val callInvoker = new Schedulable { def run(): Unit = { execution.invokeCallTarget(callMemento.callSiteId, callMemento.publicationContinuation, proxyCounter, proxyTerminator, callMemento.target, callMemento.arguments) } }
-    proxyCounter.newToken()
+    val callInvoker = new Schedulable {
+      def run(): Unit = {
+        execution.invokeCallTarget(callMemento.callSiteId, callMemento.publicationContinuation, proxyCounter, proxyTerminator, callMemento.target, callMemento.arguments)
+      }
+    }
     /* invokeCallTarget will add an appropriate child to the proxyTerminator */
 
     Tracer.traceCallReceive(callCorrelationId, origin, execution.runtime.here)
 
     Logger.fine(s"scheduling $callInvoker")
+    // Token: Pass the initial token of the proxy counter to the call.
     execution.runtime.schedule(callInvoker)
   }
 
