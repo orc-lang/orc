@@ -15,6 +15,7 @@ package orc.run.porce.distrib
 
 import orc.Schedulable
 import orc.run.porce.runtime.{ PorcEClosure, Terminatable, Terminator }
+import orc.run.porce.runtime.Counter
 
 /** A DOrcExecution mix-in to create and communicate among proxied terminators.
   *
@@ -38,12 +39,12 @@ trait TerminatorProxyManager {
       val remoteProxyId: TerminatorProxyManager#TerminatorProxyId)
     extends Terminator() {
   
-    override def kill(k: PorcEClosure): Boolean = {
+    override def kill(c: Counter, k: PorcEClosure): Boolean = {
       // TODO: This needs to actually do something with k.
       // FIXME: When something migrates we need to make sure what counter's token is held 
       //Logger.entering(getClass.getName, "kill")
       /* All RemoteTerminatorProxy kills come from the remote side */
-      super.kill(k)
+      super.kill(c, k)
     }
   
   }

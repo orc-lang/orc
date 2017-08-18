@@ -174,8 +174,8 @@ class PorcToPorcE() {
         porce.NewToken.create(transform(c))
       case porc.HaltToken.Z(c) =>
         porce.HaltToken.create(transform(c))
-      case porc.Kill.Z(t, k) =>
-        porce.Kill.create(transform(t), transform(k), ctx.execution.newRef())
+      case porc.Kill.Z(c, t, k) =>
+        porce.Kill.create(transform(c), transform(t), transform(k), ctx.execution.newRef())
       case porc.CheckKilled.Z(t) =>
         porce.CheckKilled.create(transform(t))
       case porc.Bind.Z(fut, v) =>

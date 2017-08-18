@@ -304,7 +304,7 @@ final case class Spawn(@subtree c: Argument, @subtree t: Argument, blockingCompu
 @leaf @transform
 final case class NewTerminator(@subtree parentT: Argument) extends Expression
 @leaf @transform
-final case class Kill(@subtree t: Argument, @subtree continuation: Argument) extends Expression
+final case class Kill(@subtree c: Argument, @subtree t: Argument, @subtree continuation: Argument) extends Expression
 @leaf @transform
 final case class CheckKilled(@subtree t: Argument) extends Expression
 

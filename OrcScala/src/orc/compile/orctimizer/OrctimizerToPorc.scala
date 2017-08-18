@@ -12,7 +12,6 @@
 package orc.compile.orctimizer
 
 import orc.ast.orctimizer.named._
-import orc.values.Format
 import scala.collection.mutable
 import orc.values.Field
 import orc.ast.porc
@@ -22,11 +21,9 @@ import orc.lib.state.PublishIfNotSet
 import orc.lib.state.SetFlag
 import orc.ast.porc.SetDiscorporate
 import orc.ast.porc.MethodDirectCall
-import orc.ast.porc.Continuation
 import orc.compile.AnalysisCache
 import orc.compile.Logger
 import orc.util.{ Ternary, TUnknown, TTrue, TFalse }
-import orc.ast.porc.PorcUnit
 import orc.compile.CompilerOptions
 import orc.ast.porc.MethodCPSCall
 
@@ -225,12 +222,11 @@ class OrctimizerToPorc(co: CompilerOptions) {
         let((newT, porc.NewTerminator(ctx.t)),
           (newC, porc.NewTerminatorCounter(ctx.c, newT)),
           (newP, porc.Continuation(Seq(v),
-            let((newK, porc.Continuation(Seq(),
-              ctx.p(v)))) {
-              // FIXME: This is an ordering bug. If calling newK is delayed then then halt will happen before p is called. This will destroy the token that was passed to K too soon.
-              //     This will need to be fixed by either passing newC to kill (and hard wiring the handling) or providing a second continuation to handle the non-killed case.
-              porc.Kill(newT, newK) ::: 
-              porc.HaltToken(newC)
+            let((newK, porc.Continuation(Seq(), {
+                ctx.p(v) :::
+                  porc.HaltToken(newC)    
+              }))) {
+              porc.Kill(newC, newT, newK)
             }))) {
             implicit val ctx = oldCtx.copy(t = newT, c = newC, p = newP)
             // TODO: Is this correct? Can a Trim halt and need to inform the enclosing scope?

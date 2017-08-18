@@ -125,8 +125,8 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         Spawn(renameVariables(c), renameVariables(t), b, renameVariables(comp))
       case NewTerminator.Z(t) =>
         NewTerminator(renameVariables(t))
-      case Kill.Z(t, k) =>
-        Kill(renameVariables(t), renameVariables(k))
+      case Kill.Z(c, t, k) =>
+        Kill(renameVariables(c), renameVariables(t), renameVariables(k))
       case CheckKilled.Z(t) =>
         CheckKilled(renameVariables(t))
       case TryOnException.Z(b, h) =>

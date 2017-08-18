@@ -109,7 +109,7 @@ class Terminator extends Terminatable {
     *
     * This needs to be thread-safe and idempotent.
     */
-  def kill(k: PorcEClosure): Boolean = {
+  def kill(c: Counter, k: PorcEClosure): Boolean = {
     // First, swap in null as the children set.
     val cs = children.getAndSet(null)
     // Next, process cs if needed.
@@ -119,6 +119,8 @@ class Terminator extends Terminatable {
       doKills(cs)
       true
     } else {
+      if(c != null)
+        c.haltToken()
       // If it was already killed
       false
     }
@@ -129,7 +131,7 @@ class Terminator extends Terminatable {
     * This needs to be thread-safe and idempotent.
     */
   def kill(): Unit = {
-    kill(null)
+    kill(null, null)
   }
 
   @TruffleBoundary @noinline
@@ -151,8 +153,8 @@ final class TerminatorNested(parent: Terminator) extends Terminator {
   //Logger.info(s"$this($parent)")
   parent.addChild(this)
 
-  override def kill(k: PorcEClosure): Boolean = {
+  override def kill(c: Counter, k: PorcEClosure): Boolean = {
     parent.removeChild(this)
-    super.kill(k)
+    super.kill(c, k)
   }
 }
