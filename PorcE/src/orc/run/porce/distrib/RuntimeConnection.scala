@@ -18,7 +18,7 @@ import java.net.{ InetAddress, InetSocketAddress, Socket }
 
 import com.oracle.truffle.api.RootCallTarget
 
-import orc.run.porce.runtime.{ Counter, Terminator }
+import orc.run.porce.runtime.{ Counter, Future, Terminator }
 import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
 
 /** A connection between DOrcRuntimes.  Extends SocketObjectConnection to
@@ -149,6 +149,7 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
         currExecution.get.idToCallTarget(index)
       case CounterReplacement(proxyId) => currExecution.get.makeProxyCounterFor(proxyId, currOrigin.get)
       case TerminatorReplacement(proxyId) => currExecution.get.makeProxyTerminatorFor(proxyId)
+      case BoundFutureReplacement(bindingId) => currExecution.get.futureForId(bindingId)
       case _ => super.resolveObject(obj)
     }
   }
@@ -185,7 +186,8 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
 
   @throws(classOf[IOException])
   override protected def replaceObject(obj: AnyRef): AnyRef = {
-    obj match {
+    //Logger.entering(getClass.getName, "replaceObject", Seq(s"${obj.getClass.getName}=$obj"))
+    val result = obj match {
       case xm: ExecutionContextSerializationMarker => {
         assert(xm.executionId == currExecution.get.executionId)
         obj
@@ -200,8 +202,14 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
         val proxyId = currExecution.get.makeProxyWithinTerminator(terminator, (terminatorProxyId) => currExecution.get.sendKill(currDestination.get, terminatorProxyId)())
         TerminatorReplacement(proxyId)
       }
+      case future: Future => {
+        val id = currExecution.get.ensureFutureIsRemotelyAccessibleAndGetId(future)
+        BoundFutureReplacement(id)
+      }
       case _ => super.replaceObject(obj)
     }
+    //Logger.exiting(getClass.getName, "replaceObject", s"${result.getClass.getName}=$result")
+    result
   }
 
   protected var currExecution: Option[DOrcExecution] = None
@@ -226,3 +234,5 @@ private final case class RootCallTargetReplacement(index: Int) extends Serializa
 private final case class CounterReplacement(proxyId: CounterProxyManager#CounterProxyId) extends Serializable
 
 private final case class TerminatorReplacement(proxyId: TerminatorProxyManager#TerminatorProxyId) extends Serializable
+
+private final case class BoundFutureReplacement(bindingId: RemoteFutureRef#RemoteRefId) extends Serializable

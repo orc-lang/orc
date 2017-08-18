@@ -15,7 +15,7 @@ package orc.run.porce.distrib
 
 import orc.{ Future, FutureReader }
 
-/** A reference to an GraftGroup value at another Location.
+/** A reference to an Future value at another Location.
   *
   * @author jthywiss
   */

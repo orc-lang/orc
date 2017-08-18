@@ -13,18 +13,15 @@
 
 package orc.run.porce.distrib
 
-import com.oracle.truffle.api.nodes.RootNode
-import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.RootCallTarget
+import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.nodes.RootNode
 
-import orc.{ OrcEvent, OrcExecutionOptions }
+import orc.{ OrcEvent, OrcExecutionOptions, PublishedEvent }
 import orc.compile.parse.OrcSourceRange
 import orc.compiler.porce.PorcToPorcE
+import orc.run.porce.{ HasId, PorcEUnit }
 import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEClosure, PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch }
-import orc.run.porce.HasId
-import orc.PublishedEvent
-import orc.run.porce.PorcEUnit
-import orc.run.porce.runtime.Counter
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
