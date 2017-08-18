@@ -57,8 +57,8 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   
   {
     if (CounterConstants.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
-      val timer = new Timer()
-      timer.schedule(new TimerTask{
+      val timer = new Timer(true)
+      timer.schedule(new TimerTask {
         def run(): Unit = {
           Counter.report()
         }

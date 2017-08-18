@@ -39,6 +39,8 @@ trait TerminatorProxyManager {
     extends Terminator() {
   
     override def kill(k: PorcEClosure): Boolean = {
+      // TODO: This needs to actually do something with k.
+      // FIXME: When something migrates we need to make sure what counter's token is held 
       //Logger.entering(getClass.getName, "kill")
       /* All RemoteTerminatorProxy kills come from the remote side */
       super.kill(k)

@@ -50,7 +50,7 @@ case class RemovePeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId) extends OrcLeader
 ////////
 
 /** Prepare for execution in the given Orc program AST */
-case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions) extends OrcLeaderToFollowerCmd {
+case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions, rootCounterId: CounterProxyManager#CounterProxyId) extends OrcLeaderToFollowerCmd {
   override def toString(): String = s"${getClass.getSimpleName}($executionId,...programAst..,$options)"
 }
 
@@ -97,13 +97,13 @@ case class KillGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: Re
 }
 
 /** This group member has halted */
-case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x)"
+case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId, nTokens: Int) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x,$nTokens)"
 }
 
 /** This group member has discorporated */
-case class DiscorporateGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x)"
+case class DiscorporateGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId, nTokens: Int) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x,$nTokens)"
 }
 
 /** This group member has resurrected */

@@ -197,8 +197,6 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
         CounterReplacement(proxyId)
       }
       case terminator: Terminator => {
-        //FIXME: Need the Terminable in this terminator that is migrating, in order to replace it with the proxy
-        //FIXME: Need the Terminable's enclosing Counter 
         val proxyId = currExecution.get.makeProxyWithinTerminator(terminator, (terminatorProxyId) => currExecution.get.sendKill(currDestination.get, terminatorProxyId)())
         TerminatorReplacement(proxyId)
       }

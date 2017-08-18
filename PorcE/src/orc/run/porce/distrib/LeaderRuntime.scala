@@ -66,8 +66,10 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     val leaderExecution = new DOrcLeaderExecution(thisExecutionId, programAst, options, { e => handleExecutionEvent(thisExecutionId, e); eventHandler(e) }, this)
 
     programs.put(thisExecutionId, leaderExecution)
+    
+    val rootCounterId = leaderExecution.makeProxyWithinCounter(leaderExecution.c)
 
-    followerEntries foreach { _._2.send(LoadProgramCmd(thisExecutionId, programAst, options)) }
+    followerEntries foreach { _._2.send(LoadProgramCmd(thisExecutionId, programAst, options, rootCounterId)) }
 
     installHandlers(leaderExecution)
     addRoot(leaderExecution)
@@ -109,8 +111,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
             case MigrateCallCmd(xid, gmpid, movedCall) => programs(xid).receiveCall(followerLocation, gmpid, movedCall)
             case PublishGroupCmd(xid, gmpid, pub) => programs(xid).publishInGroup(followerLocation, gmpid, pub)
             case KillGroupCmd(xid, gpid) => programs(xid).killGroupProxy(gpid)
-            case HaltGroupMemberProxyCmd(xid, gmpid) => programs(xid).haltGroupMemberProxy(gmpid)
-            case DiscorporateGroupMemberProxyCmd(xid, gmpid) => programs(xid).discorporateGroupMemberProxy(gmpid)
+            case HaltGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).haltGroupMemberProxy(gmpid, n)
+            case DiscorporateGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).discorporateGroupMemberProxy(gmpid, n)
             case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
             case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
             case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)

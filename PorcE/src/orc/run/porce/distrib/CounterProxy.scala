@@ -15,6 +15,7 @@ package orc.run.porce.distrib
 
 import orc.Schedulable
 import orc.run.porce.runtime.Counter
+import java.util.concurrent.atomic.AtomicInteger
 
 /** A DOrcExecution mix-in to create and communicate among proxied counters.
   *
@@ -26,7 +27,7 @@ trait CounterProxyManager {
   execution: DOrcExecution =>
 
   type CounterProxyId = RemoteRefId
-
+  
   /** Proxy for a counter the resides on a remote dOrc node.
     * RemoteCounterProxy is created locally when a token has been migrated from
     * another node. When all local counter members halt, the remote
@@ -36,15 +37,22 @@ trait CounterProxyManager {
     */
   class RemoteCounterProxy private[CounterProxyManager] (
       val remoteProxyId: CounterProxyManager#CounterProxyId,
-      onHaltFunc: () => Unit,
-      onDiscorporateFunc: () => Unit,
+      onHaltFunc: (Int) => Unit,
+      onDiscorporateFunc: (Int) => Unit,
       onResurrectFunc: () => Unit)
-    extends Counter() {
+    extends Counter(0) {
+    // Proxy counters start "floating" in a non-halted, but 0 count situation. 
+    val parentTokens = new AtomicInteger(0)
   
     override def onHalt(): Unit = {
       //Logger.entering(getClass.getName, "onHalt")
-      if (isDiscorporated) onDiscorporateFunc()
-      onHaltFunc()
+      val n = parentTokens.getAndSet(0)
+      assert(n > 0)
+      if (isDiscorporated) {
+        onDiscorporateFunc(n)
+      } else {
+        onHaltFunc(n)
+      }
     }
   
     override def onResurrect(): Unit = {
@@ -55,7 +63,19 @@ trait CounterProxyManager {
     override def toString(): String = {
       s"RemoteCounterProxy@$remoteProxyId"
     }
-  
+
+    /** Take a parent token and add it to this proxy.
+     *  
+     *  The parent token will be handled through it's halting by the proxy. The
+     *  caller to this method gets a token on this proxy.
+     *  
+     *  This call will never require a newToken from the parent. Instead, the
+     *  caller must provide that token.
+     */
+    final def takeParentToken(): Unit = {
+      getAndIncrement()
+      parentTokens.getAndIncrement()
+    }
   }
   
   /** Proxy for one or more remote members of a counter (tokens and counters).
@@ -73,20 +93,24 @@ trait CounterProxyManager {
     private var discorporated = false
   
     /** Remote counter members all halted, so notify parent that we've halted. */
-    def notifyParentOfHalt(): Unit = synchronized {
-      //Logger.entering(getClass.getName, "halt")
+    def notifyParentOfHalt(n: Int): Unit = synchronized {
+      Logger.entering(getClass.getName, s"halt $n")
       if (alive) {
         alive = false
-        enclosingCounter.haltToken()
+        (0 until n).foreach { (_) =>
+          enclosingCounter.haltToken()
+        }
       }
     }
   
     /** Remote counter members all halted, but there was discorporated members, so so notify parent that we've discorporated. */
-    def notifyParentOfDiscorporate(): Unit = synchronized {
-      //Logger.entering(getClass.getName, "discorporate")
+    def notifyParentOfDiscorporate(n: Int): Unit = synchronized {
+      Logger.entering(getClass.getName, s"discorporate $n")
       if (!discorporated && alive) {
         discorporated = true
-        enclosingCounter.discorporateToken()
+        (0 until n).foreach { (_) =>
+          enclosingCounter.discorporateToken()
+        }
       } else {
         throw new IllegalStateException(s"RemoteCounterMembersProxy.notifyParentOfDiscorporate when alive=$alive, discorporated=$discorporated")
       }
@@ -125,15 +149,22 @@ trait CounterProxyManager {
     counterProxyId
   }
 
-  def makeProxyCounterFor(counterProxyId: CounterProxyId, origin: PeerLocation): Counter = {
+  def makeProxyCounterFor(counterProxyId: CounterProxyId, origin: PeerLocation): RemoteCounterProxy = {
+    def newProxyCounter =
+      proxiedCounters.computeIfAbsent(counterProxyId, (_) =>
+        new RemoteCounterProxy(counterProxyId,
+          (n) => execution.sendHalt(origin, counterProxyId)(n),
+          (n) => sendDiscorporate(origin, counterProxyId)(n),
+          () => sendResurrect(origin, counterProxyId)()))
+    newProxyCounter
+    
+    // FIXME: Reenable this optimization. It's probably important. However it will require figuring out both how to
+    // make sure things are safe (in terms of message orderings) and how to handle the case where a proxy is passed
+    // here when we actually have the counter. This may require the sender knowing if this will happen.
+    /*
     val lookedUpProxyCounterMember = proxiedCounterMembers.get(counterProxyId)
     val proxyCounter = lookedUpProxyCounterMember match {
       case null => { /* Not a counter we've seen before */
-        proxiedCounters.computeIfAbsent(counterProxyId, (_) => 
-          new RemoteCounterProxy(counterProxyId, 
-              () => execution.sendHalt(origin, counterProxyId)(), 
-              () => sendDiscorporate(origin, counterProxyId)(), 
-              () => sendResurrect(origin, counterProxyId)()))
       }
       case rcmp => rcmp.enclosingCounter
     }
@@ -141,21 +172,27 @@ trait CounterProxyManager {
     if (lookedUpProxyCounterMember != null) {
       /* There is a RemoteCounterMembersProxy already for this proxyId,
        * so discard the superfluous one created at the sender. */
+      
+      // FIXME: We should be able to remove this once proxies can track multiple tokens from their parent.
+      // If we are moving from a remote proxy to a local original counter we will probably need to make a new token here.
+      // The problem is what happens to the count on he remote proxy. We would need to somehow halt it. So we might
+      // have to send this message anyway.
       Tracer.traceHaltGroupMemberSend(counterProxyId, execution.runtime.here, origin)
-      origin.sendInContext(execution)(HaltGroupMemberProxyCmd(execution.executionId, counterProxyId))
+      origin.sendInContext(execution)(HaltGroupMemberProxyCmd(execution.executionId, counterProxyId, 1))
     }
 
     proxyCounter
+    */
   }
 
-  def sendHalt(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(): Unit = {
+  def sendHalt(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(n: Int): Unit = {
     Tracer.traceHaltGroupMemberSend(groupMemberProxyId, execution.runtime.here, destination)
-    destination.sendInContext(execution)(HaltGroupMemberProxyCmd(execution.executionId, groupMemberProxyId))
+    destination.sendInContext(execution)(HaltGroupMemberProxyCmd(execution.executionId, groupMemberProxyId, n))
   }
 
-  def sendDiscorporate(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(): Unit = {
+  def sendDiscorporate(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(n: Int): Unit = {
     Tracer.traceDiscorporateGroupMemberSend(groupMemberProxyId, execution.runtime.here, destination)
-    destination.sendInContext(execution)(DiscorporateGroupMemberProxyCmd(execution.executionId, groupMemberProxyId))
+    destination.sendInContext(execution)(DiscorporateGroupMemberProxyCmd(execution.executionId, groupMemberProxyId, n))
   }
 
   def sendResurrect(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(): Unit = {
@@ -163,19 +200,19 @@ trait CounterProxyManager {
     destination.sendInContext(execution)(ResurrectGroupMemberProxyCmd(execution.executionId, groupMemberProxyId))
   }
 
-  def haltGroupMemberProxy(groupMemberProxyId: CounterProxyId): Unit = {
+  def haltGroupMemberProxy(groupMemberProxyId: CounterProxyId, n: Int): Unit = {
     val g = proxiedCounterMembers.get(groupMemberProxyId)
     if (g != null) {
-      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfHalt() } })
+      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfHalt(n) } })
     } else {
       Logger.fine(f"Halt group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }
   }
 
-  def discorporateGroupMemberProxy(groupMemberProxyId: CounterProxyId): Unit = {
+  def discorporateGroupMemberProxy(groupMemberProxyId: CounterProxyId, n: Int): Unit = {
     val g = proxiedCounterMembers.get(groupMemberProxyId)
     if (g != null) {
-      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfDiscorporate() } })
+      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfDiscorporate(n) } })
     } else {
       Logger.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }

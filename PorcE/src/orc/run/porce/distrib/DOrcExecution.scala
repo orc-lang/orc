@@ -24,6 +24,7 @@ import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEClosure, PorcEExecut
 import orc.run.porce.HasId
 import orc.PublishedEvent
 import orc.run.porce.PorcEUnit
+import orc.run.porce.runtime.Counter
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -126,8 +127,12 @@ class DOrcFollowerExecution(
   programAst: DOrcRuntime#ProgramAST,
   options: OrcExecutionOptions,
   eventHandler: OrcEvent => Unit,
+  rootCounterId: CounterProxyManager#CounterProxyId,
+  rootCounterOrigin: PeerLocation,
   runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
+  
+  val counter = makeProxyCounterFor(rootCounterId, rootCounterOrigin)
 
   val pRootNode = new RootNode(null) with HasId {
     def execute(frame: VirtualFrame): Object = {
@@ -135,7 +140,7 @@ class DOrcFollowerExecution(
       val v = frame.getArguments()(1)
       notifyOrcWithBoundary(PublishedEvent(v))
       // Token: from caller of P.
-      // FIXME: c.haltToken()
+      counter.haltToken()
       PorcEUnit.SINGLETON
     }
 

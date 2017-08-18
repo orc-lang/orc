@@ -120,8 +120,12 @@ object Counter {
   *
   * @author amp
   */
-abstract class Counter extends AtomicInteger(1) {
+abstract class Counter protected (n: Int) extends AtomicInteger(n) {
   import CounterConstants._
+  
+  def this() = {
+    this(1)
+  }
 
   @elidable(elidable.ASSERTION)
   private val log = if (tracingEnabled) new LinkedBlockingDeque[Exception]() else null
@@ -140,7 +144,7 @@ abstract class Counter extends AtomicInteger(1) {
   }
 
   if (tracingEnabled) {
-    logChange(s"Init to 1")
+    logChange(s"Init to $n")
     Counter.addCounter(this)
   }
 
