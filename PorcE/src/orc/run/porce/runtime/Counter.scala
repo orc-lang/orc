@@ -39,20 +39,20 @@ object Counter {
   }
 
   @TruffleBoundary @noinline
-  def getPorcStackTrace(): Seq[porc.PorcAST] = {
-    val b = Seq.newBuilder[porc.PorcAST]
+  def getPorcStackTrace(): Seq[Either[porc.PorcAST, String]] = {
+    val b = Seq.newBuilder[Either[porc.PorcAST, String]]
     def appendIfPorc(n: TruffleNode) = n match {
       case n: HasPorcNode =>
         n.porcNode match {
           case Some(n) =>
-            b += n
+            b += Left(n)
           case None =>
-            Logger.fine(s"Found PorcE node without Porc node: $n")
+            b += Right(n.toString())
         }
       case null =>
         {}
       case n =>
-        Logger.fine(s"Found unknown node: $n")
+        b += Right(n.toString())
     }
     Truffle.getRuntime.iterateFrames((f: FrameInstance) => {
       appendIfPorc(f.getCallNode)
@@ -135,9 +135,14 @@ abstract class Counter protected (n: Int) extends AtomicInteger(n) {
   protected final def logChange(s: => String) = {
     if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       val stack = Counter.getPorcStackTrace().map(n => {
-        val rangeStr = n.sourceTextRange.map(_.lineContentWithCaret).getOrElse("")
-        val nodeStr = n.toString().take(80)
-        s"$rangeStr\n$nodeStr"
+        n match {
+          case Left(n) => 
+            def rangeStr = n.sourceTextRange.map(_.lineContentWithCaret).getOrElse("")
+            def nodeStr = n.toString().take(80)
+            s"$rangeStr\n$nodeStr"
+          case Right(s) =>
+            s"[$s]"
+        }
       }).mkString("\n---vvv---\n")
       log.add(new Exception(s"$s in Porc stack:\n$stack"))
     }
