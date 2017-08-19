@@ -303,6 +303,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
     programs.put(executionId, followerExecution)
     addRoot(followerExecution)
+
+    leaderLocation.sendInContext(followerExecution)(ProgramReadyCmd(executionId))
   }
 
   def unloadProgram(executionId: DOrcExecution#ExecutionId): Unit = {

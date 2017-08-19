@@ -101,6 +101,24 @@ class DOrcLeaderExecution(
   runtime: LeaderRuntime)
   extends DOrcExecution(executionId, 0, programAst, options, eventHandler, runtime) with PorcEExecutionWithLaunch {
 
+  protected val startingFollowers = java.util.concurrent.ConcurrentHashMap.newKeySet[DOrcRuntime#RuntimeId]()
+  protected val readyFollowers = java.util.concurrent.ConcurrentHashMap.newKeySet[DOrcRuntime#RuntimeId]()
+  protected val followerStartWait = new Object()
+
+  def followerStarting(followerNum: DOrcRuntime#RuntimeId): Unit = {
+    startingFollowers.add(followerNum)
+  }
+
+  def followerReady(followerNum: DOrcRuntime#RuntimeId): Unit = {
+    readyFollowers.add(followerNum)
+    startingFollowers.remove(followerNum)
+    followerStartWait synchronized followerStartWait.notifyAll()
+  }
+
+  def awaitAllFollowersReady(): Unit = {
+    while (!startingFollowers.isEmpty()) followerStartWait synchronized followerStartWait.wait()
+  }
+
   //TODO: Move to superclass
   def runProgram(): Unit = {
     scheduleProgram(programPorceAst, programCallTargetMap)
@@ -156,7 +174,7 @@ class DOrcFollowerExecution(
 
     setCallTargetMap(map)
 
-    Logger.finest(s"Loaded program in follower. CallTagetMap:\n${callTargetMap.mkString("\n")}")
+    //Logger.finest(s"Loaded program in follower. CallTagetMap:\n${callTargetMap.mkString("\n")}")
   }
 }
 

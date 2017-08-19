@@ -54,6 +54,11 @@ case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programAst: DO
   override def toString(): String = s"${getClass.getSimpleName}($executionId,...programAst..,$options)"
 }
 
+/** This runtime is ready to execute in the indicated executionId */
+case class ProgramReadyCmd(executionId: DOrcExecution#ExecutionId) extends OrcFollowerToLeaderCmd {
+  override def toString(): String = s"${getClass.getSimpleName}($executionId)"
+}
+
 /** No further execution in this executionId, program AST can be discarded  */
 case class UnloadProgramCmd(executionId: DOrcExecution#ExecutionId) extends OrcLeaderToFollowerCmd {
   override def toString(): String = s"${getClass.getSimpleName}($executionId)"

@@ -69,10 +69,16 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     
     val rootCounterId = leaderExecution.makeProxyWithinCounter(leaderExecution.c)
 
-    followerEntries foreach { _._2.send(LoadProgramCmd(thisExecutionId, programAst, options, rootCounterId)) }
+    followerEntries foreach { f => {
+        leaderExecution.followerStarting(f._1)
+        f._2.send(LoadProgramCmd(thisExecutionId, programAst, options, rootCounterId)) 
+      }
+    }
 
     installHandlers(leaderExecution)
     addRoot(leaderExecution)
+
+    leaderExecution.awaitAllFollowersReady()
 
     leaderExecution.runProgram()
 
@@ -105,6 +111,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
           Logger.finest(s"Read ${msg}")
           msg match {
             case DOrcConnectionHeader(sid, rid) => assert(sid == followerRuntimeId && rid == runtimeId)
+            case ProgramReadyCmd(xid) => programs(xid).followerReady(followerRuntimeId)
             case NotifyLeaderCmd(xid, event) => LeaderRuntime.this synchronized {
               programs(xid).notifyOrc(event)
             }
