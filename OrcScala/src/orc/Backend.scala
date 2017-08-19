@@ -13,6 +13,7 @@
 package orc
 
 import java.io.{ BufferedReader, File, IOException, PrintWriter, Writer }
+import java.util.ServiceLoader
 
 import orc.ast.oil.nameless.Expression
 import orc.compile.parse.OrcInputContext
@@ -20,7 +21,6 @@ import orc.error.compiletime.{ CompilationException, CompileLogger, ExceptionCol
 import orc.error.loadtime.LoadingException
 import orc.error.runtime.ExecutionException
 import orc.progress.{ NullProgressMonitor, ProgressMonitor }
-import java.util.ServiceLoader
 
 /** An enumeration over the supported backends.
   */

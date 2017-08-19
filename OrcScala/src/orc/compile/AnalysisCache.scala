@@ -1,6 +1,5 @@
 package orc.compile
 
-import java.util.WeakHashMap
 import scala.ref.WeakReference
 import scala.ref.ReferenceQueue
 

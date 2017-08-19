@@ -12,21 +12,14 @@
 //
 package orc
 
-import java.io.{ IOException, OutputStreamWriter }
-import orc.ast.orctimizer.named.Expression
-import orc.compile.StandardOrcCompiler
+import java.io.{ IOException, ObjectInputStream, ObjectOutputStream }
+
+import orc.ast.porc.MethodCPS
+import orc.compile.orctimizer.PorcOrcCompiler
 import orc.compile.parse.OrcInputContext
 import orc.error.compiletime.CompileLogger
-import orc.error.loadtime.{ LoadingException, OilParsingException }
+import orc.error.loadtime.{ DeserializationTypeException, LoadingException }
 import orc.progress.ProgressMonitor
-import orc.run.StandardOrcRuntime
-import orc.compile.orctimizer.PorcOrcCompiler
-import orc.ast.porc.MethodCPS
-import java.io.ObjectOutputStream
-import java.io.ObjectInputStream
-import orc.error.loadtime.LoadingException
-import orc.error.loadtime.DeserializationTypeException
-import java.io.IOException
 
 /** A backend implementation using the Orctimizer and Porc compilers.
   *

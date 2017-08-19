@@ -12,36 +12,16 @@
 //
 package orc.values.sites
 
-import scala.collection.immutable.List
+import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTargetException }
+
 import scala.language.existentials
-import orc.{ Handle, Invoker, DirectInvoker, Accessor, OnlyDirectInvoker }
-import orc.values.Signal
-import orc.values.{ Field => OrcField }
+
+import orc.{ Accessor, Handle, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, UncallableValueInvoker }
+import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, UncallableValueException }
 import orc.run.Logger
-import orc.error.NotYetImplementedException
-import orc.error.runtime.JavaException
-import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.MalformedArrayAccessException
-import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.{ Member => JavaMember }
-import java.lang.reflect.{ Constructor => JavaConstructor }
-import java.lang.reflect.{ Method => JavaMethod }
-import java.lang.reflect.{ Field => JavaField }
-import java.lang.reflect.{ Array => JavaArray }
-import java.lang.reflect.Modifier
-import orc.values.sites.OrcJavaCompatibility._
-import orc.compile.typecheck.Typeloader._
-import orc.error.runtime.NoSuchMemberException
-import orc.util.ArrayExtensions.{ Array1, Array0 }
-import orc.error.runtime.{ UncallableValueException, HaltException, MethodTypeMismatchException }
-import java.lang.NoSuchMethodException
-import orc.run.Logger
-import orc.InvocationBehaviorUtilities
-import orc.values.Field
-import orc.error.runtime.NoSuchMemberException
-import orc.NoSuchMemberAccessor
-import orc.UncallableValueInvoker
+import orc.util.ArrayExtensions.Array1
+import orc.values.{ Field => OrcField, Signal }
+import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocation, java2orc, orc2java }
 
 /** Due to the way dispatch is handled we cannot pass true wrappers back into Orc. They
   * would interfere with any call to which they were passed as an argument.
@@ -100,7 +80,7 @@ object JavaCall {
       }
     }
 
-    import InvocationBehaviorUtilities._
+    import orc.InvocationBehaviorUtilities._
 
     @throws[NoSuchMethodException]
     def getMemberInvokerTypeDirected(methodName: String, argClss: Array[Class[_]]): Invoker = {
@@ -269,7 +249,7 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
 
   def getInvoker(args: Array[AnyRef]): Invoker = {
     import JavaCall._
-    import InvocationBehaviorUtilities._
+    import orc.InvocationBehaviorUtilities._
     try {
       val argClss = args.map(valueType)
       val invocable = selectMethod(javaClass, memberName, argClss)
@@ -295,7 +275,7 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
     }
   }
 
-  def getAccessor(field: Field): Accessor = {
+  def getAccessor(field: OrcField): Accessor = {
     val submemberName = field.name
 
     // In violation of JLS §10.7, arrays don't really have a length field!  Java bug 5047859
@@ -381,7 +361,7 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
   * @author jthywiss, amp
   */
 case class JavaArrayElementProxy(val theArray: Array[Any], val index: Int) extends AccessorValue {
-  def getAccessor(field: Field): Accessor = {
+  def getAccessor(field: OrcField): Accessor = {
     field match {
       case OrcField("read") => 
         new ArrayAccessor {

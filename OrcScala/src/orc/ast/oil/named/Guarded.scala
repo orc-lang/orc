@@ -12,8 +12,6 @@
 //
 package orc.ast.oil.named
 
-import orc.compile.Logger
-
 /** @author dkitchin
   */
 trait Guarding {

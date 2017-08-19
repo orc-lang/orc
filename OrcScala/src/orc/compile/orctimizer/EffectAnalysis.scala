@@ -13,12 +13,9 @@
 
 package orc.compile.orctimizer
 
-import scala.reflect.ClassTag
-
 import orc.ast.orctimizer.named._
 import orc.compile.AnalysisRunner
 import orc.compile.AnalysisCache
-import orc.compile.flowanalysis.LatticeValue
 import orc.compile.flowanalysis.GraphDataProvider
 import orc.compile.flowanalysis.{Analyzer, AnalyzerEdgeCache}
 import orc.compile.flowanalysis.DebuggableGraphDataProvider

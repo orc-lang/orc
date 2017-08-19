@@ -17,16 +17,12 @@ import orc.compile.AnalysisRunner
 import orc.ast.orctimizer.named.Expression
 import orc.ast.orctimizer.named.Method
 import orc.compile.AnalysisCache
-import scala.reflect.ClassTag
-import orc.compile.flowanalysis.LatticeValue
-import orc.compile.flowanalysis.GraphDataProvider
 import orc.compile.flowanalysis.{Analyzer, AnalyzerEdgeCache}
 import FlowGraph.{ Node, Edge }
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
 import orc.ast.orctimizer.named._
-import orc.util.{ TTrue, TFalse, TUnknown }
 
 sealed abstract class Delay {
   def <(o: Delay): Boolean

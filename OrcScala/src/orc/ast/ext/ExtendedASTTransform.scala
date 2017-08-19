@@ -12,8 +12,6 @@
 //
 package orc.ast.ext
 
-import scala.language.reflectiveCalls
-
 /** @author dkitchin and amp
   */
 trait ExtendedASTFunction {

@@ -13,8 +13,6 @@
 
 package orc.ast.orctimizer.named
 
-import scala.language.reflectiveCalls
-import orc.ast.orctimizer._
 import orc.ast.ASTForSwivel
 import orc.ast.hasOptionalVariableName
 import orc.ast.hasAutomaticVariableName
@@ -23,7 +21,6 @@ import orc.ast.PrecomputeHashcode
 import swivel.{ root, branch, leaf }
 import swivel.subtree
 import swivel.replacement
-import swivel.EmptyFunction
 import scala.PartialFunction
 
 // TODO: Remove "Named" from classes and package tree. There is no nameless Orctimizer.
