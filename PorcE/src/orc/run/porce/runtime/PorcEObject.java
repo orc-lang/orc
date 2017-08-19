@@ -5,6 +5,7 @@ import scala.Function1;
 
 import orc.Accessor;
 import orc.NoSuchMemberAccessor;
+import orc.OrcRuntime;
 import orc.run.porce.distrib.DOrcMarshalingReplacement;
 import orc.values.Field;
 import orc.values.sites.AccessorValue;
@@ -24,7 +25,7 @@ public final class PorcEObject implements AccessorValue, DOrcMarshalingReplaceme
     }
 
     @Override
-    public Accessor getAccessor(final Field field) {
+    public Accessor getAccessor(final OrcRuntime runtime, final Field field) {
         for (int i = 0; i < fieldNames.length; i++) {
             if (field.equals(fieldNames[i])) {
                 final int index = i;

@@ -50,7 +50,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
     val phaseName = "to-orctimizer"
     override def apply(co: CompilerOptions) =
       { ast =>
-        val translator = new OILToOrctimizer()
+        val translator = new OILToOrctimizer(co)
         val res = translator(ast)(translator.Context(Map(), Map()))
         orctimizer.named.VariableChecker(res.toZipper(), co)
         res

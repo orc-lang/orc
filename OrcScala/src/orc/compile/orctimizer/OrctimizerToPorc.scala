@@ -11,21 +11,14 @@
 
 package orc.compile.orctimizer
 
-import orc.ast.orctimizer.named._
 import scala.collection.mutable
-import orc.values.Field
+
+import orc.ast.orctimizer.named._
 import orc.ast.porc
-import orc.error.compiletime.FeatureNotSupportedException
-import orc.lib.state.NewFlag
-import orc.lib.state.PublishIfNotSet
-import orc.lib.state.SetFlag
-import orc.ast.porc.SetDiscorporate
-import orc.ast.porc.MethodDirectCall
-import orc.compile.AnalysisCache
-import orc.compile.Logger
-import orc.util.{ Ternary, TUnknown, TTrue, TFalse }
-import orc.compile.CompilerOptions
-import orc.ast.porc.MethodCPSCall
+import orc.ast.porc.{ MethodCPSCall, MethodDirectCall, SetDiscorporate }
+import orc.compile.{ AnalysisCache, CompilerOptions }
+import orc.lib.state.{ NewFlag, PublishIfNotSet, SetFlag }
+import orc.util.TUnknown
 
 case class ConversionContext(p: porc.Variable, c: porc.Variable, t: porc.Variable, recursives: Set[BoundVar], callgraph: CallGraph, effects: EffectAnalysis) {
 }
@@ -76,7 +69,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
     * This uses the current counter and terminator, but does not publish any value.
     */
   def buildFuture(fut: porc.Variable, f: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
-    import porc.PorcInfixNotation._
+    import orc.ast.porc.PorcInfixNotation._
     val oldCtx = ctx
 
     val comp = newVarName("comp")
@@ -119,9 +112,9 @@ class OrctimizerToPorc(co: CompilerOptions) {
   //        The exception would be that direct callable methods would be allowed to throw. However these are not used yet.
 
   def expression(expr: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
-    import porc.PorcInfixNotation._
     import CallGraphValues._
     import FlowGraph._
+    import orc.ast.porc.PorcInfixNotation._
     
     val oldCtx = ctx
 
@@ -377,7 +370,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
   }
 
   def callable(recursiveGroup: Seq[BoundVar], d: Method.Z)(implicit ctx: ConversionContext): porc.Method = {
-    import porc.PorcInfixNotation._
+    import orc.ast.porc.PorcInfixNotation._
     
     val oldCtx = ctx
     val argP = newVarName("P")
@@ -421,7 +414,6 @@ class OrctimizerToPorc(co: CompilerOptions) {
     MethodDirectCall(true, porc.Constant(NewFlag), List())
   }
   private def setFlag(p: porc.Variable, c: porc.Variable, t: porc.Variable, flag: porc.Variable): porc.Expression = {
-    import porc.PorcInfixNotation._
     if(useDirectCalls) {
       MethodDirectCall(true, porc.Constant(SetFlag), List(flag)) :::
       p()
@@ -430,7 +422,6 @@ class OrctimizerToPorc(co: CompilerOptions) {
     }
   }
   private def publishIfNotSet(p: porc.Variable, c: porc.Variable, t: porc.Variable, flag: porc.Variable): porc.Expression = {
-    import porc.PorcInfixNotation._
     if(useDirectCalls) {
       MethodDirectCall(true, porc.Constant(PublishIfNotSet), List(flag)) :::
       p()

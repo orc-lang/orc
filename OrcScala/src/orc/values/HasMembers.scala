@@ -18,6 +18,7 @@ import orc.run.core.Binding
 import orc.values.sites.AccessorValue
 import orc.Accessor
 import orc.error.runtime.DoesNotHaveMembersException
+import orc.OrcRuntime
 
 // TODO: This should replace OrcObjectInterface and HasFields
 
@@ -58,7 +59,7 @@ trait HasMembers extends OrcValue with AccessorValue {
   }
   
   @throws[NoSuchMemberException]
-  def getAccessor(field: Field): Accessor = {
+  def getAccessor(runtime: OrcRuntime, field: Field): Accessor = {
     if(hasMember(field)) {
       new HasMemberAccessor(field)
     } else {

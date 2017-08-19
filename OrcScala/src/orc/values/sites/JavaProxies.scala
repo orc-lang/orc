@@ -19,6 +19,7 @@ import scala.language.existentials
 import orc.{ Accessor, Handle, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, UncallableValueInvoker }
 import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, UncallableValueException }
 import orc.run.Logger
+import orc.OrcRuntime
 import orc.util.ArrayExtensions.Array1
 import orc.values.{ Field => OrcField, Signal }
 import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocation, java2orc, orc2java }
@@ -247,7 +248,7 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
 class JavaMemberProxy(val theObject: Object, val memberName: String, val javaField: Option[JavaField]) extends InvokerMethod with AccessorValue {
   def javaClass = theObject.getClass()
 
-  def getInvoker(args: Array[AnyRef]): Invoker = {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     import JavaCall._
     import orc.InvocationBehaviorUtilities._
     try {
@@ -275,7 +276,7 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
     }
   }
 
-  def getAccessor(field: OrcField): Accessor = {
+  def getAccessor(runtime: OrcRuntime, field: OrcField): Accessor = {
     val submemberName = field.name
 
     // In violation of JLS §10.7, arrays don't really have a length field!  Java bug 5047859
@@ -361,7 +362,7 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
   * @author jthywiss, amp
   */
 case class JavaArrayElementProxy(val theArray: Array[Any], val index: Int) extends AccessorValue {
-  def getAccessor(field: OrcField): Accessor = {
+  def getAccessor(runtime: OrcRuntime, field: OrcField): Accessor = {
     field match {
       case OrcField("read") => 
         new ArrayAccessor {

@@ -12,19 +12,9 @@
 //
 package orc.lib.util
 
-import orc.values.sites.Site
-import orc.values.sites.TypedSite
-import orc.values.sites.TotalSite0
-import java.lang.Iterable
-import orc.compile.typecheck.Typeloader
-import orc.lib.builtin.structured.ListType
-import orc.types.TypeVariable
-import orc.types.FunctionType
-import orc.types.SimpleFunctionType
-import orc.error.runtime.ArgumentTypeMismatchException
 import orc.Handle
-import orc.values.sites.Site0
 import orc.types.Bot
+import orc.values.sites.{ Site0, TypedSite }
 
 /** A site that just blocks forever. However it does so in a way that the interpreter knows
   * about so it is handled more efficiently and will not prevent hte interpreter from exiting.

@@ -20,13 +20,14 @@ import orc.values.sites.{ InvokerMethod, AccessorValue }
 import orc.IllegalArgumentInvoker
 import orc.OnlyDirectInvoker
 import orc.ClassDoesNotHaveMembersAccessor
+import orc.OrcRuntime
 
 /** @author dkitchin
   */
 case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorValue with PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement {
   assert(values.length > 1)
   
-  def getInvoker(args: Array[AnyRef]) = {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
     args match {
       case Array1(bi: BigInt) => {
         val size = values.length
@@ -51,7 +52,7 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
     }
   }
   
-  def getAccessor(f: Field) = {
+  def getAccessor(runtime: OrcRuntime, f: Field) = {
     ClassDoesNotHaveMembersAccessor(classOf[OrcTuple])
   }
 

@@ -117,7 +117,7 @@ case class BoundFuture(v: AnyRef) extends Future {
   */
 trait Handle {
 
-  // TODO: Consider making this a seperate API that is not core to the Orc JVM API.
+  // TODO: Consider making this a separate API that is not core to the Orc JVM API.
   /** Submit an event to the Orc runtime.
     */
   def notifyOrc(event: OrcEvent): Unit
