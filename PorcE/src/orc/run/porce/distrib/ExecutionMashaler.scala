@@ -14,6 +14,8 @@
 package orc.run.porce.distrib
 
 import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
+import java.util.IdentityHashMap
+import java.util.Collections
 
 /** A DOrcExecution mix-in to marshal and unmarshal dOrc execution-internal
   * objects, such as tokens, groups, closures, counters, terminators, etc.
@@ -22,6 +24,9 @@ import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
   */
 trait ExecutionMashaler {
   execution: DOrcExecution =>
+  
+  // FIXME: This leaks references to objects in the table. This needs to be week.
+  val instanceTable = Collections.synchronizedMap(new IdentityHashMap[AnyRef, AnyRef]())
 
   val marshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
     case (destination, closure: PorcEClosure) => {
@@ -31,7 +36,9 @@ trait ExecutionMashaler {
          * to any location.  Also, cycles in closure environments are
          * avoided here by not running the value marshler on closures. */
         case cl: PorcEClosure => cl
-        case cl: ClosureReplacement => cl
+        case cl: ClosureReplacement => {
+          throw new AssertionError(s"ClosureReplacement should not have been introduced yet: $cl")
+        }
         case v => execution.marshalValue(destination)(v)
       })
       ClosureReplacement(callTargetIndex, marshaledEnvironent, closure.isRoutine)
@@ -52,17 +59,24 @@ trait ExecutionMashaler {
   }
 
   val unmarshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
-    case (origin, ClosureReplacement(callTargetIndex, environment, isRoutine)) => {
+    case (origin, old@ClosureReplacement(callTargetIndex, environment, isRoutine)) => {
+      //Logger.fine(f"Unmarshaling $old ${System.identityHashCode(old)}%x")
       val callTarget = execution.idToCallTarget(callTargetIndex)
-      val unmarshledEnvironment = environment.map(_ match {
-        /* Don't run the value marshler on closures.  Closures can be copied
+      val unmarshledEnvironment = Array.ofDim[AnyRef](environment.length)
+      val replacement = new PorcEClosure(unmarshledEnvironment, callTarget, isRoutine)
+      instanceTable.put(old, replacement)
+      environment.zipWithIndex.foreach({
+        /* Don't run the value marshaler on closures.  Closures can be copied
          * to any location.  Also, cycles in closure environments are
-         * avoided here by not running the value marshler on closures. */
-        case cl: ClosureReplacement => cl
-        case cl: PorcEClosure => cl
-        case v => execution.unmarshalValue(origin)(v)
+         * avoided here by not running the value marshaler on closures. */
+        case (cl: PorcEClosure, i) => 
+          unmarshledEnvironment(i) = cl
+        case (v, i) => 
+          //Logger.fine(f"Unmarshaling nested value $v ${System.identityHashCode(v)}%x")
+          // This handles Closures and uses instanceTable to avoid recursion.
+          unmarshledEnvironment(i) = instanceTable.computeIfAbsent(v, (k) => execution.unmarshalValue(origin)(v))
       })
-      new PorcEClosure(unmarshledEnvironment, callTarget, isRoutine)
+      replacement
     }
     case (origin, CounterReplacement(proxyId)) => execution.makeProxyCounterFor(proxyId, origin)
     case (origin, TerminatorReplacement(proxyId)) => execution.makeProxyTerminatorFor(proxyId, origin)
