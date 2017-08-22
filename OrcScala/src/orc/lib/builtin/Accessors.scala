@@ -18,7 +18,7 @@ import orc.util.ArrayExtensions.{ Array1, Array2 }
 import orc.values.Field
 import orc.values.sites.InvokerMethod
 
-object GetFieldSite extends InvokerMethod {
+object GetFieldSite extends InvokerMethod with Serializable {
   val arity = 2
   override def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     args match {
@@ -45,7 +45,7 @@ class GetFieldInvoker(accessor: Accessor, f: Field) extends Invoker {
   }
 }
 
-object GetMethodSite extends InvokerMethod {
+object GetMethodSite extends InvokerMethod with Serializable {
   val arity = 2
   override def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     args match {

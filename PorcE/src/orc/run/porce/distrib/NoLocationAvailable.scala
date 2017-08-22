@@ -19,4 +19,5 @@ import orc.error.runtime.TokenException
   *
   * @author jthywiss
   */
-class NoLocationAvailable(vals: Seq[AnyRef]) extends TokenException("No common location for " + vals)
+class NoLocationAvailable(valLocations: Seq[(AnyRef, Set[Int])])
+  extends TokenException("No common location for: " + valLocations.map(p => s"${p._1} at ${p._2.mkString(", ")}").mkString("; "))

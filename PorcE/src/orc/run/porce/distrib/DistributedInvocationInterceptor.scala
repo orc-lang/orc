@@ -61,7 +61,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         if (intersectPermittedLocs.nonEmpty) {
           intersectPermittedLocs
         } else {
-          throw new NoLocationAvailable(target +: arguments.toSeq)
+          throw new NoLocationAvailable((target +: arguments.toSeq).map(v => (v, currentLocations(v).map(_.runtimeId))))
         }
       }
     }
