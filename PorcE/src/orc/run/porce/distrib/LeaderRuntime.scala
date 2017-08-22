@@ -43,7 +43,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     runtimeLocationMap.put(0, here)
     followers foreach { f => runtimeLocationMap.put(f._1, new FollowerLocation(f._1, RuntimeConnectionInitiator[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](f._2))) }
 
-    followerEntries foreach { e => 
+    followerEntries foreach { e =>
       e._2.send(DOrcConnectionHeader(runtimeId, e._1))
       new ReceiveThread(e._1, e._2).start()
     }
@@ -66,12 +66,13 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     val leaderExecution = new DOrcLeaderExecution(thisExecutionId, programAst, options, { e => handleExecutionEvent(thisExecutionId, e); eventHandler(e) }, this)
 
     programs.put(thisExecutionId, leaderExecution)
-    
+
     val rootCounterId = leaderExecution.makeProxyWithinCounter(leaderExecution.c)
 
-    followerEntries foreach { f => {
+    followerEntries foreach { f =>
+      {
         leaderExecution.followerStarting(f._1)
-        f._2.send(LoadProgramCmd(thisExecutionId, programAst, options, rootCounterId)) 
+        f._2.send(LoadProgramCmd(thisExecutionId, programAst, options, rootCounterId))
       }
     }
 
@@ -123,7 +124,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
             case DiscorporateGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).discorporateGroupMemberProxy(gmpid, n)
             case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
             case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
-            case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)
+            case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(followerLocation, futureId, value)
             case EOF => { Logger.fine(s"EOF, aborting $followerLocation"); followerLocation.connection.abort() }
           }
         }
@@ -148,8 +149,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   }
 
   @throws(classOf[ExecutionException])
-  @throws(classOf[InterruptedException])
-  /*override*/ def runSynchronous(programAst: DOrcRuntime#ProgramAST, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions): Unit = {
+  @throws(classOf[InterruptedException]) /*override*/
+  def runSynchronous(programAst: DOrcRuntime#ProgramAST, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions): Unit = {
     synchronized {
       if (runSyncThread != null) throw new IllegalStateException("runSynchronous on an engine that is already running synchronously")
       runSyncThread = Thread.currentThread()

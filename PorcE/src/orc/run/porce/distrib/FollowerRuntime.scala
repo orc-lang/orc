@@ -163,7 +163,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case DiscorporateGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).discorporateGroupMemberProxy(gmpid, n)
           case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
-          case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)
+          case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(leaderLocation, futureId, value)
           case UnloadProgramCmd(xid) => unloadProgram(xid)
           case EOF => done = true
           case DOrcConnectionHeader(sid, rid) => throw new AssertionError(f"Received extraneous DOrcConnectionHeader: sender=$sid%#x, receiver=$rid%#x")
@@ -199,7 +199,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case DiscorporateGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).discorporateGroupMemberProxy(gmpid, n)
           case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
-          case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(futureId, value)
+          case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(peerLocation, futureId, value)
           case EOF => { Logger.fine(s"EOF, aborting peerLocation"); peerLocation.connection.abort() }
           case DOrcConnectionHeader(sid, rid) => throw new AssertionError(f"Received extraneous DOrcConnectionHeader: sender=$sid%#x, receiver=$rid%#x")
         }
@@ -295,10 +295,10 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
       startScheduler(options)
     }
 
-    val followerExecution = 
+    val followerExecution =
       new DOrcFollowerExecution(executionId, runtimeId, programAst, options,
-          sendEvent(leaderLocation, executionId, DOrcExecution.noGroupProxyId),
-          rootCounterId,leaderLocation, this)
+        sendEvent(leaderLocation, executionId, DOrcExecution.noGroupProxyId),
+        rootCounterId, leaderLocation, this)
     installHandlers(followerExecution)
 
     programs.put(executionId, followerExecution)

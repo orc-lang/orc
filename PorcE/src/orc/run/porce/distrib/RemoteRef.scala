@@ -33,16 +33,16 @@ trait RemoteRef {
   * @author jthywiss
   */
 trait RemoteRefIdManager {
-  self: DOrcExecution =>
+  execution: DOrcExecution =>
 
-  private val remoteRefIdCounter = new AtomicLong(followerExecutionNum.toLong << 32)
+  private val remoteRefIdCounter = new AtomicLong(execution.followerExecutionNum.toLong << 32)
 
   protected def freshRemoteRefId(): RemoteRef#RemoteRefId = remoteRefIdCounter.getAndIncrement()
 
   protected def homeLocationForRemoteRef(id: RemoteRef#RemoteRefId): PeerLocation = {
     val followerNum = id.asInstanceOf[Long] >> 32
     assert(followerNum <= Int.MaxValue && followerNum >= Int.MinValue)
-    val home = locationForFollowerNum(followerNum.toInt)
+    val home = execution.locationForFollowerNum(followerNum.toInt)
     assert(home != null, s"homeLocationFor $id should not be null")
     home
   }
@@ -55,7 +55,7 @@ trait RemoteRefIdManager {
   */
 class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
 
-  override def toString: String = super.toString + f"(remoteRefId=$remoteRefId%#x)"
+  override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x)"
 
   def marshal(): RemoteObjectRefReplacement = {
     RemoteObjectRefReplacement(remoteRefId)
@@ -67,7 +67,9 @@ class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) ext
   * @author jthywiss
   */
 case class RemoteObjectRefReplacement(remoteRefId: RemoteObjectRef#RemoteRefId) extends Serializable {
-  override def toString: String = this.productPrefix + "(0x" + remoteRefId.toHexString + ")"
+
+  override def toString: String = f"$productPrefix(remoteRefId=$remoteRefId%#x)"
+
   def unmarshal(rmtObjMgr: RemoteObjectManager): AnyRef = {
     rmtObjMgr.localObjectForRemoteId(remoteRefId).getOrElse(new RemoteObjectRef(remoteRefId))
   }
@@ -108,11 +110,11 @@ class ObjectRemoteRefIdMapping[T >: Null](freshRemoteRefId: () => RemoteRef#Remo
 /** The manager for remote object references that is mixed into the DOrcExecution.
   */
 trait RemoteObjectManager {
-  this: DOrcExecution =>
+  idmgr: RemoteRefIdManager =>
 
   type RemoteRefId = RemoteRef#RemoteRefId
 
-  protected val objectMapping = new ObjectRemoteRefIdMapping[AnyRef](() => freshRemoteRefId())
+  protected val objectMapping = new ObjectRemoteRefIdMapping[AnyRef](() => idmgr.freshRemoteRefId())
 
   /** Get the Id for an opaque object.
     */

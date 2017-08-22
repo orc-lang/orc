@@ -49,6 +49,7 @@ abstract class DOrcExecution(
   with DistributedInvocationInterceptor
   with ValueLocator
   with ValueMarshaler
+  with ExecutionMashaler
   with CounterProxyManager
   with TerminatorProxyManager
   with RemoteFutureManager
@@ -146,7 +147,7 @@ class DOrcFollowerExecution(
   rootCounterOrigin: PeerLocation,
   runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
-  
+
   val counter = makeProxyCounterFor(rootCounterId, rootCounterOrigin)
 
   val pRootNode = new RootNode(null) with HasId {

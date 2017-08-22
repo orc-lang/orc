@@ -1,12 +1,9 @@
 
 package orc.run.porce.runtime;
 
-import java.io.Serializable;
-
 import com.oracle.truffle.api.RootCallTarget;
 
-final public class PorcEClosure implements Serializable  {
-    private static final long serialVersionUID = 2268182245053983790L;
+final public class PorcEClosure {
     public final Object[] environment;
     public final RootCallTarget body;
 

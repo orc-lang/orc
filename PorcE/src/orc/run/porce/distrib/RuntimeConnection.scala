@@ -16,9 +16,6 @@ package orc.run.porce.distrib
 import java.io.{ IOException, InputStream, ObjectInputStream, ObjectOutputStream, OutputStream }
 import java.net.{ InetAddress, InetSocketAddress, Socket }
 
-import com.oracle.truffle.api.RootCallTarget
-
-import orc.run.porce.runtime.{ Counter, Future, Terminator }
 import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
 
 /** A connection between DOrcRuntimes.  Extends SocketObjectConnection to
@@ -149,11 +146,9 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
         currExecution = Some((currExecutionLookup.get)(xm.executionId))
         obj
       }
-      case RootCallTargetReplacement(index) =>
-        currExecution.get.idToCallTarget(index)
-      case CounterReplacement(proxyId) => currExecution.get.makeProxyCounterFor(proxyId, currOrigin.get)
-      case TerminatorReplacement(proxyId) => currExecution.get.makeProxyTerminatorFor(proxyId, currOrigin.get)
-      case FutureReplacement(bindingId) => currExecution.get.futureForId(bindingId)
+      case _ if currExecution.isDefined && currOrigin.isDefined && currExecution.get.unmarshalExecutionObject.isDefinedAt((currOrigin.get, obj)) =>
+        currExecution.get.unmarshalExecutionObject((currOrigin.get, obj))
+//      case _ if currExecution.isDefined /*&& currExecution.get.unmarshalValueWouldReplace(obj)*/ => currExecution.get.unmarshalValue(obj)
       case _ => super.resolveObject(obj)
     }
   }
@@ -173,6 +168,52 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
     currExecutionLookup = None
     currOrigin = None
     currExecution = None
+  }
+
+}
+
+/** Writes Orc/dOrc values to an OutputStream.  The values can be read
+  * (reconstituted) using an RuntimeConnectionInputStream.  Extends
+  * ObjectOutputStream to provide extra serialization support for Orc/dOrc
+  * values.
+  *
+  * @author jthywiss
+  */
+protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectOutputStream(out) {
+
+  enableReplaceObject(true)
+
+  @throws(classOf[IOException])
+  override protected def replaceObject(obj: AnyRef): AnyRef = {
+    //Logger.entering(getClass.getName, "replaceObject", Seq(s"${obj.getClass.getName}=$obj"))
+    val result = obj match {
+      case xm: ExecutionContextSerializationMarker => {
+        assert(xm.executionId == currExecution.get.executionId)
+        obj
+      }
+      case _ if currExecution.isDefined && currDestination.isDefined && currExecution.get.marshalExecutionObject.isDefinedAt((currDestination.get, obj)) =>
+        currExecution.get.marshalExecutionObject((currDestination.get, obj))
+//      case _ if currExecution.isDefined && currDestination.isDefined /*&& currExecution.get.marshalValueWouldReplace(currDestination.get)(obj)*/ =>
+//          currExecution.get.marshalValue(currDestination.get)(obj)
+      case _ => super.replaceObject(obj)
+    }
+    //Logger.exiting(getClass.getName, "replaceObject", s"${result.getClass.getName}=$result")
+    result
+  }
+
+  protected var currExecution: Option[DOrcExecution] = None
+  protected var currDestination: Option[PeerLocation] = None
+
+  def setContext(execution: DOrcExecution, destination: PeerLocation): Unit = {
+    assert(currExecution.isEmpty && currDestination.isEmpty, s"currExecution=$currExecution; currDestination=$currDestination")
+    currExecution = Some(execution)
+    currDestination = Some(destination)
+  }
+
+  def clearContext(): Unit = {
+    assert(currExecution.nonEmpty && currDestination.nonEmpty, s"currExecution=$currExecution; currDestination=$currDestination")
+    currExecution = None
+    currDestination = None
   }
 
 }
@@ -208,70 +249,3 @@ class CountingOutputStream(out: OutputStream) extends OutputStream {
   @throws(classOf[IOException])
   override def close(): Unit = out.close()
 }
-
-/** Writes Orc/dOrc values to an OutputStream.  The values can be read
-  * (reconstituted) using an RuntimeConnectionInputStream.  Extends
-  * ObjectOutputStream to provide extra serialization support for Orc/dOrc
-  * values.
-  *
-  * @author jthywiss
-  */
-protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectOutputStream(out) {
-
-  enableReplaceObject(true)
-
-  @throws(classOf[IOException])
-  override protected def replaceObject(obj: AnyRef): AnyRef = {
-    //Logger.entering(getClass.getName, "replaceObject", Seq(s"${obj.getClass.getName}=$obj"))
-    val result = obj match {
-      case xm: ExecutionContextSerializationMarker => {
-        assert(xm.executionId == currExecution.get.executionId)
-        obj
-      }
-      case ct: RootCallTarget =>
-        RootCallTargetReplacement(currExecution.get.callTargetToId(ct))
-      case counter: Counter => {
-        val proxyId = currExecution.get.makeProxyWithinCounter(counter)
-        CounterReplacement(proxyId)
-      }
-      case terminator: Terminator => {
-        val destination = currDestination.get
-        val execution = currExecution.get
-        val proxyId = currExecution.get.makeProxyWithinTerminator(terminator, 
-            (terminatorProxyId) => execution.sendKilled(destination, terminatorProxyId)())
-        TerminatorReplacement(proxyId)
-      }
-      case future: Future => {
-        val id = currExecution.get.ensureFutureIsRemotelyAccessibleAndGetId(future)
-        FutureReplacement(id)
-      }
-      case _ => super.replaceObject(obj)
-    }
-    //Logger.exiting(getClass.getName, "replaceObject", s"${result.getClass.getName}=$result")
-    result
-  }
-
-  protected var currExecution: Option[DOrcExecution] = None
-  protected var currDestination: Option[PeerLocation] = None
-
-  def setContext(execution: DOrcExecution, destination: PeerLocation): Unit = {
-    assert(currExecution.isEmpty && currDestination.isEmpty, s"currExecution=$currExecution; currDestination=$currDestination")
-    currExecution = Some(execution)
-    currDestination = Some(destination)
-  }
-
-  def clearContext(): Unit = {
-    assert(currExecution.nonEmpty && currDestination.nonEmpty, s"currExecution=$currExecution; currDestination=$currDestination")
-    currExecution = None
-    currDestination = None
-  }
-
-}
-
-private final case class RootCallTargetReplacement(index: Int) extends Serializable
-
-private final case class CounterReplacement(proxyId: CounterProxyManager#CounterProxyId) extends Serializable
-
-private final case class TerminatorReplacement(proxyId: TerminatorProxyManager#TerminatorProxyId) extends Serializable
-
-private final case class FutureReplacement(bindingId: RemoteFutureRef#RemoteRefId) extends Serializable

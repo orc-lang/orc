@@ -16,8 +16,7 @@ package orc.run.porce.distrib
 import java.util.concurrent.atomic.AtomicLong
 
 import orc.Schedulable
-import orc.run.porce.runtime.{ CPSCallResponseHandler, CallClosureSchedulable, InvocationInterceptor }
-import orc.run.porce.runtime.PorcEClosure
+import orc.run.porce.runtime.{ CPSCallResponseHandler, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
   *
@@ -81,7 +80,10 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
     val terminatorProxyId = makeProxyWithinTerminator(callContext.t, (terminatorProxyId) => sendKilled(destination, terminatorProxyId)())
 
-    val callMemento = new CallMemento(callContext, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = callTarget, arguments = callArguments)
+    val marshaledTarget = execution.marshalValue(destination)(callTarget)
+    val marshaledArgs = callArguments map { execution.marshalValue(destination)(_) }
+
+    val callMemento = new CallMemento(callContext, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = marshaledTarget, arguments = marshaledArgs)
 
     val callCorrelationId = callCorrelationCounter.getAndIncrement()
     Tracer.traceCallSend(callCorrelationId, execution.runtime.here, destination)
@@ -96,9 +98,12 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
     val proxyTerminator = makeProxyTerminatorFor(callMemento.terminatorProxyId, origin)
 
+    val unmarshaledTarget = execution.unmarshalValue(origin)(callMemento.target)
+    val unmarshaledArgs = callMemento.arguments map { execution.unmarshalValue(origin)(_) }
+
     val callInvoker = new Schedulable {
       def run(): Unit = {
-        execution.invokeCallTarget(callMemento.callSiteId, callMemento.publicationContinuation, proxyCounter, proxyTerminator, callMemento.target, callMemento.arguments)
+        execution.invokeCallTarget(callMemento.callSiteId, callMemento.publicationContinuation, proxyCounter, proxyTerminator, unmarshaledTarget, unmarshaledArgs)
       }
     }
     /* invokeCallTarget will add an appropriate child to the proxyTerminator */
@@ -113,7 +118,9 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   def sendPublish(destination: PeerLocation, proxyId: RemoteRef#RemoteRefId)(publicationContinuation: PorcEClosure, publishedValue: AnyRef): Unit = {
     Logger.fine(s"sendPublish: publish by proxyId $proxyId")
     Tracer.tracePublishSend(proxyId, execution.runtime.here, destination)
-    destination.sendInContext(execution)(PublishGroupCmd(execution.executionId, proxyId, PublishMemento(publicationContinuation, publishedValue)))
+
+    val marshaledPubValue = execution.marshalValue(destination)(publishedValue)
+    destination.sendInContext(execution)(PublishGroupCmd(execution.executionId, proxyId, PublishMemento(publicationContinuation, marshaledPubValue)))
   }
 
   def publishInGroup(origin: PeerLocation, groupMemberProxyId: RemoteRef#RemoteRefId, publication: PublishMemento): Unit = {
@@ -121,7 +128,8 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     val g = proxiedTerminatorMembers.get(groupMemberProxyId)
     if (g != null) {
       Tracer.tracePublishReceive(groupMemberProxyId, origin, execution.runtime.here)
-      execution.runtime.schedule(CallClosureSchedulable(publication.publicationContinuation, publication.publishedValue))
+      val unmarshaledPubValue = execution.unmarshalValue(origin)(publication.publishedValue)
+      execution.runtime.schedule(CallClosureSchedulable(publication.publicationContinuation, unmarshaledPubValue))
     } else {
       throw new AssertionError(f"Publish by unknown group member proxy $groupMemberProxyId%#x, value=${publication.publishedValue}")
     }

@@ -64,7 +64,7 @@ class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId
   * @author jthywiss
   */
 trait RemoteFutureManager {
-  self: DOrcExecution =>
+  execution: DOrcExecution =>
 
   // These two maps are inverses of each other (sorta)
   protected val servingLocalFutures = new java.util.concurrent.ConcurrentHashMap[Future, RemoteFutureRef#RemoteRefId]
@@ -82,8 +82,8 @@ trait RemoteFutureManager {
         if (servingLocalFutures.contains(fut)) {
           servingLocalFutures.get(fut)
         } else {
-          val newFutureId = freshRemoteRefId()
-          val newReader = new RemoteFutureReader(fut, this, newFutureId)
+          val newFutureId = execution.freshRemoteRefId()
+          val newReader = new RemoteFutureReader(fut, execution, newFutureId)
           // TODO: Does this need to be atomic?
           servingLocalFutures.put(fut, newFutureId)
           servingRemoteFutures.put(newFutureId, newReader)
@@ -94,12 +94,12 @@ trait RemoteFutureManager {
   }
 
   def futureForId(futureId: RemoteFutureRef#RemoteRefId): Future = {
-    if (homeLocationForRemoteRef(futureId) == runtime.asInstanceOf[DOrcRuntime].here) {
+    if (execution.homeLocationForRemoteRef(futureId) == execution.runtime.asInstanceOf[DOrcRuntime].here) {
       servingRemoteFutures.get(futureId).fut
     } else {
       waitingReadersUpdateLock synchronized {
         if (!waitingReaders.contains(futureId)) {
-          val newFuture = new RemoteFutureRef(this, futureId)
+          val newFuture = new RemoteFutureRef(execution, futureId)
           waitingReaders.putIfAbsent(futureId, newFuture)
         }
       }
@@ -108,29 +108,29 @@ trait RemoteFutureManager {
   }
 
   def sendReadFuture(futureId: RemoteFutureRef#RemoteRefId): Unit = {
-    val homeLocation = homeLocationForRemoteRef(futureId)
-    Tracer.traceFutureReadSend(futureId, self.runtime.here, homeLocation)
-    homeLocation.sendInContext(self)(ReadFutureCmd(executionId, futureId, followerExecutionNum))
+    val homeLocation = execution.homeLocationForRemoteRef(futureId)
+    Tracer.traceFutureReadSend(futureId, execution.runtime.here, homeLocation)
+    homeLocation.sendInContext(execution)(ReadFutureCmd(executionId, futureId, followerExecutionNum))
   }
 
   def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: DOrcRuntime#RuntimeId): Unit = {
-    servingRemoteFutures.get(futureId).addReader(locationForFollowerNum(readerFollowerNum))
+    servingRemoteFutures.get(futureId).addReader(execution.locationForFollowerNum(readerFollowerNum))
   }
 
   def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]): Unit = {
     Logger.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x" + futureId.toHexString, value))
     readers foreach { reader =>
-      val mv = value.map(self.marshalValue(reader)(_))
-      Tracer.traceFutureResultSend(futureId, self.runtime.here, reader)
-      reader.sendInContext(self)(DeliverFutureResultCmd(executionId, futureId, mv))
+      val mv = value.map(execution.marshalValue(reader)(_))
+      Tracer.traceFutureResultSend(futureId, execution.runtime.here, reader)
+      reader.sendInContext(execution)(DeliverFutureResultCmd(execution.executionId, futureId, mv))
     }
   }
 
-  def deliverFutureResult(futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]): Unit = {
+  def deliverFutureResult(origin: PeerLocation, futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]): Unit = {
     val reader = waitingReaders.get(futureId)
     if (reader != null) {
       value match {
-        case Some(v) => reader.bind(self.unmarshalValue(v))
+        case Some(v) => reader.bind(execution.unmarshalValue(origin)(v))
         case None => reader.stop()
       }
     } else {

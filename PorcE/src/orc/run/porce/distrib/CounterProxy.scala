@@ -1,5 +1,5 @@
 //
-// CounterProxy.scala -- Scala trait CounterProxyManager, and classes RemoteCounterProxy and RemoteCounterMembersProxy 
+// CounterProxy.scala -- Scala trait CounterProxyManager, and classes RemoteCounterProxy and RemoteCounterMembersProxy
 // Project PorcE
 //
 // Created by jthywiss on Aug 15, 2017.
@@ -13,9 +13,10 @@
 
 package orc.run.porce.distrib
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import orc.Schedulable
 import orc.run.porce.runtime.Counter
-import java.util.concurrent.atomic.AtomicInteger
 
 /** A DOrcExecution mix-in to create and communicate among proxied counters.
   *
@@ -27,12 +28,12 @@ trait CounterProxyManager {
   execution: DOrcExecution =>
 
   type CounterProxyId = RemoteRefId
-  
+
   /** Proxy for a counter the resides on a remote dOrc node.
     * RemoteCounterProxy is created locally when a token has been migrated from
     * another node. When all local counter members halt, the remote
     * counter will be notified.
-    * 
+    *
     * This counter can maintain multiple parent tokens.
     *
     * @author jthywiss
@@ -43,9 +44,9 @@ trait CounterProxyManager {
       onDiscorporateFunc: (Int) => Unit,
       onResurrectFunc: () => Unit)
     extends Counter(0) {
-    // Proxy counters start "floating" in a non-halted, but 0 count situation. 
+    // Proxy counters start "floating" in a non-halted, but 0 count situation.
     val parentTokens = new AtomicInteger(0)
-  
+
     override def onHalt(): Unit = {
       //Logger.entering(getClass.getName, "onHalt")
       val n = parentTokens.getAndSet(0)
@@ -56,21 +57,19 @@ trait CounterProxyManager {
         onHaltFunc(n)
       }
     }
-  
+
     override def onResurrect(): Unit = {
       //Logger.entering(getClass.getName, "onResurrect")
       onResurrectFunc()
     }
-    
-    override def toString(): String = {
-      s"RemoteCounterProxy@$remoteProxyId"
-    }
+
+    override def toString: String = f"${getClass.getName}(remoteProxyId=$remoteProxyId%#x)"
 
     /** Take a parent token and add it to this proxy.
-     *  
+     *
      *  The parent token will be handled through it's halting by the proxy. The
      *  caller to this method gets a token on this proxy.
-     *  
+     *
      *  This call will never require a newToken from the parent. Instead, the
      *  caller must provide that token.
      */
@@ -80,7 +79,7 @@ trait CounterProxyManager {
       parentTokens.getAndIncrement()
     }
   }
-  
+
   /** Proxy for one or more remote members of a counter (tokens and counters).
     * RemoteCounterMembersProxy is created when a token is migrated to another node.
     * As the migrated token continues to execute, this proxy may come to represent
@@ -95,7 +94,7 @@ trait CounterProxyManager {
     // TODO: SAFETY: Are all calls into methods on this object guaranteed to be from the same receiver thread.
     private var alive = true
     private var discorporated = false
-  
+
     /** Remote counter members all halted, so notify parent that we've halted. */
     def notifyParentOfHalt(n: Int): Unit = synchronized {
       Logger.entering(getClass.getName, s"halt $n")
@@ -106,7 +105,7 @@ trait CounterProxyManager {
         }
       }
     }
-  
+
     /** Remote counter members all halted, but there was discorporated members, so so notify parent that we've discorporated. */
     def notifyParentOfDiscorporate(n: Int): Unit = synchronized {
       Logger.entering(getClass.getName, s"discorporate $n")
@@ -119,7 +118,7 @@ trait CounterProxyManager {
         throw new IllegalStateException(s"RemoteCounterMembersProxy.notifyParentOfDiscorporate when alive=$alive, discorporated=$discorporated")
       }
     }
-  
+
     /** Remote counter had only discorporated members, but now has a new member, so notify parent that we've resurrected. */
     def notifyParentOfResurrect(): Unit = synchronized {
       //Logger.entering(getClass.getName, "resurrect")
@@ -130,7 +129,7 @@ trait CounterProxyManager {
         throw new IllegalStateException(s"RemoteCounterMembersProxy.notifyParentOfResurrect when alive=$alive, discorporated=$discorporated")
       }
     }
-  
+
   }
 
   protected val proxiedCountersById = new java.util.concurrent.ConcurrentHashMap[Counter, CounterProxyId]
@@ -147,7 +146,7 @@ trait CounterProxyManager {
       Logger.finer(f"Created proxy for $enclosingCounter with id $counterProxyId")
       rmtCounterMbrProxy
     })
-    
+
     /* Token: enclosingCounter value is correct as is, since we're swapping this "token" with its proxy. */
 
     counterProxyId
@@ -161,7 +160,7 @@ trait CounterProxyManager {
           (n) => sendDiscorporate(origin, counterProxyId)(n),
           () => sendResurrect(origin, counterProxyId)()))
     newProxyCounter
-    
+
     // FIXME: Reenable this optimization. It's probably important. However it will require figuring out both how to
     // make sure things are safe (in terms of message orderings) and how to handle the case where a proxy is passed
     // here when we actually have the counter. This may require the sender knowing if this will happen.
@@ -176,7 +175,7 @@ trait CounterProxyManager {
     if (lookedUpProxyCounterMember != null) {
       /* There is a RemoteCounterMembersProxy already for this proxyId,
        * so discard the superfluous one created at the sender. */
-      
+
       // FIXME: We should be able to remove this once proxies can track multiple tokens from their parent.
       // If we are moving from a remote proxy to a local original counter we will probably need to make a new token here.
       // The problem is what happens to the count on he remote proxy. We would need to somehow halt it. So we might
