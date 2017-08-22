@@ -13,10 +13,10 @@
 
 package orc.lib.builtin
 
-import orc.values.sites.{ InvokerMethod }
-import orc.util.ArrayExtensions.{Array1, Array2}
-import orc.{Invoker, Accessor, Handle, FutureReader, OrcRuntime, ErrorAccessor}
+import orc.{ Accessor, ErrorAccessor, FutureReader, Handle, Invoker, OnlyDirectInvoker, OrcRuntime }
+import orc.util.ArrayExtensions.{ Array1, Array2 }
 import orc.values.Field
+import orc.values.sites.InvokerMethod
 
 object GetFieldSite extends InvokerMethod {
   val arity = 2
@@ -61,12 +61,12 @@ object GetMethodSite extends InvokerMethod {
   }
 }
 
-class GetMethodPassthroughInvoker(accessor: Accessor) extends Invoker {
+class GetMethodPassthroughInvoker(accessor: Accessor) extends OnlyDirectInvoker {
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     target == GetMethodSite && arguments.length == 1 && accessor.canGet(arguments(0))
   }
   
-  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     arguments(0)
   }
 }
