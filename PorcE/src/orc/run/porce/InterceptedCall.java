@@ -1,5 +1,6 @@
 package orc.run.porce;
 
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 import orc.run.porce.runtime.CPSCallResponseHandler;
@@ -21,8 +22,14 @@ public class InterceptedCall extends CallBase {
 		// Token: Passed to handle from arguments.
 		final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term, getCallSiteId());
 
-		execution.get().invokeIntercepted(handle, newTarget, buildArgumentValues(newArguments));
+		invokeInterceptedWithBoundary(handle, newTarget, newArguments);
 		return PorcEUnit.SINGLETON;
+	}
+
+	@TruffleBoundary
+	private void invokeInterceptedWithBoundary(final CPSCallResponseHandler handle, final Object newTarget,
+			final Object[] newArguments) {
+		execution.get().invokeIntercepted(handle, newTarget, buildArgumentValues(newArguments));
 	}
 
 	@Override
