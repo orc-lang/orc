@@ -13,23 +13,17 @@
 
 package orc.values.sites
 
-import orc.values.{ OrcValue, OrcRecord }
 import orc.Handle
-import orc.error.OrcException
+import orc.error.{ NotYetImplementedException, OrcException }
 import orc.error.compiletime.typing.TypeException
-import orc.error.NotYetImplementedException
-import orc.error.runtime.ArityMismatchException
+import orc.error.runtime.{ ArityMismatchException, ExceptionHaltException, HaltException, RightException }
 import orc.run.Logger
-import orc.types.Type
-import orc.types.Bot
-import orc.types.RecordType
-import orc.error.runtime.RightException
-import orc.error.runtime.HaltException
-import orc.error.runtime.ExceptionHaltException
-import orc.util.ArrayExtensions._
-import orc.error.runtime.UncallableValueException
+import orc.types.{ Bot, RecordType, Type }
+import orc.util.ArrayExtensions.{ Array0, Array1, Array2, Array3 }
+import orc.values.{ OrcRecord, OrcValue }
 
-trait Site extends OrcValue with SiteMetadata {
+//FIXME:XXX: "Serializable" here is a temporary hack.  Sites are not all Serializable.
+trait Site extends OrcValue with SiteMetadata with Serializable {
   def call(args: Array[AnyRef], h: Handle): Unit
 
   override def toOrcSyntax() = this.name
