@@ -15,6 +15,8 @@ package orc.run.porce.distrib
 
 import scala.collection.mutable.WeakHashMap
 
+import orc.run.distrib.{ DOrcMarshalingNotifications, DOrcMarshalingReplacement }
+
 /** A DOrcExecution mix-in to marshal and unmarshal Orc program values.
   *
   * When marshaling, if the ValueLocator permits the destination, and the
@@ -44,7 +46,7 @@ trait ValueMarshaler {
   }
 
   def marshalValue(destination: PeerLocation)(value: AnyRef): AnyRef = {
-    //Logger.finest(s"marshalValue: $value:${value.getClass.getName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
+    //Logger.finest(s"marshalValue: $value: ${value.getClass.getName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
 
     val replacedValue = value match {
       /* keep in sync with cases in marshalValueWouldReplace */
@@ -71,7 +73,7 @@ trait ValueMarshaler {
       case mn: DOrcMarshalingNotifications => mn.marshaled()
       case _ => { /* Nothing to do */ }
     }
-    //Logger.finest(s"marshalValue($destination)($value)=$marshaledValue")
+    Logger.finest(s"marshalValue($destination)($value): ${value.getClass.getName} = $marshaledValue")
     assert(execution.marshalExecutionObject.isDefinedAt((destination, replacedValue)) || (marshaledValue != value) == marshalValueWouldReplace(destination)(value), s"marshaledValue disagrees with marshalValueWouldReplace for value=$value, marshaledValue=$marshaledValue")
     marshaledValue
   }
@@ -177,25 +179,27 @@ trait ValueMarshaler {
 
 }
 
-/** Orc values implementing this trait will be notified of marshaling for
-  * serialization to another location.
-  *
-  * @author jthywiss
-  */
-trait DOrcMarshalingNotifications {
-  def marshaled(): Unit = {}
-  def unmarshaled(): Unit = {}
-}
-
-/** Orc values implementing this trait will be asked for a marshalable
-  * replacement for themselves when they are marshaled for serialization
-  * to another location.
-  *
-  * @author jthywiss
-  */
-trait DOrcMarshalingReplacement {
-  def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean
-  def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef
-  def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean
-  def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef
-}
+//We use these two traits in the original orc.run.distrib package:
+//
+///** Orc values implementing this trait will be notified of marshaling for
+//  * serialization to another location.
+//  *
+//  * @author jthywiss
+//  */
+//trait DOrcMarshalingNotifications {
+//  def marshaled(): Unit = {}
+//  def unmarshaled(): Unit = {}
+//}
+//
+///** Orc values implementing this trait will be asked for a marshalable
+//  * replacement for themselves when they are marshaled for serialization
+//  * to another location.
+//  *
+//  * @author jthywiss
+//  */
+//trait DOrcMarshalingReplacement {
+//  def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean
+//  def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef
+//  def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean
+//  def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef
+//}
