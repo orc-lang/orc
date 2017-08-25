@@ -13,9 +13,9 @@
 
 package orc.run.porce.distrib
 
+import java.util.{ Collections, IdentityHashMap }
+
 import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
-import java.util.IdentityHashMap
-import java.util.Collections
 
 /** A DOrcExecution mix-in to marshal and unmarshal dOrc execution-internal
   * objects, such as tokens, groups, closures, counters, terminators, etc.
@@ -24,7 +24,7 @@ import java.util.Collections
   */
 trait ExecutionMashaler {
   execution: DOrcExecution =>
-  
+
   // FIXME: This leaks references to objects in the table. This needs to be week.
   val instanceTable = Collections.synchronizedMap(new IdentityHashMap[AnyRef, AnyRef]())
 
@@ -69,9 +69,9 @@ trait ExecutionMashaler {
         /* Don't run the value marshaler on closures.  Closures can be copied
          * to any location.  Also, cycles in closure environments are
          * avoided here by not running the value marshaler on closures. */
-        case (cl: PorcEClosure, i) => 
+        case (cl: PorcEClosure, i) =>
           unmarshledEnvironment(i) = cl
-        case (v, i) => 
+        case (v, i) =>
           //Logger.fine(f"Unmarshaling nested value $v ${System.identityHashCode(v)}%x")
           // This handles Closures and uses instanceTable to avoid recursion.
           unmarshledEnvironment(i) = instanceTable.computeIfAbsent(v, (k) => execution.unmarshalValue(origin)(v))

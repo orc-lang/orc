@@ -98,9 +98,9 @@ trait ValueMarshaler {
       false
     else {
       //FIXME: Terribly slow.  Leaks objects (refs in nullOos).  Just BadBadBad.
-      //   amp: I would not spend much time on this. I suspect we will want to 
-      //        move away from Serializable anyway since it is so slow and 
-      //        unreliable. And classes will need to be white listed anyway 
+      //   amp: I would not spend much time on this. I suspect we will want to
+      //        move away from Serializable anyway since it is so slow and
+      //        unreliable. And classes will need to be white listed anyway
       //        because of the mutibility. We might be able to statically detect
       //        a FEW objects as immutable (by checking for writes to private
       //        fields and final-ness of all non-private fields and such like.
