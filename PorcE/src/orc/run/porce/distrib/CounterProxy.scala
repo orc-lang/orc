@@ -50,6 +50,7 @@ trait CounterProxyManager {
     override def onHalt(): Unit = {
       //Logger.entering(getClass.getName, "onHalt")
       val n = parentTokens.getAndSet(0)
+      logChange(s"onHalt from $n (at ${get()})")
       assert(n > 0)
       if (isDiscorporated) {
         onDiscorporateFunc(n)
@@ -85,49 +86,48 @@ trait CounterProxyManager {
     * As the migrated token continues to execute, this proxy may come to represent
     * multiple tokens, and/or sub-counters.  When all remote members halt, this
     * proxy will remove itself from the parent.
+    * 
+    * This proxy can be reused and holds no state about whether it is no longer 
+    * needed.
     *
-    * @author jthywiss
+    * @author jthywiss, amp
     */
   final class RemoteCounterMembersProxy private[CounterProxyManager] (
       val thisProxyId: CounterProxyManager#CounterProxyId,
       val enclosingCounter: Counter) {
     // TODO: SAFETY: Are all calls into methods on this object guaranteed to be from the same receiver thread.
-    private var alive = true
-    private var discorporated = false
+    //private var parentTokens = 0
+    // TODO: MEMORYLEAK: The lack of any local information on if this members proxy is done will make removing proxies from the maps very hard.
 
     /** Remote counter members all halted, so notify parent that we've halted. */
     def notifyParentOfHalt(n: Int): Unit = synchronized {
       Logger.entering(getClass.getName, s"halt $n")
-      if (alive) {
-        alive = false
-        (0 until n).foreach { (_) =>
-          enclosingCounter.haltToken()
-        }
+      //assert(parentTokens >= n)
+      //parentTokens -= n
+      (0 until n).foreach { (_) =>
+        enclosingCounter.haltToken()
       }
     }
 
     /** Remote counter members all halted, but there was discorporated members, so so notify parent that we've discorporated. */
     def notifyParentOfDiscorporate(n: Int): Unit = synchronized {
       Logger.entering(getClass.getName, s"discorporate $n")
-      if (!discorporated && alive) {
-        discorporated = true
-        (0 until n).foreach { (_) =>
-          enclosingCounter.discorporateToken()
-        }
-      } else {
-        throw new IllegalStateException(s"RemoteCounterMembersProxy.notifyParentOfDiscorporate when alive=$alive, discorporated=$discorporated")
+      //assert(parentTokens >= n)
+      //parentTokens -= n
+      (0 until n).foreach { (_) =>
+        enclosingCounter.discorporateToken()
       }
+    }
+    
+    def takeParentToken() = {
+      Logger.entering(getClass.getName, s"takeParentToken")
+      //parentTokens += 1      
     }
 
     /** Remote counter had only discorporated members, but now has a new member, so notify parent that we've resurrected. */
     def notifyParentOfResurrect(): Unit = synchronized {
       //Logger.entering(getClass.getName, "resurrect")
-      if (discorporated && alive) {
-        discorporated = false
-        enclosingCounter.newToken()
-      } else {
-        throw new IllegalStateException(s"RemoteCounterMembersProxy.notifyParentOfResurrect when alive=$alive, discorporated=$discorporated")
-      }
+      enclosingCounter.newToken()
     }
 
   }
@@ -146,7 +146,7 @@ trait CounterProxyManager {
       Logger.finer(f"Created proxy for $enclosingCounter with id $counterProxyId")
       rmtCounterMbrProxy
     })
-
+    
     /* Token: enclosingCounter value is correct as is, since we're swapping this "token" with its proxy. */
 
     counterProxyId
