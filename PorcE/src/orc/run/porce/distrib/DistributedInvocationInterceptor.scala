@@ -52,7 +52,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     // TODO: If this every turns out to be a performance issue I suspect a bloom-filter-optimized set would help.
     val intersectLocs = (arguments map currentLocations).fold(currentLocations(target)) { _ & _ }
     require(!(intersectLocs contains runtime.here))
-    Logger.finest(s"siteCall($target,$arguments): intersection of current locations=$intersectLocs")
+    Logger.finest(s"siteCall($target, $arguments): intersection of current locations=$intersectLocs")
     val candidateDestinations = {
       if (intersectLocs.nonEmpty) {
         intersectLocs
@@ -93,7 +93,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   def receiveCall(origin: PeerLocation, callCorrelationId: Long, callMemento: CallMemento): Unit = {
     // Token: Pass the token on the remote counter to the proxy counter.
     val proxyCounter = makeProxyCounterFor(callMemento.counterProxyId, origin)
-    // TODO: When we reenable the proxy chain flattening optimization we will need to handle this more carefully because "proxyCounter" here could be a local counter or something else not quite what I am assuming here.    
+    // TODO: When we reenable the proxy chain flattening optimization we will need to handle this more carefully because "proxyCounter" here could be a local counter or something else not quite what I am assuming here.
     proxyCounter.takeParentToken()
 
     val proxyTerminator = makeProxyTerminatorFor(callMemento.terminatorProxyId, origin)
@@ -110,13 +110,13 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
     Tracer.traceCallReceive(callCorrelationId, origin, execution.runtime.here)
 
-    Logger.fine(s"scheduling $callInvoker")
+    Logger.fine(s"Scheduling $callInvoker")
     // Token: Pass the initial token of the proxy counter to the call.
     execution.runtime.schedule(callInvoker)
   }
 
   def sendPublish(destination: PeerLocation, proxyId: RemoteRef#RemoteRefId)(publicationContinuation: PorcEClosure, publishedValue: AnyRef): Unit = {
-    Logger.fine(s"sendPublish: publish by proxyId $proxyId")
+    Logger.fine(f"sendPublish: publish by proxyId $proxyId%#x")
     Tracer.tracePublishSend(proxyId, execution.runtime.here, destination)
 
     val marshaledPubValue = execution.marshalValue(destination)(publishedValue)
@@ -129,6 +129,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     if (g != null) {
       Tracer.tracePublishReceive(groupMemberProxyId, origin, execution.runtime.here)
       val unmarshaledPubValue = execution.unmarshalValue(origin)(publication.publishedValue)
+      Logger.fine(s"Scheduling CallClosureSchedulable(${publication.publicationContinuation}, $unmarshaledPubValue)")
       execution.runtime.schedule(CallClosureSchedulable(publication.publicationContinuation, unmarshaledPubValue))
     } else {
       throw new AssertionError(f"Publish by unknown group member proxy $groupMemberProxyId%#x, value=${publication.publishedValue}")

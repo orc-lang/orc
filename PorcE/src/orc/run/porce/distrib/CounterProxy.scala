@@ -47,6 +47,8 @@ trait CounterProxyManager {
     // Proxy counters start "floating" in a non-halted, but 0 count situation.
     val parentTokens = new AtomicInteger(0)
 
+    override def toString: String = f"${getClass.getName}(remoteProxyId=$remoteProxyId%#x)"
+
     override def onHalt(): Unit = {
       //Logger.entering(getClass.getName, "onHalt")
       val n = parentTokens.getAndSet(0)
@@ -63,8 +65,6 @@ trait CounterProxyManager {
       //Logger.entering(getClass.getName, "onResurrect")
       onResurrectFunc()
     }
-
-    override def toString: String = f"${getClass.getName}(remoteProxyId=$remoteProxyId%#x)"
 
     /** Take a parent token and add it to this proxy.
      *
@@ -86,8 +86,8 @@ trait CounterProxyManager {
     * As the migrated token continues to execute, this proxy may come to represent
     * multiple tokens, and/or sub-counters.  When all remote members halt, this
     * proxy will remove itself from the parent.
-    * 
-    * This proxy can be reused and holds no state about whether it is no longer 
+    *
+    * This proxy can be reused and holds no state about whether it is no longer
     * needed.
     *
     * @author jthywiss, amp
@@ -98,6 +98,8 @@ trait CounterProxyManager {
     // TODO: SAFETY: Are all calls into methods on this object guaranteed to be from the same receiver thread.
     //private var parentTokens = 0
     // TODO: MEMORYLEAK: The lack of any local information on if this members proxy is done will make removing proxies from the maps very hard.
+
+    override def toString: String = f"${getClass.getName}(thisProxyId=$thisProxyId%#x, enclosingCounter=$enclosingCounter)"
 
     /** Remote counter members all halted, so notify parent that we've halted. */
     def notifyParentOfHalt(n: Int): Unit = synchronized {
@@ -118,10 +120,10 @@ trait CounterProxyManager {
         enclosingCounter.discorporateToken()
       }
     }
-    
+
     def takeParentToken() = {
       Logger.entering(getClass.getName, s"takeParentToken")
-      //parentTokens += 1      
+      //parentTokens += 1
     }
 
     /** Remote counter had only discorporated members, but now has a new member, so notify parent that we've resurrected. */
@@ -143,10 +145,10 @@ trait CounterProxyManager {
     }
     proxiedCounterMembers.computeIfAbsent(counterProxyId, (_) => {
       val rmtCounterMbrProxy = new RemoteCounterMembersProxy(counterProxyId, enclosingCounter)
-      Logger.finer(f"Created proxy for $enclosingCounter with id $counterProxyId")
+      Logger.finer(f"Created proxy for $enclosingCounter with id $counterProxyId%#x")
       rmtCounterMbrProxy
     })
-    
+
     /* Token: enclosingCounter value is correct as is, since we're swapping this "token" with its proxy. */
 
     counterProxyId
@@ -206,6 +208,7 @@ trait CounterProxyManager {
   def haltGroupMemberProxy(groupMemberProxyId: CounterProxyId, n: Int): Unit = {
     val g = proxiedCounterMembers.get(groupMemberProxyId)
     if (g != null) {
+      Logger.fine(s"Scheduling $g.notifyParentOfHalt($n)")
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfHalt(n) } })
     } else {
       Logger.fine(f"Halt group member proxy on unknown group member proxy $groupMemberProxyId%#x")
@@ -215,6 +218,7 @@ trait CounterProxyManager {
   def discorporateGroupMemberProxy(groupMemberProxyId: CounterProxyId, n: Int): Unit = {
     val g = proxiedCounterMembers.get(groupMemberProxyId)
     if (g != null) {
+      Logger.fine(s"Scheduling $g.notifyParentOfDiscorporate($n)")
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfDiscorporate(n) } })
     } else {
       Logger.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
@@ -224,6 +228,7 @@ trait CounterProxyManager {
   def resurrectGroupMemberProxy(groupMemberProxyId: CounterProxyId): Unit = {
     val g = proxiedCounterMembers.get(groupMemberProxyId)
     if (g != null) {
+      Logger.fine(s"Scheduling $g.notifyParentOfResurrect()")
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfResurrect() } })
     } else {
       Logger.fine(f"Resurrect group member proxy on unknown group member proxy $groupMemberProxyId%#x")

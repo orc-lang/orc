@@ -21,7 +21,7 @@ import orc.{ Future, FutureReader }
   */
 class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends orc.run.porce.runtime.Future() with RemoteRef {
 
-  override def toString: String = super.toString + f"(remoteRefId=$remoteRefId%#x)"
+  override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x)"
 
   execution.sendReadFuture(remoteRefId)
 }
@@ -33,6 +33,8 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
 class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId: RemoteFutureRef#RemoteRefId) extends FutureReader {
 
   protected val readerLocations = new scala.collection.mutable.HashSet[PeerLocation]()
+
+  override def toString: String = f"${getClass.getName}(fut=$fut, execution=$execution, futureId=$futureId%#x)"
 
   def addReader(l: PeerLocation): Unit = synchronized {
     readerLocations += l
@@ -114,6 +116,7 @@ trait RemoteFutureManager {
   }
 
   def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: DOrcRuntime#RuntimeId): Unit = {
+    Logger.fine(f"Posting read on $futureId%#x, with reader at follower number $readerFollowerNum")
     servingRemoteFutures.get(futureId).addReader(execution.locationForFollowerNum(readerFollowerNum))
   }
 
@@ -130,11 +133,17 @@ trait RemoteFutureManager {
     val reader = waitingReaders.get(futureId)
     if (reader != null) {
       value match {
-        case Some(v) => reader.bind(execution.unmarshalValue(origin)(v))
-        case None => reader.stop()
+        case Some(v) => {
+          Logger.fine(f"Binding future $futureId%#x to $v")
+          reader.bind(execution.unmarshalValue(origin)(v))
+        }
+        case None => {
+          Logger.fine(f"Binding future $futureId%#x to stop")
+          reader.stop()
+        }
       }
     } else {
-      Logger.finer(s"deliverFutureResult reader not found, id=$futureId")
+      Logger.finer(f"deliverFutureResult reader not found, id=$futureId%#x")
     }
   }
 }

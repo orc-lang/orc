@@ -1,5 +1,5 @@
 //
-// TerminatorProxy.scala -- Scala trait TerminatorProxyManager, and classes RemoteTerminatorProxy and RemoteTerminatorMembersProxy 
+// TerminatorProxy.scala -- Scala trait TerminatorProxyManager, and classes RemoteTerminatorProxy and RemoteTerminatorMembersProxy
 // Project PorcE
 //
 // Created by jthywiss on Aug 15, 2017.
@@ -14,9 +14,7 @@
 package orc.run.porce.distrib
 
 import orc.Schedulable
-import orc.run.porce.runtime.{ PorcEClosure, Terminatable, Terminator }
-import orc.run.porce.runtime.Counter
-import orc.run.porce.runtime.CallClosureSchedulable
+import orc.run.porce.runtime.{ CallClosureSchedulable, Counter, PorcEClosure, Terminatable, Terminator }
 
 /** A DOrcExecution mix-in to create and communicate among proxied terminators.
   *
@@ -41,6 +39,8 @@ trait TerminatorProxyManager {
       onKill: (Counter, PorcEClosure) => Unit)
     extends Terminator() {
 
+    override def toString: String = f"${getClass.getName}(remoteProxyId=$remoteProxyId%#x)"
+
     override def kill(c: Counter, k: PorcEClosure): Boolean = {
       //Logger.info(s"kill on $this")
       require(c != null)
@@ -49,12 +49,12 @@ trait TerminatorProxyManager {
       onKill(c, k)
       false
     }
-    
+
     override def kill(): Unit = {
       super.kill(null, null)
     }
   }
-  
+
   /** Proxy for one or more remote members of a terminator.
     * RemoteTerminatorMembersProxy is created when a token is migrated to another node.
     * As the migrated token continues to execute, this proxy may come to represent
@@ -68,10 +68,12 @@ trait TerminatorProxyManager {
       val enclosingTerminator: Terminator,
       sendKillFunc: (TerminatorProxyManager#TerminatorProxyId) => Unit)
     extends Terminatable {
-  
+
     // FIXME: PERFORMANCE: Make this an atomic boolean or whatever state is needed. It may not save much, but it cannot be worse than a lock (since the atomic will be a single lock instruction).
     private var alive = true
-  
+
+    override def toString: String = f"${getClass.getName}(thisProxyId=$thisProxyId%#x, enclosingTerminator=$enclosingTerminator)"
+
     /** The parent terminator is killing its members; pass it on to the remote terminator proxy. */
     override def kill(): Unit = synchronized {
       //Logger.entering(getClass.getName, "kill")
@@ -81,7 +83,7 @@ trait TerminatorProxyManager {
         sendKillFunc(thisProxyId)
       }
     }
-  
+
   }
 
   protected val proxiedTerminators = new java.util.concurrent.ConcurrentHashMap[TerminatorProxyId, RemoteTerminatorProxy]
@@ -126,7 +128,7 @@ trait TerminatorProxyManager {
 
   def sendKilling(destination: PeerLocation, proxyId: TerminatorProxyId)(counter: Counter, continuation: PorcEClosure): Unit = {
     Tracer.traceKillGroupSend(proxyId, execution.runtime.here, destination)
-    val counterProxyId = makeProxyWithinCounter(counter)    
+    val counterProxyId = makeProxyWithinCounter(counter)
     destination.sendInContext(execution)(KillingGroupCmd(execution.executionId, proxyId, new KillingMemento(counterProxyId, continuation)))
   }
 
@@ -134,25 +136,27 @@ trait TerminatorProxyManager {
     // TODO: Does this need to be atomic?
     val g = proxiedTerminators.get(proxyId)
     if (g != null) {
+      Logger.fine(s"Scheduling $g.kill()")
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.kill() } })
       proxiedTerminators.remove(proxyId)
     } else {
       Logger.fine(f"Kill group on unknown (or already killed) group $proxyId%#x")
     }
   }
-  
+
   def killingGroupProxy(origin: PeerLocation, proxyId: TerminatorProxyId, killing: KillingMemento): Unit = {
     val m = proxiedTerminatorMembers.get(proxyId)
     val proxyCounter = makeProxyCounterFor(killing.counterProxyId, origin)
     proxyCounter.takeParentToken()
     if (m != null) {
       val g = m.enclosingTerminator
-      execution.runtime.schedule(new Schedulable { 
-        def run(): Unit = { 
-          if(g.kill(proxyCounter, killing.continuation)) {
+      Logger.fine(s"Scheduling $g.kill($proxyCounter, ${killing.continuation})...")
+      execution.runtime.schedule(new Schedulable {
+        def run(): Unit = {
+          if (g.kill(proxyCounter, killing.continuation)) {
             runtime.schedule(CallClosureSchedulable(killing.continuation))
           }
-        } 
+        }
       })
       proxiedTerminatorMembers.remove(proxyId)
     } else {
