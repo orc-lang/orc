@@ -269,7 +269,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
                     porc.HaltToken(newC) :::
                     ctx.p(v)
                 }))) {
-                  setFlag(newP2, ctx.c, ctx.t, flag)
+                  setFlag(newP2, newC, ctx.t, flag)
                 }
             }))) {
               // Move into ctx with new C and P
