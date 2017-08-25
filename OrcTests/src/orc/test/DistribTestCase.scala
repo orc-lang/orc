@@ -38,10 +38,10 @@ class DistribTestCase extends OrcTestCase {
       val followerSockets = options.recognizedLongOpts("follower-sockets").getValue
       val actual = if (isLocalAddress(InetAddress.getByName(DistribTestCase.leaderSpec.hostname))) {
         //OrcForTesting.compileAndRun(orcFile.getPath(), 200 /*s*/, bindings)
-        val result = OsCommand.getResultFrom(Seq("java", "-cp", DistribTestCase.leaderSpec.classPath) ++ DistribTestCase.leaderSpec.jvmOptions ++ Seq("orc.Main", "--backend=distrib", s"--follower-sockets=$followerSockets", "--java-stack-trace", orcFile.getPath), directory = new File(DistribTestCase.leaderSpec.workingDir), teeStdOutErr = true)
+        val result = OsCommand.getResultFrom(Seq(s"${DistribTestCase.graalVmHome}/bin/java", "-cp", DistribTestCase.leaderSpec.classPath) ++ DistribTestCase.leaderSpec.jvmOptions ++ Seq("orc.Main", "--backend=porc-distrib", s"--follower-sockets=$followerSockets", "--java-stack-trace", orcFile.getPath), directory = new File(DistribTestCase.leaderSpec.workingDir), teeStdOutErr = true)
         result.stdout
       } else {
-        val result = OsCommand.getResultFrom(Seq("ssh", DistribTestCase.leaderSpec.hostname, s"cd '${DistribTestCase.leaderSpec.workingDir}' ; java -cp '${DistribTestCase.leaderSpec.classPath}' ${DistribTestCase.leaderSpec.jvmOptions.mkString(" ")} orc.Main --backend=distrib --follower-sockets=$followerSockets --java-stack-trace $orcFile"), teeStdOutErr = true)
+        val result = OsCommand.getResultFrom(Seq("ssh", DistribTestCase.leaderSpec.hostname, s"cd '${DistribTestCase.leaderSpec.workingDir}' ; '${DistribTestCase.graalVmHome}/bin/java' -cp '${DistribTestCase.leaderSpec.classPath}' ${DistribTestCase.leaderSpec.jvmOptions.mkString(" ")} orc.Main --backend=porc-distrib --follower-sockets=$followerSockets --java-stack-trace $orcFile"), teeStdOutErr = true)
         result.stdout
       }
       if (!expecteds.contains(actual)) {
@@ -79,13 +79,13 @@ class DistribTestCase extends OrcTestCase {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
         Seq(
             Seq("cd", followerSpec.workingDir),
-            Seq("java", "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq("orc.run.distrib.FollowerRuntime", followerNumber.toString, followerSpec.hostname+":"+followerSpec.port),
+            Seq(s"${DistribTestCase.graalVmHome}/bin/java", "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq("orc.run.porce.distrib.FollowerRuntime", followerNumber.toString, followerSpec.hostname+":"+followerSpec.port),
         )
       } else {
         val sshAddress = bindings.followerSockets.get(followerNumber - 1).getHostString
         println(s"Launching follower $followerNumber on $sshAddress:${followerSpec.port}")
         /* FIXME: Escape strings for shell */
-        Seq(Seq("ssh", sshAddress, s"cd '${followerSpec.workingDir}' ; java -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} orc.run.distrib.FollowerRuntime $followerNumber ${followerSpec.hostname}:${followerSpec.port}"))
+        Seq(Seq("ssh", sshAddress, s"cd '${followerSpec.workingDir}' ; '${DistribTestCase.graalVmHome}/bin/java' -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} orc.run.porce.distrib.FollowerRuntime $followerNumber ${followerSpec.hostname}:${followerSpec.port}"))
       }
       OsCommand.newTerminalWindowWith(commandSeq, s"Follower $followerNumber", 42, 132)
     }
@@ -146,14 +146,19 @@ object DistribTestCase {
 
   val remoteHomeDir = OsCommand.getResultFrom(Seq("ssh", leaderHostname, "pwd")).stdout.stripLineEnd
 
+  val graalVmHome = s"${remoteHomeDir}/graalvm-0.26"
   val dorcTestDir = s"${remoteHomeDir}/dorc-test2"
 
   val orcTestsProjDir = s"${dorcTestDir}/OrcTests"
   val dOrcTestDataDir = s"${dorcTestDir}/OrcTests/test_data/distrib"
   val orcVersion = orc.Main.versionProperties.getProperty("orc.version")
   val orcScalaProjDir = s"${dorcTestDir}/OrcScala"
-  val dOrcClassPath = s"${orcScalaProjDir}/build/orc-${orcVersion}.jar:${orcScalaProjDir}/lib/*"
-  val jvmOpts = Seq("-Dsun.io.serialization.extendedDebugInfo=true")
+  val porceBuildDir = s"${dorcTestDir}/PorcE/build/classes"
+  val dOrcClassPath = s"${orcScalaProjDir}/build/orc-${orcVersion}.jar:${orcScalaProjDir}/lib/*:${porceBuildDir}"
+  val jvmOpts = Seq(
+      s"-Xbootclasspath/a:${graalVmHome}/jre/lib/truffle/truffle-api.jar", 
+      "-XX:-UseJVMCIClassLoader", 
+      "-Dsun.io.serialization.extendedDebugInfo=true")
 
   val leaderSpec = 
       DOrcRuntimePlacement(leaderHostname, 0, orcTestsProjDir, dOrcClassPath, jvmOpts)
@@ -178,7 +183,7 @@ object DistribTestCase {
   def buildSuite() = {
     copyFiles()
     val bindings = new orc.Main.OrcCmdLineOptions()
-    bindings.backend = orc.BackendType.fromString("distrib")
+    bindings.backend = orc.BackendType.fromString("porc-distrib")
     bindings.followerSockets = (followerSpecs map { fs => new InetSocketAddress(fs.hostname, fs.port)}).asJava
     bindings.showJavaStackTrace = true
     TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), classOf[DistribTestCase], bindings, new File("test_data/distrib"))
@@ -195,13 +200,15 @@ object DistribTestCase {
     }
 
     print("Copying Orc test files to leader...")
-    checkExitValue("Remote mkdir", OsCommand.getResultFrom(Seq("ssh", leaderHostname, s"mkdir -p '${orcScalaProjDir}/build' '${orcScalaProjDir}/lib' '${dOrcTestDataDir}'")))
+    checkExitValue("Remote mkdir", OsCommand.getResultFrom(Seq("ssh", leaderHostname, s"mkdir -p '${orcScalaProjDir}/build' '${orcScalaProjDir}/lib' '${dOrcTestDataDir}' '${porceBuildDir}'")))
     print(".")
     checkExitValue("rsync of orc.jar", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"../OrcScala/build/orc-${orcVersion}.jar", s"${leaderHostname}:${orcScalaProjDir}/build/")))
     print(".")
     checkExitValue("rsync of orc/lib", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"../OrcScala/lib/", s"${leaderHostname}:${orcScalaProjDir}/lib/")))
     print(".")
     checkExitValue("rsync of test_data/distrib", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"test_data/distrib/", s"${leaderHostname}:${dOrcTestDataDir}/")))
+    print(".")
+    checkExitValue("rsync of PorcE build dir", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"../PorcE/build/classes/", s"${leaderHostname}:${porceBuildDir}/")))
     println("done")
   }
 

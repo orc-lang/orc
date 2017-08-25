@@ -8,5 +8,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/OrcScala"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/OrcSites"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/PorcE"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>
