@@ -142,14 +142,21 @@ object DistribTestCase {
 //      DOrcRuntimePlacement("localhost", 36732, dOrcTestDataDir, dOrcClassPath, jvmOpts),
 //      )
 
-  val orcTestsProjDir = "/u/jthywiss/dorc-test/OrcTests"
-  val dOrcTestDataDir = "/u/jthywiss/dorc-test/OrcTests/test_data/distrib"
+  val leaderHostname = "the-professor.cs.utexas.edu"
+
+  val remoteHomeDir = OsCommand.getResultFrom(Seq("ssh", leaderHostname, "pwd")).stdout.stripLineEnd
+
+  val dorcTestDir = s"${remoteHomeDir}/dorc-test2"
+
+  val orcTestsProjDir = s"${dorcTestDir}/OrcTests"
+  val dOrcTestDataDir = s"${dorcTestDir}/OrcTests/test_data/distrib"
   val orcVersion = orc.Main.versionProperties.getProperty("orc.version")
-  val dOrcClassPath = s"/u/jthywiss/dorc-test/OrcScala/build/orc-${orcVersion}.jar:/u/jthywiss/dorc-test/OrcScala/lib/*"
+  val orcScalaProjDir = s"${dorcTestDir}/OrcScala"
+  val dOrcClassPath = s"${orcScalaProjDir}/build/orc-${orcVersion}.jar:${orcScalaProjDir}/lib/*"
   val jvmOpts = Seq("-Dsun.io.serialization.extendedDebugInfo=true")
 
   val leaderSpec = 
-      DOrcRuntimePlacement("the-professor.cs.utexas.edu", 0, orcTestsProjDir, dOrcClassPath, jvmOpts)
+      DOrcRuntimePlacement(leaderHostname, 0, orcTestsProjDir, dOrcClassPath, jvmOpts)
 
   val followerSpecs = Seq(
       //                  (hostname,    port,  workingDir,     classPath,     jvmOptions)
@@ -169,11 +176,33 @@ object DistribTestCase {
 
 
   def buildSuite() = {
+    copyFiles()
     val bindings = new orc.Main.OrcCmdLineOptions()
     bindings.backend = orc.BackendType.fromString("distrib")
     bindings.followerSockets = (followerSpecs map { fs => new InetSocketAddress(fs.hostname, fs.port)}).asJava
     bindings.showJavaStackTrace = true
     TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), classOf[DistribTestCase], bindings, new File("test_data/distrib"))
+  }
+
+  @throws(classOf[Exception])
+  protected def copyFiles(): Unit = {
+    def checkExitValue(description: String, result: OsCommandResult): Unit = {
+      if (result.exitValue != 0) {
+        print(result.stdout)
+        Console.err.print(result.stderr)
+        throw new Exception(s"${description} filed: exitValue=${result.exitValue}, stderr=${result.stderr}")
+      }
+    }
+
+    print("Copying Orc test files to leader...")
+    checkExitValue("Remote mkdir", OsCommand.getResultFrom(Seq("ssh", leaderHostname, s"mkdir -p '${orcScalaProjDir}/build' '${orcScalaProjDir}/lib' '${dOrcTestDataDir}'")))
+    print(".")
+    checkExitValue("rsync of orc.jar", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"../OrcScala/build/orc-${orcVersion}.jar", s"${leaderHostname}:${orcScalaProjDir}/build/")))
+    print(".")
+    checkExitValue("rsync of orc/lib", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"../OrcScala/lib/", s"${leaderHostname}:${orcScalaProjDir}/lib/")))
+    print(".")
+    checkExitValue("rsync of test_data/distrib", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"test_data/distrib/", s"${leaderHostname}:${dOrcTestDataDir}/")))
+    println("done")
   }
 
 }
