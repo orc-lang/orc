@@ -148,6 +148,7 @@ class DOrcFollowerExecution(
   runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
 
+  // Token: This does not get a token initially.
   val counter = makeProxyCounterFor(rootCounterId, rootCounterOrigin)
 
   val pRootNode = new RootNode(null) with HasId {

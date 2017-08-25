@@ -25,6 +25,7 @@ public class Kill extends Expression {
     public PorcEUnit run(final VirtualFrame frame, final Counter counter, final Terminator terminator, final PorcEClosure continuation, 
     		@Cached("create(execution)") final InternalArgArrayCallBase callNode) {
     	// TODO: PERFORMANCE: This should speculate on the the result of terminator to avoid creating the callNode if it's not needed.
+    	// Token: This passes a token on counter to the continuation if kill returns false.
         if (terminator.kill(counter, continuation)) {
             callNode.execute(frame, continuation, new Object[] { null });
         }

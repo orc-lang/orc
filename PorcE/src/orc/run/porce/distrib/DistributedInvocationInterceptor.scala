@@ -87,14 +87,21 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
     val callCorrelationId = callCorrelationCounter.getAndIncrement()
     Tracer.traceCallSend(callCorrelationId, execution.runtime.here, destination)
+    // Token: The token associated with the call is passed with the message.
     destination.sendInContext(execution)(MigrateCallCmd(executionId, callCorrelationId, callMemento))
   }
 
   def receiveCall(origin: PeerLocation, callCorrelationId: Long, callMemento: CallMemento): Unit = {
-    // Token: Pass the token on the remote counter to the proxy counter.
     val proxyCounter = makeProxyCounterFor(callMemento.counterProxyId, origin)
+    // proxyCounter's parent __must__ be the a counter at origin with callMemento.counterProxyId.
+    // Otherwise, the takeParentToken below is incorrect since it takes a token from one parent
+    // and halts a token on a different one.
+
     // TODO: When we reenable the proxy chain flattening optimization we will need to handle this more carefully because "proxyCounter" here could be a local counter or something else not quite what I am assuming here.
+    
+    // Token: Pass token on implicit remote parent to proxyCounter
     proxyCounter.takeParentToken()
+    // Token: We get a token on the local proxy back from this call.
 
     val proxyTerminator = makeProxyTerminatorFor(callMemento.terminatorProxyId, origin)
 
@@ -103,6 +110,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
     val callInvoker = new Schedulable {
       def run(): Unit = {
+        // Token: Pass local proxy token to the invokation.
         execution.invokeCallTarget(callMemento.callSiteId, callMemento.publicationContinuation, proxyCounter, proxyTerminator, unmarshaledTarget, unmarshaledArgs)
       }
     }

@@ -108,6 +108,8 @@ class Terminator extends Terminatable {
     * This return value allows the caller to call `k` more efficient (allowing inlining).
     *
     * This needs to be thread-safe and idempotent.
+    * 
+    * Token: This call consumes a token on c if it returns false.
     */
   def kill(c: Counter, k: PorcEClosure): Boolean = {
     // First, swap in null as the children set.

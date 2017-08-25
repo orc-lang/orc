@@ -40,6 +40,7 @@ trait CounterProxyManager {
     */
   class RemoteCounterProxy private[CounterProxyManager] (
       val remoteProxyId: CounterProxyManager#CounterProxyId,
+      val origin: PeerLocation,
       onHaltFunc: (Int) => Unit,
       onDiscorporateFunc: (Int) => Unit,
       onResurrectFunc: () => Unit)
@@ -47,13 +48,15 @@ trait CounterProxyManager {
     // Proxy counters start "floating" in a non-halted, but 0 count situation.
     val parentTokens = new AtomicInteger(0)
 
-    override def toString: String = f"${getClass.getName}(remoteProxyId=$remoteProxyId%#x)"
+    override def toString: String = f"${getClass.getName}(remoteProxyId=$remoteProxyId%#x, origin=$origin)"
 
     override def onHalt(): Unit = {
       //Logger.entering(getClass.getName, "onHalt")
+      // FIXME: RACE: This has a race with takeParentToken followed by haltToken. We need to make sure that we don't halt someone else's parent tokens.
       val n = parentTokens.getAndSet(0)
       logChange(s"onHalt from $n (at ${get()})")
       assert(n > 0)
+      // Token: Pass all `n` collected remote parent tokens to the callbacks.
       if (isDiscorporated) {
         onDiscorporateFunc(n)
       } else {
@@ -64,17 +67,20 @@ trait CounterProxyManager {
     override def onResurrect(): Unit = {
       //Logger.entering(getClass.getName, "onResurrect")
       onResurrectFunc()
+      // Token: Receive a token on the remote parent. 
+      parentTokens.getAndIncrement()
     }
 
     /** Take a parent token and add it to this proxy.
-     *
-     *  The parent token will be handled through it's halting by the proxy. The
-     *  caller to this method gets a token on this proxy.
-     *
-     *  This call will never require a newToken from the parent. Instead, the
-     *  caller must provide that token.
-     */
+      *
+      * The parent token will be handled through it's halting by the proxy. The
+      * caller to this method gets a token on this proxy.
+      *
+      * This call will never get a newToken from the parent. Instead, the
+      * caller must provide that token.
+      */
     final def takeParentToken(): Unit = {
+      // Token: This receives a token on the remote parent.
       val n = incrementAndGet()
       logChange(s"takeParentToken to $n")
       parentTokens.getAndIncrement()
@@ -128,19 +134,25 @@ trait CounterProxyManager {
 
     /** Remote counter had only discorporated members, but now has a new member, so notify parent that we've resurrected. */
     def notifyParentOfResurrect(): Unit = synchronized {
-      //Logger.entering(getClass.getName, "resurrect")
+      Logger.entering(getClass.getName, "resurrect")
       enclosingCounter.newToken()
     }
 
   }
 
   protected val proxiedCountersById = new java.util.concurrent.ConcurrentHashMap[Counter, CounterProxyId]
-  protected val proxiedCounters = new java.util.concurrent.ConcurrentHashMap[CounterProxyId, RemoteCounterProxy]
+  protected val proxiedCounters = new java.util.concurrent.ConcurrentHashMap[(CounterProxyId, PeerLocation), RemoteCounterProxy]
   protected val proxiedCounterMembers = new java.util.concurrent.ConcurrentHashMap[CounterProxyId, RemoteCounterMembersProxy]
 
+  /** Make a members proxy in a counter.
+    *
+    * Initially, this represents no members and does not have a token on `enclosingCounter`.
+    */
   def makeProxyWithinCounter(enclosingCounter: Counter): CounterProxyId = {
+    // Token: The proxy has no token initially so this does not consume a token.
+
     val counterProxyId = enclosingCounter match {
-      case cp: RemoteCounterProxy => cp.remoteProxyId
+      //case cp: RemoteCounterProxy => cp.remoteProxyId
       case _ => proxiedCountersById.computeIfAbsent(enclosingCounter, (_) => freshRemoteRefId())
     }
     proxiedCounterMembers.computeIfAbsent(counterProxyId, (_) => {
@@ -149,18 +161,23 @@ trait CounterProxyManager {
       rmtCounterMbrProxy
     })
 
-    /* Token: enclosingCounter value is correct as is, since we're swapping this "token" with its proxy. */
-
     counterProxyId
   }
 
+  /** Make a local proxy for a remote counter (identified by id __and__ origin).
+    *
+    * An existing proxy is only returned if both the id and the origin are the same
+    * this matches the generation of members proxies at various locations.
+    */
   def makeProxyCounterFor(counterProxyId: CounterProxyId, origin: PeerLocation): RemoteCounterProxy = {
     def newProxyCounter =
-      proxiedCounters.computeIfAbsent(counterProxyId, (_) =>
-        new RemoteCounterProxy(counterProxyId,
-          (n) => execution.sendHalt(origin, counterProxyId)(n),
+      proxiedCounters.computeIfAbsent((counterProxyId, origin), (_) => {
+        Logger.finer(f"Created local proxy for id $counterProxyId%#x (from $origin)")
+        new RemoteCounterProxy(counterProxyId, origin,
+          (n) => sendHalt(origin, counterProxyId)(n),
           (n) => sendDiscorporate(origin, counterProxyId)(n),
-          () => sendResurrect(origin, counterProxyId)()))
+          () => sendResurrect(origin, counterProxyId)())
+      })
     newProxyCounter
 
     // FIXME: Reenable this optimization. It's probably important. However it will require figuring out both how to
@@ -192,23 +209,27 @@ trait CounterProxyManager {
 
   def sendHalt(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(n: Int): Unit = {
     Tracer.traceHaltGroupMemberSend(groupMemberProxyId, execution.runtime.here, destination)
+    // Token: Receives n tokens and passes them with the message.
     destination.sendInContext(execution)(HaltGroupMemberProxyCmd(execution.executionId, groupMemberProxyId, n))
   }
 
   def sendDiscorporate(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(n: Int): Unit = {
     Tracer.traceDiscorporateGroupMemberSend(groupMemberProxyId, execution.runtime.here, destination)
+    // Token: Receives n tokens and passes them with the message.
     destination.sendInContext(execution)(DiscorporateGroupMemberProxyCmd(execution.executionId, groupMemberProxyId, n))
   }
 
   def sendResurrect(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(): Unit = {
     Tracer.traceDiscorporateGroupMemberSend(groupMemberProxyId, execution.runtime.here, destination)
     destination.sendInContext(execution)(ResurrectGroupMemberProxyCmd(execution.executionId, groupMemberProxyId))
+    // Token: Receives a token from the message destination. See ResurrectGroupMemberProxyCmd.
   }
 
   def haltGroupMemberProxy(groupMemberProxyId: CounterProxyId, n: Int): Unit = {
     val g = proxiedCounterMembers.get(groupMemberProxyId)
     if (g != null) {
       Logger.fine(s"Scheduling $g.notifyParentOfHalt($n)")
+      // Token: Pass tokens in message to code in schedulable.
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfHalt(n) } })
     } else {
       Logger.fine(f"Halt group member proxy on unknown group member proxy $groupMemberProxyId%#x")
@@ -219,6 +240,7 @@ trait CounterProxyManager {
     val g = proxiedCounterMembers.get(groupMemberProxyId)
     if (g != null) {
       Logger.fine(s"Scheduling $g.notifyParentOfDiscorporate($n)")
+      // Token: Pass tokens in message to code in schedulable.
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfDiscorporate(n) } })
     } else {
       Logger.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
@@ -230,6 +252,7 @@ trait CounterProxyManager {
     if (g != null) {
       Logger.fine(s"Scheduling $g.notifyParentOfResurrect()")
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfResurrect() } })
+      // Token: The token resulting from the resurrect is passed to the origin of this message.
     } else {
       Logger.fine(f"Resurrect group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }

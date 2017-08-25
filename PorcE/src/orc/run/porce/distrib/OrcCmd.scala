@@ -88,6 +88,7 @@ case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime#RuntimeId, receivi
 
 /** Execute this token */
 case class MigrateCallCmd(executionId: DOrcExecution#ExecutionId, tokenId: Long, movedCall: CallMemento) extends OrcPeerCmdInExecutionContext(executionId) {
+  // Token: This message carries a token on the counter movedCall.counterProxyId at the origin. (the location is important)
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$tokenId%#x,$movedCall)"
 }
 
@@ -104,21 +105,26 @@ case class KilledGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: 
 
 /** Notify the given group that an event has happened that will kill if it is not already dead. */
 case class KillingGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: RemoteRef#RemoteRefId, killing: KillingMemento) extends OrcPeerCmdInExecutionContext(executionId) {
+  // Token: This message carries a token on the counter killing.counterProxyId at the origin. (the location is important)
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupProxyId%#x,$killing)"
 }
 
 /** This group member has halted */
 case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId, nTokens: Int) extends OrcPeerCmdInExecutionContext(executionId) {
+  // Token: This message carries nTokens on the counter groupMemberProxyId at the destination. (the location is important)
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x,$nTokens)"
 }
 
 /** This group member has discorporated */
 case class DiscorporateGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId, nTokens: Int) extends OrcPeerCmdInExecutionContext(executionId) {
+  // Token: This message carries nTokens on the counter groupMemberProxyId at the destination. (the location is important)
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x,$nTokens)"
 }
 
 /** This group member has resurrected */
 case class ResurrectGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId) extends OrcPeerCmdInExecutionContext(executionId) {
+  // Token: This message carries a token on the counter groupMemberProxyId at the destination **backwards** to the origin. (the location is important)
+  // TODO: This token flow may be a source of ordering bugs since the token flows in a direction which has no ordering guarantee since there is no message.
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x)"
 }
 

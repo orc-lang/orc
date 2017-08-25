@@ -46,6 +46,7 @@ trait TerminatorProxyManager {
       require(c != null)
       require(k != null)
       //Logger.entering(getClass.getName, "kill")
+      // Token: Pass a token on c to onKill
       onKill(c, k)
       false
     }
@@ -129,6 +130,7 @@ trait TerminatorProxyManager {
   def sendKilling(destination: PeerLocation, proxyId: TerminatorProxyId)(counter: Counter, continuation: PorcEClosure): Unit = {
     Tracer.traceKillGroupSend(proxyId, execution.runtime.here, destination)
     val counterProxyId = makeProxyWithinCounter(counter)
+    // Token: Pass token on counter with message.
     destination.sendInContext(execution)(KillingGroupCmd(execution.executionId, proxyId, new KillingMemento(counterProxyId, continuation)))
   }
 
@@ -147,6 +149,7 @@ trait TerminatorProxyManager {
   def killingGroupProxy(origin: PeerLocation, proxyId: TerminatorProxyId, killing: KillingMemento): Unit = {
     val m = proxiedTerminatorMembers.get(proxyId)
     val proxyCounter = makeProxyCounterFor(killing.counterProxyId, origin)
+    // Token: Pass the token on the message to the local proxy
     proxyCounter.takeParentToken()
     if (m != null) {
       val g = m.enclosingTerminator
