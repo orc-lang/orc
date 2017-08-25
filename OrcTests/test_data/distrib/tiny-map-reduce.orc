@@ -1,8 +1,8 @@
 {- tiny-map-reduce.orc -- A toy d-Orc map-reduce -}
 
-import site Location0PinnedTuple = "orc.run.distrib.Location0PinnedTupleConstructor"
-import site Location1PinnedTuple = "orc.run.distrib.Location1PinnedTupleConstructor"
-import site Location2PinnedTuple = "orc.run.distrib.Location2PinnedTupleConstructor"
+import site Location0PinnedTuple = "orc.run.porce.distrib.Location0PinnedTupleConstructor"
+import site Location1PinnedTuple = "orc.run.porce.distrib.Location1PinnedTupleConstructor"
+import site Location2PinnedTuple = "orc.run.porce.distrib.Location2PinnedTupleConstructor"
 
 
 Location1PinnedTuple([1, 2, 3, 4, 5], signal)  >shard1>

@@ -1,18 +1,18 @@
 {- holmes-map-reduce.orc -- A d-Orc map-reduce -}
 
-import site Location0PinnedTuple = "orc.run.distrib.Location0PinnedTupleConstructor"
-import site Location1PinnedTuple = "orc.run.distrib.Location1PinnedTupleConstructor"
-import site Location2PinnedTuple = "orc.run.distrib.Location2PinnedTupleConstructor"
-import site Location3PinnedTuple = "orc.run.distrib.Location3PinnedTupleConstructor"
-import site Location4PinnedTuple = "orc.run.distrib.Location4PinnedTupleConstructor"
-import site Location5PinnedTuple = "orc.run.distrib.Location5PinnedTupleConstructor"
-import site Location6PinnedTuple = "orc.run.distrib.Location6PinnedTupleConstructor"
-import site Location7PinnedTuple = "orc.run.distrib.Location7PinnedTupleConstructor"
-import site Location8PinnedTuple = "orc.run.distrib.Location8PinnedTupleConstructor"
-import site Location9PinnedTuple = "orc.run.distrib.Location9PinnedTupleConstructor"
-import site Location10PinnedTuple = "orc.run.distrib.Location10PinnedTupleConstructor"
-import site Location11PinnedTuple = "orc.run.distrib.Location11PinnedTupleConstructor"
-import site Location12PinnedTuple = "orc.run.distrib.Location12PinnedTupleConstructor"
+import site Location0PinnedTuple = "orc.run.porce.distrib.Location0PinnedTupleConstructor"
+import site Location1PinnedTuple = "orc.run.porce.distrib.Location1PinnedTupleConstructor"
+import site Location2PinnedTuple = "orc.run.porce.distrib.Location2PinnedTupleConstructor"
+import site Location3PinnedTuple = "orc.run.porce.distrib.Location3PinnedTupleConstructor"
+import site Location4PinnedTuple = "orc.run.porce.distrib.Location4PinnedTupleConstructor"
+import site Location5PinnedTuple = "orc.run.porce.distrib.Location5PinnedTupleConstructor"
+import site Location6PinnedTuple = "orc.run.porce.distrib.Location6PinnedTupleConstructor"
+import site Location7PinnedTuple = "orc.run.porce.distrib.Location7PinnedTupleConstructor"
+import site Location8PinnedTuple = "orc.run.porce.distrib.Location8PinnedTupleConstructor"
+import site Location9PinnedTuple = "orc.run.porce.distrib.Location9PinnedTupleConstructor"
+import site Location10PinnedTuple = "orc.run.porce.distrib.Location10PinnedTupleConstructor"
+import site Location11PinnedTuple = "orc.run.porce.distrib.Location11PinnedTupleConstructor"
+import site Location12PinnedTuple = "orc.run.porce.distrib.Location12PinnedTupleConstructor"
 {-
 -- Dummies for local testing
 def Location0PinnedTuple(x,y) = (x,y)
