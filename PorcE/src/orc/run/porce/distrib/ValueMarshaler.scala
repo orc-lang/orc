@@ -92,9 +92,9 @@ trait ValueMarshaler {
   private def canReallySerialize(destination: PeerLocation)(v: java.io.Serializable): Boolean = {
     if (isAlwaysSerializable(v))
       true
-    else if (knownGoodSerializables.contains(v))
+    else if (synchronized { knownGoodSerializables.contains(v) })
       true
-    else if (knownBadSerializables.contains(v))
+    else if (synchronized { knownBadSerializables.contains(v) })
       false
     else {
       //FIXME: Terribly slow.  Leaks objects (refs in nullOos).  Just BadBadBad.
@@ -123,11 +123,11 @@ trait ValueMarshaler {
           nullOos.flush()
           nullOos.clearContext()
         }
-        knownGoodSerializables.put(v, ())
+        synchronized { knownGoodSerializables.put(v, ()) }
         true
       } catch {
         case e: Exception => {
-          knownBadSerializables.put(v, ())
+          synchronized { knownBadSerializables.put(v, ()) }
           Logger.warning(s"Type ${v.getClass.getTypeName} is a LIAR: It implements java.io.Serializable, but throws a ${e.getClass.getTypeName} when written to an ObjectOutputStream. Instance='$v', Exception='$e'.")
           false
         }
