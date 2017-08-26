@@ -66,7 +66,7 @@ object Counter {
     b.result()
   }
 
-  val leavesOnly = true
+  val leavesOnly = false
 
   @TruffleBoundary @noinline
   def report() = {
@@ -84,8 +84,13 @@ object Counter {
       Logger.fine(s"========================= Counter Report; showing ${counters.size} of ${allCounters.size} counters")
       Logger.fine("\n" + counters.map(c => s"$c: log size = ${c.log.size}, count = ${c.get}, isDiscorporated = ${c.isDiscorporated}").mkString("\n"))
       for (c <- counters) {
-        Logger.fine(s"$c:\n${c.log.asScala.map(exceptionString(_)).mkString("---------------\n")}")
-        c.log.clear()
+        if(true || c.get > 0) {
+          Logger.fine(s"$c:")
+          for(e <- c.log.asScala) {
+            Logger.fine(exceptionString(e))
+          }
+          c.log.clear()
+        }
       }
     } else {
       //Logger.warning(s"Cannot report Counter information if FINE is not loggable in ${Logger.julLogger.getName} or tracingEnabled == false")
@@ -145,6 +150,9 @@ abstract class Counter protected (n: Int) extends AtomicInteger(n) {
         }
       }).mkString("\n---vvv---\n")
       log.add(new Exception(s"$s in Porc stack:\n$stack"))
+      if(log.size() > 1000) {
+        log.pollFirst()
+      }
     }
   }
 
@@ -207,7 +215,7 @@ abstract class Counter protected (n: Int) extends AtomicInteger(n) {
       //Logger.fine(s"Halted $this")
       //Counter.report()
       if (!isDiscorporated) {
-        Counter.removeCounter(this)
+        //Counter.removeCounter(this)
       }
     }
     onHalt()
@@ -219,7 +227,7 @@ abstract class Counter protected (n: Int) extends AtomicInteger(n) {
     val n = getAndIncrement()
     if (tracingEnabled) {
       logChange(s"+ Up from $n")
-      assert(n >= 0, s"Spawning is not allowed once we go to zero count. No zombies allowed!!! $this")
+      assert(n >= 0, s"Spawning is not allowed once we go to zero count. $this")
     }
     if (n == 0) {
       doResurrect()
@@ -231,8 +239,8 @@ abstract class Counter protected (n: Int) extends AtomicInteger(n) {
     if (tracingEnabled) {
       Counter.addCounter(this)
       Logger.fine(s"Resurrected $this")
-      //Counter.report()
-      assert(isDiscorporated)
+      //if(!isDiscorporated) Counter.report()
+      //assert(isDiscorporated, s"Resurrected counters must be discorporated. $this")
     }
     onResurrect()
   }
@@ -271,6 +279,7 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
   }
 
   def onResurrect() = {
+    assert(isDiscorporated)
     parent.newToken()
   }
 
