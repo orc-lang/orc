@@ -22,6 +22,7 @@ import scala.util.control.NonFatal
 import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
 import orc.error.runtime.ExecutionException
 import orc.util.LatchingSignal
+import orc.Schedulable
 
 /** Orc runtime engine leading a dOrc cluster.
   *
@@ -69,11 +70,14 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
     val rootCounterId = leaderExecution.makeProxyWithinCounter(leaderExecution.c)
 
+    
     followerEntries foreach { f =>
-      {
-        leaderExecution.followerStarting(f._1)
-        f._2.send(LoadProgramCmd(thisExecutionId, programAst, options, rootCounterId))
-      }
+      schedule(new Schedulable {
+        def run(): Unit = {
+          leaderExecution.followerStarting(f._1)
+          f._2.send(LoadProgramCmd(thisExecutionId, programAst, options, rootCounterId))
+        }
+      })
     }
 
     installHandlers(leaderExecution)
