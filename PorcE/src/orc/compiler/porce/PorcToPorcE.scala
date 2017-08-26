@@ -23,6 +23,8 @@ class PorcToPorcE() {
     descriptor: FrameDescriptor, execution: PorcEExecutionHolder,
     argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
     runtime: PorcERuntime)
+    
+  val usingInvokationInterceptor = true
 
   object LocalVariables {
     val MethodGroupClosure = new porc.Variable(Some("MethodGroupClosure"))
@@ -123,11 +125,11 @@ class PorcToPorcE() {
         val newArguments = (p +: c +: t +: arguments).map(transform(_)).toArray
         val exec = ctx.execution.newRef()
         isExt match {
-          case TTrue =>
+          case TTrue if !usingInvokationInterceptor =>
             porce.ExternalCPSCall.create(newTarget, newArguments, exec)
-          case TFalse =>
+          case TFalse if !usingInvokationInterceptor =>
             porce.InternalCall.create(newTarget, newArguments, exec)
-          case TUnknown =>
+          case _ =>
             porce.Call.CPS.create(newTarget, newArguments, exec)
         }
       case porc.MethodDirectCall.Z(isExt, target, arguments) =>
