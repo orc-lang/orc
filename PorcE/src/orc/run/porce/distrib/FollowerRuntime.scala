@@ -380,7 +380,7 @@ object FollowerRuntime {
       /* Add handler, since no existing handler (here or in parents) is at our logging level */
       val logHandler = new java.util.logging.ConsoleHandler()
       logHandler.setLevel(logLevel)
-      logHandler.setFormatter(orc.util.SyslogishFormatter)
+      logHandler.setFormatter(new orc.util.SyslogishFormatter())
       logger.addHandler(logHandler)
       logger.setUseParentHandlers(false)
       orcLogger.warning(s"No log handler found for '${logger.getName()}' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records.")

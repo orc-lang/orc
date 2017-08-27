@@ -14,11 +14,11 @@
 package orc.util
 
 import java.io.{ PrintWriter, StringWriter }
+import java.lang.management.ManagementFactory
 import java.util.{ Calendar, GregorianCalendar, Locale, TimeZone }
 import java.util.logging.{ Formatter, Level, LogRecord }
 
 import scala.annotation.elidable
-import java.lang.management.ManagementFactory
 
 /** A Scala wrapper around java.util.logging.Logger
   * <p>
@@ -85,13 +85,6 @@ class Logger(name: String) {
   @inline final def finer(msg: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.finer(msg)
   @inline final def finest(msg: => String): Unit = if (julLogger.isLoggable(Level.FINEST)) julLogger.finest(msg)
 
-  def logAllToStderr() {
-    julLogger.setLevel(Level.ALL)
-    val ch = new java.util.logging.ConsoleHandler()
-    ch.setLevel(Level.ALL)
-    julLogger.addHandler(ch)
-  }
-
   @elidable(elidable.ASSERTION) @inline
   final def check(assertion: Boolean, message: => Any) {
     if (!assertion)
@@ -109,7 +102,7 @@ class Logger(name: String) {
   *
   * @author jthywiss
   */
-object SyslogishFormatter extends Formatter {
+class SyslogishFormatter() extends Formatter() {
 
   private val appName = {
     /* Based on Sun JVM monitoring tools' heuristic */

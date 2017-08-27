@@ -841,8 +841,6 @@ case class UnrollOptimizer(co: CompilerOptions) extends Optimizer(co) {
 object Optimizer {
   //import WithContext._
 
-  //Logger.logAllToStderr()
-
   /*
   object Pars {
     private def pars(p: Expression): List[Expression] = {
