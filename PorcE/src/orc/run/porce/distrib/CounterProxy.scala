@@ -86,13 +86,20 @@ trait CounterProxyManager {
     
     override def onHalt(): Unit = synchronized {
       Logger.entering(getClass.getName, "onHalt")
-      if(!waitingForCredit) {
-        assert(credits >= 0)
+      /*
+       * Concurrency: We can reach here with credits == -1 and waitingForCredit = false.
+       * This is caused because between the decrement that caused this halt and the execution 
+       * of onHalt, an entire activate/halt cycle could happen. This would return the credits
+       * we would expect to return here. This is safe.
+       */
+      if(!waitingForCredit && credits >= 0) {
+        // We have credits and we are not waiting on more.
         // Credits: We halted locally so return all our credits.
         returnCredits(credits)
         credits = -1
       } else {
         // We are waiting for credit, so we cannot return our credits yet.
+        // Or we have no credits and then we still cannot return our credits.
       }
     }
 
