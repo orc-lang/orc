@@ -16,6 +16,9 @@ package orc.run.porce.distrib
 import orc.Schedulable
 import orc.run.porce.runtime.Counter
 import orc.util.SparseBinaryFraction
+import scala.annotation.tailrec
+import java.lang.ref.WeakReference
+import java.lang.ref.ReferenceQueue
 
 /** A DOrcExecution mix-in to create and communicate among distributed counters.
   *
@@ -257,10 +260,67 @@ trait CounterProxyManager {
     }
   }
 
-  // FIXME: Both of these maps are uncleaned. Elements need to be removed at some point.
-  private val distributedCounters = new java.util.concurrent.ConcurrentHashMap[CounterProxyManager#DistributedCounterId, DistributedCounter]()
-  private val counterIds = new java.util.concurrent.ConcurrentHashMap[Counter, CounterProxyManager#DistributedCounterId]()
+  private class DistributedCounterWeakReference(val id: CounterProxyManager#DistributedCounterId, 
+      v: DistributedCounter, q: ReferenceQueue[DistributedCounter]) extends WeakReference[DistributedCounter](v, q)
+  
+  private val distributedCounters = new java.util.concurrent.ConcurrentHashMap[CounterProxyManager#DistributedCounterId, DistributedCounterWeakReference]()
+  private val distributedCountersQueue = new ReferenceQueue[DistributedCounter]()
+  
+  // All access to counterIds should be protected by synchronizing on counterIds itself
+  private val counterIds = new java.util.WeakHashMap[Counter, DistributedCounter]()
+  
+  private def expungeDeadDistributedCounters(): Unit = {
+    for(r <- Stream.continually(distributedCountersQueue.poll()).takeWhile(_ != null)) {
+      r match {
+        case r: DistributedCounterWeakReference =>
+          Logger.fine(s"Mapping for ${r.id} was GC'd, removing")
+          distributedCounters.remove(r.id)
+      }
+    }
+  }
 
+  
+  /** Like Map.computeIfAbsent except that is wraps the result in a WeakReference inside the map and 
+    * computes if the WeakReference has been cleared.
+    *
+    * This is complicated because the obvious way to do this would allow the WeakReference to invalidate
+    * between the computation and the return of the strong reference. This method uses a volatile reference
+    * to store the strong reference across that time window to eliminate the race with GC.
+    */
+  @tailrec
+  private def computeWeakReferenceIfAbsentOrCleared(
+      map: java.util.concurrent.ConcurrentMap[CounterProxyManager#DistributedCounterId, DistributedCounterWeakReference], 
+      queue: ReferenceQueue[DistributedCounter])(
+          k: CounterProxyManager#DistributedCounterId, 
+          f: (CounterProxyManager#DistributedCounterId) => DistributedCounter): DistributedCounter = {
+    @volatile
+    var newV: DistributedCounter = null
+    val wr = map.compute(k, (id, old) => {
+      Option(old).flatMap(v => Option(v.get)) match {
+        case Some(v) => {
+          newV = v
+          old
+        }         
+        case _ => {
+          // The key is absent or the WeakReference was cleared
+          if(old != null)
+            Logger.fine(s"Mapping for $k was GC'd, computing")
+          val v = f(id)
+          newV = v
+          new DistributedCounterWeakReference(id, v, queue)
+        }
+      }
+    })
+    Option(wr.get) match {
+      case Some(v) =>
+        newV = null
+        v
+      case _ =>
+        Logger.fine(s"Mapping for $k was GC'd, retrying computeWeakReferenceIfAbsentOrCleared")
+        computeWeakReferenceIfAbsentOrCleared(map, queue)(k, f)
+    }
+  }
+  
   /** Get the distributed representation of `enclosingCounter`.
     *
     * Initially, this represents no members and does not have a token on `enclosingCounter`.
@@ -273,12 +333,15 @@ trait CounterProxyManager {
         cp
       }
       case _ =>
-        val id = counterIds.computeIfAbsent(enclosingCounter, (_) => DistributedCounterId(freshRemoteRefId(), runtime.runtimeId))
-        distributedCounters.computeIfAbsent(id, (id) => {
-          val rmtCounterMbrProxy = new DistributedCounterController(id, enclosingCounter)
-          Logger.finer(f"Created proxy for $enclosingCounter with $id")
-          rmtCounterMbrProxy
-        })
+        counterIds.synchronized {
+          counterIds.computeIfAbsent(enclosingCounter, (_) => {
+            val id = DistributedCounterId(freshRemoteRefId(), runtime.runtimeId)
+            computeWeakReferenceIfAbsentOrCleared(distributedCounters, distributedCountersQueue)(id, (id) => {
+              Logger.fine(f"Created proxy for $enclosingCounter with $id")
+              new DistributedCounterController(id, enclosingCounter)
+            })
+          })
+        }
     }
   }
 
@@ -287,8 +350,9 @@ trait CounterProxyManager {
     * This may only be called with the Ids of counters that are already created with getDistributedCounterForCounter on some node.
     */
   def getDistributedCounterForId(id: CounterProxyManager#DistributedCounterId): DistributedCounter = {
-    distributedCounters.computeIfAbsent(id, (id) => {
-      Logger.finer(s"Created local proxy for id $id")
+    expungeDeadDistributedCounters()
+    computeWeakReferenceIfAbsentOrCleared(distributedCounters, distributedCountersQueue)(id, (id) => {
+      Logger.fine(s"Created local proxy for id $id")
       assert(id.controller != runtime.runtimeId)
       new DistributedCounterFragment(id) {
         private[CounterProxyManager] def returnCreditsHalt(n: Int): Unit = sendHalt(id)(n)
@@ -329,7 +393,7 @@ trait CounterProxyManager {
   
   private def getDistributedCounterForIdHere(counterId: CounterId): Option[DistributedCounterController] = {
     val dcId = DistributedCounterId(counterId, runtime.runtimeId)
-    Option(distributedCounters.get(dcId)) match {
+    Option(distributedCounters.get(dcId)).flatMap(v => Option(v.get)) match {
       case Some(c: DistributedCounterController) => {
         Some(c)
       }
