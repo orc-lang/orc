@@ -15,6 +15,7 @@ package orc.run.porce.distrib
 
 import java.util.{ Collections, IdentityHashMap }
 
+import orc.PublishedEvent
 import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
 
 /** A DOrcExecution mix-in to marshal and unmarshal dOrc execution-internal
@@ -57,6 +58,10 @@ trait ExecutionMashaler {
       val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(future)
       FutureReplacement(id)
     }
+    case (destination, PublishedEvent(v: AnyRef)) => {
+      Logger.Marshal.finer("marshalExecutionObject on PublishedEvent")
+      PublishedEvent(execution.marshalValue(destination)(v))
+    }
   }
 
   val unmarshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
@@ -88,6 +93,10 @@ trait ExecutionMashaler {
     }
     case (origin, FutureReplacement(bindingId)) => {
       execution.futureForId(bindingId)
+    }
+    case (origin, PublishedEvent(v: AnyRef)) => {
+      Logger.Marshal.finer("unmarshalExecutionObject on PublishedEvent")
+      PublishedEvent(execution.unmarshalValue(origin)(v))
     }
   }
 }
