@@ -84,21 +84,24 @@ trait TerminatorProxyManager {
         sendKillFunc(thisProxyId)
       }
     }
-
   }
 
   protected val proxiedTerminators = new java.util.concurrent.ConcurrentHashMap[TerminatorProxyId, RemoteTerminatorProxy]
   protected val proxiedTerminatorMembers = new java.util.concurrent.ConcurrentHashMap[TerminatorProxyId, RemoteTerminatorMembersProxy]
+  protected val proxiedTerminatorMembersByTerminator = new java.util.concurrent.ConcurrentHashMap[Terminator, TerminatorProxyId]
 
   def makeProxyWithinTerminator(enclosingTerminator: Terminator, sendKillFunc: (TerminatorProxyId) => Unit) = {
     val terminatorProxyId = (enclosingTerminator: @unchecked) match {
       case tp: RemoteTerminatorProxy => tp.remoteProxyId
-      case _ => freshRemoteRefId()
+      case _ => proxiedTerminatorMembersByTerminator.computeIfAbsent(enclosingTerminator, (_) => freshRemoteRefId())
     }
 
-    val rmtTerminatorMbrProxy = new RemoteTerminatorMembersProxy(terminatorProxyId, enclosingTerminator, sendKillFunc)
-    // TODO: Does this need to only set if the key isn't present?
-    proxiedTerminatorMembers.put(terminatorProxyId, rmtTerminatorMbrProxy)
+    val rmtTerminatorMbrProxy = proxiedTerminatorMembers.computeIfAbsent(terminatorProxyId, (_) => 
+      new RemoteTerminatorMembersProxy(terminatorProxyId, enclosingTerminator, { (id) =>
+        proxiedTerminatorMembers.remove(terminatorProxyId)
+        proxiedTerminatorMembersByTerminator.remove(enclosingTerminator)
+        sendKillFunc(id)
+      }))
 
     /* Add rmtTerminatorMbrProxy in enclosingTerminator to get killed notifications */
     enclosingTerminator.addChild(rmtTerminatorMbrProxy)
@@ -113,7 +116,10 @@ trait TerminatorProxyManager {
         //val rtp = new RemoteTerminatorProxy(terminatorProxyId)
         //proxiedTerminators.put(terminatorProxyId, rtp)
         proxiedTerminators.computeIfAbsent(terminatorProxyId, (_) => {
-          new RemoteTerminatorProxy(terminatorProxyId, sendKilling(origin, terminatorProxyId))
+          new RemoteTerminatorProxy(terminatorProxyId, { (counter, closure) => 
+            proxiedTerminators.remove(terminatorProxyId)
+            sendKilling(origin, terminatorProxyId)(counter, closure)
+          })
         })
       }
       case rtmp => rtmp.enclosingTerminator
@@ -165,6 +171,7 @@ trait TerminatorProxyManager {
         }
       })
       proxiedTerminatorMembers.remove(proxyId)
+      proxiedTerminatorMembersByTerminator.remove(g)
     } else {
       // The group will be "unknown" if it has already been killed so we need to halt the counter.
       dc.counter.haltToken()
