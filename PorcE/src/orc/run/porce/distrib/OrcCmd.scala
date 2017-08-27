@@ -27,6 +27,10 @@ abstract sealed trait OrcLeaderToFollowerCmd extends OrcCmd
 abstract sealed trait OrcFollowerToLeaderCmd extends OrcCmd
 abstract sealed trait OrcPeerCmd extends OrcLeaderToFollowerCmd with OrcFollowerToLeaderCmd
 
+abstract sealed class OrcFollowerToLeaderCmdInExecutionContext(executionId: DOrcExecution#ExecutionId) extends OrcFollowerToLeaderCmd {
+  val xid = new ExecutionContextSerializationMarker(executionId)
+}
+
 abstract sealed class OrcPeerCmdInExecutionContext(executionId: DOrcExecution#ExecutionId) extends OrcPeerCmd {
   val xid = new ExecutionContextSerializationMarker(executionId)
 }
@@ -69,7 +73,7 @@ case class UnloadProgramCmd(executionId: DOrcExecution#ExecutionId) extends OrcL
 ////////
 
 /** Notify leader/environment of an OrcEvent */
-case class NotifyLeaderCmd(executionId: DOrcExecution#ExecutionId, event: OrcEvent) extends OrcFollowerToLeaderCmd {
+case class NotifyLeaderCmd(executionId: DOrcExecution#ExecutionId, event: OrcEvent) extends OrcFollowerToLeaderCmdInExecutionContext(executionId) {
   override def toString(): String = s"${getClass.getSimpleName}($executionId,$event)"
 }
 

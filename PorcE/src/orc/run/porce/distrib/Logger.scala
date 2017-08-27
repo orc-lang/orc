@@ -13,15 +13,37 @@
 
 package orc.run.porce.distrib
 
-/** Logger for the orc.lib.dorc subsystem.
+/** Logger for the orc.run.porce.distrib subsystem.
   *
   * @author jthywiss
   */
 object Logger extends orc.util.Logger("orc.run.porce.distrib") {
-  Logger.julLogger.setUseParentHandlers(false)
-  Logger.julLogger.setLevel(java.util.logging.Level.FINEST)
-  val ch = new java.util.logging.ConsoleHandler()
-  ch.setLevel(java.util.logging.Level.ALL)
-  ch.setFormatter(orc.util.SyslogishFormatter)
-  Logger.julLogger.addHandler(ch)
+
+  /** Logger for runtime network connection setup/teardown */
+  object Connect extends orc.util.Logger("orc.run.porce.distrib.connect") {}
+  
+  /** Logger for Orc program loading/unloading */
+  object ProgLoad extends orc.util.Logger("orc.run.porce.distrib.progload") {}
+  
+  /** Logger for message send/receive */
+  object Message extends orc.util.Logger("orc.run.porce.distrib.message") {}
+  
+  /** Logger for value location/policy mapping */
+  object ValueLocation extends orc.util.Logger("orc.run.porce.distrib.marshal") {}
+  
+  /** Logger for marsahling/unmarshaling */
+  object Marshal extends orc.util.Logger("orc.run.porce.distrib.marshal") {}
+  
+  /** Logger for invocation interception and publications */
+  object Invoke extends orc.util.Logger("orc.run.porce.distrib.invoke") {}
+  
+  /** Logger for group/counter/terminator proxying */
+  object Proxy extends orc.util.Logger("orc.run.porce.distrib.proxy") {}
+  
+  /** Logger for remote futures */
+  object Futures extends orc.util.Logger("orc.run.porce.distrib.futures") {}
+  
+  /** Logger for calls into the underlying Orc runtime */
+  object Downcall extends orc.util.Logger("orc.run.porce.distrib.downcall") {}
+
 }

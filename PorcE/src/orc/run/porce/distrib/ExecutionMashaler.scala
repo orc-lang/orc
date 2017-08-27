@@ -15,6 +15,7 @@ package orc.run.porce.distrib
 
 import java.util.{ Collections, WeakHashMap }
 
+import orc.PublishedEvent
 import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
 
 /** A DOrcExecution mix-in to marshal and unmarshal dOrc execution-internal
@@ -57,11 +58,15 @@ trait ExecutionMashaler {
       val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(future)
       FutureReplacement(id)
     }
+    case (destination, PublishedEvent(v: AnyRef)) => {
+      Logger.Marshal.finer("marshalExecutionObject on PublishedEvent")
+      PublishedEvent(execution.marshalValue(destination)(v))
+    }
   }
 
   val unmarshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
     case (origin, old@ClosureReplacement(callTargetIndex, environment, isRoutine)) => {
-      //Logger.fine(f"Unmarshaling $old ${System.identityHashCode(old)}%x")
+      //Logger.Marshal.fine(f"Unmarshaling $old ${System.identityHashCode(old)}%x")
       val callTarget = execution.idToCallTarget(callTargetIndex)
       val unmarshledEnvironment = Array.ofDim[AnyRef](environment.length)
       val replacement = new PorcEClosure(unmarshledEnvironment, callTarget, isRoutine)
@@ -73,7 +78,7 @@ trait ExecutionMashaler {
         case (cl: PorcEClosure, i) =>
           unmarshledEnvironment(i) = cl
         case (v, i) =>
-          //Logger.fine(f"Unmarshaling nested value $v ${System.identityHashCode(v)}%x")
+          //Logger.Marshal.fine(f"Unmarshaling nested value $v ${System.identityHashCode(v)}%x")
           // This handles Closures and uses instanceTable to avoid recursion.
           unmarshledEnvironment(i) = instanceTable.computeIfAbsent(v, (k) => execution.unmarshalValue(origin)(v))
       })
@@ -88,6 +93,10 @@ trait ExecutionMashaler {
     }
     case (origin, FutureReplacement(bindingId)) => {
       execution.futureForId(bindingId)
+    }
+    case (origin, PublishedEvent(v: AnyRef)) => {
+      Logger.Marshal.finer("unmarshalExecutionObject on PublishedEvent")
+      PublishedEvent(execution.unmarshalValue(origin)(v))
     }
   }
 }

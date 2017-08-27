@@ -1,5 +1,6 @@
 package orc.run.porce.runtime
 
+import java.util.{ Timer, TimerTask }
 import java.util.logging.Level
 
 import com.oracle.truffle.api.{ RootCallTarget, Truffle }
@@ -7,12 +8,10 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.RootNode
 
-import orc.{ ExecutionRoot, OrcEvent, PublishedEvent }
+import orc.{ ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
 import orc.run.core.EventHandler
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, Logger, PorcEUnit }
 import orc.run.porce.distrib.CallTargetManager
-import java.util.Timer
-import java.util.TimerTask
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -109,6 +108,7 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
       // Runs regardless of discorporation.
       Logger.fine("Top level context complete.")
       runtime.removeRoot(execution)
+      notifyOrc(HaltedOrKilledEvent)
       execution.synchronized {
         execution._isDone = true
         execution.notifyAll()

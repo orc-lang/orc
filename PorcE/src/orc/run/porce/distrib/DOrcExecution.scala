@@ -70,7 +70,7 @@ abstract class DOrcExecution(
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ => hereSet
     }
-    //Logger.finer(s"currentLocations($v: ${v.getClass.getName})=$cl")
+    //Logger.ValueLocation.finer(s"currentLocations($v: ${v.getClass.getName})=$cl")
     cl
   }
   override def permittedLocations(v: Any): Set[PeerLocation] = {
@@ -79,7 +79,7 @@ abstract class DOrcExecution(
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ => runtime.allLocations
     }
-    //Logger.finest(s"permittedLocations($v: ${v.getClass.getName})=$pl")
+    //Logger.ValueLocation.finest(s"permittedLocations($v: ${v.getClass.getName})=$pl")
     pl
   }
 
@@ -176,7 +176,7 @@ class DOrcFollowerExecution(
 
     setCallTargetMap(map)
 
-    //Logger.finest(s"Loaded program in follower. CallTagetMap:\n${callTargetMap.mkString("\n")}")
+    //Logger.ProgLoad.finest(s"Loaded program in follower. CallTagetMap:\n${callTargetMap.mkString("\n")}")
   }
 }
 
