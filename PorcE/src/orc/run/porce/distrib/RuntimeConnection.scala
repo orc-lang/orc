@@ -24,6 +24,8 @@ import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
   * @author jthywiss
   */
 class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R, S](socket) {
+  var lastReset = System.currentTimeMillis()
+  val RESET_PERIOD = 5 * 1000
 
   /* Note: Always get output before input */
   val cos = new CountingOutputStream(socket.getOutputStream())
@@ -60,6 +62,15 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
       send(obj)
     } finally {
       oos.clearContext()
+    }
+    maybeReset()
+  }
+  
+  private def maybeReset() = {
+    val now = System.currentTimeMillis()    
+    if(now > lastReset + RESET_PERIOD) {
+      oos.reset()
+      lastReset = now
     }
   }
 

@@ -122,6 +122,7 @@ trait ValueMarshaler {
           nullOos.writeObject(v)
           nullOos.flush()
           nullOos.clearContext()
+          nullOos.reset()
         }
         synchronized { knownGoodSerializables.put(v, ()) }
         true

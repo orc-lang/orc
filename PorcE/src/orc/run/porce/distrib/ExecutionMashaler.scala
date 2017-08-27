@@ -13,7 +13,7 @@
 
 package orc.run.porce.distrib
 
-import java.util.{ Collections, IdentityHashMap }
+import java.util.{ Collections, WeakHashMap }
 
 import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
 
@@ -25,8 +25,8 @@ import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
 trait ExecutionMashaler {
   execution: DOrcExecution =>
 
-  // FIXME: This leaks references to objects in the table. This needs to be week.
-  val instanceTable = Collections.synchronizedMap(new IdentityHashMap[AnyRef, AnyRef]())
+  // FIXME: Using a weak map here is probably not really right. Instead we could use a throw away map for each unmarshel operation since the problems will only for cycles, back refs will be handled by OIS.
+  val instanceTable = Collections.synchronizedMap(new WeakHashMap[AnyRef, AnyRef]())
 
   val marshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
     case (destination, closure: PorcEClosure) => {
