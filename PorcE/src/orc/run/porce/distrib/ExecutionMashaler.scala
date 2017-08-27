@@ -45,7 +45,7 @@ trait ExecutionMashaler {
     }
     case (destination, counter: Counter) => {
       // Token: Counters which are just in the context do not carry a token with them. So this does not effect tokens.
-      val proxyId = execution.makeProxyWithinCounter(counter)
+      val proxyId = execution.getDistributedCounterForCounter(counter).id
       CounterReplacement(proxyId)
     }
     case (destination, terminator: Terminator) => {
@@ -81,7 +81,7 @@ trait ExecutionMashaler {
     }
     case (origin, CounterReplacement(proxyId)) => {
       // Token: Counters which are just in the context do not carry a token with them. So this does not effect tokens.
-      execution.makeProxyCounterFor(proxyId, origin)
+      execution.getDistributedCounterForId(proxyId).counter
     }
     case (origin, TerminatorReplacement(proxyId)) => {
       execution.makeProxyTerminatorFor(proxyId, origin)
@@ -95,7 +95,7 @@ trait ExecutionMashaler {
 private final case class ClosureReplacement(callTargetIndex: Int, environment: Array[AnyRef], isRoutine: Boolean) extends Serializable
 
 // Token: Does not carry a token.
-private final case class CounterReplacement(proxyId: CounterProxyManager#CounterProxyId) extends Serializable
+private final case class CounterReplacement(proxyId: CounterProxyManager#DistributedCounterId) extends Serializable
 
 private final case class TerminatorReplacement(proxyId: TerminatorProxyManager#TerminatorProxyId) extends Serializable
 

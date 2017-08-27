@@ -138,6 +138,7 @@ abstract class Counter protected (n: Int) extends AtomicInteger(n) {
   @elidable(elidable.ASSERTION)
   @TruffleBoundary @noinline
   protected final def logChange(s: => String) = {
+    //Logger.finer(s"Counter $this: $s")
     if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
       val stack = Counter.getPorcStackTrace().map(n => {
         n match {

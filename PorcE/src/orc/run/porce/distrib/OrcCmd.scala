@@ -50,7 +50,7 @@ case class RemovePeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId) extends OrcLeader
 ////////
 
 /** Prepare for execution in the given Orc program AST */
-case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions, rootCounterId: CounterProxyManager#CounterProxyId) extends OrcLeaderToFollowerCmd {
+case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions, rootCounterId: CounterProxyManager#DistributedCounterId) extends OrcLeaderToFollowerCmd {
   override def toString(): String = s"${getClass.getSimpleName}($executionId,...programAst..,$options)"
 }
 
@@ -94,38 +94,45 @@ case class MigrateCallCmd(executionId: DOrcExecution#ExecutionId, tokenId: Long,
 
 /** This token has published in the given group */
 // TODO: This can probably be removed for PorcE.
-case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId, publication: PublishMemento) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x, $publication)"
+case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId, publication: PublishMemento) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$counterId%#x, $publication)"
 }
 
 /** Kill the given group which has already been killed at it's origin */
-case class KilledGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: RemoteRef#RemoteRefId) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupProxyId%#x)"
+case class KilledGroupCmd(executionId: DOrcExecution#ExecutionId, counterId: RemoteRef#RemoteRefId) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$counterId%#x)"
 }
 
 /** Notify the given group that an event has happened that will kill if it is not already dead. */
-case class KillingGroupCmd(executionId: DOrcExecution#ExecutionId, groupProxyId: RemoteRef#RemoteRefId, killing: KillingMemento) extends OrcPeerCmdInExecutionContext(executionId) {
-  // Token: This message carries a token on the counter killing.counterProxyId at the origin. (the location is important)
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupProxyId%#x,$killing)"
+case class KillingGroupCmd(executionId: DOrcExecution#ExecutionId, counterId: RemoteRef#RemoteRefId, killing: KillingMemento) extends OrcPeerCmdInExecutionContext(executionId) {
+  // Credit: This message carries credit on the counter killing.counterProxyId.
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$counterId%#x,$killing)"
 }
 
 /** This group member has halted */
-case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId, nTokens: Int) extends OrcPeerCmdInExecutionContext(executionId) {
-  // Token: This message carries nTokens on the counter groupMemberProxyId at the destination. (the location is important)
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x,$nTokens)"
+case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId, credit: Int) extends OrcPeerCmdInExecutionContext(executionId) {
+  // Credit: This message carries credit on the counter counterId at the destination. (the location is important)
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$counterId%#x,$credit)"
 }
 
 /** This group member has discorporated */
-case class DiscorporateGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId, nTokens: Int) extends OrcPeerCmdInExecutionContext(executionId) {
-  // Token: This message carries nTokens on the counter groupMemberProxyId at the destination. (the location is important)
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x,$nTokens)"
+case class DiscorporateGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId, credit: Int) extends OrcPeerCmdInExecutionContext(executionId) {
+  // Credit: This message carries credit on the counter counterId at the destination. (the location is important)
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$counterId%#x,$credit)"
 }
 
 /** This group member has resurrected */
-case class ResurrectGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, groupMemberProxyId: RemoteRef#RemoteRefId) extends OrcPeerCmdInExecutionContext(executionId) {
-  // Token: This message carries a token on the counter groupMemberProxyId at the destination **backwards** to the origin. (the location is important)
-  // TODO: This token flow may be a source of ordering bugs since the token flows in a direction which has no ordering guarantee since there is no message.
-  override def toString(): String = f"${getClass.getSimpleName}($executionId,$groupMemberProxyId%#x)"
+case class ResurrectGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$counterId%#x)"
+}
+
+/** Provide credit to a remote counter fragment.
+  *
+  * This message is sent in reply to ResurrectGroupMemberProxyCmd.
+  */
+case class ProvideCounterCreditCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId, credit: Int) extends OrcPeerCmdInExecutionContext(executionId) {
+  // Credit: This message carries credit on the counter counterId at the **origin**. (the location is important)
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$counterId%#x,$credit)"
 }
 
 /** Post a read request on this future */

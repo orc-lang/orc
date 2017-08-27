@@ -129,9 +129,11 @@ trait TerminatorProxyManager {
 
   def sendKilling(destination: PeerLocation, proxyId: TerminatorProxyId)(counter: Counter, continuation: PorcEClosure): Unit = {
     Tracer.traceKillGroupSend(proxyId, execution.runtime.here, destination)
-    val counterProxyId = makeProxyWithinCounter(counter)
-    // Token: Pass token on counter with message.
-    destination.sendInContext(execution)(KillingGroupCmd(execution.executionId, proxyId, new KillingMemento(counterProxyId, continuation)))
+    val dc = getDistributedCounterForCounter(counter)
+    // Token: Convert token into credits
+    val credits = dc.convertToken()
+    // Credit: Pass with message
+    destination.sendInContext(execution)(KillingGroupCmd(execution.executionId, proxyId, new KillingMemento(dc.id, credits, continuation)))
   }
 
   def killedGroupProxy(proxyId: TerminatorProxyId): Unit = {
@@ -148,23 +150,24 @@ trait TerminatorProxyManager {
 
   def killingGroupProxy(origin: PeerLocation, proxyId: TerminatorProxyId, killing: KillingMemento): Unit = {
     val m = proxiedTerminatorMembers.get(proxyId)
-    val proxyCounter = makeProxyCounterFor(killing.counterProxyId, origin)
+    val dc = getDistributedCounterForId(killing.counterId)
     // Token: Pass the token on the message to the local proxy
-    proxyCounter.takeParentToken()
+    dc.activate(killing.credit)
     if (m != null) {
       val g = m.enclosingTerminator
-      Logger.fine(s"Scheduling $g.kill($proxyCounter, ${killing.continuation})...")
+      Logger.fine(s"Scheduling $g.kill($dc, ${killing.continuation})...")
       execution.runtime.schedule(new Schedulable {
         def run(): Unit = {
-          if (g.kill(proxyCounter, killing.continuation)) {
-            runtime.schedule(CallClosureSchedulable(killing.continuation))
+          if (g.kill(dc.counter, killing.continuation)) {
+            // No reason to schedule here.
+            CallClosureSchedulable(killing.continuation).run()
           }
         }
       })
       proxiedTerminatorMembers.remove(proxyId)
     } else {
       // The group will be "unknown" if it has already been killed so we need to halt the counter.
-      proxyCounter.haltToken()
+      dc.counter.haltToken()
     }
   }
 }

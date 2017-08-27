@@ -68,7 +68,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
     programs.put(thisExecutionId, leaderExecution)
 
-    val rootCounterId = leaderExecution.makeProxyWithinCounter(leaderExecution.c)
+    val rootCounterId = leaderExecution.getDistributedCounterForCounter(leaderExecution.c).id
 
     
     followerEntries foreach { f =>
@@ -126,7 +126,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
             case KillingGroupCmd(xid, gpid, killing) => programs(xid).killingGroupProxy(followerLocation, gpid, killing)
             case HaltGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).haltGroupMemberProxy(gmpid, n)
             case DiscorporateGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).discorporateGroupMemberProxy(gmpid, n)
-            case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
+            case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid, followerLocation)
+            case ProvideCounterCreditCmd(xid, counterId, credits) => programs(xid).provideCounterCredit(counterId, followerLocation, credits)
             case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
             case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(followerLocation, futureId, value)
             case EOF => { Logger.fine(s"EOF, aborting $followerLocation"); followerLocation.connection.abort() }

@@ -161,7 +161,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case KilledGroupCmd(xid, gpid) => programs(xid).killedGroupProxy(gpid)
           case KillingGroupCmd(xid, gpid, killing) => programs(xid).killingGroupProxy(leaderLocation, gpid, killing)
           case DiscorporateGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).discorporateGroupMemberProxy(gmpid, n)
-          case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
+          case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid, leaderLocation)
+          case ProvideCounterCreditCmd(xid, counterId, credits) => programs(xid).provideCounterCredit(counterId, leaderLocation, credits)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
           case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(leaderLocation, futureId, value)
           case UnloadProgramCmd(xid) => unloadProgram(xid)
@@ -197,7 +198,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case KillingGroupCmd(xid, gpid, killing) => programs(xid).killingGroupProxy(peerLocation, gpid, killing)
           case HaltGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).haltGroupMemberProxy(gmpid, n)
           case DiscorporateGroupMemberProxyCmd(xid, gmpid, n) => programs(xid).discorporateGroupMemberProxy(gmpid, n)
-          case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid)
+          case ResurrectGroupMemberProxyCmd(xid, gmpid) => programs(xid).resurrectGroupMemberProxy(gmpid, peerLocation)
+          case ProvideCounterCreditCmd(xid, counterId, credits) => programs(xid).provideCounterCredit(counterId, peerLocation, credits)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
           case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(peerLocation, futureId, value)
           case EOF => { Logger.fine(s"EOF, aborting peerLocation"); peerLocation.connection.abort() }
@@ -286,7 +288,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcFollowerExecution])
 
-  def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions, rootCounterId: CounterProxyManager#CounterProxyId): Unit = {
+  def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions, rootCounterId: CounterProxyManager#DistributedCounterId): Unit = {
     Logger.entering(getClass.getName, "loadProgram")
 
     assert(programs.isEmpty) /* For now */

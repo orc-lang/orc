@@ -95,11 +95,11 @@ object DOrcExecution {
   * @author jthywiss
   */
 class DOrcLeaderExecution(
-  executionId: DOrcExecution#ExecutionId,
-  programAst: DOrcRuntime#ProgramAST,
-  options: OrcExecutionOptions,
-  eventHandler: OrcEvent => Unit,
-  runtime: LeaderRuntime)
+    executionId: DOrcExecution#ExecutionId,
+    programAst: DOrcRuntime#ProgramAST,
+    options: OrcExecutionOptions,
+    eventHandler: OrcEvent => Unit,
+    runtime: LeaderRuntime)
   extends DOrcExecution(executionId, 0, programAst, options, eventHandler, runtime) with PorcEExecutionWithLaunch {
 
   protected val startingFollowers = java.util.concurrent.ConcurrentHashMap.newKeySet[DOrcRuntime#RuntimeId]()
@@ -138,18 +138,18 @@ class DOrcLeaderExecution(
   * @author jthywiss
   */
 class DOrcFollowerExecution(
-  executionId: DOrcExecution#ExecutionId,
-  followerExecutionNum: Int,
-  programAst: DOrcRuntime#ProgramAST,
-  options: OrcExecutionOptions,
-  eventHandler: OrcEvent => Unit,
-  rootCounterId: CounterProxyManager#CounterProxyId,
-  rootCounterOrigin: PeerLocation,
-  runtime: FollowerRuntime)
+    executionId: DOrcExecution#ExecutionId,
+    followerExecutionNum: Int,
+    programAst: DOrcRuntime#ProgramAST,
+    options: OrcExecutionOptions,
+    eventHandler: OrcEvent => Unit,
+    rootCounterId: CounterProxyManager#DistributedCounterId,
+    rootCounterOrigin: PeerLocation,
+    runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
 
   // Token: This does not get a token initially.
-  val counter = makeProxyCounterFor(rootCounterId, rootCounterOrigin)
+  val counter = getDistributedCounterForId(rootCounterId).counter
 
   val pRootNode = new RootNode(null) with HasId {
     def execute(frame: VirtualFrame): Object = {
@@ -180,12 +180,12 @@ class DOrcFollowerExecution(
   }
 }
 
-case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], publicationContinuation: PorcEClosure, counterProxyId: CounterProxyManager#CounterProxyId, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) extends Serializable {
-  def this(callHandler: CPSCallResponseHandler, counterProxyId: CounterProxyManager#CounterProxyId, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) {
-    this(callSiteId = callHandler.callSiteId, callSitePosition = callHandler.callSitePosition, publicationContinuation = callHandler.p, counterProxyId = counterProxyId, terminatorProxyId = terminatorProxyId, target = target, arguments = arguments)
+case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], publicationContinuation: PorcEClosure, counterId: CounterProxyManager#DistributedCounterId, credit: Int, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) extends Serializable {
+  def this(callHandler: CPSCallResponseHandler, counterId: CounterProxyManager#DistributedCounterId, credit: Int, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) {
+    this(callSiteId = callHandler.callSiteId, callSitePosition = callHandler.callSitePosition, publicationContinuation = callHandler.p, counterId = counterId, credit = credit, terminatorProxyId = terminatorProxyId, target = target, arguments = arguments)
   }
 }
 
 case class PublishMemento(publicationContinuation: PorcEClosure, publishedValue: AnyRef) extends Serializable
 
-case class KillingMemento(counterProxyId: CounterProxyManager#CounterProxyId, continuation: PorcEClosure) extends Serializable
+case class KillingMemento(counterId: CounterProxyManager#DistributedCounterId, credit: Int, continuation: PorcEClosure) extends Serializable

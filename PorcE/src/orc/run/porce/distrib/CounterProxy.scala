@@ -13,249 +13,379 @@
 
 package orc.run.porce.distrib
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import orc.Schedulable
 import orc.run.porce.runtime.Counter
+import orc.util.SparseBinaryFraction
 
-/** A DOrcExecution mix-in to create and communicate among proxied counters.
+/** A DOrcExecution mix-in to create and communicate among distributed counters.
   *
+  * Distributed counters implement the algorithm developed by Friedemann MATTERN in 
+  * "Global quiescence detection based on credit distribution and recovery" 
+  * (1989) [https://doi.org/10.1016/0020-0190(89)90212-3].
+  * 
   * @see CounterProxyManager#RemoteCounterProxy
   * @see CounterProxyManager#RemoteCounterMembersProxy
   * @author jthywiss
   */
 trait CounterProxyManager {
-  execution: DOrcExecution =>
-
-  type CounterProxyId = RemoteRefId
-
-  /** Proxy for a counter the resides on a remote dOrc node.
-    * RemoteCounterProxy is created locally when a token has been migrated from
-    * another node. When all local counter members halt, the remote
-    * counter will be notified.
+  execution: DOrcExecution =>  
+    
+  type CounterId = CounterProxyManager.CounterId
+  type DistributedCounterId = CounterProxyManager.DistributedCounterId
+  val DistributedCounterId = CounterProxyManager.DistributedCounterId
+  
+  /** The type of all distributed counter representations.
     *
-    * This counter can maintain multiple parent tokens.
-    *
-    * @author jthywiss
+    * This includes both remote fragments and the controllers.
+    * 
     */
-  class RemoteCounterProxy private[CounterProxyManager] (
-      val remoteProxyId: CounterProxyManager#CounterProxyId,
-      val origin: PeerLocation,
-      onHaltFunc: (Int) => Unit,
-      onDiscorporateFunc: (Int) => Unit,
-      onResurrectFunc: () => Unit)
-    extends Counter(0) {
-    // Proxy counters start "floating" in a non-halted, but 0 count situation.
-    val parentTokens = new AtomicInteger(0)
-
-    override def toString: String = f"${getClass.getName}(remoteProxyId=$remoteProxyId%#x, origin=$origin)"
-
-    override def onHalt(): Unit = {
-      //Logger.entering(getClass.getName, "onHalt")
-      // FIXME: RACE: This has a race with takeParentToken followed by haltToken. We need to make sure that we don't halt someone else's parent tokens.
-      val n = parentTokens.getAndSet(0)
-      logChange(s"onHalt from $n (at ${get()})")
-      assert(n > 0)
-      // Token: Pass all `n` collected remote parent tokens to the callbacks.
-      if (isDiscorporated) {
-        onDiscorporateFunc(n)
-      } else {
-        onHaltFunc(n)
-      }
-    }
-
-    override def onResurrect(): Unit = {
-      //Logger.entering(getClass.getName, "onResurrect")
-      onResurrectFunc()
-      // Token: Receive a token on the remote parent. 
-      parentTokens.getAndIncrement()
-    }
-
-    /** Take a parent token and add it to this proxy.
-      *
-      * The parent token will be handled through it's halting by the proxy. The
-      * caller to this method gets a token on this proxy.
-      *
-      * This call will never get a newToken from the parent. Instead, the
-      * caller must provide that token.
+  sealed trait DistributedCounter {
+    /** The Id of this distributed counter.
       */
-    final def takeParentToken(): Unit = {
-      // Token: This receives a token on the remote parent.
-      val n = incrementAndGet()
-      logChange(s"takeParentToken to $n")
-      parentTokens.getAndIncrement()
-    }
+    val id: CounterProxyManager#DistributedCounterId
+    
+    /** Make a token remote by converting it into credit.
+      *
+      * The caller must already have a token on `counter`. This call consumes it. 
+      *
+      * Return the credit for the remove node to use.
+      */
+    def convertToken(): Int
+    
+    /** Return the local counter associated with this.
+      */
+    def counter: Counter
+    
+    /** Activate this representation with some credits.
+     *  
+     *  Token: Provides a local token to the caller.
+     */
+    def activate(credits: Int): Unit
   }
 
-  /** Proxy for one or more remote members of a counter (tokens and counters).
-    * RemoteCounterMembersProxy is created when a token is migrated to another node.
-    * As the migrated token continues to execute, this proxy may come to represent
-    * multiple tokens, and/or sub-counters.  When all remote members halt, this
-    * proxy will remove itself from the parent.
-    *
-    * This proxy can be reused and holds no state about whether it is no longer
-    * needed.
+  /** A counter with attached distribution information.
     *
     * @author jthywiss, amp
     */
-  final class RemoteCounterMembersProxy private[CounterProxyManager] (
-      val thisProxyId: CounterProxyManager#CounterProxyId,
-      val enclosingCounter: Counter) {
-    // TODO: SAFETY: Are all calls into methods on this object guaranteed to be from the same receiver thread.
-    //private var parentTokens = 0
+  sealed abstract class DistributedCounterFragment private[CounterProxyManager] (val id: CounterProxyManager#DistributedCounterId)
+    extends Counter(0) with DistributedCounter {
+    // TODO: PERFORMANCE: Reduce or eliminate the use of synchonized here. The state would need to be compacted and there would be complications with the local count, but it is possible to do I think.
+    
+    /** The number of credit is 1/(2**credits).
+      *
+      * -1 means we have 0 credits.
+	    */
+    var credits: Int = -1
+    
+    /** True if this is waiting for credit to be provided by the origin.
+      */
+    var waitingForCredit = false
+    // TODO: waitingForCredit is probably not needed. But is useful to leave for initial debugging.
+    
+    override def toString: String = f"DistributedCounterFragment(id=$id, credits=$credits, waitingForCredit=$waitingForCredit)"    
+    
+    override def onHalt(): Unit = synchronized {
+      Logger.entering(getClass.getName, "onHalt")
+      if(!waitingForCredit) {
+        assert(credits >= 0)
+        // Credits: We halted locally so return all our credits.
+        returnCredits(credits)
+        credits = -1
+      } else {
+        // We are waiting for credit, so we cannot return our credits yet.
+      }
+    }
+
+    override def onResurrect(): Unit = synchronized {
+      Logger.entering(getClass.getName, "onResurrect")
+      assert(!waitingForCredit)
+      val n = incrementAndGet()
+      // Token: Create a token that is held by the request credits message. It will be returned with the credits.
+      logChange(s"'waiting for credit' to $n")
+      requestCredits()
+      waitingForCredit = true
+    }
+
+    /** Activate this representation the provided credits.
+      *  
+      * Token: Returns a token on this counter to the caller.
+      */
+    final def activate(credits: Int): Unit = synchronized {
+      Logger.entering(getClass.getName, s"activate $credits")
+      val n = incrementAndGet()
+      logChange(s"activate to $n")
+      if(this.credits < 0) {
+        this.credits = credits
+      } else if(this.credits == credits) {
+        this.credits -= 1
+      } else {
+        returnCredits(credits)
+      }
+    }
+    
+    final def provideCredit(credits: Int): Unit = synchronized {
+      Logger.entering(getClass.getName, s"provideCredits $credits")
+      assert(waitingForCredit)
+      // Credits: If we have credits now (because we were activated in the intrem), just return the ones provided. If we still need them, take the credits.
+      if(this.credits < 0) {
+        this.credits = credits
+      } else {
+        returnCredits(credits)
+      }
+      waitingForCredit = false
+      // Token: Halt the special 'waiting for credit' token created in onResurrect()
+      haltToken()
+    }
+    
+    /** Make a token remote by converting it into credit.
+      *
+      * The caller must already have a token on this. This call consumes it. 
+      *
+      * Return the credit for the remove node to use.
+      */
+    def convertToken(): Int = synchronized {
+      // TODO: PERFORMANCE: This could be specialized for the final decrement case to pass the whole value to avoid the need for a message back to the root.
+      credits += 1
+      val r = credits
+      haltToken()
+      r
+    }
+    
+    /** Return the local counter associated with this.
+      */
+    def counter: Counter = this
+    
+    private[CounterProxyManager] def returnCredits(credits: Int): Unit = {
+      if (isDiscorporated) {
+        returnCreditsDiscorporate(credits)
+      } else {
+        returnCreditsHalt(credits)
+      }
+    }
+    private[CounterProxyManager] def returnCreditsHalt(credits: Int): Unit
+    private[CounterProxyManager] def returnCreditsDiscorporate(credits: Int): Unit
+    private[CounterProxyManager] def requestCredits(): Unit
+  }
+
+  /** TODO
+    *
+    * @author jthywiss, amp
+    */
+  final class DistributedCounterController private[CounterProxyManager] (val id: CounterProxyManager#DistributedCounterId, val enclosingCounter: Counter) 
+      extends DistributedCounter {
+    var credits = SparseBinaryFraction.one
+    var remoteTokens = 0
     // TODO: MEMORYLEAK: The lack of any local information on if this members proxy is done will make removing proxies from the maps very hard.
 
-    override def toString: String = f"${getClass.getName}(thisProxyId=$thisProxyId%#x, enclosingCounter=$enclosingCounter)"
-
-    /** Remote counter members all halted, so notify parent that we've halted. */
-    def notifyParentOfHalt(n: Int): Unit = synchronized {
-      Logger.entering(getClass.getName, s"halt $n")
-      //assert(parentTokens >= n)
-      //parentTokens -= n
-      (0 until n).foreach { (_) =>
+    override def toString: String = f"${getClass.getName}(id=$id, enclosingCounter=$enclosingCounter)"
+    
+    private def addCreditAndCheck(credits: Int)(doHalt: => Unit): Unit = {
+      val n = this.credits.addBit(credits)
+      Logger.fine(s"$id: Adding 1/(2^$credits) to ${this.credits} = $n")
+      this.credits = n
+      if(this.credits == SparseBinaryFraction.one) {
+        Logger.fine(s"$id: Remote halt: counter at ${enclosingCounter.get}, have $remoteTokens")
+        (0 until remoteTokens).foreach { (_) =>
+          doHalt
+        }
+        remoteTokens = 0
+      }
+    }
+    
+    /** A remote node returned credit and halted. */
+    def notifyHalt(credits: Int): Unit = synchronized {
+      Logger.entering(getClass.getName, s"halt $credits")
+      addCreditAndCheck(credits) {
         enclosingCounter.haltToken()
       }
     }
 
-    /** Remote counter members all halted, but there was discorporated members, so so notify parent that we've discorporated. */
-    def notifyParentOfDiscorporate(n: Int): Unit = synchronized {
-      Logger.entering(getClass.getName, s"discorporate $n")
-      //assert(parentTokens >= n)
-      //parentTokens -= n
-      (0 until n).foreach { (_) =>
+    /** A remote node returned credit and discorporated. */
+    def notifyDiscorporate(credits: Int): Unit = synchronized {
+      Logger.entering(getClass.getName, s"discorporate $credits")
+      addCreditAndCheck(credits) {
         enclosingCounter.discorporateToken()
       }
     }
 
-    def takeParentToken() = {
-      Logger.entering(getClass.getName, s"takeParentToken")
-      //parentTokens += 1
-    }
-
-    /** Remote counter had only discorporated members, but now has a new member, so notify parent that we've resurrected. */
-    def notifyParentOfResurrect(): Unit = synchronized {
+    /** A remote node requested resurrect. 
+      *
+      * Return the credit for the remove node to use.
+      */
+    def resurrect(): Int = synchronized {
       Logger.entering(getClass.getName, "resurrect")
       enclosingCounter.newToken()
+      convertToken()
     }
-
+    
+    /** Make a token remote by converting it into credit.
+      *
+      * The caller must already have a token on `enclosingCounter`. This call consumes it. 
+      *
+      * Return the credit for the remove node to use.
+      */
+    def convertToken(): Int = synchronized {
+      Logger.entering(getClass.getName, "takeToken")
+      remoteTokens += 1
+      val (b, n) = credits.split()
+      Logger.fine(s"$id: Splitting $credits into 1/(2^$b), $n")
+      credits = n
+      b
+    }
+    
+    /** Return the local counter associated with this.
+      */
+    def counter: Counter = enclosingCounter
+    
+    /** Activate this representation with some credits.
+     *  
+     *  Token: Provides a local token to the caller.
+     */
+    def activate(credits: Int): Unit = synchronized {
+      Logger.entering(getClass.getName, s"halt $credits")
+      enclosingCounter.newToken()
+      addCreditAndCheck(credits) {
+        enclosingCounter.haltToken()
+      }
+    }
   }
 
-  protected val proxiedCountersById = new java.util.concurrent.ConcurrentHashMap[Counter, CounterProxyId]
-  protected val proxiedCounters = new java.util.concurrent.ConcurrentHashMap[(CounterProxyId, PeerLocation), RemoteCounterProxy]
-  protected val proxiedCounterMembers = new java.util.concurrent.ConcurrentHashMap[CounterProxyId, RemoteCounterMembersProxy]
+  // FIXME: Both of these maps are uncleaned. Elements need to be removed at some point.
+  private val distributedCounters = new java.util.concurrent.ConcurrentHashMap[CounterProxyManager#DistributedCounterId, DistributedCounter]()
+  private val counterIds = new java.util.concurrent.ConcurrentHashMap[Counter, CounterProxyManager#DistributedCounterId]()
 
-  /** Make a members proxy in a counter.
+  /** Get the distributed representation of `enclosingCounter`.
     *
     * Initially, this represents no members and does not have a token on `enclosingCounter`.
+    * 
+    * The returned DistributedCounter may be either a `DistributedCounterFragment` or a `DistributedCounterController`.
     */
-  def makeProxyWithinCounter(enclosingCounter: Counter): CounterProxyId = {
-    // Token: The proxy has no token initially so this does not consume a token.
-
-    val counterProxyId = enclosingCounter match {
-      //case cp: RemoteCounterProxy => cp.remoteProxyId
-      case _ => proxiedCountersById.computeIfAbsent(enclosingCounter, (_) => freshRemoteRefId())
-    }
-    proxiedCounterMembers.computeIfAbsent(counterProxyId, (_) => {
-      val rmtCounterMbrProxy = new RemoteCounterMembersProxy(counterProxyId, enclosingCounter)
-      Logger.finer(f"Created proxy for $enclosingCounter with id $counterProxyId%#x")
-      rmtCounterMbrProxy
-    })
-
-    counterProxyId
-  }
-
-  /** Make a local proxy for a remote counter (identified by id __and__ origin).
-    *
-    * An existing proxy is only returned if both the id and the origin are the same
-    * this matches the generation of members proxies at various locations.
-    */
-  def makeProxyCounterFor(counterProxyId: CounterProxyId, origin: PeerLocation): RemoteCounterProxy = {
-    def newProxyCounter =
-      proxiedCounters.computeIfAbsent((counterProxyId, origin), (_) => {
-        Logger.finer(f"Created local proxy for id $counterProxyId%#x (from $origin)")
-        new RemoteCounterProxy(counterProxyId, origin,
-          (n) => sendHalt(origin, counterProxyId)(n),
-          (n) => sendDiscorporate(origin, counterProxyId)(n),
-          () => sendResurrect(origin, counterProxyId)())
-      })
-    newProxyCounter
-
-    // FIXME: Reenable this optimization. It's probably important. However it will require figuring out both how to
-    // make sure things are safe (in terms of message orderings) and how to handle the case where a proxy is passed
-    // here when we actually have the counter. This may require the sender knowing if this will happen.
-    /*
-    val lookedUpProxyCounterMember = proxiedCounterMembers.get(counterProxyId)
-    val proxyCounter = lookedUpProxyCounterMember match {
-      case null => { /* Not a counter we've seen before */
+  def getDistributedCounterForCounter(enclosingCounter: Counter): DistributedCounter = {
+    enclosingCounter match {
+      case cp: DistributedCounterFragment => {
+        cp
       }
-      case rcmp => rcmp.enclosingCounter
+      case _ =>
+        val id = counterIds.computeIfAbsent(enclosingCounter, (_) => DistributedCounterId(freshRemoteRefId(), runtime.runtimeId))
+        distributedCounters.computeIfAbsent(id, (id) => {
+          val rmtCounterMbrProxy = new DistributedCounterController(id, enclosingCounter)
+          Logger.finer(f"Created proxy for $enclosingCounter with $id")
+          rmtCounterMbrProxy
+        })
     }
+  }
 
-    if (lookedUpProxyCounterMember != null) {
-      /* There is a RemoteCounterMembersProxy already for this proxyId,
-       * so discard the superfluous one created at the sender. */
-
-      // FIXME: We should be able to remove this once proxies can track multiple tokens from their parent.
-      // If we are moving from a remote proxy to a local original counter we will probably need to make a new token here.
-      // The problem is what happens to the count on he remote proxy. We would need to somehow halt it. So we might
-      // have to send this message anyway.
-      Tracer.traceHaltGroupMemberSend(counterProxyId, execution.runtime.here, origin)
-      origin.sendInContext(execution)(HaltGroupMemberProxyCmd(execution.executionId, counterProxyId, 1))
-    }
-
-    proxyCounter
+  /** Return the local representation of a remote counter.
+    *
+    * This may only be called with the Ids of counters that are already created with getDistributedCounterForCounter on some node.
     */
+  def getDistributedCounterForId(id: CounterProxyManager#DistributedCounterId): DistributedCounter = {
+    distributedCounters.computeIfAbsent(id, (id) => {
+      Logger.finer(s"Created local proxy for id $id")
+      assert(id.controller != runtime.runtimeId)
+      new DistributedCounterFragment(id) {
+        private[CounterProxyManager] def returnCreditsHalt(n: Int): Unit = sendHalt(id)(n)
+        private[CounterProxyManager] def returnCreditsDiscorporate(n: Int): Unit = sendDiscorporate(id)(n)
+        private[CounterProxyManager] def requestCredits(): Unit = sendResurrect(id)()
+      }
+    })
   }
 
-  def sendHalt(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(n: Int): Unit = {
-    Tracer.traceHaltGroupMemberSend(groupMemberProxyId, execution.runtime.here, destination)
-    // Token: Receives n tokens and passes them with the message.
-    destination.sendInContext(execution)(HaltGroupMemberProxyCmd(execution.executionId, groupMemberProxyId, n))
+  def sendHalt(id: CounterProxyManager#DistributedCounterId)(n: Int): Unit = {
+    require(n > 0)
+    val location = runtime.locationForRuntimeId(id.controller)
+    Tracer.traceHaltGroupMemberSend(id.id, execution.runtime.here, location)
+    // Credit: Send credit with message
+    location.sendInContext(execution)(HaltGroupMemberProxyCmd(execution.executionId, id.id, n))
   }
 
-  def sendDiscorporate(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(n: Int): Unit = {
-    Tracer.traceDiscorporateGroupMemberSend(groupMemberProxyId, execution.runtime.here, destination)
-    // Token: Receives n tokens and passes them with the message.
-    destination.sendInContext(execution)(DiscorporateGroupMemberProxyCmd(execution.executionId, groupMemberProxyId, n))
+  def sendDiscorporate(id: CounterProxyManager#DistributedCounterId)(n: Int): Unit = {
+    require(n > 0)
+    val location = runtime.locationForRuntimeId(id.controller)
+    Tracer.traceDiscorporateGroupMemberSend(id.id, execution.runtime.here, location)
+    // Credit: Send credit with message
+    location.sendInContext(execution)(DiscorporateGroupMemberProxyCmd(execution.executionId, id.id, n))
   }
 
-  def sendResurrect(destination: PeerLocation, groupMemberProxyId: CounterProxyId)(): Unit = {
-    Tracer.traceDiscorporateGroupMemberSend(groupMemberProxyId, execution.runtime.here, destination)
-    destination.sendInContext(execution)(ResurrectGroupMemberProxyCmd(execution.executionId, groupMemberProxyId))
-    // Token: Receives a token from the message destination. See ResurrectGroupMemberProxyCmd.
+  def sendResurrect(id: CounterProxyManager#DistributedCounterId)(): Unit = {
+    val location = runtime.locationForRuntimeId(id.controller)
+    Tracer.traceDiscorporateGroupMemberSend(id.id, execution.runtime.here, location)
+    location.sendInContext(execution)(ResurrectGroupMemberProxyCmd(execution.executionId, id.id))
   }
 
-  def haltGroupMemberProxy(groupMemberProxyId: CounterProxyId, n: Int): Unit = {
-    val g = proxiedCounterMembers.get(groupMemberProxyId)
-    if (g != null) {
-      Logger.fine(s"Scheduling $g.notifyParentOfHalt($n)")
+  def sendProvideCredit(destination: PeerLocation, id: CounterProxyManager#DistributedCounterId)(n: Int): Unit = {
+    require(n > 0)
+    Tracer.traceDiscorporateGroupMemberSend(id.id, execution.runtime.here, destination)
+    // Credit: Send credit with message
+    destination.sendInContext(execution)(ProvideCounterCreditCmd(execution.executionId, id.id, n))
+  }
+  
+  private def getDistributedCounterForIdHere(counterId: CounterId): Option[DistributedCounterController] = {
+    val dcId = DistributedCounterId(counterId, runtime.runtimeId)
+    Option(distributedCounters.get(dcId)) match {
+      case Some(c: DistributedCounterController) => {
+        Some(c)
+      }
+      case Some(v) =>
+        throw new AssertionError(f"getDistributedCounterForIdHere should only be called for counters with a controller in this location: $counterId%#x, $v")
+      case None => {
+        Logger.info(f"Unknown distributed counter $counterId%#x")
+        None
+      }
+    }
+  }
+
+  def haltGroupMemberProxy(counterId: CounterId, n: Int): Unit = {
+    getDistributedCounterForIdHere(counterId) map { g =>
+      Logger.fine(s"Scheduling $g.notifyHalt($n)")
       // Token: Pass tokens in message to code in schedulable.
-      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfHalt(n) } })
-    } else {
-      Logger.fine(f"Halt group member proxy on unknown group member proxy $groupMemberProxyId%#x")
+      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyHalt(n) } })
     }
   }
 
-  def discorporateGroupMemberProxy(groupMemberProxyId: CounterProxyId, n: Int): Unit = {
-    val g = proxiedCounterMembers.get(groupMemberProxyId)
-    if (g != null) {
-      Logger.fine(s"Scheduling $g.notifyParentOfDiscorporate($n)")
+  def discorporateGroupMemberProxy(counterId: CounterId, n: Int): Unit = {
+    getDistributedCounterForIdHere(counterId) map { g =>
+      Logger.fine(s"Scheduling $g.notifyDiscorporate($n)")
       // Token: Pass tokens in message to code in schedulable.
-      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfDiscorporate(n) } })
-    } else {
-      Logger.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
+      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyDiscorporate(n) } })
     }
   }
 
-  def resurrectGroupMemberProxy(groupMemberProxyId: CounterProxyId): Unit = {
-    val g = proxiedCounterMembers.get(groupMemberProxyId)
-    if (g != null) {
-      Logger.fine(s"Scheduling $g.notifyParentOfResurrect()")
-      execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyParentOfResurrect() } })
-      // Token: The token resulting from the resurrect is passed to the origin of this message.
-    } else {
-      Logger.fine(f"Resurrect group member proxy on unknown group member proxy $groupMemberProxyId%#x")
+  def resurrectGroupMemberProxy(counterId: CounterId, requester: PeerLocation): Unit = {
+    getDistributedCounterForIdHere(counterId) map { g =>
+      Logger.fine(s"Scheduling $g.resurrect()")
+      execution.runtime.schedule(new Schedulable { 
+        def run(): Unit = { 
+          val credit = g.resurrect()
+          // Credit: Getting credit and forwarding it to the requester.
+          execution.sendProvideCredit(requester, g.id)(credit)
+        } 
+      })
     }
   }
 
+  def provideCounterCredit(counterId: CounterId, origin: PeerLocation, n: Int): Unit = {
+    val g = getDistributedCounterForId(DistributedCounterId(counterId, origin.runtimeId))
+    g match {
+      case g: DistributedCounterFragment => {
+        Logger.fine(s"Scheduling $g.provideCredit($n)")
+        execution.runtime.schedule(new Schedulable {
+          def run(): Unit = {
+            // Credit: Give credit to local counter representation.
+            g.provideCredit(n)
+          }
+        })
+      }
+      case _ =>
+        throw new AssertionError(f"provideCounterCredit should only be called for remote counters.")
+    }
+  }
+
+}
+
+object CounterProxyManager {
+  type CounterId = RemoteRef#RemoteRefId
+  case class DistributedCounterId(id: CounterId, controller: DOrcRuntime#RuntimeId) extends Serializable {
+    override def toString() = f"DistributedCounterId($id%#x @ $controller%#x)"
+  }
 }
