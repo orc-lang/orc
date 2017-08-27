@@ -27,20 +27,16 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   execution: DOrcExecution =>
 
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    // WARNING: Contains return!!!
-
     // TODO: PERFORMANCE: This would probably gain a lot by specializing on the number of arguments. That will probably require a simpler structure for the loops.
     if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
-      return true
+      true
     } else {
       val here = execution.runtime.here
-      for (v <- arguments.view :+ target) {
-        if (v.isInstanceOf[LocationPolicy] && !currentLocations(v).contains(here)) {
-          return true
-        }
+      @inline
+      def checkValue(v: AnyRef): Boolean = {
+        v.isInstanceOf[LocationPolicy] && !currentLocations(v).contains(here)
       }
-
-      return false
+      checkValue(target) || arguments.exists(checkValue)
     }
   }
 
