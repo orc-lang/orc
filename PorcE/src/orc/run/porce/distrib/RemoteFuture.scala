@@ -32,31 +32,32 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
   */
 class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId: RemoteFutureRef#RemoteRefId) extends FutureReader {
 
-  protected val readerLocations = new scala.collection.mutable.HashSet[PeerLocation]()
+  protected var readerLocations = new java.util.HashSet[PeerLocation](4)
 
   override def toString: String = f"${getClass.getName}(fut=$fut, execution=$execution, futureId=$futureId%#x)"
 
   def addReader(l: PeerLocation): Unit = synchronized {
-    readerLocations += l
+    readerLocations.add(l)
     if (readerLocations.size == 1) {
       fut.read(this)
     }
   }
 
-  protected def getAndClearReaders(): List[PeerLocation] = synchronized {
-    val readers = readerLocations.toList
+  protected def getAndClearReaders(): Array[PeerLocation] = synchronized {
+    import scala.collection.JavaConverters._
+    val readers = readerLocations.asScala.toArray
     readerLocations.clear()
     readers
   }
 
   override def publish(v: AnyRef): Unit = synchronized {
     //Logger.entering(getClass.getName, "publish")
-    execution.sendFutureResult(getAndClearReaders(), futureId, Some(v))
+    execution.sendFutureResult(getAndClearReaders(), futureId, fut, Some(v))
   }
 
   override def halt(): Unit = synchronized {
     //Logger.entering(getClass.getName, "halt")
-    execution.sendFutureResult(getAndClearReaders(), futureId, None)
+    execution.sendFutureResult(getAndClearReaders(), futureId, fut, None)
   }
 
 }
@@ -70,11 +71,18 @@ trait RemoteFutureManager {
 
   // These two maps are inverses of each other (sorta)
   protected val servingLocalFutures = new java.util.concurrent.ConcurrentHashMap[Future, RemoteFutureRef#RemoteRefId]
+  // TODO: MEMORYLEAK: servingRemoteFutures is not cleaned as futures are no longer needed. This is because the future Id 
+  //       could be requested from another node with any amount of delay. This will be a problem as programs run longer or
+  //       use more futures. The initial symptom is likely to be programs slowing down as they run, instead of a visible
+  //       increase in the heap size. The object are small, but ConcurrentHashMap does show quite a bit of slowdown as the
+  //       number of entries increases.
   protected val servingRemoteFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureReader]
   protected val servingGroupsFuturesUpdateLock = new Object()
 
   protected val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureRef]
   protected val waitingReadersUpdateLock = new Object()
+  
+  // TODO: PERFORMANCE: We are using locks here when we could probably use computeIfAbsent and fiends.
 
   def ensureFutureIsRemotelyAccessibleAndGetId(fut: Future): RemoteFutureRef#RemoteRefId = {
     //Logger.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
@@ -86,7 +94,6 @@ trait RemoteFutureManager {
         } else {
           val newFutureId = execution.freshRemoteRefId()
           val newReader = new RemoteFutureReader(fut, execution, newFutureId)
-          // TODO: Does this need to be atomic?
           servingLocalFutures.put(fut, newFutureId)
           servingRemoteFutures.put(newFutureId, newReader)
           newFutureId
@@ -120,13 +127,16 @@ trait RemoteFutureManager {
     servingRemoteFutures.get(futureId).addReader(execution.locationForFollowerNum(readerFollowerNum))
   }
 
-  def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]): Unit = {
+  def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, fut: Future, value: Option[AnyRef]): Unit = {
     Logger.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x" + futureId.toHexString, value))
     readers foreach { reader =>
       val mv = value.map(execution.marshalValue(reader)(_))
       Tracer.traceFutureResultSend(futureId, execution.runtime.here, reader)
       reader.sendInContext(execution)(DeliverFutureResultCmd(execution.executionId, futureId, mv))
     }
+    servingLocalFutures.remove(fut)
+    // TODO: PERFORMANCE: See servingRemoteFutures declaration
+    //servingRemoteFutures.remove(futureId)
   }
 
   def deliverFutureResult(origin: PeerLocation, futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]): Unit = {
@@ -142,6 +152,7 @@ trait RemoteFutureManager {
           reader.stop()
         }
       }
+      waitingReaders.remove(futureId)
     } else {
       Logger.finer(f"deliverFutureResult reader not found, id=$futureId%#x")
     }
