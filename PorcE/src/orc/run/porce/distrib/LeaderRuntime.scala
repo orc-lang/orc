@@ -19,10 +19,9 @@ import java.net.InetSocketAddress
 import scala.collection.JavaConverters.{ asScalaBufferConverter, mapAsScalaConcurrentMap }
 import scala.util.control.NonFatal
 
-import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
+import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, Schedulable }
 import orc.error.runtime.ExecutionException
 import orc.util.LatchingSignal
-import orc.Schedulable
 
 /** Orc runtime engine leading a dOrc cluster.
   *
@@ -61,7 +60,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
     val thisExecutionId = DOrcExecution.freshExecutionId()
 
-    Logger.fine(s"starting scheduler")
+    Logger.Downcall.fine(s"starting scheduler")
     startScheduler(options: OrcExecutionOptions)
 
     val leaderExecution = new DOrcLeaderExecution(thisExecutionId, programAst, options, { e => handleExecutionEvent(thisExecutionId, e); eventHandler(e) }, this)
@@ -106,14 +105,14 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     extends Thread(f"dOrc leader receiver for $followerRuntimeId%#x @ ${followerLocation.connection.socket}") {
     override def run(): Unit = {
       try {
-        Logger.info(s"Reading events from ${followerLocation.connection.socket}")
+        Logger.Connect.info(s"Reading events from ${followerLocation.connection.socket}")
         while (!followerLocation.connection.closed && !followerLocation.connection.socket.isInputShutdown) {
           val msg = try {
             followerLocation.connection.receiveInContext({ programs(_) }, followerLocation)()
           } catch {
             case _: EOFException => EOF
           }
-          Logger.finest(s"Read ${msg}")
+          //Logger.Message.finest(s"Read ${msg}")
           msg match {
             case DOrcConnectionHeader(sid, rid) => assert(sid == followerRuntimeId && rid == runtimeId)
             case ProgramReadyCmd(xid) => programs(xid).followerReady(followerRuntimeId)
@@ -130,22 +129,22 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
             case ProvideCounterCreditCmd(xid, counterId, credits) => programs(xid).provideCounterCredit(counterId, followerLocation, credits)
             case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
             case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(followerLocation, futureId, value)
-            case EOF => { Logger.fine(s"EOF, aborting $followerLocation"); followerLocation.connection.abort() }
+            case EOF => { Logger.Message.fine(s"EOF, aborting $followerLocation"); followerLocation.connection.abort() }
           }
         }
       } finally {
         try {
-          if (!followerLocation.connection.closed) { Logger.fine(s"ReceiveThread finally: Closing $followerLocation"); followerLocation.connection.close() }
+          if (!followerLocation.connection.closed) { Logger.Connect.fine(s"ReceiveThread finally: Closing $followerLocation"); followerLocation.connection.close() }
         } catch {
-          case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore close failures at this point */
+          case NonFatal(e) => Logger.Connect.finer(s"Ignoring $e") /* Ignore close failures at this point */
         }
-        Logger.info(s"Stopped reading events from ${followerLocation.connection.socket}")
+        Logger.Connect.info(s"Stopped reading events from ${followerLocation.connection.socket}")
         runtimeLocationMap.remove(followerRuntimeId)
         followerEntries foreach { fe =>
           try {
             fe._2.send(RemovePeerCmd(followerRuntimeId))
           } catch {
-            case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore send RemovePeerCmd failures at this point */
+            case NonFatal(e) => Logger.Connect.finer(s"Ignoring $e") /* Ignore send RemovePeerCmd failures at this point */
           }
         }
         programs.values foreach { _.notifyOrc(FollowerConnectionClosedEvent(followerLocation)) }
@@ -199,7 +198,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
       try {
         e._2.connection.socket.shutdownOutput()
       } catch {
-        case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore shutdownOutput failures at this point */
+        case NonFatal(e) => Logger.Connect.finer(s"Ignoring $e") /* Ignore shutdownOutput failures at this point */
       }
     }
     super.stop()

@@ -100,14 +100,21 @@ object Main {
   lazy val orcCopyright: String = "(c) " + copyrightYear + " " + versionProperties.getProperty("orc.vendor")
   lazy val copyrightYear: String = versionProperties.getProperty("orc.copyright-year")
 
-  // Must keep a reference to this logger, or it'll get GC-ed and the level reset
-  lazy val orcLogger = java.util.logging.Logger.getLogger("orc")
+  // Must keep a reference to these loggers, or they'll get GC-ed and the level reset
+  protected lazy val orcLogger = java.util.logging.Logger.getLogger("orc")
+  protected var setupLogger: java.util.logging.Logger = null
 
   def setupLogging(options: OrcOptions) {
-    val logLevel = java.util.logging.Level.parse(options.logLevel)
-    orcLogger.setLevel(logLevel)
+    val (logger, logLevel) = if (options.logLevel.contains(":")) {
+      val (logger, level) = options.logLevel.splitAt(options.logLevel.indexOf(":"))
+      (java.util.logging.Logger.getLogger(logger), java.util.logging.Level.parse(level.drop(1)))
+    } else {
+      (orcLogger, java.util.logging.Level.parse(options.logLevel))
+    }
+    setupLogger = logger
+    logger.setLevel(logLevel)
     val testOrcLogRecord = new java.util.logging.LogRecord(logLevel, "")
-    testOrcLogRecord.setLoggerName(orcLogger.getName())
+    testOrcLogRecord.setLoggerName(logger.getName())
     def willLog(checkLogger: java.util.logging.Logger, testLogRecord: java.util.logging.LogRecord): Boolean = {
       for (handler <- checkLogger.getHandlers()) {
         if (handler.isLoggable(testLogRecord))
@@ -119,20 +126,20 @@ object Main {
         return false
       }
     }
-    if (!willLog(orcLogger, testOrcLogRecord)) {
-      /* Only add handler if no existing handler (here or in parents) is at our logging level */
-      val oldLoggers = orcLogger.getHandlers()
+    if (!willLog(logger, testOrcLogRecord)) {
+      /* Add handler, since no existing handler (here or in parents) is at our logging level */
       val logHandler = new java.util.logging.ConsoleHandler()
       logHandler.setLevel(logLevel)
       logHandler.setFormatter(orc.util.SyslogishFormatter)
-      orcLogger.addHandler(logHandler)
-      orcLogger.warning(s"No log handler found for 'orc' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records. The old handlers are: ${oldLoggers.toSeq}")
+      logger.addHandler(logHandler)
+      logger.setUseParentHandlers(false)
+      orcLogger.warning(s"No log handler found for '${logger.getName()}' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
     }
     orcLogger.config(orcImplName + " " + orcVersion)
     orcLogger.config("Orc logging level: " + logLevel)
     //TODO: orcLogger.config(options.printAllTheOptions...)
 
-    if(options.xmlLogFile.nonEmpty) {
+    if (options.xmlLogFile.nonEmpty) {
       // Use two 64MiB files. This might need to be configurable, but probably not for a long time.
       val handler = new FileHandler(options.xmlLogFile, 64*1024*1024, 2)
       handler.setLevel(java.util.logging.Level.ALL)
@@ -158,7 +165,7 @@ object Main {
               }
               sb.toString
             }
-            oldFormatter.format(record).stripLineEnd + s" threadID=threadId\n$stack"
+            oldFormatter.format(record).stripLineEnd + s" threadID=$threadId\n$stack"
           }
         }
         handler.setFormatter(formatter)
@@ -182,7 +189,7 @@ object Main {
 trait CmdLineOptions extends OrcOptions with CmdLineParser {
   StringOprd(() => filename, filename = _, position = 0, argName = "file", required = true, usage = "Path to script to execute.")
 
-  StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL")
+  StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL.  Optionally preceded by logger name and colon, such as 'orc.run:FINE'.")
 
   StringOpt(() => xmlLogFile, xmlLogFile = _, ' ', "xmllogfile", usage = "Specify a file that will receive ALL log messages as java.util.logging XML. This can have some performance overhead. Default is no XML output.")
 

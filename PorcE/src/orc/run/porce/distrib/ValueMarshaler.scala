@@ -46,7 +46,7 @@ trait ValueMarshaler {
   }
 
   def marshalValue(destination: PeerLocation)(value: AnyRef): AnyRef = {
-    //Logger.finest(s"marshalValue: $value: ${value.getClass.getName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
+    //Logger.Marshal.finest(s"marshalValue: $value: ${value.getClass.getName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
 
     val replacedValue = value match {
       /* keep in sync with cases in marshalValueWouldReplace */
@@ -73,7 +73,7 @@ trait ValueMarshaler {
       case mn: DOrcMarshalingNotifications => mn.marshaled()
       case _ => { /* Nothing to do */ }
     }
-    Logger.finest(s"marshalValue($destination)($value): ${value.getClass.getName} = $marshaledValue")
+    Logger.Marshal.finest(s"marshalValue($destination)($value): ${value.getClass.getName} = $marshaledValue")
     assert(execution.marshalExecutionObject.isDefinedAt((destination, replacedValue)) || (marshaledValue != value) == marshalValueWouldReplace(destination)(value), s"marshaledValue disagrees with marshalValueWouldReplace for value=$value, marshaledValue=$marshaledValue")
     marshaledValue
   }
@@ -128,7 +128,7 @@ trait ValueMarshaler {
       } catch {
         case e: Exception => {
           synchronized { knownBadSerializables.put(v, ()) }
-          Logger.warning(s"Type ${v.getClass.getTypeName} is a LIAR: It implements java.io.Serializable, but throws a ${e.getClass.getTypeName} when written to an ObjectOutputStream. Instance='$v', Exception='$e'.")
+          Logger.Marshal.warning(s"Type ${v.getClass.getTypeName} is a LIAR: It implements java.io.Serializable, but throws a ${e.getClass.getTypeName} when written to an ObjectOutputStream. Instance='$v', Exception='$e'.")
           false
         }
       }
@@ -172,7 +172,7 @@ trait ValueMarshaler {
       case mn: DOrcMarshalingNotifications => mn.unmarshaled()
       case _ => { /* Nothing to do */ }
     }
-    Logger.finest(s"unmarshalValue($value)=$replacedValue")
+    Logger.Marshal.finest(s"unmarshalValue($value)=$replacedValue")
     assert((replacedValue != value) == unmarshalValueWouldReplace(value))
     replacedValue
   }

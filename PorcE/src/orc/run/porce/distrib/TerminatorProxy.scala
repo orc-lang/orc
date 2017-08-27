@@ -42,10 +42,10 @@ trait TerminatorProxyManager {
     override def toString: String = f"${getClass.getName}(remoteProxyId=$remoteProxyId%#x)"
 
     override def kill(c: Counter, k: PorcEClosure): Boolean = {
-      //Logger.info(s"kill on $this")
+      //Logger.Proxy.info(s"kill on $this")
       require(c != null)
       require(k != null)
-      //Logger.entering(getClass.getName, "kill")
+      //Logger.Proxy.entering(getClass.getName, "kill")
       // Token: Pass a token on c to onKill
       onKill(c, k)
       false
@@ -77,9 +77,9 @@ trait TerminatorProxyManager {
 
     /** The parent terminator is killing its members; pass it on to the remote terminator proxy. */
     override def kill(): Unit = synchronized {
-      //Logger.entering(getClass.getName, "kill")
+      //Logger.Proxy.entering(getClass.getName, "kill")
       if (alive) {
-        //Logger.finer(s"RemoteTerminatorMembersProxy.kill")
+        //Logger.Proxy.finer(s"RemoteTerminatorMembersProxy.kill")
         alive = false
         sendKillFunc(thisProxyId)
       }
@@ -140,11 +140,11 @@ trait TerminatorProxyManager {
     // TODO: Does this need to be atomic?
     val g = proxiedTerminators.get(proxyId)
     if (g != null) {
-      Logger.fine(s"Scheduling $g.kill()")
+      Logger.Downcall.fine(s"Scheduling $g.kill()")
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.kill() } })
       proxiedTerminators.remove(proxyId)
     } else {
-      Logger.fine(f"Kill group on unknown (or already killed) group $proxyId%#x")
+      Logger.Proxy.fine(f"Kill group on unknown (or already killed) group $proxyId%#x")
     }
   }
 
@@ -155,7 +155,7 @@ trait TerminatorProxyManager {
     dc.activate(killing.credit)
     if (m != null) {
       val g = m.enclosingTerminator
-      Logger.fine(s"Scheduling $g.kill($dc, ${killing.continuation})...")
+      Logger.Downcall.fine(s"Scheduling $g.kill($dc, ${killing.continuation})...")
       execution.runtime.schedule(new Schedulable {
         def run(): Unit = {
           if (g.kill(dc.counter, killing.continuation)) {

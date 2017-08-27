@@ -38,7 +38,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   override def allLocations: Set[PeerLocation] = runtimeLocationMap.values.toSet
 
   def listen(): Unit = {
-    Logger.info(s"Listening on $listenAddress")
+    Logger.Connect.info(s"Listening on $listenAddress")
 
     runtimeLocationMap.put(runtimeId, here)
 
@@ -47,7 +47,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     try {
       while (!listener.serverSocket.isClosed()) {
         val newConn = listener.acceptConnection()
-        Logger.finer(s"accepted ${newConn.socket}")
+        Logger.Connect.finer(s"accepted ${newConn.socket}")
 
         MessageProcessorThread(newConn).start()
 
@@ -64,7 +64,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
       }
       runtimeLocationMap.clear()
       listener.close()
-      Logger.info(s"Closed $listenAddress")
+      Logger.Connect.info(s"Closed $listenAddress")
       boundListenAddress = null
     }
   }
@@ -73,7 +73,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     extends Thread(s"dOrc follower connection with ${connection.socket}") {
 
     override def run(): Unit = {
-      Logger.entering(getClass.getName, "run")
+      Logger.Connect.entering(getClass.getName, "run")
       try {
         initiatingWithRuntimeId match {
           case Some(otherId) => connection.send(DOrcConnectionHeader(runtimeId, otherId).asInstanceOf[S])
@@ -114,21 +114,21 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         }
       } catch {
         case e: Throwable => {
-          Logger.log(Level.SEVERE, "MessageProcessorThread caught", e);
+          Logger.Connect.log(Level.SEVERE, "MessageProcessorThread caught", e);
           throw e
         }
       } finally {
-        Logger.info(s"Stopped reading events from ${connection.socket}")
+        Logger.Connect.info(s"Stopped reading events from ${connection.socket}")
         if (!connection.closed) {
           try {
-            Logger.fine(s"MessageProcessorThread terminating; aborting $connection")
+            Logger.Connect.fine(s"MessageProcessorThread terminating; aborting $connection")
             connection.abort()
           } catch {
-            case NonFatal(e2) => Logger.finer(s"Ignoring $e2") /* Ignore close failures at this point */
+            case NonFatal(e2) => Logger.Connect.finer(s"Ignoring $e2") /* Ignore close failures at this point */
           }
         }
       }
-      Logger.exiting(getClass.getName, "run")
+      Logger.Connect.exiting(getClass.getName, "run")
     }
   }
 
@@ -138,11 +138,11 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   }
 
   protected def followLeader(leaderLocation: LeaderLocation): Unit = {
-    Logger.entering(getClass.getName, "followLeader")
+    Logger.Connect.entering(getClass.getName, "followLeader")
     try {
       var done = false
 
-      Logger.info(s"Reading events from ${leaderLocation.connection.socket}")
+      Logger.Message.info(s"Reading events from ${leaderLocation.connection.socket}")
 
       while (!done && !leaderLocation.connection.closed && !leaderLocation.connection.socket.isInputShutdown) {
         val cmd = try {
@@ -150,7 +150,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         } catch {
           case _: EOFException => EOF
         }
-        //Logger.finest(s"received $cmd")
+        //Logger.Message.finest(s"received $cmd")
         cmd match {
           case AddPeerCmd(peerRuntimeId, peerListenAddress) => addPeer(peerRuntimeId, peerListenAddress)
           case RemovePeerCmd(peerRuntimeId) => removePeer(peerRuntimeId)
@@ -171,26 +171,26 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         }
       }
     } finally {
-      if (!programs.isEmpty) Logger.warning(s"Shutting down with ${programs.size} programs still loaded: ${programs.keys.mkString(",")}")
+      if (!programs.isEmpty) Logger.ProgLoad.warning(s"Shutting down with ${programs.size} programs still loaded: ${programs.keys.mkString(",")}")
       programs.clear()
       stopScheduler()
       runtimeLocationMap.remove(0)
       FollowerRuntime.this.stop()
     }
-    Logger.finer(s"runtimeLocationMap.size = ${runtimeLocationMap.size}; runtimeLocationMap = $runtimeLocationMap")
-    Logger.exiting(getClass.getName, "followLeader")
+    Logger.Connect.finer(s"runtimeLocationMap.size = ${runtimeLocationMap.size}; runtimeLocationMap = $runtimeLocationMap")
+    Logger.Connect.exiting(getClass.getName, "followLeader")
   }
 
   protected def communicateWithPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerLocation: PeerLocationImpl): Unit = {
     try {
-      Logger.info(s"Reading events from ${peerLocation.connection.socket}")
+      Logger.Connect.info(s"Reading events from ${peerLocation.connection.socket}")
       while (!peerLocation.connection.closed && !peerLocation.connection.socket.isInputShutdown) {
         val msg = try {
           peerLocation.connection.receiveInContext({ programs(_) }, peerLocation)
         } catch {
           case _: EOFException => EOF
         }
-        Logger.finest(s"Read ${msg}")
+        //Logger.Message.finest(s"Read ${msg}")
         msg match {
           case MigrateCallCmd(xid, gmpid, movedCall) => programs(xid).receiveCall(peerLocation, gmpid, movedCall)
           case PublishGroupCmd(xid, gmpid, pub) => programs(xid).publishInGroup(peerLocation, gmpid, pub)
@@ -202,7 +202,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case ProvideCounterCreditCmd(xid, counterId, credits) => programs(xid).provideCounterCredit(counterId, peerLocation, credits)
           case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
           case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(peerLocation, futureId, value)
-          case EOF => { Logger.fine(s"EOF, aborting peerLocation"); peerLocation.connection.abort() }
+          case EOF => { Logger.Message.fine(s"EOF, aborting peerLocation"); peerLocation.connection.abort() }
           case DOrcConnectionHeader(sid, rid) => throw new AssertionError(f"Received extraneous DOrcConnectionHeader: sender=$sid%#x, receiver=$rid%#x")
         }
       }
@@ -221,14 +221,14 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
       case e1: SocketException => {
         if (!leaderLocation.connection.closed) {
           try {
-            Logger.fine(s"SocketException, aborting $leaderLocation")
+            Logger.Connect.fine(s"SocketException, aborting $leaderLocation")
             leaderLocation.connection.abort()
           } catch {
-            case e2: IOException => Logger.finer(s"Ignoring $e2") /* Ignore close failures at this point */
+            case e2: IOException => Logger.Connect.finer(s"Ignoring $e2") /* Ignore close failures at this point */
           }
           throw e1
         } else {
-          Logger.finer(s"Ignoring $e1") /* Ignore failures on a closed socket */
+          Logger.Connect.finer(s"Ignoring $e1") /* Ignore failures on a closed socket */
         }
       }
     }
@@ -236,32 +236,32 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   }
 
   def addPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerListenAddress: InetSocketAddress): Unit = {
-    Logger.entering(getClass.getName, "addPeer", Seq(peerRuntimeId.toString, peerListenAddress))
+    Logger.Connect.entering(getClass.getName, "addPeer", Seq(peerRuntimeId.toString, peerListenAddress))
     if (peerListenAddress == boundListenAddress || peerRuntimeId == runtimeId) {
       /* Hey, that's me! */
       assert(peerRuntimeId == runtimeId)
       assert(runtimeLocationMap(peerRuntimeId) == here)
     } else {
       if (shouldOpen(peerListenAddress)) {
-        Logger.finest("New peer; Will open connection")
+        Logger.Connect.finest("New peer; Will open connection")
 
         /* FIXME:Race: If two addPeer calls for the same peerRuntimeId run simultaneously, an assertion will fail in MessageProcessorThread.run */
         runtimeLocationMap.get(peerRuntimeId) match {
           case Some(pl: PeerLocationImpl) if (pl.connection.socket.getRemoteSocketAddress == peerListenAddress) => {
-            Logger.fine(s"addPeer: redundant add of $peerRuntimeId => $peerListenAddress")
+            Logger.Connect.fine(s"addPeer: redundant add of $peerRuntimeId => $peerListenAddress")
           }
           case Some(pl) => throw new AssertionError(s"addPeer: adding $peerRuntimeId => $peerListenAddress, but $peerRuntimeId is already mapped to $pl")
           case None => {
-            Logger.finest("Opening connection")
+            Logger.Connect.finest("Opening connection")
             MessageProcessorThread(RuntimeConnectionInitiator[OrcPeerCmd, OrcPeerCmd](peerListenAddress), peerRuntimeId).start()
           }
         }
 
       } else {
-        Logger.finest("Expecting peer to initiate connection (it may have already)")
+        Logger.Connect.finest("Expecting peer to initiate connection (it may have already)")
       }
     }
-    Logger.exiting(getClass.getName, "addPeer")
+    Logger.Connect.exiting(getClass.getName, "addPeer")
   }
 
   protected def shouldOpen(peerListenAddress: InetSocketAddress): Boolean = {
@@ -272,10 +272,10 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   }
 
   def removePeer(peerRuntimeId: DOrcRuntime#RuntimeId): Unit = {
-    Logger.entering(getClass.getName, "removePeer", Seq(peerRuntimeId.toString))
+    Logger.Connect.entering(getClass.getName, "removePeer", Seq(peerRuntimeId.toString))
     if (peerRuntimeId == runtimeId) {
       /* If the leader sends RemovePeer with our ID, we shutdown */
-      Logger.fine("Closing listen socket")
+      Logger.Connect.fine("Closing listen socket")
       listener.close()
     } else {
       runtimeLocationMap.remove(peerRuntimeId) match {
@@ -289,11 +289,11 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcFollowerExecution])
 
   def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions, rootCounterId: CounterProxyManager#DistributedCounterId): Unit = {
-    Logger.entering(getClass.getName, "loadProgram")
+    Logger.ProgLoad.entering(getClass.getName, "loadProgram")
 
     assert(programs.isEmpty) /* For now */
     if (programs.isEmpty) {
-      Logger.fine("starting scheduler")
+      Logger.Downcall.fine("starting scheduler")
       startScheduler(options)
     }
 
@@ -310,13 +310,13 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   }
 
   def unloadProgram(executionId: DOrcExecution#ExecutionId): Unit = {
-    Logger.entering(getClass.getName, "unloadProgram", Seq(executionId))
+    Logger.ProgLoad.entering(getClass.getName, "unloadProgram", Seq(executionId))
     programs.remove(executionId) match {
-      case None => Logger.warning(s"Received unload for unknown (or previously unloaded) execution $executionId")
+      case None => Logger.ProgLoad.warning(s"Received unload for unknown (or previously unloaded) execution $executionId")
       case Some(removedExecution) =>
         // FIXME: Figure out how to implement this warning. Currently there is no way to tell if a follower execution is completed since it doesn't have a single root counter.
         //if (!removedExecution.isDone) {
-        //  Logger.fine(s"Unloaded $executionId with group members still in execution")
+        //  Logger.ProgLoad.fine(s"Unloaded $executionId with group members still in execution")
         //}
     }
 
@@ -344,17 +344,27 @@ object FollowerRuntime {
     val frOptions = new FollowerRuntimeCmdLineOptions()
     frOptions.parseCmdLine(args)
 
-    val orcLogger = java.util.logging.Logger.getLogger("orc")
-    val logLevel = java.util.logging.Level.parse(frOptions.logLevel)
-    setupLogging(orcLogger, logLevel)
+    setupLogging(frOptions.logLevel)
 
+    Logger.Connect.finer("Calling FollowerRuntime.listen")
     new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
   }
 
-  def setupLogging(orcLogger: java.util.logging.Logger, logLevel: java.util.logging.Level): Unit = {
-    orcLogger.setLevel(logLevel)
+  // Must keep a reference to this logger, or it'll get GC-ed and the level reset
+  protected var setupLogger: java.util.logging.Logger = null
+
+  def setupLogging(logLevelOption: String): Unit = {
+    val orcLogger = java.util.logging.Logger.getLogger("orc")
+    val (logger, logLevel) = if (logLevelOption.contains(":")) {
+      val (logger, level) = logLevelOption.splitAt(logLevelOption.indexOf(":"))
+      (java.util.logging.Logger.getLogger(logger), java.util.logging.Level.parse(level.drop(1)))
+    } else {
+      (orcLogger, java.util.logging.Level.parse(logLevelOption))
+    }
+    setupLogger = logger
+    logger.setLevel(logLevel)
     val testOrcLogRecord = new java.util.logging.LogRecord(logLevel, "")
-    testOrcLogRecord.setLoggerName(orcLogger.getName())
+    testOrcLogRecord.setLoggerName(logger.getName())
     def willLog(checkLogger: java.util.logging.Logger, testLogRecord: java.util.logging.LogRecord): Boolean = {
       for (handler <- checkLogger.getHandlers()) {
         if (handler.isLoggable(testLogRecord))
@@ -366,14 +376,14 @@ object FollowerRuntime {
         return false
       }
     }
-    if (!willLog(orcLogger, testOrcLogRecord)) {
-      /* Only add handler if no existing handler (here or in parents) is at our logging level */
-      val oldLoggers = orcLogger.getHandlers()
+    if (!willLog(logger, testOrcLogRecord)) {
+      /* Add handler, since no existing handler (here or in parents) is at our logging level */
       val logHandler = new java.util.logging.ConsoleHandler()
       logHandler.setLevel(logLevel)
       logHandler.setFormatter(orc.util.SyslogishFormatter)
-      orcLogger.addHandler(logHandler)
-      orcLogger.warning(s"No log handler found for 'orc' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records. The old handlers are: ${oldLoggers.toSeq}")
+      logger.addHandler(logHandler)
+      logger.setUseParentHandlers(false)
+      orcLogger.warning(s"No log handler found for '${logger.getName()}' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
     }
     orcLogger.config(orc.Main.orcImplName + " " + orc.Main.orcVersion)
     orcLogger.config("Orc logging level: " + logLevel)
@@ -396,7 +406,7 @@ class FollowerRuntimeCmdLineOptions() extends CmdLineParser {
 
   SocketOprd(() => socket, socket = _, position = 1, argName = "socket", required = true, usage = "Local socket (host:port) to listen on")
 
-  StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL")
+  StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL.  Optionally preceded by logger name and colon, such as 'orc.run:FINE'.")
 }
 
 trait ClosableConnection {

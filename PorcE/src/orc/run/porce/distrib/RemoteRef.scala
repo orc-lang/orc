@@ -85,7 +85,7 @@ class ObjectRemoteRefIdMapping[T >: Null](freshRemoteRefId: () => RemoteRef#Remo
   protected val remoteIdToObject = new java.util.concurrent.ConcurrentHashMap[RemoteRef#RemoteRefId, T]()
 
   def idForObject(obj: T): RemoteRef#RemoteRefId = {
-    //Logger.entering(getClass.getName, "idForObject", Seq(obj))
+    //Logger.Marshal.entering(getClass.getName, "idForObject", Seq(obj))
     obj match {
       case ro: RemoteObjectRef =>
         ro.remoteRefId

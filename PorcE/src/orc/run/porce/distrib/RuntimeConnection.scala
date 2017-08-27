@@ -32,16 +32,16 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
 
   override def receive(): R = {
     val obj = super.receive()
-    Logger.finest(s"${Console.BLUE}RuntimeConnection.receive: Received $obj on $socket${Console.RESET}")
+    Logger.Message.finest(s"${Console.BLUE}RuntimeConnection.receive: Received $obj on $socket${Console.RESET}")
     EventCounter.count( /*'receive*/ Symbol("recv " + obj.getClass.getName))
     obj
   }
 
   override def send(obj: S): Unit = {
-    Logger.finest(s"${Console.RED}RuntimeConnection.send: Sending $obj on $socket${Console.RESET}")
+    Logger.Message.finest(s"${Console.RED}RuntimeConnection.send: Sending $obj on $socket${Console.RESET}")
     val startCount = cos.bytecount
     super.send(obj)
-    Logger.finest(s"message size = ${cos.bytecount - startCount}")
+    Logger.Message.finest(s"message size = ${cos.bytecount - startCount}")
     EventCounter.count( /*'send*/ Symbol("send " + obj.getClass.getName))
   }
 
@@ -64,12 +64,12 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
   }
 
   override def close(): Unit = {
-    Logger.finest(s"${Console.GREEN}RuntimeConnection.close on $socket${Console.RESET}")
+    Logger.Connect.finest(s"${Console.GREEN}RuntimeConnection.close on $socket${Console.RESET}")
     super.close()
   }
 
   override def abort(): Unit = {
-    Logger.finest(s"${Console.GREEN}RuntimeConnection.abort on $socket${Console.RESET}")
+    Logger.Connect.finest(s"${Console.GREEN}RuntimeConnection.abort on $socket${Console.RESET}")
     super.abort()
   }
 
@@ -84,12 +84,12 @@ class RuntimeConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) extends
 
   override def acceptConnection(): RuntimeConnection[R, S] = {
     val acceptedSocket = serverSocket.accept()
-    Logger.finer(s"${Console.GREEN}RuntimeConnectionListener accepted $acceptedSocket${Console.RESET}")
+    Logger.Connect.finer(s"${Console.GREEN}RuntimeConnectionListener accepted $acceptedSocket${Console.RESET}")
     SocketObjectConnection.configSocket(acceptedSocket)
     new RuntimeConnection[R, S](acceptedSocket)
   }
 
-  Logger.finer(s"${Console.GREEN}RuntimeConnectionListener listening on $serverSocket${Console.RESET}")
+  Logger.Connect.finer(s"${Console.GREEN}RuntimeConnectionListener listening on $serverSocket${Console.RESET}")
 
 }
 
@@ -107,7 +107,7 @@ object RuntimeConnectionInitiator {
       socket.bind(localSockAddr)
     }
     socket.connect(remoteSockAddr)
-    Logger.finer(s"${Console.GREEN}RuntimeConnectionInitiator opening $socket${Console.RESET}")
+    Logger.Message.finer(s"${Console.GREEN}RuntimeConnectionInitiator opening $socket${Console.RESET}")
     new RuntimeConnection[R, S](socket)
   }
 
@@ -142,7 +142,7 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
   override protected def resolveObject(obj: AnyRef): AnyRef = {
     obj match {
       case xm: ExecutionContextSerializationMarker => {
-        Logger.finest(s"ExecutionContext ${obj.getClass.getName}=$obj, xid=${xm.executionId}")
+        Logger.Marshal.finest(s"ExecutionContext ${obj.getClass.getName}=$obj, xid=${xm.executionId}")
         currExecution = Some((currExecutionLookup.get)(xm.executionId))
         obj
       }
@@ -185,7 +185,7 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
 
   @throws(classOf[IOException])
   override protected def replaceObject(obj: AnyRef): AnyRef = {
-    //Logger.entering(getClass.getName, "replaceObject", Seq(s"${obj.getClass.getName}=$obj"))
+    //Logger.Marshal.entering(getClass.getName, "replaceObject", Seq(s"${obj.getClass.getName}=$obj"))
     val result = obj match {
       case xm: ExecutionContextSerializationMarker => {
         assert(xm.executionId == currExecution.get.executionId)
@@ -197,7 +197,7 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
 //          currExecution.get.marshalValue(currDestination.get)(obj)
       case _ => super.replaceObject(obj)
     }
-    //Logger.exiting(getClass.getName, "replaceObject", s"${result.getClass.getName}=$result")
+    //Logger.Marshal.exiting(getClass.getName, "replaceObject", s"${result.getClass.getName}=$result")
     result
   }
 

@@ -61,7 +61,7 @@ trait ExecutionMashaler {
 
   val unmarshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
     case (origin, old@ClosureReplacement(callTargetIndex, environment, isRoutine)) => {
-      //Logger.fine(f"Unmarshaling $old ${System.identityHashCode(old)}%x")
+      //Logger.Marshal.fine(f"Unmarshaling $old ${System.identityHashCode(old)}%x")
       val callTarget = execution.idToCallTarget(callTargetIndex)
       val unmarshledEnvironment = Array.ofDim[AnyRef](environment.length)
       val replacement = new PorcEClosure(unmarshledEnvironment, callTarget, isRoutine)
@@ -73,7 +73,7 @@ trait ExecutionMashaler {
         case (cl: PorcEClosure, i) =>
           unmarshledEnvironment(i) = cl
         case (v, i) =>
-          //Logger.fine(f"Unmarshaling nested value $v ${System.identityHashCode(v)}%x")
+          //Logger.Marshal.fine(f"Unmarshaling nested value $v ${System.identityHashCode(v)}%x")
           // This handles Closures and uses instanceTable to avoid recursion.
           unmarshledEnvironment(i) = instanceTable.computeIfAbsent(v, (k) => execution.unmarshalValue(origin)(v))
       })

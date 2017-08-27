@@ -47,12 +47,12 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   override def invokeIntercepted(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     def pickLocation(ls: Set[PeerLocation]) = ls.head
 
-    //Logger.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target, arguments))
+    //Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target, arguments))
 
     // TODO: If this every turns out to be a performance issue I suspect a bloom-filter-optimized set would help.
     val intersectLocs = (arguments map currentLocations).fold(currentLocations(target)) { _ & _ }
     require(!(intersectLocs contains runtime.here))
-    Logger.finest(s"siteCall($target, $arguments): intersection of current locations=$intersectLocs")
+    Logger.Invoke.finest(s"siteCall($target, $arguments): intersection of current locations=$intersectLocs")
     val candidateDestinations = {
       if (intersectLocs.nonEmpty) {
         intersectLocs
@@ -65,7 +65,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         }
       }
     }
-    Logger.finest(s"candidateDestinations=$candidateDestinations")
+    Logger.Invoke.finest(s"candidateDestinations=$candidateDestinations")
     val destination = pickLocation(candidateDestinations)
     sendCall(callHandler, target, arguments, destination)
   }
@@ -74,7 +74,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   private val callCorrelationCounter = new AtomicLong(followerExecutionNum.toLong << 32)
 
   def sendCall(callContext: CPSCallResponseHandler, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
-    Logger.fine(s"sendCall $callContext, $callTarget, $callArguments, $destination")
+    Logger.Invoke.fine(s"sendCall $callContext, $callTarget, $callArguments, $destination")
 
     val distributedCounter = getDistributedCounterForCounter(callContext.c)
     // Token: Give our token back to the local representation
@@ -121,13 +121,13 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
     Tracer.traceCallReceive(callCorrelationId, origin, execution.runtime.here)
 
-    Logger.fine(s"Scheduling $callInvoker")
+    Logger.Downcall.fine(s"Scheduling $callInvoker")
     // Token: Pass the initial token of the proxy counter to the call.
     execution.runtime.schedule(callInvoker)
   }
 
   def sendPublish(destination: PeerLocation, proxyId: RemoteRef#RemoteRefId)(publicationContinuation: PorcEClosure, publishedValue: AnyRef): Unit = {
-    Logger.fine(f"sendPublish: publish by proxyId $proxyId%#x")
+    Logger.Invoke.fine(f"sendPublish: publish by proxyId $proxyId%#x")
     Tracer.tracePublishSend(proxyId, execution.runtime.here, destination)
 
     val marshaledPubValue = execution.marshalValue(destination)(publishedValue)
@@ -135,12 +135,12 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   }
 
   def publishInGroup(origin: PeerLocation, groupMemberProxyId: RemoteRef#RemoteRefId, publication: PublishMemento): Unit = {
-    Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publication))
+    Logger.Invoke.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publication))
     val g = proxiedTerminatorMembers.get(groupMemberProxyId)
     if (g != null) {
       Tracer.tracePublishReceive(groupMemberProxyId, origin, execution.runtime.here)
       val unmarshaledPubValue = execution.unmarshalValue(origin)(publication.publishedValue)
-      Logger.fine(s"Scheduling CallClosureSchedulable(${publication.publicationContinuation}, $unmarshaledPubValue)")
+      Logger.Downcall.fine(s"Scheduling CallClosureSchedulable(${publication.publicationContinuation}, $unmarshaledPubValue)")
       execution.runtime.schedule(CallClosureSchedulable(publication.publicationContinuation, unmarshaledPubValue))
     } else {
       throw new AssertionError(f"Publish by unknown group member proxy $groupMemberProxyId%#x, value=${publication.publishedValue}")

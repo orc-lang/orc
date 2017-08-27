@@ -85,7 +85,7 @@ trait CounterProxyManager {
     override def toString: String = f"DistributedCounterFragment(id=$id, credits=$credits, waitingForCredit=$waitingForCredit)"    
     
     override def onHalt(): Unit = synchronized {
-      Logger.entering(getClass.getName, "onHalt")
+      Logger.Proxy.entering(getClass.getName, "onHalt")
       if(!waitingForCredit) {
         assert(credits >= 0)
         // Credits: We halted locally so return all our credits.
@@ -97,7 +97,7 @@ trait CounterProxyManager {
     }
 
     override def onResurrect(): Unit = synchronized {
-      Logger.entering(getClass.getName, "onResurrect")
+      Logger.Proxy.entering(getClass.getName, "onResurrect")
       assert(!waitingForCredit)
       val n = incrementAndGet()
       // Token: Create a token that is held by the request credits message. It will be returned with the credits.
@@ -111,7 +111,7 @@ trait CounterProxyManager {
       * Token: Returns a token on this counter to the caller.
       */
     final def activate(credits: Int): Unit = synchronized {
-      Logger.entering(getClass.getName, s"activate $credits")
+      Logger.Proxy.entering(getClass.getName, s"activate $credits")
       val n = incrementAndGet()
       logChange(s"activate to $n")
       if(this.credits < 0) {
@@ -124,7 +124,7 @@ trait CounterProxyManager {
     }
     
     final def provideCredit(credits: Int): Unit = synchronized {
-      Logger.entering(getClass.getName, s"provideCredits $credits")
+      Logger.Proxy.entering(getClass.getName, s"provideCredits $credits")
       assert(waitingForCredit)
       // Credits: If we have credits now (because we were activated in the intrem), just return the ones provided. If we still need them, take the credits.
       if(this.credits < 0) {
@@ -181,10 +181,10 @@ trait CounterProxyManager {
     
     private def addCreditAndCheck(credits: Int)(doHalt: => Unit): Unit = {
       val n = this.credits.addBit(credits)
-      Logger.fine(s"$id: Adding 1/(2^$credits) to ${this.credits} = $n")
+      Logger.Proxy.fine(s"$id: Adding 1/(2^$credits) to ${this.credits} = $n")
       this.credits = n
       if(this.credits == SparseBinaryFraction.one) {
-        Logger.fine(s"$id: Remote halt: counter at ${enclosingCounter.get}, have $remoteTokens")
+        Logger.Proxy.fine(s"$id: Remote halt: counter at ${enclosingCounter.get}, have $remoteTokens")
         (0 until remoteTokens).foreach { (_) =>
           doHalt
         }
@@ -194,7 +194,7 @@ trait CounterProxyManager {
     
     /** A remote node returned credit and halted. */
     def notifyHalt(credits: Int): Unit = synchronized {
-      Logger.entering(getClass.getName, s"halt $credits")
+      Logger.Proxy.entering(getClass.getName, s"halt $credits")
       addCreditAndCheck(credits) {
         enclosingCounter.haltToken()
       }
@@ -202,7 +202,7 @@ trait CounterProxyManager {
 
     /** A remote node returned credit and discorporated. */
     def notifyDiscorporate(credits: Int): Unit = synchronized {
-      Logger.entering(getClass.getName, s"discorporate $credits")
+      Logger.Proxy.entering(getClass.getName, s"discorporate $credits")
       addCreditAndCheck(credits) {
         enclosingCounter.discorporateToken()
       }
@@ -213,7 +213,7 @@ trait CounterProxyManager {
       * Return the credit for the remove node to use.
       */
     def resurrect(): Int = synchronized {
-      Logger.entering(getClass.getName, "resurrect")
+      Logger.Proxy.entering(getClass.getName, "resurrect")
       enclosingCounter.newToken()
       convertToken()
     }
@@ -225,10 +225,10 @@ trait CounterProxyManager {
       * Return the credit for the remove node to use.
       */
     def convertToken(): Int = synchronized {
-      Logger.entering(getClass.getName, "takeToken")
+      Logger.Proxy.entering(getClass.getName, "takeToken")
       remoteTokens += 1
       val (b, n) = credits.split()
-      Logger.fine(s"$id: Splitting $credits into 1/(2^$b), $n")
+      Logger.Proxy.fine(s"$id: Splitting $credits into 1/(2^$b), $n")
       credits = n
       b
     }
@@ -242,7 +242,7 @@ trait CounterProxyManager {
      *  Token: Provides a local token to the caller.
      */
     def activate(credits: Int): Unit = synchronized {
-      Logger.entering(getClass.getName, s"halt $credits")
+      Logger.Proxy.entering(getClass.getName, s"halt $credits")
       enclosingCounter.newToken()
       addCreditAndCheck(credits) {
         enclosingCounter.haltToken()
@@ -269,7 +269,7 @@ trait CounterProxyManager {
         val id = counterIds.computeIfAbsent(enclosingCounter, (_) => DistributedCounterId(freshRemoteRefId(), runtime.runtimeId))
         distributedCounters.computeIfAbsent(id, (id) => {
           val rmtCounterMbrProxy = new DistributedCounterController(id, enclosingCounter)
-          Logger.finer(f"Created proxy for $enclosingCounter with $id")
+          Logger.Proxy.finer(f"Created proxy for $enclosingCounter with $id")
           rmtCounterMbrProxy
         })
     }
@@ -281,7 +281,7 @@ trait CounterProxyManager {
     */
   def getDistributedCounterForId(id: CounterProxyManager#DistributedCounterId): DistributedCounter = {
     distributedCounters.computeIfAbsent(id, (id) => {
-      Logger.finer(s"Created local proxy for id $id")
+      Logger.Proxy.finer(s"Created local proxy for id $id")
       assert(id.controller != runtime.runtimeId)
       new DistributedCounterFragment(id) {
         private[CounterProxyManager] def returnCreditsHalt(n: Int): Unit = sendHalt(id)(n)
@@ -329,7 +329,7 @@ trait CounterProxyManager {
       case Some(v) =>
         throw new AssertionError(f"getDistributedCounterForIdHere should only be called for counters with a controller in this location: $counterId%#x, $v")
       case None => {
-        Logger.info(f"Unknown distributed counter $counterId%#x")
+        Logger.Proxy.info(f"Unknown distributed counter $counterId%#x")
         None
       }
     }
@@ -337,7 +337,7 @@ trait CounterProxyManager {
 
   def haltGroupMemberProxy(counterId: CounterId, n: Int): Unit = {
     getDistributedCounterForIdHere(counterId) map { g =>
-      Logger.fine(s"Scheduling $g.notifyHalt($n)")
+      Logger.Downcall.fine(s"Scheduling $g.notifyHalt($n)")
       // Token: Pass tokens in message to code in schedulable.
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyHalt(n) } })
     }
@@ -345,7 +345,7 @@ trait CounterProxyManager {
 
   def discorporateGroupMemberProxy(counterId: CounterId, n: Int): Unit = {
     getDistributedCounterForIdHere(counterId) map { g =>
-      Logger.fine(s"Scheduling $g.notifyDiscorporate($n)")
+      Logger.Downcall.fine(s"Scheduling $g.notifyDiscorporate($n)")
       // Token: Pass tokens in message to code in schedulable.
       execution.runtime.schedule(new Schedulable { def run(): Unit = { g.notifyDiscorporate(n) } })
     }
@@ -353,7 +353,7 @@ trait CounterProxyManager {
 
   def resurrectGroupMemberProxy(counterId: CounterId, requester: PeerLocation): Unit = {
     getDistributedCounterForIdHere(counterId) map { g =>
-      Logger.fine(s"Scheduling $g.resurrect()")
+      Logger.Downcall.fine(s"Scheduling $g.resurrect()")
       execution.runtime.schedule(new Schedulable { 
         def run(): Unit = { 
           val credit = g.resurrect()
@@ -368,7 +368,7 @@ trait CounterProxyManager {
     val g = getDistributedCounterForId(DistributedCounterId(counterId, origin.runtimeId))
     g match {
       case g: DistributedCounterFragment => {
-        Logger.fine(s"Scheduling $g.provideCredit($n)")
+        Logger.Downcall.fine(s"Scheduling $g.provideCredit($n)")
         execution.runtime.schedule(new Schedulable {
           def run(): Unit = {
             // Credit: Give credit to local counter representation.

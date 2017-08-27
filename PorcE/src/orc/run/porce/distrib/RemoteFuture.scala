@@ -50,12 +50,12 @@ class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId
   }
 
   override def publish(v: AnyRef): Unit = synchronized {
-    //Logger.entering(getClass.getName, "publish")
+    //Logger.Futures.entering(getClass.getName, "publish")
     execution.sendFutureResult(getAndClearReaders(), futureId, Some(v))
   }
 
   override def halt(): Unit = synchronized {
-    //Logger.entering(getClass.getName, "halt")
+    //Logger.Futures.entering(getClass.getName, "halt")
     execution.sendFutureResult(getAndClearReaders(), futureId, None)
   }
 
@@ -77,7 +77,7 @@ trait RemoteFutureManager {
   protected val waitingReadersUpdateLock = new Object()
 
   def ensureFutureIsRemotelyAccessibleAndGetId(fut: Future): RemoteFutureRef#RemoteRefId = {
-    //Logger.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
+    //Logger.Futures.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
     fut match {
       case rfut: RemoteFutureRef => rfut.remoteRefId
       case _ => servingGroupsFuturesUpdateLock synchronized {
@@ -116,12 +116,12 @@ trait RemoteFutureManager {
   }
 
   def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: DOrcRuntime#RuntimeId): Unit = {
-    Logger.fine(f"Posting read on $futureId%#x, with reader at follower number $readerFollowerNum")
+    Logger.Futures.fine(f"Posting read on $futureId%#x, with reader at follower number $readerFollowerNum")
     servingRemoteFutures.get(futureId).addReader(execution.locationForFollowerNum(readerFollowerNum))
   }
 
   def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]): Unit = {
-    Logger.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x" + futureId.toHexString, value))
+    Logger.Futures.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x" + futureId.toHexString, value))
     readers foreach { reader =>
       val mv = value.map(execution.marshalValue(reader)(_))
       Tracer.traceFutureResultSend(futureId, execution.runtime.here, reader)
@@ -134,16 +134,16 @@ trait RemoteFutureManager {
     if (reader != null) {
       value match {
         case Some(v) => {
-          Logger.fine(f"Binding future $futureId%#x to $v")
+          Logger.Futures.fine(f"Binding future $futureId%#x to $v")
           reader.bind(execution.unmarshalValue(origin)(v))
         }
         case None => {
-          Logger.fine(f"Binding future $futureId%#x to stop")
+          Logger.Futures.fine(f"Binding future $futureId%#x to stop")
           reader.stop()
         }
       }
     } else {
-      Logger.finer(f"deliverFutureResult reader not found, id=$futureId%#x")
+      Logger.Futures.finer(f"deliverFutureResult reader not found, id=$futureId%#x")
     }
   }
 }
