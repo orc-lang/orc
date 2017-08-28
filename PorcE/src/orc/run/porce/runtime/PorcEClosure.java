@@ -50,5 +50,10 @@ final public class PorcEClosure {
         System.arraycopy(args, 0, values, 1, args.length);
         return body.call(values);
     }
+    
+    @Override
+    public String toString() {
+    	return super.toString() + "(" + body.getRootNode().toString() + ")";
+    }
 
 }

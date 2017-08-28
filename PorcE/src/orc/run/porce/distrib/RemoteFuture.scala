@@ -68,12 +68,12 @@ class RemoteFutureReader(val fut: Future, val futureManager: RemoteFutureManager
   }
 
   override def publish(v: AnyRef): Unit = synchronized {
-    //Logger.Futures.entering(getClass.getName, "publish")
+    Logger.Futures.entering(getClass.getName, s"$this publish $v")
     futureManager.sendFutureResult(getAndClearReaders(), futureId, fut, Some(v))
   }
 
   override def halt(): Unit = synchronized {
-    //Logger.Futures.entering(getClass.getName, "halt")
+    Logger.Futures.entering(getClass.getName, s"$this halt")
     futureManager.sendFutureResult(getAndClearReaders(), futureId, fut, None)
   }
 
