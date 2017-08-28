@@ -140,12 +140,17 @@ case class ProvideCounterCreditCmd(executionId: DOrcExecution#ExecutionId, count
 }
 
 /** Post a read request on this future */
-case class ReadFutureCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: Int) extends OrcPeerCmdInExecutionContext(executionId) {
+case class ReadFutureCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureManager#RemoteFutureId, readerFollowerNum: Int) extends OrcPeerCmdInExecutionContext(executionId) {
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$futureId%#x,$readerFollowerNum)"
 }
 
 /** The given future has resolved to a value */
-case class DeliverFutureResultCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]) extends OrcPeerCmdInExecutionContext(executionId) {
+case class DeliverFutureResultCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureManager#RemoteFutureId, value: Option[AnyRef]) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId,$futureId%#x,$value)"
+}
+
+/** Resolve this future to the given value */
+case class ResolveFutureCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureManager#RemoteFutureId, value: Option[AnyRef]) extends OrcPeerCmdInExecutionContext(executionId) {
   override def toString(): String = f"${getClass.getSimpleName}($executionId,$futureId%#x,$value)"
 }
 

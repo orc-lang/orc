@@ -133,7 +133,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
   def force(i: Int, f: orc.run.porce.runtime.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
     if (!isHaltedST()) {
-      f.getInternal() match {
+      f.getInternal match {
         case FutureConstants.Halt => {
           setHaltedST()
         }
@@ -156,7 +156,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
   def force(i: Int, f: orc.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
     if (!isHaltedST()) {
-      (f.get(): @unchecked) match {
+      (f.get: @unchecked) match {
         case s: orc.FutureState.Bound => {
           set(i, s.value)
         }
@@ -216,7 +216,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
 
     assert(isBlocked())
 
-    // This fence is needed because we are doing non-atomic accesses before this call, but 
+    // This fence is needed because we are doing non-atomic accesses before this call, but
     // after this we may have updates or reads from other threads.
     unsafe.fullFence()
 

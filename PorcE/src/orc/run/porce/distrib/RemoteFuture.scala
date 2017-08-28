@@ -13,28 +13,45 @@
 
 package orc.run.porce.distrib
 
-import orc.{ Future, FutureReader }
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+
+import orc.FutureReader
+import orc.run.porce.runtime.Future
 
 /** A reference to an Future value at another Location.
   *
   * @author jthywiss
   */
-class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends orc.run.porce.runtime.Future() with RemoteRef {
+class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends Future() with RemoteRef {
 
   override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x)"
 
-  execution.sendReadFuture(remoteRefId)
+  /** Resolve this to a value and call publish and halt on each blocked FutureReader.
+    */
+  @TruffleBoundary(allowInlining = true) @noinline
+  override def bind(v: AnyRef) = {
+    futureManager.sendFutureResolution(remoteRefId, Some(v))
+  }
+
+  /** Resolve this to stop and call halt on each blocked FutureReader.
+    */
+  @TruffleBoundary(allowInlining = true) @noinline
+  override def stop(): Unit = {
+    futureManager.sendFutureResolution(remoteRefId, None)
+  }
+
+  futureManager.sendReadFuture(remoteRefId)
 }
 
 /** A remote reader that is blocked awaiting a local Future value.
   *
   * @author jthywiss
   */
-class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId: RemoteFutureRef#RemoteRefId) extends FutureReader {
+class RemoteFutureReader(val fut: Future, val futureManager: RemoteFutureManager, futureId: RemoteFutureManager#RemoteFutureId) extends FutureReader {
 
   protected var readerLocations = new java.util.HashSet[PeerLocation](4)
 
-  override def toString: String = f"${getClass.getName}(fut=$fut, execution=$execution, futureId=$futureId%#x)"
+  override def toString: String = f"${getClass.getName}(fut=$fut, futureManager=$futureManager, futureId=$futureId%#x)"
 
   def addReader(l: PeerLocation): Unit = synchronized {
     readerLocations.add(l)
@@ -52,12 +69,12 @@ class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId
 
   override def publish(v: AnyRef): Unit = synchronized {
     //Logger.Futures.entering(getClass.getName, "publish")
-    execution.sendFutureResult(getAndClearReaders(), futureId, fut, Some(v))
+    futureManager.sendFutureResult(getAndClearReaders(), futureId, fut, Some(v))
   }
 
   override def halt(): Unit = synchronized {
     //Logger.Futures.entering(getClass.getName, "halt")
-    execution.sendFutureResult(getAndClearReaders(), futureId, fut, None)
+    futureManager.sendFutureResult(getAndClearReaders(), futureId, fut, None)
   }
 
 }
@@ -69,22 +86,24 @@ class RemoteFutureReader(val fut: Future, val execution: DOrcExecution, futureId
 trait RemoteFutureManager {
   execution: DOrcExecution =>
 
+  type RemoteFutureId = RemoteFutureRef#RemoteRefId
+
   // These two maps are inverses of each other (sorta)
-  protected val servingLocalFutures = new java.util.concurrent.ConcurrentHashMap[Future, RemoteFutureRef#RemoteRefId]
-  // TODO: MEMORYLEAK: servingRemoteFutures is not cleaned as futures are no longer needed. This is because the future Id 
+  protected val servingLocalFutures = new java.util.concurrent.ConcurrentHashMap[Future, RemoteFutureId]
+  // TODO: MEMORYLEAK: servingRemoteFutures is not cleaned as futures are no longer needed. This is because the future Id
   //       could be requested from another node with any amount of delay. This will be a problem as programs run longer or
   //       use more futures. The initial symptom is likely to be programs slowing down as they run, instead of a visible
   //       increase in the heap size. The object are small, but ConcurrentHashMap does show quite a bit of slowdown as the
   //       number of entries increases.
-  protected val servingRemoteFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureReader]
+  protected val servingRemoteFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureId, RemoteFutureReader]
   protected val servingGroupsFuturesUpdateLock = new Object()
 
-  protected val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureRef#RemoteRefId, RemoteFutureRef]
+  protected val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureId, RemoteFutureRef]
   protected val waitingReadersUpdateLock = new Object()
-  
+
   // TODO: PERFORMANCE: We are using locks here when we could probably use computeIfAbsent and fiends.
 
-  def ensureFutureIsRemotelyAccessibleAndGetId(fut: Future): RemoteFutureRef#RemoteRefId = {
+  def ensureFutureIsRemotelyAccessibleAndGetId(fut: Future): RemoteFutureId = {
     //Logger.Futures.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
     fut match {
       case rfut: RemoteFutureRef => rfut.remoteRefId
@@ -102,7 +121,7 @@ trait RemoteFutureManager {
     }
   }
 
-  def futureForId(futureId: RemoteFutureRef#RemoteRefId): Future = {
+  def futureForId(futureId: RemoteFutureId): Future = {
     if (execution.homeLocationForRemoteRef(futureId) == execution.runtime.asInstanceOf[DOrcRuntime].here) {
       servingRemoteFutures.get(futureId).fut
     } else {
@@ -116,18 +135,18 @@ trait RemoteFutureManager {
     }
   }
 
-  def sendReadFuture(futureId: RemoteFutureRef#RemoteRefId): Unit = {
+  def sendReadFuture(futureId: RemoteFutureId): Unit = {
     val homeLocation = execution.homeLocationForRemoteRef(futureId)
     Tracer.traceFutureReadSend(futureId, execution.runtime.here, homeLocation)
     homeLocation.sendInContext(execution)(ReadFutureCmd(executionId, futureId, followerExecutionNum))
   }
 
-  def readFuture(futureId: RemoteFutureRef#RemoteRefId, readerFollowerNum: DOrcRuntime#RuntimeId): Unit = {
+  def readFuture(futureId: RemoteFutureId, readerFollowerNum: DOrcRuntime#RuntimeId): Unit = {
     Logger.Futures.fine(f"Posting read on $futureId%#x, with reader at follower number $readerFollowerNum")
     servingRemoteFutures.get(futureId).addReader(execution.locationForFollowerNum(readerFollowerNum))
   }
 
-  def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureRef#RemoteRefId, fut: Future, value: Option[AnyRef]): Unit = {
+  def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureId, fut: Future, value: Option[AnyRef]): Unit = {
     Logger.Futures.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x" + futureId.toHexString, value))
     readers foreach { reader =>
       val mv = value.map(execution.marshalValue(reader)(_))
@@ -139,17 +158,17 @@ trait RemoteFutureManager {
     //servingRemoteFutures.remove(futureId)
   }
 
-  def deliverFutureResult(origin: PeerLocation, futureId: RemoteFutureRef#RemoteRefId, value: Option[AnyRef]): Unit = {
+  def deliverFutureResult(origin: PeerLocation, futureId: RemoteFutureId, value: Option[AnyRef]): Unit = {
     val reader = waitingReaders.get(futureId)
     if (reader != null) {
       value match {
         case Some(v) => {
-          Logger.Futures.fine(f"Binding future $futureId%#x to $v")
-          reader.bind(execution.unmarshalValue(origin)(v))
+          Logger.Futures.fine(f"Future $futureId%#x was resolved to $v")
+          reader.localBind(execution.unmarshalValue(origin)(v))
         }
         case None => {
-          Logger.Futures.fine(f"Binding future $futureId%#x to stop")
-          reader.stop()
+          Logger.Futures.fine(f"Future $futureId%#x was resolved to stop")
+          reader.localStop()
         }
       }
       waitingReaders.remove(futureId)
@@ -157,4 +176,18 @@ trait RemoteFutureManager {
       Logger.Futures.finer(f"deliverFutureResult reader not found, id=$futureId%#x")
     }
   }
+
+  def sendFutureResolution(futureId: RemoteFutureId, value: Option[AnyRef]): Unit = {
+    val homeLocation = execution.homeLocationForRemoteRef(futureId)
+    Tracer.traceFutureResolveSend(futureId, execution.runtime.here, homeLocation)
+    homeLocation.sendInContext(execution)(ResolveFutureCmd(executionId, futureId, value))
+  }
+
+  def receiveFutureResolution(futureId: RemoteFutureId, value: Option[AnyRef]): Unit = {
+    value match {
+      case Some(v) => servingRemoteFutures.get(futureId).fut.bind(v)
+      case None => servingRemoteFutures.get(futureId).fut.stop()
+    }
+  }
+
 }

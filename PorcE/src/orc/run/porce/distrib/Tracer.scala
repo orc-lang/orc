@@ -47,7 +47,10 @@ object Tracer {
   final val DeliverFutureResultSend = 19L
   orc.util.Tracer.registerEventTypeId(DeliverFutureResultSend, "DelFutSd")
 
-  final val OrcEventSend = 20L
+  final val ResolveFutureSend = 20L
+  orc.util.Tracer.registerEventTypeId(ResolveFutureSend, "ResFutSd")
+
+  final val OrcEventSend = 21L
   orc.util.Tracer.registerEventTypeId(OrcEventSend, "EventSnd")
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
@@ -122,6 +125,13 @@ object Tracer {
   def traceFutureResultSend(futureId: RemoteFutureRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
     if (traceFutureRemoteReads) {
       orc.util.Tracer.trace(DeliverFutureResultSend, futureId, origin.runtimeId, destination.runtimeId)
+    }
+  }
+
+  @inline
+  def traceFutureResolveSend(futureId: RemoteFutureRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+    if (traceFutureRemoteReads) {
+      orc.util.Tracer.trace(ResolveFutureSend, futureId, origin.runtimeId, destination.runtimeId)
     }
   }
 

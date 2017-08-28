@@ -98,7 +98,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
   @TruffleBoundary(allowInlining = true) @noinline
   def force(i: Int, f: orc.run.porce.runtime.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
-    f.getInternal() match {
+    f.getInternal match {
       case FutureConstants.Unbound => {
         // Store a JoinElement in the array so it can be started later.
         elements.add(new JoinElement(i, f))
@@ -117,7 +117,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
   @TruffleBoundary(allowInlining = true) @noinline
   def force(i: Int, f: orc.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
-    f.get() match {
+    f.get match {
       case FutureConstants.Orc_Unbound => {
         // Store a JoinElement in the array so it can be started later.
         elements.add(new JoinElement(i, f))
@@ -162,7 +162,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
 
     assert(isBlocked())
 
-    // This fence is needed because we are doing non-atomic accesses before this call, but 
+    // This fence is needed because we are doing non-atomic accesses before this call, but
     // after this we may have updates or reads from other threads.
     unsafe.fullFence()
 

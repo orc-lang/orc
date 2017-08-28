@@ -35,10 +35,24 @@ class Future() extends OrcValue with orc.Future {
   private var _state: AnyRef = Unbound
   private var _blocked: ArrayList[FutureReader] = new ArrayList()
 
-  /** Bind this to a value and call publish and halt on each blocked Blockable.
+  /** Resolve this to a value and call publish and halt on each blocked FutureReader.
     */
   @TruffleBoundary(allowInlining = true) @noinline
-  final def bind(v: AnyRef) = {
+  def bind(v: AnyRef) = {
+    localBind(v)
+  }
+
+  /** Resolve this to stop and call halt on each blocked FutureReader.
+    */
+  @TruffleBoundary(allowInlining = true) @noinline
+  def stop(): Unit = {
+    localStop()
+  }
+
+  /** Resolve this to a value and call publish and halt on each blocked FutureReader.
+    */
+  @TruffleBoundary(allowInlining = true) @noinline
+  final def localBind(v: AnyRef): Unit = {
     //assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
     //assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
     val done = synchronized {
@@ -58,10 +72,10 @@ class Future() extends OrcValue with orc.Future {
     }
   }
 
-  /** Bind this to stop and call halt on each blocked Blockable.
+  /** Resolve this to stop and call halt on each blocked FutureReader.
     */
   @TruffleBoundary(allowInlining = true) @noinline
-  final def stop() = {
+  final def localStop(): Unit = {
     val done = synchronized {
       if (_state eq Unbound) {
         _state = Halt
@@ -112,19 +126,11 @@ class Future() extends OrcValue with orc.Future {
     }
   }
 
-  override def toOrcSyntax() = {
-    getInternal() match {
+  override def toOrcSyntax(): String = {
+    _state match {
       case Unbound => "<$unbound$>"
       case Halt => "<$stop$>"
       case v => s"<${Format.formatValue(v)}>"
-    }
-  }
-
-  final def get(): FutureState = {
-    getInternal() match {
-      case Unbound => orc.FutureState.Unbound
-      case Halt => orc.FutureState.Stopped
-      case v => orc.FutureState.Bound(v)
     }
   }
 
@@ -133,9 +139,18 @@ class Future() extends OrcValue with orc.Future {
     * The state may change at any time. However, Unbound is the only state
     * that is not stable, so if Halt or a value is returned it will not
     * change.
-    *
     */
-  final def getInternal(): AnyRef = {
+  final def get: FutureState = {
+    _state match {
+      case Unbound => orc.FutureState.Unbound
+      case Halt => orc.FutureState.Stopped
+      case v => orc.FutureState.Bound(v)
+    }
+  }
+
+  /** Get the state of this future, using the PorcE raw future status. */
+  final def getInternal: AnyRef = {
     _state
   }
+
 }
