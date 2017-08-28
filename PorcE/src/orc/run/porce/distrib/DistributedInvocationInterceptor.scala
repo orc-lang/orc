@@ -33,7 +33,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
     // TODO: PERFORMANCE: This would probably gain a lot by specializing on the number of arguments. That will probably require a simpler structure for the loops.
     if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
-      Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
+      //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
       true
     } else {
       val here = execution.runtime.here
