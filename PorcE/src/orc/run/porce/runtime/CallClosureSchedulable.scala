@@ -14,6 +14,7 @@
 package orc.run.porce.runtime
 
 import orc.Schedulable
+import orc.run.porce.Logger
 
 object CallClosureSchedulable {
   /** Create a schedulable which will call `closure` with no arguments.
@@ -51,6 +52,7 @@ object CallClosureSchedulable {
 
 final class CallClosureSchedulable private (closure: PorcEClosure, arguments: Array[AnyRef]) extends Schedulable {
   def run(): Unit = {
+    Logger.entering(getClass.getName, "run", Seq(closure, arguments))
     if (arguments == null)
       closure.callFromRuntime()
     else

@@ -27,8 +27,13 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   execution: DOrcExecution =>
 
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    //Logger.Invoke.entering(getClass.getName, "shouldInterceptInvocation", Seq(target.getClass.getName, target) ++ arguments)
+    //Logger.Invoke.finest("class names: "+target.getClass.getName+arguments.map(_.getClass.getName).mkString("(", ",", ")"))
+    //Logger.Invoke.finest("isInstanceOf[RemoteRef]: "+target.isInstanceOf[RemoteRef]+arguments.map(_.isInstanceOf[RemoteRef]).mkString("(", ",", ")"))
+
     // TODO: PERFORMANCE: This would probably gain a lot by specializing on the number of arguments. That will probably require a simpler structure for the loops.
     if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
+      Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
       true
     } else {
       val here = execution.runtime.here
@@ -36,19 +41,21 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
       def checkValue(v: AnyRef): Boolean = {
         v.isInstanceOf[LocationPolicy] && !currentLocations(v).contains(here)
       }
-      checkValue(target) || arguments.exists(checkValue)
+      val notAllHere = checkValue(target) || arguments.exists(checkValue(_))
+      //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", notAllHere.toString)
+      notAllHere
     }
   }
 
   override def invokeIntercepted(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     def pickLocation(ls: Set[PeerLocation]) = ls.head
 
-    //Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target, arguments))
+    //Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target) ++ arguments)
 
     // TODO: If this every turns out to be a performance issue I suspect a bloom-filter-optimized set would help.
     val intersectLocs = (arguments map currentLocations).fold(currentLocations(target)) { _ & _ }
     require(!(intersectLocs contains runtime.here))
-    Logger.Invoke.finest(s"siteCall($target, $arguments): intersection of current locations=$intersectLocs")
+    Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
     val candidateDestinations = {
       if (intersectLocs.nonEmpty) {
         intersectLocs
@@ -61,7 +68,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         }
       }
     }
-    Logger.Invoke.finest(s"candidateDestinations=$candidateDestinations")
+    Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): candidateDestinations=$candidateDestinations")
     val destination = pickLocation(candidateDestinations)
     sendCall(callHandler, target, arguments, destination)
   }
@@ -70,7 +77,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   private val callCorrelationCounter = new AtomicLong(followerExecutionNum.toLong << 32)
 
   def sendCall(callContext: CPSCallResponseHandler, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
-    Logger.Invoke.fine(s"sendCall $callContext, $callTarget, $callArguments, $destination")
+    Logger.Invoke.entering(getClass.getName, "sendCall", Seq(callContext, callTarget) ++ callArguments :+ destination)
 
     val distributedCounter = getDistributedCounterForCounter(callContext.c)
     // Token: Give our token back to the local representation
@@ -108,6 +115,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     val unmarshaledArgs = callMemento.arguments map { execution.unmarshalValue(origin)(_) }
 
     val callInvoker = new Schedulable {
+      override def toString: String = s"execution.invokeCallTarget(${callMemento.callSiteId}, ${callMemento.publicationContinuation}, ${distributedCounter.counter}, ${proxyTerminator}, ${unmarshaledTarget}(${unmarshaledArgs.mkString(", ")}))" 
       def run(): Unit = {
         // Token: Pass local token to the invocation.
         execution.invokeCallTarget(callMemento.callSiteId, callMemento.publicationContinuation, distributedCounter.counter, proxyTerminator, unmarshaledTarget, unmarshaledArgs)
