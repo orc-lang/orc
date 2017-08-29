@@ -117,31 +117,31 @@ class OrcSite(val code: Site,
   *
   * @author amp
   */
-class OrcSiteCallGroup(parent: Group, handle: OrcSiteCallHandle) extends Subgroup(parent) {
+class OrcSiteCallGroup(parent: Group, controller: OrcSiteCallController) extends Subgroup(parent) {
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
     // This should never receive a stop. Just let it throw if it does. 
-    handle.publishNonterminal(v.get)
+    controller.publishNonterminal(v.get)
     // Halt the token which sent this publication. It cannot do anything else.
     t.halt()
   }
 
   override def kill() = synchronized {
-    handle.halt()
+    controller.halt()
     super.kill()
   }
 
   def onHalt() = synchronized {
-    handle.halt()
+    controller.halt()
     parent.remove(this)
   }
 
-  // Note: discorporate is a no-op in this because this group needs to stay alive to handle kills.
+  // Note: discorporate is a no-op in this because this group needs to stay alive to controller kills.
   def onDiscorporate() = ()
 }
 
-/** A call handle specific to Orc site calls.
+/** A call controller specific to Orc site calls.
   *
   * @author amp
   */
-class OrcSiteCallHandle(caller: Token) extends CallHandle(caller) {
+class OrcSiteCallController(caller: Token) extends CallController(caller) {
 }

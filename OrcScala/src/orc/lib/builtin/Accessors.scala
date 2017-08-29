@@ -13,7 +13,7 @@
 
 package orc.lib.builtin
 
-import orc.{ Accessor, ErrorAccessor, FutureReader, Handle, Invoker, OnlyDirectInvoker, OrcRuntime }
+import orc.{ Accessor, CallContext, ErrorAccessor, FutureReader, Invoker, OnlyDirectInvoker, OrcRuntime }
 import orc.util.ArrayExtensions.{ Array1, Array2 }
 import orc.values.Field
 import orc.values.sites.InvokerMethod
@@ -34,13 +34,13 @@ class GetFieldInvoker(accessor: Accessor, f: Field) extends Invoker {
     target == GetFieldSite && arguments.length == 2 && f == arguments(1) && accessor.canGet(arguments(0))
   }
   
-  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     val v = accessor.get(arguments(0))
     v match {
       case f: orc.Future =>
-        f.read(new FutureHandler(h))
+        f.read(new FutureHandler(callContext))
       case _ =>
-        h.publish(v)
+        callContext.publish(v)
     }
   }
 }
@@ -76,18 +76,18 @@ class GetMethodApplyInvoker(accessor: Accessor) extends Invoker {
     target == GetMethodSite && arguments.length == 1 && accessor.canGet(arguments(0))
   }
   
-  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     val v = accessor.get(arguments(0))
     v match {
       case f: orc.Future =>
-        f.read(new FutureHandler(h))
+        f.read(new FutureHandler(callContext))
       case _ =>
-        h.publish(v)
+        callContext.publish(v)
     }
   }
 }
 
-class FutureHandler(h: Handle) extends FutureReader {
-  def publish(v: AnyRef): Unit = h.publish(v)
-  def halt(): Unit = h.halt()
+class FutureHandler(callContext: CallContext) extends FutureReader {
+  def publish(v: AnyRef): Unit = callContext.publish(v)
+  def halt(): Unit = callContext.halt()
 }

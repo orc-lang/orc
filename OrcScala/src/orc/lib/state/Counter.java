@@ -14,7 +14,7 @@ package orc.lib.state;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.CounterType;
@@ -45,7 +45,7 @@ public class Counter extends EvalSite implements TypedSite {
         return new DotSite() {
             // TODO: Reimplement this without the lock. It will probably scale much better with AtomicInteger
             protected int count = init;
-            protected final LinkedList<Handle> waiters = new LinkedList<Handle>();
+            protected final LinkedList<CallContext> waiters = new LinkedList<CallContext>();
 
             @Override
             protected void addMembers() {
@@ -70,7 +70,7 @@ public class Counter extends EvalSite implements TypedSite {
                             if (count > 0) {
                                 --count;
                                 if (count == 0) {
-                                    for (final Handle waiter : waiters) {
+                                    for (final CallContext waiter : waiters) {
                                         waiter.publish(signal());
                                     }
                                     waiters.clear();
@@ -89,7 +89,7 @@ public class Counter extends EvalSite implements TypedSite {
                 });
                 addMember("onZero", new SiteAdaptor() {
                     @Override
-                    public void callSite(final Args args, final Handle caller) throws TokenException {
+                    public void callSite(final Args args, final CallContext caller) throws TokenException {
                         synchronized (Counter.this) {
                             if (count == 0) {
                                 caller.publish(signal());

@@ -45,7 +45,7 @@ trait Invoker {
     * This could occur for sites which have mutable values which may stop being callable.
     */
   @throws[UncallableValueException]
-  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit
+  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit
 }
 
 /** Implement direct invocation for calls with do not block and do not need runtime access.

@@ -12,7 +12,7 @@
 //
 package orc.lib.util
 
-import orc.Handle
+import orc.CallContext
 import orc.types.Bot
 import orc.values.sites.{ Site0, TypedSite }
 
@@ -22,8 +22,8 @@ import orc.values.sites.{ Site0, TypedSite }
   * @author amp
   */
 object Block extends Site0 with TypedSite {
-  def call(h: Handle) {
-    h.discorporate()
+  def call(callContext: CallContext) {
+    callContext.discorporate()
   }
 
   def orcType() = Bot

@@ -2,7 +2,7 @@
 // MailerFactory.java -- Java class MailerFactory
 // Project OrcSites
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -51,7 +51,7 @@ import javax.mail.search.RecipientTerm;
 import javax.mail.search.SearchTerm;
 import javax.mail.search.SubjectTerm;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
@@ -837,7 +837,7 @@ public class MailerFactory extends SiteAdaptor {
     }
 
     @Override
-    public void callSite(final Args args, final Handle caller) throws TokenException {
+    public void callSite(final Args args, final CallContext caller) throws TokenException {
         requireRight(caller, "send mail");
         try {
             caller.publish(new Mailer("/" + args.stringArg(0)));

@@ -16,7 +16,7 @@ package orc.run.porce.distrib
 import java.util.concurrent.atomic.AtomicLong
 
 import orc.Schedulable
-import orc.run.porce.runtime.{ CPSCallResponseHandler, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
+import orc.run.porce.runtime.{ CPSCallContext, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
   *
@@ -47,7 +47,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     }
   }
 
-  override def invokeIntercepted(callHandler: CPSCallResponseHandler, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  override def invokeIntercepted(callContext: CPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     def pickLocation(ls: Set[PeerLocation]) = ls.head
 
     //Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target) ++ arguments)
@@ -70,13 +70,13 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     }
     Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): candidateDestinations=$candidateDestinations")
     val destination = pickLocation(candidateDestinations)
-    sendCall(callHandler, target, arguments, destination)
+    sendCall(callContext, target, arguments, destination)
   }
 
   /* Since we don't have token IDs in PorcE: */
   private val callCorrelationCounter = new AtomicLong(followerExecutionNum.toLong << 32)
 
-  def sendCall(callContext: CPSCallResponseHandler, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
+  def sendCall(callContext: CPSCallContext, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
     Logger.Invoke.entering(getClass.getName, "sendCall", Seq(callContext, callTarget) ++ callArguments :+ destination)
 
     val distributedCounter = getDistributedCounterForCounter(callContext.c)

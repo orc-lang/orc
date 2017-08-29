@@ -16,7 +16,7 @@ import java.util.LinkedList;
 
 import scala.collection.JavaConversions;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.BoundedChannelType;
@@ -52,9 +52,9 @@ public class BoundedChannel extends EvalSite implements TypedSite {
     protected class ChannelInstance extends DotSite {
 
         protected final LinkedList<Object> contents;
-        protected final LinkedList<Handle> readers;
-        protected final LinkedList<Handle> writers;
-        protected Handle closer;
+        protected final LinkedList<CallContext> readers;
+        protected final LinkedList<CallContext> writers;
+        protected CallContext closer;
         /** The number of open slots in the channel. */
         protected int open;
         protected boolean closed = false;
@@ -62,15 +62,15 @@ public class BoundedChannel extends EvalSite implements TypedSite {
         ChannelInstance(final int bound) {
             open = bound;
             contents = new LinkedList<Object>();
-            readers = new LinkedList<Handle>();
-            writers = new LinkedList<Handle>();
+            readers = new LinkedList<CallContext>();
+            writers = new LinkedList<CallContext>();
         }
 
         @Override
         protected void addMembers() {
             addMember("get", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle reader) {
+                public void callSite(final Args args, final CallContext reader) {
                     synchronized (ChannelInstance.this) {
                         if (contents.isEmpty()) {
                             if (closed) {
@@ -84,7 +84,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                             if (writers.isEmpty()) {
                                 ++open;
                             } else {
-                                final Handle writer = writers.removeFirst();
+                                final CallContext writer = writers.removeFirst();
                                 writer.publish(signal());
                             }
                             if (closer != null && contents.isEmpty()) {
@@ -97,7 +97,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
             });
             addMember("getD", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle reader) {
+                public void callSite(final Args args, final CallContext reader) {
                     synchronized (ChannelInstance.this) {
                         if (contents.isEmpty()) {
                             reader.halt();
@@ -106,7 +106,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                             if (writers.isEmpty()) {
                                 ++open;
                             } else {
-                                final Handle writer = writers.removeFirst();
+                                final CallContext writer = writers.removeFirst();
                                 writer.publish(signal());
                             }
                             if (closer != null && contents.isEmpty()) {
@@ -124,13 +124,13 @@ public class BoundedChannel extends EvalSite implements TypedSite {
             });
             addMember("put", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle writer) throws TokenException {
+                public void callSite(final Args args, final CallContext writer) throws TokenException {
                     synchronized (ChannelInstance.this) {
                         final Object item = args.getArg(0);
                         if (closed) {
                             writer.halt();
                         } else if (!readers.isEmpty()) {
-                            final Handle reader = readers.removeFirst();
+                            final CallContext reader = readers.removeFirst();
                             reader.publish(object2value(item));
                             writer.publish(signal());
                         } else if (open == 0) {
@@ -147,13 +147,13 @@ public class BoundedChannel extends EvalSite implements TypedSite {
             });
             addMember("putD", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle writer) throws TokenException {
+                public void callSite(final Args args, final CallContext writer) throws TokenException {
                     synchronized (ChannelInstance.this) {
                         final Object item = args.getArg(0);
                         if (closed) {
                             writer.halt();
                         } else if (!readers.isEmpty()) {
-                            final Handle reader = readers.removeFirst();
+                            final CallContext reader = readers.removeFirst();
                             reader.publish(object2value(item));
                             writer.publish(signal());
                         } else if (open == 0) {
@@ -181,7 +181,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         final Object out = JavaConversions.collectionAsScalaIterable(contents).toList();
                         contents.clear();
                         // resume all writers
-                        for (final Handle writer : writers) {
+                        for (final CallContext writer : writers) {
                             writer.publish(signal());
                         }
                         writers.clear();
@@ -214,10 +214,10 @@ public class BoundedChannel extends EvalSite implements TypedSite {
             });
             addMember("close", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle caller) {
+                public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final Handle reader : readers) {
+                        for (final CallContext reader : readers) {
                             reader.halt();
                         }
                         if (contents.isEmpty()) {
@@ -231,10 +231,10 @@ public class BoundedChannel extends EvalSite implements TypedSite {
             });
             addMember("closeD", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle caller) {
+                public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final Handle reader : readers) {
+                        for (final CallContext reader : readers) {
                             reader.halt();
                         }
                         caller.publish(signal());

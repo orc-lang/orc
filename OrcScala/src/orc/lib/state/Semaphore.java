@@ -14,7 +14,7 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.SemaphoreType;
@@ -55,8 +55,8 @@ public class Semaphore extends EvalSite implements TypedSite {
 
     protected class SemaphoreInstance extends DotSite {
 
-        protected final Queue<Handle> waiters = new LinkedList<Handle>();
-        protected final Queue<Handle> snoopers = new LinkedList<Handle>();
+        protected final Queue<CallContext> waiters = new LinkedList<CallContext>();
+        protected final Queue<CallContext> snoopers = new LinkedList<CallContext>();
 
         /* Invariant: n >= 0 */
         protected int n;
@@ -70,13 +70,13 @@ public class Semaphore extends EvalSite implements TypedSite {
         protected void addMembers() {
             addMember("acquire", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle waiter) {
+                public void callSite(final Args args, final CallContext waiter) {
                     synchronized (SemaphoreInstance.this) {
                         if (0 == n) {
                             waiter.setQuiescent();
                             waiters.offer(waiter);
                             if (!snoopers.isEmpty()) {
-                                for (final Handle snooper : snoopers) {
+                                for (final CallContext snooper : snoopers) {
                                     snooper.publish(signal());
                                 }
                                 snoopers.clear();
@@ -90,7 +90,7 @@ public class Semaphore extends EvalSite implements TypedSite {
             });
             addMember("acquireD", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle waiter) {
+                public void callSite(final Args args, final CallContext waiter) {
                     synchronized (SemaphoreInstance.this) {
                         if (0 == n) {
                             waiter.halt();
@@ -108,12 +108,12 @@ public class Semaphore extends EvalSite implements TypedSite {
             });
             addMember("release", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle sender) throws TokenException {
+                public void callSite(final Args args, final CallContext sender) throws TokenException {
                     synchronized (SemaphoreInstance.this) {
                         if (waiters.isEmpty()) {
                             ++n;
                         } else {
-                            final Handle waiter = waiters.poll();
+                            final CallContext waiter = waiters.poll();
                             waiter.publish(signal());
                         }
                         sender.publish(signal());
@@ -127,7 +127,7 @@ public class Semaphore extends EvalSite implements TypedSite {
             });
             addMember("snoop", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle snooper) throws TokenException {
+                public void callSite(final Args args, final CallContext snooper) throws TokenException {
                     synchronized (SemaphoreInstance.this) {
                         if (waiters.isEmpty()) {
                             snooper.setQuiescent();
@@ -140,7 +140,7 @@ public class Semaphore extends EvalSite implements TypedSite {
             });
             addMember("snoopD", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle caller) throws TokenException {
+                public void callSite(final Args args, final CallContext caller) throws TokenException {
                     synchronized (SemaphoreInstance.this) {
                         if (waiters.isEmpty()) {
                             caller.halt();

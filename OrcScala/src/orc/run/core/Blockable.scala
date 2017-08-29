@@ -4,16 +4,17 @@
 //
 // Created by amp on Dec 14, 2012.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
+
 import orc.Schedulable
 import orc.error.OrcException
-import orc.run.Logger
 
 /** The interface that allows Schedulables to block on Blockers and receive a value when unblocked.
   *
@@ -27,7 +28,7 @@ import orc.run.Logger
 trait Blockable extends Schedulable {
   /* The following actions are applied to Blockables to wake them.
    *
-   *        P = Pruning, O = Otherwise, L = Closure, C = CallHandle
+   *        P = Pruning, O = Otherwise, L = Closure, C = CallController
    *        These define what Blockers use what kind of awake.
    *
    * Publish a value                 PCL

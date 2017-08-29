@@ -13,7 +13,7 @@
 
 package orc.values.sites
 
-import orc.Handle
+import orc.CallContext
 import orc.error.{ NotYetImplementedException, OrcException }
 import orc.error.compiletime.typing.TypeException
 import orc.error.runtime.{ ArityMismatchException, ExceptionHaltException, HaltException, RightException }
@@ -24,12 +24,12 @@ import orc.values.{ OrcRecord, OrcValue }
 
 //FIXME:XXX: "Serializable" here is a temporary hack.  Sites are not all Serializable.
 trait Site extends OrcValue with SiteMetadata with Serializable {
-  def call(args: Array[AnyRef], h: Handle): Unit
+  def call(args: Array[AnyRef], callContext: CallContext): Unit
 
   override def toOrcSyntax() = this.name
 
-  def requireRight(h: Handle, rightName: String) {
-    if (!h.hasRight(rightName)) {
+  def requireRight(callContext: CallContext, rightName: String) {
+    if (!callContext.hasRight(rightName)) {
       throw new RightException(rightName);
     }
   }
@@ -38,7 +38,7 @@ trait Site extends OrcValue with SiteMetadata with Serializable {
 trait DirectSite extends Site {
   override val isDirectCallable = true
 
-  def call(args: Array[AnyRef], h: Handle): Unit // This could be implemented here if it was useful
+  def call(args: Array[AnyRef], callContext: CallContext): Unit // This could be implemented here if it was useful
 
   def calldirect(args: Array[AnyRef]): AnyRef
 }
@@ -63,12 +63,12 @@ trait SpecificArity extends Site {
 
 /* Enforce totality */
 trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
-  def call(args: Array[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], callContext: CallContext) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
-      h.publish(evaluate(args))
+      callContext.publish(evaluate(args))
     } catch {
-      case (e: OrcException) => h.halt(e)
+      case (e: OrcException) => callContext.halt(e)
     }
   }
   def calldirect(args: Array[AnyRef]): AnyRef = {
@@ -89,11 +89,11 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
 
 /* Enforce nonblocking, but do not enforce totality */
 trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
-  def call(args: Array[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], callContext: CallContext) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     evaluate(args) match {
-      case Some(v) => h.publish(v)
-      case None => h.halt
+      case Some(v) => callContext.publish(v)
+      case None => callContext.halt
     }
   }
   def calldirect(args: Array[AnyRef]): AnyRef = {
@@ -120,7 +120,7 @@ trait UnimplementedSite extends Site {
   def orcType(argTypes: List[Type]): Nothing = {
     throw new NotYetImplementedException("Site " + this + " is unimplemented.")
   }
-  def call(args: Array[AnyRef], h: Handle): Nothing = {
+  def call(args: Array[AnyRef], callContext: CallContext): Nothing = {
     throw new NotYetImplementedException("Site " + this + " is unimplemented.")
   }
 }
@@ -130,14 +130,14 @@ trait Site0 extends Site with SpecificArity {
 
   val arity = 0
 
-  def call(args: Array[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], callContext: CallContext) {
     args match {
-      case Array0() => call(h)
+      case Array0() => call(callContext)
       case _ => throw new ArityMismatchException(0, args.size)
     }
   }
 
-  def call(h: Handle): Unit
+  def call(callContext: CallContext): Unit
 
 }
 
@@ -145,14 +145,14 @@ trait Site1 extends Site with SpecificArity {
 
   val arity = 1
 
-  def call(args: Array[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], callContext: CallContext) {
     args match {
-      case Array1(a) => call(a, h)
+      case Array1(a) => call(a, callContext)
       case _ => throw new ArityMismatchException(1, args.size)
     }
   }
 
-  def call(a: AnyRef, h: Handle): Unit
+  def call(a: AnyRef, callContext: CallContext): Unit
 
 }
 
@@ -160,14 +160,14 @@ trait Site2 extends Site with SpecificArity {
 
   val arity = 2
 
-  def call(args: Array[AnyRef], h: Handle) {
+  def call(args: Array[AnyRef], callContext: CallContext) {
     args match {
-      case Array2(a, b) => call(a, b, h)
+      case Array2(a, b) => call(a, b, callContext)
       case _ => throw new ArityMismatchException(2, args.size)
     }
   }
 
-  def call(a: AnyRef, b: AnyRef, h: Handle): Unit
+  def call(a: AnyRef, b: AnyRef, callContext: CallContext): Unit
 
 }
 
@@ -281,7 +281,7 @@ class StructurePairSite(
   "unapply" -> unapplySite) with TypedSite {
 
   // If we are called, call apply. This is needed since .apply passthrough only works on things that are not already callable.
-  def call(args: Array[AnyRef], h: Handle) = applySite.call(args, h)
+  def call(args: Array[AnyRef], callContext: CallContext) = applySite.call(args, callContext)
 
   def orcType() = new RecordType(
     "apply" -> applySite.orcType(),

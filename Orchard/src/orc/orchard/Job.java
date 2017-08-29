@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 
 import scala.util.parsing.input.Positional;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.OrcEvent;
 import orc.OrcEventAction;
 import orc.OrcOptions;
@@ -38,7 +38,7 @@ import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.run.StandardOrcRuntime;
-import orc.run.core.ExternalSiteCallHandle;
+import orc.run.core.ExternalSiteCallController;
 import orc.run.core.Execution;
 
 /**
@@ -297,9 +297,9 @@ public final class Job implements JobMBean {
         engine = new JobEngine(expression, config, "Orchard Job " + id);
     }
 
-    public static Job getJobFromHandle(final Handle callHandle) throws UnsupportedOperationException {
+    public static Job getJobFromHandle(final CallContext callContext) throws UnsupportedOperationException {
         try {
-            return ((JobEngine) ((ExternalSiteCallHandle) callHandle).caller().runtime()).getJob();
+            return ((JobEngine) ((ExternalSiteCallController) callContext).caller().runtime()).getJob();
         } catch (final ClassCastException e) {
             throw new UnsupportedOperationException("This site may be called only from an Orchard JobEngine", e);
         }

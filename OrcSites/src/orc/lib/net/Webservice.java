@@ -2,7 +2,7 @@
 // Webservice.java -- Java class Webservice
 // Project OrcSites
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -18,7 +18,7 @@ import java.net.URLClassLoader;
 import java.util.List;
 import java.util.UUID;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
@@ -105,7 +105,7 @@ public class Webservice extends SiteAdaptor {
     }
 
     @Override
-    public void callSite(final Args args, final Handle caller) {
+    public void callSite(final Args args, final CallContext caller) {
         try {
             // Create a temporary directory to host compilation of stubs
             final File tmpdir = new File(System.getProperty("java.io.tmpdir"), "orc-" + UUID.randomUUID().toString());

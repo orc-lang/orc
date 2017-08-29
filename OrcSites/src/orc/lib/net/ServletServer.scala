@@ -42,7 +42,7 @@ trait CastArgumentSupport {
 
 class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrapper) extends HttpServlet with Site with HasMembers {
   val requestQueue = new ConcurrentLinkedQueue[AsyncContext]()
-  val getQueue = new ConcurrentLinkedQueue[orc.Handle]()
+  val getQueue = new ConcurrentLinkedQueue[orc.CallContext]()
 
   /** Call to process one request if possible.
     *
@@ -76,19 +76,19 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
   }
 
   object GetSite extends Site0 {
-    def call(h: orc.Handle): Unit = {
+    def call(h: orc.CallContext): Unit = {
       getQueue.add(h)
       process()
     }
   }
 
   object JoinSite extends Site0 {
-    def call(h: orc.Handle): Unit = {
+    def call(callContext: orc.CallContext): Unit = {
       servlet.addLifeCycleListener(new LifeCycle.Listener {
         def lifeCycleFailure(l: LifeCycle, e: Throwable): Unit = {}
         def lifeCycleStarted(l: LifeCycle): Unit = {}
         def lifeCycleStarting(l: LifeCycle): Unit = {}
-        def lifeCycleStopped(l: LifeCycle): Unit = h.publish()
+        def lifeCycleStopped(l: LifeCycle): Unit = callContext.publish()
         def lifeCycleStopping(l: LifeCycle): Unit = {}
       })
     }
@@ -117,7 +117,7 @@ class ServletWrapper(val servlet: ServletHolder, val server: ServletServerWrappe
     fields contains f
   }
 
-  def call(args: Array[AnyRef], h: orc.Handle): Unit = {
+  def call(args: Array[AnyRef], h: orc.CallContext): Unit = {
     h !! new UncallableValueException("This site is not callable, but has fields.")
   }
 }
@@ -175,12 +175,12 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
   }
 
   object JoinSite extends Site0 {
-    def call(h: orc.Handle): Unit = ServletServerWrapper.this synchronized {
+    def call(callContext: orc.CallContext): Unit = ServletServerWrapper.this synchronized {
       server.addLifeCycleListener(new LifeCycle.Listener {
         def lifeCycleFailure(l: LifeCycle, e: Throwable): Unit = {}
         def lifeCycleStarted(l: LifeCycle): Unit = {}
         def lifeCycleStarting(l: LifeCycle): Unit = {}
-        def lifeCycleStopped(l: LifeCycle): Unit = h.publish()
+        def lifeCycleStopped(l: LifeCycle): Unit = callContext.publish()
         def lifeCycleStopping(l: LifeCycle): Unit = {}
       })
     }
@@ -208,7 +208,7 @@ class ServletServerWrapper(val server: Server, val context: ServletContextHandle
     fields contains f
   }
 
-  def call(args: Array[AnyRef], h: orc.Handle): Unit = {
+  def call(args: Array[AnyRef], h: orc.CallContext): Unit = {
     h !! new UncallableValueException("This site is not callable, but has fields.")
   }
 }

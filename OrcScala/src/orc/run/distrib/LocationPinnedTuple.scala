@@ -13,9 +13,9 @@
 
 package orc.run.distrib
 
-import orc.Handle
+import orc.CallContext
 import orc.error.OrcException
-import orc.run.core.ExternalSiteCallHandle
+import orc.run.core.ExternalSiteCallController
 import orc.values.OrcTuple
 import orc.values.sites.Site
 
@@ -24,17 +24,17 @@ import orc.values.sites.Site
   * @author jthywiss
   */
 abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with LocationPolicy {
-  override def call(args: Array[AnyRef], h: Handle) {
+  override def call(args: Array[AnyRef], callContext: CallContext) {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
-      h.publish(evaluate(args, h))
+      callContext.publish(evaluate(args, callContext))
     } catch {
-      case (e: OrcException) => h.halt(e)
+      case (e: OrcException) => callContext.halt(e)
     }
   }
 
-  private def evaluate(args: Array[AnyRef], h: Handle) = {
-    val loc = h.asInstanceOf[ExternalSiteCallHandle].caller.execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
+  private def evaluate(args: Array[AnyRef], callContext: CallContext) = {
+    val loc = callContext.asInstanceOf[ExternalSiteCallController].caller.execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
     new LocationPinnedTuple(loc, args)
   }
 

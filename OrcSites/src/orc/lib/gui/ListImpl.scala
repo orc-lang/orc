@@ -12,8 +12,8 @@
 //
 package orc.lib.gui
 
-import orc.Handle
-import orc.run.core.ExternalSiteCallHandle
+import orc.CallContext
+import orc.run.core.ExternalSiteCallController
 import orc.run.extensions.SupportForCallsIntoOrc
 import orc.values.{ Field, HasMembers }
 import orc.values.sites.Site1
@@ -46,14 +46,14 @@ class ToStringAdapter(val deligate: HasMembers, val execution: SupportForCallsIn
 }
 
 object ToStringAdapter extends Site1 {
-  def call(arg: AnyRef, h: Handle) = {
-    val execution = h.asInstanceOf[ExternalSiteCallHandle].caller.execution match {
+  def call(arg: AnyRef, callContext: CallContext) = {
+    val execution = callContext.asInstanceOf[ExternalSiteCallController].caller.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
     arg match {
-      case d: HasMembers => h.publish(new ToStringAdapter(d, execution))
-      case o => h.publish(o)
+      case d: HasMembers => callContext.publish(new ToStringAdapter(d, execution))
+      case o => callContext.publish(o)
     }
   }
 }

@@ -27,7 +27,7 @@ class TokenFutureReader(val caller: Token) extends FutureReader with Blocker {
   def check(t: Blockable): Unit = {
     value match {
       case FutureState.Unbound => { 
-        throw new AssertionError("Spurious check of call handle. " + this) 
+        throw new AssertionError("Spurious check of TokenFutureReader. " + this) 
       }
       case FutureState.Bound(v) => {
         t.awakeTerminalValue(v)
@@ -53,7 +53,7 @@ class TokenFuturePublisher(caller: Token) extends TokenFutureReader(caller) {
   override def check(t: Blockable): Unit = {
     value match {
       case FutureState.Unbound => { 
-        throw new AssertionError("Spurious check of call handle. " + this) 
+        throw new AssertionError("Spurious check of TokenFuturePublisher. " + this) 
       }
       case FutureState.Bound(v) => {
         t.awakeNonterminalValue(v)

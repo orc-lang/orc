@@ -12,25 +12,22 @@
 //
 package orc.lib.progswap
 
-import java.io.{ File, FileInputStream }
-import java.io.PrintWriter
+import java.io.{ File, PrintWriter }
+
 import scala.util.control.Breaks.{ break, breakable }
-import orc.Handle
-import orc.OrcCompilationOptions
+
+import orc.{ CallContext, OrcCompilationOptions }
+import orc.ast.oil.nameless.Expression
 import orc.compile.StandardOrcCompiler
 import orc.compile.parse.OrcFileInputContext
 import orc.error.compiletime.PrintWriterCompileLogger
+import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
 import orc.progress.NullProgressMonitor
-import orc.ast.oil.nameless.Expression
-import orc.run.Orc
+import orc.run.core.{ Execution, ExternalSiteCallController, Token }
 import orc.run.extensions.SwappableASTs
+import orc.util.ArrayExtensions.Array1
 import orc.values.Signal
 import orc.values.sites.{ Site, UntypedSite }
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
-import orc.run.core.Execution
-import orc.run.core.Token
-import orc.run.core.ExternalSiteCallHandle
-import orc.util.ArrayExtensions.Array1
 
 /** Update a running Orc program to the supplied OIL program. One argument is
   * expected, an OIL file name.
@@ -39,9 +36,9 @@ import orc.util.ArrayExtensions.Array1
   */
 object ProgSwap extends Site with UntypedSite {
 
-  override def call(args: Array[AnyRef], callHandle: Handle) {
-    def handleCracker(callHandle: Handle): Token = callHandle.asInstanceOf[ExternalSiteCallHandle].caller
-    val execGroup: Execution = ??? //handleCracker(callHandle).getGroup().root
+  override def call(args: Array[AnyRef], callContext: CallContext) {
+    def handleCracker(callContext: CallContext): Token = callContext.asInstanceOf[ExternalSiteCallController].caller
+    val execGroup: Execution = ??? //handleCracker(callContext).getGroup().root
     var updateSuceeded = false
     args match {
       case Array1(filename: String) => updateSuceeded = update(execGroup, new File(filename))
@@ -53,9 +50,9 @@ object ProgSwap extends Site with UntypedSite {
     //      case e: IOException => throw new SiteException(e.getMessage(), e)
     //    }
     if (updateSuceeded) {
-      callHandle.publish(Signal)
+      callContext.publish(Signal)
     } else {
-      callHandle.halt
+      callContext.halt
     }
   }
 

@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.core
 
 /** The trait for objects that can be blocked on.
@@ -22,7 +23,7 @@ package orc.run.core
   * be maintained.
   *
   * Blockers may unblock Blockables at any time in any thread. So as soon as you
-  * block (for instance by calling Future.read or instantiating a SiteCallHandle)
+  * block (for instance by calling Future.read or instantiating a SiteCallController)
   * on a Blocker you should assume you may be unblocked and running on another thread.
   *
   * @see Blockable

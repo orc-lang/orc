@@ -1,5 +1,5 @@
 //
-// ExternalSiteCallHandle.scala -- Scala class ExternalSiteCallHandle
+// ExternalSiteCallController.scala -- Scala class ExternalSiteCallController
 // Project OrcScala
 //
 // Created by dkitchin on Aug 12, 2011.
@@ -14,15 +14,15 @@ package orc.run.core
 
 import orc.{ CaughtEvent, Schedulable }
 import orc.error.OrcException
-import orc.values.sites._
 import orc.error.runtime.JavaException
+import orc.values.sites.{ Delay, Site }
 
-/** A call handle specific to site calls.
-  * Scheduling this call handle will invoke the site.
+/** A call controller specific to site calls.
+  * Scheduling this call controller will invoke the site.
   *
   * @author dkitchin
   */
-class ExternalSiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallHandle(caller) with Schedulable {
+class ExternalSiteCallController(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallController(caller) with Schedulable {
   override val nonblocking = calledSite match {
     case s: Site =>
       s.timeToHalt == Delay.NonBlocking
@@ -32,7 +32,7 @@ class ExternalSiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[An
   var invocationThread: Option[Thread] = None
 
   def run() {
-    val beginProfInterval = orc.util.Profiler.beginInterval(0L, 'ExternalSiteCallHandle_run)
+    val beginProfInterval = orc.util.Profiler.beginInterval(0L, 'ExternalSiteCallController_run)
     try {
       if (synchronized {
         if (isLive) {
@@ -56,18 +56,18 @@ class ExternalSiteCallHandle(caller: Token, calledSite: AnyRef, actuals: List[An
       synchronized {
         invocationThread = None
       }
-      orc.util.Profiler.endInterval(0L, 'ExternalSiteCallHandle_run, beginProfInterval)
+      orc.util.Profiler.endInterval(0L, 'ExternalSiteCallController_run, beginProfInterval)
     }
   }
 
-  /* When a site call handle is scheduled, notify its clock accordingly. */
+  /* When a site call controller is scheduled, notify its clock accordingly. */
   override def onSchedule() {
     caller.getClock() foreach { _.unsetQuiescent() }
   }
 
   /* NOTE: We do NOT setQuiescent in onComplete. A site call is not
    * "complete" until the caller token is reawakened. Completion of
-   * SiteCallHandle.run() indicates the call has been invoked, but
+   * SiteCallController.run() indicates the call has been invoked, but
    * the call may continue to be outstanding.  Instead, we override
    * the setState method to look for completion of the site call.
    */

@@ -12,7 +12,7 @@
 //
 package orc.lib.time
 
-import orc.Handle
+import orc.CallContext
 import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
 import orc.types.{ BooleanType, FunctionType, StrictCallableType, TypeVariable }
@@ -23,7 +23,7 @@ import orc.values.sites.{ Site1, TypedSite }
 object Vawait extends Site1 with VirtualClockOperation with TypedSite {
 
   // Do not invoke directly.
-  def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vawait")) }
+  def call(a: AnyRef, callContext: CallContext) { callContext !! (new RuntimeSupportException("Vawait")) }
 
   lazy val orcType = {
     val A = new TypeVariable()

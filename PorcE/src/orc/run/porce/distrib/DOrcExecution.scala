@@ -21,7 +21,7 @@ import orc.{ OrcEvent, OrcExecutionOptions, PublishedEvent }
 import orc.compile.parse.OrcSourceRange
 import orc.compiler.porce.PorcToPorcE
 import orc.run.porce.{ HasId, PorcEUnit }
-import orc.run.porce.runtime.{ CPSCallResponseHandler, PorcEClosure, PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch }
+import orc.run.porce.runtime.{ CPSCallContext, PorcEClosure, PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch }
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -181,8 +181,8 @@ class DOrcFollowerExecution(
 }
 
 case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], publicationContinuation: PorcEClosure, counterId: CounterProxyManager#DistributedCounterId, credit: Int, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) extends Serializable {
-  def this(callHandler: CPSCallResponseHandler, counterId: CounterProxyManager#DistributedCounterId, credit: Int, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) {
-    this(callSiteId = callHandler.callSiteId, callSitePosition = callHandler.callSitePosition, publicationContinuation = callHandler.p, counterId = counterId, credit = credit, terminatorProxyId = terminatorProxyId, target = target, arguments = arguments)
+  def this(callContext: CPSCallContext, counterId: CounterProxyManager#DistributedCounterId, credit: Int, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) {
+    this(callSiteId = callContext.callSiteId, callSitePosition = callContext.callSitePosition, publicationContinuation = callContext.p, counterId = counterId, credit = credit, terminatorProxyId = terminatorProxyId, target = target, arguments = arguments)
   }
 }
 
