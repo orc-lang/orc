@@ -3,11 +3,10 @@ package orc.run.porce;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import orc.run.porce.runtime.CPSCallResponseHandler;
+import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
-import orc.run.porce.runtime.Terminator;
 
 public class InterceptedCall extends CallBase {
 	protected InterceptedCall(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
@@ -19,17 +18,17 @@ public class InterceptedCall extends CallBase {
 		final Counter counter = (Counter) newArguments[1];
 		final Terminator term = (Terminator) newArguments[2];
 
-		// Token: Passed to handle from arguments.
-		final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term, getCallSiteId());
+		// Token: Passed to callContext from arguments.
+		final CPSCallContext callContext = new CPSCallContext(execution.get(), pub, counter, term, getCallSiteId());
 
-		invokeInterceptedWithBoundary(handle, newTarget, newArguments);
+		invokeInterceptedWithBoundary(callContext, newTarget, newArguments);
 		return PorcEUnit.SINGLETON;
 	}
 
 	@TruffleBoundary
-	private void invokeInterceptedWithBoundary(final CPSCallResponseHandler handle, final Object newTarget,
+	private void invokeInterceptedWithBoundary(final CPSCallContext callContext, final Object newTarget,
 			final Object[] newArguments) {
-		execution.get().invokeIntercepted(handle, newTarget, buildArgumentValues(newArguments));
+		execution.get().invokeIntercepted(callContext, newTarget, buildArgumentValues(newArguments));
 	}
 
 	@Override

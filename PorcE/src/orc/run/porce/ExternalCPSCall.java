@@ -10,18 +10,18 @@ import com.oracle.truffle.api.nodes.NodeCost;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+
 import orc.CaughtEvent;
 import orc.DirectInvoker;
 import orc.ErrorInvoker;
 import orc.Invoker;
 import orc.error.runtime.ExceptionHaltException;
 import orc.error.runtime.HaltException;
-import orc.run.porce.runtime.CPSCallResponseHandler;
+import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
-import orc.run.porce.runtime.Terminator;
 
 abstract class ExternalCPSCallBase extends CallBase {
     @CompilerDirectives.CompilationFinal(dimensions = 1)
@@ -76,8 +76,8 @@ abstract class ExternalCPSCallBase extends CallBase {
     }
 
     @TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
-    protected static void invokeWithBoundary(final Invoker invoker, final CPSCallResponseHandler handle, final Object t, final Object[] argumentValues) {
-        invoker.invoke(handle, t, argumentValues);
+    protected static void invokeWithBoundary(final Invoker invoker, final CPSCallContext callContext, final Object t, final Object[] argumentValues) {
+        invoker.invoke(callContext, t, argumentValues);
     }
 
     @TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
@@ -175,12 +175,12 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
                 final Counter counter = executeC(frame);
                 final Terminator term = executeT(frame);
 
-                // Token: Passed to handle from arguments.
-                final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term, getCallSiteId());
+                // Token: Passed to callContext from arguments.
+                final CPSCallContext callContext = new CPSCallContext(execution.get(), pub, counter, term, getCallSiteId());
 
 				try {
-					handle.begin();
-					invokeWithBoundary(invoker, handle, t, argumentValues);
+					callContext.begin();
+					invokeWithBoundary(invoker, callContext, t, argumentValues);
 				} catch (final ExceptionHaltException e) {
                     exceptionProfiles[0].enter();
                     execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
@@ -301,12 +301,12 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
                 }
                 // Token: All exception handlers halt the token that was passed to this call. Calls are not allowed to keep the token if they throw an exception.
             } else {
-                // Token: Passed to handle from arguments.
-                final CPSCallResponseHandler handle = new CPSCallResponseHandler(execution.get(), pub, counter, term, getCallSiteId());
+                // Token: Passed to callContext from arguments.
+                final CPSCallContext callContext = new CPSCallContext(execution.get(), pub, counter, term, getCallSiteId());
 
 				try {
-					handle.begin();
-					invokeWithBoundary(invoker, handle, t, argumentValues);
+					callContext.begin();
+					invokeWithBoundary(invoker, callContext, t, argumentValues);
 				} catch (final ExceptionHaltException e) {
                     exceptionProfiles2[0].enter();
                     execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));

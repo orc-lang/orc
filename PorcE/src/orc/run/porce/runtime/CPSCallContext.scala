@@ -6,7 +6,7 @@ import orc.{ CallContext, CaughtEvent, OrcEvent }
 import orc.compile.parse.OrcSourceRange
 import orc.error.OrcException
 
-class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator, val callSiteId: Int) extends AtomicBoolean with CallContext with Terminatable {
+class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator, val callSiteId: Int) extends AtomicBoolean with CallContext with Terminatable {
   // The value stored in the AtomicBoolean is a flag saying if we have already halted.
 
   val runtime = execution.runtime
@@ -73,6 +73,6 @@ class CPSCallResponseHandler(val execution: PorcEExecution, val p: PorcEClosure,
   def callSitePosition: Option[OrcSourceRange] = None
 
   override def toString() = {
-    s"CPSCallResponseHandler@${hashCode().formatted("%x")}(${get()})"
+    s"CPSCallContext@${hashCode().formatted("%x")}(${get()})"
   }
 }

@@ -15,7 +15,7 @@ package orc.run.porce.distrib
 
 import orc.CallContext
 import orc.error.OrcException
-import orc.run.porce.runtime.CPSCallResponseHandler
+import orc.run.porce.runtime.CPSCallContext
 import orc.values.OrcTuple
 import orc.values.sites.Site
 
@@ -34,7 +34,7 @@ abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site wit
   }
 
   private def evaluate(args: Array[AnyRef], callContext: CallContext) = {
-    val loc = callContext.asInstanceOf[CPSCallResponseHandler].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
+    val loc = callContext.asInstanceOf[CPSCallContext].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
     new LocationPinnedTuple(loc, args)
   }
 
