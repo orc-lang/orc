@@ -13,18 +13,18 @@ import orc.values.Field
 import swivel.Zipper
 
 object PorcToPorcE {
-  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
-    new PorcToPorcE()(m, execution)
+  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder, usingInvokationInterceptor: Boolean): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
+    new PorcToPorcE(usingInvokationInterceptor)(m, execution)
   }
 }
 
-class PorcToPorcE() {
+class PorcToPorcE(val usingInvokationInterceptor: Boolean) {
   case class Context(
     descriptor: FrameDescriptor, execution: PorcEExecutionHolder,
     argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
     runtime: PorcERuntime)
     
-  val usingInvokationInterceptor = true
+  
 
   object LocalVariables {
     val MethodGroupClosure = new porc.Variable(Some("MethodGroupClosure"))

@@ -59,7 +59,7 @@ case class PorcEBackend() extends PorcBackend {
 	    */
       val execution = new PorcEExecution(this, k) with PorcEExecutionWithLaunch
       val executionHolder = new PorcEExecutionHolder(execution)
-      val (porceAst, map) = PorcToPorcE(ast, executionHolder)
+      val (porceAst, map) = PorcToPorcE(ast, executionHolder, false)
       addRoot(execution)
       execution.scheduleProgram(porceAst, map)
       execution
