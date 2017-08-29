@@ -12,8 +12,9 @@
 //
 package orc.run.core
 
-import orc.Schedulable
+import orc.{ CaughtEvent, Schedulable }
 import orc.error.OrcException
+import orc.error.runtime.JavaException
 import orc.values.sites.{ Delay, Site }
 
 /** A call controller specific to site calls.
