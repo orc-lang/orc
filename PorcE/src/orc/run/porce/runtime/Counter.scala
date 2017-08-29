@@ -271,6 +271,7 @@ abstract class Counter protected (n: Int) extends AtomicInteger(n) {
   *
   */
 final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContinuation: PorcEClosure) extends Counter {
+  import CounterConstants._
   //Tracer.trace(Counter.CounterNestedCreated, hashCode(), parent.hashCode(), 0)
 
   if (CounterConstants.tracingEnabled) {
@@ -280,7 +281,9 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
   }
 
   def onResurrect() = {
-    assert(isDiscorporated)
+    if (tracingEnabled) {
+      assert(isDiscorporated)
+    }
     parent.newToken()
   }
 
