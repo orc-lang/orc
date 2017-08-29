@@ -206,23 +206,23 @@ class Token protected (
     * the thread currently running this token.
     */
   def kill() {
-    def findHandle(victimState: TokenState): Option[CallHandle] = {
+    def findController(victimState: TokenState): Option[CallController] = {
       victimState match {
-        case Suspending(s) => findHandle(s)
-        case Suspended(s) => findHandle(s)
-        case Blocked(handle: ExternalSiteCallHandle) => Some(handle)
+        case Suspending(s) => findController(s)
+        case Suspended(s) => findController(s)
+        case Blocked(escc: ExternalSiteCallController) => Some(escc)
         case Live | Publishing(_) | Blocked(_) | Halted | Killed => None
       }
     }
     Tracer.traceTokenExecStateTransition(this, TokenExecState.Killed)
     synchronized {
-      val handle = findHandle(state)
+      val controller = findController(state)
       if (setState(Killed)) {
         /* group.remove(this) conceptually runs here, but as an optimization,
          * this is unnecessary. Note that the current Group.remove implementation
          * relies on this optimization for correctness of the tokenCount. */
       }
-      handle foreach { _.kill }
+      controller foreach { _.kill }
     }
   }
 
@@ -420,10 +420,10 @@ class Token protected (
     if (params.size != s.code.arity) {
       this !! new ArityMismatchException(s.code.arity, params.size) /* Arity mismatch. */
     } else {
-      val sh = new OrcSiteCallHandle(this)
+      val sh = new OrcSiteCallController(this)
       blockOn(sh)
 
-      // TODO: Implement TCO for OrcSite calls. By reusing the OrcSiteCallHandle? When is it safe?
+      // TODO: Implement TCO for OrcSite calls. By reusing the OrcSiteCallController? When is it safe?
 
       // Just build the stack instead of pushing after we create it.
       // The parameters go on in reverse order. First parameter on the "bottom" of the arguments.
@@ -501,9 +501,9 @@ class Token protected (
         orcSiteCall(s, actuals)
       }
       case _ => {
-        val sh = new ExternalSiteCallHandle(this, s, actuals)
-        blockOn(sh)
-        runtime.stage(sh)
+        val scc = new ExternalSiteCallController(this, s, actuals)
+        blockOn(scc)
+        runtime.stage(scc)
       }
     }
   }

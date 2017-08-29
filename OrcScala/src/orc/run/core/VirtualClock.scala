@@ -1,5 +1,5 @@
 //
-// VirtualClock.scala -- Scala class VirtualClock, trait VirtualClockOperation, and class AwaitCallHandle
+// VirtualClock.scala -- Scala class VirtualClock, trait VirtualClockOperation, and class AwaitCallController
 // Project OrcScala
 //
 // Created by dkitchin on Aug 12, 2011.
@@ -16,7 +16,7 @@ import scala.collection.mutable
 
 import orc.{ OrcRuntime, Schedulable }
 import orc.error.runtime.VirtualClockError
-import orc.values.sites._
+import orc.values.sites.{ Site, SpecificArity }
 
 /** @author dkitchin
   */
@@ -24,7 +24,7 @@ trait VirtualClockOperation extends Site with SpecificArity
 
 /** @author dkitchin
   */
-class AwaitCallHandle(caller: Token) extends CallHandle(caller) {
+class AwaitCallController(caller: Token) extends CallController(caller) {
   override def toString() = super.toString + s"(caller=$caller)"
   /** An expensive walk-to-root check for alive state */
   def checkAlive(): Boolean = isLive && caller.checkAlive()
@@ -39,12 +39,12 @@ class VirtualClock(ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
 
   type Time = AnyRef
 
-  val queueOrder = new Ordering[(AwaitCallHandle, Time)] {
-    def compare(x: (AwaitCallHandle, Time), y: (AwaitCallHandle, Time)) = ordering(y._2, x._2)
+  val queueOrder = new Ordering[(AwaitCallController, Time)] {
+    def compare(x: (AwaitCallController, Time), y: (AwaitCallController, Time)) = ordering(y._2, x._2)
   }
 
   var currentTime: Option[Time] = None
-  val waiterQueue: mutable.PriorityQueue[(AwaitCallHandle, Time)] = new mutable.PriorityQueue()(queueOrder)
+  val waiterQueue: mutable.PriorityQueue[(AwaitCallController, Time)] = new mutable.PriorityQueue()(queueOrder)
 
   private var readyCount: Int = 0
 
@@ -52,14 +52,14 @@ class VirtualClock(ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
     * Return Some tuple containing the minimum time and a nonempty list of waiters on that time.
     * If the queue is empty, return None instead.
     */
-  private def dequeueMins(): Option[(Time, List[AwaitCallHandle])] = {
+  private def dequeueMins(): Option[(Time, List[AwaitCallController])] = {
     /* Don't advance clock to time of a killed Vawait call.
      * Possible race with kill(), best effort only. */
     while (waiterQueue.headOption.exists(!_._1.checkAlive())) waiterQueue.dequeue()
 
     waiterQueue.headOption match {
       case Some((_, minTime)) => {
-        def allMins(): List[AwaitCallHandle] = {
+        def allMins(): List[AwaitCallController] = {
           waiterQueue.headOption match {
             case Some((h, time)) if (ordering(time, minTime) == 0) => {
               waiterQueue.dequeue()
@@ -107,7 +107,7 @@ class VirtualClock(ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
   }
 
   def await(caller: Token, t: Time) {
-    val h = new AwaitCallHandle(caller)
+    val h = new AwaitCallController(caller)
     val timeOrder = synchronized {
       if (readyCount <= 0) {
         h !! new VirtualClockError("Virtual clock internal failure: await when readyCount = " + readyCount)

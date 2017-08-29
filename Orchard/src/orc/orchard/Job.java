@@ -38,7 +38,7 @@ import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.run.StandardOrcRuntime;
-import orc.run.core.ExternalSiteCallHandle;
+import orc.run.core.ExternalSiteCallController;
 import orc.run.core.Execution;
 
 /**
@@ -299,7 +299,7 @@ public final class Job implements JobMBean {
 
     public static Job getJobFromHandle(final CallContext callContext) throws UnsupportedOperationException {
         try {
-            return ((JobEngine) ((ExternalSiteCallHandle) callContext).caller().runtime()).getJob();
+            return ((JobEngine) ((ExternalSiteCallController) callContext).caller().runtime()).getJob();
         } catch (final ClassCastException e) {
             throw new UnsupportedOperationException("This site may be called only from an Orchard JobEngine", e);
         }

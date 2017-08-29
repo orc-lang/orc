@@ -23,7 +23,7 @@ import orc.compile.parse.OrcFileInputContext
 import orc.error.compiletime.PrintWriterCompileLogger
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
 import orc.progress.NullProgressMonitor
-import orc.run.core.{ Execution, ExternalSiteCallHandle, Token }
+import orc.run.core.{ Execution, ExternalSiteCallController, Token }
 import orc.run.extensions.SwappableASTs
 import orc.util.ArrayExtensions.Array1
 import orc.values.Signal
@@ -37,7 +37,7 @@ import orc.values.sites.{ Site, UntypedSite }
 object ProgSwap extends Site with UntypedSite {
 
   override def call(args: Array[AnyRef], callContext: CallContext) {
-    def handleCracker(callContext: CallContext): Token = callContext.asInstanceOf[ExternalSiteCallHandle].caller
+    def handleCracker(callContext: CallContext): Token = callContext.asInstanceOf[ExternalSiteCallController].caller
     val execGroup: Execution = ??? //handleCracker(callContext).getGroup().root
     var updateSuceeded = false
     args match {

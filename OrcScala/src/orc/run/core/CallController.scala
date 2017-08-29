@@ -1,5 +1,5 @@
 //
-// CallHandle.scala -- Scala class CallHandle
+// CallController.scala -- Scala class CallController
 // Project OrcScala
 //
 // Created by dkitchin on Aug 26, 2011.
@@ -16,22 +16,22 @@ package orc.run.core
 import orc.CallContext
 import orc.error.OrcException
 
-/** An abstract call handle for any call made by a token.
+/** An abstract call controller for any call made by a token.
   *
-  * All descendants of CallHandle must maintain a scheduling invariant:
-  * it must not be possible for the handle to reschedule the calling token
+  * All descendants of CallController must maintain a scheduling invariant:
+  * it must not be possible for the controller to reschedule the calling token
   * until the calling thread enters the onComplete method of the token.
   *
-  * SiteCallHandle maintains this invariant by staging itself on the caller,
+  * SiteCallController maintains this invariant by staging itself on the caller,
   * so that it cannot be scheduled to run until after the caller has completed.
   *
-  * AwaitCallHandle maintains this invariant because the calling token keeps
+  * AwaitCallController maintains this invariant because the calling token keeps
   * its governing clock from becoming quiescent until the token itself becomes
   * quiescent in its onComplete method.
   *
   * @author dkitchin
   */
-abstract class CallHandle(val caller: Token) extends CallContext with Blocker {
+abstract class CallController(val caller: Token) extends CallContext with Blocker {
   // This is the only Blocker that can produce exceptions.
 
   protected var state: CallState = CallState.InProgress(List())
@@ -41,7 +41,7 @@ abstract class CallHandle(val caller: Token) extends CallContext with Blocker {
   var scheduleHeld = false
   var scheduleOnRelease = false
 
-  /** Set the CallHandle to hold scheduling the caller until releaseSchedule is called.
+  /** Set the CallController to hold scheduling the caller until releaseSchedule is called.
     *
     * Call inside a synchronized block only.
     */
@@ -75,7 +75,7 @@ abstract class CallHandle(val caller: Token) extends CallContext with Blocker {
   }
 
   /* Returns true if the state transition was made,
-   * false otherwise (e.g. if the handle was already in a final state)
+   * false otherwise (e.g. if the controller was already in a final state)
    *
    * Should always be called with the monitor on this held.
    */
@@ -100,7 +100,7 @@ abstract class CallHandle(val caller: Token) extends CallContext with Blocker {
     setState(CallState.InProgress(v +: state.publications))
   }
   def halt() = synchronized {
-    // A second call to this can occur because we are trying to halt a handle for an OrcSite call.
+    // A second call to this can occur because we are trying to halt a controller for an OrcSite call.
     // And it's idempotent, so it shouldn't matter.
     //assert(state.isInstanceOf[CallState.InProgress] || state == CallState.WasKilled, state.toString)
     setState(CallState.Halted(state.publications))
@@ -129,7 +129,7 @@ abstract class CallHandle(val caller: Token) extends CallContext with Blocker {
         caller.setQuiescent()
       }
       case CallState.WasKilled => {}
-      case _ => throw new AssertionError(s"Handle.setQuiescent in bad state: state=$state, quiescent=$quiescent")
+      case _ => throw new AssertionError(s"CallController.setQuiescent in bad state: state=$state, quiescent=$quiescent")
     }
   }
 
@@ -139,7 +139,7 @@ abstract class CallHandle(val caller: Token) extends CallContext with Blocker {
     setState(CallState.WasKilled)
   }
 
-  def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'CallHandle_check) {
+  def check(t: Blockable): Unit = orc.util.Profiler.measureInterval(0L, 'CallController_check) {
     val st = synchronized {
       val st = state
       holdSchedule()
@@ -152,7 +152,7 @@ abstract class CallHandle(val caller: Token) extends CallContext with Blocker {
     }
 
     st match {
-      case CallState.InProgress(Nil) => { throw new AssertionError("Spurious check of call handle. " + this) }
+      case CallState.InProgress(Nil) => { throw new AssertionError("Spurious check of call controller. " + this) }
       case CallState.InProgress(_) => {} // Already handled fully by parts above and below
       case CallState.Halted(_) => { t.halt() }
       case CallState.RaisedException(e) => { t.awakeException(e) } // t !! e
@@ -170,7 +170,7 @@ abstract class CallHandle(val caller: Token) extends CallContext with Blocker {
 
 }
 
-/** Possible states of a CallHandle */
+/** Possible states of a CallController */
 protected abstract sealed class CallState() {
   val isFinal: Boolean
   // The publications that have not been read in reverse order
