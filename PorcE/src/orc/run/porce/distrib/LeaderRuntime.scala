@@ -128,7 +128,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
             case ProvideCounterCreditCmd(xid, counterId, credits) => programs(xid).provideCounterCredit(counterId, followerLocation, credits)
             case ReadFutureCmd(xid, futureId, readerFollowerNum) => programs(xid).readFuture(futureId, readerFollowerNum)
             case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(followerLocation, futureId, value)
-            case ResolveFutureCmd(xid, futureId, value) => programs(xid).receiveFutureResolution(futureId, value)
+            case ResolveFutureCmd(xid, futureId, value) => programs(xid).receiveFutureResolution(followerLocation, futureId, value)
             case EOF => { Logger.Message.fine(s"EOF, aborting $followerLocation"); followerLocation.connection.abort() }
           }
         }

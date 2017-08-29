@@ -179,13 +179,17 @@ trait RemoteFutureManager {
 
   def sendFutureResolution(futureId: RemoteFutureId, value: Option[AnyRef]): Unit = {
     val homeLocation = execution.homeLocationForRemoteRef(futureId)
+    val marshaledFutureValue = value match {
+      case Some(v) => Some(execution.marshalValue(homeLocation)(v))
+      case None => value
+    }
     Tracer.traceFutureResolveSend(futureId, execution.runtime.here, homeLocation)
-    homeLocation.sendInContext(execution)(ResolveFutureCmd(executionId, futureId, value))
+    homeLocation.sendInContext(execution)(ResolveFutureCmd(executionId, futureId, marshaledFutureValue))
   }
 
-  def receiveFutureResolution(futureId: RemoteFutureId, value: Option[AnyRef]): Unit = {
+  def receiveFutureResolution(origin: PeerLocation, futureId: RemoteFutureId, value: Option[AnyRef]): Unit = {
     value match {
-      case Some(v) => servingRemoteFutures.get(futureId).fut.bind(v)
+      case Some(v) => servingRemoteFutures.get(futureId).fut.bind(execution.unmarshalValue(origin)(v))
       case None => servingRemoteFutures.get(futureId).fut.stop()
     }
   }
