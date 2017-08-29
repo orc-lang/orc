@@ -11,7 +11,7 @@ SCALALIBS=$ROOTDIR/OrcScala/lib/scala-library.jar:$ROOTDIR/OrcScala/lib/scala-pa
 ORCSCALALIBS=$ROOTDIR/OrcScala/build/orc-2.1.1.jar:$ROOTDIR/OrcScala/lib/swivel_2.12-0.0.1.jar
 ORCTESTSLIBS=$ROOTDIR/OrcTests/build:$ROOTDIR/OrcTests/tools/junit-4.5.jar
 
-PORCELIBS=$ROOTDIR/PorcE/bin
+PORCELIBS=$ROOTDIR/PorcE/build/classes
 #:$GRAALHOME/lib/truffle/tuffle-api.jar:$GRAALHOME/lib/jvmci/graal.jar
 
 GRAALBOOTLIBS="$GRAALHOME/lib/boot/graal-sdk.jar:$GRAALHOME/lib/truffle/truffle-api.jar:$GRAALHOME/lib/jvmci/graal.jar" 
@@ -23,7 +23,7 @@ NORMALJAVA=java
 CPUS=8
 NRUNS_GRAAL=100
 NRUNS_OTHER=50
-TIMEOUT=45
+TIMEOUT=60
 
 BATCHNAME="$(hostname)_$(date +"%Y%m%d-%H%M")"
 
@@ -31,9 +31,10 @@ echo "NOTE: Don't forget to build everything in eclipse first. Ideally with a cl
 echo "NOTE: Don't forget to set CPUs to a fixed frequency!"
 sleep 2
 
+#                  "porcegraalO3%$GRAALJAVA%orc%porc%3"   \
 for config in     \
                   "porcegraalO2%$GRAALJAVA%orc%porc%2"   \
-                  "porcegraalO3%$GRAALJAVA%orc%porc%3"   \
+                  "porcedistribgraalO2%$GRAALJAVA%orc%porc-distrib%2"   \
                   "scala%$NORMALJAVA%scala%scala%3"      \
                   "token%$NORMALJAVA%orc%token%3"        \
                   ; do
@@ -60,7 +61,7 @@ for config in     \
     echo "Benchmark data: $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv"
     echo "Run log: $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log"
     echo 
-    (time $JAVA -Xbootclasspath/a:"$GRAALBOOTLIBS" -Dgraal.TruffleBackgroundCompilation=false -classpath "$SCALALIBS:$ORCSCALALIBS:$ORCTESTSLIBS:$PORCELIBS" orc.test.BenchmarkTest \
+    (time $JAVA -Xbootclasspath/a:"$GRAALBOOTLIBS" -Dgraal.TruffleBackgroundCompilation=false -Dgraal.TruffleCompilerThreads=6 -classpath "$SCALALIBS:$ORCSCALALIBS:$ORCTESTSLIBS:$PORCELIBS" orc.test.BenchmarkTest \
             -O $OPT -S $SET -B $BACKEND -t $TIMEOUT -c $CPUS -r $NRUNS \
             -o $ROOTDIR/benchmark_data_${BATCHNAME}_${NAME}.tsv >> $ROOTDIR/benchmark_${BATCHNAME}_${NAME}.log 2>&1) \
             || exit 2
