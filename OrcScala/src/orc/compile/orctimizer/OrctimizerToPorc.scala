@@ -40,6 +40,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
   }
   
   val useDirectCalls = co.options.optimizationFlags("porc:directcalls").asBool(true)
+  val useDirectGetFields = co.options.optimizationFlags("porc:directgetfields").asBool(true)  
 
   val vars: mutable.Map[BoundVar, porc.Variable] = new mutable.HashMap()
   val usedNames: mutable.Set[String] = new mutable.HashSet()
@@ -122,8 +123,6 @@ class OrctimizerToPorc(co: CompilerOptions) {
       case Stop.Z() =>
         porc.HaltToken(ctx.c)
       case c @ Call.Z(target, args, typeargs) => {
-        import CallGraph._
-
         val potentialTargets = ctx.callgraph.valuesOf(target)
 
         val isExternal = potentialTargets.view.collect({
@@ -333,21 +332,29 @@ class OrctimizerToPorc(co: CompilerOptions) {
           (fvs.toSeq, fs.toMap, bs.flatten)
         }
 
-        let(fieldVars :+ (selfV, porc.New(fields)): _*) {
+        let(fieldVars :+ ((selfV, porc.New(fields))): _*) {
           binders.foldRight(ctx.p(selfV): porc.Expression)((a, b) => porc.Sequence(Seq(a, b)))
         }
       }
 
       case GetField.Z(o, f) => {
-        val v = newVarName(f.name)
-        let((v, porc.GetField(argument(o), f))) {
-          ctx.p(v)
+        if(useDirectGetFields) {
+          val v = o.value ->> newVarName(f.name)
+          let((v, porc.GetField(argument(o), f))) {
+            ctx.p(v)
+          }
+        } else {
+          MethodCPSCall(true, porc.Constant(orc.lib.builtin.GetFieldSite), ctx.p, ctx.c, ctx.t, List(argument(o), porc.Constant(f)))
         }
       }
       case GetMethod.Z(o) => {
-        val v = o.value ->> newVarName()
-        let((v, porc.GetMethod(argument(o)))) {
-          ctx.p(v)
+        if(useDirectGetFields) {
+          val v = o.value ->> newVarName()
+          let((v, porc.GetMethod(argument(o)))) {
+            ctx.p(v)
+          }
+        } else {
+          MethodCPSCall(true, porc.Constant(orc.lib.builtin.GetMethodSite), ctx.p, ctx.c, ctx.t, List(argument(o)))
         }
       }
       case a: Argument.Z => {
@@ -416,7 +423,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
   private def setFlag(p: porc.Variable, c: porc.Variable, t: porc.Variable, flag: porc.Variable): porc.Expression = {
     if(useDirectCalls) {
       MethodDirectCall(true, porc.Constant(SetFlag), List(flag)) :::
-      p()
+      p(porc.Constant(orc.values.Signal))
     } else {
       MethodCPSCall(true, porc.Constant(SetFlag), p, c, t, List(flag))
     }
@@ -424,10 +431,9 @@ class OrctimizerToPorc(co: CompilerOptions) {
   private def publishIfNotSet(p: porc.Variable, c: porc.Variable, t: porc.Variable, flag: porc.Variable): porc.Expression = {
     if(useDirectCalls) {
       MethodDirectCall(true, porc.Constant(PublishIfNotSet), List(flag)) :::
-      p()
+      p(porc.Constant(orc.values.Signal))
     } else {
       MethodCPSCall(true, porc.Constant(PublishIfNotSet), p, c, t, List(flag))
     }
   }
-
 }

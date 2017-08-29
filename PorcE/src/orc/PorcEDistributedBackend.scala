@@ -30,7 +30,7 @@ class PorcEDistributedBackend extends PorcBackend {
   override def modifyCompilationOptions(options: OrcCompilationOptions): OrcCompilationOptions = {
     val oos = options.optimizationOptions
     // Add options to prevent the use of features which are incompatible with DOrc.
-    oos.add("orct:directgetfields=false")
+    oos.add("porc:directgetfields=false")
     oos.add("porc:directcalls=false")
     options.optimizationOptions = oos
     
