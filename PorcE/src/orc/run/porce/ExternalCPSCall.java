@@ -22,6 +22,7 @@ import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
+import orc.run.porce.runtime.Terminator;
 
 abstract class ExternalCPSCallBase extends CallBase {
     @CompilerDirectives.CompilationFinal(dimensions = 1)

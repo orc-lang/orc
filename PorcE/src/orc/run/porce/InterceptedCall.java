@@ -7,6 +7,7 @@ import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.Terminator;
 
 public class InterceptedCall extends CallBase {
 	protected InterceptedCall(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
