@@ -13,16 +13,21 @@
 
 package orc.run.porce.runtime
 
-import orc.run.Orc
-import orc.run.extensions.SimpleWorkStealingScheduler
-import orc.OrcExecutionOptions
-import orc.Schedulable
-import orc.run.porce.Logger
 import java.util.logging.Level
+
 import com.oracle.truffle.api.CompilerDirectives
 
-/** An Orc runtime engine extension which
-  * schedules Orc Tokens to run in an OrcThreadPoolExecutor.
+import orc.OrcExecutionOptions
+import orc.Schedulable
+import orc.run.Orc
+import orc.run.extensions.SimpleWorkStealingScheduler
+import orc.run.porce.Logger
+
+/** An Orc runtime engine extension which schedules Orc Tokens to
+  * run in an OrcThreadPoolExecutor.
+  *
+  * WARNING: PorcEWithWorkStealingScheduler does not call onSchedule or
+  * onComplete.
   *
   * @author amp
   */
@@ -39,7 +44,7 @@ trait PorcEWithWorkStealingScheduler extends Orc {
       }
 
       override def afterExecute(w: Worker, r: Schedulable, t: Throwable): Unit = {
-        r.onComplete()
+        //r.onComplete()
         if (t != null) {
           CompilerDirectives.transferToInterpreter()
           Logger.log(Level.SEVERE, s"Schedulable threw exception: $r", t)
@@ -62,12 +67,12 @@ trait PorcEWithWorkStealingScheduler extends Orc {
 
   def schedule(t: Schedulable): Unit = {
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.
-    t.onSchedule()
+    //t.onSchedule()
     scheduler.schedule(t)
   }
 
   def stopScheduler(): Unit = {
-    if(scheduler != null)
+    if (scheduler != null)
       scheduler.stopScheduler()
   }
 }

@@ -19,11 +19,16 @@ import orc.ExecutionRoot
 import orc.run.Orc
 import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution }
 
+/** The base runtime for PorcE runtimes.
+ *  
+ *  WARNING: This runtime does not support onSchedule and onComplete on 
+ *  schedulables. See PorcEWithWorkStealingScheduler. 
+  */
 class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   with PorcEInvocationBehavior
   with PorcEWithWorkStealingScheduler
   with SupportForRwait
-  with SupportForSynchronousExecution
+  with SupportForSynchronousExecution 
   // with SupportForSchedulerUseProfiling 
   {
 
@@ -37,7 +42,7 @@ class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
   def beforeExecute(): Unit = {
     //PorcERuntime.resetStackDepth()
   }
-  
+
   @TruffleBoundary @noinline
   def spawn(c: Counter, computation: PorcEClosure): Unit = {
     schedule(CallClosureSchedulable(computation))
