@@ -89,10 +89,23 @@ end tell
         def escapeStringForUnixShell(s: String) = "'" + s.replaceAll("\\\\", "\\\\\\\\").replaceAll("'", "\\\\\'") + "'"
         val commandsAsArgs = addSeperator(commands.map(_.map(escapeStringForUnixShell(_))), Seq(" ; ")).flatten
         /* TODO: Test this guess */
-        getResultFrom(Seq("gnome-terminal", "-t", escapeStringForUnixShell(windowTitle), s"--geometry=${numColumns}x${numRows}", "-x") ++ commandsAsArgs)
+        getResultFrom(Seq("gnome-terminal", s"--geometry=${numColumns}x${numRows}", "-x", "bash", "-c") ++ commandsAsArgs)
         /* TODO: Escape commands as needed */
       }
-      //case DesktopType.KDE => ???
+      case DesktopType.XFCE => {
+        def escapeStringForUnixShell(s: String) = "'" + s.replaceAll("\\\\", "\\\\\\\\").replaceAll("'", "\"") + "'"
+        val commandsAsArgs = addSeperator(commands.map(_.map(escapeStringForUnixShell(_))), Seq(" ; ")).flatten
+        /* TODO: Test this guess */
+        getResultFrom(Seq("xfce4-terminal", "-x", "bash", "-c", commandsAsArgs.mkString(" ")))
+        /* TODO: Escape commands as needed */
+      }
+      case DesktopType.KDE => {
+        def escapeStringForUnixShell(s: String) = "'" + s.replaceAll("\\\\", "\\\\\\\\").replaceAll("\'", "\\\\\"") + "'"
+        val commandsAsArgs = addSeperator(commands.map(_.map(escapeStringForUnixShell(_))), Seq(" ; ")).flatten
+        /* TODO: Test this guess */
+        getResultFrom(Seq("konsole", s"--geometry=${numColumns}x${numRows}", "-x", "bash", "-c") ++ commandsAsArgs)
+        /* TODO: Escape commands as needed */
+      }
       //case DesktopType.CDE => ???
       case DesktopType.Windows => {
         def escapeStringForWindowsCmd(s: String) = "\"" + s.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\"") + "\""
@@ -139,6 +152,7 @@ object DesktopType {
   case object Gnome extends DesktopType
   case object KDE extends DesktopType
   case object CDE extends DesktopType
+  case object XFCE extends DesktopType
   case object Windows extends DesktopType
   case object DontKnow extends DesktopType
 
@@ -148,6 +162,7 @@ object DesktopType {
     else if (osName.startsWith("macOS")) DesktopType.MacOS
     else if (osName.startsWith("Windows")) DesktopType.Windows
     else if (System.getenv("GNOME_DESKTOP_SESSION_ID") != null) DesktopType.Gnome
+    else if (System.getenv("XDG_CURRENT_DESKTOP") == "XFCE") DesktopType.XFCE
     else if (System.getenv("KDE_FULL_SESSION") != null) DesktopType.KDE
     // TODO: else if (???) DesktopType.CDE
     else DesktopType.DontKnow
