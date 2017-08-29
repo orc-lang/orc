@@ -15,10 +15,10 @@ package orc.test;
 
 import java.io.File;
 
-import junit.framework.Test;
-import orc.PorcCompilerBackend$;
 import orc.script.OrcBindings;
 import orc.test.TestUtils.OrcTestCase;
+
+import junit.framework.Test;
 
 /**
  * Test Orc by running annotated sample programs from the "../OrcExamples"
@@ -37,7 +37,7 @@ public class PorcExamplesTest {
         OrcBindings bindings = new OrcBindings();
 
         // Turn on Orctimizer
-        bindings.backend_$eq(PorcCompilerBackend$.MODULE$);
+        bindings.backend_$eq(orc.BackendType.fromString("porc"));
         bindings.optimizationLevel_$eq(2);
 
         return TestUtils.buildSuite(PorcExamplesTest.class.getSimpleName(), PorcExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));

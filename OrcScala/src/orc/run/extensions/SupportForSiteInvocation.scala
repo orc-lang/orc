@@ -30,14 +30,16 @@ import orc.error.runtime.DoesNotHaveMembersException
 import orc.values.sites.AccessorValue
 import orc.ErrorInvoker
 import orc.ErrorAccessor
+import orc.OrcRuntime
 
 /** @author dkitchin
   */
 trait SupportForSiteInvocation extends InvocationBehavior {
+  this: OrcRuntime =>
   abstract override def getInvoker(target: AnyRef, arguments: Array[AnyRef]) = {
     target match {
       case m: InvokerMethod =>
-        m.getInvoker(arguments) match {
+        m.getInvoker(this, arguments) match {
           case ei: ErrorInvoker =>
             val i = super.getInvoker(target, arguments)
             i match {
@@ -62,7 +64,7 @@ trait SupportForSiteInvocation extends InvocationBehavior {
   abstract override def getAccessor(target: AnyRef, field: Field) = {
     target match {
       case m: AccessorValue =>
-        m.getAccessor(field) match {
+        m.getAccessor(this, field) match {
           case ea: ErrorAccessor =>
             val a = super.getAccessor(target, field)
             a match {

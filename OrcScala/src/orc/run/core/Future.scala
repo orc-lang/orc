@@ -136,7 +136,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
 
   // orc.Future API
   
-  def get(): FutureState = {
+  def get: FutureState = {
     synchronized { _state } match {
       case Unbound => FutureState.Unbound
       case Bound => FutureState.Bound(_value)

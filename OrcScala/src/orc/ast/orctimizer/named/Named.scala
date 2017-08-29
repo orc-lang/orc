@@ -13,8 +13,6 @@
 
 package orc.ast.orctimizer.named
 
-import scala.language.reflectiveCalls
-import orc.ast.orctimizer._
 import orc.ast.ASTForSwivel
 import orc.ast.hasOptionalVariableName
 import orc.ast.hasAutomaticVariableName
@@ -23,7 +21,6 @@ import orc.ast.PrecomputeHashcode
 import swivel.{ root, branch, leaf }
 import swivel.subtree
 import swivel.replacement
-import swivel.EmptyFunction
 import scala.PartialFunction
 
 // TODO: Remove "Named" from classes and package tree. There is no nameless Orctimizer.
@@ -148,6 +145,8 @@ final case class Future(@subtree expr: Expression) extends Expression
   */
 @leaf @transform
 final case class Force(xs: Seq[BoundVar], @subtree vs: Seq[Argument], @subtree expr: Expression) extends Expression {
+  require(!xs.isInstanceOf[collection.TraversableView[_, _]])
+  require(!vs.isInstanceOf[collection.TraversableView[_, _]])
   override def boundVars: Set[BoundVar] = xs.toSet
 }
 object Force {
@@ -169,7 +168,9 @@ object Force {
   * `expr` must be a method. This allows for rewritting concrete values in place of the futures.
   */
 @leaf @transform
-final case class Resolve(@subtree futures: Seq[Argument], @subtree expr: Argument) extends Expression
+final case class Resolve(@subtree futures: Seq[Argument], @subtree expr: Argument) extends Expression {
+  require(!futures.isInstanceOf[collection.TraversableView[_, _]])
+}
 
 /** Publish a value (generally a method or method future) which should be called to handle a call to `expr`.
   *
@@ -195,7 +196,9 @@ final case class IfLenientMethod(@subtree v: Argument, @subtree left: Expression
   * This can call all kinds of methods (routine or service, and internal or external).
   */
 @leaf @transform
-final case class Call(@subtree target: Argument, @subtree args: Seq[Argument], @subtree typeargs: Option[Seq[Type]]) extends Expression
+final case class Call(@subtree target: Argument, @subtree args: Seq[Argument], @subtree typeargs: Option[Seq[Type]]) extends Expression {
+  require(!args.isInstanceOf[collection.TraversableView[_, _]])
+}
 
 /** Execute `left` and `right` concurrently.
   */
@@ -349,7 +352,9 @@ object Method {
 @leaf @transform
 final case class Routine(override val name: BoundVar, override val formals: Seq[BoundVar], @subtree override val body: Expression, typeformals: Seq[BoundTypevar], @subtree argtypes: Option[Seq[Type]], @subtree returntype: Option[Type])
   extends Method {
-  //TODO: Does Def need to have the closed variables listed here? Probably not unless we are type checking.
+  require(!formals.isInstanceOf[collection.TraversableView[_, _]])
+  require(!typeformals.isInstanceOf[collection.TraversableView[_, _]])
+  require(!argtypes.isInstanceOf[collection.TraversableView[_, _]])
 
   transferOptionalVariableName(name, this)
 
@@ -370,6 +375,10 @@ final case class Routine(override val name: BoundVar, override val formals: Seq[
 @leaf @transform
 final case class Service(override val name: BoundVar, override val formals: Seq[BoundVar], @subtree override val body: Expression, typeformals: Seq[BoundTypevar], @subtree argtypes: Option[Seq[Type]], @subtree returntype: Option[Type])
   extends Method {
+  require(!formals.isInstanceOf[collection.TraversableView[_, _]])
+  require(!typeformals.isInstanceOf[collection.TraversableView[_, _]])
+  require(!argtypes.isInstanceOf[collection.TraversableView[_, _]])
+  
   transferOptionalVariableName(name, this)
 
   def copy(name: BoundVar = name,
@@ -389,6 +398,7 @@ final case class Service(override val name: BoundVar, override val formals: Seq[
   */
 @leaf @transform
 final case class New(self: BoundVar, @subtree selfType: Option[Type], @subtree bindings: Map[values.Field, FieldValue], @subtree objType: Option[Type]) extends Expression {
+  require(!bindings.isInstanceOf[collection.TraversableView[_, _]])
   override def boundVars: Set[BoundVar] = Set(self)
 }
 

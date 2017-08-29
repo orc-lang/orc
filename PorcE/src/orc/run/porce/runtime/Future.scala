@@ -12,12 +12,12 @@
 //
 package orc.run.porce.runtime
 
-import orc.values.{ Format, OrcValue }
-import orc.values.Field
-import orc.FutureState
-import orc.FutureReader
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import java.util.ArrayList
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+
+import orc.{ FutureReader, FutureState }
+import orc.values.{ Format, OrcValue }
 
 /** A future value that can be bound or unbound or halted.
   *
@@ -27,18 +27,32 @@ import java.util.ArrayList
   * in the critical paths. The trade off is that Future contains an
   * extra couple of pointers.
   */
-final class Future() extends OrcValue with orc.Future {
+class Future() extends OrcValue with orc.Future {
   import FutureConstants._
 
   // TODO: PERFORMANCE: Using an ArrayList here forces the use of a lock. Ideally we would avoid that. However, it would be quite a lot of work and may not gain much. Profile first.
-  
+
   private var _state: AnyRef = Unbound
   private var _blocked: ArrayList[FutureReader] = new ArrayList()
 
-  /** Bind this to a value and call publish and halt on each blocked Blockable.
+  /** Resolve this to a value and call publish and halt on each blocked FutureReader.
     */
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary(allowInlining = true) @noinline
   def bind(v: AnyRef) = {
+    localBind(v)
+  }
+
+  /** Resolve this to stop and call halt on each blocked FutureReader.
+    */
+  @TruffleBoundary(allowInlining = true) @noinline
+  def stop(): Unit = {
+    localStop()
+  }
+
+  /** Resolve this to a value and call publish and halt on each blocked FutureReader.
+    */
+  @TruffleBoundary(allowInlining = true) @noinline
+  final def localBind(v: AnyRef): Unit = {
     //assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
     //assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
     val done = synchronized {
@@ -58,10 +72,10 @@ final class Future() extends OrcValue with orc.Future {
     }
   }
 
-  /** Bind this to stop and call halt on each blocked Blockable.
+  /** Resolve this to stop and call halt on each blocked FutureReader.
     */
-  @TruffleBoundary(allowInlining = true)
-  def stop() = {
+  @TruffleBoundary(allowInlining = true) @noinline
+  final def localStop(): Unit = {
     val done = synchronized {
       if (_state eq Unbound) {
         _state = Halt
@@ -87,8 +101,8 @@ final class Future() extends OrcValue with orc.Future {
     *
     * Return true if the value was already available.
     */
-  @TruffleBoundary(allowInlining = true)
-  def read(blocked: FutureReader): Unit = {
+  @TruffleBoundary(allowInlining = true) @noinline
+  final def read(blocked: FutureReader): Unit = {
     val st = synchronized {
       _state match {
         case Unbound => {
@@ -112,30 +126,31 @@ final class Future() extends OrcValue with orc.Future {
     }
   }
 
-  override def toOrcSyntax() = {
-    getInternal() match {
+  override def toOrcSyntax(): String = {
+    _state match {
       case Unbound => "<$unbound$>"
       case Halt => "<$stop$>"
       case v => s"<${Format.formatValue(v)}>"
     }
   }
 
-  def get(): FutureState = {
-    getInternal() match {
+  /** Get the state of this future.
+    *
+    * The state may change at any time. However, Unbound is the only state
+    * that is not stable, so if Halt or a value is returned it will not
+    * change.
+    */
+  final def get: FutureState = {
+    _state match {
       case Unbound => orc.FutureState.Unbound
       case Halt => orc.FutureState.Stopped
       case v => orc.FutureState.Bound(v)
     }
   }
-  
-  /** Get the state of this future.
-   *  
-   *  The state may change at any time. However, Unbound is the only state
-   *  that is not stable, so if Halt or a value is returned it will not
-   *  change.
-   * 
-   */
-  def getInternal(): AnyRef = {
+
+  /** Get the state of this future, using the PorcE raw future status. */
+  final def getInternal: AnyRef = {
     _state
   }
+
 }

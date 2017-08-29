@@ -12,15 +12,13 @@
 //
 package orc.lib.net
 
-import java.io.FileNotFoundException
+import java.io.{ FileNotFoundException, InputStream }
 import java.util.Properties
-import java.io.InputStream
-import orc.values.sites.Site
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.values.OrcRecord
-import orc.values.sites.TotalSite2
+
+import orc.error.runtime.{ ArgumentTypeMismatchException, SiteException }
 import orc.lib.web.HTTP
-import orc.error.runtime.SiteException
+import orc.values.OrcRecord
+import orc.values.sites.{ Site, TotalSite2 }
 
 /** An Orchard-specific factory for specializations of the HTTP site.
   * It is intended to provide REST-style access to web services using

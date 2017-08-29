@@ -13,10 +13,12 @@
 package orc.test
 
 import java.io.File
-import junit.framework.Test
+
+import scala.xml.{ Text, XML }
+
 import orc.script.OrcBindings
-import scala.xml.XML
-import scala.xml.Text
+
+import junit.framework.Test
 
 /** Test suite for examples extracted from documentation.
   *
@@ -42,7 +44,6 @@ object DocExamplesTest extends ExamplesTest {
 
     for (f <- files) {
       println("Processing " + f.toString)
-      val root = XML.loadFile(f)
       var anyExamples = false
       for ((id, code) <- extractExamples(f)) {
         val target = new File(targetdir, id + ".orc")

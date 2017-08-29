@@ -12,28 +12,20 @@
 //
 package orc.test
 
-import orc.test.TestUtils.OrcTestCase
-import orc.error.compiletime.CompilationException
-import orc.error.OrcException
-import java.util.concurrent.TimeoutException
-import java.io.FileNotFoundException
-import orc.script.OrcScriptEngine
-import orc.script.OrcBindings
-import java.io.File
-import orc.BackendType
-import java.util.LinkedList
-import java.util.Date
-import scala.collection.JavaConverters._
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.io.OutputStreamWriter
-import java.io.FileOutputStream
-import orc.util.SynchronousThreadExec
-import orc.TokenInterpreterBackend
-import java.util.Properties
-import java.io.FileInputStream
+import java.io.{ File, FileInputStream, FileNotFoundException, FileOutputStream, IOException, OutputStreamWriter }
 import java.lang.management.ManagementFactory
+import java.text.SimpleDateFormat
+import java.util.{ Date, LinkedList, Properties }
+import java.util.concurrent.TimeoutException
+
+import scala.collection.JavaConverters.{ asScalaBufferConverter, asScalaSetConverter }
+
+import orc.BackendType
+import orc.error.OrcException
+import orc.error.compiletime.CompilationException
 import orc.lib.BenchmarkTimes
+import orc.script.{ OrcBindings, OrcScriptEngine }
+import orc.util.SynchronousThreadExec
 
 sealed trait BenchmarkSet
 case object ScalaBenchmarkSet extends BenchmarkSet
@@ -167,7 +159,7 @@ object BenchmarkTest {
     }
 
     implicit val config = processArgs(args, BenchmarkConfig(OrcBenchmarkSet,
-      0 until osmxbean.getAvailableProcessors, TokenInterpreterBackend, 0,
+      0 until osmxbean.getAvailableProcessors, BackendType.fromString("token"), 0,
       new File(s"benchmark-${dateFormatter.format(new Date())}.csv")))
 
     // generate a single row for the configuration.

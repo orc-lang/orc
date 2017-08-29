@@ -1,10 +1,10 @@
 // Hamming sequence
 package orc.scalabenchmarks
 
-import orc.test.BenchmarkApplication
-import scala.concurrent.Channel
-import scala.reflect.ClassTag
 import scala.collection.mutable.Buffer
+import scala.concurrent.Channel
+
+import orc.test.BenchmarkApplication
 
 object Hamming extends BenchmarkApplication {
   import Util._

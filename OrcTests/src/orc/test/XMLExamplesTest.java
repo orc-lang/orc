@@ -19,14 +19,13 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import junit.framework.Test;
-
 import orc.ast.oil.nameless.Expression;
 import orc.ast.oil.xml.OrcXML;
 import orc.script.OrcBindings;
 import orc.script.OrcScriptEngine;
 import orc.test.TestUtils.OrcTestCase;
 
+import junit.framework.Test;
 import org.xml.sax.SAXException;
 
 /**

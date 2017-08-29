@@ -67,6 +67,7 @@ trait PorcEWithWorkStealingScheduler extends Orc {
   }
 
   def stopScheduler(): Unit = {
-    scheduler.stopScheduler()
+    if(scheduler != null)
+      scheduler.stopScheduler()
   }
 }

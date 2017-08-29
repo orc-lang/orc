@@ -13,8 +13,6 @@
 
 package orc.run
 
-import orc.OrcRuntime
-import orc.OrcOptions
 import orc.run.extensions._
 
 class StandardOrcRuntime(engineInstanceName: String) extends Orc(engineInstanceName)

@@ -11,10 +11,8 @@
 
 package orc.run.core
 
-import orc.CaughtEvent
 import orc.OrcEvent
 import orc.run.Logger
-import orc.error.runtime.TokenError
 import java.util.logging.Level
 
 trait EventHandler {

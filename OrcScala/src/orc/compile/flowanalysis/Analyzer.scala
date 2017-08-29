@@ -1,14 +1,10 @@
 package orc.compile.flowanalysis
 
-import scala.collection.immutable.Queue
 import scala.collection.mutable
 import scala.annotation.tailrec
 import scala.collection.immutable.HashMap
-import collection.Set
 import scala.reflect.ClassTag
 import orc.compile.Logger
-import java.nio.file.Files
-import java.nio.file.Paths
 import java.io.File
 import java.util.logging.Level
 import java.io.FileWriter

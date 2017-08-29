@@ -13,21 +13,17 @@
 
 package orc.lib.net
 
-import twitter4j._
-import twitter4j.auth.{ OAuthSupport, OAuth2Support }
-
-import java.util.Properties
-import java.util.Collections
-import java.io.FileNotFoundException
-
-import orc.values.sites._
-import orc.types._
-import orc.util.ArrayExtensions.{ Array0, Array1, Array2 }
-import orc.values.sites.compatibility.{ Types, Args, DotSite }
-import orc.values.OrcRecord
-
-import TwitterUtil._
 import java.io.FileInputStream
+import java.util.Properties
+
+import orc.types.{ FunctionType, JavaObjectType }
+import orc.util.ArrayExtensions.{ Array0, Array1, Array2 }
+import orc.values.OrcRecord
+import orc.values.sites.{ PartialSite, SpecificArity, TotalSite, TypedSite }
+
+import TwitterUtil.OAuthAdd
+import twitter4j.{ StallWarning, Status, StatusDeletionNotice, StatusListener, Twitter, TwitterFactory, TwitterStream, TwitterStreamFactory }
+import twitter4j.auth.{ OAuth2Support, OAuthSupport }
 
 object TwitterUtil {
   private def loadProperties(file: String): (String, String) = {
@@ -69,7 +65,7 @@ class TwitterFactoryPropertyFile extends PartialSite with SpecificArity with Typ
   val arity = 1
 
   def orcType() = {
-    import Types._
+    import orc.values.sites.compatibility.Types._
     FunctionType(Nil, List(string), JavaObjectType(classOf[Twitter]))
   }
 
@@ -85,7 +81,7 @@ class TwitterFactoryKeySecret extends PartialSite with SpecificArity with TypedS
   val arity = 2
 
   def orcType() = {
-    import Types._
+    import orc.values.sites.compatibility.Types._
     FunctionType(Nil, List(string, string), JavaObjectType(classOf[Twitter]))
   }
 
@@ -101,7 +97,7 @@ class TwitterStreamFactoryPropertyFile extends PartialSite with SpecificArity wi
   val arity = 1
 
   def orcType() = {
-    import Types._
+    import orc.values.sites.compatibility.Types._
     FunctionType(Nil, List(string), JavaObjectType(classOf[TwitterStream]))
   }
 
@@ -117,7 +113,7 @@ class TwitterStreamFactoryKeySecret extends PartialSite with SpecificArity with 
   val arity = 2
 
   def orcType() = {
-    import Types._
+    import orc.values.sites.compatibility.Types._
     FunctionType(Nil, List(string, string), JavaObjectType(classOf[TwitterStream]))
   }
 
@@ -150,7 +146,7 @@ class WrapTwitterStream extends TotalSite with SpecificArity with TypedSite {
   val arity = 1
 
   def orcType() = {
-    import Types._
+    import orc.values.sites.compatibility.Types._
     FunctionType(Nil, List(JavaObjectType(classOf[TwitterStream])), bot)
   }
 

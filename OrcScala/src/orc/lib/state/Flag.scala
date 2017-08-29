@@ -13,26 +13,12 @@
 
 package orc.lib.state
 
-import orc.values.sites.Site
-import orc.values.sites.TypedSite
-import orc.values.sites.TotalSite0
-import orc.values.sites.TotalSite1
-import orc.values.sites.PartialSite1
-import java.lang.Iterable
-import orc.compile.typecheck.Typeloader
-import orc.lib.builtin.structured.ListType
-import orc.types.JavaObjectType
-import orc.error.runtime.ArgumentTypeMismatchException
 import java.util.concurrent.atomic.AtomicBoolean
-import orc.types.SimpleFunctionType
-import orc.types.SignalType
+
+import orc.error.runtime.ArgumentTypeMismatchException
+import orc.types.{ JavaObjectType, SignalType, SimpleFunctionType }
 import orc.values.Signal
-import orc.values.sites.FunctionalSite
-import orc.values.sites.TalkativeSite
-import orc.values.sites.TalkativeSite
-import orc.values.sites.NonBlockingSite
-import orc.values.sites.Effects
-import orc.values.sites.EffectFreeSite
+import orc.values.sites.{ EffectFreeSite, Effects, FunctionalSite, NonBlockingSite, PartialSite1, TalkativeSite, TotalSite0, TotalSite1, TypedSite }
 
 // It is critical that this stays non-serializable so that DOrc cannot copy it.
 final class Flag {

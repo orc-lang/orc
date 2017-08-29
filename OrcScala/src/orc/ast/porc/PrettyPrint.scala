@@ -74,7 +74,7 @@ class PrettyPrint(includeNestedCode: Boolean = true) {
         case SetDiscorporate(c) => pp"setDiscorporate $c"
 
         case NewTerminator(t) => pp"terminator $t"
-        case Kill(t) => pp"kill $t"
+        case Kill(c, t, k) => pp"kill $c $t $k"
         case CheckKilled(t) => pp"checkKilled $t"
 
         case NewFuture() => pp"newFuture"

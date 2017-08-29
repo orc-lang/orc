@@ -14,6 +14,7 @@ package orc.run
 
 import orc.InvocationBehavior
 import orc.run.extensions._
+import orc.OrcRuntime
 
 /** @author dkitchin
   */
@@ -21,4 +22,6 @@ import orc.run.extensions._
 trait StandardInvocationBehavior extends InvocationBehavior
   with ErrorOnUndefinedInvocation
   with SupportForJavaObjectInvocation
-  with SupportForSiteInvocation
+  with SupportForSiteInvocation {
+  this: OrcRuntime =>
+}

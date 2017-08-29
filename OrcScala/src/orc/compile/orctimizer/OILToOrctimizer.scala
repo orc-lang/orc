@@ -14,14 +14,13 @@ package orc.compile.orctimizer
 
 import orc.ast.oil.named._
 import orc.ast.orctimizer.{ named => orct }
-import scala.collection.mutable
+import orc.compile.CompilerOptions
 import orc.error.compiletime.FeatureNotSupportedException
-import orc.compile.Logger
+import orc.values.Field
 
 /** @author amp
   */
-// Conversions from named to nameless representations
-class OILToOrctimizer {
+class OILToOrctimizer(co: CompilerOptions) {
   case class Context(valueSource: Map[BoundVar, Expression], variableMapping: Map[BoundVar, orct.BoundVar]) {
     def addValueSource(x: BoundVar, e: Expression) = {
       assert(!variableMapping.contains(x), s"Variable source for $x is already set")
@@ -36,6 +35,8 @@ class OILToOrctimizer {
       addVariableMapping(x, y)
     }
   }
+  
+  val useDirectGetFields = co.options.optimizationFlags("orct:directgetfields").asBool(true)  
   
   private def isDef(a: Argument)(implicit ctx: Context) = a match {
     case b: BoundVar =>
@@ -123,11 +124,16 @@ class OILToOrctimizer {
         } else if (isSite(target)) {
           ft >fm> siteCall
         } else {
-          orct.GetMethod(ft) >m>
-          orct.Force(fm, m, {
-            orct.IfLenientMethod(fm, defCall, siteCall)
-          })
+          def getMethod(e: orct.Expression): orct.Expression = if (useDirectGetFields) {
+            orct.GetMethod(ft) >m>
+            orct.Force(fm, m, e)
+          } else {
+            sitecallGetMethod(ft) >fm> e
+          }
           
+          getMethod { 
+            orct.IfLenientMethod(fm, defCall, siteCall)
+          }
         }
         maybePublishForce(ft, target, call)
       }
@@ -171,13 +177,20 @@ class OILToOrctimizer {
       }
       case HasType(body, expectedType) => orct.HasType(apply(body), apply(expectedType))
       case FieldAccess(o, f) => {
-        val t = new orct.BoundVar(Some(s"f_$o"))
-        val fv1 = new orct.BoundVar(Some(s"f_${o}_${f.name}'"))
-        val fv2 = new orct.BoundVar(Some(s"f_${o}_${f.name}"))
-        maybePublishForce(t, o, {
-          orct.GetField(t, f) > fv1 >
-            orct.Force(fv2, fv1, fv2)
-        })
+        if (useDirectGetFields) {
+          val t = new orct.BoundVar(Some(s"f_$o"))
+          val fv1 = new orct.BoundVar(Some(s"f_${o}_${f.name}'"))
+          val fv2 = new orct.BoundVar(Some(s"f_${o}_${f.name}"))
+          maybePublishForce(t, o, {
+            orct.GetField(t, f) > fv1 >
+              orct.Force(fv2, fv1, fv2)
+          })
+        } else {
+          val t = new orct.BoundVar(Some(s"f_${o}_${f.name}"))
+          maybePublishForce(t, o, {
+            sitecallGetField(t, f)
+          })
+        }
       }
       case New(self, selfT, members, objT) => {
         val bctx = ctx.addValueSource(self, e).addVariableMapping(self)
@@ -277,4 +290,10 @@ class OILToOrctimizer {
     }
   }
 
+  private def sitecallGetField(v: orct.Argument, f: Field): orct.Expression = {
+    orct.Call(orct.Constant(orc.lib.builtin.GetFieldSite), Seq(v, orct.Constant(f)), None)
+  }
+  private def sitecallGetMethod(v: orct.Argument): orct.Expression = {
+    orct.Call(orct.Constant(orc.lib.builtin.GetMethodSite), Seq(v), None)
+  }
 }

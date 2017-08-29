@@ -29,6 +29,8 @@ import scala.PartialFunction
 import swivel.TransformFunction
 import orc.util.Ternary
 import orc.ast.hasOptionalVariableName
+import orc.ast.ASTWithIndex
+import java.io.IOException
 
 abstract class Transform extends TransformFunction {
   def onExpression: PartialFunction[Expression.Z, Expression] = {
@@ -81,11 +83,31 @@ object Expression {
 @branch
 sealed abstract class Argument extends Expression with PorcInfixValue with PrecomputeHashcode
 @leaf @transform
-final case class Constant(v: AnyRef) extends Argument
+final case class Constant(v: AnyRef) extends Argument {
+  @throws[IOException]
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
+    out.writeObject(orc.ast.oil.xml.OrcXML.anyToXML(v))
+  }
+  
+  @throws[IOException]
+  @throws[ClassNotFoundException]
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
+    Constant.setVDuringDeserialize(this, orc.ast.oil.xml.OrcXML.anyRefFromXML(in.readObject().asInstanceOf[xml.Node]))
+  }
+}
+object Constant {
+  private val vField = classOf[Constant].getDeclaredField("v")
+  vField.setAccessible(true)
+  private def setVDuringDeserialize(c: Constant, v: AnyRef) = {
+    vField.set(c, v)
+  }
+}
+
+
 @leaf @transform
 final case class PorcUnit() extends Argument
 @leaf @transform
-final class Variable(val optionalName: Option[String] = None) extends Argument with hasAutomaticVariableName {
+final class Variable(val optionalName: Option[String] = None) extends Argument with hasAutomaticVariableName with Serializable {
   optionalVariableName = optionalName
   autoName("pv")
 
@@ -102,7 +124,9 @@ final class Variable(val optionalName: Option[String] = None) extends Argument w
 }
 
 @leaf @transform
-final case class CallContinuation(@subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression
+final case class CallContinuation(@subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+}
 
 @leaf @transform
 final case class Let(x: Variable, @subtree v: Expression, @subtree body: Expression) extends Expression with hasOptionalVariableName {
@@ -115,7 +139,7 @@ final case class Let(x: Variable, @subtree v: Expression, @subtree body: Express
 
 @leaf @transform
 final case class Sequence(@subtree es: Seq[Expression]) extends Expression {
-  //assert(!es.isEmpty)
+  require(!es.isInstanceOf[collection.TraversableView[_, _]])
 }
 object Sequence {
   def apply(es: Seq[Expression]): Expression = {
@@ -137,8 +161,22 @@ object Sequence {
 }
 
 @leaf @transform
-final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression with hasOptionalVariableName {
+final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression with hasOptionalVariableName with ASTWithIndex {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
   override def boundVars: Set[Variable] = arguments.toSet
+  
+  @throws[IOException]
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
+    out.writeObject(optionalIndex)
+  }
+  
+  @throws[IOException]
+  @throws[ClassNotFoundException]
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    optionalIndex = in.readObject().asInstanceOf[Option[Int]]
+  }
 }
 
 @leaf @transform
@@ -147,7 +185,7 @@ final case class MethodDeclaration(@subtree t: Argument, @subtree defs: Seq[Meth
 }
 
 @branch @replacement[Method]
-sealed abstract class Method extends PorcAST with hasOptionalVariableName {
+sealed abstract class Method extends PorcAST with hasOptionalVariableName with ASTWithIndex with Serializable {
   def name: Variable
   def isRoutine: Boolean
   def arguments: Seq[Variable]
@@ -158,6 +196,19 @@ sealed abstract class Method extends PorcAST with hasOptionalVariableName {
   override def boundVars: Set[Variable] = allArguments.toSet
   
   transferOptionalVariableName(name, this)
+  
+  @throws[IOException]
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
+    out.writeObject(optionalIndex)
+  }
+  
+  @throws[IOException]
+  @throws[ClassNotFoundException]
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    optionalIndex = in.readObject().asInstanceOf[Option[Int]]
+  }
 }
 
 object Method {
@@ -192,10 +243,12 @@ object Method {
 
 @leaf @transform
 final case class MethodCPS(name: Variable, pArg: Variable, cArg: Variable, tArg: Variable, isRoutine: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
   override def allArguments: Seq[Variable] = pArg +: cArg +: tArg +: arguments
 }
 @leaf @transform
 final case class MethodDirect(name: Variable, isRoutine: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
   override def allArguments: Seq[Variable] = arguments
 }
 
@@ -206,9 +259,26 @@ final case class MethodDirect(name: Variable, isRoutine: Boolean, arguments: Seq
   * This call will halt if `target` is killed after discorporating.
   */
 @leaf @transform
-final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression
+final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression with ASTWithIndex {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+  
+  @throws[IOException]
+  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
+    out.writeObject(optionalIndex)
+  }
+  
+  @throws[IOException]
+  @throws[ClassNotFoundException]
+  private def readObject(in: java.io.ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    optionalIndex = in.readObject().asInstanceOf[Option[Int]]
+  }
+}
 @leaf @transform
-final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression
+final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression {
+  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+}
 
 @leaf @transform
 final case class IfLenientMethod(@subtree argument: Argument, @subtree left: Expression, @subtree right: Expression) extends Expression
@@ -234,7 +304,7 @@ final case class Spawn(@subtree c: Argument, @subtree t: Argument, blockingCompu
 @leaf @transform
 final case class NewTerminator(@subtree parentT: Argument) extends Expression
 @leaf @transform
-final case class Kill(@subtree t: Argument) extends Expression
+final case class Kill(@subtree c: Argument, @subtree t: Argument, @subtree continuation: Argument) extends Expression
 @leaf @transform
 final case class CheckKilled(@subtree t: Argument) extends Expression
 
@@ -305,7 +375,9 @@ final case class BindStop(@subtree future: Argument) extends Expression
   * This consumes a token of c and passes it to p and finally removes it.
   */
 @leaf @transform
-final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression
+final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression {
+  require(!futures.isInstanceOf[collection.TraversableView[_, _]])
+}
 /** Resolve a sequence of futures.
   *
   * This calls p when every future is either stopped or resolved to a value.
@@ -313,4 +385,6 @@ final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: A
   * This consumes a token of c and passes it to p and finally removes it.
   */
 @leaf @transform
-final case class Resolve(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression
+final case class Resolve(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression {
+  require(!futures.isInstanceOf[collection.TraversableView[_, _]])
+}

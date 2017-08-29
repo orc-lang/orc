@@ -378,12 +378,15 @@ object OrcXML {
       case i @ (_: Int | _: Short | _: Long | _: Char | _: BigInt) => <integer>{ i.toString() }</integer>
       case n @ (_: Float | _: Double | _: BigDecimal) => <number>{ n.toString() }</number>
       case s: String => <string>{ s }</string>
+      case null => <nil/>
       case true => <true/>
       case false => <false/>
       case orc.values.Signal => <signal/>
       case orc.values.Field(s) => <field>{ s }</field>
       case x: java.lang.Class[_] => <jclass>{ x.getCanonicalName() }</jclass>
       case x: orc.values.sites.Site =>
+        <site>{ strip$(a.asInstanceOf[AnyRef].getClass().getName) }</site>
+      case x: orc.values.sites.InvokerMethod =>
         <site>{ strip$(a.asInstanceOf[AnyRef].getClass().getName) }</site>
       case _ => throw new AssertionError("Could not serialize value " + a.toString + " to XML.")
     }

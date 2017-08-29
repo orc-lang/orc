@@ -13,11 +13,11 @@ package orc.test;
 
 import java.io.File;
 
-import junit.extensions.RepeatedTest;
-import junit.framework.Test;
-
 import orc.script.OrcBindings;
 import orc.test.TestUtils.OrcTestCase;
+
+import junit.extensions.RepeatedTest;
+import junit.framework.Test;
 
 /**
  * Repeatedly run the test specified as a path in the TEST environment variable.

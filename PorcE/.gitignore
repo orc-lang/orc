@@ -1,5 +1,7 @@
-bin/
-.apt_generated/
-dumps/
-benchmark-localconfig.sh
-.cache-main
+/.cache
+/.cache-main
+/build/
+/build-local.properties
+/.apt_generated/
+/dumps/
+/benchmark-localconfig.sh

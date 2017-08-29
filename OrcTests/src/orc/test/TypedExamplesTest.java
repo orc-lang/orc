@@ -15,10 +15,10 @@ package orc.test;
 
 import java.io.File;
 
-import junit.framework.Test;
-
 import orc.script.OrcBindings;
 import orc.test.TestUtils.OrcTestCase;
+
+import junit.framework.Test;
 
 /**
  * Test Orc by running annotated sample programs from the "../OrcExamples"

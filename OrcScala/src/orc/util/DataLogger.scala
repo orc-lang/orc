@@ -1,6 +1,5 @@
 package orc.util
 
-import java.io.Writer
 import java.io.FileWriter
 import java.io.File
 import java.text.SimpleDateFormat

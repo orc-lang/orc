@@ -87,7 +87,7 @@ object FutureState {
 trait Future {
   /** Return the state of the future.
     */
-  def get(): FutureState
+  def get: FutureState
 
   /** Register to get the value of this future.
     *
@@ -98,14 +98,14 @@ trait Future {
 }
 
 object StoppedFuture extends Future {
-  def get() = FutureState.Stopped
+  def get = FutureState.Stopped
   def read(reader: FutureReader) = {
     reader.halt()
   }
 }
 
 case class BoundFuture(v: AnyRef) extends Future {
-  def get() = FutureState.Bound(v)
+  def get = FutureState.Bound(v)
   def read(reader: FutureReader) = {
     reader.publish(v)
   }
@@ -117,7 +117,7 @@ case class BoundFuture(v: AnyRef) extends Future {
   */
 trait Handle {
 
-  // TODO: Consider making this a seperate API that is not core to the Orc JVM API.
+  // TODO: Consider making this a separate API that is not core to the Orc JVM API.
   /** Submit an event to the Orc runtime.
     */
   def notifyOrc(event: OrcEvent): Unit

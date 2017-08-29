@@ -12,19 +12,9 @@
 //
 package orc.compiler.test
 
+import orc.ast.orctimizer.named.{ Call, Constant, Stop }
+
 import org.junit.Test
-import org.junit.Assert._
-import orc.ast.orctimizer.named._
-import orc.compile.orctimizer._
-import orc.values.sites.Delay
-import orc.values.sites.Effects
-import orc.values.sites.Range
-import orc.lib.state.NewFlag
-import orc.lib.builtin.Iff
-import orc.values.Signal
-import orc.values.Field
-import orc.lib.builtin.structured.TupleConstructor
-import orc.lib.builtin.structured.RecordConstructor
 
 /** @author amp
   */

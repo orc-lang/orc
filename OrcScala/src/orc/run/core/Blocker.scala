@@ -11,7 +11,6 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 package orc.run.core
-import orc.OrcRuntime
 
 /** The trait for objects that can be blocked on.
   *

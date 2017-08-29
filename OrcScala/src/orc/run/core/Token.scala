@@ -727,7 +727,7 @@ class Token protected (
   }
 
   protected def resolveOptional(f: orc.Future)(k: Option[AnyRef] => Unit) {
-    f.get() match {
+    f.get match {
       case FutureState.Bound(v) =>
         k(Some(v))
       case FutureState.Stopped =>

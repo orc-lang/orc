@@ -12,25 +12,11 @@
 //
 package orc.test
 
-import orc.test.TestUtils.OrcTestCase
-import orc.error.compiletime.CompilationException
-import orc.error.OrcException
-import java.util.concurrent.TimeoutException
-import java.io.FileNotFoundException
-import orc.script.OrcScriptEngine
-import orc.script.OrcBindings
 import java.io.File
-import orc.BackendType
-import java.util.ArrayList
-import java.util.Date
-import scala.collection.JavaConverters._
-import java.io.IOException
 import java.text.SimpleDateFormat
-import java.io.OutputStreamWriter
-import java.io.FileOutputStream
-import orc.util.SynchronousThreadExec
-import orc.PorcCompilerBackend
-import orc.TokenInterpreterBackend
+import java.util.Date
+
+import orc.BackendType
 
 /** @author amp
   */
@@ -102,7 +88,7 @@ object AllBenchmarkTests {
 
     val defaultOutputFile = new File(s"allbenchmarks_${dateFormatter.format(new Date())}.csv")
     implicit val config = processArgs(args, AllBenchmarkConfig(
-      Seq(1, 2, 4, 8).reverse, Seq(PorcCompilerBackend),
+      Seq(1, 2, 4, 8).reverse, Seq(BackendType.fromString("porc")),
       Seq(2, 3).reverse, nRuns = 7, nDroppedRuns = 2, output = defaultOutputFile))
 
     println(s"Running configs: (${config.configs.size})\n${config.configs.map(_.asArguments.mkString(" ")).mkString("\n")}")

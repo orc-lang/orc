@@ -13,21 +13,13 @@
 
 package orc.lib.gui
 
-import javax.swing.JFrame
-import javax.swing.DefaultListModel
-import javax.swing.JList
+import java.awt.{ Dimension, Rectangle }
 
 import scala.collection.mutable
 
-import ScalaSwingUtils._
-import javax.swing.JTable
+import ScalaSwingUtils.{ onEDT, onEDTNow }
+import javax.swing.{ BoxLayout, JFrame, JLabel, JPanel, JScrollPane, JTable }
 import javax.swing.table.DefaultTableModel
-import java.awt.Dimension
-import javax.swing.JScrollPane
-import javax.swing.JPanel
-import javax.swing.BoxLayout
-import javax.swing.JLabel
-import java.awt.Rectangle
 
 class TableDisplay(title: String) extends JFrame {
   private val model = new DefaultTableModel()

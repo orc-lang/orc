@@ -50,7 +50,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
     val phaseName = "to-orctimizer"
     override def apply(co: CompilerOptions) =
       { ast =>
-        val translator = new OILToOrctimizer()
+        val translator = new OILToOrctimizer(co)
         val res = translator(ast)(translator.Context(Map(), Map()))
         orctimizer.named.VariableChecker(res.toZipper(), co)
         res
@@ -199,7 +199,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     val phaseName = "to-porc"
     override def apply(co: CompilerOptions) =
       { ast =>
-        val translator = new OrctimizerToPorc()
+        val translator = new OrctimizerToPorc(co)
         val res = translator(ast, cache)
         porc.VariableChecker(res.toZipper(), co)
         res
@@ -251,6 +251,16 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     }
   }
 
+  
+  val indexPorc = new CompilerPhase[CompilerOptions, porc.MethodCPS, porc.MethodCPS] {
+    import orc.ast.porc._
+    val phaseName = "porc-index"
+    override def apply(co: CompilerOptions) = { ast =>
+      IndexAST(ast)
+      ast
+    }
+  }
+  
   def nullOutput[T >: Null] = new CompilerPhase[CompilerOptions, T, T] {
     val phaseName = "nullOutput"
     override def apply(co: CompilerOptions) =
@@ -288,5 +298,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       clearCachePhase >>>
       outputIR(8) >>>
       optimizePorc.timePhase >>>
+      indexPorc.timePhase >>>
       outputIR(9)
 }

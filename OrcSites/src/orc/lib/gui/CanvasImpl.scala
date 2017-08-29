@@ -12,11 +12,10 @@
 //
 package orc.lib.gui
 
-import javax.swing.JPanel
-import java.awt.Graphics
+import java.awt.{ Color, Dimension, Graphics }
 import java.awt.image.BufferedImage
-import java.awt.Color
-import java.awt.Dimension
+
+import javax.swing.JPanel
 
 /** @author amp
   */

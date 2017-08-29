@@ -14,13 +14,15 @@
 package orc
 
 import orc.ast.porc.MethodCPS
-import orc.run.porce.runtime.PorcERuntime
 import orc.compiler.porce.PorcToPorcE
-import orc.run.porce.runtime.PorcEExecution
-import orc.run.porce.runtime.PorcEExecutionRef
-import orc.run.porce.runtime.PorcEExecutionHolder
-import orc.run.porce.runtime.PorcEClosure
-import orc.run.porce.Logger
+import orc.run.porce.runtime.{ PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch, PorcERuntime }
+
+case class PorcEBackendType() extends BackendType {
+  type CompiledCode = MethodCPS
+
+  val name = "porc"
+  def newBackend(): Backend[MethodCPS] = new PorcEBackend()
+}
 
 /** A backend implementation using the Orctimizer and Porc compilers.
   *
@@ -28,15 +30,13 @@ import orc.run.porce.Logger
   *
   * @author amp
   */
-class PorcEBackend extends PorcBackend {
+case class PorcEBackend() extends PorcBackend {
   def createRuntime(options: OrcExecutionOptions): Runtime[MethodCPS] = new PorcERuntime("PorcE on Truffles") with Runtime[MethodCPS] {
     startScheduler(options)
-    val translator = new PorcToPorcE
-    
+
     //val cache = new collection.mutable.HashMap[MethodCPS, (PorcEExecutionHolder, PorcEClosure)]()
-    
-    private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecution = synchronized {
-      val execution = new PorcEExecution(this, k)
+
+    private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecutionWithLaunch = synchronized {
       /*val porceAst = cache.get(ast) match {
         case Some((holder, porceAst)) => {
           if(holder.setExecution(execution)) {
@@ -57,10 +57,11 @@ class PorcEBackend extends PorcBackend {
         }
       }
 	    */
+      val execution = new PorcEExecution(this, k) with PorcEExecutionWithLaunch
       val executionHolder = new PorcEExecutionHolder(execution)
-      val porceAst = translator(ast, executionHolder, this)
+      val (porceAst, map) = PorcToPorcE(ast, executionHolder)
       addRoot(execution)
-      execution.scheduleProgram(porceAst)
+      execution.scheduleProgram(porceAst, map)
       execution
     }
 

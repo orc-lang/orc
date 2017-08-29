@@ -5,6 +5,7 @@ import orc.Invoker
 import orc.IllegalArgumentInvoker
 import java.lang.management.ManagementFactory
 import orc.OnlyDirectInvoker
+import orc.OrcRuntime
 
 object Benchmark {
   val osmxbean = ManagementFactory.getOperatingSystemMXBean() match {
@@ -16,7 +17,7 @@ object Benchmark {
 }
 
 object StartBenchmark extends InvokerMethod {
-  def getInvoker(args: Array[AnyRef]): Invoker = {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 0) {
       new OnlyDirectInvoker {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
@@ -38,7 +39,7 @@ case class BenchmarkTimes(iteration: Int, runTime: Double, cpuTime: Double)
 object EndBenchmark extends InvokerMethod {
   def nsToS(ns: Long) = ns.toDouble / 1000 / 1000 / 1000
   
-  def getInvoker(args: Array[AnyRef]): Invoker = {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 2) {
       new OnlyDirectInvoker {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {

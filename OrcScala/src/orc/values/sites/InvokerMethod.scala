@@ -1,10 +1,7 @@
 package orc.values.sites
 
 import orc.values.Field
-import orc.{Invoker, Accessor}
-import orc.error.runtime.UncallableValueException
-import orc.error.runtime.NoSuchMemberException
-import orc.error.runtime.DoesNotHaveMembersException
+import orc.{Invoker, Accessor, OrcRuntime}
 
 /** An external method interface in which the method provides Invokers directly.
   */
@@ -18,7 +15,7 @@ trait InvokerMethod {
     * 
     * @see UncallableValueInvoker
     */
-  def getInvoker(args: Array[AnyRef]): Invoker
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker
 }
 
   
@@ -34,5 +31,5 @@ trait AccessorValue {
     * 
     * @see NoSuchMemberAccessor, DoesNotHaveMembersAccessor
     */
-  def getAccessor(field: Field): Accessor
+  def getAccessor(runtime: OrcRuntime, field: Field): Accessor
 }

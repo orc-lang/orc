@@ -15,7 +15,7 @@ package orc.run.distrib
 
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.nameless.Expression
-import orc.run.core.Execution
+import orc.run.core.{ Execution, Token }
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -35,17 +35,24 @@ import orc.run.core.Execution
 abstract class DOrcExecution(
     val executionId: DOrcExecution#ExecutionId,
     val followerExecutionNum: Int,
-    node: Expression,
+    programAst: Expression,
     options: OrcExecutionOptions,
     eventHandler: OrcEvent => Unit,
     override val runtime: DOrcRuntime)
-  extends Execution(node, options, eventHandler, runtime)
+  extends Execution(programAst, options, eventHandler, runtime)
   with ValueLocator
   with ValueMarshaler
   with GroupProxyManager
   with RemoteFutureManager
   with RemoteObjectManager
   with RemoteRefIdManager {
+
+  //TODO: Move to superclass
+  def runProgram() {
+    /* Initial program token */
+    val t = new Token(programAst, this)
+    runtime.schedule(t)
+  }
 
   type ExecutionId = String
 

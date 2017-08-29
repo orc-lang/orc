@@ -7,7 +7,7 @@ if [ "$GRAALHOME" = "" ]; then
     exit 1
 fi
 
-SCALALIBS=$ROOTDIR/OrcScala/lib/scala-library.jar:$ROOTDIR/OrcScala/lib/scala-parser-combinators_2.12-1.0.5.jar:$ROOTDIR/OrcScala/lib/scala-reflect.jar:$ROOTDIR/OrcScala/lib/scala-xml_2.12-1.0.6.jar
+SCALALIBS=$ROOTDIR/OrcScala/lib/scala-library.jar:$ROOTDIR/OrcScala/lib/scala-parser-combinators_2.12-1.0.6.jar:$ROOTDIR/OrcScala/lib/scala-reflect.jar:$ROOTDIR/OrcScala/lib/scala-xml_2.12-1.0.6.jar
 ORCSCALALIBS=$ROOTDIR/OrcScala/build/orc-2.1.1.jar:$ROOTDIR/OrcScala/lib/swivel_2.12-0.0.1.jar
 ORCTESTSLIBS=$ROOTDIR/OrcTests/build:$ROOTDIR/OrcTests/tools/junit-4.5.jar
 

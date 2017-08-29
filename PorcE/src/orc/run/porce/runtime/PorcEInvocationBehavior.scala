@@ -13,26 +13,15 @@
 package orc.run.porce.runtime
 
 import orc.InvocationBehavior
-import orc.run.extensions._
-import orc.values.Field
-import orc.values.sites.Site
-import orc.Invoker
-import orc.ErrorAccessor
-import orc.Accessor
-import orc.Handle
-import orc.FutureReader
-import orc.error.runtime.JavaException
-import orc.error.OrcException
+import orc.run.extensions.{ ErrorOnUndefinedInvocation, SupportForJavaObjectInvocation, SupportForSiteInvocation }
+import orc.OrcRuntime
 
 /** @author dkitchin
   */
 /* The first behavior in the trait list will be tried last */
 trait PorcEInvocationBehavior extends InvocationBehavior
   with ErrorOnUndefinedInvocation
-  with SupportForPorcEClosure
-  with SupportForApply
   with SupportForJavaObjectInvocation
-  with SupportForSiteInvocation
-  
-// TODO: PERFORMANCE: Make an extension to Invoker that can provide PorcE Nodes including both the check and the calls. 
-// These nodes could then be included in a poly-cache and could directly call PorcE closures and other Truffle stuff.
+  with SupportForSiteInvocation {
+  this: OrcRuntime =>
+}

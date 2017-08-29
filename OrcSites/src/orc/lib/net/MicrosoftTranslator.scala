@@ -12,25 +12,23 @@
 //
 package orc.lib.net
 
-import orc.values.sites._
-import orc.types._
-import orc.values.sites.compatibility.Types
-import java.net.URL
-import java.net.URLEncoder
-import java.net.HttpURLConnection
-import scala.io.Source
-import org.codehaus.jettison.json.JSONObject
+import java.io.{ FileNotFoundException, OutputStreamWriter }
+import java.net.{ HttpURLConnection, URL, URLEncoder }
 import java.util.Properties
-import java.io.FileNotFoundException
-import java.io.OutputStreamWriter
-import org.codehaus.jettison.json.JSONArray
+
+import scala.io.Source
+
+import orc.types.FunctionType
 import orc.util.ArrayExtensions.{ Array1, Array2 }
+import orc.values.sites.{ PartialSite, SpecificArity, TypedSite }
+
+import org.codehaus.jettison.json.{ JSONArray, JSONObject }
 
 class MicrosoftTranslatorFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
   val arity = 1
 
   def orcType() = {
-    import Types._
+    import orc.values.sites.compatibility.Types._
     FunctionType(Nil, List(string),
       BingSearch.orcType)
   }
@@ -57,7 +55,7 @@ class MicrosoftTranslatorFactoryUsernameKey extends PartialSite with SpecificAri
   val arity = 2
 
   def orcType() = {
-    import Types._
+    import orc.values.sites.compatibility.Types._
     FunctionType(Nil, List(string, string),
       BingSearch.orcType)
   }
@@ -69,7 +67,7 @@ class MicrosoftTranslatorFactoryUsernameKey extends PartialSite with SpecificAri
 }
 
 object MicrosoftTranslator {
-  import Types._
+  import orc.values.sites.compatibility.Types._
   val orcType = FunctionType(Nil, List(string, string), string)
 }
 

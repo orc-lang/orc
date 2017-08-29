@@ -2,24 +2,29 @@ package orc.compiler.porce
 
 import scala.collection.mutable
 
-import orc.ast.porc
-import orc.run.porce
-import swivel.Zipper
-import com.oracle.truffle.api.frame._
-import com.oracle.truffle.api.CallTarget
-import orc.run.porce.runtime.PorcEExecution
-import orc.run.porce.runtime.PorcEClosure
-import orc.compile.Logger
-import orc.values.Field
-import orc.run.porce.runtime.PorcEExecutionHolder
-import orc.run.porce.runtime.PorcERuntime
-import com.oracle.truffle.api.Truffle
+import com.oracle.truffle.api.{ RootCallTarget, Truffle }
+import com.oracle.truffle.api.frame.{ FrameDescriptor, FrameSlot, FrameSlotKind }
 
-class PorcToPorcE {
+import orc.ast.{ ASTWithIndex, porc }
+import orc.run.porce
+import orc.run.porce.runtime.{ PorcEClosure, PorcEExecutionHolder, PorcERuntime }
+import orc.util.{ TFalse, TTrue, TUnknown }
+import orc.values.Field
+import swivel.Zipper
+
+object PorcToPorcE {
+  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
+    new PorcToPorcE()(m, execution)
+  }
+}
+
+class PorcToPorcE() {
   case class Context(
     descriptor: FrameDescriptor, execution: PorcEExecutionHolder,
     argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
     runtime: PorcERuntime)
+    
+  val usingInvokationInterceptor = true
 
   object LocalVariables {
     val MethodGroupClosure = new porc.Variable(Some("MethodGroupClosure"))
@@ -41,18 +46,35 @@ class PorcToPorcE {
     fieldOrderCache.getOrElseUpdate(s.toSet, s.toSeq.sortBy(_.name))
   }
 
-  private def normalizeOrderAndLookup(s: TraversableOnce[porc.Variable])(implicit ctx: Context) = {
-    normalizeOrder(s).map(lookupVariable(_))
+  //private def normalizeOrderAndLookup(s: TraversableOnce[porc.Variable])(implicit ctx: Context) = {
+  //  normalizeOrder(s).map(lookupVariable(_))
+  //}
+
+  val closureMap = mutable.HashMap[Int, RootCallTarget]()
+
+  def makeCallTarget(root: porce.PorcERootNode): RootCallTarget = {
+    require(root.porcNode().isDefined, s"$root")
+    require(root.porcNode().get.isInstanceOf[ASTWithIndex], s"${root.porcNode().get}")
+    require(root.porcNode().get.asInstanceOf[ASTWithIndex].optionalIndex.isDefined, s"${root.porcNode().get}")
+    val callTarget = Truffle.getRuntime().createCallTarget(root)
+    closureMap += (root.getId() -> callTarget)
+    callTarget
   }
 
-  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder, runtime: PorcERuntime): PorcEClosure = {
+  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
     val descriptor = new FrameDescriptor()
-    implicit val ctx = Context(descriptor = descriptor, execution = execution, argumentVariables = Seq(m.pArg, m.cArg, m.tArg), closureVariables = Seq(), runtime = runtime)
+    implicit val ctx = Context(
+      descriptor = descriptor,
+      execution = execution,
+      argumentVariables = Seq(m.pArg, m.cArg, m.tArg),
+      closureVariables = Seq(),
+      runtime = execution.newRef().get().runtime)
     val newBody = transform(m.body.toZipper())
     val rootNode = porce.PorcERootNode.create(descriptor, newBody, 3, 0)
-    val callTarget = Truffle.getRuntime().createCallTarget(rootNode);
-    val closure = new PorcEClosure(Array(), callTarget, true);
-    closure
+    rootNode.setPorcAST(m)
+    val callTarget = makeCallTarget(rootNode)
+    val closure = new PorcEClosure(Array(), callTarget, true)
+    (closure, closureMap)
   }
 
   def transform(x: porc.Variable)(implicit ctx: Context): porce.Expression = {
@@ -79,8 +101,8 @@ class PorcToPorcE {
         porce.Sequence.create(es.map(transform(_)).toArray)
       case porc.Let.Z(x, v, body) =>
         porce.Sequence.create(Array(
-            porce.Write.Local.create(lookupVariable(x), transform(v)),
-            transform(body)))
+          porce.Write.Local.create(lookupVariable(x), transform(v)),
+          transform(body)))
       case porc.Continuation.Z(args, body) =>
         val descriptor = new FrameDescriptor()
         val oldCtx = ctx
@@ -89,17 +111,39 @@ class PorcToPorcE {
 
         {
           implicit val ctx = oldCtx.copy(descriptor = descriptor, closureVariables = capturedVars, argumentVariables = args)
-          
+
           val newBody = transform(body)
-          val rootNode = porce.PorcERootNode.create(descriptor, newBody, args.size, capturedVars.size);
+          val rootNode = porce.PorcERootNode.create(descriptor, newBody, args.size, capturedVars.size)
+          rootNode.setPorcAST(e.value)
+          makeCallTarget(rootNode)
           porce.NewContinuation.create(capturingExprs, rootNode)
         }
       case porc.CallContinuation.Z(target, arguments) =>
         porce.InternalCall.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
       case porc.MethodCPSCall.Z(isExt, target, p, c, t, arguments) =>
-        porce.Call.CPS.create(transform(target), (p +: c +: t +: arguments).map(transform(_)).toArray, ctx.execution.newRef())
+        val newTarget = transform(target)
+        val newArguments = (p +: c +: t +: arguments).map(transform(_)).toArray
+        val exec = ctx.execution.newRef()
+        isExt match {
+          case TTrue if !usingInvokationInterceptor =>
+            porce.ExternalCPSCall.create(newTarget, newArguments, exec)
+          case TFalse if !usingInvokationInterceptor =>
+            porce.InternalCall.create(newTarget, newArguments, exec)
+          case _ =>
+            porce.Call.CPS.create(newTarget, newArguments, exec)
+        }
       case porc.MethodDirectCall.Z(isExt, target, arguments) =>
-        porce.Call.Direct.create(transform(target), arguments.map(transform(_)).toArray, ctx.execution.newRef())
+        val newTarget = transform(target)
+        val newArguments = arguments.map(transform(_)).toArray
+        val exec = ctx.execution.newRef()
+        isExt match {
+          case TTrue =>
+            porce.ExternalDirectCall.create(newTarget, newArguments, exec)
+          case TFalse =>
+            porce.InternalCall.create(newTarget, newArguments, exec)
+          case TUnknown =>
+            porce.Call.Direct.create(newTarget, newArguments, exec)
+        }
       case porc.MethodDeclaration.Z(t, methods, body) =>
         val closure = lookupVariable(LocalVariables.MethodGroupClosure)
 
@@ -132,8 +176,8 @@ class PorcToPorcE {
         porce.NewToken.create(transform(c))
       case porc.HaltToken.Z(c) =>
         porce.HaltToken.create(transform(c))
-      case porc.Kill.Z(t) =>
-        porce.Kill.create(transform(t))
+      case porc.Kill.Z(c, t, k) =>
+        porce.Kill.create(transform(c), transform(t), transform(k), ctx.execution.newRef())
       case porc.CheckKilled.Z(t) =>
         porce.CheckKilled.create(transform(t))
       case porc.Bind.Z(fut, v) =>
@@ -146,7 +190,7 @@ class PorcToPorcE {
         // Due to not generally being on as hot of paths we do not have a single value version of Resolve. It could easily be created if needed.
         val join = lookupVariable(LocalVariables.Join)
         val newJoin = porce.Write.Local.create(join,
-            porce.Resolve.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
+          porce.Resolve.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
         val processors = futures.zipWithIndex.map { p =>
           val (f, i) = p
           porce.Resolve.Future.create(porce.Read.Local.create(join), transform(f), i)
@@ -159,7 +203,7 @@ class PorcToPorcE {
       case porc.Force.Z(p, c, t, futures) =>
         val join = lookupVariable(LocalVariables.Join)
         val newJoin = porce.Write.Local.create(join,
-            porce.Force.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
+          porce.Force.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
         val processors = futures.zipWithIndex.map { p =>
           val (f, i) = p
           porce.Force.Future.create(porce.Read.Local.create(join), transform(f), i)
@@ -201,6 +245,8 @@ class PorcToPorcE {
       val rootNode = porce.PorcERootNode.create(descriptor, newBody, arguments.size, closureVariables.size)
       rootNode.setPorcAST(m.value)
       val readClosure = porce.Read.Local.create(closureSlot)
+
+      makeCallTarget(rootNode)
 
       val newMethod = porce.MethodDeclaration.NewMethod.create(readClosure, methodOffset + index, rootNode, m.value.isRoutine)
 

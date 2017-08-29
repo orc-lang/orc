@@ -26,9 +26,10 @@ Floor(sqrt(n))
 
 package orc.scalabenchmarks
 
-import java.util.{ HashSet, Set }
-import scala.collection.JavaConverters._
-import java.util.Collections
+import java.util.{ Collections, HashSet, Set }
+
+import scala.collection.JavaConverters.asScalaSetConverter
+
 import orc.test.BenchmarkApplication
 
 object Sieve extends BenchmarkApplication {

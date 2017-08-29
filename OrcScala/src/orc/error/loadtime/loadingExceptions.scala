@@ -17,3 +17,8 @@ package orc.error.loadtime
 @SerialVersionUID(-2514919839288618140L)
 case class OilParsingException(message: String)
   extends LoadingException(message)
+
+/** When reading serialized data, it was found encode the wrong type of object.
+  */
+case class DeserializationTypeException(message: String)
+  extends LoadingException(message)

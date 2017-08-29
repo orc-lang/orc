@@ -1,8 +1,8 @@
 package orc.scalabenchmarks
 
-import orc.test.BenchmarkApplication
 import scala.concurrent.Channel
-import scala.concurrent.Future
+
+import orc.test.BenchmarkApplication
 
 /*
 Threadring

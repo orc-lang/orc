@@ -12,23 +12,23 @@
 //
 package orc.lib.net
 
-import orc.values.sites._
-import orc.types._
-import orc.values.sites.compatibility.Types
-import java.net.URL
-import java.net.URLEncoder
-import sun.misc.BASE64Encoder
-import java.net.HttpURLConnection
-import scala.io.Source
-import org.codehaus.jettison.json.JSONObject
-import java.util.Properties
 import java.io.FileNotFoundException
+import java.net.{ HttpURLConnection, URL, URLEncoder }
+import java.util.Properties
+
+import scala.io.Source
+
+import orc.types.FunctionType
+import orc.values.sites.{ PartialSite, SpecificArity, TypedSite }
+
+import org.codehaus.jettison.json.JSONObject
+import sun.misc.BASE64Encoder
 
 class BingSearchFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
   val arity = 2
 
   def orcType() = {
-    import Types._
+    import orc.values.sites.compatibility.Types._
     FunctionType(Nil, List(string, string),
       BingSearch.orcType)
   }
@@ -55,7 +55,7 @@ class BingSearchFactoryUsernameKey extends PartialSite with SpecificArity with T
   val arity = 3
 
   def orcType() = {
-    import Types._
+    import orc.values.sites.compatibility.Types._
     FunctionType(Nil, List(string, string, string),
       BingSearch.orcType)
   }
@@ -67,7 +67,7 @@ class BingSearchFactoryUsernameKey extends PartialSite with SpecificArity with T
 }
 
 object BingSearch {
-  import Types._
+  import orc.values.sites.compatibility.Types._
   val orcType = FunctionType(Nil, List(string), list(bot))
   // TODO: This is not quite right and will probably not work when type checked.
 }

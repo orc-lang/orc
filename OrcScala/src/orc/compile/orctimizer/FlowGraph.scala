@@ -14,14 +14,10 @@
 package orc.compile.orctimizer
 
 import scala.collection.mutable
-import scala.reflect.ClassTag
 
 import orc.ast.PrecomputeHashcode
 import orc.ast.orctimizer.named._
-import orc.compile.Logger
-import orc.values.Field
 
-import orc.compile.flowanalysis.GraphDataProvider
 import orc.compile.flowanalysis.EdgeBase
 import orc.util.DotUtils._
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
