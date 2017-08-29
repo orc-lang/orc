@@ -115,7 +115,7 @@ case class BoundFuture(v: AnyRef) extends Future {
   *
   * Published values passed to publish and publishNonterminal may not be futures.
   */
-trait Handle {
+trait CallContext {
 
   // TODO: Consider making this a separate API that is not core to the Orc JVM API.
   /** Submit an event to the Orc runtime.

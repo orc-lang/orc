@@ -24,7 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.TokenException;
 import orc.orchard.AbstractExecutorService;
@@ -63,7 +63,7 @@ public class FormSenderSite extends SiteAdaptor {
     }
 
     @Override
-    public void callSite(final Args args, final Handle caller) throws TokenException {
+    public void callSite(final Args args, final CallContext caller) throws TokenException {
         try {
             final Job job = Job.getJobFromHandle(caller);
             if (job == null) {

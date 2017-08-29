@@ -11,7 +11,7 @@
 
 package orc.values.sites.compatibility;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.TokenException;
 
 /**
@@ -28,7 +28,7 @@ import orc.error.runtime.TokenException;
 public abstract class PartialSite extends SiteAdaptor {
 
     @Override
-    public void callSite(final Args args, final Handle caller) throws TokenException {
+    public void callSite(final Args args, final CallContext caller) throws TokenException {
 
         final Object v = evaluate(args);
         if (v != null) {

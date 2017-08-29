@@ -59,21 +59,21 @@ object Tracer {
     if (traceTokenScheduling) orc.util.Tracer.trace(TokenExecStateTransition, token.debugId, 0L, tokenExecStateIdFor(newState))
   }
 
-  private def getHandleDebugId(h: orc.Handle) = {
-    h match {
+  private def getHandleDebugId(callContext: orc.CallContext) = {
+    callContext match {
       case h: ExternalSiteCallHandle => h.caller.debugId
       case _ => 0xdeadbeef
     }
   }
 
   @inline
-  def traceJavaCall(h: orc.Handle) {
-    if (traceJavaCall) orc.util.Tracer.trace(JavaCall, getHandleDebugId(h), 0L, 0L)
+  def traceJavaCall(callContext: orc.CallContext) {
+    if (traceJavaCall) orc.util.Tracer.trace(JavaCall, getHandleDebugId(callContext), 0L, 0L)
   }
 
   @inline
-  def traceJavaReturn(h: orc.Handle) {
-    if (traceJavaCall) orc.util.Tracer.trace(JavaReturn, getHandleDebugId(h), 0L, 0L)
+  def traceJavaReturn(callContext: orc.CallContext) {
+    if (traceJavaCall) orc.util.Tracer.trace(JavaReturn, getHandleDebugId(callContext), 0L, 0L)
   }
 
   private def tokenStateIdFor(ts: TokenState) = ts match {

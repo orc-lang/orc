@@ -14,7 +14,7 @@ package orc.values.sites.compatibility;
 import java.util.Map;
 import java.util.TreeMap;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.NoSuchMemberException;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
@@ -42,7 +42,7 @@ public abstract class DotSite extends SiteAdaptor implements HasMembers {
     }
 
     @Override
-    public void callSite(final Args args, final Handle t) throws TokenException {
+    public void callSite(final Args args, final CallContext t) throws TokenException {
 
         String f;
 
@@ -74,7 +74,7 @@ public abstract class DotSite extends SiteAdaptor implements HasMembers {
         methodMap.put(f, s);
     }
 
-    protected void defaultTo(final Args args, final Handle token) throws TokenException {
+    protected void defaultTo(final Args args, final CallContext token) throws TokenException {
         throw new UncallableValueException("This dot site is not callable. It only has members.");
     }
 

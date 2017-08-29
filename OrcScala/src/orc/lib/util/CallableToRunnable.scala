@@ -2,7 +2,7 @@
 // CallableToRunnable.scala -- Scala object CallableToRunnable and CallableToCallable
 // Project OrcScala
 //
-// Created by amd on Feb 11, 2015.
+// Created by amp on Feb 11, 2015.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
@@ -14,7 +14,7 @@ package orc.lib.util
 
 import java.util.concurrent.Callable
 
-import orc.Handle
+import orc.CallContext
 import orc.compile.typecheck.Typeloader
 import orc.run.core.ExternalSiteCallHandle
 import orc.run.extensions.SupportForCallsIntoOrc
@@ -25,12 +25,12 @@ import orc.values.sites.{ Site1, TypedSite }
   * @author amp
   */
 object CallableToRunnable extends Site1 with TypedSite {
-  def call(arg: AnyRef, h: Handle) = {
-    val runtime = h.asInstanceOf[ExternalSiteCallHandle].caller.execution match {
+  def call(arg: AnyRef, callContext: CallContext) = {
+    val runtime = callContext.asInstanceOf[ExternalSiteCallHandle].caller.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
-    h.publish(new Runnable {
+    callContext.publish(new Runnable {
       def run() {
         runtime.callOrcCallable(arg, Nil)
       }
@@ -48,12 +48,12 @@ object CallableToRunnable extends Site1 with TypedSite {
   * @author amp
   */
 object CallableToCallable extends Site1 with TypedSite {
-  def call(arg: AnyRef, h: Handle) = {
-    val runtime = h.asInstanceOf[ExternalSiteCallHandle].caller.execution match {
+  def call(arg: AnyRef, callContext: CallContext) = {
+    val runtime = callContext.asInstanceOf[ExternalSiteCallHandle].caller.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
-    h.publish(new Callable[AnyRef] {
+    callContext.publish(new Callable[AnyRef] {
       def call() = {
         runtime.callOrcCallable(arg, Nil).getOrElse(null)
       }

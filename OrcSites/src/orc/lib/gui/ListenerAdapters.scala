@@ -14,7 +14,7 @@ package orc.lib.gui
 
 import java.awt.event.{ ActionEvent, ActionListener, MouseEvent, MouseListener, WindowFocusListener, WindowListener, WindowStateListener }
 
-import orc.Handle
+import orc.CallContext
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.run.core.ExternalSiteCallHandle
 import orc.run.extensions.SupportForCallsIntoOrc
@@ -35,8 +35,8 @@ abstract class ListenerAdapter {
 
 // TODO: Make this typed once we have object types.
 abstract class ListenerAdapterSite extends Site1 {
-  def call(arg: AnyRef, h: Handle) = {
-    val execution = h.asInstanceOf[ExternalSiteCallHandle].caller.execution match {
+  def call(arg: AnyRef, callContext: CallContext) = {
+    val execution = callContext.asInstanceOf[ExternalSiteCallHandle].caller.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
@@ -44,7 +44,7 @@ abstract class ListenerAdapterSite extends Site1 {
       case d: HasMembers => d
       case a => throw new ArgumentTypeMismatchException(0, "<has members>", if (a != null) a.getClass().toString() else "null")
     }
-    h.publish(buildAdapter(execution, del))
+    callContext.publish(buildAdapter(execution, del))
   }
 
   def buildAdapter(execution: SupportForCallsIntoOrc, del: HasMembers): AnyRef

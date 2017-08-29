@@ -13,17 +13,13 @@
 package orc.lib.time
 
 import scala.math.BigInt.int2bigInt
-import orc.Handle
+
+import orc.CallContext
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.run.extensions.RwaitEvent
-import orc.types.{ SimpleFunctionType, SignalType, RecordType, IntegerType }
-import orc.values.sites.{ TypedSite, TotalSite0, Site1 }
-import orc.values.OrcRecord
-import orc.values.sites.FunctionalSite
-import orc.values.sites.EffectFreeSite
-import orc.values.sites.TalkativeSite
-import orc.values.sites.SiteMetadata
-import orc.values.Field
+import orc.types.{ IntegerType, RecordType, SignalType, SimpleFunctionType }
+import orc.values.{ Field, OrcRecord }
+import orc.values.sites.{ EffectFreeSite, FunctionalSite, Site1, SiteMetadata, TalkativeSite, TotalSite0, TypedSite }
 
 /**
   */
@@ -62,16 +58,16 @@ class Rtime(startTime: Long) extends TotalSite0 with FunctionalSite {
   */
 object Rwait extends Site1 with EffectFreeSite {
 
-  def call(a: AnyRef, h: Handle) {
+  def call(a: AnyRef, callContext: CallContext) {
     a match {
       case delay: BigInt => {
         if (delay > 0) {
-          h.setQuiescent()
-          h.notifyOrc(RwaitEvent(delay, h))
+          callContext.setQuiescent()
+          callContext.notifyOrc(RwaitEvent(delay, callContext))
         } else if (delay == 0) {
-          h.publish()
+          callContext.publish()
         } else {
-          h.halt
+          callContext.halt
         }
       }
       case _ => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")

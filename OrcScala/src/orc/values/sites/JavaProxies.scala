@@ -16,7 +16,7 @@ import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTar
 
 import scala.language.existentials
 
-import orc.{ Accessor, Handle, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, UncallableValueInvoker }
+import orc.{ Accessor, CallContext, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, UncallableValueInvoker }
 import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, UncallableValueException }
 import orc.run.Logger
 import orc.OrcRuntime
@@ -202,8 +202,8 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
 
   @throws[UncallableValueException]
-  def invoke(h: Handle, theObject: AnyRef, arguments: Array[AnyRef]): Unit = {
-    orc.run.core.Tracer.traceJavaCall(h)
+  def invoke(callContext: CallContext, theObject: AnyRef, arguments: Array[AnyRef]): Unit = {
+    orc.run.core.Tracer.traceJavaCall(callContext)
     try {
       if (theObject == null && !invocable.isStatic) {
         throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
@@ -228,13 +228,13 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
         convertedArgs
       }
       Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
-      h.publish(java2orc(invocable.invoke(theObject, finalArgs.toArray)))
+      callContext.publish(java2orc(invocable.invoke(theObject, finalArgs.toArray)))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
       case e: InterruptedException => throw e
       case e: Exception => throw new JavaException(e)
     } finally {
-      orc.run.core.Tracer.traceJavaReturn(h)
+      orc.run.core.Tracer.traceJavaReturn(callContext)
     }
   }
 }
@@ -264,8 +264,8 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
             case _ => false
           }
         }
-        override def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-          super.invoke(h, target.asInstanceOf[JavaMemberProxy].theObject, arguments)
+        override def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+          super.invoke(callContext, target.asInstanceOf[JavaMemberProxy].theObject, arguments)
         }
   
         override def toString() = s"<Member Invoker>($javaClass.$memberName)"

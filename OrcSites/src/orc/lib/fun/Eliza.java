@@ -2,7 +2,7 @@
 // Eliza.java -- Java class Eliza
 // Project OrcSites
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;
@@ -57,7 +57,7 @@ public class Eliza extends EvalSite {
             }
 
             @Override
-            protected void defaultTo(final Args args, final Handle token) throws TokenException {
+            protected void defaultTo(final Args args, final CallContext token) throws TokenException {
                 if (args.size() != 1) {
                     throw new ArityMismatchException(1, args.size());
                 }

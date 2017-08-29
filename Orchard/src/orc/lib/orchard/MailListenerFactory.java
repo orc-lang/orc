@@ -18,7 +18,7 @@ import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.ArgumentTypeMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
@@ -69,7 +69,7 @@ public class MailListenerFactory extends SiteAdaptor {
     }
 
     @Override
-    public void callSite(final Args args, final Handle caller) throws TokenException {
+    public void callSite(final Args args, final CallContext caller) throws TokenException {
         try {
             final Job job = Job.getJobFromHandle(caller);
             if (job == null) {

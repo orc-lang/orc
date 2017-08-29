@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jan 24, 2011.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,25 +12,11 @@
 //
 package orc.run.extensions
 
-import orc.InvocationBehavior
-import orc.Handle
-import orc.values.sites.Site
+import orc.{ CallContext, DirectInvoker, ErrorAccessor, ErrorInvoker, InvocationBehavior, Invoker, OrcRuntime }
 import orc.error.OrcException
-import orc.error.runtime.JavaException
-import orc.values.sites.DirectSite
+import orc.error.runtime.{ ExceptionHaltException, HaltException, JavaException }
 import orc.values.Field
-import orc.Invoker
-import orc.DirectInvoker
-import orc.error.runtime.ExceptionHaltException
-import orc.error.runtime.HaltException
-import orc.values.sites.InvokerMethod
-import orc.error.runtime.UncallableValueException
-import orc.error.runtime.NoSuchMemberException
-import orc.error.runtime.DoesNotHaveMembersException
-import orc.values.sites.AccessorValue
-import orc.ErrorInvoker
-import orc.ErrorAccessor
-import orc.OrcRuntime
+import orc.values.sites.{ AccessorValue, DirectSite, InvokerMethod, Site }
 
 /** @author dkitchin
   */
@@ -88,13 +74,13 @@ class SiteInvoker(val site: Site) extends Invoker {
     (target eq site) || (target == site)
   }
 
-  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]) = {
+  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]) = {
     try {
-      site.call(arguments, h)
+      site.call(arguments, callContext)
     } catch {
-      case e: OrcException => h.halt(e)
+      case e: OrcException => callContext.halt(e)
       case e: InterruptedException => throw e
-      case e: Exception => h.halt(new JavaException(e))
+      case e: Exception => callContext.halt(new JavaException(e))
     }
   }
 }

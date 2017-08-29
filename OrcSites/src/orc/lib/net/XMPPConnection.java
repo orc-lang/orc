@@ -2,7 +2,7 @@
 // XMPPConnection.java -- Java class XMPPConnection
 // Project OrcSites
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,7 @@ package orc.lib.net;
 
 import java.util.LinkedList;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
@@ -138,7 +138,7 @@ public class XMPPConnection extends EvalSite {
         /** Buffer for received messages. */
         private final LinkedList<Object> received = new LinkedList<Object>();
         /** Queue of tokens waiting to receive messages. */
-        private final LinkedList<Handle> receivers = new LinkedList<Handle>();
+        private final LinkedList<CallContext> receivers = new LinkedList<CallContext>();
         private final XMPPConnectionSite xmppConnectionSite;
 
         public ChatSite(final XMPPConnectionSite xmppConnectionSite, final String account) {
@@ -159,7 +159,7 @@ public class XMPPConnection extends EvalSite {
                 if (receivers.isEmpty()) {
                     received.add(v);
                 } else {
-                    final Handle receiver = receivers.removeFirst();
+                    final CallContext receiver = receivers.removeFirst();
                     receiver.publish(v);
                 }
             }
@@ -187,7 +187,7 @@ public class XMPPConnection extends EvalSite {
              */
             addMember("receive", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle receiver) {
+                public void callSite(final Args args, final CallContext receiver) {
                     // System.out.println(getClass().getSimpleName()+" receive ihc="+System.identityHashCode(this));
                     synchronized (received) {
                         if (received.isEmpty()) {

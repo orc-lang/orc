@@ -13,12 +13,7 @@
 
 package orc
 
-import orc.error.runtime.UncallableValueException
-import orc.error.runtime.HaltException
-import orc.error.runtime.NoSuchMemberException
-import orc.error.runtime.DoesNotHaveMembersException
-import java.lang.IllegalArgumentException
-import java.lang.IllegalArgumentException
+import orc.error.runtime.{ DoesNotHaveMembersException, HaltException, NoSuchMemberException, UncallableValueException }
 
 /** A collection of utility methods for writing invokers and accessors.
 	*/
@@ -54,12 +49,12 @@ object InvocationBehaviorUtilities {
 
 abstract class OnlyDirectInvoker extends DirectInvoker {
   @throws[UncallableValueException]
-  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     try {
-      h.publish(invokeDirect(target, arguments))
+      callContext.publish(invokeDirect(target, arguments))
     } catch {
       case _: HaltException =>
-        h.halt()
+        callContext.halt()
     }
   }
 }
@@ -68,7 +63,7 @@ abstract class OnlyDirectInvoker extends DirectInvoker {
 	*/
 case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker {
   @throws[UncallableValueException]
-  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     throw new UncallableValueException(target)
   }
 
@@ -81,7 +76,7 @@ case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker {
 	*/
 case class IllegalArgumentInvoker(target: AnyRef, arguments: Array[AnyRef]) extends ErrorInvoker {
   @throws[IllegalArgumentException]
-  def invoke(h: Handle, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     throw new IllegalArgumentException(s"$target(${arguments.mkString(", ")})")
   }
 

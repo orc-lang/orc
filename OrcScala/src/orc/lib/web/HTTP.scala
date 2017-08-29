@@ -13,16 +13,15 @@
 package orc.lib.web
 
 import java.io.OutputStreamWriter
-import java.net.{ URLEncoder, URL }
+import java.net.{ URL, URLEncoder }
 
-import scala.Array.canBuildFrom
 import scala.io.Source
 
-import orc.error.runtime.{ SiteException, JavaException }
-import orc.values.sites.{ TotalSite, Site2, Site0 }
-import orc.values.OrcRecord
-import orc.Handle
+import orc.CallContext
+import orc.error.runtime.{ JavaException, SiteException }
 import orc.util.ArrayExtensions.{ Array1, Array2 }
+import orc.values.OrcRecord
+import orc.values.sites.{ Site0, Site2, TotalSite }
 
 /** The HTTP site provides a simple mechanism to send GET and POST requests to a URL.
   *
@@ -76,7 +75,7 @@ object HTTP extends TotalSite {
     " Java/" + java.lang.System.getProperty("java.version")
 
   case class HTTPGet(url: URL) extends Site0 {
-    def call(h: Handle) {
+    def call(callContext: CallContext) {
       val getAction =
         new Runnable {
           def run() {
@@ -95,10 +94,10 @@ object HTTP extends TotalSite {
               val result = in.mkString
               in.close
 
-              h.publish(result)
+              callContext.publish(result)
             } catch {
-              case ie: InterruptedException => { h.halt; throw ie }
-              case e: Exception => { h !! new JavaException(e) }
+              case ie: InterruptedException => { callContext.halt; throw ie }
+              case e: Exception => { callContext !! new JavaException(e) }
             }
           }
         }
@@ -107,7 +106,7 @@ object HTTP extends TotalSite {
   }
 
   case class HTTPPost(url: URL) extends Site2 {
-    def call(a: AnyRef, b: AnyRef, h: Handle) {
+    def call(a: AnyRef, b: AnyRef, callContext: CallContext) {
       val post = a.toString
       val postContentType = b.toString +
         (if (b.toString.toLowerCase.contains("charset="))
@@ -136,10 +135,10 @@ object HTTP extends TotalSite {
               val in = Source.fromInputStream(conn.getInputStream, charEncoding)
               val result = in.mkString
               in.close
-              h.publish(result)
+              callContext.publish(result)
             } catch {
-              case ie: InterruptedException => { h.halt; throw ie }
-              case e: Exception => { h !! new JavaException(e) }
+              case ie: InterruptedException => { callContext.halt; throw ie }
+              case e: Exception => { callContext !! new JavaException(e) }
             }
 
           }

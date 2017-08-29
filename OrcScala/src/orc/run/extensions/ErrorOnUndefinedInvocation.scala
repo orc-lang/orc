@@ -12,15 +12,8 @@
 //
 package orc.run.extensions
 
-import orc.InvocationBehavior
-import orc.{Handle, Invoker, Accessor}
-import orc.values.Format
-import orc.error.runtime.UncallableValueException
+import orc.{ Accessor, DoesNotHaveMembersAccessor, InvocationBehavior, Invoker, UncallableValueInvoker }
 import orc.values.Field
-import orc.error.runtime.{TypeNoSuchMemberException, UncallableTypeException}
-import orc.error.runtime.NoSuchMemberException
-import orc.UncallableValueInvoker
-import orc.DoesNotHaveMembersAccessor
 
 /** @author dkitchin
   */

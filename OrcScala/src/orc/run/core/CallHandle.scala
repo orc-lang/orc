@@ -13,8 +13,8 @@
 
 package orc.run.core
 
+import orc.CallContext
 import orc.error.OrcException
-import orc.Handle
 
 /** An abstract call handle for any call made by a token.
   *
@@ -31,7 +31,7 @@ import orc.Handle
   *
   * @author dkitchin
   */
-abstract class CallHandle(val caller: Token) extends Handle with Blocker {
+abstract class CallHandle(val caller: Token) extends CallContext with Blocker {
   // This is the only Blocker that can produce exceptions.
 
   protected var state: CallState = CallState.InProgress(List())

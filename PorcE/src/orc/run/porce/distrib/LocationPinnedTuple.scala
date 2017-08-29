@@ -13,28 +13,28 @@
 
 package orc.run.porce.distrib
 
-import orc.Handle
+import orc.CallContext
 import orc.error.OrcException
+import orc.run.porce.runtime.CPSCallResponseHandler
 import orc.values.OrcTuple
 import orc.values.sites.Site
-import orc.run.porce.runtime.CPSCallResponseHandler
 
 /** Superclass of Orc sites to construct LocationPinnedTuples
   *
   * @author jthywiss
   */
 abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with LocationPolicy with Serializable {
-  override def call(args: Array[AnyRef], h: Handle): Unit = {
+  override def call(args: Array[AnyRef], callContext: CallContext): Unit = {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
-      h.publish(evaluate(args, h))
+      callContext.publish(evaluate(args, callContext))
     } catch {
-      case (e: OrcException) => h.halt(e)
+      case (e: OrcException) => callContext.halt(e)
     }
   }
 
-  private def evaluate(args: Array[AnyRef], h: Handle) = {
-    val loc = h.asInstanceOf[CPSCallResponseHandler].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
+  private def evaluate(args: Array[AnyRef], callContext: CallContext) = {
+    val loc = callContext.asInstanceOf[CPSCallResponseHandler].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
     new LocationPinnedTuple(loc, args)
   }
 

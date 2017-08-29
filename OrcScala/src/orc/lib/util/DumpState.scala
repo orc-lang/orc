@@ -12,19 +12,18 @@
 //
 package orc.lib.util
 
-import orc.values.sites.TypedSite
+import orc.CallContext
 import orc.types.SignalType
-import orc.Handle
-import orc.values.sites.Site0
+import orc.values.sites.{ Site0, TypedSite }
 
 /** Cause the execution to dump the token state.
   *
   * @author amp
   */
 object DumpState extends Site0 with TypedSite {
-  def call(h: Handle) {
-    h.notifyOrc(orc.run.core.DumpState)
-    h.publish()
+  def call(callContext: CallContext) {
+    callContext.notifyOrc(orc.run.core.DumpState)
+    callContext.publish()
   }
 
   def orcType() = SignalType

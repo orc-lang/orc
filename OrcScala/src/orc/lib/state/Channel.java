@@ -14,7 +14,7 @@ package orc.lib.state;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.ChannelType;
@@ -56,8 +56,8 @@ public class Channel extends EvalSite implements TypedSite {
     protected class ChannelInstance extends DotSite {
 
         protected final LinkedList<Object> contents;
-        protected final LinkedList<Handle> readers;
-        protected Handle closer;
+        protected final LinkedList<CallContext> readers;
+        protected CallContext closer;
         /**
          * Once this becomes true, no new items may be put, and gets on an empty
          * channel die rather than blocking.
@@ -66,14 +66,14 @@ public class Channel extends EvalSite implements TypedSite {
 
         ChannelInstance() {
             contents = new LinkedList<Object>();
-            readers = new LinkedList<Handle>();
+            readers = new LinkedList<CallContext>();
         }
 
         @Override
         protected void addMembers() {
             addMember("get", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle reader) {
+                public void callSite(final Args args, final CallContext reader) {
                     synchronized (ChannelInstance.this) {
                         if (contents.isEmpty()) {
                             if (closed) {
@@ -101,7 +101,7 @@ public class Channel extends EvalSite implements TypedSite {
             });
             addMember("put", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle writer) throws TokenException {
+                public void callSite(final Args args, final CallContext writer) throws TokenException {
                     synchronized (ChannelInstance.this) {
                         final Object item = args.getArg(0);
                         if (closed) {
@@ -114,7 +114,7 @@ public class Channel extends EvalSite implements TypedSite {
                         } else {
                             // If there are callers waiting, give this item to
                             // the top caller.
-                            final Handle receiver = readers.removeFirst();
+                            final CallContext receiver = readers.removeFirst();
                             receiver.publish(object2value(item));
                         }
                         // Since this is an asynchronous channel, a put call
@@ -130,7 +130,7 @@ public class Channel extends EvalSite implements TypedSite {
             });
             addMember("getD", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle reader) {
+                public void callSite(final Args args, final CallContext reader) {
                     synchronized (ChannelInstance.this) {
                         if (contents.isEmpty()) {
                             reader.halt();
@@ -180,10 +180,10 @@ public class Channel extends EvalSite implements TypedSite {
             });
             addMember("close", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle caller) {
+                public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final Handle reader : readers) {
+                        for (final CallContext reader : readers) {
                             reader.halt();
                         }
                         if (contents.isEmpty()) {
@@ -202,10 +202,10 @@ public class Channel extends EvalSite implements TypedSite {
             });
             addMember("closeD", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle caller) {
+                public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final Handle reader : readers) {
+                        for (final CallContext reader : readers) {
                             reader.halt();
                         }
                         caller.publish(signal());

@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jan 20, 2011.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,14 +12,10 @@
 //
 package orc.lib.util
 
+import orc.{ CallContext, OrcEvent }
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ArityMismatchException
-import orc.values.sites.Site1
-import orc.values.sites.TypedSite
-import orc.types.SimpleFunctionType
-import orc.types.StringType
-import orc.Handle
-import orc.OrcEvent
+import orc.types.{ SimpleFunctionType, StringType }
+import orc.values.sites.{ Site1, TypedSite }
 
 /** Generic site for presenting the user with a prompt for input.
   * Different runtimes will present different prompts depending
@@ -36,14 +32,14 @@ case class PromptEvent(val prompt: String, val callback: PromptCallback) extends
 
 object Prompt extends Site1 with TypedSite {
 
-  def call(arg: AnyRef, caller: Handle) {
+  def call(arg: AnyRef, callContext: CallContext) {
     arg match {
       case prompt: String => {
         val callback = new PromptCallback() {
-          def respondToPrompt(response: String) = caller.publish(response)
-          def cancelPrompt() = caller.halt
+          def respondToPrompt(response: String) = callContext.publish(response)
+          def cancelPrompt() = callContext.halt()
         }
-        caller.notifyOrc(PromptEvent(prompt, callback))
+        callContext.notifyOrc(PromptEvent(prompt, callback))
       }
       case a => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
     }

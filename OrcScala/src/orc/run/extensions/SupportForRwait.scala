@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,18 +12,15 @@
 //
 package orc.run.extensions
 
+import java.util.{ Timer, TimerTask }
+
+import orc.{ CallContext, OrcEvent }
 import orc.run.Orc
-import orc.Handle
-import orc.OrcEvent
-import orc.OrcExecutionOptions
-import java.util.Timer
-import java.util.TimerTask
-import orc.run.core.Execution
 import orc.run.core.EventHandler
 
 /** @author dkitchin
   */
-case class RwaitEvent(delay: BigInt, caller: Handle) extends OrcEvent
+case class RwaitEvent(delay: BigInt, callContext: CallContext) extends OrcEvent
 
 trait SupportForRwait extends Orc {
 
@@ -38,11 +35,11 @@ trait SupportForRwait extends Orc {
 
   override def installHandlers(host: EventHandler) {
     val thisHandler = {
-      case RwaitEvent(delay, caller) => {
+      case RwaitEvent(delay, callContext) => {
         val callback =
           new TimerTask() {
             @Override
-            override def run() { caller.publish() }
+            override def run() { callContext.publish() }
           }
         timer.schedule(callback, delay.toLong)
       }

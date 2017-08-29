@@ -12,11 +12,9 @@
 //
 package orc.run.extensions
 
-import orc.InvocationBehavior
-import orc.values.OrcValue
-import orc.{Handle, Invoker, Accessor}
+import orc.{ Accessor, InvocationBehavior, Invoker }
+import orc.values.{ Field, OrcValue }
 import orc.values.sites.JavaCall
-import orc.values.Field
 
 /** @author dkitchin, amp
   */

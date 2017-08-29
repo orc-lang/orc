@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jan 18, 2011.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,15 +12,10 @@
 //
 package orc.lib.str
 
-import orc.values.sites.Site1
-import orc.values.sites.TypedSite
-import orc.values.sites.Range
-import orc.types.SimpleFunctionType
-import orc.types.SignalType
-import orc.types.Top
-import orc.Handle
-import orc.OrcEvent
+import orc.{ CallContext, OrcEvent }
+import orc.types.{ SignalType, SimpleFunctionType, Top }
 import orc.values.Format.formatValue
+import orc.values.sites.{ Range, Site1, TypedSite }
 
 /** Display a value on the console or equivalent output device.
   *
@@ -43,18 +38,18 @@ abstract class PrintSite extends Site1 with TypedSite {
 
 object Print extends PrintSite {
 
-  def call(a: AnyRef, h: Handle) = {
-    h.notifyOrc(PrintEvent(formatToPrint(a)))
-    h.publish()
+  def call(a: AnyRef, callContext: CallContext) = {
+    callContext.notifyOrc(PrintEvent(formatToPrint(a)))
+    callContext.publish()
   }
 
 }
 
 object Println extends PrintSite {
 
-  def call(a: AnyRef, h: Handle) = {
-    h.notifyOrc(PrintEvent(formatToPrint(a) + "\n"))
-    h.publish()
+  def call(a: AnyRef, callContext: CallContext) = {
+    callContext.notifyOrc(PrintEvent(formatToPrint(a) + "\n"))
+    callContext.publish()
   }
 
 }

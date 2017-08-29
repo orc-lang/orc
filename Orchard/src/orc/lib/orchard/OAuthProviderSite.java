@@ -20,7 +20,7 @@ import net.oauth.OAuth.Parameter;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.oauth.OAuthProvider;
@@ -51,7 +51,7 @@ public class OAuthProviderSite extends SiteAdaptor {
         protected void addMembers() {
             addMember("authenticate", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle caller) throws TokenException {
+                public void callSite(final Args args, final CallContext caller) throws TokenException {
                     try {
                         final String consumer = args.stringArg(0);
                         final List<OAuth.Parameter> request = OAuth.newList();
@@ -82,7 +82,7 @@ public class OAuthProviderSite extends SiteAdaptor {
     }
 
     @Override
-    public void callSite(final Args args, final Handle caller) throws TokenException {
+    public void callSite(final Args args, final CallContext caller) throws TokenException {
         try {
             /**
              * This implementation of OAuthProvider

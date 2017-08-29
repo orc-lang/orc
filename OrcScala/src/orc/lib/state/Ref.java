@@ -14,7 +14,7 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.Handle;
+import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.RefType;
@@ -57,7 +57,7 @@ public class Ref extends EvalSite implements TypedSite {
 
     public static class RefInstance extends DotSite {
 
-        protected Queue<Handle> readQueue;
+        protected Queue<CallContext> readQueue;
         Object contents;
 
         public RefInstance() {
@@ -71,7 +71,7 @@ public class Ref extends EvalSite implements TypedSite {
              * needed, and it also frees the memory associated with the read
              * queue once the reference has been assigned.
              */
-            this.readQueue = new LinkedList<Handle>();
+            this.readQueue = new LinkedList<CallContext>();
         }
 
         /*
@@ -89,7 +89,7 @@ public class Ref extends EvalSite implements TypedSite {
             addMember("write", new writeMethod());
             addMember("readD", new SiteAdaptor() {
                 @Override
-                public void callSite(final Args args, final Handle caller) throws TokenException {
+                public void callSite(final Args args, final CallContext caller) throws TokenException {
                     synchronized (RefInstance.this) {
                         if (readQueue != null) {
                             caller.halt();
@@ -108,7 +108,7 @@ public class Ref extends EvalSite implements TypedSite {
 
         protected class readMethod extends SiteAdaptor {
             @Override
-            public void callSite(final Args args, final Handle reader) {
+            public void callSite(final Args args, final CallContext reader) {
                 synchronized (RefInstance.this) {
                     /*
                      * If the read queue is not null, the ref has not been set.
@@ -128,7 +128,7 @@ public class Ref extends EvalSite implements TypedSite {
 
         protected class writeMethod extends SiteAdaptor {
             @Override
-            public void callSite(final Args args, final Handle writer) throws TokenException {
+            public void callSite(final Args args, final CallContext writer) throws TokenException {
                 synchronized (RefInstance.this) {
 
                     final Object val = args.getArg(0);
@@ -146,7 +146,7 @@ public class Ref extends EvalSite implements TypedSite {
                          * Wake up all queued readers and report the written
                          * value to them.
                          */
-                        for (final Handle reader : readQueue) {
+                        for (final CallContext reader : readQueue) {
                             reader.publish(object2value(val));
                         }
 

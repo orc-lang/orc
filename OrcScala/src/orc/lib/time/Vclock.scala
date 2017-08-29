@@ -12,9 +12,9 @@
 //
 package orc.lib.time
 
+import orc.CallContext
 import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
-import orc.Handle
 import orc.types.{ FunctionType, SignalType, StrictCallableType, Top }
 import orc.values.sites.{ Site1, TypedSite }
 
@@ -23,7 +23,7 @@ import orc.values.sites.{ Site1, TypedSite }
 object Vclock extends Site1 with VirtualClockOperation with TypedSite {
 
   // Do not invoke directly.
-  def call(a: AnyRef, h: Handle) { h !! (new RuntimeSupportException("Vclock")) }
+  def call(a: AnyRef, callContext: CallContext) { callContext !! (new RuntimeSupportException("Vclock")) }
 
   lazy val orcType = {
     //val A = new TypeVariable()
