@@ -83,6 +83,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
     leaderExecution.awaitAllFollowersReady()
 
+    Logger.info(s"Start run $thisExecutionId")
+
     leaderExecution.runProgram()
 
     Logger.exiting(getClass.getName, "run")
@@ -92,6 +94,9 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     Logger.fine(s"Execution got $event")
     event match {
       case HaltedOrKilledEvent => {
+
+        Logger.info(s"Stop run $executionId")
+
         followerLocations foreach { _.send(UnloadProgramCmd(executionId)) }
         programs.remove(executionId)
         if (programs.isEmpty) stop()
