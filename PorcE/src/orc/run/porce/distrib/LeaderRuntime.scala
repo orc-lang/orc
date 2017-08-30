@@ -70,9 +70,9 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     val rootCounterId = leaderExecution.getDistributedCounterForCounter(leaderExecution.c).id
 
     followerEntries foreach { f =>
+      leaderExecution.followerStarting(f._1)
       schedule(new Schedulable {
         def run(): Unit = {
-          leaderExecution.followerStarting(f._1)
           f._2.send(LoadProgramCmd(thisExecutionId, programAst, options, rootCounterId))
         }
       })
