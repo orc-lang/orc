@@ -109,7 +109,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     extends Thread(f"dOrc leader receiver for $followerRuntimeId%#x @ ${followerLocation.connection.socket}") {
     override def run(): Unit = {
       try {
-        Logger.Connect.info(s"Reading events from ${followerLocation.connection.socket}")
+        Logger.Connect.fine(s"Reading events from ${followerLocation.connection.socket}")
         while (!followerLocation.connection.closed && !followerLocation.connection.socket.isInputShutdown) {
           val msg = try {
             followerLocation.connection.receiveInContext({ programs(_) }, followerLocation)()
@@ -143,7 +143,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
         } catch {
           case NonFatal(e) => Logger.Connect.finer(s"Ignoring $e") /* Ignore close failures at this point */
         }
-        Logger.Connect.info(s"Stopped reading events from ${followerLocation.connection.socket}")
+        Logger.Connect.fine(s"Stopped reading events from ${followerLocation.connection.socket}")
         runtimeLocationMap.remove(followerRuntimeId)
         followerEntries foreach { fe =>
           try {
