@@ -38,7 +38,14 @@ class GetFieldInvoker(accessor: Accessor, f: Field) extends Invoker {
     val v = accessor.get(arguments(0))
     v match {
       case f: orc.Future =>
-        f.read(new FutureHandler(callContext))
+        f.get match {
+          case orc.FutureState.Unbound =>
+            f.read(new FutureHandler(callContext))
+          case orc.FutureState.Bound(v) =>
+            callContext.publish(v)
+          case orc.FutureState.Stopped =>
+            callContext.halt()
+        }
       case _ =>
         callContext.publish(v)
     }
@@ -53,7 +60,7 @@ object GetMethodSite extends InvokerMethod with Serializable {
         val accessor = runtime.getAccessor(o, Field("apply"))
         accessor match {
           case _: ErrorAccessor =>
-            new GetMethodPassthroughInvoker(accessor)
+            new GetMethodPassthroughInvoker()
           case _ =>
             new GetMethodApplyInvoker(accessor)
         }
@@ -61,9 +68,9 @@ object GetMethodSite extends InvokerMethod with Serializable {
   }
 }
 
-class GetMethodPassthroughInvoker(accessor: Accessor) extends OnlyDirectInvoker {
+class GetMethodPassthroughInvoker() extends OnlyDirectInvoker {
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    target == GetMethodSite && arguments.length == 1 && accessor.canGet(arguments(0))
+    target == GetMethodSite && arguments.length == 1
   }
   
   def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
@@ -80,7 +87,14 @@ class GetMethodApplyInvoker(accessor: Accessor) extends Invoker {
     val v = accessor.get(arguments(0))
     v match {
       case f: orc.Future =>
-        f.read(new FutureHandler(callContext))
+        f.get match {
+          case orc.FutureState.Unbound =>
+            f.read(new FutureHandler(callContext))
+          case orc.FutureState.Bound(v) =>
+            callContext.publish(v)
+          case orc.FutureState.Stopped =>
+            callContext.halt()
+        }
       case _ =>
         callContext.publish(v)
     }
