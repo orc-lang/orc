@@ -34,8 +34,13 @@ abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site wit
   }
 
   private def evaluate(args: Array[AnyRef], callContext: CallContext) = {
-    val loc = callContext.asInstanceOf[CPSCallContext].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
-    new LocationPinnedTuple(loc, args)
+    try {
+      val loc = callContext.asInstanceOf[CPSCallContext].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
+      new LocationPinnedTuple(loc, args)
+    } catch {
+      case _: ClassCastException =>
+        new OrcTuple(args)
+    }
   }
 
   override def permittedLocations(runtime: DOrcRuntime): Set[PeerLocation] = Set(runtime.locationForRuntimeId(locationNum))
