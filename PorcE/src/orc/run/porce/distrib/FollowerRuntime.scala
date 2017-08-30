@@ -118,7 +118,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           throw e
         }
       } finally {
-        Logger.Connect.info(s"Stopped reading events from ${connection.socket}")
+        Logger.Connect.fine(s"Stopped reading events from ${connection.socket}")
         if (!connection.closed) {
           try {
             Logger.Connect.fine(s"MessageProcessorThread terminating; aborting $connection")
@@ -142,7 +142,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     try {
       var done = false
 
-      Logger.Message.info(s"Reading events from ${leaderLocation.connection.socket}")
+      Logger.Message.fine(s"Reading events from ${leaderLocation.connection.socket}")
 
       while (!done && !leaderLocation.connection.closed && !leaderLocation.connection.socket.isInputShutdown) {
         val cmd = try {
@@ -184,7 +184,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
   protected def communicateWithPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerLocation: PeerLocationImpl): Unit = {
     try {
-      Logger.Connect.info(s"Reading events from ${peerLocation.connection.socket}")
+      Logger.Connect.fine(s"Reading events from ${peerLocation.connection.socket}")
       while (!peerLocation.connection.closed && !peerLocation.connection.socket.isInputShutdown) {
         val msg = try {
           peerLocation.connection.receiveInContext({ programs(_) }, peerLocation)
