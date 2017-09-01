@@ -51,9 +51,9 @@ final public class PorcEClosure {
         return body.call(values);
     }
     
-    @Override
-    public String toString() {
-    	return super.toString() + "(" + body.getRootNode().toString() + ")";
-    }
+	@Override
+	public String toString() {
+		return "PorcEClosure@" + hashCode() + "(" + body.getRootNode().toString() + ")";
+	}
 
 }
