@@ -12,7 +12,9 @@
 //
 package orc.run.porce.runtime
 
-import java.util.ArrayList
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import java.util.concurrent.locks.ReentrantLock
+import java.util.concurrent.ConcurrentLinkedQueue
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
@@ -30,10 +32,19 @@ import orc.values.{ Format, OrcValue }
 class Future() extends OrcValue with orc.Future {
   import FutureConstants._
 
-  // TODO: PERFORMANCE: Using an ArrayList here forces the use of a lock. Ideally we would avoid that. However, it would be quite a lot of work and may not gain much. Profile first.
-
   private var _state: AnyRef = Unbound
-  private var _blocked: ArrayList[FutureReader] = new ArrayList()
+  private var _blocked: ConcurrentLinkedQueue[FutureReader] = new ConcurrentLinkedQueue()
+  //private var _blocked = ConcurrentHashMap.newKeySet[FutureReader]()
+  
+  /*
+  private val lock = new ReentrantReadWriteLock()
+  private val readLock = lock.readLock()
+  private val bindLock = lock.writeLock()
+  */
+
+  private val lock = new ReentrantLock()
+  private val readLock = lock
+  private val bindLock = lock
 
   /** Resolve this to a value and call publish and halt on each blocked FutureReader.
     */
@@ -55,13 +66,18 @@ class Future() extends OrcValue with orc.Future {
   final def localBind(v: AnyRef): Unit = {
     //assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
     //assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
-    val done = synchronized {
-      if (_state eq Unbound) {
-        _state = v
-        //Logger.finest(s"$this bound to $v")
-        true
-      } else {
-        false
+    val done = {
+      bindLock.lock()
+      try {
+        if (_state eq Unbound) {
+          _state = v
+          //Logger.finest(s"$this bound to $v")
+          true
+        } else {
+          false
+        }
+      } finally {
+        bindLock.unlock()
       }
     }
     // We can access and clear _blocked without the lock because we are in a
@@ -77,12 +93,17 @@ class Future() extends OrcValue with orc.Future {
   @TruffleBoundary(allowInlining = true) @noinline
   final def localStop(): Unit = {
     val done = synchronized {
-      if (_state eq Unbound) {
-        _state = Halt
-        //Logger.finest(s"$this halted")
-        true
-      } else {
-        false
+      bindLock.lock()
+      try {
+        if (_state eq Unbound) {
+          _state = Halt
+          //Logger.finest(s"$this halted")
+          true
+        } else {
+          false
+        }
+      } finally {
+        bindLock.unlock()
       }
     }
     // We can access and clear _blocked without the lock because we are in a
@@ -103,14 +124,23 @@ class Future() extends OrcValue with orc.Future {
     */
   @TruffleBoundary(allowInlining = true) @noinline
   final def read(blocked: FutureReader): Unit = {
-    val st = synchronized {
-      _state match {
-        case Unbound => {
-          _blocked.add(blocked)
+    val st = {
+      if(_state eq Unbound) {
+        readLock.lock()
+        try {
+          _state match {
+            case Unbound => {
+              _blocked.add(blocked)
+            }
+            case _ => {}
+          }
+          _state
+        } finally {
+          readLock.unlock()
         }
-        case _ => {}
+      } else {
+        _state
       }
-      _state
     }
 
     st match {
