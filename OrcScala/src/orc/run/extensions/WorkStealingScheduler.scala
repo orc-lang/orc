@@ -13,13 +13,13 @@
 package orc.run.extensions
 
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.logging.Level
 
 import scala.collection.mutable.ArrayBuffer
 
 import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
 import orc.util.ABPWSDeque
-import java.util.logging.Level
 
 /** @param monitorInterval The interval at which the monitor thread runs and checks that the thread pool is the correct size.
   * @param goalExtraThreads The ideal number of extra idle threads that the pool should contain.
@@ -29,9 +29,9 @@ import java.util.logging.Level
   */
 class SimpleWorkStealingScheduler(
   maxSiteThreads: Int,
-  val monitorInterval: Int = 25,
+  val monitorInterval: Int = 100,
   val goalExtraThreads: Int = 0,
-  val workerQueueLength: Int = 1024) {
+  val workerQueueLength: Int = 1024 * 2) {
   schedulerThis =>
 
   val nCores = Runtime.getRuntime().availableProcessors()
@@ -44,7 +44,7 @@ class SimpleWorkStealingScheduler(
   val maxWorkers = minWorkers + maxSiteThreads
   /** The maximum amount of time (ms) to wait between attempts to steal work.
     */
-  val maxStealWait = 20
+  val maxStealWait = 100
   /** The ideal number of active (non-blocked) worker threads.
     */
   val goalUsableThreads = minWorkers + goalExtraThreads
@@ -53,7 +53,7 @@ class SimpleWorkStealingScheduler(
   val maxUsableThreads = (goalUsableThreads * 1.1 + 0.5).toInt
   /** The interval (ms) between thread statistics dumps.
     */
-  val dumpInterval = -1 // 2000
+  val dumpInterval = -1 // 10000
   /** The number of elements to evict from the local queue when it overflows.
     *
     * This number should be fairly large to amortize the cost of eviction.
@@ -121,13 +121,16 @@ class SimpleWorkStealingScheduler(
         
         val nBlocked = ws.count(t => {
           val state = t.getState
-          if (t.isInternallyBlocked) {
+          val isBlocked = if (t.isInternallyBlocked) {
             false
           } else if (t.isPotentiallyBlocked) {
             state != Thread.State.RUNNABLE
           } else {
-            state != Thread.State.RUNNABLE && state != Thread.State.BLOCKED && state != Thread.State.NEW
+            //state != Thread.State.RUNNABLE && state != Thread.State.BLOCKED && state != Thread.State.NEW
+            false
           }
+          //Logger.finest(s"Examined thread $t: $state = $isBlocked (${t.isInternallyBlocked}, ${t.isPotentiallyBlocked})")
+          isBlocked
         })
 
         val currentTime = System.currentTimeMillis()
