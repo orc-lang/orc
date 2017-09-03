@@ -3,7 +3,7 @@ This project contains system testing tools, cases, and data for the OrcScala and
 This project does //not// contain unit tests.
 Those belong in the projects with the code being tested.
 
-(This project may use testing frameworks with "unit" in their name, but they are not be used for unit testing here.)
+(This project may use testing frameworks with "unit" in their name, but they are not used for unit testing here.)
 
 ----
 
