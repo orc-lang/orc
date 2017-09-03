@@ -316,3 +316,11 @@ If the number is negative, <link linkend="ref.concepts.states.halt">halt</link> 
 --}
 def sqrt(Number) :: Number
 def sqrt(n) = n ** 0.5
+
+{--
+@site Log(Number) :: Number
+Publish the natural log of this number.
+
+@implementation
+--}
+import site Log = "orc.lib.math.Log"
