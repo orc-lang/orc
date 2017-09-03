@@ -40,6 +40,14 @@ class ReadJSON extends TotalSite with UntypedSite {
 
 }
 
+/** A simple wrapper for the JSON parser to make it easier to call from Scala.
+  */
+object ReadJSON {
+  def apply(s: String): AnyRef = {
+    SynchronousThreadExec("Orc JSON Parser Thread", OrcJSONParser.parse(s))
+  }
+}
+
 /** JSON lexical scanner.  Returns stream of StringLit, NumericLit, Keyword, and EOF.
   *
   * See ECMA-262 section 15.12.1, The JSON Grammar, and RFC 4627.

@@ -92,7 +92,7 @@ def readPoints(path) =
 
 val points = readPoints("test_data/performance/points-small.json")
 
-val _ = Println(unlines(map({ _.toString() }, take(5, points))))
+val _ = Println(length(points) + "\n" + unlines(map({ _.toString() }, take(5, points))))
 
 benchmark({
   run(points)
