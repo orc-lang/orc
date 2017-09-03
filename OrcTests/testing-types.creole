@@ -1,0 +1,33 @@
+This project contains system testing tools, cases, and data for the OrcScala and OrcSites projects.
+
+This project does //not// contain unit tests.
+Those belong in the projects with the code being tested.
+
+(This project may use testing frameworks with "unit" in their name, but they are not be used for unit testing here.)
+
+----
+
+For clarity, here are terms used in this project:
+
+**testing.** The process of operating a system or component under specified conditions, observing or recording the results, and making an evaluation of some aspect of the system or component.
+
+* Test levels:
+## **unit testing.** Testing of individual hardware or software units or groups of related units.
+## **integration testing.** Testing in which software components, hardware components, or both are combined and tested to evaluate the interaction between them.
+## **system testing.** Testing conducted on a complete, integrated system to evaluate the system's compliance with its specified requirements.
+
+* Objectives of testing -- Common examples:
+** **functional testing.** Testing conducted to evaluate the compliance of a system or component with specified functional requirements.
+** **performance testing.** Testing conducted to evaluate the compliance of a system or component with specified performance requirements.
+** **qualification testing.** Testing conducted to determine whether a system or component is suitable for operational use.
+** **stress testing.** Testing conducted to evaluate a system or component at or beyond the limits of its specified requirements.
+
+* Function vs. performance:
+** **function.** A defined objective or characteristic action of a system or component.
+** **performance.** The degree to which a system or component accomplishes its designated functions within given constraints, such as speed, accuracy, or memory usage.
+
+//Note:// **benchmark.** [often misused] A standard or point of reference against which things may be compared or assessed.
+
+* Valid vs. invalid:
+** Functional //valid// test cases are expected to accomplish a user-level action.
+** Functional //invalid// test cases are expected to provide a diagnostic indication, and not accomplish any user-level action; that is, invalid test cases are erroneous input to Orc.
