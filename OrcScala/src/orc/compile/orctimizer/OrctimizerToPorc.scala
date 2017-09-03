@@ -99,7 +99,8 @@ class OrctimizerToPorc(co: CompilerOptions) {
           }
       }))) {
         porc.NewToken(ctx.c) :::
-          catchExceptions { porc.Spawn(ctx.c, ctx.t, true, comp) }
+        	// TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
+          catchExceptions { porc.Spawn(ctx.c, ctx.t, false, comp) }
       }
   }
 
@@ -192,10 +193,19 @@ class OrctimizerToPorc(co: CompilerOptions) {
         }
       }
       case Parallel.Z(left, right) => {
-        // TODO: While it is sound to never add a spawn here it might be good to add them sometimes.
-        porc.NewToken(ctx.c) :::
-          catchExceptions(expression(left)) :::
-          expression(right)
+        val comp = newVarName("comp")
+        
+        let(
+          (comp, porc.Continuation(Seq(), {
+            catchExceptions {
+              expression(left)
+            }
+          }))) {
+            porc.NewToken(ctx.c) :::
+            	// TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
+              catchExceptions { porc.Spawn(ctx.c, ctx.t, false, comp) } :::
+              expression(right)
+          }
       }
       case Branch.Z(left, x, right) => {
         val newP = newVarName("P")

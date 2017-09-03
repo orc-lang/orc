@@ -23,8 +23,6 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean) {
     descriptor: FrameDescriptor, execution: PorcEExecutionHolder,
     argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
     runtime: PorcERuntime)
-    
-  
 
   object LocalVariables {
     val MethodGroupClosure = new porc.Variable(Some("MethodGroupClosure"))
@@ -184,8 +182,8 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean) {
         porce.Bind.create(transform(fut), transform(v))
       case porc.BindStop.Z(fut) =>
         porce.BindStop.create(transform(fut))
-      case porc.Spawn.Z(c, t, _, comp) =>
-        porce.Spawn.create(transform(c), transform(t), transform(comp), ctx.runtime)
+      case porc.Spawn.Z(c, t, must, comp) =>
+        porce.Spawn.create(transform(c), transform(t), must, transform(comp), ctx.execution.newRef())
       case porc.Resolve.Z(p, c, t, futures) =>
         // Due to not generally being on as hot of paths we do not have a single value version of Resolve. It could easily be created if needed.
         val join = lookupVariable(LocalVariables.Join)

@@ -37,4 +37,5 @@ porc:inline-let
 porc:let-inline-expansion-threshold=30
 porc:try-catch-elim
 porc:try-finally-elim
-porc:max-passes=2
+porc:inline-spawn
+porc:max-passes=3

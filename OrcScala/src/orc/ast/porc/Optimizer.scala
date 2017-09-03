@@ -268,17 +268,16 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     case (Let.Z(x, Zipper(y: Variable, _), b), a) => b.value.substAll(Map((x, y)))
   }
 
-  /*
 
-  val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(30)
+  val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(-1)
 
   val InlineSpawn = OptFull("inline-spawn") { (e, a) =>
-    import a.ImplicitResults._
     e match {
-      case SpawnIn(c, t, e) => {
-        val c = Analysis.cost(e)
-        if (c <= spawnCostInlineThreshold && e.fastTerminating)
-          Some(e)
+      case Spawn.Z(c, t, blocking, e) => {
+        def cost = Analysis.cost(e.value)
+        def acceptableCost = spawnCostInlineThreshold < 0 || cost <= spawnCostInlineThreshold
+        if (!blocking && acceptableCost)
+          Some(CallContinuation(e.value, Seq()))
         else
           None
       }
@@ -287,7 +286,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   /*
-  This may not be needed because site inlining is already done in Orc5C
+  This may not be needed because site inlining is already done in Orctimizer
 
   val siteInlineThreshold = 50
   val siteInlineCodeExpansionThreshold = 50
@@ -318,10 +317,9 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
-   */
-
-*/
-  val allOpts = List[Optimization](InlineLet, EtaReduce, TryCatchElim, TryFinallyElim, EtaSpawnReduce)
+  */
+  
+  val allOpts = List[Optimization](InlineLet, EtaReduce, TryCatchElim, TryFinallyElim, EtaSpawnReduce, InlineSpawn)
 
   val opts = allOpts.filter { o =>
     val b = co.options.optimizationFlags(s"porc:${o.name}").asBool()

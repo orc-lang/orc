@@ -18,6 +18,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.ExecutionRoot
 import orc.run.Orc
 import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution }
+import orc.run.porce.Logger
 
 /** The base runtime for PorcE runtimes.
  *  
@@ -43,23 +44,26 @@ class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
     //PorcERuntime.resetStackDepth()
   }
 
-  @TruffleBoundary @noinline
+  @TruffleBoundary(allowInlining = true) @noinline
   def spawn(c: Counter, computation: PorcEClosure): Unit = {
     schedule(CallClosureSchedulable(computation))
   }
 }
 
 object PorcERuntime {
-  /*
   val stackDepthThreadLocal = new ThreadLocal[Int]() {
     override def initialValue() = {
       0
     }
   }
 
-  def checkAndImplementStackDepth() = {
+  @TruffleBoundary(allowInlining = true) @noinline
+  def incrementAndCheckStackDepth() = {
     if (PorcERuntime.maxStackDepth > 0) {
       val depth = PorcERuntime.stackDepthThreadLocal.get()
+      /*if (depth > PorcERuntime.maxStackDepth / 2)
+        Logger.fine(s"incr depth at $depth.")
+        */
       val r = depth < PorcERuntime.maxStackDepth
       if (r)
         PorcERuntime.stackDepthThreadLocal.set(depth + 1)
@@ -69,12 +73,25 @@ object PorcERuntime {
     }
   }
 
+  @TruffleBoundary(allowInlining = true) @noinline
+  def decrementStackDepth() = {
+    if (PorcERuntime.maxStackDepth > 0) {
+      val depth = PorcERuntime.stackDepthThreadLocal.get()
+      /*if (depth > PorcERuntime.maxStackDepth / 2)
+        Logger.fine(s"decr depth at $depth.")
+        */
+      PorcERuntime.stackDepthThreadLocal.set(depth - 1)
+    }
+  }
+
+  /*
   def resetStackDepth() = {
     if (PorcERuntime.maxStackDepth > 0) {
       PorcERuntime.stackDepthThreadLocal.set(0)
     }
   }
-
-  val maxStackDepth = -1 // 24
   */
+
+  @inline
+  val maxStackDepth = 32
 }
