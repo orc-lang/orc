@@ -15,7 +15,7 @@ def distance((ar, ai)) = (ar**2 + ai**2) ** 0.5
 
 val threshold = 100
 val steps = 10
-val size = 48
+val size = problemSizeSqrtScaledInt(48)
 val resolution = 3.0 / size
 val offset = size / 2.0
 
@@ -23,7 +23,7 @@ def point(c) =
 	def inner(z, n) = 
 		val next = plus(square(z), c) #
 		val isIn = distance(z) <: threshold #
-		(Ift(n :> steps || ~isIn) >> isIn) ; inner(next, n + 1)
+		(Ift(n :> steps) >> isIn) ; inner(next, n + 1)
 	inner((0,0), 0)
 
 def cell(i, j) = point(((i-offset)*resolution, (j-offset)*resolution))
@@ -34,7 +34,7 @@ def tableToList(n, t) = t(n-1) : tableToList(n-1, t)
 
 def showRow(l) = afold({ _ + _ }, map({ if _ then "@" else "." }, l))
 
-benchmark({
+benchmarkSized(size * size, {
 tableToList(size, Table(size, row)) >ll>
 map(compose(showRow, curry(tableToList)(size)), ll) >ls>
 Println(unlines(ls))

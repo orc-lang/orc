@@ -22,7 +22,7 @@ def threadRing(id, m, in, next) =
      else
         next.put(x+1) >> threadRing(id, m, in, next))
 
-val N = 503
+val N = problemSizeScaledInt(503)
 
 def threadRingRunner(Integer) :: Signal
 def threadRingRunner(p) =
@@ -31,10 +31,11 @@ def threadRingRunner(p) =
   val lastid = {| upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N)) |}
   Println(lastid)
 
-benchmark({
-threadRingRunner(2000) >>
-threadRingRunner(20000) >> stop
+benchmarkSized(problemSizeScaledInt(2000) + problemSizeScaledInt(20000), {
+threadRingRunner(problemSizeScaledInt(2000)) >>
+threadRingRunner(problemSizeScaledInt(20000)) >> stop
 })
+
 {-
 OUTPUT:
 492

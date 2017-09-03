@@ -44,7 +44,7 @@ def primes(n) =
   joinMap(set.add, candidates(n)) >>
   sieve(n, set)
 
-benchmark({ primes(20000) })
+benchmarkSized(problemSizeScaledInt(20000), { primes(problemSizeScaledInt(20000)) })
 
 {-
 OUTPUT:

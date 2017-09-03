@@ -26,8 +26,14 @@ def queens(N) =
   def extend(x,n) = extend(x,n-1) >y> upto(N) >j> addqueen((n,j), y)
   extend([],N)
 
-benchmark({
-  collect(defer(queens, 8)) >x> signal
+val N = Floor(7 + problemSize)
+
+def factorial(0) = 1
+def factorial(1) = 1
+def factorial(n) = n * factorial(n - 1)
+
+benchmarkSized(factorial(N), {
+  collect(defer(queens, N)) >x> signal
 })
 
 {-
