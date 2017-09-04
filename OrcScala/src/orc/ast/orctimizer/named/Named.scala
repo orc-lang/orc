@@ -64,6 +64,10 @@ sealed abstract class NamedAST extends ASTForSwivel {
     * 				These variables in in scope for any subexpressions.
     */
   def boundVars: Set[BoundVar] = Set()
+  
+  override def transferMetadata[T <: NamedAST](e: T): T = {
+    this ->> e
+  }
 }
 
 object NamedAST {

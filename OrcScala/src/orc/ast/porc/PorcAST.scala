@@ -60,6 +60,10 @@ sealed abstract class PorcAST extends ASTForSwivel with Product {
   override def toString() = prettyprint()
 
   def boundVars: Set[Variable] = Set()
+  
+  override def transferMetadata[T <: PorcAST](e: T): T = {
+    this ->> e
+  }
 }
 
 // ==================== CORE ===================

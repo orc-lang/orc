@@ -53,6 +53,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         val translator = new OILToOrctimizer(co)
         val res = translator(ast)(translator.Context(Map(), Map()))
         orctimizer.named.VariableChecker(res.toZipper(), co)
+        orctimizer.named.PositionChecker(res.toZipper(), co)
         res
       }
   }
@@ -107,6 +108,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Orctimizer after pass $pass/$maxPasses: $optimizationCountsStr")
 
         orctimizer.named.VariableChecker(prog1.toZipper(), co)
+        orctimizer.named.PositionChecker(prog1.toZipper(), co)
 
         if (prog1 == prog || pass >= maxPasses)
           prog1
@@ -202,6 +204,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         val translator = new OrctimizerToPorc(co)
         val res = translator(ast, cache)
         porc.VariableChecker(res.toZipper(), co)
+        porc.PositionChecker(res.toZipper(), co)
         res
       }
   }
@@ -231,7 +234,9 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $optimizationCountsStr")
+        
         porc.VariableChecker(prog1.toZipper(), co)
+        porc.PositionChecker(prog1.toZipper(), co)
 
         if (prog1 == prog || pass >= maxPasses)
           prog1
