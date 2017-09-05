@@ -97,4 +97,8 @@ val _ = Println(length(points) + "\n" + unlines(map({ _.toString() }, take(5, po
 benchmark({
   run(points)
 })
+
+{-
+BENCHMARK
+-}
   

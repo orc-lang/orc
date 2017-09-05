@@ -20,7 +20,18 @@ object KMeans extends BenchmarkApplication {
   val iters = 15
   
   def main(args: Array[String]): Unit = {
-    println(run(KMeansData.data))
+    if (args.size == 0) {
+      val r = run(KMeansData.data)
+      println(r.size)
+    } else if (args.size == 1) {
+      val n = args(0).toInt
+      for (_ <- 0 until n) {
+        Util.timeIt {
+          val r = run(KMeansData.data)
+          println(r.size)
+        }
+      }
+    }
   }
 
   case class Point(x: BigDecimal, y: BigDecimal) {

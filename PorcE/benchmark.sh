@@ -33,9 +33,9 @@ sleep 2
 
 #                  "porcegraalO3%$GRAALJAVA%orc%porc%3"   \
 for config in     \
+                  "scala%$NORMALJAVA%scala%token%3"      \
                   "porcegraalO2%$GRAALJAVA%orc%porc%2"   \
                   "porcedistribgraalO2%$GRAALJAVA%orc%porc-distrib%2"   \
-                  "scala%$NORMALJAVA%scala%scala%3"      \
                   "token%$NORMALJAVA%orc%token%3"        \
                   ; do
     IFS='%' read -r -a configs <<< "$config"
