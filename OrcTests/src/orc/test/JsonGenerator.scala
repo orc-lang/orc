@@ -27,11 +27,11 @@ import scala.collection.JavaConverters.{ dictionaryAsScalaMapConverter, enumerat
   */
 object JsonGenerator {
 
-  def apply(out: StringBuilder)(value: Any): Unit = {
+  def apply(out: Appendable)(value: Any): Unit = {
     serializeJsonProperty(out)(value, "", "  ")
   }
 
-  def serializeJsonProperty(out: StringBuilder)(value: Any, currIndent: String, addlIndent: String): Unit = {
+  def serializeJsonProperty(out: Appendable)(value: Any, currIndent: String, addlIndent: String): Unit = {
     value match {
       //Maybe: case (object with toJson method) => object.toJson()
       case null => out.append("null")
@@ -39,8 +39,8 @@ object JsonGenerator {
       case false => out.append("false")
       case s: String => writeQuotedJsonString(out)(s)
       case c: Char => writeQuotedJsonString(out)(c.toString)
-      case _: Byte | _: Short | _: Int | _: Long | _: Float | _: Double => out.append(value)
-      case n: Number => out.append(n)
+      case _: Byte | _: Short | _: Int | _: Long | _: Float | _: Double => out.append(value.toString)
+      case n: Number => out.append(n.toString)
       case o: scala.collection.Map[_,_] => serializeJsonObject(out)(o, currIndent, addlIndent)
       case o: java.util.Map[_,_] => serializeJsonObject(out)(o.asScala, currIndent, addlIndent)
       case o: java.util.Dictionary[_,_] => serializeJsonObject(out)(o.asScala, currIndent, addlIndent)
@@ -52,7 +52,7 @@ object JsonGenerator {
     }
   }
 
-  def writeQuotedJsonString(out: StringBuilder)(str: String): Unit = {
+  def writeQuotedJsonString(out: Appendable)(str: String): Unit = {
     out.append("\"")
     str.foreach(_ match {
       case '"' => out.append("\\\"")
@@ -71,7 +71,7 @@ object JsonGenerator {
     out.append("\"")
   }
 
-  def serializeJsonObject(out: StringBuilder)(value: Iterable[(_,_)], currIndent: String, addlIndent: String): Unit = {
+  def serializeJsonObject(out: Appendable)(value: Iterable[(_,_)], currIndent: String, addlIndent: String): Unit = {
     if (value.isEmpty) {
       out.append("{}")
     } else {
@@ -101,7 +101,7 @@ object JsonGenerator {
     }
   }
 
-  def serializeJsonArray(out: StringBuilder)(value: TraversableOnce[Any], currIndent: String, addlIndent: String): Unit = {
+  def serializeJsonArray(out: Appendable)(value: TraversableOnce[Any], currIndent: String, addlIndent: String): Unit = {
     if (value.isEmpty) {
       out.append("[]")
     } else {
