@@ -135,7 +135,7 @@ class CsvWriter(write: String => Unit) extends DelimeterSeparatedTabularTextWrit
   val quoteCharacter: String = "\""
 
   /** A set of characters that require an escape prefix. */
-  val requiresEscape: String = ""
+  val requiresEscape: String = "\""
 
   /** The string that is used to escape the quote character within escaped cells. */
   val escapePrefix: String = "\""
