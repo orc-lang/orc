@@ -17,6 +17,9 @@ import java.io.IOException
 import java.lang.management.ManagementFactory
 import java.lang.reflect.Modifier
 import java.time.{ Duration, Instant }
+import java.util.jar.Manifest
+
+import scala.collection.JavaConverters.{ enumerationAsScalaIteratorConverter, mapAsScalaMapConverter }
 
 /** Captures a snapshot of the execution environment state at time of
   * construction.
@@ -26,6 +29,7 @@ import java.time.{ Duration, Instant }
 class TestEnvironmentDescription() extends FieldsToMap {
   
   val jvmDescription = new JvmDescription().toMap
+  val classPathDescription = new ClassPathDescription().toMap
   val scmStateDescription = new ScmStateDescription().toMap
   val orcDescription = new OrcDescription().toMap
 
@@ -135,6 +139,21 @@ class TestEnvironmentDescription() extends FieldsToMap {
 
   }
 
+  class ClassPathDescription() extends FieldsToMap {
+
+    val manifests = scala.collection.mutable.Map[String, scala.collection.mutable.Map[String, String]]()
+
+    for (manifestUrl <- Thread.currentThread().getContextClassLoader().getResources("META-INF/MANIFEST.MF").asScala) {
+      val is = manifestUrl.openStream()
+      val manifest = new Manifest(is)
+      is.close()
+      manifests.put(manifestUrl.toExternalForm, manifest.getMainAttributes.asInstanceOf[java.util.Map[String,String]].asScala)
+      /* Cast required because java.util.jar.Manifest.getMainAttributes's
+       * declared type is Map[AnyRef,AnyRef] for compatibility reasons. */
+    }
+
+  }
+  
   class ScmStateDescription() extends FieldsToMap {
 
     val gitDescribe = {
