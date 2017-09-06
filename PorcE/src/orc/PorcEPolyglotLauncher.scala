@@ -8,7 +8,7 @@ import orc.run.porce.PorcELanguage
 import com.oracle.truffle.api.source.Source
 import orc.script.OrcBindings
 import java.io.File
-//import orc.util.PorcNodeExecutionProfiler
+import orc.util.PorcNodeExecutionProfiler
 
 object PorcEPolyglotLauncher {
   class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
@@ -28,7 +28,7 @@ object PorcEPolyglotLauncher {
     //println(langs.asScala)
     //println(options.filename)
     
-    //insts.get(PorcNodeExecutionProfiler.ID).setEnabled(true)
+    insts.get(PorcNodeExecutionProfiler.ID).setEnabled(true)
     
     engine.eval(Source.newBuilder(new File(options.filename)).mimeType(PorcELanguage.MIME_TYPE).build())
     

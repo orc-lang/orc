@@ -1,26 +1,15 @@
 package orc.util;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.Callable;
 
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
+import com.oracle.truffle.api.frame.FrameSlotTypeException;
+import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.EventContext;
 import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
 import com.oracle.truffle.api.instrumentation.ExecutionEventNodeFactory;
@@ -29,7 +18,6 @@ import com.oracle.truffle.api.instrumentation.SourceSectionFilter;
 import com.oracle.truffle.api.instrumentation.TruffleInstrument;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import com.oracle.truffle.api.source.SourceSection;
 
 import orc.ast.porc.PorcAST;
 import orc.run.porce.HasPorcNode;
@@ -39,8 +27,8 @@ public final class PorcNodeExecutionProfiler extends TruffleInstrument {
 
 	public static final String ID = "porc-execution-profiler";
 	
-	// Remove measurements from constants, reads, writes, sequences (that are not representing a non sequence Porc node).
-	// Implement Orc controlled starting and output. This will allow the benchmark harness to output/reset the data at the end of each iteration.
+	// FIXME: Remove measurements from constants, reads, writes, sequences (that are not representing a non sequence Porc node).
+	// FIXME: Implement Orc controlled starting and output. This will allow the benchmark harness to output/reset the data at the end of each iteration.
 	
 	private ThreadLocal<ProfilerState> profilerState = new ThreadLocal<ProfilerState>() {
 		protected  ProfilerState initialValue() {
@@ -174,8 +162,6 @@ public final class PorcNodeExecutionProfiler extends TruffleInstrument {
 			com.oracle.truffle.api.nodes.Node n = ec.getInstrumentedNode();
 			RootNode rootNode = n.getRootNode();
 			return rootNode.atomic(() -> {
-				final Object startTimeKey = new Object();
-
 				PorcAST ast = null;
 				if (n instanceof HasPorcNode)
 					ast = ((HasPorcNode) n).porcNode().getOrElse(() -> null);
