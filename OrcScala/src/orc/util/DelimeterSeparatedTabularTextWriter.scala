@@ -96,7 +96,7 @@ abstract class DelimeterSeparatedTabularTextWriter(write: String => Unit) {
     val str = if (value != null) value.toString else ""
     val mustQuote =
         (str.nonEmpty && (whitespace.contains(str.head) || whitespace.contains(str.last))) ||
-        requiresQuotes.nonEmpty && str.contains(requiresQuotes)
+        (requiresQuotes.nonEmpty && requiresQuotes.exists(str.contains(_)))
     val escapedStr = if (requiresEscape.nonEmpty) str.flatMap(escape(requiresEscape, escapePrefix)(_)) else str
     if (mustQuote) {
       write(quoteCharacter)
@@ -108,7 +108,7 @@ abstract class DelimeterSeparatedTabularTextWriter(write: String => Unit) {
   }
 }
 
-/** Tab-separated value writer, per RFC 4180 and https://www.w3.org/TR/tabular-data-model/
+/** Comma-separated value writer, per RFC 4180 and https://www.w3.org/TR/tabular-data-model/
   *
   * @author jthywiss
   */
