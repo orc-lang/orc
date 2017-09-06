@@ -13,6 +13,9 @@
 
 package orc.util
 
+import java.io.{ File, FileOutputStream, OutputStreamWriter }
+import java.lang.management.ManagementFactory
+
 /** Rudimentary profiling facility.
   *
   * Each thread accumulates times in a thread-local profiling map.  At JVM
@@ -73,19 +76,6 @@ object Profiler {
   private final class ProfilingAccumulators(val javaThreadId: Long) {
     final val accumulatorMap = new scala.collection.mutable.HashMap[Symbol, Array[Long]]
 
-    /* Thomas Wang, "Integer Hash Function". http://web.archive.org/web/20071223173210/http://www.concentric.net/~Ttwang/tech/inthash.htm */
-    /* Works well for our location IDs, even in small hash tables */
-    @inline
-    private def hashLongToInt(in: Long) = {
-      var hash = (~in) + (in << 18)  // hash = (hash << 18) - hash - 1
-      hash = hash ^ (hash >>> 31)
-      hash = hash * 21               // hash = (hash + (hash << 2)) + (hash << 4);
-      hash = hash ^ (hash >>> 11)
-      hash = hash + (hash << 6)
-      hash = hash ^ (hash >>> 22)
-      hash.toInt
-    }
-
     @inline
     def add(locationId: Long, intervalType: Symbol, intervalCount: Long, intervalDurationNanos: Long) {
       val accums = accumulatorMap.get(intervalType)
@@ -129,6 +119,19 @@ object Profiler {
           System.err.append(f"\t${e._2(0)}%20d\t${e._2(1)}%20d\n")
         }
         System.err.append(f"Profiling Accumulators: end\n")
+      }
+
+      val outDir = System.getProperty("orc.executionlog.dir")
+      if (outDir != null) {
+        val profileCsvFile = new File(outDir, s"profile-${ManagementFactory.getRuntimeMXBean().getName()}.csv")
+        assert(profileCsvFile.createNewFile(), s"Profile output file: File already exists: $profileCsvFile")
+        val profileCsv = new OutputStreamWriter(new FileOutputStream(profileCsvFile), "UTF-8")
+        val csvWriter = new CsvWriter(profileCsv.append(_))
+        val tableColumnTitles = Seq("Interval Type", "Count", "Accum. Time (ns)")
+        csvWriter.writeHeader(tableColumnTitles)
+        val rows = sumMap.map(e => ((e._1.name,e._2(0),e._2(1))))
+        csvWriter.writeRows(rows)
+        profileCsv.close()
       }
     }
 

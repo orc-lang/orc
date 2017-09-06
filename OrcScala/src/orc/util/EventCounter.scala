@@ -13,6 +13,9 @@
 
 package orc.util
 
+import java.io.{ File, FileOutputStream, OutputStreamWriter }
+import java.lang.management.ManagementFactory
+
 /** Rudimentary event counting facility.
   *
   * Each thread accumulates counts in a thread-local counting map.  At JVM
@@ -63,8 +66,8 @@ object EventCounter {
       val sumMap = new scala.collection.mutable.HashMap[Symbol, Array[Long]]
       var eventTypeColWidth = 14
 
-      for (pa <- accums) {
-        for (e <- pa.countMap) {
+      for (ec <- accums) {
+        for (e <- ec.countMap) {
           val sums = sumMap.getOrElseUpdate(e._1, Array(0L))
           sums(0) += e._2(0)
           if (e._1.name.length > eventTypeColWidth) eventTypeColWidth = e._1.name.length
@@ -73,7 +76,7 @@ object EventCounter {
 
       /* Convention: synchronize on System.err during output of block */
       System.err synchronized {
-        System.err.append(s"Profiling Accumulators: begin, ${sumMap.size} entries\n")
+        System.err.append(s"Event Counters: begin, ${sumMap.size} entries\n")
         System.err.append("Event-Type".padTo(eventTypeColWidth, '-'))
         System.err.append("\t-------Count--------\n")
 
@@ -81,7 +84,20 @@ object EventCounter {
           System.err.append(e._1.name.padTo(eventTypeColWidth, ' '))
           System.err.append(f"\t${e._2(0)}%20d\n")
         }
-        System.err.append(f"Profiling Accumulators: end\n")
+        System.err.append(f"Event Counters: end\n")
+      }
+
+      val outDir = System.getProperty("orc.executionlog.dir")
+      if (outDir != null) {
+        val eventCountCsvFile = new File(outDir, s"eventCount-${ManagementFactory.getRuntimeMXBean().getName()}.csv")
+        assert(eventCountCsvFile.createNewFile(), s"Event count output file: File already exists: $eventCountCsvFile")
+        val eventCountCsv = new OutputStreamWriter(new FileOutputStream(eventCountCsvFile), "UTF-8")
+        val csvWriter = new CsvWriter(eventCountCsv.append(_))
+        val tableColumnTitles = Seq("Event Type", "Count")
+        csvWriter.writeHeader(tableColumnTitles)
+        val rows = sumMap.map(e => ((e._1.name,e._2(0))))
+        csvWriter.writeRows(rows)
+        eventCountCsv.close()
       }
     }
 

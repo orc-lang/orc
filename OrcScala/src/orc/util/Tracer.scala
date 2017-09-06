@@ -13,6 +13,9 @@
 
 package orc.util
 
+import java.io.{ File, FileOutputStream, OutputStreamWriter }
+import java.lang.management.ManagementFactory
+
 /** Rudimentary event tracing facility.
   *
   * Each thread writes events to a thread-local event trace buffer.  At JVM
@@ -86,34 +89,17 @@ object Tracer {
     final val fromArgs = new Array[Long](size)
     final val toArgs = new Array[Long](size)
 
-    private final var nextWriteIndex = 0
+    final var nextWriteIndex = 0
 
-    @inline
-    def add(eventTypeId: Long, eventLocationId: Long, eventTimeMillis: Long, eventTimeNanos: Long, eventFromArg: Long, eventToArg: Long) {
-      typeIds(nextWriteIndex) = eventTypeId
-      locationIds(nextWriteIndex) = eventLocationId
-      millitimes(nextWriteIndex) = eventTimeMillis
-      nanotimes(nextWriteIndex) = eventTimeNanos
-      fromArgs(nextWriteIndex) = eventFromArg
-      toArgs(nextWriteIndex) = eventToArg
-      nextWriteIndex = (nextWriteIndex + 1) //% size
-    }
-
-    def dump(a: Appendable) = Tracer synchronized {
-      /* Convention: synchronize on a during output of block */
-      a synchronized {
-        a.append(s"Trace Buffer: begin: Java thread ID $javaThreadId, ${nextWriteIndex.toString} entries\n")
-        a.append(s"-----Time-(ms)-----  -----Time-(ns)-----  -----Thread-ID-----  -Token/Group-ID-  EvntType  ------From------  -------To-------\n")
-
-        for (i <- 0 to nextWriteIndex - 1) {
-          if (!onlyDumpSelectedLocations || selectedLocations.contains(locationIds(i))) {
-            val eventTypeName = eventTypeNameMap(typeIds(i))
-                val prettyFromArg = eventPrettyprintFromArg(typeIds(i))(fromArgs(i))
-                val prettyToArg = eventPrettyprintToArg(typeIds(i))(toArgs(i))
-                a.append(f"${millitimes(i)}%19d  ${nanotimes(i)}%19d  $javaThreadId%19d  ${locationIds(i)}%016x  ${eventTypeName}  ${prettyFromArg}%16s  ${prettyToArg}%16s\n")
-          }
-        }
-        a.append(s"Trace Buffer: end: Java thread ID $javaThreadId\n")
+    def add(eventTypeId: Long, eventLocationId: Long, eventTimeMillis: Long, eventTimeNanos: Long, eventFromArg: Long, eventToArg: Long): Unit = {
+      this synchronized {
+        typeIds(nextWriteIndex) = eventTypeId
+        locationIds(nextWriteIndex) = eventLocationId
+        millitimes(nextWriteIndex) = eventTimeMillis
+        nanotimes(nextWriteIndex) = eventTimeNanos
+        fromArgs(nextWriteIndex) = eventFromArg
+        toArgs(nextWriteIndex) = eventToArg
+        nextWriteIndex = (nextWriteIndex + 1) //% size
       }
     }
 
@@ -127,8 +113,49 @@ object Tracer {
   private object TraceBufferDumpThread extends Thread("TraceBufferDumpThread") {
     private val buffers = scala.collection.mutable.Set[TraceBuffer]()
     override def run = synchronized {
-      buffers.map { _.dump(System.err) }
+      val a = System.err
+      /* Convention: synchronize on a during output of block */
+      a synchronized {
+        a.append(s"Trace Buffer: begin\n")
+        a.append(s"-----Time-(ms)-----  -----Time-(ns)-----  -----Thread-ID-----  -Token/Group-ID-  EvntType  ------From------  -------To-------\n")
+
+        for (tb <- buffers) {
+          Tracer synchronized {
+            tb synchronized {
+              for (i <- 0 to tb.nextWriteIndex - 1) {
+                if (!onlyDumpSelectedLocations || selectedLocations.contains(tb.locationIds(i))) {
+                  val eventTypeName = eventTypeNameMap(tb.typeIds(i))
+                  val prettyFromArg = eventPrettyprintFromArg(tb.typeIds(i))(tb.fromArgs(i))
+                  val prettyToArg = eventPrettyprintToArg(tb.typeIds(i))(tb.toArgs(i))
+                  a.append(f"${tb.millitimes(i)}%19d  ${tb.nanotimes(i)}%19d  ${tb.javaThreadId}%19d  ${tb.locationIds(i)}%016x  ${eventTypeName}  ${prettyFromArg}%16s  ${prettyToArg}%16s\n")
+                }
+              }
+            }
+          }
+        }
+        a.append(s"Trace Buffer: end\n")
+      }
+
+      val outDir = System.getProperty("orc.executionlog.dir")
+      if (outDir != null) {
+        val traceCsvFile = new File(outDir, s"trace-${ManagementFactory.getRuntimeMXBean().getName()}.csv")
+        assert(traceCsvFile.createNewFile(), s"Trace output file: File already exists: $traceCsvFile")
+        val traceCsv = new OutputStreamWriter(new FileOutputStream(traceCsvFile), "UTF-8")
+        val csvWriter = new CsvWriter(traceCsv.append(_))
+        val tableColumnTitles = Seq("Time (ms)", "Time (ns)", "Thread ID", "Token/Group ID", "Event Type", "From", "To")
+        csvWriter.writeHeader(tableColumnTitles)
+        for (tb <- buffers) {
+          tb synchronized {
+            val numRows = tb.nextWriteIndex
+            val eventTypeNames = tb.typeIds.view(0, numRows).map(eventTypeNameMap(_));
+            val rows = new JoinedColumnsTraversable(numRows, tb.millitimes, tb.nanotimes, new ConstantSeq(tb.javaThreadId, numRows), tb.locationIds, eventTypeNames, tb.fromArgs, tb.toArgs)
+            csvWriter.writeRows(rows)
+          }
+        }
+        traceCsv.close()
+      }
     }
+
     def register(tb: TraceBuffer) = synchronized {
       buffers += tb
     }
@@ -136,4 +163,26 @@ object Tracer {
 
   if (traceOn) Runtime.getRuntime().addShutdownHook(TraceBufferDumpThread)
 
+}
+
+private class ConstantSeq[A](val value: A, override val length: Int) extends Seq[A] {
+  override def apply(idx: Int): A = value
+  override def iterator: Iterator[A] = Iterator.fill(length)(value)
+}
+
+private class JoinedColumnsTraversable(override val size: Int, columns: Seq[Any]*) extends Traversable[Product] {
+  def foreach[U](f: Product => U): Unit = {
+    scala.Product10
+    for (i <- 0 to size - 1) {
+      f(new ColumnProduct(i, columns))
+    }
+  }
+
+  override def isEmpty: Boolean = size == 0
+
+  class ColumnProduct(index: Int, columns: Seq[Seq[Any]]) extends Product {
+    override def productElement(n: Int): Any = columns(n)(index)
+    override def productArity: Int = columns.size
+    override def canEqual(that: Any): Boolean = that.isInstanceOf[ColumnProduct]
+  }
 }
