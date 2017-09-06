@@ -3,44 +3,15 @@ package orc.run.porce;
 
 import java.util.concurrent.locks.Lock;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.NodeCost;
+
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
-
-abstract class InternalArgArrayCallBase extends Expression {
-    protected final PorcEExecutionRef execution;
-
-    public InternalArgArrayCallBase(final PorcEExecutionRef execution) {
-        this.execution = execution;
-    }
-
-    @Override
-    public Object execute(final VirtualFrame frame) {
-        CompilerDirectives.bailout("InternalArgArrayCall cannot be executed this way.");
-        throw new IllegalStateException("InternalArgArrayCall cannot be executed this way.");
-    }
-
-    public abstract Object execute(VirtualFrame frame, Object target, Object[] arguments);
-
-    protected static InternalArgArrayCallBase findCacheRoot(final InternalArgArrayCallBase n) {
-        CompilerAsserts.neverPartOfCompilation();
-        if (n.getParent() instanceof InternalArgArrayCallBase) {
-            return findCacheRoot((InternalArgArrayCallBase) n.getParent());
-        } else {
-            return n;
-        }
-    }
-
-    public static InternalArgArrayCallBase create(final PorcEExecutionRef execution) {
-        return InternalArgArrayCall.create(execution);
-    }
-}
 
 public class InternalArgArrayCall extends InternalArgArrayCallBase {
     public InternalArgArrayCall(final PorcEExecutionRef execution) {

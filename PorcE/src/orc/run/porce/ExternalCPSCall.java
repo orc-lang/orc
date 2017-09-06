@@ -116,7 +116,7 @@ public class ExternalCPSCall extends ExternalCPSCallBase {
                     } else {
                         n = new Specific((Expression) target.copy(), invoker, copyExpressionArray(arguments), (CallBase) this.copy(), execution);
                     }
-                    replace(n, "ExternalCPSCall: Speculate on target invoker.");
+                    n = replace(n, "ExternalCPSCall: Speculate on target invoker.");
                 } else {
                     n = replaceWithUniversal();
                 }

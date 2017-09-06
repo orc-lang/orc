@@ -24,7 +24,7 @@ import orc.run.porce.runtime.PorcERuntime
   *
   * @author jthywiss
   */
-abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String) extends PorcERuntime(engineInstanceName) {
+abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String) extends PorcERuntime(engineInstanceName, null) {
 
   type ProgramAST = MethodCPS
 

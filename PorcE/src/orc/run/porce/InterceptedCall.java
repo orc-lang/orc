@@ -2,6 +2,7 @@ package orc.run.porce;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Instrumentable;
 
 import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
@@ -9,7 +10,12 @@ import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.Terminator;
 
+@Instrumentable(factory = InterceptedCallWrapper.class)
 public class InterceptedCall extends CallBase {
+	protected InterceptedCall(InterceptedCall orig) {
+		this(orig.target, orig.arguments, orig.execution);
+	}
+	
 	protected InterceptedCall(Expression target, Expression[] arguments, PorcEExecutionRef execution) {
 		super(target, arguments, execution);
 	}

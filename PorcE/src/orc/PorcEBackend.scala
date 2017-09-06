@@ -16,6 +16,7 @@ package orc
 import orc.ast.porc.MethodCPS
 import orc.compiler.porce.PorcToPorcE
 import orc.run.porce.runtime.{ PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch, PorcERuntime }
+import orc.run.porce.PorcELanguage
 
 case class PorcEBackendType() extends BackendType {
   type CompiledCode = MethodCPS
@@ -30,36 +31,14 @@ case class PorcEBackendType() extends BackendType {
   *
   * @author amp
   */
-case class PorcEBackend() extends PorcBackend {
-  def createRuntime(options: OrcExecutionOptions): Runtime[MethodCPS] = new PorcERuntime("PorcE on Truffles") with Runtime[MethodCPS] {
+case class PorcEBackend(language: PorcELanguage = null) extends PorcBackend {
+  def createRuntime(options: OrcExecutionOptions): Runtime[MethodCPS] = new PorcERuntime("PorcE on Truffles", language) with Runtime[MethodCPS] {
     startScheduler(options)
 
-    //val cache = new collection.mutable.HashMap[MethodCPS, (PorcEExecutionHolder, PorcEClosure)]()
-
     private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecutionWithLaunch = synchronized {
-      /*val porceAst = cache.get(ast) match {
-        case Some((holder, porceAst)) => {
-          if(holder.setExecution(execution)) {
-            Logger.info(s"Updating execution for cached program.")
-            porceAst
-          } else {
-            Logger.info(s"Converting and not caching program that is being started concurrently with itself.")
-            val executionHolder = new PorcEExecutionHolder(execution)
-            val porceAst = translator(ast, executionHolder, this)
-            porceAst
-          }
-        }
-        case None => {
-          Logger.info(s"Converting and caching input program.")
-          ...
-		      cache += ((ast, (executionHolder, porceAst)))
-          porceAst
-        }
-      }
-	    */
       val execution = new PorcEExecution(this, k) with PorcEExecutionWithLaunch
       val executionHolder = new PorcEExecutionHolder(execution)
-      val (porceAst, map) = PorcToPorcE(ast, executionHolder, false)
+      val (porceAst, map) = PorcToPorcE(ast, executionHolder, false, language)
       addRoot(execution)
       execution.scheduleProgram(porceAst, map)
       execution

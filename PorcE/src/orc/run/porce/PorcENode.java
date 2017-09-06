@@ -28,14 +28,14 @@ public abstract class PorcENode extends Node implements HasPorcNode {
 		CompilerAsserts.neverPartOfCompilation();
 		porcNode = Option.apply(ast);
 		section = SourceSectionFromPorc.apply(ast);
-		getChildren().forEach((n) -> {
+		/*getChildren().forEach((n) -> {
 			if (n instanceof PorcENode) {
 				final Expression e = (Expression) n;
 				if (e.porcNode().isEmpty()) {
 					e.setPorcAST(ast);
 				}
 			}
-		});
+		});*/
 	}
 
     @Override
@@ -86,5 +86,12 @@ public abstract class PorcENode extends Node implements HasPorcNode {
             ((PorcENode) newNode).setPorcAST(porcNode().get());
         }
         super.onReplace(newNode, reason);
+    }
+    
+    @Override
+    public Node copy() {
+    	Node n = super.copy();
+    	((PorcENode)n).porcNode = Option.apply(null);
+    	return n;
     }
 }

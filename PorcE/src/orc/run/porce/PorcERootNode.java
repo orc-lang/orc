@@ -74,11 +74,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final int nArguments;
     private final int nCaptured;
 
-    public PorcERootNode(final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured) {
-        super(null, descriptor);
+    public PorcERootNode(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured) {
+        super(language, descriptor);
         this.body = body;
         this.nArguments = nArguments;
         this.nCaptured = nCaptured;
+        
+    	PorcELanguage lang = getRootNode().getLanguage(PorcELanguage.class);
+    	assert lang != null : "RootNode " + getRootNode();
     }
 
     @Override
@@ -112,8 +115,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         throw new ArityMismatchException(nExpected, nReceived);
     }
 
-    public static PorcERootNode create(final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured) {
-        return new PorcERootNode(descriptor, body, nArguments, nCaptured);
+    public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured) {
+        return new PorcERootNode(language, descriptor, body, nArguments, nCaptured);
     }
 
     @Override

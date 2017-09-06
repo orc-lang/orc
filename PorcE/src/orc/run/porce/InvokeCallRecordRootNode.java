@@ -26,7 +26,7 @@ public class InvokeCallRecordRootNode extends PorcERootNode {
         return Call.CPS.create(readTarget, readArgs, holder.newRef());
     }
 
-    public InvokeCallRecordRootNode(final int nArguments, final PorcEExecution execution) {
-        super(new FrameDescriptor(), buildBody(nArguments, execution), nArguments, 0);
+    public InvokeCallRecordRootNode(final PorcELanguage language, final int nArguments, final PorcEExecution execution) {
+        super(language, new FrameDescriptor(), buildBody(nArguments, execution), nArguments, 0);
     }
 }

@@ -109,8 +109,6 @@ public class Force {
     @NodeField(name = "execution", type = PorcEExecutionRef.class)
     @ImportStatic({ Force.class })
     public static abstract class SingleFuture extends Expression {
-        volatile static int count = 0;
-
         @Child
         protected InternalArgArrayCallBase call = null;
         private final BranchProfile boundPorcEFuture = BranchProfile.create();

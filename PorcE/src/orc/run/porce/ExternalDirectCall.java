@@ -77,7 +77,7 @@ public class ExternalDirectCall extends ExternalDirectCallBase {
                 if (!(invoker instanceof ErrorInvoker) && cacheSize < cacheMaxSize) {
                     cacheSize++;
                     n = new Specific((Expression) target.copy(), invoker, copyExpressionArray(arguments), (CallBase) this.copy(), execution);
-                    replace(n, "ExternalDirectCall: Speculate on target invoker.");
+                    n = replace(n, "ExternalDirectCall: Speculate on target invoker.");
                 } else {
                     n = replaceWithUniversal();
                 }

@@ -19,13 +19,14 @@ import orc.ExecutionRoot
 import orc.run.Orc
 import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution }
 import orc.run.porce.Logger
+import orc.run.porce.PorcELanguage
 
 /** The base runtime for PorcE runtimes.
  *  
  *  WARNING: This runtime does not support onSchedule and onComplete on 
  *  schedulables. See PorcEWithWorkStealingScheduler. 
   */
-class PorcERuntime(engineInstanceName: String) extends Orc(engineInstanceName)
+class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) extends Orc(engineInstanceName)
   with PorcEInvocationBehavior
   with PorcEWithWorkStealingScheduler
   with SupportForRwait

@@ -42,9 +42,9 @@ public class Sequence extends Expression {
     public static Expression create(final Expression[] exprs) {
         final List<Expression> l = new ArrayList<>(exprs.length);
         Arrays.asList(exprs).forEach((expr) -> {
-            if (expr instanceof Sequence) {
+            /*if (expr instanceof Sequence) {
                 ((Sequence) expr).addExprsToList(l);
-            } else {
+            } else*/ {
                 l.add(expr);
             }
         });
