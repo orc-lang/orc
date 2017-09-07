@@ -14,7 +14,7 @@ orct:constant-propogation
 orct:getmethod-elim
 orct:trim-elim
 orct:trim-compiler-choice
-orct:inline-def
+orct:inline
 orct:inline-threshold=30
 orct:higher-order-inline-threshold=100
 orct:future-elim
@@ -27,6 +27,7 @@ orct:tuple-elim
 orct:accessor-elim
 orct:flag-elim
 orct:ifdef-elim
+orct:method-elim
 orct:max-passes=20
 porc
 porc:eta-reduce

@@ -432,7 +432,7 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
           states(ExitNode(body))
         case ExitNode(Resolve.Z(_, body)) =>
           states(ExitNode(body))
-        case EntryNode(_: IfLenientMethod.Z) =>
+        case EntryNode(IfLenientMethod.Z(v, l, r)) =>
           // Pass the check value through for use in the ExitNode
           inState
         case n @ ExitNode(IfLenientMethod.Z(v, l, r)) =>
@@ -450,7 +450,9 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
           } else if(nonRoutines) {
             states(ExitNode(r))
           } else {
-            assert(inState == initialState)
+            // We may reach here if for whatever reason we are evaluated after l and r but before the entry node.
+            // This can happen and is not invalid. We just return the initial state which will later be filled in.
+            // The entry node will have to run eventually and will triger us to recompute.
             initialState
           }
         case ExitNode(_) if valueInputs(node).nonEmpty =>

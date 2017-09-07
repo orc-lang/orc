@@ -95,17 +95,13 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
 
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, logAnalysis())
 
-        {
-          lazy val z = prog.toZipper()
-          lazy val cg = cache.get(CallGraph)(z, None)
-          //cg.debugShow()
-        }
-
-
         val prog1 = optimizer(prog.toZipper(), cache)
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1}=${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Orctimizer after pass $pass/$maxPasses: $optimizationCountsStr")
+      
+        //println("=============== AST ---")
+        //println(prog1)
 
         orctimizer.named.VariableChecker(prog1.toZipper(), co)
         orctimizer.named.PositionChecker(prog1.toZipper(), co)

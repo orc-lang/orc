@@ -100,7 +100,8 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
       e match {
         case EntryExitEdge(ast: Call.Z) =>
           val (a, b, c) = ast.target.byCallTargetCases(_ => true, _ => false, _ => true)
-          Seq(a, b, c).flatten.reduce(_ || _)
+          // It's not clear how a call with an unassigned target can reach here, however it is safe to include the edge.
+          Seq(a, b, c).flatten.reduceOption(_ || _).getOrElse(true)
         case EntryExitEdge(ast) =>
           false
         case _ => true

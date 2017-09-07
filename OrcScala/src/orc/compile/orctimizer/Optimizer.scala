@@ -36,6 +36,7 @@ import orc.compile.orctimizer.CallGraphValues._
 import orc.compile.orctimizer.DelayAnalysis.DelayInfo
 import swivel.Zipper
 import orc.compile.orctimizer.FlowGraph.EverywhereNode
+import orc.ast.orctimizer.named.DeclareMethods
 
 class HashFirstEquality[T](val value: T) {
   override def toString() = value.toString()
@@ -186,6 +187,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   */
 
+  case object FoundException extends RuntimeException
+
   val FutureElim = OptFull("future-elim") { (e, a) =>
     e match {
       /*case IndependentFutures(futs, core) => {
@@ -220,10 +223,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         } else None
       }*/
       case Future.Z(body) => {
-        // TODO: This is a hack. We just never lift out anything that references an object field. But really we just care about referencing 
+        // FIXME: This is a hack. We just never lift out anything that references an object field. But really we just care about referencing 
         //       objects that could be recursive with an enclosing field. Otherwise, the optimization can create deadlocks.
         lazy val noObjectRefs = {
-          case object FoundException extends RuntimeException
           try {
             (new Transform {
               override val onExpression = {
@@ -344,7 +346,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   val ResolveElim = OptFull("resolve-elim") { (e, a) =>
-    import orc.compile.orctimizer.CallGraphValues._
     e match {
       case Resolve.Z(vs, body) => {
         val (fs, nfs) = vs.partition(v => a.valuesOf(v).futures.nonEmpty)
@@ -456,10 +457,189 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   val TrimElim = Opt("trim-elim") {
     case _ if false => ???
-    // TODO: Reenable this when DelayAnalysis is fixed for recursive functions.
+    // FIXME: Reenable this when DelayAnalysis is fixed for recursive functions.
     //case (Trim.Z(f), a) if a.publicationsOf(f) <= 1 && a.delayOf(f).maxHaltDelay == ComputationDelay() && !a.effects(f) => f.value
   }
+  
+  var nextInlineNumberCounter = 0
+  
+  def nextInlineNumber(): Int = {
+    nextInlineNumberCounter += 1
+    nextInlineNumberCounter
+  }
+  
+  def newName(x: BoundVar) = {
+    new BoundVar(x.optionalName.map(_ + s"i${nextInlineNumber()}"))
+  }
+  def newName(x: BoundTypevar) = {
+    new BoundTypevar(x.optionalName.map(_ + s"i${nextInlineNumber()}"))
+  }
 
+  def renameVariables(newN: BoundVar, e: Method.Z)(implicit mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): Method = {
+    e.value ->> (e match {
+      case m@Method.Z(name, args, b, targs, argTypes, returnType) =>
+        val newArgs = args.map(newName)
+        val newTArgs = targs.map(newName)
+        val newMapping = mapping ++ (args zip newArgs)
+        val newTMapping = tmapping ++ (targs zip newTArgs)
+        m.value.copy(newN, newArgs, renameVariables(b)(newMapping, newTMapping),
+            newTArgs, argTypes.map(_.map(renameVariables(_)(newMapping, newTMapping))), returnType.map(renameVariables(_)(newMapping, newTMapping)))
+    })
+  }
+
+  def renameVariables(e: FieldValue.Z)(implicit mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): FieldValue = {
+    e.value ->> (e match {
+      case FieldArgument.Z(a) => FieldArgument(renameVariables(a))
+      case FieldFuture.Z(e) => FieldFuture(renameVariables(e))
+    })
+  }
+
+  def renameVariables(e: Argument.Z)(implicit mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): Argument = {
+    e.value ->> (e.value match {
+      case v: BoundVar =>
+        mapping.getOrElse(v, v)
+      case a =>
+        a
+    })
+  }
+
+  def renameVariables(e: Type.Z)(implicit mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): Type = {
+    val typeRewrite = new Transform {
+      override val onType = {
+        case v: BoundTypevar.Z =>
+          tmapping.getOrElse(v.value, v.value)
+      }
+    }
+    typeRewrite(e)
+  }
+
+  def renameVariables(e: Expression.Z)(implicit mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): Expression = {
+    e.value ->> (e match {
+      case Stop.Z() => e.value
+      case Future.Z(e) => Future(renameVariables(e))
+      case Force.Z(xs, es, b) => {
+        val newXs = xs.map(newName).view.force
+        Force(newXs, es.map(renameVariables).view.force, renameVariables(b)(mapping ++ (xs zip newXs), tmapping))
+      }
+      case Resolve.Z(es, b) => Resolve(es.map(renameVariables).view.force, renameVariables(b))
+      case Call.Z(target, args, targs) => {
+        Call(renameVariables(target), args.map(renameVariables).view.force, targs.map(_.map(renameVariables)))
+      }
+      case Parallel.Z(l, r) => Parallel(renameVariables(l), renameVariables(r))
+      case Branch.Z(l, x, r) => {
+        val newX = newName(x)
+        Branch(renameVariables(l), newX, renameVariables(r)(mapping + ((x, newX)), tmapping))
+      }
+      case Trim.Z(e) => Trim(renameVariables(e))
+      case Otherwise.Z(l, r) => Otherwise(renameVariables(l), renameVariables(r))
+      case DeclareMethods.Z(methods, body) => {
+        val newMethodNames = methods.map(m => newName(m.name)).view.force
+        val newMapping = mapping ++ (methods.map(_.name) zip newMethodNames)
+        val newMethods = (newMethodNames zip methods).map(p => renameVariables(p._1, p._2)(newMapping, tmapping)).view.force
+        DeclareMethods(newMethods, renameVariables(body)(newMapping, tmapping))
+      }
+      case GetMethod.Z(e) => GetMethod(renameVariables(e))
+      case GetField.Z(e, f) => GetField(renameVariables(e), f)
+      case IfLenientMethod.Z(c, e, f) => IfLenientMethod(renameVariables(c), renameVariables(e), renameVariables(f))
+      case New.Z(self, selfType, bindings, objType) => {
+        val newSelf = newName(self)
+        val newMapping = mapping + ((self, newSelf))
+        val newBindings = bindings.mapValues(b => renameVariables(b)(newMapping, tmapping)).view.force
+        New(newSelf, selfType.map(renameVariables(_)(newMapping, tmapping)), newBindings, objType.map(renameVariables(_)(newMapping, tmapping)))
+      }
+      case DeclareType.Z(n, t, b) => {
+        val newN = newName(n)
+        val newTMapping = tmapping + ((n, newN))
+        DeclareType(newN, renameVariables(t)(mapping, newTMapping), renameVariables(b)(mapping, newTMapping))
+      }
+      case HasType.Z(e, t) => HasType(renameVariables(e), renameVariables(t))
+      case a: Argument.Z => renameVariables(a)
+    })
+  }
+
+  def inliningCost(e: Expression.Z): Int = {
+    var n = 0
+    val countExpressions = new Transform {
+      override val onExpression = {
+        case e: Argument.Z => e.value 
+        case e => n += 1; e.value
+      }
+    }
+    countExpressions(e)
+    n
+  }
+  
+  val inlineCostThreshold = co.options.optimizationFlags("orct:inline-threshold").asInt(15)
+  val higherOrderInlineCostThreshold = co.options.optimizationFlags("orct:higher-order-inline-threshold").asInt(200)
+
+  val Inline = OptFull("inline") { (e, a) =>
+    e match {
+      case Call.Z(target, args, targs) => {
+        val vs = a.valuesOf(target).toSet
+        if (vs.size == 1) {
+          vs.head match {
+            case NodeValue(MethodNode(method@Routine.Z(name, formals, body, tformals, _, _), _)) if formals.size == args.size =>
+              lazy val hasCapturedVariables = {
+                (body.freeVars -- formals).nonEmpty 
+              }
+              lazy val isRecursive1 = e.parents.exists {
+                case Routine.Z(`name`, _, _, _, _, _) => true
+                case _ => false
+              }
+              lazy val isRecursive2 = {
+                var found = false
+                val searchForRecursiveCall = new Transform {
+                  override val onExpression = {
+                    case e@Call.Z(target, _, _) => {
+                      found ||= a.valuesOf(target).exists {
+                        case NodeValue(MethodNode(Routine.Z(`name`, _, _, _, _, _), _)) => true
+                        case _ => false
+                      }
+                      e.value
+                    }
+                    case e => e.value
+                  }
+                }
+                searchForRecursiveCall(body)
+                found
+              }
+              def isRecursive = isRecursive1 || isRecursive2
+              lazy val cost = inliningCost(body)
+              lazy val hasClosureArgument = args.exists { arg =>
+                def isMethod(e: Value[_]) = e match {
+                  case NodeValue(MethodNode(_, _)) => true
+                  case _ => false
+                }
+                a.valuesOf(arg).exists(isMethod)
+              }
+              
+              //Logger.finer(s"Attempting inline of $name at ${e.value}: $isRecursive1 $isRecursive2 $cost $hasClosureArgument $hasCapturedVariables")
+              
+              if (isRecursive || (target != name && hasCapturedVariables)) {
+                // Never inline recursive functions or functions with captured variables where we are not referencing the function directly.
+                None
+              } else if (cost < inlineCostThreshold || (cost < higherOrderInlineCostThreshold && hasClosureArgument)) {
+                Some(renameVariables(body)(Map() ++ (formals zip args.map(_.value)), 
+                    Map() ++ (tformals zip targs.getOrElse(Seq()).map(_.value))))
+              } else {
+                None
+              }
+            case _ =>
+              None
+          }
+        } else {
+          None
+        }
+      }
+      case _ => None
+    }
+  }
+  
+  val MethodElim = Opt("method-elim") {
+    case (DeclareMethods.Z(methods, b), a) if (b.freeVars & methods.map(_.name).toSet).isEmpty => b.value
+  }
+
+  
   /*
   val LiftForce = OptFull("lift-force") { (e, a) =>
     import a.ImplicitResults._
@@ -584,45 +764,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  val inlineCostThreshold = co.options.optimizationFlags("orct:inline-threshold").asInt(15)
-  val higherOrderInlineCostThreshold = co.options.optimizationFlags("orct:higher-order-inline-threshold").asInt(100)
-
-  val InlineDef = OptFull("inline-def") { (e, a) =>
-    import a.ImplicitResults._
-
-    e match {
-      case CallDefAt((f: BoundVar) in ctx, args, targs, _) => ctx(f) match {
-        // TODO: Add inlining for sites.
-        case Bindings.CallableBound(dctx, decls, d: Def) => {
-          val DeclareCallablesAt(_, declsctx, _) = decls in dctx
-          val DefAt(_, _, body, _, _, _, _) = d in declsctx
-          val cost = Analysis.cost(body)
-          // If the body contains references to any other def in the recursive group.
-          // TODO: This only really needs to check for calls I think.
-          val bodyfree = body.freeVars
-          val recursive = decls.defs exists { d1 => bodyfree.contains(d1.name) }
-          val ctxsCompat = areContextsCompat(a, decls, d, ctx, dctx)
-          val hasDefArg = args.exists {
-            case x: BoundVar => isClosureBinding(ctx(x))
-            case _ => false
-          }
-          //if (cost > costThreshold)
-          //  println(s"WARNING: Not inlining ${d.name} because of cost ${cost}")
-          if (!recursive && hasDefArg && cost <= higherOrderInlineCostThreshold && ctxsCompat) {
-            Some(buildInlineDef(d, args, targs, declsctx, a))
-          } else if (!recursive && cost <= inlineCostThreshold && ctxsCompat) {
-            Some(buildInlineDef(d, args, targs, declsctx, a))
-          } else {
-            Logger.finest(s"Failed to inline: ${e.e} hasDefArg=$hasDefArg ctxsCompat=$ctxsCompat cost=$cost recursive=$recursive (higherOrderInlineCostThreshold=$higherOrderInlineCostThreshold inlineCostThreshold=$inlineCostThreshold)")
-            None
-          }
-        }
-        case _ => None
-      }
-      case _ => None
-    }
-  }
-
   val unrollCostThreshold = co.options.optimizationFlags("orct:unroll-threshold").asInt(45)
 
   val UnrollDef = OptFull("unroll-def") { (e, a) =>
@@ -648,52 +789,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       }
       case _ => None
     }
-  }
-
-  // TODO: Rename all type variables inside the function body.
-  def buildInlineDef(d: Def, args: List[Argument], targs: Option[List[Type]], ctx: TransformContext, a: ExpressionAnalysisProvider[Expression]) = {
-    val bodyWithValArgs = d.body.substAll(((d.formals: List[Argument]) zip args).toMap)
-    val typeSubst = targs match {
-      case Some(as) => (d.typeformals: List[Typevar]) zip as
-      case None => (d.typeformals: List[Typevar]) map { (t) => (t, Bot()) }
-    }
-
-    //Logger.finer(s"Inlining:\n$d\nwith args $args $targs")
-
-    val boundVarCache = collection.mutable.HashMap[BoundVar, BoundVar]()
-    def replaceVar(x: BoundVar) = {
-      def newVar = {
-        val name = x.optionalVariableName.map { n =>
-          hasAutomaticVariableName.getNextVariableName(n.takeWhile(!_.isDigit).dropWhile(_ == '`'))
-        }
-        new BoundVar(name)
-      }
-      boundVarCache.getOrElseUpdate(x, newVar)
-    }
-
-    val freevars = bodyWithValArgs.freeVars
-
-    val trans = new ContextualTransform.Pre {
-      override def onExpression(implicit ctx: TransformContext) = {
-        case left > x > right => left > replaceVar(x) > right
-        case Force(xs, vs, b, e) => Force(xs.map(replaceVar), vs, b, e)
-      }
-
-      override def onCallable(implicit ctx: TransformContext) = {
-        case d @ Def(name, formals, body, typeformals, argtypes, returntype) => {
-          d.copy(name = replaceVar(name), formals = formals.map(replaceVar))
-        }
-        // TODO: Add handling of sites.
-      }
-
-      override def onArgument(implicit ctx: TransformContext) = {
-        case x: BoundVar if !freevars.contains(x) => replaceVar(x)
-      }
-    }
-
-    val result = trans(bodyWithValArgs.substAllTypes(typeSubst.toMap))
-    //Logger.finer(s"Inlined:\n$result")
-    result
   }
 
   def areContextsCompat(a: ExpressionAnalysisProvider[Expression], decls: DeclareCallables,
@@ -802,9 +897,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 }
 
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
-  val allOpts = List(FutureForceElim, BranchElim, TrimElim, UnusedFutureElim, StopEquiv, 
-      IfDefElim, ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant, 
-      FutureElim, GetMethodElim)
+  val allOpts = List(
+      IfDefElim, Inline, FutureForceElim, BranchElim, TrimElim, UnusedFutureElim, StopEquiv, 
+      ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant, 
+      FutureElim, GetMethodElim, MethodElim)
   /*
   val allOpts = List(
     BranchReassoc,
