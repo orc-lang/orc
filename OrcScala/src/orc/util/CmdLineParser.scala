@@ -16,6 +16,7 @@ package orc.util
 import java.io.File
 import java.net.InetSocketAddress
 import java.util.NoSuchElementException
+import java.lang.Integer
 
 /** Parses command line arguments per POSIX and GNU command line syntax guidelines.
   * Mix this trait in and add XxxOprd and XxxOpt statements to your class holding
@@ -81,7 +82,24 @@ trait CmdLineParser {
   ////////
   // Command line operand and option definitions
   ////////
-
+      
+  val HexLiteral = raw"0x([0-f]+)".r
+  val BinLiteral = raw"0b([0-f]+)".r
+  val OctLiteral = raw"0([0-f]+)".r
+      
+  def parseIntWithPossibleRadix(value: String): Int = {
+    value match {
+      case HexLiteral(s) =>
+        Integer.parseInt(s, 16)
+      case BinLiteral(s) =>
+        Integer.parseInt(s, 2)
+      case OctLiteral(s) =>
+        Integer.parseInt(s, 8)
+      case _ =>
+        value.toInt          
+    }
+  }
+  
   abstract class CmdLineOprdOpt(val argName: String, val usage: String, val required: Boolean, val hidden: Boolean) extends Serializable {
     def getValue: String
     def setValue(s: String): Unit
@@ -119,7 +137,7 @@ trait CmdLineParser {
   case class IntOprd(val getter: Function0[Int], val setter: (Int => Unit), override val position: Int, override val argName: String = "INT", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
     def getValue: String = { getter().toString }
-    def setValue(value: String) { setter(value.toInt) }
+    def setValue(value: String) { setter(parseIntWithPossibleRadix(value)) }
   }
 
   case class CharOprd(val getter: Function0[Char], val setter: (Char => Unit), override val position: Int, override val argName: String = "CHAR", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
@@ -216,9 +234,9 @@ trait CmdLineParser {
     def getValue: String = { getter().toString }
     def setValue(value: String) {
       try {
-        setter(value.toInt)
+        setter(parseIntWithPossibleRadix(value))
       } catch {
-        case _: NumberFormatException => throw new UnrecognizedCmdLineOptArgException("expecting a decimal integer", longName, value, CmdLineParser.this)
+        case _: NumberFormatException => throw new UnrecognizedCmdLineOptArgException("expecting an integer (with optional hexadecimal, octal, or binary prefix to select radix)", longName, value, CmdLineParser.this)
       }
     }
   }
