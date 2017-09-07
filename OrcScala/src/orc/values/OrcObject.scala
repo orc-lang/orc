@@ -12,14 +12,9 @@
 //
 package orc.values
 
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.NoSuchMemberException
-import scala.collection.JavaConverters._
 import scala.collection.immutable.Map
-import orc.run.core.Future
-import orc.run.core.Binding
-import orc.run.core.BoundReadable
+
+import orc.error.runtime.NoSuchMemberException
 
 /** The runtime object representing Orc objects.
   *
@@ -29,9 +24,6 @@ import orc.run.core.BoundReadable
   * @author amp
   */
 case class OrcObject(private var entries: Map[Field, AnyRef] = null) extends HasMembers {
-  // TODO: Replace the OrcObject implementation with something that can avoid the table look up when the Accessor is cached. 
-  // Maybe a mapping from fields to indexes and then an array of field values. The mapping could even be only created once per instantiation site.
-  // This would allow identical (and fast) access to all instances that come from the same "new {}".
   def setFields(_entries: Map[Field, AnyRef]) = {
     assert(entries eq null)
     entries = _entries

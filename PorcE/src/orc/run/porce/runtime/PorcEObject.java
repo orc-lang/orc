@@ -8,6 +8,7 @@ import orc.NoSuchMemberAccessor;
 import orc.OrcRuntime;
 import orc.run.distrib.DOrcMarshalingReplacement;
 import orc.values.Field;
+import orc.values.Format;
 import orc.values.sites.AccessorValue;
 
 public final class PorcEObject implements AccessorValue, DOrcMarshalingReplacement {
@@ -22,6 +23,24 @@ public final class PorcEObject implements AccessorValue, DOrcMarshalingReplaceme
 
         this.fieldNames = fieldNames;
         this.fieldValues = fieldValues;
+    }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("{ ");
+    	for (int i = 0; i < fieldNames.length; i++) {
+			Field field = fieldNames[i];
+			Object value = fieldValues[i];
+			if (i > 0) {
+				sb.append(" # ");
+			}
+			sb.append(field);
+			sb.append(" = ");
+			sb.append(Format.formatValue(value));
+		}
+    	sb.append(" }");
+    	return sb.toString();
     }
 
     @Override
