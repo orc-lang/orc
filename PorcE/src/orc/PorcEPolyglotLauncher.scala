@@ -8,7 +8,10 @@ import orc.run.porce.PorcELanguage
 import com.oracle.truffle.api.source.Source
 import orc.script.OrcBindings
 import java.io.File
-import orc.util.PorcNodeExecutionProfiler
+import orc.run.porce.instruments.PorcNodeExecutionProfiler
+import orc.run.porce.instruments.PorcNodeExecutionProfilerInstrument
+import java.util.Timer
+import java.util.TimerTask
 
 object PorcEPolyglotLauncher {
   class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
@@ -22,17 +25,26 @@ object PorcEPolyglotLauncher {
     val runtime = PolyglotRuntime.newBuilder().setOut(System.out).setErr(System.err).build()
     val engine = PolyglotEngine.newBuilder().runtime(runtime).build()
     val insts = runtime.getInstruments()
-    val langs = engine.getLanguages()
+    //val langs = engine.getLanguages()
 
     //println(insts.asScala)
     //println(langs.asScala)
     //println(options.filename)
+
+    /*
+    insts.get(PorcNodeExecutionProfilerInstrument.ID).setEnabled(true)
+    val profiler = PorcNodeExecutionProfiler.get(engine)
     
-    insts.get(PorcNodeExecutionProfiler.ID).setEnabled(true)
-    
+    val timer = new Timer(true)
+    timer.scheduleAtFixedRate(new TimerTask {
+      def run(): Unit = {
+        profiler.dump()
+        profiler.reset()
+      }
+    }, 90 * 1000, 20 * 1000)
+    */
+
     engine.eval(Source.newBuilder(new File(options.filename)).mimeType(PorcELanguage.MIME_TYPE).build())
-    
-    println("Done")
     
     engine.dispose()
     runtime.dispose()

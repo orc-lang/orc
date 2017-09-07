@@ -4,9 +4,10 @@ import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
 
 import orc.util.ExpressionTag;
+import orc.run.porce.instruments.ProfiledPorcNodeTag;
 
 @TruffleLanguage.Registration(name = "Orc", version = "2.99.0.1", mimeType = { PorcELanguage.MIME_TYPE })
-@ProvidedTags({ ExpressionTag.class })
+@ProvidedTags({ ExpressionTag.class, ProfiledPorcNodeTag.class })
 public class PorcELanguage extends PorcELanguageBase {
 	public static final String MIME_TYPE = "application/x-orc";
 
