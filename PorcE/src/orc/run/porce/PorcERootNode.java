@@ -79,9 +79,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         this.body = body;
         this.nArguments = nArguments;
         this.nCaptured = nCaptured;
-        
-    	PorcELanguage lang = getRootNode().getLanguage(PorcELanguage.class);
-    	assert lang != null : "RootNode " + getRootNode();
     }
 
     @Override
