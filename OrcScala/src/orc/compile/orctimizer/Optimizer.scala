@@ -124,15 +124,13 @@ case class OptFull(name: String)(f: (Expression.Z, AnalysisResults) => Option[Ex
   */
 abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   def opts: Seq[Optimization]
-
-  private def traverse(e: Expression.Z)(f: (Expression.Z) => Expression) = {
-    e.subtrees
-  }
+  
+  val optimizeOptimizationResult = false
 
   def apply(e: Expression.Z, cache: AnalysisCache): Expression = {
-    val results = new AnalysisResults(cache, e)
-
-    val trans = new Transform {
+    val optimizationTransform: Transform = new Transform { optimizationTransform =>
+      val results = new AnalysisResults(cache, e)
+      
       override val onExpression = {
         case (e: Expression.Z) => {
           import orc.util.StringExtension._
@@ -151,34 +149,23 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                 } else {
                   e
                 }
-
                 e3
             }
           })
-          e1.value
+          if(optimizeOptimizationResult && e1 != e)
+            optimizationTransform(e1)
+          else
+            e1.value
         }
       }
     }
-
-    val r = trans(e)
+  
+    val r = optimizationTransform(e)
 
     r
   }
 
   import Optimizer._
-
-  /*
-  val flattenThreshold = co.options.optimizationFlags("orct:future-flatten-threshold").asInt(5)
-
-  val FutureElimFlatten = Opt("future-elim-flatten") {
-    // TODO: This may not be legal. What about small expressions that could still block on something.
-    /*case (FutureAt(g) > x > f, a) if a(f).forces(x) <= ForceType.Eventually && (a(g).publications only 1)
-            && Analysis.cost(g) <= flattenThreshold =>
-              g > x > f
-              */
-    case (e, a) if false => e
-  }
-  */
 
   /*
   Analysis needed:
@@ -240,7 +227,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         }
 
         val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
-        if (byNonBlocking1 && noObjectRefs)
+        if (byNonBlocking1)
           Some(body.value)
         else
           None
@@ -256,7 +243,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             // TODO: This is a hack. We just never lift out anything that references an object field. But really we just care about referencing 
             //       objects that could be recursive with this one. This happens with the this arguments of partial constructors.
             lazy val noObjectRefs = {
-              case object FoundException extends RuntimeException
               try {
                 (new Transform {
                   override val onExpression = {
@@ -272,7 +258,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
             val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
             lazy val x = new BoundVar()
-            if (byNonBlocking1 && noObjectRefs) {
+            if (byNonBlocking1) {
               changed = true
               (FieldArgument(x), Some(body), Some(x))
             } else
@@ -326,20 +312,49 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   val ForceElim = OptFull("force-elim") { (e, a) =>
     import orc.compile.orctimizer.CallGraphValues._
+    
     e match {
       case Force.Z(xs, vs, body) => {
-        val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).futures.nonEmpty)
-        def addAnalysis(p: (BoundVar, Argument.Z)) = {
-          val (x, v) = p
-          (x, v.value, a.valuesOf(v))
+        def eliminateNonFutures() = {
+          val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).futures.nonEmpty)
+          
+          val (newXs, newVs) = fs.unzip
+          val newBody = body.value.substAll(nfs.map(p => (p._1, p._2.value)).toMap[Argument, Argument])
+          if (nfs.isEmpty)
+            None
+          else if (fs.nonEmpty)
+            Some(Force(newXs, newVs.map(_.value), newBody))
+          else
+            Some(newBody)
         }
-        //Logger.fine(s"nfs = ${nfs.map(addAnalysis)}\nfs = ${fs.map(addAnalysis)}")
-        val (newXs, newVs) = fs.unzip
-        val newBody = body.value.substAll(nfs.map(p => (p._1, p._2.value)).toMap[Argument, Argument])
-        if (fs.nonEmpty)
-          Some(Force(newXs, newVs.map(_.value), newBody))
-        else
-          Some(newBody)
+        
+        def eliminateDuplicateForces() = {
+          def findParentForce(v: Argument) = {
+            def isV(w: Argument.Z) = w.value == v
+            val parents = e.parents.tail
+            parents.collectFirst({ 
+              case Force.Z(xs, vs, _) if vs.exists(isV) => xs(vs.indexWhere(isV)) 
+            })
+          }
+  
+          val allInformation = (xs, vs, vs.map(v => findParentForce(v.value))).zipped
+          val nfs = allInformation.collect({ 
+            case (x, _, Some(y)) => (x, y)
+          }).toMap[Argument, Argument]
+          val fs = allInformation.collect({ 
+            case (x, v, None) => (x, v.value)
+          }).toSeq
+          
+          val (newXs, newVs) = fs.unzip
+          val newBody = body.value.substAll(nfs)
+          if (nfs.isEmpty)
+            None
+          else if (fs.nonEmpty)
+            Some(Force(newXs, newVs, newBody))
+          else
+            Some(newBody)
+        }
+        eliminateNonFutures() orElse eliminateDuplicateForces()
       }
       case _ => None
     }
@@ -448,9 +463,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case Branch.Z(f, x, g) if !a.effects(f) &&
         a.delayOf(f).maxFirstPubDelay == ComputationDelay() && a.delayOf(f).maxHaltDelay == ComputationDelay() &&
         (a.publicationsOf(f) only 1) && !g.freeVars.contains(x) => Some(g.value)
-      case Branch.Z(f, x, g) =>
-        //Logger.finest(s"Failed to elimate >>: ${f.effectFree} && ${f.nonBlockingPublish} && ${f.publications} only 1 && ${f.timeToHalt} && ${!g.freeVars.contains(x)} : ${e.e}")
-        None
+      case Branch.Z(f, x, g) if !a.effects(f) =>
+        val valueExpr = f.value
+        val parents = e.parents.tail
+        parents.collectFirst({ case Branch.Z(Zipper(`valueExpr`, _), y, _) => y }) map { y =>
+          g.value.subst(y, x)
+        }
       case _ => None
     }
   }
@@ -578,7 +596,23 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         val vs = a.valuesOf(target).toSet
         if (vs.size == 1) {
           vs.head match {
-            case NodeValue(MethodNode(method@Routine.Z(name, formals, body, tformals, _, _), _)) if formals.size == args.size =>
+            case NodeValue(MethodNode(method @ Routine.Z(name, formals, body, tformals, _, _), _)) if formals.size == args.size =>
+              lazy val directCallCount = {
+                val Some(DeclareMethods.Z(_, scope)) = method.parent
+                var n = 0
+                val countCalls = new Transform {
+                  override val onArgument = {
+                    case Zipper(`name`, _) => n += 1000; name
+                  }
+                  override val onExpression = {
+                    case Call.Z(Zipper(`name`, _), _, _) => n += 1; e.value 
+                    case a: Argument.Z if onArgument.isDefinedAt(a) => onArgument(a)
+                  }
+                }
+                countCalls(scope)
+                n
+              }
+              
               lazy val hasCapturedVariables = {
                 (body.freeVars -- formals).nonEmpty 
               }
@@ -587,21 +621,24 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                 case _ => false
               }
               lazy val isRecursive2 = {
-                var found = false
                 val searchForRecursiveCall = new Transform {
                   override val onExpression = {
                     case e@Call.Z(target, _, _) => {
-                      found ||= a.valuesOf(target).exists {
-                        case NodeValue(MethodNode(Routine.Z(`name`, _, _, _, _, _), _)) => true
+                      a.valuesOf(target).exists {
+                        case NodeValue(MethodNode(Routine.Z(`name`, _, _, _, _, _), _)) => throw FoundException
                         case _ => false
                       }
                       e.value
                     }
-                    case e => e.value
                   }
                 }
-                searchForRecursiveCall(body)
-                found
+                try {
+                  searchForRecursiveCall(body)
+                  false
+                } catch {
+                  case FoundException =>
+                    true
+                }
               }
               def isRecursive = isRecursive1 || isRecursive2
               lazy val cost = inliningCost(body)
@@ -614,11 +651,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               }
               
               //Logger.finer(s"Attempting inline of $name at ${e.value}: $isRecursive1 $isRecursive2 $cost $hasClosureArgument $hasCapturedVariables")
-              
               if (isRecursive || (target != name && hasCapturedVariables)) {
                 // Never inline recursive functions or functions with captured variables where we are not referencing the function directly.
                 None
-              } else if (cost < inlineCostThreshold || (cost < higherOrderInlineCostThreshold && hasClosureArgument)) {
+              } else if (directCallCount <= 1 || cost < inlineCostThreshold || (cost < higherOrderInlineCostThreshold && hasClosureArgument)) {
                 Some(renameVariables(body)(Map() ++ (formals zip args.map(_.value)), 
                     Map() ++ (tformals zip targs.getOrElse(Seq()).map(_.value))))
               } else {

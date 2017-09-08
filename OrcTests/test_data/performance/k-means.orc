@@ -45,6 +45,7 @@ class Point {
 }
 
 def Point(x' :: Double, y' :: Double) = new Point { val x = x' # val y = y' }
+--def Point(x' :: Double, y' :: Double) = x' >x''> y' >y''> new Point { val x = x'' # val y = y'' }
 
 def run(xs) =
   def run'(0, centroids) = Println(unlines(map({ _.toString() }, centroids))) >> stop | clusters(xs, centroids)

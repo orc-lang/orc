@@ -15,8 +15,8 @@ orct:getmethod-elim
 orct:trim-elim
 orct:trim-compiler-choice
 orct:inline
-orct:inline-threshold=30
-orct:higher-order-inline-threshold=100
+orct:inline-threshold=50
+orct:higher-order-inline-threshold=400
 orct:future-elim
 orct:unused-future-elim
 orct:future-force-elim
@@ -28,7 +28,7 @@ orct:accessor-elim
 orct:flag-elim
 orct:ifdef-elim
 orct:method-elim
-orct:max-passes=20
+orct:max-passes=50
 porc
 porc:eta-reduce
 porc:eta-spawn-reduce
