@@ -227,7 +227,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         }
 
         val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
-        if (byNonBlocking1)
+        if (byNonBlocking1 && noObjectRefs)
           Some(body.value)
         else
           None
@@ -258,7 +258,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
             val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
             lazy val x = new BoundVar()
-            if (byNonBlocking1) {
+            if (byNonBlocking1 && noObjectRefs) {
               changed = true
               (FieldArgument(x), Some(body), Some(x))
             } else
