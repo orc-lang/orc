@@ -61,6 +61,7 @@ class AnalysisResults(cache: AnalysisCache, e: Expression.Z) {
   lazy val effectsAnalysis: EffectAnalysis = cache.get(EffectAnalysis)((e, None))
   lazy val delays: DelayAnalysis = cache.get(DelayAnalysis)((e, None))
   lazy val forces: ForceAnalysis = cache.get(ForceAnalysis)((e, None))
+  lazy val alreadyForced: AlreadyForcedAnalysis = cache.get(AlreadyForcedAnalysis)((e, None))
 
   private val exprMapping = mutable.HashMap[HashFirstEquality[Expression.Z], Expression.Z]()
   private val varMapping = mutable.HashMap[ValueNode, ValueNode]()
@@ -165,8 +166,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     r
   }
 
-  import Optimizer._
-
   /*
   Analysis needed:
 
@@ -177,57 +176,25 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   case object FoundException extends RuntimeException
 
   val FutureElim = OptFull("future-elim") { (e, a) =>
+    def isFutureEliminable(future: NamedAST.Z, body: Expression.Z): Boolean = {
+      val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
+      
+      def surroundingFutureIsForced = {
+        val surroundingFuture = future.parents.tail.collectFirst({ case FieldFuture.Z(b) => b; case Future.Z(b) => b })        
+        surroundingFuture match {
+          case None => false
+          case Some(surroundingF) =>
+            val alreadyForced = a.alreadyForced(body).collect({ case n: WithSpecificAST => n.location })
+            alreadyForced contains surroundingF
+        }
+      }
+      
+      byNonBlocking1 && !surroundingFutureIsForced
+    }
+    
     e match {
-      /*case IndependentFutures(futs, core) => {
-        // futs is a seq of (f, x)
-        // f_1 >x_1> ... >x_n-1> f_n >x_n> core
-        var interestingElimables = 0
-        def isElimable(p: (Expression, BoundVar)) = {
-          val (fexp, x) = p
-          val f = fexp in e.ctx
-          val byImmediate1 = core.forces(x) == ForceType.Immediately(true) && (f.publications <= 1)
-          val byImmediate2 = core.forces(x) == ForceType.Immediately(false) && (f.publications only 1)
-          val byNonBlocking1 = f.nonBlockingPublish && (f.publications only 1)
-          val byNonBlocking2 = f.nonBlockingPublish && (f.publications <= 1) && core.forces(x).haltsWith
-          val result = byImmediate1 || byImmediate2 || byNonBlocking1 || byNonBlocking2
-          if (byImmediate1 || byImmediate2) {
-            interestingElimables += 1
-            Logger.fine(s"Elimable by: $byImmediate1 || $byImmediate2 || $byNonBlocking1 || $byNonBlocking2\n$p")
-          }
-          result
-        }
-
-        // Split into elimable and non
-        val (elim, keep) = futs.partition(isElimable)
-        if (!elim.isEmpty) {
-          // Build (very schematically):
-          // keeps >> elims with future stripped >> core
-          val rest :+ toElim = elim
-          val result = Futures(keep ++ rest, Seqs(Seq(toElim), core))
-          if (interestingElimables > 1)
-            Logger.fine(s"Eliminating futures: $futs\n${e.e}\n====>\n${keep.mkString(" >>\n")} >> --\n${elim.mkString(" >>\n")} >> --\n${core.e}")
-          Some(result)
-        } else None
-      }*/
       case Future.Z(body) => {
-        // FIXME: This is a hack. We just never lift out anything that references an object field. But really we just care about referencing 
-        //       objects that could be recursive with an enclosing field. Otherwise, the optimization can create deadlocks.
-        lazy val noObjectRefs = {
-          try {
-            (new Transform {
-              override val onExpression = {
-                case GetField.Z(_, _) => throw FoundException
-              }
-            })(body)
-            true
-          } catch {
-            case FoundException =>
-              false
-          }
-        }
-
-        val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
-        if (byNonBlocking1 && noObjectRefs)
+        if (isFutureEliminable(e, body))
           Some(body.value)
         else
           None
@@ -240,26 +207,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             (FieldArgument(a.value), None, None)
           }
           case f @ FieldFuture.Z(body) if !body.freeVars.contains(self) => {
-            // TODO: This is a hack. We just never lift out anything that references an object field. But really we just care about referencing 
-            //       objects that could be recursive with this one. This happens with the this arguments of partial constructors.
-            lazy val noObjectRefs = {
-              try {
-                (new Transform {
-                  override val onExpression = {
-                    case GetField.Z(_, _) => throw FoundException
-                  }
-                })(body)
-                true
-              } catch {
-                case FoundException =>
-                  false
-              }
-            }
-
-            val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
-            lazy val x = new BoundVar()
-            if (byNonBlocking1 && noObjectRefs) {
+            if (isFutureEliminable(f, body)) {
               changed = true
+              val x = new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("fieldVal")))
               (FieldArgument(x), Some(body), Some(x))
             } else
               (f.value, None, None)
@@ -439,7 +389,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case Branch.Z(c, x, y) if (a.publicationsOf(c) only 1) && !a.effects(c) =>
         val vs = a.valuesOf(c).toSet
         val DelayInfo(delay, _) = a.delayOf(c)
-        //println(s"branch-elim-const: $c\n${vs.values}, $effects, $delay")
+        //Logger.finer(s"branch-elim-const: ${c.value}\n$vs, ${a.effects(c)}, $delay")
         if (vs.size == 1 && delay == ComputationDelay()) {
           vs.head match {
             case NodeValue(ConstantNode(Constant(v), _)) =>

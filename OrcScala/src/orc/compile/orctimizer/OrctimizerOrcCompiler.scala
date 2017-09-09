@@ -124,6 +124,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         lazy val delay = cache.get(DelayAnalysis)(z, None)
         lazy val effect = cache.get(EffectAnalysis)(z, None)
         lazy val forces = cache.get(ForceAnalysis)(z, None)
+        lazy val alreadyForced = cache.get(AlreadyForcedAnalysis)(z, None)
 
         //fg.debugShow()
 
@@ -145,6 +146,10 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         //println("=============== force results ---")
         //println(forces.results.par.map(p => s"${shortString(p._1.value)}\t----=========--> ${p._2}").seq.mkString("\n"))
         //forces.debugShow()
+        
+        //println("=============== force results ---")
+        //println(alreadyForced.results.par.map(p => s"${shortString(p._1.ast)}\t----=========--> ${p._2}").seq.mkString("\n"))
+        //alreadyForced.debugShow()
 
         //System.exit(0)
       }

@@ -109,7 +109,9 @@ class DelayAnalysis(
         case _: EntryNode => entry
         case _: ExitNode => exit
       }
-  
+   
+      /** Return the delay information for just this not not the entire subexpression.
+        */
       def delay: DelayInfo = {
         node.location match {
           case Call.Z(target, args, _) => {

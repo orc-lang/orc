@@ -76,10 +76,17 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
 
   def compute(cache: AnalysisCache)(params: (Expression.Z, Option[Method.Z])): EffectAnalysis = {
     val cg = cache.get(CallGraph)(params)
-    val a = new DelayAnalyzer(cg)
+    val local = cache.get(LocalNodeAnalysis)(params)
+    val a = new DelayAnalyzer(cg, local)
     val res = a()
 
-    new EffectAnalysis(res collect { case (ExitNode(e), r) => (e, r) }, cg)
+    val delay = new EffectAnalysis(res collect { case (ExitNode(e), r) => (e, r) }, cg)
+    
+    def shortString(o: AnyRef) = s"'${o.toString().replace('\n', ' ').take(30)}'"
+    //println("=============== delay results ---")
+    //println(delay.results.par.map(p => s"${shortString(p._1.value)}\t----=========--> ${p._2}").seq.mkString("\n"))
+    
+    delay    
   }
   
   val worstState: EffectInfo = EffectInfo(true, true)
@@ -93,7 +100,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
     }
   }
 
-  class DelayAnalyzer(graph: CallGraph) extends Analyzer with AnalyzerEdgeCache {
+  class DelayAnalyzer(graph: CallGraph, local: LocalNodeAnalysis) extends Analyzer with AnalyzerEdgeCache {
     import graph._
     import graph.NodeInformation._
     
@@ -151,25 +158,15 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
             case Future.Z(_) =>
               inState
             case Call.Z(target, args, _) => {
-              val (extPubs, intPubs, otherPubs) = target.byCallTargetCases(
+              val (extPubs, intPubs, otherPubs) = target.byCallTargetCases( 
                 externals = { vs =>
-                  // FIXME: Update to use compile time "invoker" API once available. This will avoid problems of too specific results since the Site assumes a specific arity, etc.
-                  vs.collect({
-                    case site: orc.values.sites.SpecificArity =>
-                      if (args.size == site.arity) {
-                        EffectInfo(site.effects != Effects.None, true)
-                      } else {
-                        worstState
-                      }
-                    case site: orc.values.sites.Site => EffectInfo(site.effects != Effects.None, true)
-                    case _ => worstState
-                  }).reduce(_ combine _)
-                }, internals = { vs =>
-                  inState
-                }, others = { vs =>
-                  worstState
-                })
-              applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combine _))(_ combine _).getOrElse(worstState)
+                  EffectInfo(local.effects(node), local.effected(node))
+                }, internals = { vs => 
+                  inState 
+                }, others = { vs => 
+                  worstState 
+                }) 
+              applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combine _))(_ combine _).getOrElse(worstState) 
             }
             case IfLenientMethod.Z(v, l, r) => {
               v.byIfLenientCases(

@@ -62,8 +62,9 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
     val cg = cache.get(CallGraph)(params)
     val effects = cache.get(EffectAnalysis)(params)
     val delay = cache.get(DelayAnalysis)(params)
+    val local = cache.get(LocalNodeAnalysis)(params)
     val initial = cg.nodes.collect({ case VariableNode(x, _) => x }).toSet
-    val a = new DelayAnalyzer(initial, cg, effects, delay)
+    val a = new DelayAnalyzer(initial, cg, effects, delay, local)
     val res = a()
     
 
@@ -80,7 +81,7 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
 
   val worstState: DelayAnalyzer#StateT = Set()
 
-  class DelayAnalyzer(val initialState: Set[BoundVar], graph: CallGraph, effects: EffectAnalysis, delay: DelayAnalysis) extends Analyzer with AnalyzerEdgeCache {
+  class DelayAnalyzer(val initialState: Set[BoundVar], graph: CallGraph, effects: EffectAnalysis, delay: DelayAnalysis, local: LocalNodeAnalysis) extends Analyzer with AnalyzerEdgeCache {
     import graph._
     import graph.NodeInformation._
     import delay.NodeInformation._
@@ -119,13 +120,12 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
     def transfer(node: Node, old: StateT, states: States): (StateT, Seq[Node]) = {
       lazy val inState = states.inStateReduced[Edge](_ intersect _)
 
-      // TODO: This can probably be much tighter. Notably the delay and effect analysis are not actually the correct info since they are for whole expressions.
       val killAll = node match {
         case n: ExitNode if inputs(n).isEmpty =>
           // The initial nodes all have empty output. Unless they gen of course.
           true
         case node: TokenFlowNode =>
-          node.effects || 
+          local.effects(node) || 
             (node.delay.maxFirstPubDelay > ComputationDelay()) ||
             (node.delay.maxHaltDelay > ComputationDelay())
           /*
@@ -157,6 +157,18 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
                   x.value
               }).toSet
               */
+            case _ =>
+              Set()
+          }
+        case node @ ExitNode(ast) =>
+          import orc.ast.orctimizer.named._
+          ast match {
+            case IfLenientMethod.Z(v, l, r) => {
+              v.byIfLenientCases(
+                  left = states(ExitNode(l)),
+                  right = states(ExitNode(r)),
+                  both = Set())
+            }
             case _ =>
               Set()
           }
