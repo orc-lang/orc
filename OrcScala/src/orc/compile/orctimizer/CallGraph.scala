@@ -34,6 +34,7 @@ import orc.compile.AnalysisCache
 import orc.compile.AnalysisRunner
 import orc.compile.orctimizer.CallGraphValues.FutureValueSet
 import orc.util.{ TTrue, TFalse, TUnknown }
+import orc.compile.orctimizer.FlowGraph.ValueNode
 
 /** Compute and store a call graph for the program stored in flowgraph.
   *
@@ -370,6 +371,7 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
           val methods = inState.filter(isMethod(_))
           val callableObjects = inState.filter(isObjectWithApply(_)).flatMap({
             case o: ObjectValue if o.get(Field("apply")).isDefined => o.get(Field("apply")).get
+            case v @ NodeValue(ExitNode(Call.Z(Constant.Z(orc.lib.builtin.structured.TupleConstructor), _, _))) => v.set  
             case _ => initialState
           })
           
@@ -415,12 +417,21 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
           // Compute the possible values for external calls, this is combined with internal information in the ExitNode(Call) case.
           val exit = ExitNode(e)
           states.get(ValueNode(target)) match {
+            case Some(targets) if args.size == 2 && targets.forall({
+              case n: NodeValue[_] if n.constantValue == Some(orc.lib.builtin.structured.TupleArityChecker) => true
+              case _ => false
+            }) => {
+              // Pass through the first argument for TupleArityChecker
+              states.get(ValueNode(args(0))).getOrElse(initialState)
+            }
+              
             case Some(targets) if targets.exists({
               case n: NodeValue[_] if !n.isExternalMethod.isFalse => true
               case n: NodeValue[_] if n.isMethod => false
               case _ => true
-            }) =>
+            }) => {
               NodeValue[ObjectValueSet](exit).set
+            }
             case _ =>
               initialState
           }

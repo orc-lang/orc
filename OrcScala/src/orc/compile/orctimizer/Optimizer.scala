@@ -37,6 +37,8 @@ import orc.compile.orctimizer.DelayAnalysis.DelayInfo
 import swivel.Zipper
 import orc.compile.orctimizer.FlowGraph.EverywhereNode
 import orc.ast.orctimizer.named.DeclareMethods
+import orc.lib.builtin.structured.TupleArityChecker
+import orc.lib.builtin.structured.TupleConstructor
 
 class HashFirstEquality[T](val value: T) {
   override def toString() = value.toString()
@@ -235,6 +237,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   val GetMethodElim = Opt("getmethod-elim") {
     case (GetMethod.Z(o), a) if a.valuesOf(o).forall({
+      case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), _, _))) =>  true
       case n: NodeValue[_] => n.isMethod
       case _ => false
     }) =>
@@ -625,6 +628,89 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     case (DeclareMethods.Z(methods, b), a) if (b.freeVars & methods.map(_.name).toSet).isEmpty => b.value
   }
 
+  case object OptimizationNotApplicableException extends RuntimeException
+  def abortOptimization() = throw OptimizationNotApplicableException
+  def attemptOptimization[T](f: => Option[T]): Option[T] = try { f } catch { case OptimizationNotApplicableException => None }
+  
+  val TupleElim = OptFull("tuple-elim") { (e, a) =>
+    // We use exceptions for flow control (see abortOptimization and attemptOptimization). Think in ML-style and you should feel OK about it.
+    e match {
+      case Call.Z(Constant.Z(TupleArityChecker), Seq(tupleArg, sizeArg), _) =>
+        attemptOptimization {
+          //Logger.finer(s"TupleArityChecker(${tupleArg.value}, ${sizeArg.value})")
+          val sizeVs = a.valuesOf(sizeArg).toSet.map({
+            case v @ NodeValue(_) => v.constantValue match {
+              case Some(n: Number) => n.intValue
+              case _ =>
+                //Logger.finer(s"Tuple arity: failed due to size node value $v")
+                abortOptimization()
+            }
+            case v => 
+              //Logger.finer(s"Tuple arity: failed due to size value $v")
+              abortOptimization()
+          })
+          if (sizeVs.size != 1) abortOptimization()
+          val size = sizeVs.head
+          
+          //Logger.finer(s"TupleArityChecker(${tupleArg.value}, $size)")
+          
+          val tupleSizes = a.valuesOf(tupleArg).toSet.map({
+            case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), elements, _))) => 
+              elements.size
+            case _ => abortOptimization()
+          })
+
+          //Logger.finer(s"TupleArityChecker($tupleSizes, $size)")
+
+          if (tupleSizes == Set(size)) {
+            Some(tupleArg.value)
+          } else {
+            None
+          }
+        }
+      case Call.Z(targetArg, Seq(indexArg), _) =>
+        attemptOptimization {
+          val indexVs = a.valuesOf(indexArg).toSet.map({
+            case v @ NodeValue(_) => v.constantValue match {
+              case Some(n: Number) => n.intValue
+              case _ => abortOptimization()
+            }
+            case _ => abortOptimization()
+          })
+          if (indexVs.size != 1) abortOptimization()
+          val index = indexVs.head
+          
+          //Logger.finer(s"Tuple get ${e.value}: target = ${a.valuesOf(targetArg)} index = $index")
+
+          val values = a.valuesOf(targetArg).toSet.map({
+            case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), elements, _))) if elements.size > index => 
+              elements(index)
+            case v =>
+              //Logger.finer(s"Tuple get ${e.value}: failed due to tuple value $v")
+              abortOptimization()
+          })
+          //Logger.finer(s"Tuple get ${e.value}: values = ${values.map(_.value)}")
+          
+          if (values.size != 1) abortOptimization()
+          val value = values.head
+
+          val valueConstants = a.valuesOf(value).toSet.map({
+            case v @ NodeValue(_) => v.constantValue
+            case _ => None
+          })
+          if (valueConstants.size == 1 && valueConstants.head.isDefined) {
+            // Just propagate the constant if that's what was in the tuple
+            Some(Constant(valueConstants.head.get))
+          } else if (e.contextBoundVars contains value.value) {
+            // If we are in scope of the binding used in the tuple put in the variable name.
+            Some(value.value)
+          } else {
+            None
+          }
+        }
+      case _ => None
+    }
+  }
   
   /*
   val LiftForce = OptFull("lift-force") { (e, a) =>
@@ -846,39 +932,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       Constant(r.getField(Field("unapply")))
       */
   }
-
-  val TupleFieldPattern = """_([0-9]+)""".r
-
-  val TupleElim = OptFull("tuple-elim") { (e, a) =>
-    import a.ImplicitResults._, Bindings._
-    e match {
-      //case FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx
-      case CallSiteAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _) if (v in ctx).nonBlockingPublish =>
-        val i = bi.toInt
-        ctx(v) match {
-          case SeqBound(tctx, CallSite(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size && (args(i) in tctx).nonBlockingPublish =>
-            Some(Force.asExpr(args(i), true))
-          case _ => None
-        }
-      //case (FieldAccess(v: BoundVar, Field(TupleFieldPattern(num))) in ctx) > x > e
-      case CallSiteAt((v: BoundVar) in ctx, List(Constant(bi: BigInt)), _, _) > x > e if (v in ctx).nonBlockingPublish && !e.freeVars.contains(x) =>
-        val i = bi.toInt
-        ctx(v) match {
-          case SeqBound(tctx, CallSite(Constant(TupleConstructor), args, _) > `v` > _) if i < args.size => Some(e)
-          case _ => None
-        }
-      case CallSiteAt(Constant(TupleArityChecker) in _, List(v: BoundVar, Constant(bi: BigInt)), _, ctx) if (v in ctx).nonBlockingPublish =>
-        val i = bi.intValue
-        ctx(v) match {
-          case SeqBound(tctx, CallSite(Constant(TupleConstructor), args, _) > `v` > _) if i == args.size => Some(v)
-          case _ => None
-        }
-      // TODO: I may need a special case for removing tuple constructors.
-      //case CallAt(Constant(TupleConstructor) in _, args, _, ctx) > x > e
-      //        if args.size > 0 && args.forall(_.isInstanceOf[BoundVar]) && !e.freeVars.contains(x) =>
-      case _ => None
-    }
-  }
   */
 }
 
@@ -886,7 +939,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
       IfDefElim, Inline, FutureForceElim, BranchElim, TrimElim, UnusedFutureElim, StopEquiv, 
       ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant, 
-      FutureElim, GetMethodElim, MethodElim)
+      FutureElim, GetMethodElim, TupleElim, MethodElim)
   /*
   val allOpts = List(
     BranchReassoc,

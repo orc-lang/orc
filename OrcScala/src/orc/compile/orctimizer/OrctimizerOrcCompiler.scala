@@ -138,7 +138,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         //pubs.debugShow()
 
         //println("=============== delay results ---")
-        //println(delay.results.par.map(p => s"${shortString(p._1.ast)}\t----=========--> ${p._2}").seq.mkString("\n"))
+        //println(delay.results.par.map(p => s"${shortString(p._1.value)}\t----=========--> ${p._2}").seq.mkString("\n"))
         //delay.debugShow()
 
         //effect.debugShow()
