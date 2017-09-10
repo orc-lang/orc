@@ -102,9 +102,6 @@ object AlreadyForcedAnalysis extends AnalysisRunner[(Expression.Z, Option[Method
           Seq(a, b, c).flatten.reduceOption(_ || _).getOrElse(true)
         case EntryExitEdge(ast) => false
         case _: CombinatorInternalOrderEdge => false
-        case _: FutureValueSourceEdge => 
-          Logger.finer(s"Have edge $e")
-          true
         case _ => true
       }
     }

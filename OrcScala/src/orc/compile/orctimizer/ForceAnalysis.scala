@@ -75,6 +75,7 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
     def shortString(o: AnyRef) = s"'${o.toString().replace('\n', ' ').take(30)}'"
     println(r.results.par.map(p => s"${shortString(p._1.value)}\t----=========--> ${p._2}").seq.mkString("\n"))
 		*/
+    //r.debugShow()
 
     r
   }
@@ -103,8 +104,8 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
           val (a, b, c) = ast.target.byCallTargetCases(_ => true, _ => false, _ => true)
           // It's not clear how a call with an unassigned target can reach here, however it is safe to include the edge.
           Seq(a, b, c).flatten.reduceOption(_ || _).getOrElse(true)
-        case EntryExitEdge(ast) =>
-          false
+        case EntryExitEdge(ast) => false
+        case CombinatorInternalOrderEdge(from, _, ExitNode(Branch.Z(_, _, _))) => false
         case _ => true
       }
     }
@@ -157,16 +158,10 @@ object ForceAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), Fo
                   x.value
               }).toSet
               */
-            case _ =>
-              Set()
-          }
-        case node @ ExitNode(ast) =>
-          import orc.ast.orctimizer.named._
-          ast match {
             case IfLenientMethod.Z(v, l, r) => {
               v.byIfLenientCases(
-                  left = states(ExitNode(l)),
-                  right = states(ExitNode(r)),
+                  left = states(EntryNode(l)),
+                  right = states(EntryNode(r)),
                   both = Set())
             }
             case _ =>
