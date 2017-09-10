@@ -13,15 +13,17 @@
 
 package orc.run.porce.distrib
 
-import java.io.{ EOFException, IOException }
+import java.io.{ EOFException, IOException, NotSerializableException }
 import java.net.{ InetSocketAddress, SocketException }
 import java.util.logging.Level
 
 import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
 
-import orc.{ OrcEvent, OrcExecutionOptions }
+import orc.{ CaughtEvent, OrcEvent, OrcExecutionOptions }
 import orc.util.CmdLineParser
+import java.io.ObjectOutputStream
+import scala.util.control.NonFatal
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -214,11 +216,36 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   }
 
   def sendEvent(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, groupProxyId: RemoteRef#RemoteRefId)(event: OrcEvent): Unit = {
+    def exceptionWhileMarshaling(throwableUnderSuspicion: Throwable) = {
+      try {
+        val nullOos = new ObjectOutputStream(new java.io.OutputStream() { def write(b: Int): Unit = {} })
+        nullOos.writeObject(throwableUnderSuspicion)
+        None
+      } catch {
+        case NonFatal(e) => Some(e)
+      }
+    }
     Logger.entering(getClass.getName, "sendEvent")
     val execution = programs(executionId)
+
+    val eventWithoutBadThrowable = event match {
+      case CaughtEvent(e) => {
+        exceptionWhileMarshaling(e) match {
+          case None => event
+          case Some(nse) => { 
+            val replacementThrowable = new Throwable("Replacement for corrupt (serialization failed) Throwable: " + e.getClass.getName + ": " + e.getMessage)
+            replacementThrowable.setStackTrace(e.getStackTrace)
+            replacementThrowable.addSuppressed(nse)
+            CaughtEvent(replacementThrowable)
+          }
+        }
+      }
+      case _ => event
+    }
+
     try {
       Tracer.traceOrcEventSend(here, leaderLocation)
-      leaderLocation.sendInContext(execution)(NotifyLeaderCmd(executionId, event))
+      leaderLocation.sendInContext(execution)(NotifyLeaderCmd(executionId, eventWithoutBadThrowable))
     } catch {
       case e1: SocketException => {
         if (!leaderLocation.connection.closed) {
