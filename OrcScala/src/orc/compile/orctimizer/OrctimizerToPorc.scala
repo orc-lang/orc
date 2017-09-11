@@ -18,6 +18,7 @@ import orc.ast.porc
 import orc.ast.porc.{ MethodCPSCall, MethodDirectCall, SetDiscorporate }
 import orc.compile.{ AnalysisCache, CompilerOptions }
 import orc.lib.state.{ NewFlag, PublishIfNotSet, SetFlag }
+import orc.lib.builtin.structured.{ TupleConstructor }
 import orc.util.TUnknown
 
 case class ConversionContext(p: porc.Variable, c: porc.Variable, t: porc.Variable, recursives: Set[BoundVar], callgraph: CallGraph, effects: EffectAnalysis) {
@@ -134,6 +135,8 @@ class OrctimizerToPorc(co: CompilerOptions) {
         val isDirect = {
           potentialTargets.forall({
             case NodeValue(ConstantNode(Constant(s: orc.values.sites.Site), _)) if s.isDirectCallable =>
+              true
+            case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), _, _))) =>
               true
             case _ =>
               false
