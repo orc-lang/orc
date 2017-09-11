@@ -87,7 +87,7 @@ main ()
     while [[ $(grep -c "^${clusterid} ${job_status_timestamp} " ${listen_sockaddr}) -ne ${_CONDOR_NPROCS} ]]; do
       sleep 1
       if [[ $(( $(date +"%s") - ${started_waiting} )) -gt ${max_wait_listeners} ]]; then
-        errmsg="Timed out waiting for all listeners to post their locations.  Found $(grep -c "^${job_status_timestamp} " ${listen_sockaddr}) of ${_CONDOR_NPROCS} nodes, waited ${max_wait_listeners} seconds."
+        errmsg="Timed out waiting for all listeners to post their locations.  Found $(grep -c "^${clusterid} ${job_status_timestamp} " ${listen_sockaddr}) of ${_CONDOR_NPROCS} nodes, waited ${max_wait_listeners} seconds."
         echo "${errmsg}" 1>&2
         ${CONDOR_CHIRP} ulog "${errmsg}"
         exit 1
