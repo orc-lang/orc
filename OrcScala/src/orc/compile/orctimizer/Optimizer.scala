@@ -768,16 +768,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  /*
-  val BranchRHSInline= OptFull("branch-rhs-inline") { (e, a) =>
-    import a.ImplicitResults._
-    e match {
-      case f > x > g if g strictOn x =>
-      case _ => None
-    }
-  }
-  */
-
   val BranchExp = Opt("branch-expansion") {
     case (e @ (Pars(fs, ctx) > x > g), a) if fs.size > 1 && fs.exists(f => a(f in ctx).silent) => {
       // This doesn't really eliminate any code and I cannot think of a case where
@@ -799,22 +789,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  val BranchReassoc = Opt("branch-reassoc") {
-    case (Seqs(ss, en), a) if ss.size > 1 => {
-      Seqs(ss, en)
-    }
-  }
-  val DefBranchNorm = Opt("def-branch-norm") {
-    case (DeclareCallablesAt(defs, ctx, b) > x > e, a) if (e.freeVars & defs.map(_.name).toSet).isEmpty => {
-      DeclareCallables(defs, b > x > e)
-    }
-  }
-
-  val ConstProp = Opt("constant-propogation") {
-    case (((y: Constant) in _) > x > g, a) => g.e.subst(y, x)
-    case (((y: Argument) in ctx) > x > g, a) if a(y in ctx).nonBlockingPublish => g.subst(y, x)
-    // FIXME: This may not be triggering in every case that it should.
-  }
 
   val LiftUnrelated = Opt("lift-unrelated") {
     case (e @ (g > x > Pars(es, ctx)), a) if a(g).nonBlockingPublish && (a(g).publications only 1) &&
@@ -863,34 +837,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  def areContextsCompat(a: ExpressionAnalysisProvider[Expression], decls: DeclareCallables,
-    d: Def, dctx: TransformContext, ctx: TransformContext) = {
-    val DeclareCallablesAt(_, declsctx, _) = decls in dctx
-    // TODO: This will crash on encountering a site. It should handle it.
-    val DefAt(_, _, body, _, _, _, _) = d in declsctx
-    val bodyfree = body.freeVars
-    def isRelevant(b: Bindings.Binding) = bodyfree.contains(b.variable)
-    val ctxTrimed = ctx.bindings.filter(isRelevant).map(_.nonRecursive)
-    val dctxTrimed = dctx.bindings.filter(isRelevant).map(_.nonRecursive)
-    val res = compareBindingSets(ctxTrimed, dctxTrimed)
-    if (!res) {
-      Logger.finest(s"Incompatible ctxs: decls: ${decls.defs.map(_.name).mkString("[", ",", "]")} d=$d\n$ctxTrimed\n$dctxTrimed")
-    }
-    res
-  }
-
-  def compareBindingSets(ctx1: Set[Bindings.Binding], ctx2: Set[Bindings.Binding]): Boolean = {
-    ctx1 forall { e1 =>
-      ctx2.exists { e2 =>
-        e1.ast == e2.ast && e1.variable == e2.variable
-      }
-    }
-  }
-
-  val DefElim = Opt("def-elim") {
-    case (DeclareCallablesAt(defs, ctx, b), a) if (b.freeVars & defs.map(_.name).toSet).isEmpty => b
-  }
-
   def containsType(b: Expression, tv: BoundTypevar) = {
     var found = false
     (new NamedASTTransform {
@@ -904,33 +850,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
   val TypeElim = Opt("type-elim") {
     case (DeclareTypeAt(tv, t, b), a) if !containsType(b, tv) => b
-  }
-
-  def isClosureBinding(b: Bindings.Binding): Boolean = {
-    import Bindings._
-    b match {
-      case CallableBound(_, _, d) if d.isInstanceOf[Def] => true
-      case RecursiveCallableBound(_, _, d) if d.isInstanceOf[Def] => true
-      // TODO: Should sites also be counted as closures?
-      case ForceBound(ctx, f, x) =>
-        f.argForVar(x) match {
-          case y: BoundVar => isClosureBinding(ctx(y))
-        }
-      case SeqBound(ctx, (y: BoundVar) > x > _) => isClosureBinding(ctx(y))
-      case _ => false
-    }
-  }
-
-  val AccessorElim = Opt("accessor-elim") {
-    case (FieldAccess(Constant(r: OrcRecord), f) in ctx, a) if r.entries.contains(f.field) =>
-      Constant(r.entries(f.field))
-    /*  case (CallAt(Constant(ProjectClosure) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("apply") =>
-      Constant(r.getField(Field("apply")))
-    case (CallAt(Constant(ProjectClosure) in _, List(v : BoundVar), _, ctx), a) if isClosureBinding(ctx(v)) =>
-      v
-    case (CallAt(Constant(ProjectUnapply) in _, List(Constant(r : OrcRecord)), ctx, _), a) if r.entries.contains("unapply") =>
-      Constant(r.getField(Field("unapply")))
-      */
   }
   */
 }

@@ -220,6 +220,7 @@ object CallGraphValues {
 
     def exists(p: Value[ObjectSetT] => Boolean) = view.exists(p)
     def forall(p: Value[ObjectSetT] => Boolean) = view.forall(p)
+    def existsForall(p: Value[ObjectSetT] => Boolean) = exists(p) && forall(p) 
 
     /** Convert this set to a real scala set for iterating.
       */

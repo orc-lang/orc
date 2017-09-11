@@ -28,6 +28,7 @@ orct:accessor-elim
 orct:flag-elim
 orct:ifdef-elim
 orct:method-elim
+orct:tuple-elim
 orct:max-passes=5
 porc
 porc:eta-reduce

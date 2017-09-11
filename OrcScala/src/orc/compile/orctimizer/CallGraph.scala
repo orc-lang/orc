@@ -417,7 +417,7 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
           // Compute the possible values for external calls, this is combined with internal information in the ExitNode(Call) case.
           val exit = ExitNode(e)
           states.get(ValueNode(target)) match {
-            case Some(targets) if args.size == 2 && targets.forall({
+            case Some(targets) if args.size == 2 && targets.existsForall({
               case n: NodeValue[_] if n.constantValue == Some(orc.lib.builtin.structured.TupleArityChecker) => true
               case _ => false
             }) => {
