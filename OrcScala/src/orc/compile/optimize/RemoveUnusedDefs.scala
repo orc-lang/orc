@@ -33,7 +33,7 @@ object RemoveUnusedDefs extends NamedASTTransform {
       // If none of the defs are bound in the body,
       // just return the body.
       if (newbody.freevars intersect defNamesSet isEmpty) {
-        Logger.fine(s"Removing defs $defnames with fv ${newbody.freevars}")
+        Logger.finest(s"Removing defs $defnames with fv ${newbody.freevars}")
         newbody
       } else {
         val newdefs = defs map { transform(_, defnames ::: context, typecontext) }

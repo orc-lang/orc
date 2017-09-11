@@ -89,7 +89,7 @@ object AlreadyForcedAnalysis extends AnalysisRunner[(Expression.Z, Option[Method
 
     def initialNodes: collection.Seq[Node] = {
       nodesBy({
-        case n: EntryNode if inputs(n).isEmpty =>
+        case n: TokenFlowNode if inputs(n).isEmpty =>
           n
       }).toSeq
     }
