@@ -16,22 +16,36 @@ package orc.util
 import java.io.{ File, FileInputStream }
 import java.util.Properties
 
-/** A map of settings loaded from configuration files.  The directories
-  * listed in the given system property ("orc.config.dirs" by default)
-  * are searched for the given filename.  Settings in files found
-  * earlier in the list of directories take precedence.  Defaults are
-  * loaded from a resource on the class path, namely a file of the given
-  * name in the package of the concrete subclass of this class.
+/** A map of settings loaded from configuration files.
+  *  
+  * Rule of thumb for configuration files vs. command line arguments:
+  * Use configuration files for administrative values that do not change
+  * frequently, i.e. general attributes of providing services.  Conceptually,
+  * configuration settings are read-only for "ordinary" end users.  On the
+  * other hand, use command line arguments for values that correlate with
+  * particular input (Orc programs in our case).
   *
+  * The files contain string key value pairs in the Java properties file
+  * format (see the cross-reference below for the format).
+  *
+  * The directories listed in the given system property ("orc.config.dirs"
+  * by default) are searched for the given filename.  Settings in files found
+  * earlier in the list of directories take precedence.  If the system
+  * property is not set, then no directory-list-based search is performed.
+  * In any case, defaults are loaded from a resource on the class path,
+  * namely a file of the given name in the package of the concrete subclass
+  * of this class.
+  *
+  * @see java.util.Properties#load(java.io.Reader)
   * @author jthywiss
   */
 abstract class Config(filename: String, systemProperty: String = "orc.config.dirs") extends scala.collection.immutable.AbstractMap[String,String] with scala.collection.immutable.DefaultMap[String, String]() {
 
-  protected val settings = load()
+  protected val settings: Properties = load()
 
-  override def toString = iterator.map(e => e._1 + "=" + e._2).mkString(s"${getClass.getName}(# filename=$filename; ", ", ", ")")
+  override def toString: String = iterator.map(e => e._1 + "=" + e._2).mkString(s"${getClass.getName}(#filename=$filename; ", ", ", ")")
 
-  protected def load() = {
+  protected def load(): Properties = {
     def wrapProps(dirs: Iterator[String], inner: Properties): Properties = {
       if (dirs.hasNext) {
         val f = new File(dirs.next(), filename)
@@ -56,10 +70,14 @@ abstract class Config(filename: String, systemProperty: String = "orc.config.dir
       defaults
     }
     val configDirs = System.getProperty(systemProperty).split(File.pathSeparatorChar)
-    wrapProps(configDirs.reverseIterator,defaults)
+    if (configDirs != null && configDirs.nonEmpty) {
+      wrapProps(configDirs.reverseIterator,defaults)
+    } else {
+      defaults
+    }
   }
 
-  override def get(key: String) = {
+  override def get(key: String): Option[String] = {
     val v = settings.getProperty(key)
     if (v != null)
       Some(v)
@@ -69,7 +87,7 @@ abstract class Config(filename: String, systemProperty: String = "orc.config.dir
       None
   }
 
-  def iterator: Iterator[(String, String)] = new scala.collection.AbstractIterator[(String, String)]() {
+  override def iterator: Iterator[(String, String)] = new scala.collection.AbstractIterator[(String, String)]() {
     val si = settings.stringPropertyNames.iterator()
     def hasNext = si.hasNext
     def next() = { val k = si.next(); (k, settings.getProperty(k)) }
