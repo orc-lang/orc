@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 # orc-run-parallel.sh -- Bash shell script to run Orc in the HTCondor batch system's Parallel universe
 # Project OrcTest
@@ -43,7 +43,7 @@ get_job_attr_at_submit ()
 main ()
 {
 
-  ${CONDOR_CHIRP} ulog "Greetings and felicitations from node ${_CONDOR_PROCNO} of ${_CONDOR_NPROCS}"
+  ${CONDOR_CHIRP} ulog "Greetings and felicitations from node ${_CONDOR_PROCNO} of ${_CONDOR_NPROCS}, running $0 on $(uname -n)"
 
   clusterid="$(get_job_attr ClusterId)"
   job_status_timestamp="$(get_job_attr_at_submit EnteredCurrentStatus)"
