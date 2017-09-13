@@ -26,11 +26,11 @@ object DistribTestConfig extends Config("DistribTestConfig.properties") {
 
   object expanded extends scala.collection.immutable.AbstractMap[String,String] with scala.collection.immutable.DefaultMap[String, String]() {
 
-    val addedMacros: scala.collection.mutable.Map[String,String] = scala.collection.mutable.Map[String,String]()
+    val addedVariables: scala.collection.mutable.Map[String,String] = scala.collection.mutable.Map[String,String]()
 
     override def toString: String = iterator.map({case (k, v) => k + "=" + v}).mkString(s"${getClass.getName}(#filename=${unexpanded.filename}; ", ", ", ")")
 
-    def addMacro(key: String, value: String): Option[String] = addedMacros.put(key, value)
+    def addVariable(key: String, value: String): Option[String] = addedVariables.put(key, value)
 
     private val ExpansionIterationLimit = 50
 
@@ -40,7 +40,7 @@ object DistribTestConfig extends Config("DistribTestConfig.properties") {
       var previous: String = null
       do {
         previous = result
-        for ((k, v) <- addedMacros) {
+        for ((k, v) <- addedVariables) {
           result = result.replaceAllLiterally("${" + k + "}", v)
         }
         for ((k, v) <- unexpanded) {
@@ -50,14 +50,14 @@ object DistribTestConfig extends Config("DistribTestConfig.properties") {
       } while (previous != result && remainIter > 0)
       result
     }
-  
+
     override def get(key: String): Option[String] = {
       unexpanded.get(key) match {
         case Some(v) => Some(expandMacros(v))
         case None => None
       }
     }
-  
+
     def getIndexed(key: String): Option[SortedMap[Int,String]] = {
       val elements = SortedMap[Int,String]()
       for ((k, v) <- this) {
@@ -85,6 +85,6 @@ object DistribTestConfig extends Config("DistribTestConfig.properties") {
       def hasNext = ui.hasNext
       def next() = { val (k, v) = ui.next(); (k, expandMacros(v)) }
     }
-      
+
   }
 }

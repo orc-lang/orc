@@ -16,7 +16,7 @@ package orc.test.proc
 import java.io.File
 import java.net.{ InetAddress, InetSocketAddress, NetworkInterface, SocketException }
 
-import scala.collection.JavaConverters.{ asScalaBufferConverter, seqAsJavaListConverter }
+import scala.collection.JavaConverters.{ seqAsJavaListConverter }
 
 import orc.error.compiletime.{ CompilationException, FeatureNotSupportedException }
 import orc.test.util.{ OsCommand, OsCommandResult, TestUtils }
@@ -36,13 +36,14 @@ class DistribTestCase extends OrcTestCase {
     startFollowers()
     println("\n==== Starting " + orcFile + " ====")
     try {
+      val leaderOpts = DistribTestConfig.expanded.getIterableFor("leaderOpts").getOrElse(Seq())
       val followerSockets = options.recognizedLongOpts("follower-sockets").getValue
-      val actual = if (DistribTestCase.leaderIsLocal.get) {
+      val actual = if (DistribTestCase.leaderSpec.isLocal) {
         //OrcForTesting.compileAndRun(orcFile.getPath(), 200 /*s*/, bindings)
-        val result = OsCommand.getResultFrom(Seq(s"${DistribTestCase.javaHome}/bin/java", "-cp", DistribTestCase.leaderSpec.classPath) ++ DistribTestCase.leaderSpec.jvmOptions ++ Seq("orc.Main", "--backend=porc-distrib", s"--follower-sockets=$followerSockets", "--java-stack-trace", orcFile.getPath), directory = new File(DistribTestCase.leaderSpec.workingDir), teeStdOutErr = true)
+        val result = OsCommand.getResultFrom(Seq(DistribTestCase.leaderSpec.javaCmd, "-cp", DistribTestCase.leaderSpec.classPath) ++ DistribTestCase.leaderSpec.jvmOptions ++ Seq(DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--follower-sockets=$followerSockets", orcFile.getPath), directory = new File(DistribTestCase.leaderSpec.workingDir), teeStdOutErr = true)
         result.stdout
       } else {
-        val result = OsCommand.getResultFrom(Seq("ssh", DistribTestCase.leaderSpec.hostname, s"cd '${DistribTestCase.leaderSpec.workingDir}' ; '${DistribTestCase.javaHome}/bin/java' -cp '${DistribTestCase.leaderSpec.classPath}' ${DistribTestCase.leaderSpec.jvmOptions.mkString(" ")} orc.Main -O 3 --backend=porc-distrib --follower-sockets=$followerSockets --java-stack-trace $orcFile"), teeStdOutErr = true)
+        val result = OsCommand.getResultFrom(Seq("ssh", DistribTestCase.leaderSpec.hostname, s"cd '${DistribTestCase.leaderSpec.workingDir}' ; '${DistribTestCase.leaderSpec.javaCmd}' -cp '${DistribTestCase.leaderSpec.classPath}' ${DistribTestCase.leaderSpec.jvmOptions.mkString(" ")} ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --follower-sockets=$followerSockets $orcFile"), teeStdOutErr = true)
         result.stdout
       }
       if (!expecteds.contains(actual)) {
@@ -64,19 +65,18 @@ class DistribTestCase extends OrcTestCase {
 
     for (followerNumber <- 1 to DistribTestCase.followerSpecs.size) {
       val followerSpec = DistribTestCase.followerSpecs(followerNumber - 1)
-      val address = bindings.followerSockets.get(followerNumber - 1).getAddress
+      val followerOpts = DistribTestConfig.expanded.getIterableFor("followerOpts").getOrElse(Seq())
 
-      val commandSeq = if (DistribTestCase.isLocalAddress(address)) {
+      val commandSeq = if (followerSpec.isLocal) {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
         Seq(
             Seq("cd", followerSpec.workingDir),
-            Seq(s"${DistribTestCase.javaHome}/bin/java", "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq("orc.run.porce.distrib.FollowerRuntime", followerNumber.toString, followerSpec.hostname+":"+followerSpec.port),
+            Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq(DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(followerNumber.toString, followerSpec.hostname+":"+followerSpec.port),
         )
       } else {
-        val sshAddress = bindings.followerSockets.get(followerNumber - 1).getHostString
-        println(s"Launching follower $followerNumber on $sshAddress:${followerSpec.port}")
+        println(s"Launching follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
         /* FIXME: Escape strings for shell */
-        Seq(Seq("ssh", sshAddress, s"cd '${followerSpec.workingDir}' ; '${DistribTestCase.javaHome}/bin/java' -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} orc.run.porce.distrib.FollowerRuntime $followerNumber ${followerSpec.hostname}:${followerSpec.port}"))
+        Seq(Seq("ssh", followerSpec.hostname, s"cd '${followerSpec.workingDir}' ; '${followerSpec.javaCmd}' -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} ${DistribTestConfig.expanded("followerClass")} ${followerOpts.mkString(" ")} $followerNumber ${followerSpec.hostname}:${followerSpec.port}"))
       }
       OsCommand.newTerminalWindowWith(commandSeq, s"Follower $followerNumber", 42, 132)
     }
@@ -84,19 +84,18 @@ class DistribTestCase extends OrcTestCase {
 
   def stopFollowers() {
     for (followerNumber <- 1 to bindings.followerSockets.size) {
-      val address = bindings.followerSockets.get(followerNumber - 1).getAddress
-      val port = bindings.followerSockets.get(followerNumber - 1).getPort
-      if (DistribTestCase.isLocalAddress(address)) {
-        val lsofResult = OsCommand.getResultFrom(Seq("lsof", "-t", "-a", s"-i:$port", "-sTCP:LISTEN"))
+      val followerSpec = DistribTestCase.followerSpecs(followerNumber - 1)
+
+      if (followerSpec.isLocal) {
+        val lsofResult = OsCommand.getResultFrom(Seq("lsof", "-t", "-a", s"-i:${followerSpec.port}", "-sTCP:LISTEN"))
         if (lsofResult.exitValue == 0) {
-          println(s"Terminating follower $followerNumber on port $port")
+          println(s"Terminating follower $followerNumber on port ${followerSpec.port}")
           OsCommand.getResultFrom(Seq("kill", lsofResult.stdout.stripLineEnd))
         }
       } else {
-        val sshAddress = bindings.followerSockets.get(followerNumber - 1).getHostString
-        val termResult = OsCommand.getResultFrom(Seq("ssh", sshAddress, "PID=`lsof -t -a -i:"+port+" -sTCP:LISTEN` && kill $PID"))
+        val termResult = OsCommand.getResultFrom(Seq("ssh", followerSpec.hostname, "PID=`lsof -t -a -i:"+followerSpec.port+" -sTCP:LISTEN` && kill $PID"))
         if (termResult.exitValue == 0) {
-          println(s"Terminated follower $followerNumber on $sshAddress:$port")
+          println(s"Terminated follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
         }
       }
     }
@@ -115,13 +114,13 @@ object DistribTestCase {
       })
   }
 
-  case class DOrcRuntimePlacement(hostname: String, port: Int, workingDir: String, classPath:String, jvmOptions: Seq[String]) { }
+  case class DOrcRuntimePlacement(hostname: String, port: Int, isLocal: Boolean, workingDir: String, javaCmd: String, classPath:String, jvmOptions: Seq[String]) { }
 
   def buildSuite() = {
 
     computeLeaderFollowerSpecs()
 
-    if (!leaderIsLocal.get) {
+    if (!leaderSpec.isLocal) {
       copyFiles()
     }
     val bindings = new orc.Main.OrcCmdLineOptions()
@@ -131,40 +130,38 @@ object DistribTestCase {
     TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), classOf[DistribTestCase], bindings, new File("test_data/distrib"))
   }
 
-  var leaderIsLocal: Option[Boolean] = None
-  var javaHome: String = null
-  var dOrcClassPath: String = null
   var leaderSpec: DOrcRuntimePlacement = null
   var followerSpecs: Seq[DOrcRuntimePlacement] = null
 
   protected def computeLeaderFollowerSpecs(): Unit = {
     val currentJavaHome = System.getProperty("java.home")
-    DistribTestConfig.expanded.addMacro("currentJavaHome", currentJavaHome)
+    DistribTestConfig.expanded.addVariable("currentJavaHome", currentJavaHome)
+    //val currentJvmOpts = java.lang.management.ManagementFactory.getRuntimeMXBean.getInputArguments.asScala
+    //DistribTestConfig.expanded.addVariable("currentJvmOpts", currentJvmOpts)
     val currentWorkingDir = System.getProperty("user.dir")
-    DistribTestConfig.expanded.addMacro("currentWorkingDir", currentWorkingDir)
-  
-    val leaderHostname = DistribTestConfig.expanded.getOrElse("leaderHostname", "localhost")
-    leaderIsLocal = Some(isLocalAddress(InetAddress.getByName(leaderHostname)))
-  
-    DistribTestConfig.expanded.addMacro("leaderHomeDir", if (leaderIsLocal.get) System.getProperty("user.home") else OsCommand.getResultFrom(Seq("ssh", leaderHostname, "pwd")).stdout.stripLineEnd)
-    
-    DistribTestConfig.expanded.addMacro("orcVersion", orc.Main.versionProperties.getProperty("orc.version"))
-  
-    javaHome = DistribTestConfig.expanded.getOrElse("javaHome", currentJavaHome)
-    dOrcClassPath = DistribTestConfig.expanded.getIterableFor("dOrcClassPath").map(_.mkString(File.pathSeparator)).getOrElse(System.getProperty("java.class.path"))
-    val jvmOpts = DistribTestConfig.expanded.getIterableFor("jvmOpts").getOrElse(java.lang.management.ManagementFactory.getRuntimeMXBean.getInputArguments.asScala).toSeq
-  
-    val leaderWorkingDir = DistribTestConfig.expanded.getOrElse("leaderWorkingDir", currentWorkingDir)
-  
+    DistribTestConfig.expanded.addVariable("currentWorkingDir", currentWorkingDir)
+
+    val leaderHostname = DistribTestConfig.expanded("leaderHostname")
+    val leaderIsLocal = isLocalAddress(InetAddress.getByName(leaderHostname))
+
+    DistribTestConfig.expanded.addVariable("leaderHomeDir", if (leaderIsLocal) System.getProperty("user.home") else OsCommand.getResultFrom(Seq("ssh", leaderHostname, "pwd")).stdout.stripLineEnd)
+
+    DistribTestConfig.expanded.addVariable("orcVersion", orc.Main.versionProperties.getProperty("orc.version"))
+
+    val javaCmd = DistribTestConfig.expanded("javaCmd")
+    val dOrcClassPath = DistribTestConfig.expanded.getIterableFor("dOrcClassPath").get.mkString(File.pathSeparator)
+    val jvmOpts = DistribTestConfig.expanded.getIterableFor("jvmOpts").get.toSeq
+    val leaderWorkingDir = DistribTestConfig.expanded("leaderWorkingDir")
+
     val followerHostnames = DistribTestConfig.expanded.getIndexed("followerHostname").get
     val followerPorts = DistribTestConfig.expanded.getIndexed("followerPort").get.mapValues(_.toInt)
     val followerWorkingDir = DistribTestConfig.expanded("followerWorkingDir")
     assert (followerHostnames.keys == followerPorts.keys, "followerHostnames and followerPorts must cover same indicies")
     assert (followerHostnames.keys.last == followerHostnames.size, "followerHostnames and followerPorts must cover all indicies from 1 to the number of followers")
-  
-    leaderSpec = DOrcRuntimePlacement(leaderHostname, 0, leaderWorkingDir, dOrcClassPath, jvmOpts)
-  
-    followerSpecs = followerHostnames.toSeq.map({case (followerNum, hostname) => DOrcRuntimePlacement(hostname, followerPorts(followerNum), followerWorkingDir, dOrcClassPath, jvmOpts)})
+
+    leaderSpec = DOrcRuntimePlacement(leaderHostname, 0, leaderIsLocal, leaderWorkingDir, javaCmd, dOrcClassPath, jvmOpts)
+
+    followerSpecs = followerHostnames.toSeq.map({case (followerNum, hostname) => DOrcRuntimePlacement(hostname, followerPorts(followerNum), isLocalAddress(InetAddress.getByName(hostname)), followerWorkingDir, javaCmd, dOrcClassPath, jvmOpts)})
   }
 
   @throws(classOf[Exception])
@@ -187,14 +184,14 @@ object DistribTestCase {
 
     print("Copying Orc test files to leader...")
     for (cpEntry <- DistribTestConfig.expanded.getIterableFor("dOrcClassPath").get) {
-      //print(".")
+      print(".")
       val localFilename = ".." + cpEntry.stripPrefix(DistribTestConfig.expanded("testRootDir")).stripSuffix("/*")
       val remoteFilename = cpEntry.stripSuffix("/*")
       mkdirAndRsync(localFilename, leaderSpec.hostname, remoteFilename)
     }
-    //print(".")
+    print(".")
     mkdirAndRsync(s"config/logging.properties", leaderSpec.hostname, DistribTestConfig.expanded("loggingConfigFile"))
-    //print(".")
+    print(".")
     mkdirAndRsync("test_data/distrib/", leaderSpec.hostname, DistribTestConfig.expanded("dOrcTestDataDir"))
     println("done")
   }
