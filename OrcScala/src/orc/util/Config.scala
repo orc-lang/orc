@@ -39,7 +39,7 @@ import java.util.Properties
   * @see java.util.Properties#load(java.io.Reader)
   * @author jthywiss
   */
-abstract class Config(filename: String, systemProperty: String = "orc.config.dirs") extends scala.collection.immutable.AbstractMap[String,String] with scala.collection.immutable.DefaultMap[String, String]() {
+abstract class Config(val filename: String, val systemProperty: String = "orc.config.dirs") extends scala.collection.immutable.AbstractMap[String,String] with scala.collection.immutable.DefaultMap[String, String]() {
 
   protected val settings: Properties = load()
 
@@ -69,8 +69,9 @@ abstract class Config(filename: String, systemProperty: String = "orc.config.dir
       defaults.load(defaultsStream)
       defaults
     }
-    val configDirs = System.getProperty(systemProperty).split(File.pathSeparatorChar)
-    if (configDirs != null && configDirs.nonEmpty) {
+    val configDirProp = System.getProperty(systemProperty)
+    if (configDirProp != null && configDirProp.nonEmpty) {
+      val configDirs = configDirProp.split(File.pathSeparatorChar)
       wrapProps(configDirs.reverseIterator,defaults)
     } else {
       defaults

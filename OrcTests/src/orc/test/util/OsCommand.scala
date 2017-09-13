@@ -46,10 +46,10 @@ object OsCommand {
 
     val exitValue = p.waitFor()
 
-    outDrainThread.join(10 /*ms*/)
-    errDrainThread.join(10 /*ms*/)
-    assert(!outDrainThread.isAlive, "outDrainThread should be dead for "+command)
-    assert(!errDrainThread.isAlive, "errDrainThread should be dead for "+command)
+    outDrainThread.join(400 /*ms*/)
+    errDrainThread.join(400 /*ms*/)
+    if (outDrainThread.isAlive) Logger.warning("outDrainThread should be dead for "+command)
+    if (errDrainThread.isAlive) Logger.warning("errDrainThread should be dead for "+command)
 
     val stdoutString = outBAOS.toString(charset.name)
     val stderrString = errBAOS.toString(charset.name)
