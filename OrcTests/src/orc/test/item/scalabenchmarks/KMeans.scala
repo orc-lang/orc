@@ -4,17 +4,35 @@ import scala.io.Source
 import scala.math.sqrt
 
 object KMeansData  {
-  def readPoints(path: String): List[KMeans.Point] = {
+  def readPoints(path: String): List[Point] = {
     val json = Source.fromFile(path).mkString
-    orc.lib.web.ReadJSON(json).asInstanceOf[List[List[BigDecimal]]].map({ case List(a, b) => new KMeans.Point(a, b) })
+    val data = orc.lib.web.ReadJSON(json).asInstanceOf[List[List[BigDecimal]]].map({ case List(a, b) => new Point(a, b) })
+    data ++ data ++ data
   }
 
-  val data = readPoints("test_data/performance/points-small.json")
+  val data = readPoints("test_data/performance/points.json")
+  
+  println(data.size)
+}
+
+case class Point(x: BigDecimal, y: BigDecimal) {
+  def /(k: BigDecimal): Point = new Point(x / k, y / k)
+
+  def +(p: Point) = new Point(x + p.x, y + p.y)
+  def -(p: Point) = new Point(x - p.x, y - p.y)
+  
+  def add(p: Point) = this + p
+  def sub(p: Point) = this - p
+  def div(k: Int) = this / k
+
+  def modulus: BigDecimal = sqrt((sq(x) + sq(y)).toDouble)
+  
+  def sq(x: BigDecimal) = x * x
 }
 
 object KMeans extends BenchmarkApplication {
   val n = 10
-  val iters = 15
+  val iters = 1
   
   def main(args: Array[String]): Unit = {
     if (args.size == 0) {
@@ -31,33 +49,36 @@ object KMeans extends BenchmarkApplication {
     }
   }
 
-  case class Point(x: BigDecimal, y: BigDecimal) {
-    def /(k: Double): Point = new Point(x / k, y / k)
-
-    def +(p: Point) = new Point(x + p.x, y + p.y)
-    def -(p: Point) = new Point(x - p.x, y - p.y)
-
-    def modulus: BigDecimal = sqrt((sq(x) + sq(y)).toDouble)
-  }
-
   def run(xs: List[Point]) = {
     var centroids = xs take n
 
     for (i <- 1 to iters) {
-      centroids = clusters(xs, centroids) map average
+      centroids = updateCentroids(xs, centroids)
     }
-    clusters(xs, centroids)
+    //clusters(xs, centroids)
+    centroids
+  }
+  
+  def updateCentroids(data: List[Point], centroids: List[Point]): List[Point] = {
+    clusters(data, centroids) map average
   }
 
+  def split(n: Int, xs: List[Point]): List[List[Point]] = {
+    xs.grouped(xs.size / n).toList
+  }
+    
+  def appendMultiple(ls: List[List[List[Point]]]) = {
+    ls.reduce((x, y) => (x zip y).map({ case (a, b) => a ++ b }))
+  }
+    
   def clusters(xs: List[Point], centroids: List[Point]) =
     (xs groupBy { x => closest(x, centroids) }).values.toList
 
   def closest(x: Point, choices: List[Point]) =
     choices minBy { y => dist(x, y) }
 
-  def sq(x: BigDecimal) = x * x
-
   def dist(x: Point, y: Point) = (x - y).modulus
 
   def average(xs: List[Point]) = xs.reduce(_ + _) / xs.size
+  def sum(xs: List[Point]) = xs.reduce(_ + _)
 }
