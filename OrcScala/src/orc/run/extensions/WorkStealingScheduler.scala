@@ -35,13 +35,18 @@ class SimpleWorkStealingScheduler(
   schedulerThis =>
 
   val nCores = Runtime.getRuntime().availableProcessors()
+  
+  val overrideWorkers = Option(System.getProperty("SimpleWorkStealingScheduler.overrideWorkers")).map(_.toInt)
+  overrideWorkers foreach { n =>
+    Logger.info(s"Worker count fixed at $n (read from System property SimpleWorkStealingScheduler.overrideWorkers).")
+  }
 
   /** The minimum number of worker threads.
     */
-  val minWorkers = math.max(4, nCores * 2)
+  val minWorkers = overrideWorkers.getOrElse(math.max(4, nCores * 2))
   /** The maximum number of worker threads.
     */
-  val maxWorkers = minWorkers + maxSiteThreads
+  val maxWorkers = overrideWorkers.getOrElse(minWorkers + maxSiteThreads)
   /** The maximum amount of time (ms) to wait between attempts to steal work.
     */
   val maxStealWait = 100
