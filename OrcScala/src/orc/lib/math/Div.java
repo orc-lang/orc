@@ -41,7 +41,7 @@ public class Div extends EvalSite implements TypedSite {
                 // not representable as a finite decimal, so
                 // in that case we convert to double.
                 // warning: this can lose precision
-                return Double.valueOf(a.doubleValue() / b.doubleValue());
+                return new BigDecimal(Double.valueOf(a.doubleValue() / b.doubleValue()));
             }
         }
 
