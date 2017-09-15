@@ -23,6 +23,7 @@ import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import orc.util.DotUtils.DotAttributes
 import orc.compile.Logger
 import orc.ast.orctimizer.named._
+import orc.values.sites.SiteMetadata
 
 sealed abstract class Delay {
   def <(o: Delay): Boolean
@@ -125,7 +126,7 @@ class DelayAnalysis(
                     } else {
                       bestState
                     }
-                  case site: orc.values.sites.Site =>
+                  case site: orc.values.sites.SiteMetadata =>
                     DelayInfo(Delay(site.timeToPublish), Delay(site.timeToHalt))
                   case _ =>
                     bestState

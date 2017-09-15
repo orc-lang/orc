@@ -24,6 +24,7 @@ import orc.compile.Logger
 import scala.reflect.ClassTag
 import orc.values.Field
 import swivel.Zipper
+import orc.values.sites.SiteMetadata
 
 class PublicationCountAnalysis(
   results: Map[Node, Range],
@@ -166,7 +167,7 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
                       } else {
                         defaultResult
                       }
-                    case site: orc.values.sites.Site => site.publications
+                    case site: orc.values.sites.SiteMetadata => site.publications
                     case _ => defaultResult
                   }).reduce(_ union _)
                 }, internals = { vs =>

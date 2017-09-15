@@ -18,6 +18,7 @@ import orc.compile.AnalysisCache
 import orc.ast.orctimizer.named._
 import FlowGraph._
 import orc.values.sites.Effects
+import orc.values.sites.SiteMetadata
 
 class LocalNodeAnalysis(graph: CallGraph) {
   import graph.NodeInformation._
@@ -78,7 +79,7 @@ class LocalNodeAnalysis(graph: CallGraph) {
                     } else {
                       false
                     }
-                  case site: orc.values.sites.Site => 
+                  case site: orc.values.sites.SiteMetadata => 
                     site.effects != Effects.None
                   case _ =>
                     true
