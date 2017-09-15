@@ -242,6 +242,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => false
     }) =>
       o.value
+    case (e @ GetMethod.Z(o), a) if e.parents.collectFirst({ case Branch.Z(GetMethod.Z(Zipper(`o`, _)), _, _) => true }).isDefined =>
+      e.parents.collectFirst({ case Branch.Z(GetMethod.Z(Zipper(`o`, _)), x, _) => x }).get
   }
 
   val FutureForceElim = OptFull("future-force-elim") { (e, a) =>
@@ -290,7 +292,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             })
           }
   
-          val allInformation = (xs, vs, vs.map(v => findParentForce(v.value))).zipped
+          val allInformation = (xs, vs.view.force, vs.map(v => findParentForce(v.value)).view.force).zipped
           val nfs = allInformation.collect({ 
             case (x, _, Some(y)) => (x, y)
           }).toMap[Argument, Argument]
@@ -384,6 +386,16 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
+  val Normalize = OptFull("normalize") { (e, a) =>
+    e match {
+      case Branch.Z(f, x, y) =>
+        Some(Branch(f.value, x, y.value))
+      case Otherwise.Z(f, y) =>
+        Some(Otherwise(f.value, y.value))
+      case _ => None
+    }
+  }
+
   val BranchElimConstant = OptFull("branch-elim-const") { (e, a) =>
     import orc.compile.orctimizer.CallGraphValues._
     e match {
@@ -392,7 +404,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case Branch.Z(c, x, y) if (a.publicationsOf(c) only 1) && !a.effects(c) =>
         val vs = a.valuesOf(c).toSet
         val DelayInfo(delay, _) = a.delayOf(c)
-        //Logger.finer(s"branch-elim-const: ${c.value}\n$vs, ${a.effects(c)}, $delay")
         if (vs.size == 1 && delay == ComputationDelay()) {
           vs.head match {
             case NodeValue(ConstantNode(Constant(v), _)) =>
@@ -422,6 +433,15 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         parents.collectFirst({ case Branch.Z(Zipper(`valueExpr`, _), y, _) => y }) map { y =>
           g.value.subst(y, x)
         }
+      case _ => None
+    }
+  }
+  
+  val OtherwiseElim = OptFull("otherwise-elim") { (e, a) =>
+    e match {
+      case Otherwise.Z(f, g) if a.publicationsOf(f) > 0 => Some(f.value)
+      case Otherwise.Z(f, g) if !a.effects(f) && (a.publicationsOf(f) only 0) && 
+        a.delayOf(f).maxHaltDelay == ComputationDelay() => Some(g.value)
       case _ => None
     }
   }
@@ -856,7 +876,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
-      IfDefElim, Inline, FutureForceElim, BranchElim, TrimElim, UnusedFutureElim, StopEquiv, 
+      Normalize,
+      IfDefElim, Inline, FutureForceElim, BranchElim, OtherwiseElim, TrimElim, UnusedFutureElim, StopEquiv, 
       ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant, 
       FutureElim, GetMethodElim, TupleElim, MethodElim)
   /*

@@ -2,12 +2,14 @@ remove-unused-defs
 remove-unused-types
 fraction-defs
 orct
+orct:normalize
 orct:type-elim
 orct:def-branch-norm
 orct:def-elim
 orct:branch-elim
 orct:branch-elim-arg
 orct:branch-elim-const
+orct:otherwise-elim
 orct:stop-equiv
 orct:stop-elim
 orct:constant-propogation
@@ -39,5 +41,4 @@ porc:inline-let
 porc:let-inline-expansion-threshold=30
 porc:try-catch-elim
 porc:try-finally-elim
-porc:inline-spawn
 porc:max-passes=3
