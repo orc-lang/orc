@@ -3,11 +3,8 @@ package orc.run.porce;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
-import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node.Child;
-import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import orc.run.porce.runtime.Counter;
@@ -15,6 +12,7 @@ import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.Terminator;
+import orc.run.porce.runtime.CallClosureSchedulable;
 import orc.run.porce.InternalArgArrayCallBase;
 
 @NodeChild(value = "c", type = Expression.class)
@@ -52,7 +50,7 @@ public abstract class Spawn extends Expression {
 			}
 		} else {
 			t.checkLive();
-			execution.get().runtime().spawn(c, computation);
+			execution.get().runtime().potentiallySchedule(CallClosureSchedulable.apply(computation));
 		}
         return PorcEUnit.SINGLETON;
     }

@@ -20,6 +20,8 @@ import orc.run.Orc
 import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution }
 import orc.run.porce.Logger
 import orc.run.porce.PorcELanguage
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
+import orc.Schedulable
 
 /** The base runtime for PorcE runtimes.
  *  
@@ -44,10 +46,16 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   def beforeExecute(): Unit = {
     //PorcERuntime.resetStackDepth()
   }
-
-  @TruffleBoundary(allowInlining = true) @noinline
-  def spawn(c: Counter, computation: PorcEClosure): Unit = {
-    schedule(CallClosureSchedulable(computation))
+  
+  @CompilationFinal
+  val actuallySchedule = true
+  
+  def potentiallySchedule(s: Schedulable) = {
+    if (actuallySchedule) {
+      schedule(s)
+    } else {
+      s.run()
+    }
   }
 }
 

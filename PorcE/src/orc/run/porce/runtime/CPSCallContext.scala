@@ -17,7 +17,7 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
 
   final def publishNonterminal(v: AnyRef): Unit = {
     c.newToken() // Token: Passed to p.
-    runtime.schedule(CallClosureSchedulable(p, v))
+    runtime.potentiallySchedule(CallClosureSchedulable(p, v))
   }
 
   /** Handle a site call publication.
@@ -28,7 +28,7 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
     // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
     if (compareAndSet(false, true)) {
       // Token: Pass token to p.
-      runtime.schedule(CallClosureSchedulable(p, v))
+      runtime.potentiallySchedule(CallClosureSchedulable(p, v))
       t.removeChild(this)
     }
   }

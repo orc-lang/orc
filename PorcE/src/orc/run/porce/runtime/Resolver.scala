@@ -199,7 +199,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
   def done(): Unit = {
     t.removeChild(this)
     // Token: Pass to p.
-    runtime.schedule(CallClosureSchedulable(p))
+    runtime.potentiallySchedule(CallClosureSchedulable(p))
   }
 
   /** Handle being killed by the terminator.

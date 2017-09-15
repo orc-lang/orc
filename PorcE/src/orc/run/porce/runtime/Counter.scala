@@ -295,7 +295,7 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
       //   Maybe we need two ways to halt a token. One which schedules the handler and one which direct calls it.
 
       // Token: from parent
-      runtime.schedule(CallClosureSchedulable(haltContinuation))
+      runtime.potentiallySchedule(CallClosureSchedulable(haltContinuation))
     } else {
       parent.setDiscorporate()
       // Token: from parent
