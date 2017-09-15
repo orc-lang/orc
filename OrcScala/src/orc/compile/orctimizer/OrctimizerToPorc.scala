@@ -21,7 +21,11 @@ import orc.lib.state.{ NewFlag, PublishIfNotSet, SetFlag }
 import orc.lib.builtin.structured.{ TupleConstructor }
 import orc.util.TUnknown
 
-case class ConversionContext(p: porc.Variable, c: porc.Variable, t: porc.Variable, recursives: Set[BoundVar], callgraph: CallGraph, effects: EffectAnalysis) {
+case class ConversionContext(
+    p: porc.Variable, c: porc.Variable, t: porc.Variable,
+    recursives: Set[BoundVar],
+    callgraph: CallGraph,
+    effects: EffectAnalysis) {
 }
 
 /** @author amp
@@ -56,6 +60,16 @@ class OrctimizerToPorc(co: CompilerOptions) {
   }
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
  
+  /** Spawn if we are not in a sequentialized section.
+    */
+  def probablySpawn(scope: Expression.Z)(mustSpawn: Boolean, comp: porc.Argument)(implicit ctx: ConversionContext): porc.Expression = {
+    if (AnnotationHack.inAnnotation[Sequentialize](scope)) {
+      comp()
+    } else {
+      porc.Spawn(ctx.c, ctx.t, mustSpawn, comp)
+    }
+  }
+  
   /** Catch porc exceptions and halt the current C.
     */
   def catchExceptions(e: porc.Expression)(implicit ctx: ConversionContext): porc.Expression = {
@@ -65,7 +79,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
       porc.HaltToken(ctx.c)
     })
   }
-
+  
   /** Run expression f to bind future fut.
     *
     * This uses the current counter and terminator, but does not publish any value.
@@ -101,7 +115,9 @@ class OrctimizerToPorc(co: CompilerOptions) {
       }))) {
         porc.NewToken(ctx.c) :::
         	// TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
-          catchExceptions { porc.Spawn(ctx.c, ctx.t, false, comp) }
+          catchExceptions {
+            probablySpawn(f)(false, comp)
+          }
       }
   }
 
@@ -178,13 +194,13 @@ class OrctimizerToPorc(co: CompilerOptions) {
             let(
               (newP, porc.Continuation(Seq(v), {
                 let((comp1, porc.Continuation(Seq(), ctx.p(v)))) {
-                  catchExceptions { porc.Spawn(ctx.c, ctx.t, true, comp1) }
+                  catchExceptions { probablySpawn(expr)(true, comp1) }
                 }
               })),
               (comp2, porc.Continuation(Seq(), {
                 catchExceptions { porc.MethodCPSCall(isExternal, argument(target), newP, ctx.c, ctx.t, args.map(argument(_)).view.force) }
               }))) {
-                catchExceptions { porc.Spawn(ctx.c, ctx.t, true, comp2) }
+                catchExceptions { probablySpawn(expr)(true, comp2) }
               }
           }
         } else {
@@ -197,7 +213,6 @@ class OrctimizerToPorc(co: CompilerOptions) {
       }
       case Parallel.Z(left, right) => {
         val comp = newVarName("comp")
-        
         let(
           (comp, porc.Continuation(Seq(), {
             catchExceptions {
@@ -206,7 +221,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
           }))) {
             porc.NewToken(ctx.c) :::
             	// TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
-              catchExceptions { porc.Spawn(ctx.c, ctx.t, false, comp) } :::
+              catchExceptions { probablySpawn(expr)(false, comp) } :::
               expression(right)
           }
       }
@@ -326,7 +341,6 @@ class OrctimizerToPorc(co: CompilerOptions) {
           expression(body)
         porc.MethodDeclaration(ctx.t, defs.map(callable(defs.map(_.name), _)).view.force, b)
       }
-
       case New.Z(self, _, bindings, _) => {
         val selfV = lookup(self)
 
@@ -349,7 +363,6 @@ class OrctimizerToPorc(co: CompilerOptions) {
           binders.foldRight(ctx.p(selfV): porc.Expression)((a, b) => porc.Sequence(Seq(a, b)))
         }
       }
-
       case GetField.Z(o, f) => {
         if(useDirectGetFields) {
           val v = o.value ->> newVarName(f.name)
