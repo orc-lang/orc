@@ -15,7 +15,7 @@ object KMeansData  {
   println(data.size)
 }
 
-case class Point(x: BigDecimal, y: BigDecimal) {
+case class Point(val x: BigDecimal, val y: BigDecimal) {
   def /(k: BigDecimal): Point = new Point(x / k, y / k)
 
   def +(p: Point) = new Point(x + p.x, y + p.y)
@@ -43,24 +43,51 @@ object KMeans extends BenchmarkApplication {
       for (_ <- 0 until n) {
         Util.timeIt {
           val r = run(KMeansData.data)
-          println(r.size)
+          println(r.mkString("\n"))
         }
       }
     }
   }
 
   def run(xs: List[Point]) = {
-    var centroids = xs take n
+    var centroids: Seq[Point] = xs take n
 
     for (i <- 1 to iters) {
       centroids = updateCentroids(xs, centroids)
     }
-    //clusters(xs, centroids)
     centroids
   }
   
+  /*
   def updateCentroids(data: List[Point], centroids: List[Point]): List[Point] = {
-    clusters(data, centroids) map average
+    val state = new collection.mutable.HashMap() ++ centroids.map(c => (c, (0.0, 0.0, 0)))
+    for (p <- data) {
+      val cluster = closest(p, centroids)
+      val (x, y, count) = state(cluster)
+      state += cluster -> ((x + p.x.toDouble, y + p.y.toDouble, count + 1))
+    }
+    state.values.map({ case (x, y, count) => Point(x/count, y/count) }).toList
+  }
+  */
+
+  def sumAndCountClusters(data: List[Point], centroids: Seq[Point]) = {
+    val xs = Array.fill[BigDecimal](centroids.size)(BigDecimal(0))
+    val ys = Array.fill[BigDecimal](centroids.size)(BigDecimal(0))
+    val counts = Array.ofDim[Integer](centroids.size)
+    for (p <- data) {
+      val cluster = closestIndex(p, centroids)
+      xs(cluster) += p.x
+      ys(cluster) += p.y
+      counts(cluster) += 1
+    }
+    (xs, ys, counts)
+  }  
+  def updateCentroids(data: List[Point], centroids: Seq[Point]): Seq[Point] = {
+    val (xs, ys, counts) = sumAndCountClusters(data, centroids)
+    centroids.indices.map({ i =>
+      val c: BigDecimal = BigDecimal(counts(i))
+      new Point(xs(i)/c, ys(i)/c)
+    }).toSeq
   }
 
   def split(n: Int, xs: List[Point]): List[List[Point]] = {
@@ -76,6 +103,21 @@ object KMeans extends BenchmarkApplication {
 
   def closest(x: Point, choices: List[Point]) =
     choices minBy { y => dist(x, y) }
+
+  def closestIndex(x: Point, choices: Seq[Point]): Int = {
+    var index = 0
+    var closestIndex = -1
+    var closestDist = BigDecimal(0)
+    for(y <- choices) {
+      val d = dist(x, y)
+      if(closestIndex < 0 || d < closestDist) {
+        closestDist = d
+        closestIndex = index
+      }
+      index += 1
+    }
+    closestIndex
+  }
 
   def dist(x: Point, y: Point) = (x - y).modulus
 

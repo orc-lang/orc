@@ -3,9 +3,12 @@ package orc.test.item.scalabenchmarks
 import java.util.concurrent.atomic.DoubleAdder
 import java.util.concurrent.atomic.LongAdder
 
-object KMeansPar extends BenchmarkApplication {
+object KMeansParManual extends BenchmarkApplication {
   val n = 10
   val iters = 1
+
+  import KMeans._
+    
   
   def main(args: Array[String]): Unit = {
     if (args.size == 0) {
@@ -32,27 +35,25 @@ object KMeansPar extends BenchmarkApplication {
     centroids
   }
   
-  /*
-  def updateCentroids(data: List[Point], centroids: List[Point]): List[Point] = {
-    val state = new collection.mutable.HashMap() ++ centroids.map(c => (c, (0.0, 0.0, 0)))
-    for (p <- data) {
-      val cluster = closest(p, centroids)
-      val (x, y, count) = state(cluster)
-      state += cluster -> ((x + p.x.toDouble, y + p.y.toDouble, count + 1))
-    }
-    state.values.map({ case (x, y, count) => Point(x/count, y/count) }).toList
-  }
-  */
-  
   def updateCentroids(data: List[Point], centroids: Seq[Point]): Seq[Point] = {
     val xs = Array.fill(centroids.size)(new DoubleAdder())
     val ys = Array.fill(centroids.size)(new DoubleAdder())
     val counts = Array.fill(centroids.size)(new LongAdder())
-    for (p <- data.par) {
-      val cluster = closestIndex(p, centroids)
-      xs(cluster).add(p.x.toDouble)
-      ys(cluster).add(p.y.toDouble)
-      counts(cluster).add(1)
+    for (partition <- split(8, data).par) {
+      val lxs = Array.fill(centroids.size)(0.0)
+      val lys = Array.fill(centroids.size)(0.0)
+      val lcounts = Array.fill(centroids.size)(0)
+      
+      for (p <- partition) {
+        val cluster = closestIndex(p, centroids)
+        lxs(cluster) += p.x.toDouble
+        lys(cluster) += p.y.toDouble
+        lcounts(cluster) += 1
+      }
+
+      (xs zip lxs).foreach(p => p._1.add(p._2))
+      (ys zip lys).foreach(p => p._1.add(p._2))
+      (counts zip lcounts).foreach(p => p._1.add(p._2))
     }
     centroids.indices.map({ i =>
       val c: BigDecimal = counts(i).sum()

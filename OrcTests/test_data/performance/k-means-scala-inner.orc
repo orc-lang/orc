@@ -34,11 +34,30 @@ def readFile(fn) =
 val n = 10
 val iters = 1
 
+import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
+import class LongAdder = "java.util.concurrent.atomic.LongAdder"
+
 import class Point = "orc.test.item.scalabenchmarks.Point"
 import class KMeans = "orc.test.item.scalabenchmarks.KMeans"
 import class KMeansData = "orc.test.item.scalabenchmarks.KMeansData"
 
-def clusters(cs, xs) = KMeans.clusters(cs, xs)
+class PointAdder {
+  val x = DoubleAdder()
+  val y = DoubleAdder()
+  val count = LongAdder()
+  
+  def add(p, n) = (x.add(p.x()), y.add(p.y()), count.add(n)) >> signal
+  
+  {-- Get the average of the added points. 
+    If this is called while points are being added this may have transient errors since the counter, x, or y may include values not included in the others. -}
+  def average() =
+    val c = count.sum()
+  	Point(x.sum() / c, y.sum() / c)
+  
+  def toString() = "<" + x + "," + y + ">"
+}
+
+def PointAdder() = new PointAdder
 
 def nof(0, v) = v >> []
 def nof(n, v) = v >> v : nof(n-1, v)
@@ -69,17 +88,26 @@ def run(xs) =
   run'(iters, take(n, xs))
 
 def updateCentroids(xs, centroids) = 
-  -- clusters(data, centroids) map average
+  val pointAdders = listToArray(map({ PointAdder() }, centroids))
   val splitXs = KMeans.split(8, xs)
-  val mappings = KMeans.appendMultiple(map({ clusters(_, centroids) }, splitXs))
-  map(KMeans.average, mappings)
+  each(splitXs) >partition> (
+    val p = KMeans.sumAndCountClusters(partition, centroids)
+    val xs = p.productElement(0)
+    val ys = p.productElement(1)
+    val counts = p.productElement(2)
+  
+    upto(xs.length?) >i> (
+      pointAdders(i)?.add(Point(xs(i)? / 1.0, ys(i)? / 1.0), counts(i)?)
+    )
+  ) >> stop ;
+  map({ _.average() }, arrayToList(pointAdders))
 
 def readPoints(path) = 
   map(lambda([a, b]) = Point(a, b), ReadJSON(head(readFile(path))))
 
 val points = KMeansData.data() -- readPoints("test_data/performance/points.json")
 
-val _ = Println(length(points) + "\n" + unlines(map({ _.toString() }, take(5, points))))
+--val _ = Println(length(points) + "\n" + unlines(map({ _.toString() }, take(5, points))))
 
 benchmarkSized(length(points), {
   run(points)

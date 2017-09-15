@@ -47,28 +47,41 @@ class Point {
 def Point(x' :: Double, y' :: Double) = new Point { val x = x' # val y = y' }
 --def Point(x' :: Double, y' :: Double) = x' >x''> y' >y''> new Point { val x = x'' # val y = y'' }
 
+import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
+import class LongAdder = "java.util.concurrent.atomic.LongAdder"
+
+class PointAdder {
+  val x = DoubleAdder()
+  val y = DoubleAdder()
+  val count = LongAdder()
+  
+  def add(p) = (x.add(p.x), y.add(p.y), count.add(1)) >> signal
+  
+  {-- Get the average of the added points. 
+    If this is called while points are being added this may have transient errors since the counter, x, or y may include values not included in the others. -}
+  def average() =
+    val c = count.sum()
+  	Point(x.sum() / c, y.sum() / c)
+  
+  def toString() = "<" + x + "," + y + ">"
+}
+
+def PointAdder() = new PointAdder
+
 def run(xs) =
-  def run'(0, centroids) = Println(unlines(map({ _.toString() }, centroids))) >> stop --| clusters(xs, centroids)
+  def run'(0, centroids) = Println(unlines(map({ _.toString() }, centroids))) >> stop
   def run'(i, centroids) = 
-    run'(i - 1, map(average, clusters(xs, centroids)))
+    run'(i - 1, updateClusters(xs, centroids))
   run'(iters, take(n, xs))
 
-def groupBy(f, l) =
-  val map = ConcurrentHashMap()
-  each(l) >x> (
-    val y = f(x)
-    if map.contains(y) then
-      map.get(y)
-    else (
-      val c = Channel()
-      map.putIfAbsent(y, c) >c'> Iff(c' = null) >> c' ;
-      c
-    )
-  ) >c> c.put(x) >> stop ;
-  map
-
-def clusters(xs, centroids) =
-  map({ _.getAll() }, iterableToList(groupBy({ closest(_, centroids) }, xs).values()))
+def updateClusters(xs, clusters) = 
+  val clusterAdders = ConcurrentHashMap()
+  map({ clusterAdders.put(_, PointAdder()) }, clusters) >>
+  each(xs) >x> (
+  	clusterAdders.get(closest(x, clusters)).add(x) 
+  ) >> stop ;
+  map({ clusterAdders.get(_).average() }, clusters)
+  
 
 def minBy(f, l) =
   def minBy'([x]) = (f(x), x)
@@ -91,7 +104,7 @@ def average(xs) = cfold({ _.add(_) }, xs).div(length(xs))
 def readPoints(path) = 
   map(lambda([a, b]) = Point(a, b), ReadJSON(head(readFile(path))))
 
-val data = readPoints("test_data/performance/points.json")
+val data = readPoints("test_data/performance/points-small.json")
 val points = append(data,append(data, data))
 
 val _ = Println(length(points) + "\n" + unlines(map({ _.toString() }, take(5, points))))
