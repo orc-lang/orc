@@ -179,7 +179,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   val FutureElim = OptFull("future-elim") { (e, a) =>
     def isFutureEliminable(future: NamedAST.Z, body: Expression.Z): Boolean = {
-      val byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
+      def byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
       
       def surroundingFutureIsForced = {
         val surroundingFuture = future.parents.tail.collectFirst({ case FieldFuture.Z(b) => b; case Future.Z(b) => b })        
@@ -191,7 +191,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         }
       }
       
-      byNonBlocking1 && !surroundingFutureIsForced
+      val sequentialize = AnnotationHack.inAnnotation[Sequentialize](body)
+      
+      sequentialize || (byNonBlocking1 && !surroundingFutureIsForced)
     }
     
     e match {
