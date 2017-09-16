@@ -20,6 +20,7 @@ import orc.compile.{ AnalysisCache, CompilerOptions }
 import orc.lib.state.{ NewFlag, PublishIfNotSet, SetFlag }
 import orc.lib.builtin.structured.{ TupleConstructor }
 import orc.util.TUnknown
+import orc.lib.builtin.structured.TupleArityChecker
 
 case class ConversionContext(
     p: porc.Variable, c: porc.Variable, t: porc.Variable,
@@ -153,6 +154,8 @@ class OrctimizerToPorc(co: CompilerOptions) {
             case NodeValue(ConstantNode(Constant(s: orc.values.sites.Site), _)) if s.isDirectCallable =>
               true
             case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), _, _))) =>
+              true
+            case NodeValue(ExitNode(Call.Z(Constant.Z(TupleArityChecker), _, _))) =>
               true
             case _ =>
               false

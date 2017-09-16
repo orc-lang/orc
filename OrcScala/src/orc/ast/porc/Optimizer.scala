@@ -149,6 +149,8 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
       case Bind.Z(fut, comp) =>
         Bind(renameVariables(fut), renameVariables(comp))
+      case BindStop.Z(fut) =>
+        BindStop(renameVariables(fut))
       case f @ NewFuture.Z() =>
         f.value
     })

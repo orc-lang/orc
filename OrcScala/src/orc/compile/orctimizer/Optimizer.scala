@@ -39,6 +39,7 @@ import orc.compile.orctimizer.FlowGraph.EverywhereNode
 import orc.ast.orctimizer.named.DeclareMethods
 import orc.lib.builtin.structured.TupleArityChecker
 import orc.lib.builtin.structured.TupleConstructor
+import orc.lib.builtin.structured.TupleArityChecker
 
 class HashFirstEquality[T](val value: T) {
   override def toString() = value.toString()
@@ -239,7 +240,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   val GetMethodElim = Opt("getmethod-elim") {
     case (GetMethod.Z(o), a) if a.valuesOf(o).forall({
-      case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), _, _))) =>  true
+      case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), _, _))) => true
+      case NodeValue(ExitNode(Call.Z(Constant.Z(TupleArityChecker), _, _))) => true
       case n: NodeValue[_] => n.isMethod
       case _ => false
     }) =>
