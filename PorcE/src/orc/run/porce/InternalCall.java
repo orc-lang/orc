@@ -9,6 +9,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.NodeCost;
+import com.oracle.truffle.api.nodes.RootNode;
+
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 
@@ -45,8 +47,16 @@ public class InternalCall extends CallBase {
         try {
             if (cacheSize < cacheMaxSize) {
                 cacheSize++;
-                n = new Specific((Expression) target.copy(), t, copyExpressionArray(arguments), (CallBase) this.copy(), execution);
-                //Logger.info(() -> "Replaced " + this + " with " + n);
+                CallBase thisCopy = (CallBase) this.copy();
+                thisCopy.setTail(isTail);
+                if (isTail && getRootNode() == t.body.getRootNode()) {
+                	// Self tail call
+                	n = new SelfTail((Expression) target.copy(), t.body.getRootNode(), copyExpressionArray(arguments), thisCopy, execution);
+                } else {
+                	// Specialize for this target
+                	n = new Specific((Expression) target.copy(), t, copyExpressionArray(arguments), thisCopy, execution);
+                }
+                Logger.info(() -> "At " + porcNode() + ": Replaced " + this + " with " + n + " (" + isTail + ", " + getRootNode() + " == " + t.body.getRootNode() + ")");
                 replace(n, "InternalCall: Speculate on target closure.");
             } else {
                 n = new Universal(target, arguments, execution);
@@ -103,6 +113,47 @@ public class InternalCall extends CallBase {
         @Override
         public NodeCost getCost() {
             return NodeCost.POLYMORPHIC;
+        }
+        
+        @Override
+        public String toString() {
+        	return "InternalCall.Specific(" + expectedTarget + ")";
+        }
+    }
+    
+    protected static class SelfTail extends InternalCallBase {
+        @Child
+        protected SelfTailCall callNode;
+        private final RootNode expectedTarget;
+        @Child
+        protected Expression notMatched;
+
+        public SelfTail(final Expression target, final RootNode expectedTarget, final Expression[] arguments, final Expression notMatched, final PorcEExecutionRef execution) {
+            super(target, arguments, execution);
+            this.expectedTarget = expectedTarget;
+            this.notMatched = notMatched;
+            this.callNode = SelfTailCall.create(arguments);
+        }
+
+        @Override
+        public Object execute(final VirtualFrame frame) {
+            final PorcEClosure t = executeTargetClosure(frame);
+            if (expectedTarget == t.body.getRootNode()) {
+                callNode.executeCall(frame, t.environment);
+                return PorcEUnit.SINGLETON;
+            } else {
+                return notMatched.execute(frame);
+            }
+        }
+
+        @Override
+        public NodeCost getCost() {
+            return NodeCost.POLYMORPHIC;
+        }
+        
+        @Override
+        public String toString() {
+        	return "InternalCall.SelfTail(" + expectedTarget + ")";
         }
     }
 

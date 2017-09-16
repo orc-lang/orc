@@ -94,9 +94,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             }
         }
 
-		// TODO: PERFORMANCE: Implement some form of TCO which generates a loop for 
-		// self-tail calls by actually calling the body repeatedly.
-		
         try {
             final Object ret = body.execute(frame);
             return ret;
@@ -113,7 +110,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     }
 
     public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured) {
-        return new PorcERootNode(language, descriptor, body, nArguments, nCaptured);
+    	// Add self tail call catcher to the body during construction.
+        return new PorcERootNode(language, descriptor, CatchSelfTailCall.create(body), nArguments, nCaptured);
     }
 
     @Override

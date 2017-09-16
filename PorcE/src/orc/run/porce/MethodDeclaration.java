@@ -131,13 +131,19 @@ public class MethodDeclaration {
     }
 
     @NodeChild("closure")
-    @NodeField(name = "index", type = int.class)
-    @NodeField(name = "callTarget", type = RootCallTarget.class)
-    @NodeField(name = "isRoutine", type = boolean.class)
     public static class NewMethod extends Expression {
+    	final int index;
+    	final RootCallTarget callTarget;
+    	final boolean isRoutine;
+    	
+		protected NewMethod(final int index, final RootCallTarget callTarget, final boolean isRoutine) {
+			this.index = index;
+			this.callTarget = callTarget;
+			this.isRoutine = isRoutine;
+		}
 
         @Specialization
-        public PorcEClosure run(final int index, final RootCallTarget callTarget, final boolean isRoutine, final MethodClosure closure) {
+        public PorcEClosure run(final MethodClosure closure) {
         	if(closure.environment[index] == null) {
         		// This races with itself if the closure is reused. But that doesn't matter since any instance is equivalent.
 	            final PorcEClosure m = new PorcEClosure(closure.environment, callTarget, isRoutine);
@@ -148,7 +154,7 @@ public class MethodDeclaration {
 
         public static NewMethod create(final Expression closure, final int index, final PorcERootNode rootNode, final boolean isRoutine) {
             final RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(rootNode);
-            return MethodDeclarationFactory.NewMethodNodeGen.create(closure, index, callTarget, isRoutine);
+            return MethodDeclarationFactory.NewMethodNodeGen.create(index, callTarget, isRoutine, closure);
         }
     }
 

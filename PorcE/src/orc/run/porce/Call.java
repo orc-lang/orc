@@ -31,6 +31,7 @@ public abstract class Call extends CallBase {
 		if (internalCall == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
 			this.internalCall = insert(makeInternalCall());
+			this.internalCall.setTail(isTail);
 		}
 		return internalCall;
 	}
@@ -41,6 +42,7 @@ public abstract class Call extends CallBase {
 		if (externalCall == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
 			this.externalCall = insert(makeExternalCall());
+			this.externalCall.setTail(isTail);
 		}
 		return externalCall;
 	}
@@ -53,6 +55,7 @@ public abstract class Call extends CallBase {
 		if (interceptedCall == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
 			this.interceptedCall = insert(makeInterceptedCall());
+			this.interceptedCall.setTail(isTail);
 		}
 		return interceptedCall;
 	}
