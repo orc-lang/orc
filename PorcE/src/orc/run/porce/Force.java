@@ -10,6 +10,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import orc.FutureState;
+import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Join;
 import orc.run.porce.runtime.PorcEClosure;
@@ -71,17 +72,22 @@ public class Force {
     @NodeChild(value = "join", type = Expression.class)
     @NodeField(name = "execution", type = PorcEExecutionRef.class)
     public static abstract class Finish extends Expression {
-        volatile static int count = 0;
         @Child
-        InternalArgArrayCallBase call = null;
+        InternalCPSDispatch call = null;
 
         @Specialization(guards = { "join.isResolved()" })
         public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecutionRef execution, final Join join) {
             if (call == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                call = insert(InternalArgArrayCall.create(execution));
+                call = insert(InternalCPSDispatch.create(execution));
             }
-            call.execute(frame, join.p(), join.values());
+			// FIXME: This extra copy is because Join was optimized for the old
+			// way of calling. If it turns out that we generate lots of copies
+			// then we will need to provide a way to bypass this.
+            Object[] values = join.values();
+            Object[] valuesWithoutPrefix = new Object[values.length - 1];
+            System.arraycopy(values, 1, valuesWithoutPrefix, 0, valuesWithoutPrefix.length);
+            call.executeDispatch(frame, join.p(), valuesWithoutPrefix);
             return PorcEUnit.SINGLETON;
         }
 
@@ -110,7 +116,7 @@ public class Force {
     @ImportStatic({ Force.class })
     public static abstract class SingleFuture extends Expression {
         @Child
-        protected InternalArgArrayCallBase call = null;
+        protected InternalCPSDispatch call = null;
         private final BranchProfile boundPorcEFuture = BranchProfile.create();
         private final BranchProfile unboundPorcEFuture = BranchProfile.create();
         private final BranchProfile boundOrcFuture = BranchProfile.create();
@@ -163,7 +169,7 @@ public class Force {
                 }
             } catch (final ValueAvailable e) {
                 initializeCall(execution);
-                call.execute(frame, p, new Object[] { null, e.value });
+                call.executeDispatch(frame, p, new Object[] { e.value });
             }
 
             return PorcEUnit.SINGLETON;
@@ -172,7 +178,7 @@ public class Force {
         private void initializeCall(final PorcEExecutionRef execution) {
             if (call == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                call = insert(InternalArgArrayCall.create(execution));
+                call = insert(InternalCPSDispatch.create(execution));
             }
         }
 

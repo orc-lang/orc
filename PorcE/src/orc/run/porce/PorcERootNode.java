@@ -19,6 +19,7 @@ import orc.ast.ASTWithIndex;
 import orc.ast.porc.PorcAST;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.HaltException;
+import orc.run.porce.call.CatchSelfTailCall;
 import orc.run.porce.runtime.KilledException;
 import orc.run.porce.runtime.SourceSectionFromPorc;
 

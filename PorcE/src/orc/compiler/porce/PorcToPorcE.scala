@@ -75,6 +75,18 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
     closureMap += (root.getId() -> callTarget)
     callTarget
   }
+  
+  def transform(x: porc.Variable)(implicit ctx: Context): porce.Expression = {
+    val res = if (ctx.argumentVariables.contains(x)) {
+      porce.Read.Argument.create(ctx.argumentVariables.indexOf(x))
+    } else if (ctx.closureVariables.contains(x)) {
+      porce.Read.Closure.create(ctx.closureVariables.indexOf(x))
+    } else {
+      porce.Read.Local.create(lookupVariable(x))
+    }
+    res.setPorcAST(x)
+    res
+  }
 
   def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
     val descriptor = new FrameDescriptor()
@@ -93,17 +105,6 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
     (closure, closureMap)
   }
 
-  def transform(x: porc.Variable)(implicit ctx: Context): porce.Expression = {
-    val res = if (ctx.argumentVariables.contains(x)) {
-      porce.Read.Argument.create(ctx.argumentVariables.indexOf(x))
-    } else if (ctx.closureVariables.contains(x)) {
-      porce.Read.Closure.create(ctx.closureVariables.indexOf(x))
-    } else {
-      porce.Read.Local.create(lookupVariable(x))
-    }
-    res.setPorcAST(x)
-    res
-  }
 
   def transform(e: porc.Expression.Z)(implicit ctx: Context): porce.Expression = {
     val thisCtx = ctx
@@ -142,18 +143,21 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             porce.NewContinuation.create(capturingExprs, rootNode)
           }
         case porc.CallContinuation.Z(target, arguments) =>
-          porce.InternalCall.create(transform(target)(innerCtx), arguments.map(transform(_)(innerCtx)).toArray, ctx.execution.newRef())
+          // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an InternalCall of some kind.
+          porce.call.Call.CPS.create(transform(target)(innerCtx), arguments.map(transform(_)(innerCtx)).toArray, ctx.execution.newRef())
         case porc.MethodCPSCall.Z(isExt, target, p, c, t, arguments) =>
           lazy val newTarget = transform(target)(innerCtx)
           val newArguments = (p +: c +: t +: arguments).map(transform(_)(innerCtx)).toArray
           val exec = ctx.execution.newRef()
           isExt match {
             case TTrue if !usingInvokationInterceptor =>
-              porce.ExternalCPSCall.create(newTarget, newArguments, exec)
+              // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
+              porce.call.Call.CPS.create(newTarget, newArguments, exec)
             case TFalse if !usingInvokationInterceptor =>
-              porce.InternalCall.create(newTarget, newArguments, exec)
+              // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
+              porce.call.Call.CPS.create(newTarget, newArguments, exec)
             case TUnknown =>
-              porce.Call.CPS.create(newTarget, newArguments, exec)
+              porce.call.Call.CPS.create(newTarget, newArguments, exec)
           }
         case porc.MethodDirectCall.Z(isExt, target, arguments) =>
           val newTarget = transform(target)
@@ -161,11 +165,13 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           val exec = ctx.execution.newRef()
           isExt match {
             case TTrue =>
-              porce.ExternalDirectCall.create(newTarget, newArguments, exec)
+              // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
+              porce.call.Call.Direct.create(newTarget, newArguments, exec)
             case TFalse =>
-              porce.InternalCall.create(newTarget, newArguments, exec)
+              // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
+              porce.call.Call.Direct.create(newTarget, newArguments, exec)
             case TUnknown =>
-              porce.Call.Direct.create(newTarget, newArguments, exec)
+              porce.call.Call.Direct.create(newTarget, newArguments, exec)
           }
         case porc.MethodDeclaration.Z(t, methods, body) =>
           val closure = lookupVariable(LocalVariables.MethodGroupClosure)(innerCtx)

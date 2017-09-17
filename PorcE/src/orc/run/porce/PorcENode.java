@@ -18,41 +18,11 @@ import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEObject;
 import orc.run.porce.runtime.Terminator;
-import orc.util.ExpressionTag;
 import orc.run.porce.runtime.SourceSectionFromPorc;
 
 @NodeInfo(language = "PorcE")
 @TypeSystemReference(PorcETypes.class)
-public abstract class PorcENode extends Node implements HasPorcNode {
-	@CompilationFinal
-    private Option<PorcAST> porcNode = Option.apply(null);
-
-	public void setPorcAST(final PorcAST ast) {
-		CompilerAsserts.neverPartOfCompilation();
-		porcNode = Option.apply(ast);
-		section = SourceSectionFromPorc.apply(ast);
-		/*getChildren().forEach((n) -> {
-			if (n instanceof PorcENode) {
-				final Expression e = (Expression) n;
-				if (e.porcNode().isEmpty()) {
-					e.setPorcAST(ast);
-				}
-			}
-		});*/
-	}
-
-    @Override
-    public Option<PorcAST> porcNode() {
-        return porcNode;
-    }
-    
-    @CompilationFinal
-    private SourceSection section = null;
-
-    @Override
-    public SourceSection getSourceSection() {
-        return section;
-    }
+public abstract class PorcENode extends NodeBase {
     
     public Object execute(final VirtualFrame frame) {
         executePorcEUnit(frame);
@@ -82,28 +52,4 @@ public abstract class PorcENode extends Node implements HasPorcNode {
     public PorcEObject executePorcEObject(final VirtualFrame frame) throws UnexpectedResultException {
         return PorcETypesGen.expectPorcEObject(execute(frame));
     }
-
-    @Override
-    protected void onReplace(final Node newNode, final CharSequence reason) {
-        if (newNode instanceof PorcENode && porcNode().isDefined()) {
-            ((PorcENode) newNode).setPorcAST(porcNode().get());
-        }
-        super.onReplace(newNode, reason);
-    }
-    
-    @Override
-    public Node copy() {
-    	Node n = super.copy();
-    	((PorcENode)n).porcNode = Option.apply(null);
-    	return n;
-    }
-    
-	@Override
-	protected boolean isTaggedWith(Class<?> tag) {
-		if (tag == ProfiledPorcNodeTag.class) {
-			return porcNode().isDefined() && ProfiledPorcNodeTag.isProfiledPorcNode(porcNode().get());
-		} else {
-			return super.isTaggedWith(tag);
-		}
-	}
 }

@@ -6,6 +6,7 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
@@ -23,11 +24,11 @@ public class Kill extends Expression {
 
     @Specialization
     public PorcEUnit run(final VirtualFrame frame, final Counter counter, final Terminator terminator, final PorcEClosure continuation, 
-    		@Cached("create(execution)") final InternalArgArrayCallBase callNode) {
+    		@Cached("create(execution)") final InternalCPSDispatch callNode) {
     	// TODO: PERFORMANCE: This should speculate on the the result of terminator to avoid creating the callNode if it's not needed.
     	// Token: This passes a token on counter to the continuation if kill returns false.
         if (terminator.kill(counter, continuation)) {
-            callNode.execute(frame, continuation, new Object[] { null });
+            callNode.executeDispatch(frame, continuation, new Object[] { });
         }
 
         return PorcEUnit.SINGLETON;

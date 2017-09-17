@@ -12,8 +12,8 @@ import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.Terminator;
+import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.CallClosureSchedulable;
-import orc.run.porce.InternalArgArrayCallBase;
 
 @NodeChild(value = "c", type = Expression.class)
 @NodeChild(value = "t", type = Expression.class)
@@ -21,7 +21,7 @@ import orc.run.porce.InternalArgArrayCallBase;
 public abstract class Spawn extends Expression {
 	
     @Child
-    protected InternalArgArrayCallBase call = null;
+    protected InternalCPSDispatch call = null;
     private final ConditionProfile canDirectCallProfile = ConditionProfile.createCountingProfile();
     private final PorcEExecutionRef execution;
     @SuppressWarnings("unused")
@@ -44,7 +44,7 @@ public abstract class Spawn extends Expression {
 		if (canDirectCall) {
 			try {
 				initializeCall();
-				call.execute(frame, computation, new Object[] { null });
+				call.executeDispatch(frame, computation, new Object[] { });
 			} finally {
 				PorcERuntime.decrementStackDepth();
 			}
@@ -58,7 +58,7 @@ public abstract class Spawn extends Expression {
     private void initializeCall() {
         if (call == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
-            call = insert(InternalArgArrayCall.create(execution));
+            call = insert(InternalCPSDispatch.create(execution));
         }
     }
 
