@@ -129,9 +129,12 @@ object JavaCall {
   }
 
   def getInvoker(target: AnyRef, args: Array[AnyRef]): Option[Invoker] = {
-    val targetCls = target.getClass()
+    def targetCls = target.getClass()
     val argClss = args.map(InvocationBehaviorUtilities.valueType)
     (target, args) match {
+      case (null, _) =>
+        None
+        
       // ARRAYS
       case (_, Array1(_: BigInt)) if targetCls.isArray() => {
         Some(new OnlyDirectInvoker {
@@ -173,6 +176,9 @@ object JavaCall {
 
   def getAccessor(target: AnyRef, f: OrcField): Option[Accessor] = {
     target match {
+      case null =>
+        None
+        
       // CLASSES (static fields)
       case target: Class[_] if target.hasStaticMember(f.name) => {
         Some(target.getStaticMemberAccessor(f.name))
@@ -272,7 +278,7 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
       }
     } catch {
       case _: NoSuchMethodException | _: MethodTypeMismatchException =>
-        UncallableValueInvoker(this, memberName)
+        UncallableValueInvoker(this)
     }
   }
 

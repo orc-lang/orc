@@ -12,6 +12,8 @@
 //
 package orc.error.runtime
 
+import orc.values.Format
+
 ////////
 // Token exceptions
 ////////
@@ -100,7 +102,7 @@ class UncallableTypeException(uncallable: Class[_]) extends RuntimeTypeException
 /** Exception raised when an uncallable value occurs in call argPosition.
   */
 @SerialVersionUID(7171287004340017499L)
-class UncallableValueException(uncallable: Any) extends RuntimeTypeException("Value not callable: \"" + uncallable.toString() + "\"")
+class UncallableValueException(uncallable: Any) extends RuntimeTypeException("Value not callable: \"" + Format.formatValue(uncallable) + "\"")
 
 /** Attempted dot access at an unknown member.
   */
