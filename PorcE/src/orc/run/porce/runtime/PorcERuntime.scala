@@ -47,12 +47,23 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     //PorcERuntime.resetStackDepth()
   }
   
-  @CompilationFinal
-  val actuallySchedule = true
+  import PorcERuntime._
   
   def potentiallySchedule(s: Schedulable) = {
     if (actuallySchedule) {
-      schedule(s)
+      if (occationallySchedule && incrementAndCheckStackDepth()) {
+        try {
+          s.run()
+        } catch {
+          case e: StackOverflowError =>
+            throw new RuntimeException(s"Allowed stack depth too deep: ${stackDepthThreadLocal.get()}", e)
+        } finally {
+          decrementStackDepth()
+        }
+      } else {
+        //Logger.info(s"Scheduling (${stackDepthThreadLocal.get()}) $s")
+        schedule(s)
+      }
     } else {
       s.run()
     }
@@ -66,6 +77,10 @@ object PorcERuntime {
     }
   }
 
+  /** Increment the stack depth and return true if we can continue to extend the stack.
+    * 
+    * If this returns true the caller must call decrementStackDepth() after it finishes.
+    */
   @TruffleBoundary(allowInlining = true) @noinline
   def incrementAndCheckStackDepth() = {
     if (PorcERuntime.maxStackDepth > 0) {
@@ -82,6 +97,10 @@ object PorcERuntime {
     }
   }
 
+  /** Decrement stack depth.
+    *
+    * @see incrementAndCheckStackDepth()
+    */
   @TruffleBoundary(allowInlining = true) @noinline
   def decrementStackDepth() = {
     if (PorcERuntime.maxStackDepth > 0) {
@@ -93,14 +112,22 @@ object PorcERuntime {
     }
   }
 
-  /*
   def resetStackDepth() = {
     if (PorcERuntime.maxStackDepth > 0) {
       PorcERuntime.stackDepthThreadLocal.set(0)
     }
   }
-  */
 
   @inline
+  @CompilationFinal
   val maxStackDepth = 32
+  // TODO: Make maxStackDepth configurable. Any value >= 0 can theoretically cause a crash in a program that would otherwise have worked.
+  
+  @inline
+  @CompilationFinal
+  val actuallySchedule = true
+  
+  @inline
+  @CompilationFinal
+  val occationallySchedule = false
 }

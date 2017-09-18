@@ -50,7 +50,7 @@ object CallClosureSchedulable {
   }
 }
 
-final class CallClosureSchedulable private (closure: PorcEClosure, arguments: Array[AnyRef]) extends Schedulable {
+final case class CallClosureSchedulable private (closure: PorcEClosure, arguments: Array[AnyRef]) extends Schedulable {
   def run(): Unit = {
     Logger.entering(getClass.getName, "run", Seq(closure, arguments))
     if (arguments == null)
