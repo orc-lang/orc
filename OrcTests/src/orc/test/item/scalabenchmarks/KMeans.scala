@@ -4,10 +4,10 @@ import scala.io.Source
 import scala.math.sqrt
 
 object KMeansData  {
-  def readPoints(path: String): List[Point] = {
+  def readPoints(path: String): Array[Point] = {
     val json = Source.fromFile(path).mkString
     val data = orc.lib.web.ReadJSON(json).asInstanceOf[List[List[BigDecimal]]].map({ case List(a, b) => new Point(a, b) })
-    data ++ data ++ data
+    data.toArray ++ data ++ data
   }
 
   val data = readPoints("test_data/performance/points.json")
@@ -49,14 +49,16 @@ object KMeans extends BenchmarkApplication {
     }
   }
 
-  def run(xs: List[Point]) = {
-    var centroids: Seq[Point] = xs take n
+  def run(xs: Array[Point]) = {
+    var centroids = xs take n
 
     for (i <- 1 to iters) {
       centroids = updateCentroids(xs, centroids)
     }
     centroids
   }
+  
+  def takePointArray(n: Int, xs: Array[Point]) = xs take n
   
   /*
   def updateCentroids(data: List[Point], centroids: List[Point]): List[Point] = {
@@ -70,41 +72,50 @@ object KMeans extends BenchmarkApplication {
   }
   */
 
-  def sumAndCountClusters(data: List[Point], centroids: Seq[Point]) = {
+  def sumAndCountClusters(data: Array[Point], centroids: Array[Point], start: Int, end: Int) = {
     val xs = Array.fill[BigDecimal](centroids.size)(BigDecimal(0))
     val ys = Array.fill[BigDecimal](centroids.size)(BigDecimal(0))
     val counts = Array.ofDim[Integer](centroids.size)
-    for (p <- data) {
+    var i = start
+    while(i < end) {
+      val p = data(i)
       val cluster = closestIndex(p, centroids)
       xs(cluster) += p.x
       ys(cluster) += p.y
       counts(cluster) += 1
+      i += 1
     }
     (xs, ys, counts)
-  }  
-  def updateCentroids(data: List[Point], centroids: Seq[Point]): Seq[Point] = {
-    val (xs, ys, counts) = sumAndCountClusters(data, centroids)
+  }
+  
+  def updateCentroids(data: Array[Point], centroids: Array[Point]): Array[Point] = 
+    updateCentroids(data, centroids, 0, data.size)
+    
+  def updateCentroids(data: Array[Point], centroids: Array[Point], start: Int, end: Int): Array[Point] = {
+    val (xs, ys, counts) = sumAndCountClusters(data, centroids, start, end)
     centroids.indices.map({ i =>
       val c: BigDecimal = BigDecimal(counts(i))
       new Point(xs(i)/c, ys(i)/c)
-    }).toSeq
+    }).toArray
   }
 
-  def split(n: Int, xs: List[Point]): List[List[Point]] = {
-    xs.grouped(xs.size / n).toList
+  /*
+  def split(n: Int, xs: Array[Point]): Array[Array[Point]] = {
+    xs.grouped(xs.size / n).toArray
   }
     
-  def appendMultiple(ls: List[List[List[Point]]]) = {
+  def appendMultiple(ls: Array[Array[Array[Point]]]) = {
     ls.reduce((x, y) => (x zip y).map({ case (a, b) => a ++ b }))
   }
+  */
     
-  def clusters(xs: List[Point], centroids: List[Point]) =
+  def clusters(xs: Array[Point], centroids: Array[Point]) =
     (xs groupBy { x => closest(x, centroids) }).values.toList
 
-  def closest(x: Point, choices: List[Point]) =
+  def closest(x: Point, choices: Array[Point]) =
     choices minBy { y => dist(x, y) }
 
-  def closestIndex(x: Point, choices: Seq[Point]): Int = {
+  def closestIndex(x: Point, choices: Array[Point]): Int = {
     var index = 0
     var closestIndex = -1
     var closestDist = BigDecimal(0)
@@ -121,6 +132,6 @@ object KMeans extends BenchmarkApplication {
 
   def dist(x: Point, y: Point) = (x - y).modulus
 
-  def average(xs: List[Point]) = xs.reduce(_ + _) / xs.size
-  def sum(xs: List[Point]) = xs.reduce(_ + _)
+  def average(xs: Array[Point]) = xs.reduce(_ + _) / xs.size
+  def sum(xs: Array[Point]) = xs.reduce(_ + _)
 }

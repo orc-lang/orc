@@ -3,43 +3,88 @@
  - Based on the microbenchmark in several languages at https://github.com/andreaferretti/kmeans
  -}
 
+import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+
+Sequentialize() >> (
 include "benchmark.inc"
 
+import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 type Double = Top
+
+def smap(f, xs) =
+  def h([], acc) = acc
+  def h(x:xs, acc) =
+    f(x) >y> h(xs, y : acc)
+  h(xs, []) 
+
+def sforBy(low, high, step, f) = Sequentialize() >> ( 
+  def h(i) if (i >= high) = signal
+  def h(i) = f(i) >> h(i + step)
+  h(low)
+  )
+
+val n = 10
+val iters = 1
+val nPartitions = 8
+
+import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
+import class LongAdder = "java.util.concurrent.atomic.LongAdder"
 
 import class Point = "orc.test.item.scalabenchmarks.Point"
 import class KMeans = "orc.test.item.scalabenchmarks.KMeans"
 import class KMeansData = "orc.test.item.scalabenchmarks.KMeansData"
 
-val n = 10
-val iters = 1
+class PointAdder {
+  val x = DoubleAdder()
+  val y = DoubleAdder()
+  val count = LongAdder()
+  
+  def add(p, n) = (x.add(p.x()), y.add(p.y()), count.add(n)) >> signal
+  
+  {-- Get the average of the added points. 
+    If this is called while points are being added this may have transient errors since the counter, x, or y may include values not included in the others. -}
+  def average() =
+    val c = count.sum()
+  	Point(x.sum() / c, y.sum() / c)
+  
+  def toString() = "<" + x + "," + y + ">"
+}
+
+def PointAdder() = new PointAdder
+
+def nof(0, v) = v >> []
+def nof(n, v) = v >> v : nof(n-1, v)
+
+def flatten([]) = []
+def flatten(l:ls) = append(l, flatten(ls))
 
 def run(xs) =
-  def run'(0, centroids) = Println(unlines(map({ _.toString() }, centroids))) >> stop
+  def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> stop
   def run'(i, centroids) = run'(i - 1, updateCentroids(xs, centroids))
-  run'(iters, take(n, xs))
+  run'(iters, KMeans.takePointArray(n, xs))
 
 def updateCentroids(xs, centroids) = 
-  val p = KMeans.sumAndCountClusters(xs, centroids)
-  val xs = p.productElement(0)
-  val ys = p.productElement(1)
-  val counts = p.productElement(2)
+  val pointAdders = listToArray(map({ PointAdder() }, arrayToList(centroids)))
+  val partitionSize = Ceil((0.0 + xs.length?) / nPartitions)
+  sforBy(0, xs.length?, partitionSize, lambda(index) = (
+    val _ = Println("Partition: " + index + " to " + (index + partitionSize) + " (" + xs.length? + ")")
+    val p = KMeans.sumAndCountClusters(xs, centroids, index, index + partitionSize)
+    val xs = p.productElement(0)
+    val ys = p.productElement(1)
+    val counts = p.productElement(2)
   
-  collect({ upto(xs.length?) >i> (
-    val c = counts(i)?
-    Point(xs(i)? / c, ys(i)? / c)
-  )})
-
+    upto(xs.length?) >i> (
+      pointAdders(i)?.add(Point(xs(i)? / 1.0, ys(i)? / 1.0), counts(i)?)
+    ) >> stop ; signal
+  )) >>
+  listToArray(map({ _.average() }, arrayToList(pointAdders)))
 
 val points = KMeansData.data()
 
---val _ = Println(length(points) + "\n" + unlines(map({ _.toString() }, take(5, points))))
-
-val _ = Println(Point(0.0, 1.0))
-
-benchmark({
+benchmarkSized(points.length?, {
   run(points)
 })
+)
 
 {-
 BENCHMARK

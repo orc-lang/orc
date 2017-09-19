@@ -23,8 +23,8 @@ object KMeansPar extends BenchmarkApplication {
   }
 
 
-  def run(xs: List[Point]) = {
-    var centroids: Seq[Point] = xs take n
+  def run(xs: Array[Point]) = {
+    var centroids: Array[Point] = xs take n
 
     for (i <- 1 to iters) {
       centroids = updateCentroids(xs, centroids)
@@ -32,19 +32,9 @@ object KMeansPar extends BenchmarkApplication {
     centroids
   }
   
-  /*
-  def updateCentroids(data: List[Point], centroids: List[Point]): List[Point] = {
-    val state = new collection.mutable.HashMap() ++ centroids.map(c => (c, (0.0, 0.0, 0)))
-    for (p <- data) {
-      val cluster = closest(p, centroids)
-      val (x, y, count) = state(cluster)
-      state += cluster -> ((x + p.x.toDouble, y + p.y.toDouble, count + 1))
-    }
-    state.values.map({ case (x, y, count) => Point(x/count, y/count) }).toList
-  }
-  */
+  import KMeans._
   
-  def updateCentroids(data: List[Point], centroids: Seq[Point]): Seq[Point] = {
+  def updateCentroids(data: Array[Point], centroids: Array[Point]): Array[Point] = {
     val xs = Array.fill(centroids.size)(new DoubleAdder())
     val ys = Array.fill(centroids.size)(new DoubleAdder())
     val counts = Array.fill(centroids.size)(new LongAdder())
@@ -57,23 +47,6 @@ object KMeansPar extends BenchmarkApplication {
     centroids.indices.map({ i =>
       val c: BigDecimal = counts(i).sum()
       new Point(xs(i).sum/c, ys(i).sum/c)
-    }).toSeq
+    }).toArray
   }
-
-  def closestIndex(x: Point, choices: Seq[Point]): Int = {
-    var index = 0
-    var closestIndex = -1
-    var closestDist = BigDecimal(0)
-    for(y <- choices) {
-      val d = dist(x, y)
-      if(closestIndex < 0 || d < closestDist) {
-        closestDist = d
-        closestIndex = index
-      }
-      index += 1
-    }
-    closestIndex
-  }
-
-  def dist(x: Point, y: Point) = (x - y).modulus
 }

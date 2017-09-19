@@ -8,31 +8,9 @@ include "benchmark.inc"
 import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 type Double = Top
 
-def smap(f, xs) =
-  def h([], acc) = acc
-  def h(x:xs, acc) =
-    f(x) >y> h(xs, y : acc)
-  h(xs, []) 
-
-def readFile(fn) =
-  import class BufferedReader = "java.io.BufferedReader"
-  import class FileReader = "java.io.FileReader"
-  BufferedReader(FileReader(fn))  >in>
-  (  def appendLinesFromIn(lines) =
-      (in.readLine() ; null)  >nextLine>
-      ( if nextLine = null
-        then
-          lines
-        else
-          appendLinesFromIn(nextLine:lines)
-      )
-    appendLinesFromIn([])
-  )  >ss>
-  in.close()  >>
-  reverse(ss)
-
 val n = 10
 val iters = 1
+val nPartitions = 8
 
 import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
 import class LongAdder = "java.util.concurrent.atomic.LongAdder"
@@ -62,36 +40,20 @@ def PointAdder() = new PointAdder
 def nof(0, v) = v >> []
 def nof(n, v) = v >> v : nof(n-1, v)
 
-def consMultiple(_, []) = []
-def consMultiple([], tails) = tails
-def consMultiple(h:heads, t:tails) = (h:t) : consMultiple(heads, tails) 
-
-def split(n, l) =
-  def h([], acc) = acc
-  def h(xs, acc) = acc >>
-    (take(n, xs) ; xs) >heads>
-    (drop(n, xs) ; []) >tail>
-    consMultiple(heads, acc) >newAcc>
-    h(tail, newAcc)
-  h(l, nof(n, [])) 
-
 def flatten([]) = []
 def flatten(l:ls) = append(l, flatten(ls))
 
-def appendMultiple([x]) = x
-def appendMultiple(l:ls) =
-   cfold(lambda(l, acc) = zipWith(append, l, acc), ls)
-
 def run(xs) =
-  def run'(0, centroids) = Println(unlines(map({ _.toString() }, centroids))) >> stop
+  def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> stop
   def run'(i, centroids) = run'(i - 1, updateCentroids(xs, centroids))
-  run'(iters, take(n, xs))
+  run'(iters, KMeans.takePointArray(n, xs))
 
 def updateCentroids(xs, centroids) = 
-  val pointAdders = listToArray(map({ PointAdder() }, centroids))
-  val splitXs = KMeans.split(8, xs)
-  each(splitXs) >partition> (
-    val p = KMeans.sumAndCountClusters(partition, centroids)
+  val pointAdders = listToArray(map({ PointAdder() }, arrayToList(centroids)))
+  val partitionSize = Ceil((0.0 + xs.length?) / nPartitions)
+  forBy(0, xs.length?, partitionSize) >index> (
+    val _ = Println("Partition: " + index + " to " + (index + partitionSize) + " (" + xs.length? + ")")
+    val p = KMeans.sumAndCountClusters(xs, centroids, index, index + partitionSize)
     val xs = p.productElement(0)
     val ys = p.productElement(1)
     val counts = p.productElement(2)
@@ -100,16 +62,11 @@ def updateCentroids(xs, centroids) =
       pointAdders(i)?.add(Point(xs(i)? / 1.0, ys(i)? / 1.0), counts(i)?)
     )
   ) >> stop ;
-  map({ _.average() }, arrayToList(pointAdders))
+  listToArray(map({ _.average() }, arrayToList(pointAdders)))
 
-def readPoints(path) = 
-  map(lambda([a, b]) = Point(a, b), ReadJSON(head(readFile(path))))
+val points = KMeansData.data()
 
-val points = KMeansData.data() -- readPoints("test_data/performance/points.json")
-
---val _ = Println(length(points) + "\n" + unlines(map({ _.toString() }, take(5, points))))
-
-benchmarkSized(length(points), {
+benchmarkSized(points.length?, {
   run(points)
 })
 
