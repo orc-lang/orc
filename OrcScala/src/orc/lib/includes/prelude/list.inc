@@ -292,8 +292,7 @@ def concat(h:t) = append(h,concat(t))
 @implementation
 --}
 def length[A](List[A]) :: Integer
-def length([]) = 0
-def length(h:t) = 1 + length(t)
+def length(l) = l.size()
 
 {--
 @def take[A](Integer, List[A]) :: List[A]
