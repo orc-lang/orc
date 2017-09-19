@@ -7,12 +7,16 @@ object KMeansData  {
   def readPoints(path: String): Array[Point] = {
     val json = Source.fromFile(path).mkString
     val data = orc.lib.web.ReadJSON(json).asInstanceOf[List[List[BigDecimal]]].map({ case List(a, b) => new Point(a, b) })
-    data.toArray ++ data ++ data
+    data.toArray // ++ data // ++ data
   }
 
-  val data = readPoints("test_data/performance/points.json")
+  val dataBase = readPoints("test_data/performance/points.json")
   
-  println(data.size)
+  def data = dataSized(3)
+  
+  def dataSized(n: Int) = (0 until n).foldLeft(Array[Point]())((acc, _) => acc ++ dataBase)
+  
+  println(s"Loaded ${dataBase.size} points from JSON")
 }
 
 case class Point(val x: BigDecimal, val y: BigDecimal) {
