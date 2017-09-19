@@ -39,7 +39,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
       val here = execution.runtime.here
       @inline
       def checkValue(v: AnyRef): Boolean = {
-        v.isInstanceOf[LocationPolicy] && !currentLocations(v).contains(here)
+        v.isInstanceOf[LocationPolicy] && !execution.currentLocations(v).contains(here)
       }
       val notAllHere = checkValue(target) || arguments.exists(checkValue(_))
       //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", notAllHere.toString)
@@ -53,18 +53,18 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     //Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target) ++ arguments)
 
     // TODO: If this every turns out to be a performance issue I suspect a bloom-filter-optimized set would help.
-    val intersectLocs = (arguments map currentLocations).fold(currentLocations(target)) { _ & _ }
-    require(!(intersectLocs contains runtime.here))
+    val intersectLocs = (arguments map execution.currentLocations).fold(execution.currentLocations(target)) { _ & _ }
+    require(!(intersectLocs contains execution.runtime.here))
     Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
     val candidateDestinations = {
       if (intersectLocs.nonEmpty) {
         intersectLocs
       } else {
-        val intersectPermittedLocs = (arguments map permittedLocations).fold(permittedLocations(target)) { _ & _ }
+        val intersectPermittedLocs = (arguments map execution.permittedLocations).fold(execution.permittedLocations(target)) { _ & _ }
         if (intersectPermittedLocs.nonEmpty) {
           intersectPermittedLocs
         } else {
-          throw new NoLocationAvailable((target +: arguments.toSeq).map(v => (v, currentLocations(v).map(_.runtimeId))))
+          throw new NoLocationAvailable((target +: arguments.toSeq).map(v => (v,execution.currentLocations(v).map(_.runtimeId))))
         }
       }
     }
@@ -74,18 +74,18 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   }
 
   /* Since we don't have token IDs in PorcE: */
-  private val callCorrelationCounter = new AtomicLong(followerExecutionNum.toLong << 32)
+  private val callCorrelationCounter = new AtomicLong(execution.followerExecutionNum.toLong << 32)
 
   def sendCall(callContext: CPSCallContext, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
     Logger.Invoke.entering(getClass.getName, "sendCall", Seq(callContext, callTarget) ++ callArguments :+ destination)
 
-    val distributedCounter = getDistributedCounterForCounter(callContext.c)
+    val distributedCounter = execution.getDistributedCounterForCounter(callContext.c)
     // Token: Give our token back to the local representation
     val credit = distributedCounter.convertToken()
     // Credit: Get credit for the token to send elsewhere.
     assert(credit > 0)
 
-    val terminatorProxyId = makeProxyWithinTerminator(callContext.t, (terminatorProxyId) => sendKilled(destination, terminatorProxyId)())
+    val terminatorProxyId = execution.makeProxyWithinTerminator(callContext.t, (terminatorProxyId) => execution.sendKilled(destination, terminatorProxyId)())
 
     val marshaledTarget = execution.marshalValue(destination)(callTarget)
     val marshaledArgs = callArguments map { execution.marshalValue(destination)(_) }
@@ -100,16 +100,16 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     val callCorrelationId = callCorrelationCounter.getAndIncrement()
     Tracer.traceCallSend(callCorrelationId, execution.runtime.here, destination)
     // Credit: The credit from above is passed in the message.
-    destination.sendInContext(execution)(MigrateCallCmd(executionId, callCorrelationId, callMemento))
+    destination.sendInContext(execution)(MigrateCallCmd(execution.executionId, callCorrelationId, callMemento))
   }
 
   def receiveCall(origin: PeerLocation, callCorrelationId: Long, callMemento: CallMemento): Unit = {
-    val distributedCounter = getDistributedCounterForId(callMemento.counterId)
+    val distributedCounter = execution.getDistributedCounterForId(callMemento.counterId)
     // Credit: Give credit from message to local representation
     distributedCounter.activate(callMemento.credit)
     // Token: Get token from local representation
 
-    val proxyTerminator = makeProxyTerminatorFor(callMemento.terminatorProxyId, origin)
+    val proxyTerminator = execution.makeProxyTerminatorFor(callMemento.terminatorProxyId, origin)
 
     val unmarshaledTarget = execution.unmarshalValue(origin)(callMemento.target)
     val unmarshaledArgs = callMemento.arguments map { execution.unmarshalValue(origin)(_) }
@@ -140,7 +140,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
 
   def publishInGroup(origin: PeerLocation, groupMemberProxyId: RemoteRef#RemoteRefId, publication: PublishMemento): Unit = {
     Logger.Invoke.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publication))
-    val g = proxiedTerminatorMembers.get(groupMemberProxyId)
+    val g = execution.proxiedTerminatorMembers.get(groupMemberProxyId)
     if (g != null) {
       Tracer.tracePublishReceive(groupMemberProxyId, origin, execution.runtime.here)
       val unmarshaledPubValue = execution.unmarshalValue(origin)(publication.publishedValue)
