@@ -26,15 +26,15 @@ public class Sequence extends Expression {
         return exprs[exprs.length - 1].execute(frame);
     }
 
-    private void addExprsToList(final List<Expression> l) {
-        Arrays.asList(exprs).forEach((expr) -> {
-            if (expr instanceof Sequence) {
-                ((Sequence) expr).addExprsToList(l);
-            } else {
-                l.add(expr);
-            }
-        });
-    }
+//    private void addExprsToList(final List<Expression> l) {
+//        Arrays.asList(exprs).forEach((expr) -> {
+//            if (expr instanceof Sequence) {
+//                ((Sequence) expr).addExprsToList(l);
+//            } else {
+//                l.add(expr);
+//            }
+//        });
+//    }
 
     /**
      * Smart constructor for Sequence objects.

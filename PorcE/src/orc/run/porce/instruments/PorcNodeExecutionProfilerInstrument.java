@@ -1,11 +1,7 @@
 package orc.run.porce.instruments;
 
-import java.io.PrintWriter;
-import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
@@ -62,7 +58,8 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 			this.env = env;
 		}
 
-		public ExecutionEventNode create(final EventContext ec) {
+	@Override
+    public ExecutionEventNode create(final EventContext ec) {
 			com.oracle.truffle.api.nodes.Node n = ec.getInstrumentedNode();
 			RootNode rootNode = n.getRootNode();
 			final PorcNodeExecutionProfiler profiler = PorcNodeExecutionProfilerInstrument.this.profiler;
@@ -122,6 +119,7 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 					};
 				} else {
 					return new ExecutionEventNode() {
+					  /* Empty body to make concrete */
 					};
 				}
 			});

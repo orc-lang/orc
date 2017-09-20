@@ -3,15 +3,15 @@ package orc
 import com.oracle.truffle.api.vm.PolyglotRuntime
 import com.oracle.truffle.api.vm.PolyglotEngine
 
-import scala.collection.JavaConverters._
+//import scala.collection.JavaConverters._
 import orc.run.porce.PorcELanguage
 import com.oracle.truffle.api.source.Source
 import orc.script.OrcBindings
 import java.io.File
-import orc.run.porce.instruments.PorcNodeExecutionProfiler
-import orc.run.porce.instruments.PorcNodeExecutionProfilerInstrument
-import java.util.Timer
-import java.util.TimerTask
+//import orc.run.porce.instruments.PorcNodeExecutionProfiler
+//import orc.run.porce.instruments.PorcNodeExecutionProfilerInstrument
+//import java.util.Timer
+//import java.util.TimerTask
 
 object PorcEPolyglotLauncher {
   class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
@@ -24,7 +24,7 @@ object PorcEPolyglotLauncher {
     orcOptions = Some(options)
     val runtime = PolyglotRuntime.newBuilder().setOut(System.out).setErr(System.err).build()
     val engine = PolyglotEngine.newBuilder().runtime(runtime).build()
-    val insts = runtime.getInstruments()
+    //val insts = runtime.getInstruments()
     //val langs = engine.getLanguages()
 
     //println(insts.asScala)

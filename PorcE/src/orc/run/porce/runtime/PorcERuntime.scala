@@ -18,7 +18,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.ExecutionRoot
 import orc.run.Orc
 import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution }
-import orc.run.porce.Logger
+//import orc.run.porce.Logger
 import orc.run.porce.PorcELanguage
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import orc.Schedulable

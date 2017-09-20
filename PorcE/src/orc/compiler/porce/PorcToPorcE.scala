@@ -12,7 +12,6 @@ import orc.util.{ TFalse, TTrue, TUnknown }
 import orc.values.Field
 import swivel.Zipper
 import orc.run.porce.PorcELanguage
-import orc.compile.Logger
 
 object PorcToPorcE {
   def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder, usingInvokationInterceptor: Boolean, language: PorcELanguage = null): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {

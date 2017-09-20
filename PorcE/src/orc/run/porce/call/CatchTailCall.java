@@ -28,7 +28,8 @@ public class CatchTailCall extends Expression {
 	
 	protected final PorcEExecutionRef execution;
 
-	public void setTail(boolean v) {
+	@Override
+    public void setTail(boolean v) {
 		super.setTail(v);
 		body.setTail(v);
 	}
