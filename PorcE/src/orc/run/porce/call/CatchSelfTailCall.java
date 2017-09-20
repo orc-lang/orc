@@ -50,6 +50,11 @@ public class CatchSelfTailCall extends Expression {
 				return true;
 			}
 		}
+		
+		@Override
+		public String toString() {
+			return "CatchSelfTailCallRepeatingNode@" + getRootNode();
+		}
 
 	}
 

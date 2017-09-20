@@ -100,7 +100,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             return ret;
         } catch (KilledException | HaltException e) {
             transferToInterpreter();
-            Logger.log(Level.WARNING, () -> "Caught " + e + " from root node.", e);
+            Logger.log(Level.WARNING, () -> "Caught " + e + " in root node " + this, e);
             return PorcEUnit.SINGLETON;
         }
     }
