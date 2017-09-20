@@ -48,8 +48,6 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   }
 
   override def invokeIntercepted(callContext: CPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-    def pickLocation(ls: Set[PeerLocation]) = ls.head
-
     //Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target) ++ arguments)
 
     // TODO: If this every turns out to be a performance issue I suspect a bloom-filter-optimized set would help.
@@ -69,7 +67,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
       }
     }
     Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): candidateDestinations=$candidateDestinations")
-    val destination = pickLocation(candidateDestinations)
+    val destination = execution.selectLocationForCall(candidateDestinations)
     sendCall(callContext, target, arguments, destination)
   }
 

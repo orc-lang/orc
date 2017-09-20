@@ -47,7 +47,6 @@ abstract class DOrcExecution(
   override val runtime: DOrcRuntime)
   extends PorcEExecution( /* node, options,*/ runtime, eventHandler)
   with DistributedInvocationInterceptor
-  with ValueLocator
   with ValueMarshaler
   with ExecutionMashaler
   with CounterProxyManager
@@ -63,25 +62,38 @@ abstract class DOrcExecution(
   def locationForFollowerNum(followerNum: DOrcRuntime#RuntimeId): PeerLocation = runtime.locationForRuntimeId(followerNum)
 
   private val hereSet: Set[PeerLocation] = Set(runtime.here)
-  override def currentLocations(v: Any): Set[PeerLocation] = {
+
+  //TODO: Add a ValueLocator registration mechanism.
+  protected val valueLocators: Set[ValueLocator] = Set()
+
+  def currentLocations(v: Any): Set[PeerLocation] = {
+    def pfc(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
+      { case vl if vl.currentLocations.isDefinedAt(v) => vl.currentLocations(v) }
     val cl = v match {
       //TODO: Replace this with location tracking
       case plp: LocationPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
+      case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.collect(pfc(v)).reduce(_.union(_))
       case _ => hereSet
     }
     //Logger.ValueLocation.finer(s"currentLocations($v: ${v.getClass.getName})=$cl")
     cl
   }
-  override def permittedLocations(v: Any): Set[PeerLocation] = {
+
+  def permittedLocations(v: Any): Set[PeerLocation] = {
+  	def pfp(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
+  	  { case vl if vl.permittedLocations.isDefinedAt(v) => vl.permittedLocations(v) }
     val pl = v match {
       case plp: LocationPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
+      case _ if valueLocators.exists(_.permittedLocations.isDefinedAt(v)) => valueLocators.collect(pfp(v)).reduce(_.intersect(_))
       case _ => runtime.allLocations
     }
     //Logger.ValueLocation.finest(s"permittedLocations($v: ${v.getClass.getName})=$pl")
     pl
   }
+  
+  def selectLocationForCall(candidateLocations: Set[PeerLocation]): PeerLocation = candidateLocations.head
 
 }
 

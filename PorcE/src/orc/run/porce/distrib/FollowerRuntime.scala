@@ -13,7 +13,7 @@
 
 package orc.run.porce.distrib
 
-import java.io.{ EOFException, IOException, NotSerializableException }
+import java.io.{ EOFException, IOException }
 import java.net.{ InetSocketAddress, SocketException }
 import java.util.logging.Level
 

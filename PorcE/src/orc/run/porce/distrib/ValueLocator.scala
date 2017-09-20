@@ -18,8 +18,8 @@ package orc.run.porce.distrib
   * @author jthywiss
   */
 trait ValueLocator {
-  def currentLocations(v: Any): Set[PeerLocation]
-  def permittedLocations(v: Any): Set[PeerLocation]
+  val currentLocations: PartialFunction[Any, Set[PeerLocation]]
+  val permittedLocations: PartialFunction[Any, Set[PeerLocation]]
 }
 
 /** A Distributed Orc runtime participating in this cluster of runtimes.
@@ -33,7 +33,7 @@ trait Location[-M <: OrcCmd] {
   def runtimeId: DOrcRuntime#RuntimeId
 }
 
-/** Provides the set of Locations that can feasibly have a copy of this value.
+/** Provides the set of Locations where this value may feasibly reside.
   *
   * @author jthywiss
   */
