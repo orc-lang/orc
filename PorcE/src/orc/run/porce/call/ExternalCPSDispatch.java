@@ -59,16 +59,13 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 			exceptionProfiles[0].enter();
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 			counter.haltToken();
-			// TODO: This probably actually needs a throw HaltException
 		} catch (final HaltException e) {
 			exceptionProfiles[1].enter();
 			counter.haltToken();
-			// TODO: This probably actually needs a throw HaltException
 		} catch (final Exception e) {
 			exceptionProfiles[2].enter();
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 			counter.haltToken();
-			throw HaltException.SINGLETON();
 		}
 		// Token: All exception handlers halt the token that was passed to this
 		// call. Calls are not allowed to keep the token if they throw an
@@ -92,14 +89,11 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 		} catch (final ExceptionHaltException e) {
 			exceptionProfiles[0].enter();
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
-			// TODO: This probably actually needs a throw HaltException
 		} catch (final HaltException e) {
 			exceptionProfiles[1].enter();
-			// TODO: This probably actually needs a throw HaltException
 		} catch (final Exception e) {
 			exceptionProfiles[2].enter();
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
-			throw HaltException.SINGLETON();
 		}
 	}
 
