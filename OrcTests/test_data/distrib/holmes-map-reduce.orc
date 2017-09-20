@@ -79,19 +79,21 @@ def combineOperation(xs) = afold((+), concat(xs))
 
 def reduceOperation(x, y) = x + y
 
+"test_data/distrib/holmes_test_data/"  >dataDir>
+
 [
-  Location1PinnedTuple(["holmes_test_data/adventure-1.txt"], 1),
-  Location2PinnedTuple(["holmes_test_data/adventure-2.txt"], 2),
-  Location3PinnedTuple(["holmes_test_data/adventure-3.txt"], 3),
-  Location4PinnedTuple(["holmes_test_data/adventure-4.txt"], 4),
-  Location5PinnedTuple(["holmes_test_data/adventure-5.txt"], 5),
-  Location6PinnedTuple(["holmes_test_data/adventure-6.txt"], 6),
-  Location7PinnedTuple(["holmes_test_data/adventure-7.txt"], 7),
-  Location8PinnedTuple(["holmes_test_data/adventure-8.txt"], 8),
-  Location9PinnedTuple(["holmes_test_data/adventure-9.txt"], 9),
-  Location10PinnedTuple(["holmes_test_data/adventure-10.txt"], 10),
-  Location11PinnedTuple(["holmes_test_data/adventure-11.txt"], 11),
-  Location12PinnedTuple(["holmes_test_data/adventure-12.txt"], 12)
+  Location1PinnedTuple([dataDir + "adventure-1.txt"], 1),
+  Location2PinnedTuple([dataDir + "adventure-2.txt"], 2),
+  Location3PinnedTuple([dataDir + "adventure-3.txt"], 3),
+  Location4PinnedTuple([dataDir + "adventure-4.txt"], 4),
+  Location5PinnedTuple([dataDir + "adventure-5.txt"], 5),
+  Location6PinnedTuple([dataDir + "adventure-6.txt"], 6),
+  Location7PinnedTuple([dataDir + "adventure-7.txt"], 7),
+  Location8PinnedTuple([dataDir + "adventure-8.txt"], 8),
+  Location9PinnedTuple([dataDir + "adventure-9.txt"], 9),
+  Location10PinnedTuple([dataDir + "adventure-10.txt"], 10),
+  Location11PinnedTuple([dataDir + "adventure-11.txt"], 11),
+  Location12PinnedTuple([dataDir + "adventure-12.txt"], 12)
 ] >inputList>
 
 
