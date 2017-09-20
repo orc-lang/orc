@@ -155,7 +155,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             case TFalse if !usingInvokationInterceptor =>
               // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
               porce.call.Call.CPS.create(newTarget, newArguments, exec)
-            case TUnknown =>
+            case _ =>
               porce.call.Call.CPS.create(newTarget, newArguments, exec)
           }
         case porc.MethodDirectCall.Z(isExt, target, arguments) =>
