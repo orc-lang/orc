@@ -13,7 +13,6 @@
 package orc
 
 import java.io.{ FileInputStream, FileNotFoundException, InputStreamReader, PrintStream }
-import java.util.logging.{ FileHandler, Formatter, LogRecord }
 
 import scala.collection.JavaConverters.{ asScalaBufferConverter, seqAsJavaListConverter }
 
@@ -38,9 +37,10 @@ object Main {
 
   def main(args: Array[String]) {
     try {
+      Logger.config(orcImplName + " " + orcVersion)
       val options = new OrcCmdLineOptions()
       options.parseCmdLine(args)
-      setupLogging(options)
+      Logger.config("Orc options & operands: " + options.composeCmdLine().mkString(" "))
 
       val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[ScriptEngine with Compilable]
       if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
@@ -100,79 +100,6 @@ object Main {
   lazy val orcCopyright: String = "(c) " + copyrightYear + " " + versionProperties.getProperty("orc.vendor")
   lazy val copyrightYear: String = versionProperties.getProperty("orc.copyright-year")
 
-  // Must keep a reference to these loggers, or they'll get GC-ed and the level reset
-  protected lazy val orcLogger = java.util.logging.Logger.getLogger("orc")
-  protected var setupLogger: java.util.logging.Logger = null
-
-  def setupLogging(options: OrcOptions) {
-    val (logger, logLevel) = if (options.logLevel.contains(":")) {
-      val (logger, level) = options.logLevel.splitAt(options.logLevel.indexOf(":"))
-      (java.util.logging.Logger.getLogger(logger), java.util.logging.Level.parse(level.drop(1)))
-    } else {
-      (orcLogger, java.util.logging.Level.parse(options.logLevel))
-    }
-    setupLogger = logger
-    logger.setLevel(logLevel)
-    val testOrcLogRecord = new java.util.logging.LogRecord(logLevel, "")
-    testOrcLogRecord.setLoggerName(logger.getName())
-    def willLog(checkLogger: java.util.logging.Logger, testLogRecord: java.util.logging.LogRecord): Boolean = {
-      for (handler <- checkLogger.getHandlers()) {
-        if (handler.isLoggable(testLogRecord))
-          return true
-      }
-      if (checkLogger.getUseParentHandlers() && checkLogger.getParent() != null) {
-        return willLog(checkLogger.getParent(), testLogRecord)
-      } else {
-        return false
-      }
-    }
-    if (!willLog(logger, testOrcLogRecord)) {
-      /* Add handler, since no existing handler (here or in parents) is at our logging level */
-      val logHandler = new java.util.logging.ConsoleHandler()
-      logHandler.setLevel(logLevel)
-      logHandler.setFormatter(new orc.util.SyslogishFormatter())
-      logger.addHandler(logHandler)
-      logger.setUseParentHandlers(false)
-      orcLogger.warning(s"No log handler found for '${logger.getName()}' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
-    }
-    orcLogger.config(orcImplName + " " + orcVersion)
-    orcLogger.config("Orc logging level: " + logLevel)
-    //TODO: orcLogger.config(options.printAllTheOptions...)
-
-    if (options.xmlLogFile.nonEmpty) {
-      // Use two 64MiB files. This might need to be configurable, but probably not for a long time.
-      val handler = new FileHandler(options.xmlLogFile, 64*1024*1024, 2)
-      handler.setLevel(java.util.logging.Level.ALL)
-      orcLogger.setLevel(java.util.logging.Level.ALL)
-      orcLogger.addHandler(handler)
-      orcLogger.config(s"Orc logging ALL to: ${options.xmlLogFile} (with a numeric suffix for log rotation)")
-    }
-
-    val includeStackTracesWithEveryLogMessage = false
-    if (includeStackTracesWithEveryLogMessage) {
-      for (handler <- orcLogger.getHandlers()) {
-        val oldFormatter = handler.getFormatter()
-        val formatter = new Formatter() {
-          override def format(record: LogRecord) = {
-            val threadId = record.getThreadID()
-            val stack = {
-              val frames = (Thread.currentThread().getStackTrace().toVector.drop(2)
-                .dropWhile(!_.getClassName().startsWith("orc"))
-                .takeWhile(_.getMethodName() != "runWorker"))
-              val sb = new scala.collection.mutable.StringBuilder()
-              for (frame <- frames) {
-                sb ++= "\tat " + frame + "\n"
-              }
-              sb.toString
-            }
-            oldFormatter.format(record).stripLineEnd + s" threadID=$threadId\n$stack"
-          }
-        }
-        handler.setFormatter(formatter)
-      }
-    }
-  }
-
   def printException(e: Throwable, err: PrintStream, showJavaStackTrace: Boolean) {
     e match {
       case je: JavaException if (!showJavaStackTrace) => err.print(je.getMessageAndPositon() + "\n" + je.getOrcStacktraceAsString())
@@ -188,10 +115,6 @@ object Main {
   */
 trait CmdLineOptions extends OrcOptions with CmdLineParser {
   StringOprd(() => filename, filename = _, position = 0, argName = "file", required = true, usage = "Path to script to execute.")
-
-  StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL.  Optionally preceded by logger name and colon, such as 'orc.run:FINE'.")
-
-  StringOpt(() => xmlLogFile, xmlLogFile = _, ' ', "xmllogfile", usage = "Specify a file that will receive ALL log messages as java.util.logging XML. This can have some performance overhead. Default is no XML output.")
 
   UnitOpt(() => (!usePrelude), () => usePrelude = false, ' ', "noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
 

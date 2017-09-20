@@ -13,7 +13,7 @@
 
 package orc.run.porce.distrib
 
-import java.io.{ EOFException, IOException }
+import java.io.{ EOFException, IOException, ObjectOutputStream }
 import java.net.{ InetSocketAddress, SocketException }
 import java.util.logging.Level
 
@@ -22,8 +22,6 @@ import scala.util.control.NonFatal
 
 import orc.{ CaughtEvent, OrcEvent, OrcExecutionOptions }
 import orc.util.CmdLineParser
-import java.io.ObjectOutputStream
-import scala.util.control.NonFatal
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -373,69 +371,26 @@ object FollowerRuntime {
     val frOptions = new FollowerRuntimeCmdLineOptions()
     frOptions.parseCmdLine(args)
 
-    setupLogging(frOptions.logLevel)
+    Logger.config(orc.Main.orcImplName + " " + orc.Main.orcVersion)
+    Logger.config("FollowerRuntime options & operands: " + frOptions.composeCmdLine().mkString(" "))
 
     Logger.Connect.finer("Calling FollowerRuntime.listen")
     new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
-  }
-
-  // Must keep a reference to this logger, or it'll get GC-ed and the level reset
-  protected var setupLogger: java.util.logging.Logger = null
-
-  def setupLogging(logLevelOption: String): Unit = {
-    val orcLogger = java.util.logging.Logger.getLogger("orc")
-    val (logger, logLevel) = if (logLevelOption.contains(":")) {
-      val (logger, level) = logLevelOption.splitAt(logLevelOption.indexOf(":"))
-      (java.util.logging.Logger.getLogger(logger), java.util.logging.Level.parse(level.drop(1)))
-    } else {
-      (orcLogger, java.util.logging.Level.parse(logLevelOption))
-    }
-    setupLogger = logger
-    logger.setLevel(logLevel)
-    val testOrcLogRecord = new java.util.logging.LogRecord(logLevel, "")
-    testOrcLogRecord.setLoggerName(logger.getName())
-    def willLog(checkLogger: java.util.logging.Logger, testLogRecord: java.util.logging.LogRecord): Boolean = {
-      for (handler <- checkLogger.getHandlers()) {
-        if (handler.isLoggable(testLogRecord))
-          return true
-      }
-      if (checkLogger.getUseParentHandlers() && checkLogger.getParent() != null) {
-        return willLog(checkLogger.getParent(), testLogRecord)
-      } else {
-        return false
-      }
-    }
-    if (!willLog(logger, testOrcLogRecord)) {
-      /* Add handler, since no existing handler (here or in parents) is at our logging level */
-      val logHandler = new java.util.logging.ConsoleHandler()
-      logHandler.setLevel(logLevel)
-      logHandler.setFormatter(new orc.util.SyslogishFormatter())
-      logger.addHandler(logHandler)
-      logger.setUseParentHandlers(false)
-      orcLogger.warning(s"No log handler found for '${logger.getName()}' $logLevel log records, so a ConsoleHandler was added.  This may result in duplicate log records.")
-    }
-    orcLogger.config(orc.Main.orcImplName + " " + orc.Main.orcVersion)
-    orcLogger.config("Orc logging level: " + logLevel)
   }
 
 }
 
 class FollowerRuntimeCmdLineOptions() extends CmdLineParser {
   private var runtimeId_ = 0
-  def logLevel: String = logLevel_
-  def logLevel_=(newVal: String): Unit = logLevel_ = newVal
+  def runtimeId: Int = runtimeId_
+  def runtimeId_=(newVal: Int): Unit = runtimeId_ = newVal
   private var socket_ : InetSocketAddress = null
   def socket: InetSocketAddress = socket_
   def socket_=(newVal: InetSocketAddress): Unit = socket_ = newVal
-  private var logLevel_ = "INFO"
-  def runtimeId: Int = runtimeId_
-  def runtimeId_=(newVal: Int): Unit = runtimeId_ = newVal
 
   IntOprd(() => runtimeId, runtimeId = _, position = 0, argName = "runtime-id", required = true, usage = "d-Orc runtime (follower) ID")
 
   SocketOprd(() => socket, socket = _, position = 1, argName = "socket", required = true, usage = "Local socket (host:port) to listen on")
-
-  StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL.  Optionally preceded by logger name and colon, such as 'orc.run:FINE'.")
 }
 
 trait ClosableConnection {
