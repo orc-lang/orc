@@ -29,7 +29,7 @@ object Logger extends orc.util.Logger("orc.run.porce.distrib") {
   object Message extends orc.util.Logger("orc.run.porce.distrib.message") {}
   
   /** Logger for value location/policy mapping */
-  object ValueLocation extends orc.util.Logger("orc.run.porce.distrib.marshal") {}
+  object ValueLocation extends orc.util.Logger("orc.run.porce.distrib.valueloc") {}
   
   /** Logger for marsahling/unmarshaling */
   object Marshal extends orc.util.Logger("orc.run.porce.distrib.marshal") {}
