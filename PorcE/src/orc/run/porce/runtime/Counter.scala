@@ -125,11 +125,15 @@ object Counter {
   *
   * @author amp
   */
-abstract class Counter protected (n: Int) extends AtomicInteger(n) {
+abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(n) {
   import CounterConstants._
   
+  if (depth > maxCounterDepth) {
+    throw new StackOverflowError(s"The Orc stack is limited to $maxCounterDepth. Make sure your functions are actually tail recursive.")
+  }
+  
   def this() = {
-    this(1)
+    this(1, 0)
   }
 
   @elidable(elidable.ASSERTION)
@@ -270,7 +274,7 @@ abstract class Counter protected (n: Int) extends AtomicInteger(n) {
 /** A Counter which forwards it's halting to a parent Counter and executes a closure on halt.
   *
   */
-final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContinuation: PorcEClosure) extends Counter {
+final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContinuation: PorcEClosure) extends Counter(1, parent.depth + 1) {
   import CounterConstants._
   //Tracer.trace(Counter.CounterNestedCreated, hashCode(), parent.hashCode(), 0)
 
@@ -304,12 +308,14 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
   }
 }
 
+// FIXME: MEMORYLEAK: Null all fields when the counter is halted but not discorporated.
+
 /** A counter which always stays alive long enough to detect kills.
   *
   * This is specifically designed to handle calls into a Service methods.
   *
   */
-final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, val parentContaining: Counter, terminator: Terminator) extends Counter with Terminatable {
+final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, val parentContaining: Counter, terminator: Terminator) extends Counter(1, parentCalling.depth+1) with Terminatable {
   //Tracer.trace(Counter.CounterServiceCreated, hashCode(), parentCalling.hashCode(), parentContaining.hashCode())
 
   if (CounterConstants.tracingEnabled) {
@@ -366,7 +372,7 @@ final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, va
   * This is specifically designed to make sure terminators do not become garbage when there body halts.
   *
   */
-final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, terminator: Terminator) extends Counter with Terminatable {
+final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, terminator: Terminator) extends Counter(1, parent.depth+1) with Terminatable {
   //Tracer.trace(Counter.CounterTerminatorCreated, hashCode(), parent.hashCode(), terminator.hashCode())
 
   if (CounterConstants.tracingEnabled) {
@@ -420,7 +426,10 @@ final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, termin
 }
 
 object CounterTerminator {
+  @inline
   val HasNoTokens = 0
+  @inline
   val HasTokens = 1
+  @inline
   val WasKilled = 2
 }

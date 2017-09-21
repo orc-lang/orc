@@ -68,7 +68,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 		}
 	}
 
-	public static ExternalDirectDispatch create(final PorcEExecutionRef execution) {
+	static ExternalDirectDispatch createBare(final PorcEExecutionRef execution) {
 		return ExternalDirectDispatchNodeGen.create(execution);
 	}
 

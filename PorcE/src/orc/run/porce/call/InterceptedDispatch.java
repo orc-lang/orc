@@ -45,7 +45,7 @@ public abstract class InterceptedDispatch extends Dispatch {
 		return argumentValues;
 	}
 
-	public static InterceptedDispatch create(PorcEExecutionRef execution) {
+	static InterceptedDispatch create(PorcEExecutionRef execution) {
 		return InterceptedDispatchNodeGen.create(execution);
 	}
 }

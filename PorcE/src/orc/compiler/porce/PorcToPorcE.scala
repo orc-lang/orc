@@ -143,7 +143,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           }
         case porc.CallContinuation.Z(target, arguments) =>
           // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an InternalCall of some kind.
-          porce.call.Call.CPS.create(transform(target)(innerCtx), arguments.map(transform(_)(innerCtx)).toArray, ctx.execution.newRef())
+          porce.call.Call.CPS.create(transform(target)(innerCtx), arguments.map(transform(_)(innerCtx)).toArray, ctx.execution.newRef(), thisCtx.inTailPosition)
         case porc.MethodCPSCall.Z(isExt, target, p, c, t, arguments) =>
           lazy val newTarget = transform(target)(innerCtx)
           val newArguments = (p +: c +: t +: arguments).map(transform(_)(innerCtx)).toArray
@@ -151,12 +151,12 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           isExt match {
             case TTrue if !usingInvokationInterceptor =>
               // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
-              porce.call.Call.CPS.create(newTarget, newArguments, exec)
+              porce.call.Call.CPS.create(newTarget, newArguments, exec, thisCtx.inTailPosition)
             case TFalse if !usingInvokationInterceptor =>
               // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
-              porce.call.Call.CPS.create(newTarget, newArguments, exec)
+              porce.call.Call.CPS.create(newTarget, newArguments, exec, thisCtx.inTailPosition)
             case _ =>
-              porce.call.Call.CPS.create(newTarget, newArguments, exec)
+              porce.call.Call.CPS.create(newTarget, newArguments, exec, thisCtx.inTailPosition)
           }
         case porc.MethodDirectCall.Z(isExt, target, arguments) =>
           val newTarget = transform(target)

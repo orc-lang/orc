@@ -27,6 +27,9 @@ trait Terminatable {
 }
 
 object Terminator {
+  @inline
+  val maxTerminatorDepth = CounterConstants.maxCounterDepth;
+  
   val TerminatorAddChild = 150L
   Tracer.registerEventTypeId(TerminatorAddChild, "TrmAddCh", _.formatted("%016x"), _.formatted("%016x"))
 }
@@ -35,8 +38,14 @@ object Terminator {
   *
   * @author amp
   */
-class Terminator extends Terminatable {
-  //import Terminator._
+class Terminator(val depth: Int) extends Terminatable {
+  import Terminator._
+  
+  if (depth > maxTerminatorDepth) {
+    throw new StackOverflowError(s"The Orc stack is limited to $maxTerminatorDepth. Make sure your functions are actually tail recursive.")
+  }
+
+  def this() = this(0)
 
   protected[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
 
@@ -148,11 +157,13 @@ class Terminator extends Terminatable {
   }
 }
 
+// FIXME: MEMORYLEAK: Clean parent ref when killed.
+
 /** A termination tracker which adds itself as a child of parent.
   *
   * @author amp
   */
-final class TerminatorNested(parent: Terminator) extends Terminator {
+final class TerminatorNested(parent: Terminator) extends Terminator(parent.depth + 1) {
   //Logger.info(s"$this($parent)")
   parent.addChild(this)
 

@@ -2,6 +2,9 @@
 package orc.run.porce.call;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.profiles.ConditionProfile;
@@ -36,7 +39,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	}
 
 	protected InternalCPSDispatch makeInternalCall() {
-		return InternalCPSDispatch.create(execution);
+		return InternalCPSDispatch.createBare(execution);
 	}
 
 	protected Dispatch getInternalCall() {
@@ -78,6 +81,8 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 		final Object targetValue = executeTargetObject(frame);
 		final Object[] argumentValues = new Object[arguments.length];
 		executeArguments(argumentValues, frame);
+		
+		//clearFrameIfTail(frame);
 
 		if (profileIsIntercepted.profile(execution.get().shouldInterceptInvocation(targetValue, argumentValues))) {
 			getInterceptedCall().executeDispatch(frame, targetValue, argumentValues);
@@ -94,7 +99,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
             return new Call<DirectDispatch>(target, arguments, execution) {
                 @Override
                 protected DirectDispatch makeExternalCall() {
-                       return ExternalDirectDispatch.create(execution);
+                       return ExternalDirectDispatch.createBare(execution);
                 }
 
 				@Override
@@ -106,20 +111,30 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
    }
 
    public static class CPS {
-       public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
-            return CatchTailCall.create(new Call<Dispatch>(target, arguments, execution) {
-                @Override
-                protected Dispatch makeExternalCall() {
-                       return ExternalCPSDispatch.create(execution);
-                }
+       public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution, boolean isTail) {
+    	   if (isTail) {
+    		   return createTail(target, arguments, execution);
+    	   } else {
+    		   return createNontail(target, arguments, execution);
+    	   }
+       }
+       public static Expression createNontail(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
+           return CatchTailCall.create(createTail(target, arguments, execution), execution);
+       }
+       public static Expression createTail(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
+           return new Call<Dispatch>(target, arguments, execution) {
+               @Override
+               protected Dispatch makeExternalCall() {
+                      return ExternalCPSDispatch.createBare(execution);
+               }
 
 				@Override
 				protected Object callExternal(VirtualFrame frame, Object target, Object[] arguments) {
 					getExternalCall().executeDispatch(frame, target, arguments);
 					return PorcEUnit.SINGLETON;
 				}
-            }, execution);
-        }
+           };
+       }
 	}
 
 	@ExplodeLoop
@@ -129,7 +144,22 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 			argumentValues[i] = arguments[i].execute(frame);
 		}
 	}
-	
+
+	//@ExplodeLoop
+	protected void clearFrameIfTail(VirtualFrame frame) {
+		if(isTail) {
+			FrameDescriptor descriptor = frame.getFrameDescriptor();
+			//CompilerAsserts.partialEvaluationConstant(descriptor);
+			//CompilerAsserts.partialEvaluationConstant(descriptor.getSlots());
+			for(FrameSlot slot : descriptor.getSlots()) {
+				//CompilerAsserts.partialEvaluationConstant(slot);
+				if(slot.getKind() == FrameSlotKind.Object) {
+					frame.setObject(slot, null);
+				}
+			}
+		}
+	}
+
     public Object executeTargetObject(final VirtualFrame frame) {
         return target.execute(frame);
     }

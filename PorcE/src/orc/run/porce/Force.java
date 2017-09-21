@@ -10,6 +10,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import orc.FutureState;
+import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Join;
@@ -73,13 +74,13 @@ public class Force {
     @NodeField(name = "execution", type = PorcEExecutionRef.class)
     public static abstract class Finish extends Expression {
         @Child
-        InternalCPSDispatch call = null;
+        Dispatch call = null;
 
         @Specialization(guards = { "join.isResolved()" })
         public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecutionRef execution, final Join join) {
             if (call == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                call = insert(InternalCPSDispatch.create(execution));
+                call = insert(InternalCPSDispatch.create(execution, isTail));
             }
 			// FIXME: This extra copy is because Join was optimized for the old
 			// way of calling. If it turns out that we generate lots of copies
@@ -116,7 +117,7 @@ public class Force {
     @ImportStatic({ Force.class })
     public static abstract class SingleFuture extends Expression {
         @Child
-        protected InternalCPSDispatch call = null;
+        protected Dispatch call = null;
         private final BranchProfile boundPorcEFuture = BranchProfile.create();
         private final BranchProfile unboundPorcEFuture = BranchProfile.create();
         private final BranchProfile boundOrcFuture = BranchProfile.create();
@@ -178,7 +179,7 @@ public class Force {
         private void initializeCall(final PorcEExecutionRef execution) {
             if (call == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                call = insert(InternalCPSDispatch.create(execution));
+                call = insert(InternalCPSDispatch.create(execution, isTail));
             }
         }
 

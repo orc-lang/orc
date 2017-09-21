@@ -47,15 +47,46 @@ object CallClosureSchedulable {
     */
   def varArgs(closure: PorcEClosure, arguments: Array[AnyRef]): CallClosureSchedulable = {
     new CallClosureSchedulable(closure, arguments)
-  }
-}
-
-final case class CallClosureSchedulable private (closure: PorcEClosure, arguments: Array[AnyRef]) extends Schedulable {
-  def run(): Unit = {
-    Logger.entering(getClass.getName, "run", Seq(closure, arguments))
+  } 
+  
+  @inline
+  def simpleCall(closure: PorcEClosure, arguments: Array[AnyRef]) = {
     if (arguments == null)
       closure.callFromRuntime()
     else
       closure.callFromRuntimeArgArray(arguments)
+  }
+
+}
+
+final class CallClosureSchedulable private (private var closure: PorcEClosure, private var arguments: Array[AnyRef]) extends Schedulable {
+  override val nonblocking: Boolean = true
+  
+  def run(): Unit = {
+    assert(closure != null)
+    //Logger.entering(getClass.getName, "run", Seq(hashCode().formatted("%x"), closure, arguments))
+    // TODO: This is a Scala implementation of the logic and handling in CatchTailCall. Ideally we could reuse that logic. However to do so we would need access to the runtime and probably execution.
+    try {
+      val (t, a) = (closure, arguments)
+      closure = null
+      arguments = null
+      CallClosureSchedulable.simpleCall(t, a)
+    } catch {
+      case e: TailCallException =>
+        //Logger.entering(getClass.getName, "run", Seq(CallClosureSchedulable.this.hashCode().formatted("%x"), closure, arguments))
+        var exception = e
+        while(exception != null) {
+          try {
+            val (t, a) = (exception.target, exception.arguments)
+            exception = null
+            //Logger.entering(getClass.getName, "run(tail call)", Seq(CallClosureSchedulable.this.hashCode().formatted("%x"), t, a))
+            CallClosureSchedulable.simpleCall(t, null +: a)
+          } catch {
+            case e: TailCallException =>
+              exception = e
+          }
+        }
+    }
+    //Logger.exiting(getClass.getName, "run", CallClosureSchedulable.this.hashCode().formatted("%x"))
   }
 }

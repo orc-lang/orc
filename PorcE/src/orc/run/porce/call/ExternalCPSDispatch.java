@@ -22,6 +22,7 @@ import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
+import orc.run.porce.runtime.TailCallException;
 import orc.run.porce.runtime.Terminator;
 
 @ImportStatic({ SpecializationConfiguration.class })
@@ -40,7 +41,7 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 	protected InternalCPSDispatch getDispatchP() {
 		if (dispatchP == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
-			dispatchP = InternalCPSDispatch.create(execution);
+			dispatchP = InternalCPSDispatch.createBare(execution);
 		}
 		return dispatchP;
 	}
@@ -55,6 +56,8 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 		try {
 			final Object v = invokeDirectWithBoundary(invoker, target, buildArguments(arguments));
 			getDispatchP().executeDispatch(frame, pub, new Object[] { v });
+		} catch (final TailCallException e) {
+			throw e;
 		} catch (final ExceptionHaltException e) {
 			exceptionProfiles[0].enter();
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
@@ -86,14 +89,19 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 		try {
 			callContext.begin();
 			invokeWithBoundary(invoker, callContext, target, buildArguments(arguments));
+		} catch (final TailCallException e) {
+			throw e;
 		} catch (final ExceptionHaltException e) {
 			exceptionProfiles[0].enter();
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+			counter.haltToken();
 		} catch (final HaltException e) {
 			exceptionProfiles[1].enter();
+			counter.haltToken();
 		} catch (final Exception e) {
 			exceptionProfiles[2].enter();
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+			counter.haltToken();
 		}
 	}
 
@@ -108,7 +116,7 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 		}
 	}
 
-	public static ExternalCPSDispatch create(PorcEExecutionRef execution) {
+	static ExternalCPSDispatch createBare(PorcEExecutionRef execution) {
 		return ExternalCPSDispatchNodeGen.create(execution);
 	}
 
@@ -133,7 +141,7 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 			return null;
 		}
 	}
-
+	
 	@TruffleBoundary(allowInlining = true)
 	protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object target,
 			final Object[] arguments) {

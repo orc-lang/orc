@@ -16,8 +16,8 @@ import orc.run.porce.runtime.Terminator;
 public abstract class PorcENode extends NodeBase {
     
     public Object execute(final VirtualFrame frame) {
-        executePorcEUnit(frame);
-        return PorcEUnit.SINGLETON;
+	        executePorcEUnit(frame);
+	        return PorcEUnit.SINGLETON;
     }
 
     public void executePorcEUnit(final VirtualFrame frame) {

@@ -51,12 +51,14 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   
   def potentiallySchedule(s: Schedulable) = {
     if (actuallySchedule) {
+      // TODO: Due to the memory retention caused by retained Counter/Terminator chains it may be useful to call this based on high-memory utilization as well. 
       if (occationallySchedule && incrementAndCheckStackDepth()) {
         try {
           s.run()
         } catch {
           case e: StackOverflowError =>
-            throw new RuntimeException(s"Allowed stack depth too deep: ${stackDepthThreadLocal.get()}", e)
+            // FIXME: Make this error fatal for the whole runtime and make sure the message describes how to fix it.
+            throw e //new RuntimeException(s"Allowed stack depth too deep: ${stackDepthThreadLocal.get()}", e)
         } finally {
           decrementStackDepth()
         }
@@ -130,4 +132,8 @@ object PorcERuntime {
   @inline
   @CompilationFinal
   val occationallySchedule = false
+
+  
+  // Force loading of a few classes in Truffle. Without this the error handling code crashes and destroys the stack trace.
+  Class.forName("com.oracle.truffle.api.TruffleStackTrace").getFields()
 }

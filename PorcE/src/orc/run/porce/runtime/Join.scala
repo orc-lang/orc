@@ -253,7 +253,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     * This may be called in multi-threaded mode.
     */
   def done(): Unit = {
-    Logger.finer(s"Done for $this with: $state ${values.mkString(", ")}")
+    //Logger.finer(s"Done for $this with: $state ${values.mkString(", ")}")
     t.removeChild(this)
     // Token: Pass to p.
     runtime.potentiallySchedule(CallClosureSchedulable.varArgs(p, values))
@@ -267,7 +267,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     */
   def halt(): Unit = {
     if (setHaltedMT()) {
-      Logger.finer(s"Halt for $state $this")
+      //Logger.finer(s"Halt for $state $this")
       t.removeChild(this)
       // Token: Remove token passed in.
       c.haltToken()

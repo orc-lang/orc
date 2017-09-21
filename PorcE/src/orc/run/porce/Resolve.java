@@ -8,6 +8,7 @@ import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
+import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
@@ -71,13 +72,13 @@ public class Resolve extends Expression {
     public static abstract class Finish extends Expression {
         volatile static int count = 0;
         @Child
-        InternalCPSDispatch call = null;
+        Dispatch call = null;
 
         @Specialization(guards = { "join.isResolved()" })
         public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecutionRef execution, final Resolver join) {
             if (call == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                call = insert(InternalCPSDispatch.create(execution));
+                call = insert(InternalCPSDispatch.create(execution, isTail));
             }
             call.executeDispatch(frame, join.p(), new Object[] {});
             return PorcEUnit.SINGLETON;

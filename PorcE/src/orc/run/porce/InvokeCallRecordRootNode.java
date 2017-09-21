@@ -10,7 +10,7 @@ import orc.run.porce.runtime.PorcEExecutionHolder;
 public class InvokeCallRecordRootNode extends PorcERootNode {
     @Override
     public String getName() {
-        return "InvokeCallRecordRootNode#" + hashCode();
+        return "InvokeCallRecordRootNode@" + hashCode();
     }
 
     @Override
@@ -25,7 +25,7 @@ public class InvokeCallRecordRootNode extends PorcERootNode {
         for (int i = 0; i < nArguments; i++) {
             readArgs[i] = Read.Argument.create(i + 1);
         }
-        return Call.CPS.create(readTarget, readArgs, holder.newRef());
+        return Call.CPS.create(readTarget, readArgs, holder.newRef(), false);
     }
 
     public InvokeCallRecordRootNode(final PorcELanguage language, final int nArguments, final PorcEExecution execution) {

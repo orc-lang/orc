@@ -32,6 +32,7 @@ final public class PorcEClosure {
         return body.call((Object) environment);
     }
 
+    /*
     public Object callFromRuntime(final Object p1) {
         return body.call(environment, p1);
     }
@@ -50,6 +51,7 @@ final public class PorcEClosure {
         System.arraycopy(args, 0, values, 1, args.length);
         return body.call(values);
     }
+    */
     
 	@Override
 	public String toString() {
