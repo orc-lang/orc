@@ -345,20 +345,15 @@ object FollowerRuntime {
 
 class FollowerRuntimeCmdLineOptions() extends CmdLineParser {
   private var runtimeId_ = 0
-  def logLevel: String = logLevel_
-  def logLevel_=(newVal: String): Unit = logLevel_ = newVal
+  def runtimeId: Int = runtimeId_
+  def runtimeId_=(newVal: Int): Unit = runtimeId_ = newVal
   private var socket_ : InetSocketAddress = null
   def socket: InetSocketAddress = socket_
   def socket_=(newVal: InetSocketAddress): Unit = socket_ = newVal
-  private var logLevel_ = "INFO"
-  def runtimeId: Int = runtimeId_
-  def runtimeId_=(newVal: Int): Unit = runtimeId_ = newVal
 
   IntOprd(() => runtimeId, runtimeId = _, position = 0, argName = "runtime-id", required = true, usage = "d-Orc runtime (follower) ID")
 
   SocketOprd(() => socket, socket = _, position = 1, argName = "socket", required = true, usage = "Local socket (host:port) to listen on")
-
-  StringOpt(() => logLevel, logLevel = _, ' ', "loglevel", usage = "Set the level of logging. Default is INFO. Allowed values: OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL")
 }
 
 trait ClosableConnection {

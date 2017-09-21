@@ -52,7 +52,6 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 
     public static final String PATH_SEPARATOR = "|"; //$NON-NLS-1$
 
-    public static final String LOG_LEVEL_ATTR_NAME = OrcPlugin.getId() + ".LOG_LEVEL"; //$NON-NLS-1$
     public static final String PRELUDE_ATTR_NAME = OrcPlugin.getId() + ".USE_PRELUDE"; //$NON-NLS-1$
     public static final String INCLUDE_PATH_ATTR_NAME = OrcPlugin.getId() + ".INCLUDE_PATH"; //$NON-NLS-1$
     public static final String ADDITIONAL_INCLUDES_ATTR_NAME = OrcPlugin.getId() + ".ADDITIONAL_INCLUDES"; //$NON-NLS-1$
@@ -69,7 +68,6 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 
     private static final OrcBindings defaultConfig = new OrcBindings();
 
-    public static final String LOG_LEVEL_DEFAULT = defaultConfig.logLevel();
     public static final boolean PRELUDE_DEFAULT = defaultConfig.usePrelude();
     public static final String INCLUDE_PATH_DEFAULT = defaultConfig.includePath().isEmpty() ? "" : listMkString(defaultConfig.includePath(), PATH_SEPARATOR).concat(PATH_SEPARATOR); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
     public static final String ADDITIONAL_INCLUDES_DEFAULT = defaultConfig.additionalIncludes().isEmpty() ? "" : listMkString(defaultConfig.additionalIncludes(), PATH_SEPARATOR).concat(PATH_SEPARATOR); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
@@ -113,9 +111,6 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
 
         // Will also look upwards in prefs levels if not found in project.
 
-        logLevel_$eq(prefSvc.getString(ORC_PREFS_QUALIFIER, LOG_LEVEL_ATTR_NAME, logLevel(), scopeContexts));
-        usePrelude_$eq(prefSvc.getBoolean(ORC_PREFS_QUALIFIER, PRELUDE_ATTR_NAME, usePrelude(), scopeContexts));
-
         if (prefSvc.getString(ORC_PREFS_QUALIFIER, INCLUDE_PATH_ATTR_NAME, null, scopeContexts) != null) {
             includePath_$eq(performSubstitutions(stringToPathList(prefSvc.getString(ORC_PREFS_QUALIFIER, INCLUDE_PATH_ATTR_NAME, null, scopeContexts))));
         }
@@ -148,7 +143,6 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
      * @throws CoreException
      */
     private void fillFromLaunchConfig(final ILaunchConfiguration launchConfig) throws CoreException {
-        logLevel_$eq(launchConfig.getAttribute(LOG_LEVEL_ATTR_NAME, logLevel()));
         usePrelude_$eq(launchConfig.getAttribute(PRELUDE_ATTR_NAME, usePrelude()));
         includePath_$eq(launchConfig.getAttribute(INCLUDE_PATH_ATTR_NAME, includePath()));
         additionalIncludes_$eq(launchConfig.getAttribute(ADDITIONAL_INCLUDES_ATTR_NAME, additionalIncludes()));
@@ -176,7 +170,6 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
          * defaults here.
          */
         final IEclipsePreferences defaultPrefs = DefaultScope.INSTANCE.getNode(ORC_PREFS_QUALIFIER);
-        defaultPrefs.put(LOG_LEVEL_ATTR_NAME, LOG_LEVEL_DEFAULT);
         defaultPrefs.putBoolean(PRELUDE_ATTR_NAME, PRELUDE_DEFAULT);
         defaultPrefs.put(INCLUDE_PATH_ATTR_NAME, INCLUDE_PATH_DEFAULT);
         defaultPrefs.put(ADDITIONAL_INCLUDES_ATTR_NAME, ADDITIONAL_INCLUDES_DEFAULT);

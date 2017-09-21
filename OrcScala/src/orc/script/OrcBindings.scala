@@ -34,10 +34,6 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
 
   def filename: String = getString("javax.script.filename", "")
   def filename_=(newVal: String) = putString("javax.script.filename", newVal)
-  def logLevel: String = getString("orc.logLevel", "INFO")
-  def logLevel_=(newVal: String) = putString("orc.logLevel", newVal)
-  def xmlLogFile: String = getString("orc.xmlLogFile", "")
-  def xmlLogFile_=(newVal: String) = putString("orc.xmlLogFile", newVal)
   def backend: BackendType = BackendType.fromString(getString("orc.backend", "Token"))
   def backend_=(newVal: BackendType) = putString("orc.backend", newVal.toString)
 

@@ -51,12 +51,9 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
     private Spinner stackDepthSpinner;
     private Spinner tokenLimitSpinner;
     private Spinner maxSiteThreadsSpinner;
-    private Combo logLevelList;
     private Button dumpStackButton;
     private Button noTcoButton;
     private Button echoOilButton;
-
-    protected static final String LOG_LEVELS[] = { "OFF", "SEVERE", "WARNING", "INFO", "CONFIG", "FINE", "FINER", "FINEST", "ALL" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$
 
     /**
      * Constructs an OrcGeneralLaunchConfigurationTab instance.
@@ -82,7 +79,6 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
 
     @Override
     public void setDefaults(final ILaunchConfigurationWorkingCopy configuration) {
-        configuration.removeAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME);
         configuration.removeAttribute(OrcConfigSettings.PRELUDE_ATTR_NAME);
         configuration.removeAttribute(OrcConfigSettings.INCLUDE_PATH_ATTR_NAME);
         configuration.removeAttribute(OrcConfigSettings.ADDITIONAL_INCLUDES_ATTR_NAME);
@@ -144,14 +140,6 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
         maxSiteThreadsSpinner.setValues(OrcConfigSettings.MAX_SITE_THREADS_DEFAULT, 0, Integer.MAX_VALUE, 0, 1, 100);
         maxSiteThreadsSpinner.addSelectionListener(ourSelectionAdapter);
 
-        SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_LogLevelLabel, 1);
-
-        logLevelList = new Combo(labelWidgetComp, SWT.READ_ONLY);
-        logLevelList.setItems(LOG_LEVELS);
-        logLevelList.setFont(parent.getFont());
-        logLevelList.select(indexOfLevel(OrcConfigSettings.LOG_LEVEL_DEFAULT, LOG_LEVELS));
-        logLevelList.addSelectionListener(ourSelectionAdapter);
-
         dumpStackButton = new Button(labelWidgetComp, SWT.CHECK);
         dumpStackButton.setFont(parent.getFont());
         dumpStackButton.setSelection(OrcConfigSettings.SHOW_JAVA_STACK_TRACE_DEFAULT);
@@ -185,20 +173,6 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
         SWTFactory.createLabel(labelWidgetComp, Messages.OrcGeneralLaunchConfigurationTab_runtimeVersion + orcVersionText(), 2);
     }
 
-    /**
-     * @param lookup
-     * @param logLevels
-     * @return
-     */
-    private int indexOfLevel(final String lookup, final String[] logLevels) {
-        for (int i = 0; i < logLevels.length; i++) {
-            if (logLevels[i].equals(lookup)) {
-                return i;
-            }
-        }
-        return 0;
-    }
-
     protected String orcVersionText() {
         return orc.Main.orcImplName() + " " + orc.Main.orcVersion() + "\n" + orc.Main.orcURL() + "\n" + orc.Main.orcCopyright(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
@@ -217,7 +191,6 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
             stackDepthSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME, OrcConfigSettings.MAX_STACK_DEPTH_DEFAULT));
             tokenLimitSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_TOKENS_ATTR_NAME, OrcConfigSettings.MAX_TOKENS_DEFAULT));
             maxSiteThreadsSpinner.setSelection(configuration.getAttribute(OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME, OrcConfigSettings.MAX_SITE_THREADS_DEFAULT));
-            logLevelList.select(indexOfLevel(configuration.getAttribute(OrcConfigSettings.LOG_LEVEL_ATTR_NAME, OrcConfigSettings.LOG_LEVEL_DEFAULT), LOG_LEVELS));
             dumpStackButton.setSelection(configuration.getAttribute(OrcConfigSettings.SHOW_JAVA_STACK_TRACE_ATTR_NAME, OrcConfigSettings.SHOW_JAVA_STACK_TRACE_DEFAULT));
             noTcoButton.setSelection(configuration.getAttribute(OrcConfigSettings.NO_TCO_ATTR_NAME, OrcConfigSettings.NO_TCO_DEFAULT));
             echoOilButton.setSelection(configuration.getAttribute(OrcConfigSettings.ECHO_OIL_ATTR_NAME, OrcConfigSettings.ECHO_OIL_DEFAULT));
@@ -236,7 +209,6 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
         setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_STACK_DEPTH_ATTR_NAME, stackDepthSpinner.getSelection(), OrcConfigSettings.MAX_STACK_DEPTH_DEFAULT);
         setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_TOKENS_ATTR_NAME, tokenLimitSpinner.getSelection(), OrcConfigSettings.MAX_TOKENS_DEFAULT);
         setOrUnsetIntAttr(configuration, OrcConfigSettings.MAX_SITE_THREADS_ATTR_NAME, maxSiteThreadsSpinner.getSelection(), OrcConfigSettings.MAX_SITE_THREADS_DEFAULT);
-        setOrUnsetTextAttr(configuration, OrcConfigSettings.LOG_LEVEL_ATTR_NAME, logLevelList.getText());
         setOrUnsetBoolAttr(configuration, OrcConfigSettings.SHOW_JAVA_STACK_TRACE_ATTR_NAME, dumpStackButton.getSelection(), OrcConfigSettings.SHOW_JAVA_STACK_TRACE_DEFAULT);
         setOrUnsetBoolAttr(configuration, OrcConfigSettings.NO_TCO_ATTR_NAME, noTcoButton.getSelection(), OrcConfigSettings.NO_TCO_DEFAULT);
         setOrUnsetBoolAttr(configuration, OrcConfigSettings.ECHO_OIL_ATTR_NAME, echoOilButton.getSelection(), OrcConfigSettings.ECHO_OIL_DEFAULT);

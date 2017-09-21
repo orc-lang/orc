@@ -29,10 +29,6 @@ trait OrcCommonOptions extends Serializable {
   def filename_=(newVal: String)
   def classPath: java.util.List[String]
   def classPath_=(newVal: java.util.List[String])
-  def logLevel: String
-  def logLevel_=(newVal: String)
-  def xmlLogFile: String
-  def xmlLogFile_=(newVal: String)
   def backend: BackendType
   def backend_=(newVal: BackendType)
 }
