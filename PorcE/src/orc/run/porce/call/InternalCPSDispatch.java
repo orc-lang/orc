@@ -48,7 +48,7 @@ public abstract class InternalCPSDispatch extends Dispatch {
 	// The RootNode guard is required so that selfTail can be activated even
 	// after universe has activated; without this universal would end up
 	// handling those cases and cause TCO to fail based on optimizations.
-    @Specialization(guards = { "isTail", "getRootNode() != target.body.getRootNode()" })
+    @Specialization(guards = { "isTail", "getRootNodeCached() != target.body.getRootNode()" })
     public void tail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
         throw new TailCallException(target, arguments);
     }
