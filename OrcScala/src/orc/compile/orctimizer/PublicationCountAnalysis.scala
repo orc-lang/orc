@@ -171,7 +171,10 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
                     case _ => defaultResult
                   }).reduce(_ union _)
                 }, internals = { vs =>
-                  inStateTokenOneOf
+                  if (vs.exists({ case _ : Service.Z => true; case _ => false }))
+                      inStateTokenOneOf.mayHalt
+                  else
+                    inStateTokenOneOf
                 }, others = { vs =>
                   Range(0, None)
                 })
