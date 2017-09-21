@@ -22,10 +22,9 @@ import orc.run.porce.runtime.PorcERuntime;
 public abstract class Spawn extends Expression {
 	
     @Child
-    protected Dispatch call = null;
+    protected volatile Dispatch call = null;
     private final ConditionProfile canDirectCallProfile = ConditionProfile.createCountingProfile();
     private final PorcEExecutionRef execution;
-    @SuppressWarnings("unused")
 	private final boolean mustSpawn;
     
     protected Spawn(boolean mustSpawn, PorcEExecutionRef execution) {
@@ -44,7 +43,7 @@ public abstract class Spawn extends Expression {
     	
 		boolean canDirectCall = canDirectCallProfile.profile(PorcERuntime.incrementAndCheckStackDepth());		
 		
-		if (canDirectCall) {
+		if ((!mustSpawn || PorcERuntime.allowAllSpawnInlining()) && canDirectCall) {
 			try {
 				initializeCall();
 				call.executeDispatch(frame, computation, new Object[] { });
@@ -61,8 +60,10 @@ public abstract class Spawn extends Expression {
     private void initializeCall() {
         if (call == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
-            call = insert(InternalCPSDispatch.create(execution, isTail));
-            call.setTail(isTail);
+            atomic(() -> {
+	            call = insert(InternalCPSDispatch.create(execution, isTail));
+	            call.setTail(isTail);
+            });
         }
     }
 

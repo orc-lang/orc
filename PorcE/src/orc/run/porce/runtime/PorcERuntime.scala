@@ -122,16 +122,23 @@ object PorcERuntime {
 
   @inline
   @CompilationFinal
-  val maxStackDepth = 32
+  val maxStackDepth = 8
   // TODO: Make maxStackDepth configurable. Any value >= 0 can theoretically cause a crash in a program that would otherwise have worked.
   
+  // TODO: Make configurable.
   @inline
   @CompilationFinal
   val actuallySchedule = true
   
+  // TODO: Make configurable.
   @inline
   @CompilationFinal
-  val occationallySchedule = false
+  val occationallySchedule = true
+  
+  // TODO: Make configurable.
+  @inline
+  @CompilationFinal
+  val allowAllSpawnInlining = false
 
   
   // Force loading of a few classes in Truffle. Without this the error handling code crashes and destroys the stack trace.
