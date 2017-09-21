@@ -2,4 +2,5 @@
 /.cache-main
 /build/
 /build-local.properties
+/config/
 /dumps/
