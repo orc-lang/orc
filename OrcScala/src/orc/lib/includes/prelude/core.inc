@@ -324,3 +324,11 @@ Publish the natural log of this number.
 @implementation
 --}
 import site Log = "orc.lib.math.Log"
+
+{--
+@site Exp(Number) :: Number
+Publish the e to the power of this number.
+
+@implementation
+--}
+import site Exp = "orc.lib.math.Exp"
