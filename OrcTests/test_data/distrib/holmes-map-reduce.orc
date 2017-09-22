@@ -1,14 +1,19 @@
 {- holmes-map-reduce.orc -- A d-Orc map-reduce -}
 
 {- This performance test counts words in the 12 data files adventure-*.txt.
- - Each file is counted 10 times.  The file is read line-by-line in to an Orc
- - list, then each element (line) of the list is word counted, which results
- - in, for each file, a list (per-iteration) of lists of per-line word counts.
- - The multiple iterations of one file are concatenated, and the resulting
- - list is combined by folding the lists with the + operator.  Then the
- - resulting per-file word counts*10 are reduced, again by folding with the
- - + operator.  The folds use Orc's associative fold library function (afold).
+ - Each file is counted {{{repeatRead}}} times.  The file is read line-by-
+ - line in to an Orc list, then each element (line) of the list is word
+ - counted, which results in, for each file, a list (per-iteration) of
+ - lists of per-line word counts. The multiple iterations of one file are
+ - concatenated, and the resulting list is combined by folding the lists
+ - with the + operator.  Then the resulting per-file word counts*10 are
+ - reduced, again by folding with the + operator.  The folds use Orc's
+ - associative fold library function (afold).
  -}
+
+{- Number of times to re-read and word count each file. -}
+{- Update the OUTPUT annotation when changing this. -}
+val repeatRead = 1
 
 def readFile(fn) =
   import class BufferedReader = "java.io.BufferedReader"
@@ -49,7 +54,7 @@ def wordCount(line) =
 
 def mapOperation(filename) =
   collect(
-    { signals(10) >>
+    { signals(repeatRead) >>
       readFile(filename)  >lines>
       map(wordCount, lines)
     }
@@ -81,7 +86,8 @@ map(mapOperation, inputList)  >mappedList>
 map(combineOperation, mappedList)  >combinedList>
 afold(reduceOperation, combinedList)
 
+{- Adjust this to 104484 * repeatRead. -}
 {-
 OUTPUT:
-1044840
+104484
 -}
