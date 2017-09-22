@@ -64,7 +64,7 @@ def combineOperation(xs) = afold((+), concat(xs))
 
 def reduceOperation(x, y) = x + y
 
-"../OrcTests/test_data/distrib/holmes_test_data/"  >dataDir>
+"../OrcTests/test_data/functional_valid/distrib/holmes_test_data/"  >dataDir>
 
 [
   dataDir + "adventure-1.txt",

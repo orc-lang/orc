@@ -127,7 +127,7 @@ object DistribTestCase {
     bindings.backend = orc.BackendType.fromString("porc-distrib")
     bindings.followerSockets = (followerSpecs map { fs => new InetSocketAddress(fs.hostname, fs.port)}).toList.asJava
     bindings.showJavaStackTrace = true
-    TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), classOf[DistribTestCase], bindings, new File("test_data/distrib"))
+    TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), classOf[DistribTestCase], bindings, new File("test_data/functional_valid/distrib"))
   }
 
   var leaderSpec: DOrcRuntimePlacement = null
@@ -192,7 +192,7 @@ object DistribTestCase {
     print(".")
     mkdirAndRsync(s"config/logging.properties", leaderSpec.hostname, DistribTestConfig.expanded("loggingConfigFile"))
     print(".")
-    mkdirAndRsync("test_data/distrib/", leaderSpec.hostname, DistribTestConfig.expanded("dOrcTestDataDir"))
+    mkdirAndRsync("test_data/functional_valid/distrib/", leaderSpec.hostname, DistribTestConfig.expanded("dOrcTestDataDir"))
     println("done")
   }
 
