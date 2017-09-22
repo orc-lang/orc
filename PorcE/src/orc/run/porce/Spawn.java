@@ -58,13 +58,14 @@ public abstract class Spawn extends Expression {
     }
     
     private void initializeCall() {
-        if (call == null) {
-            CompilerDirectives.transferToInterpreterAndInvalidate();
-            atomic(() -> {
-	            call = insert(InternalCPSDispatch.create(execution, isTail));
-	            call.setTail(isTail);
-            });
-        }
+    	if (call == null) {
+    		CompilerDirectives.transferToInterpreterAndInvalidate();
+	    	computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
+	    		Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
+				n.setTail(isTail);
+				return n;
+	    	});
+    	}
     }
 
     public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn, final Expression computation, final PorcEExecutionRef execution) {

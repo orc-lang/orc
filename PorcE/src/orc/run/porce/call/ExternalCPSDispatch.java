@@ -41,7 +41,11 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 	protected InternalCPSDispatch getDispatchP() {
 		if (dispatchP == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
-			dispatchP = InternalCPSDispatch.createBare(execution);
+			computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
+				InternalCPSDispatch n = InternalCPSDispatch.createBare(execution);
+				n.setTail(isTail);
+				return n;
+			});
 		}
 		return dispatchP;
 	}

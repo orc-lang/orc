@@ -78,10 +78,14 @@ public class Force {
 
         @Specialization(guards = { "join.isResolved()" })
         public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecutionRef execution, final Join join) {
-            if (call == null) {
-                CompilerDirectives.transferToInterpreterAndInvalidate();
-                call = insert(InternalCPSDispatch.create(execution, isTail));
-            }
+        	if (call == null) {
+    			CompilerDirectives.transferToInterpreterAndInvalidate();
+	        	computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
+	        		Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
+	        		n.setTail(isTail);
+	        		return n;
+	        	});
+        	}
 			// FIXME: This extra copy is because Join was optimized for the old
 			// way of calling. If it turns out that we generate lots of copies
 			// then we will need to provide a way to bypass this.
@@ -177,10 +181,14 @@ public class Force {
         }
 
         private void initializeCall(final PorcEExecutionRef execution) {
-            if (call == null) {
-                CompilerDirectives.transferToInterpreterAndInvalidate();
-                call = insert(InternalCPSDispatch.create(execution, isTail));
-            }
+			if (call == null) {
+				CompilerDirectives.transferToInterpreterAndInvalidate();
+				computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
+					Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
+					n.setTail(isTail);
+					return n;
+				});
+			}
         }
 
         public static SingleFuture create(final Expression p, final Expression c, final Expression t, final Expression future, final PorcEExecutionRef execution) {

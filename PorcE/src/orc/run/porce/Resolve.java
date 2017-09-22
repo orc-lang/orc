@@ -76,10 +76,14 @@ public class Resolve extends Expression {
 
         @Specialization(guards = { "join.isResolved()" })
         public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecutionRef execution, final Resolver join) {
-            if (call == null) {
-                CompilerDirectives.transferToInterpreterAndInvalidate();
-                call = insert(InternalCPSDispatch.create(execution, isTail));
-            }
+        	if (call == null) {
+        		CompilerDirectives.transferToInterpreterAndInvalidate();
+	        	computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
+	        		Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
+	        		n.setTail(isTail);
+	        		return n;
+	        	});
+        	}
             call.executeDispatch(frame, join.p(), new Object[] {});
             return PorcEUnit.SINGLETON;
         }

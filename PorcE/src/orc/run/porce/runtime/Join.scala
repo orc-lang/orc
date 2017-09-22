@@ -14,7 +14,6 @@ package orc.run.porce.runtime
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 import orc.FutureReader
-import orc.run.porce.Logger
 import sun.misc.Unsafe
 
 /** Join a number of futures by blocking on all of them simultaneously.
@@ -285,12 +284,14 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
 }
 
 object Join {
+  @inline
   val unsafe = {
     val theUnsafe = classOf[Unsafe].getDeclaredField("theUnsafe");
     theUnsafe.setAccessible(true);
     theUnsafe.get(null).asInstanceOf[Unsafe];
   }
 
+  @inline
   val joinStateOffset = {
     unsafe.objectFieldOffset(classOf[Join].getDeclaredField("state"))
   }

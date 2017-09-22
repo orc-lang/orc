@@ -45,8 +45,11 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	protected Dispatch getInternalCall() {
 		if (internalCall == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
-			this.internalCall = insert(makeInternalCall());
-			this.internalCall.setTail(isTail);
+			computeAtomicallyIfNull(() -> internalCall, (v) -> this.internalCall = v, () -> {
+				InternalCPSDispatch n = insert(makeInternalCall());
+				n.setTail(isTail);
+				return n;
+			});
 		}
 		return internalCall;
 	}
@@ -57,8 +60,11 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	protected ExternalDispatch getExternalCall() {
 		if (externalCall == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
-			this.externalCall = insert(makeExternalCall());
-			this.externalCall.setTail(isTail);
+			computeAtomicallyIfNull(() -> externalCall, (v) -> this.externalCall = v, () -> {
+				ExternalDispatch n = insert(makeExternalCall());
+				n.setTail(isTail);
+				return n;
+			});
 		}
 		return externalCall;
 	}
@@ -70,8 +76,11 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	protected Dispatch getInterceptedCall() {
 		if (interceptedCall == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
-			this.interceptedCall = insert(makeInterceptedCall());
-			this.interceptedCall.setTail(isTail);
+			computeAtomicallyIfNull(() -> interceptedCall, (v) -> this.interceptedCall = v, () -> {
+				InterceptedDispatch n = insert(makeInterceptedCall());
+				n.setTail(isTail);
+				return n;
+			});
 		}
 		return interceptedCall;
 	}

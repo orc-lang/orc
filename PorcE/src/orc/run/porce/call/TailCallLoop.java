@@ -32,15 +32,10 @@ public class TailCallLoop extends NodeBase {
     }
     
     private LoopNode getLoopNode(VirtualFrame frame) {
-    	// FIXME: Find all other instances of double checked locking and make sure they are all correct. Maybe abstract this into utility of some kind.
     	if (loop == null) {
     		CompilerDirectives.transferToInterpreterAndInvalidate();
-    		// Double checked locking is valid only because we require JRE > 5 and that loop is volatile.
-    		atomic(() -> {
-    	    	if (loop == null) {
-    	    		loop = insert(Truffle.getRuntime().createLoopNode(new CatchTailCallRepeatingNode(frame.getFrameDescriptor())));
-    	    	}
-    		});
+	    	computeAtomicallyIfNull(() -> loop, (v) -> loop = v, () ->
+	    		insert(Truffle.getRuntime().createLoopNode(new CatchTailCallRepeatingNode(frame.getFrameDescriptor()))));
     	}
     	return loop;
     }
