@@ -223,7 +223,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         case NonFatal(e) => Some(e)
       }
     }
-    Logger.entering(getClass.getName, "sendEvent")
+
+    Logger.entering(getClass.getName, "sendEvent", Seq(leaderLocation, executionId, groupProxyId.toString, event))
     val execution = programs(executionId)
 
     val eventWithoutBadThrowable = event match {

@@ -64,7 +64,7 @@ abstract class DOrcExecution(
   private val hereSet: Set[PeerLocation] = Set(runtime.here)
 
   //TODO: Add a ValueLocator registration mechanism.
-  protected val valueLocators: Set[ValueLocator] = Set()
+  protected val valueLocators: Set[ValueLocator] = Set(new FileValueLocator(this))
 
   def currentLocations(v: Any): Set[PeerLocation] = {
     def pfc(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
@@ -76,7 +76,7 @@ abstract class DOrcExecution(
       case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.collect(pfc(v)).reduce(_.union(_))
       case _ => hereSet
     }
-    //Logger.ValueLocation.finer(s"currentLocations($v: ${v.getClass.getName})=$cl")
+    //Logger.ValueLocation.finer(s"currentLocations($v: ${if (v==null) "Null" else (v.getClass.getName)})=$cl")
     cl
   }
 
@@ -89,7 +89,7 @@ abstract class DOrcExecution(
       case _ if valueLocators.exists(_.permittedLocations.isDefinedAt(v)) => valueLocators.collect(pfp(v)).reduce(_.intersect(_))
       case _ => runtime.allLocations
     }
-    //Logger.ValueLocation.finest(s"permittedLocations($v: ${v.getClass.getName})=$pl")
+    //Logger.ValueLocation.finest(s"permittedLocations($v: ${if (v==null) "Null" else (v.getClass.getName)})=$pl")
     pl
   }
   

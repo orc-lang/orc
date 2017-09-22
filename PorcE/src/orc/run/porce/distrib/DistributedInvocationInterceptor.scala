@@ -38,9 +38,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     } else {
       val here = execution.runtime.here
       @inline
-      def checkValue(v: AnyRef): Boolean = {
-        v.isInstanceOf[LocationPolicy] && !execution.currentLocations(v).contains(here)
-      }
+      def checkValue(v: AnyRef): Boolean = !execution.currentLocations(v).contains(here)
       val notAllHere = checkValue(target) || arguments.exists(checkValue(_))
       //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", notAllHere.toString)
       notAllHere
@@ -68,6 +66,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     }
     Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): candidateDestinations=$candidateDestinations")
     val destination = execution.selectLocationForCall(candidateDestinations)
+    Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): selected location for call: $destination")
     sendCall(callContext, target, arguments, destination)
   }
 
