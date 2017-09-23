@@ -23,8 +23,8 @@ import orc.ast.oil.nameless.Expression;
 import orc.ast.oil.xml.OrcXML;
 import orc.script.OrcBindings;
 import orc.script.OrcScriptEngine;
-import orc.test.util.ExpectedOutput;
 import orc.test.item.OrcForTesting;
+import orc.test.util.ExpectedOutput;
 import orc.test.util.TestUtils;
 import orc.test.util.TestUtils.OrcTestCase;
 
@@ -35,7 +35,8 @@ import org.xml.sax.SAXException;
  * Test Orc by running annotated sample programs from the "../OrcExamples"
  * directory. Each program is compiled, written to XML, subjected to validation
  * against an XML schema, and then read back as an AST. This second AST is run.
- * Each program is given at most 10 seconds to complete.
+ * Each program is given at most TestUtils.OrcTestCase.TESTING_TIMEOUT seconds
+ * to complete.
  * <p>
  * We look for one or more comment blocks formatted per
  * <code>ExampleOutput</code>'s specs.

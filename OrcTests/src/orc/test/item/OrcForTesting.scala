@@ -15,18 +15,17 @@ package orc.test.item
 
 import java.io.{ FileInputStream, FileNotFoundException, InputStreamReader }
 import java.util.concurrent.TimeoutException
+
 import orc.{ OrcEvent, OrcEventAction }
 import orc.error.OrcException
 import orc.lib.str.PrintEvent
 import orc.script.{ OrcBindings, OrcScriptEngine }
 import orc.util.SynchronousThreadExec
 import orc.values.Format
+
 import javax.script.{ ScriptEngine, ScriptEngineManager, ScriptException }
 import javax.script.Compilable
 import javax.script.ScriptContext.ENGINE_SCOPE
-import java.io.FileNotFoundException
-import java.util.concurrent.TimeoutException
-import orc.error.OrcException
 
 /** A test harness for the standard Orc compiler and runtime
   * engine, as exposed through the JSR-223 interface.

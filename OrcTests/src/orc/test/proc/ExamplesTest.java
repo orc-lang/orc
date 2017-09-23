@@ -13,6 +13,7 @@ package orc.test.proc;
 
 import java.io.File;
 
+import orc.BackendType$;
 import orc.script.OrcBindings;
 import orc.test.util.ExpectedOutput;
 import orc.test.util.TestUtils;
@@ -22,7 +23,8 @@ import junit.framework.Test;
 
 /**
  * Test Orc by running annotated sample programs from the "../OrcExamples"
- * directory. Each program is given at most 10 seconds to complete.
+ * directory. Each program is given at most
+ * TestUtils.OrcTestCase.TESTING_TIMEOUT seconds to complete.
  * <p>
  * We look for one or more comment blocks formatted per
  * <code>ExampleOutput</code>'s specs.

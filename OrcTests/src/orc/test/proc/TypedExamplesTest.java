@@ -25,7 +25,7 @@ import junit.framework.Test;
 /**
  * Test Orc by running annotated sample programs from the "../OrcExamples"
  * directory. The Orc type checker is enabled for these tests. Each program is
- * given at most 10 seconds to complete.
+ * given at most TestUtils.OrcTestCase.TESTING_TIMEOUT seconds to complete.
  * <p>
  * We look for one or more comment blocks formatted per
  * <code>ExampleOutput</code>'s specs.
