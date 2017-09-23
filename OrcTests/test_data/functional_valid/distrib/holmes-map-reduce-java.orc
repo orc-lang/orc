@@ -5,28 +5,39 @@
  - this test's WordCount Java class, which results in, for each file, a list
  - (per-iteration) of file word counts.  The multiple iterations of one file
  - are combined by folding the lists with the + operator.  Then the resulting
- - per-file word counts*10 are reduced, again by folding with the + operator.
- - The folds use Orc's associative fold library function (afold).
+ - per-file word counts (times {{{repeatRead}}}) are reduced, again by
+ - folding with the + operator. The folds use Orc's associative fold library
+ - function (afold).
  -}
 
 {- Number of times to re-read and word count each file. -}
 {- Update the OUTPUT annotation when changing this. -}
 val repeatRead = 10
 
-def readerForFile(fn) =
+def checkReadableFile(file) =
+  import class JavaSys = "java.lang.System"
+  if file.canRead() then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
+
+def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"
-  import class File = "java.io.File"
-  BufferedReader(FileReader(File(fn)))
-
+  import class WordCount = "orc.test.item.distrib.WordCount"
+  BufferedReader(FileReader(file))  >in>
+  WordCount.countReader(in)  >counts>
+  in.close()  >>
+  counts
 
 def mapOperation(filename) =
-  import class WordCount = "orc.test.item.distrib.WordCount"
-  collect(
-    { signals(repeatRead) >>
-      readerForFile(filename)  >rdr>
-      WordCount.countReader(rdr)
-    }
+  -- Run n copies of f to build a list.
+  def loop(0, f) = []
+  def loop(1, f) = [f()]
+  def loop(n, f) = {| f() |} : loop(n-1, f) 
+
+  import class File = "java.io.File"
+  File(filename)  >f>
+  checkReadableFile(f)  >>
+  loop(repeatRead,
+    { countFile(f) }
   )
 
 def combineOperation(xs) = afold((+), xs)
