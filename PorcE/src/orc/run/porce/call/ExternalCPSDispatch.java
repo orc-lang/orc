@@ -49,6 +49,22 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 		}
 		return dispatchP;
 	}
+	
+	// FIXME: PERFORMANCE: There are three calls to buildArguments here. They
+	// each allocate a new array and they cannot be eliminated by the compiler.
+	// Somehow I need to move these checks into the body so I can compute only
+	// once.
+	//
+	// The problem is that if I do that I can no longer use the automated
+	// caching which is a significant development cost. Maybe I could eliminate
+	// the new array compute on each call and then the compiler could eliminate
+	// the repeated copy. The problem is that the allocated array would need to
+	// be per CALL not per specialization-callsite. This means we cannot use
+	// Cached.
+	//
+	// It may be possible to use a special child node which the specializations
+	// can access as an argument. The problem is I don't know how to make sure
+	// arguments is passed down from the parent call.
 
 	@Specialization(guards = {"invoker != null", "canInvokeWithBoundary(invoker, target, buildArguments(arguments))" }, limit = "ExternalDirectCallMaxCacheSize")
 	public void specificDirect(final VirtualFrame frame, final Object target, final Object[] arguments,
@@ -79,6 +95,8 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 		// exception.
 	}
 
+	// FIXME: PERFORMANCE: See specificDirect FIXME.
+	
 	@Specialization(guards = {
 			"canInvokeWithBoundary(invoker, target, buildArguments(arguments))" }, limit = "ExternalCPSCallMaxCacheSize")
 	public void specific(final VirtualFrame frame, final Object target, final Object[] arguments,
