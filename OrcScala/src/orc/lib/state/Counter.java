@@ -18,6 +18,9 @@ import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.CounterType;
+import orc.run.distrib.AbstractLocation;
+import orc.run.distrib.ClusterLocations;
+import orc.run.distrib.DOrcLocationPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -42,82 +45,95 @@ public class Counter extends EvalSite implements TypedSite {
             throw new ArityMismatchException(1, args.size());
         }
 
-        return new DotSite() {
-            // TODO: Reimplement this without the lock. It will probably scale much better with AtomicInteger
-            protected int count = init;
-            protected final LinkedList<CallContext> waiters = new LinkedList<CallContext>();
-
-            @Override
-            protected void addMembers() {
-                addMember("inc", new EvalSite() {
-                    @Override
-                    public Object evaluate(final Args args) throws TokenException {
-                        synchronized (Counter.this) {
-                            ++count;
-                        }
-                        return signal();
-                    }
-
-                    @Override
-                    public boolean nonBlocking() {
-                        return true;
-                    }
-                });
-                addMember("dec", new PartialSite() {
-                    @Override
-                    public Object evaluate(final Args args) throws TokenException {
-                        synchronized (Counter.this) {
-                            if (count > 0) {
-                                --count;
-                                if (count == 0) {
-                                    for (final CallContext waiter : waiters) {
-                                        waiter.publish(signal());
-                                    }
-                                    waiters.clear();
-                                }
-                                return signal();
-                            } else {
-                                return null;
-                            }
-                        }
-                    }
-
-                    @Override
-                    public boolean nonBlocking() {
-                        return true;
-                    }
-                });
-                addMember("onZero", new SiteAdaptor() {
-                    @Override
-                    public void callSite(final Args args, final CallContext caller) throws TokenException {
-                        synchronized (Counter.this) {
-                            if (count == 0) {
-                                caller.publish(signal());
-                            } else {
-                                caller.setQuiescent();
-                                waiters.add(caller);
-                            }
-                        }
-                    }
-                });
-                addMember("value", new EvalSite() {
-                    @Override
-                    public Object evaluate(final Args args) throws TokenException {
-                        return BigDecimal.valueOf(count);
-                    }
-
-                    @Override
-                    public boolean nonBlocking() {
-                        return true;
-                    }
-                });
-            }
-        };
+        return new CounterInstance(init);
     }
 
     @Override
     public Type orcType() {
         return CounterType.getBuilder();
+    }
+
+    protected class CounterInstance extends DotSite implements DOrcLocationPolicy {
+        // TODO: Reimplement this without the lock. It will probably scale much better with AtomicInteger
+        protected int count;
+        protected final LinkedList<CallContext> waiters = new LinkedList<CallContext>();
+
+        public CounterInstance(final int init) {
+            super();
+            count = init;
+        }
+
+        @Override
+        protected void addMembers() {
+            addMember("inc", new EvalSite() {
+                @Override
+                public Object evaluate(final Args args) throws TokenException {
+                    synchronized (Counter.this) {
+                        ++count;
+                    }
+                    return signal();
+                }
+
+                @Override
+                public boolean nonBlocking() {
+                    return true;
+                }
+            });
+            addMember("dec", new PartialSite() {
+                @Override
+                public Object evaluate(final Args args) throws TokenException {
+                    synchronized (Counter.this) {
+                        if (count > 0) {
+                            --count;
+                            if (count == 0) {
+                                for (final CallContext waiter : waiters) {
+                                    waiter.publish(signal());
+                                }
+                                waiters.clear();
+                            }
+                            return signal();
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+
+                @Override
+                public boolean nonBlocking() {
+                    return true;
+                }
+            });
+            addMember("onZero", new SiteAdaptor() {
+                @Override
+                public void callSite(final Args args, final CallContext caller) throws TokenException {
+                    synchronized (Counter.this) {
+                        if (count == 0) {
+                            caller.publish(signal());
+                        } else {
+                            caller.setQuiescent();
+                            waiters.add(caller);
+                        }
+                    }
+                }
+            });
+            addMember("value", new EvalSite() {
+                @Override
+                public Object evaluate(final Args args) throws TokenException {
+                    return BigDecimal.valueOf(count);
+                }
+
+                @Override
+                public boolean nonBlocking() {
+                    return true;
+                }
+            });
+        }
+
+        @Override
+        public <L extends AbstractLocation> scala.collection.immutable.Set<L> permittedLocations(final ClusterLocations<L> locations) {
+            return locations.hereSet();
+        }
+
     }
 
     @Override

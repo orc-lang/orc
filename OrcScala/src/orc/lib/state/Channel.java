@@ -18,6 +18,9 @@ import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.ChannelType;
+import orc.run.distrib.AbstractLocation;
+import orc.run.distrib.ClusterLocations;
+import orc.run.distrib.DOrcLocationPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -53,7 +56,7 @@ public class Channel extends EvalSite implements TypedSite {
     // return new ArrowType(ChannelOfX, 1);
     // }
 
-    protected class ChannelInstance extends DotSite {
+    protected class ChannelInstance extends DotSite implements DOrcLocationPolicy {
 
         protected final LinkedList<Object> contents;
         protected final LinkedList<CallContext> readers;
@@ -65,7 +68,7 @@ public class Channel extends EvalSite implements TypedSite {
         protected boolean closed = false;
 
         ChannelInstance() {
-            contents = new LinkedList<Object>();
+            contents = new LinkedList<>();
             readers = new LinkedList<CallContext>();
         }
 
@@ -153,9 +156,9 @@ public class Channel extends EvalSite implements TypedSite {
                 @Override
                 public Object evaluate(final Args args) throws TokenException {
                     synchronized (ChannelInstance.this) {
-                        ArrayList<Object> convertedContents = new ArrayList<>(contents.size());
-                        for(Object o : contents) {
-                          convertedContents.add(object2value(o));
+                        final ArrayList<Object> convertedContents = new ArrayList<>(contents.size());
+                        for (final Object o : contents) {
+                            convertedContents.add(object2value(o));
                         }
                         final Object out = scala.collection.JavaConversions.collectionAsScalaIterable(convertedContents).toList();
                         contents.clear();
@@ -221,9 +224,14 @@ public class Channel extends EvalSite implements TypedSite {
 
         @Override
         public String toString() {
-          synchronized (ChannelInstance.this) {
-            return super.toString() + contents.toString();
-          }
+            synchronized (ChannelInstance.this) {
+                return super.toString() + contents.toString();
+            }
+        }
+
+        @Override
+        public <L extends AbstractLocation> scala.collection.immutable.Set<L> permittedLocations(final ClusterLocations<L> locations) {
+            return locations.hereSet();
         }
 
     }

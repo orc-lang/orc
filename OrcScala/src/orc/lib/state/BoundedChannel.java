@@ -20,6 +20,9 @@ import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.BoundedChannelType;
+import orc.run.distrib.AbstractLocation;
+import orc.run.distrib.ClusterLocations;
+import orc.run.distrib.DOrcLocationPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -49,7 +52,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
         return BoundedChannelType.getBuilder();
     }
 
-    protected class ChannelInstance extends DotSite {
+    protected class ChannelInstance extends DotSite implements DOrcLocationPolicy {
 
         protected final LinkedList<Object> contents;
         protected final LinkedList<CallContext> readers;
@@ -61,7 +64,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
 
         ChannelInstance(final int bound) {
             open = bound;
-            contents = new LinkedList<Object>();
+            contents = new LinkedList<>();
             readers = new LinkedList<CallContext>();
             writers = new LinkedList<CallContext>();
         }
@@ -247,5 +250,11 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                 }
             });
         }
+
+        @Override
+        public <L extends AbstractLocation> scala.collection.immutable.Set<L> permittedLocations(final ClusterLocations<L> locations) {
+            return locations.hereSet();
+        }
+
     }
 }

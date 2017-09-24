@@ -16,6 +16,9 @@ import java.util.LinkedList;
 import orc.CallContext;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.SyncChannelType;
+import orc.run.distrib.AbstractLocation;
+import orc.run.distrib.ClusterLocations;
+import orc.run.distrib.DOrcLocationPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -52,14 +55,14 @@ public class SyncChannel extends EvalSite implements TypedSite {
         }
     }
 
-    protected class SyncChannelInstance extends DotSite {
+    protected class SyncChannelInstance extends DotSite implements DOrcLocationPolicy {
 
         // Invariant: senderQueue is empty or receiverQueue is empty
         protected final LinkedList<SenderItem> senderQueue;
         protected final LinkedList<CallContext> receiverQueue;
 
         SyncChannelInstance() {
-            senderQueue = new LinkedList<SenderItem>();
+            senderQueue = new LinkedList<>();
             receiverQueue = new LinkedList<CallContext>();
         }
 
@@ -114,6 +117,11 @@ public class SyncChannel extends EvalSite implements TypedSite {
                 }
 
             }
+        }
+
+        @Override
+        public <L extends AbstractLocation> scala.collection.immutable.Set<L> permittedLocations(final ClusterLocations<L> locations) {
+            return locations.hereSet();
         }
 
     }

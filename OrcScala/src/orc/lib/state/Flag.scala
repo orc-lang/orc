@@ -13,15 +13,13 @@
 
 package orc.lib.state
 
-import java.util.concurrent.atomic.AtomicBoolean
-
 import orc.error.runtime.ArgumentTypeMismatchException
+import orc.run.distrib.PinnedLocationPolicy
 import orc.types.{ JavaObjectType, SignalType, SimpleFunctionType }
 import orc.values.Signal
 import orc.values.sites.{ EffectFreeSite, Effects, FunctionalSite, NonBlockingSite, PartialSite1, TalkativeSite, TotalSite0, TotalSite1, TypedSite }
 
-// It is critical that this stays non-serializable so that DOrc cannot copy it.
-final class Flag {
+final class Flag extends PinnedLocationPolicy {
   @volatile
   var _value = false
 

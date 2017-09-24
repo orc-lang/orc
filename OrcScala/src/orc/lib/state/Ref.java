@@ -18,6 +18,9 @@ import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.RefType;
+import orc.run.distrib.AbstractLocation;
+import orc.run.distrib.ClusterLocations;
+import orc.run.distrib.DOrcLocationPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -55,7 +58,7 @@ public class Ref extends EvalSite implements TypedSite {
         return RefType.getBuilder();
     }
 
-    public static class RefInstance extends DotSite {
+    public static class RefInstance extends DotSite implements DOrcLocationPolicy {
 
         protected Queue<CallContext> readQueue;
         Object contents;
@@ -173,6 +176,12 @@ public class Ref extends EvalSite implements TypedSite {
         public String toString() {
             return "Ref(" + contents + ")";
         }
+
+        @Override
+        public <L extends AbstractLocation> scala.collection.immutable.Set<L> permittedLocations(final ClusterLocations<L> locations) {
+            return locations.hereSet();
+        }
+
     }
 
     @Override
