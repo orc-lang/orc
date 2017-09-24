@@ -1,5 +1,5 @@
 //
-// DOrcLocationPolicy.scala -- Scala traits DOrcLocationPolicy, PinnedLocationPolicy, AbstractLocation, ClusterLocations and MigrationDecision
+// placement.scala -- Scala traits AbstractLocation, ClusterLocations, MigrationDecision, and PinnedLocationPolicy
 // Project OrcScala
 //
 // Created by jthywiss on Sep 24, 2017.
@@ -13,28 +13,11 @@
 
 package orc.run.distrib
 
-/** Provides the set of Locations where this value may feasibly reside.
-  *
-  * @author jthywiss
-  */
-trait DOrcLocationPolicy[L <: AbstractLocation] {
-  def permittedLocations(locations: ClusterLocations[L]): Set[L]
-}
-
-/** Convenience DOrcLocationPolicy that specifies that instances of this
-  * class cannot be migrated.
-  *
-  * @author jthywiss
-  */
-trait PinnedLocationPolicy[L <: AbstractLocation] {
-  def permittedLocations(locations: ClusterLocations[L]): Set[L] = locations.hereSet
-}
-
 /** An opaque value that represents a distributed Orc runtime location.
   *
   * @author jthywiss
   */
-trait AbstractLocation { }
+trait AbstractLocation {}
 
 /** Provides AbstractLocations representing this distributed Orc runtimes in
   * this distributed Orc cluster.
@@ -55,4 +38,13 @@ object MigrationDecision {
   case object Copy extends MigrationDecision
   case object Move extends MigrationDecision
   case object Remote extends MigrationDecision
+}
+
+/** Convenience DOrcLocationPolicy that specifies that instances of this
+  * class cannot be migrated.
+  *
+  * @author jthywiss
+  */
+trait PinnedLocationPolicy {
+  def permittedLocations[L <: AbstractLocation](locations: ClusterLocations[L]): Set[L] = locations.hereSet
 }

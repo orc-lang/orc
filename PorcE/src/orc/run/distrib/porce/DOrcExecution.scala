@@ -72,7 +72,7 @@ abstract class DOrcExecution(
       { case vl if vl.currentLocations.isDefinedAt(v) => vl.currentLocations(v) }
     val cl = v match {
       //TODO: Replace this with location tracking
-      case plp: DOrcLocationPolicy[_] => plp.asInstanceOf[DOrcLocationPolicy[PeerLocation]].permittedLocations(runtime)
+      case plp: DOrcLocationPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.collect(pfc(v)).reduce(_.union(_))
       case _ => hereSet
@@ -85,7 +85,7 @@ abstract class DOrcExecution(
   	def pfp(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
   	  { case vl if vl.permittedLocations.isDefinedAt(v) => vl.permittedLocations(v) }
     val pl = v match {
-      case plp: DOrcLocationPolicy[_] => plp.asInstanceOf[DOrcLocationPolicy[PeerLocation]].permittedLocations(runtime)
+      case plp: DOrcLocationPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ if valueLocators.exists(_.permittedLocations.isDefinedAt(v)) => valueLocators.collect(pfp(v)).reduce(_.intersect(_))
       case _ => runtime.allLocations

@@ -20,12 +20,13 @@ import orc.values.OrcTuple
 import orc.values.sites.Site
 import orc.run.distrib.DOrcLocationPolicy
 import orc.run.distrib.ClusterLocations
+import orc.run.distrib.AbstractLocation
 
 /** Superclass of Orc sites to construct LocationPinnedTuples
   *
   * @author jthywiss
   */
-abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with DOrcLocationPolicy[PeerLocation] with Serializable {
+abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with DOrcLocationPolicy with Serializable {
   override def call(args: Array[AnyRef], callContext: CallContext): Unit = {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
@@ -45,7 +46,11 @@ abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site wit
     }
   }
 
-  override def permittedLocations(locations: ClusterLocations[PeerLocation]) = Set(locations.asInstanceOf[DOrcRuntime].locationForRuntimeId(locationNum))
+  override def permittedLocations[L <: AbstractLocation](locations: ClusterLocations[L]) = {
+    locations match {
+      case runtime: DOrcRuntime => Set(runtime.locationForRuntimeId(locationNum))
+    }
+  }
 }
 
 class Location0PinnedTupleConstructor extends LocationPinnedTupleConstructor(0) {}
@@ -67,7 +72,11 @@ class Location12PinnedTupleConstructor extends LocationPinnedTupleConstructor(12
   *
   * @author jthywiss
   */
-class LocationPinnedTuple(l: PeerLocation, args: Array[AnyRef]) extends OrcTuple(args) with DOrcLocationPolicy[PeerLocation] {
+class LocationPinnedTuple(l: PeerLocation, args: Array[AnyRef]) extends OrcTuple(args) with DOrcLocationPolicy {
   private val permittedLocationSet = Set(l)
-  override def permittedLocations(locations: ClusterLocations[PeerLocation]) = permittedLocationSet
+  override def permittedLocations[L <: AbstractLocation](locations: ClusterLocations[L]) = {
+    locations match {
+      case runtime: DOrcRuntime => permittedLocationSet
+    }
+  }
 }

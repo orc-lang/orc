@@ -63,7 +63,7 @@ abstract class DOrcExecution(
   override def currentLocations(v: Any) = {
     val cl = v match {
       //TODO: Replace this with location tracking
-      case plp: DOrcLocationPolicy[_] => plp.asInstanceOf[DOrcLocationPolicy[PeerLocation]].permittedLocations(runtime)
+      case plp: DOrcLocationPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ => hereSet
     }
@@ -72,7 +72,7 @@ abstract class DOrcExecution(
   }
   override def permittedLocations(v: Any): Set[PeerLocation] = {
     val pl = v match {
-      case plp: DOrcLocationPolicy[_] => plp.asInstanceOf[DOrcLocationPolicy[PeerLocation]].permittedLocations(runtime)
+      case plp: DOrcLocationPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ => runtime.allLocations
     }
