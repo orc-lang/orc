@@ -13,7 +13,7 @@
 package orc
 
 import orc.ast.porc.MethodCPS
-import orc.run.porce.distrib.LeaderRuntime
+import orc.run.distrib.porce.LeaderRuntime
 
 case class PorcEDistributedBackendType() extends BackendType {
   type CompiledCode = MethodCPS

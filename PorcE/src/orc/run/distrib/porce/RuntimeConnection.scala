@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.porce.distrib
+package orc.run.distrib.porce
 
 import java.io.{ IOException, InputStream, ObjectInputStream, ObjectOutputStream, OutputStream }
 import java.net.{ InetAddress, InetSocketAddress, Socket }

@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.porce.distrib
+package orc.run.distrib.porce
 
 /** A ValueLocator that looks up java.io.File names in a filename-to-location
   * Map.

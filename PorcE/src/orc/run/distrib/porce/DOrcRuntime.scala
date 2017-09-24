@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.porce.distrib
+package orc.run.distrib.porce
 
 import orc.ast.porc.MethodCPS
 import orc.run.porce.runtime.PorcERuntime

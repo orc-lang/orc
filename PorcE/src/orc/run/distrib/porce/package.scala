@@ -1,5 +1,5 @@
 //
-// package.scala -- Scala package object for package orc.run.porce.distrib
+// package.scala -- Scala package object for package orc.run.distrib.porce
 // Project PorcE
 //
 // Created by amp on Aug 11, 2017.
@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.porce
+package orc.run.distrib
 
 /*
  * The following comments describe where DOrc can hook into the PorcE framework for specific features.
@@ -82,6 +82,6 @@ package orc.run.porce
  * calling back into the FutureReader.
  */
 
-package object distrib {
+package object porce  {
   type PeerLocation = Location[OrcPeerCmd]
 }

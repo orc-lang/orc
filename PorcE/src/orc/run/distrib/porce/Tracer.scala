@@ -11,9 +11,9 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.porce.distrib
+package orc.run.distrib.porce
 
-/** Tracer utility for orc.run.porce.distrib package.
+/** Tracer utility for orc.run.distrib.porce package.
   *
   * @see orc.util.Tracer
   * @author jthywiss
