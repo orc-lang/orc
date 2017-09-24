@@ -11,11 +11,11 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.distrib.token
 
 import orc.OrcRuntime
 
-/** Tracer utility for orc.run.distrib package. 
+/** Tracer utility for orc.run.distrib.token package. 
   *
   * @see orc.util.Tracer
   * @author jthywiss

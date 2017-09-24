@@ -1,8 +1,8 @@
 //
-// package.scala -- Scala package object for package orc.run.distrib
+// package.scala -- Scala package object for package orc.run.distrib.token
 // Project OrcScala
 //
-// Created by jthywiss on Sep 24, 2017.
+// Created by jthywiss on Jan 19, 2016.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
@@ -11,12 +11,8 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run
+package orc.run.distrib
 
-/** Public interface for Distributed Orc (d-Orc) implementations.
-  *
-  * @author jthywiss
-  */
-package object distrib {
-  
+package object token {
+  type PeerLocation = Location[OrcPeerCmd]
 }

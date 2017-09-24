@@ -11,9 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
-
-import scala.collection.JavaConversions.collectionAsScalaIterable
+package orc.run.distrib.token
 
 import orc.run.StandardOrcRuntime
 import orc.run.extensions.SupportForDOrc
@@ -48,6 +46,6 @@ abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceN
     * We use the least significant 8 bits of the runtime number and the
     * least significant 24 bits of Java's thread ID.
     */
-  override def runtimeDebugThreadId() = runtimeId<<24 | Thread.currentThread().getId.asInstanceOf[Int]
+  override def runtimeDebugThreadId = runtimeId<<24 | Thread.currentThread().getId.asInstanceOf[Int]
 
 }

@@ -21,7 +21,7 @@ import orc.compile.parse.OrcInputContext
 import orc.error.compiletime.CompileLogger
 import orc.error.loadtime.{ LoadingException, OilParsingException }
 import orc.progress.ProgressMonitor
-import orc.run.distrib.LeaderRuntime
+import orc.run.distrib.token.LeaderRuntime
 
 /** A backend implementation using the dOrc interpreter.
   *

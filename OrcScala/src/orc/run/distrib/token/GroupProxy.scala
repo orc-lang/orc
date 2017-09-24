@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.distrib.token
 
 import orc.{ CaughtEvent, OrcEvent, Schedulable }
 import orc.run.core.{ Execution, Group, GroupMember, Token }

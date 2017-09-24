@@ -179,28 +179,3 @@ trait ValueMarshaler {
   }
 
 }
-
-//We use these two traits in the original orc.run.distrib package:
-//
-///** Orc values implementing this trait will be notified of marshaling for
-//  * serialization to another location.
-//  *
-//  * @author jthywiss
-//  */
-//trait DOrcMarshalingNotifications {
-//  def marshaled(): Unit = {}
-//  def unmarshaled(): Unit = {}
-//}
-//
-///** Orc values implementing this trait will be asked for a marshalable
-//  * replacement for themselves when they are marshaled for serialization
-//  * to another location.
-//  *
-//  * @author jthywiss
-//  */
-//trait DOrcMarshalingReplacement {
-//  def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean
-//  def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef
-//  def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean
-//  def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef
-//}

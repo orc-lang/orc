@@ -1,5 +1,5 @@
 //
-// ValueMarshaler.scala -- Scala traits ValueMarshaler, DOrcMarshalingNotifications, and DOrcMarshalingReplacement
+// ValueMarshaler.scala -- Scala trait ValueMarshaler
 // Project OrcScala
 //
 // Created by jthywiss on Mar 3, 2017.
@@ -11,11 +11,12 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.distrib.token
 
 import scala.collection.mutable.WeakHashMap
 
 import orc.run.core.Closure
+import orc.run.distrib.{ DOrcMarshalingNotifications, DOrcMarshalingReplacement }
 
 /** A mix-in to marshal and unmarshal Orc program values.
   *
@@ -160,27 +161,4 @@ trait ValueMarshaler { self: DOrcExecution =>
     replacedValue
   }
 
-}
-
-/** Orc values implementing this trait will be notified of marshaling for
-  * serialization to another location.
-  *
-  * @author jthywiss
-  */
-trait DOrcMarshalingNotifications {
-  def marshaled() {}
-  def unmarshaled() {}
-}
-
-/** Orc values implementing this trait will be asked for a marshalable
-  * replacement for themselves when they are marshaled for serialization
-  * to another location.
-  *
-  * @author jthywiss
-  */
-trait DOrcMarshalingReplacement {
-  def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean
-  def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef
-  def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean
-  def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef
 }

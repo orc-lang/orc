@@ -19,7 +19,7 @@ import orc.error.OrcException
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, DoesNotHaveMembersException, JavaStackLimitReachedError, NoSuchMemberException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
-import orc.run.distrib.{ DOrcExecution, NoLocationAvailable, PeerLocation }
+import orc.run.distrib.token.{ DOrcExecution, NoLocationAvailable, PeerLocation }
 import orc.values.{ Field, OrcObject, Signal }
 import orc.values.sites.TotalSite
 
@@ -468,10 +468,10 @@ class Token protected (
 
     group.execution match {
       case dOrcExecution: DOrcExecution => {
-        //orc.run.distrib.Logger.entering(getClass.getName, "siteCall", Seq(s.getClass.getName, s, actuals))
+        //orc.run.distrib.token.Logger.entering(getClass.getName, "siteCall", Seq(s.getClass.getName, s, actuals))
         val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)) { _ & _ }
         if (!(intersectLocs contains dOrcExecution.runtime.here)) {
-          orc.run.distrib.Logger.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
+          orc.run.distrib.token.Logger.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
           val candidateDestinations = {
             if (intersectLocs.nonEmpty) {
               intersectLocs
@@ -484,7 +484,7 @@ class Token protected (
               }
             }
           }
-          orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
+          orc.run.distrib.token.Logger.finest(s"candidateDestinations=$candidateDestinations")
           val destination = pickLocation(candidateDestinations)
           dOrcExecution.sendToken(this, destination)
           return

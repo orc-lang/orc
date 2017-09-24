@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.distrib.token
 
 /** Given an Orc value, find the locations for that value.
   *

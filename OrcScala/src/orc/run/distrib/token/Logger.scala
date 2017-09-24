@@ -11,10 +11,10 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.distrib.token
 
 /** Logger for the orc.lib.dorc subsystem.
   *
   * @author jthywiss
   */
-object Logger extends orc.util.Logger("orc.run.distrib") {}
+object Logger extends orc.util.Logger("orc.run.distrib.token") {}
