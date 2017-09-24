@@ -14,6 +14,7 @@
 package orc.run.distrib.token
 
 import orc.run.StandardOrcRuntime
+import orc.run.distrib.ClusterLocations
 import orc.run.extensions.SupportForDOrc
 
 /** Distributed Orc (dOrc) Runtime Engine.
@@ -24,7 +25,10 @@ import orc.run.extensions.SupportForDOrc
   *
   * @author jthywiss
   */
-abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String) extends StandardOrcRuntime(engineInstanceName) with SupportForDOrc {
+abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String)
+    extends StandardOrcRuntime(engineInstanceName)
+    with SupportForDOrc
+    with ClusterLocations[PeerLocation] {
 
   /* For now, runtime IDs and Execution follower numbers are the same.  When
    * we host more than one execution in an engine, they will be different. */
@@ -33,9 +37,10 @@ abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceN
 
   def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation
 
-  def allLocations: Set[PeerLocation]
+  override def allLocations: Set[PeerLocation]
 
-  val here: PeerLocation
+  override def here: PeerLocation
+  override def hereSet: Set[PeerLocation]
 
   /** A thread ID 32-bit integer that can be combined with a thread local
     * counter to produce identifiers.

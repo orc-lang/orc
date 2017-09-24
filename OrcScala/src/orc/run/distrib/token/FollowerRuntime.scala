@@ -318,7 +318,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     }
   }
 
-  val here = Here
+  override val here = Here
+  override val hereSet = Set(here)
 
   object Here extends PeerLocation {
     override def toString = s"${getClass.getName}(runtimeId=$runtimeId)"

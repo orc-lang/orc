@@ -231,7 +231,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
       case CaughtEvent(e) => {
         exceptionWhileMarshaling(e) match {
           case None => event
-          case Some(nse) => { 
+          case Some(nse) => {
             val replacementThrowable = new Throwable("Replacement for corrupt (serialization failed) Throwable: " + e.getClass.getName + ": " + e.getMessage)
             replacementThrowable.setStackTrace(e.getStackTrace)
             replacementThrowable.addSuppressed(nse)
@@ -355,7 +355,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     }
   }
 
-  val here = Here
+  override val here = Here
+  override val hereSet = Set(here)
 
   object Here extends PeerLocation {
     override def toString: String = s"${getClass.getName}(runtimeId=$runtimeId)"

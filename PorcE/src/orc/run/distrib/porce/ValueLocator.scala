@@ -1,5 +1,5 @@
 //
-// ValueLocator.scala -- Scala traits ValueLocator, Location, LocationPolicy, and MigrationDecision
+// ValueLocator.scala -- Scala traits ValueLocator and Location
 // Project PorcE
 //
 // Created by jthywiss on Dec 28, 2015.
@@ -12,6 +12,8 @@
 //
 
 package orc.run.distrib.porce
+
+import orc.run.distrib.AbstractLocation
 
 /** Given an Orc value, find the locations for that value.
   *
@@ -27,23 +29,8 @@ trait ValueLocator {
   *
   * @author jthywiss
   */
-trait Location[-M <: OrcCmd] {
+trait Location[-M <: OrcCmd] extends AbstractLocation {
   def send(message: M): Unit
   def sendInContext(execution: DOrcExecution)(message: M): Unit
   def runtimeId: DOrcRuntime#RuntimeId
-}
-
-/** Provides the set of Locations where this value may feasibly reside.
-  *
-  * @author jthywiss
-  */
-trait LocationPolicy {
-  def permittedLocations(runtime: DOrcRuntime): Set[PeerLocation]
-}
-
-abstract sealed trait MigrationDecision
-object MigrationDecision {
-  case object Copy extends MigrationDecision
-  case object Move extends MigrationDecision
-  case object Remote extends MigrationDecision
 }

@@ -15,6 +15,7 @@ package orc.run.distrib.porce
 
 import orc.ast.porc.MethodCPS
 import orc.run.porce.runtime.PorcERuntime
+import orc.run.distrib.ClusterLocations
 
 /** Distributed Orc (dOrc) Runtime Engine.
   *
@@ -24,7 +25,9 @@ import orc.run.porce.runtime.PorcERuntime
   *
   * @author jthywiss
   */
-abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String) extends PorcERuntime(engineInstanceName, null) {
+abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String)
+    extends PorcERuntime(engineInstanceName, null)
+    with ClusterLocations[PeerLocation] {
 
   type ProgramAST = MethodCPS
 
@@ -35,9 +38,10 @@ abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceN
 
   def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation
 
-  def allLocations: Set[PeerLocation]
+  override def allLocations: Set[PeerLocation]
 
-  val here: PeerLocation
+  override def here: PeerLocation
+  override def hereSet: Set[PeerLocation]
 
   /** A thread ID 32-bit integer that can be combined with a thread local
     * counter to produce identifiers.

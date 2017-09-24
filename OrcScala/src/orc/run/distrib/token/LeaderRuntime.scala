@@ -192,7 +192,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     super.stop()
   }
 
-  val here = Here
+  override val here = Here
+  override val hereSet = Set(here)
 
   object Here extends FollowerLocation(0, null) {
     override def send(message: OrcLeaderToFollowerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
