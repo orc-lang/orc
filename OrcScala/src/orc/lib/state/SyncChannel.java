@@ -18,7 +18,7 @@ import orc.error.runtime.TokenException;
 import orc.lib.state.types.SyncChannelType;
 import orc.run.distrib.AbstractLocation;
 import orc.run.distrib.ClusterLocations;
-import orc.run.distrib.DOrcLocationPolicy;
+import orc.run.distrib.DOrcPlacementPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -55,7 +55,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
         }
     }
 
-    protected class SyncChannelInstance extends DotSite implements DOrcLocationPolicy {
+    protected class SyncChannelInstance extends DotSite implements DOrcPlacementPolicy {
 
         // Invariant: senderQueue is empty or receiverQueue is empty
         protected final LinkedList<SenderItem> senderQueue;

@@ -20,7 +20,7 @@ import orc.error.runtime.TokenException;
 import orc.lib.state.types.ChannelType;
 import orc.run.distrib.AbstractLocation;
 import orc.run.distrib.ClusterLocations;
-import orc.run.distrib.DOrcLocationPolicy;
+import orc.run.distrib.DOrcPlacementPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -56,7 +56,7 @@ public class Channel extends EvalSite implements TypedSite {
     // return new ArrowType(ChannelOfX, 1);
     // }
 
-    protected class ChannelInstance extends DotSite implements DOrcLocationPolicy {
+    protected class ChannelInstance extends DotSite implements DOrcPlacementPolicy {
 
         protected final LinkedList<Object> contents;
         protected final LinkedList<CallContext> readers;

@@ -1,5 +1,5 @@
 //
-// DOrcLocationPolicy.java -- Java interface DOrcLocationPolicy
+// DOrcPlacementPolicy.java -- Java interface DOrcPlacementPolicy
 // Project OrcScala
 //
 // Created by jthywiss on Sep 24, 2017.
@@ -20,6 +20,6 @@ import scala.collection.immutable.Set;
  *
  * @author jthywiss
  */
-public interface DOrcLocationPolicy {
+public interface DOrcPlacementPolicy {
     public <L extends AbstractLocation> Set<L> permittedLocations(ClusterLocations<L> locations);
 }

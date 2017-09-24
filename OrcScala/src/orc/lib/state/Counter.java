@@ -20,7 +20,7 @@ import orc.error.runtime.TokenException;
 import orc.lib.state.types.CounterType;
 import orc.run.distrib.AbstractLocation;
 import orc.run.distrib.ClusterLocations;
-import orc.run.distrib.DOrcLocationPolicy;
+import orc.run.distrib.DOrcPlacementPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -53,7 +53,7 @@ public class Counter extends EvalSite implements TypedSite {
         return CounterType.getBuilder();
     }
 
-    protected class CounterInstance extends DotSite implements DOrcLocationPolicy {
+    protected class CounterInstance extends DotSite implements DOrcPlacementPolicy {
         // TODO: Reimplement this without the lock. It will probably scale much better with AtomicInteger
         protected int count;
         protected final LinkedList<CallContext> waiters = new LinkedList<CallContext>();

@@ -20,7 +20,7 @@ import orc.error.runtime.TokenException;
 import orc.lib.state.types.SemaphoreType;
 import orc.run.distrib.AbstractLocation;
 import orc.run.distrib.ClusterLocations;
-import orc.run.distrib.DOrcLocationPolicy;
+import orc.run.distrib.DOrcPlacementPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -56,7 +56,7 @@ public class Semaphore extends EvalSite implements TypedSite {
         return SemaphoreType.getBuilder();
     }
 
-    protected class SemaphoreInstance extends DotSite implements DOrcLocationPolicy {
+    protected class SemaphoreInstance extends DotSite implements DOrcPlacementPolicy {
 
         protected final Queue<CallContext> waiters = new LinkedList<CallContext>();
         protected final Queue<CallContext> snoopers = new LinkedList<CallContext>();

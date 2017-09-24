@@ -14,12 +14,12 @@
 package orc.lib.state
 
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.run.distrib.PinnedLocationPolicy
+import orc.run.distrib.PinnedPlacementPolicy
 import orc.types.{ JavaObjectType, SignalType, SimpleFunctionType }
 import orc.values.Signal
 import orc.values.sites.{ EffectFreeSite, Effects, FunctionalSite, NonBlockingSite, PartialSite1, TalkativeSite, TotalSite0, TotalSite1, TypedSite }
 
-final class Flag extends PinnedLocationPolicy {
+final class Flag extends PinnedPlacementPolicy {
   @volatile
   var _value = false
 

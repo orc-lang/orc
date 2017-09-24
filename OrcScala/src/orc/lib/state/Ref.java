@@ -20,7 +20,7 @@ import orc.error.runtime.TokenException;
 import orc.lib.state.types.RefType;
 import orc.run.distrib.AbstractLocation;
 import orc.run.distrib.ClusterLocations;
-import orc.run.distrib.DOrcLocationPolicy;
+import orc.run.distrib.DOrcPlacementPolicy;
 import orc.types.Type;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
@@ -58,7 +58,7 @@ public class Ref extends EvalSite implements TypedSite {
         return RefType.getBuilder();
     }
 
-    public static class RefInstance extends DotSite implements DOrcLocationPolicy {
+    public static class RefInstance extends DotSite implements DOrcPlacementPolicy {
 
         protected Queue<CallContext> readQueue;
         Object contents;

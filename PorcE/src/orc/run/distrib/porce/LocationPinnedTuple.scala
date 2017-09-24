@@ -18,7 +18,7 @@ import orc.error.OrcException
 import orc.run.porce.runtime.CPSCallContext
 import orc.values.OrcTuple
 import orc.values.sites.Site
-import orc.run.distrib.DOrcLocationPolicy
+import orc.run.distrib.DOrcPlacementPolicy
 import orc.run.distrib.ClusterLocations
 import orc.run.distrib.AbstractLocation
 
@@ -26,7 +26,7 @@ import orc.run.distrib.AbstractLocation
   *
   * @author jthywiss
   */
-abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with DOrcLocationPolicy with Serializable {
+abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with DOrcPlacementPolicy with Serializable {
   override def call(args: Array[AnyRef], callContext: CallContext): Unit = {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
@@ -72,7 +72,7 @@ class Location12PinnedTupleConstructor extends LocationPinnedTupleConstructor(12
   *
   * @author jthywiss
   */
-class LocationPinnedTuple(l: PeerLocation, args: Array[AnyRef]) extends OrcTuple(args) with DOrcLocationPolicy {
+class LocationPinnedTuple(l: PeerLocation, args: Array[AnyRef]) extends OrcTuple(args) with DOrcPlacementPolicy {
   private val permittedLocationSet = Set(l)
   override def permittedLocations[L <: AbstractLocation](locations: ClusterLocations[L]) = {
     locations match {

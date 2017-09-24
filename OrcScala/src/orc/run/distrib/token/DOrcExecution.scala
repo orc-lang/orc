@@ -16,7 +16,7 @@ package orc.run.distrib.token
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.nameless.Expression
 import orc.run.core.{ Execution, Token }
-import orc.run.distrib.DOrcLocationPolicy
+import orc.run.distrib.DOrcPlacementPolicy
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -63,7 +63,7 @@ abstract class DOrcExecution(
   override def currentLocations(v: Any) = {
     val cl = v match {
       //TODO: Replace this with location tracking
-      case plp: DOrcLocationPolicy => plp.permittedLocations(runtime)
+      case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ => hereSet
     }
@@ -72,7 +72,7 @@ abstract class DOrcExecution(
   }
   override def permittedLocations(v: Any): Set[PeerLocation] = {
     val pl = v match {
-      case plp: DOrcLocationPolicy => plp.permittedLocations(runtime)
+      case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ => runtime.allLocations
     }

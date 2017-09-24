@@ -1,5 +1,5 @@
 //
-// placement.scala -- Scala traits AbstractLocation, ClusterLocations, MigrationDecision, and PinnedLocationPolicy
+// placement.scala -- Scala traits AbstractLocation, ClusterLocations, MigrationDecision, and PinnedPlacementPolicy
 // Project OrcScala
 //
 // Created by jthywiss on Sep 24, 2017.
@@ -26,7 +26,7 @@ trait AbstractLocation {}
   */
 trait ClusterLocations[L <: AbstractLocation] {
   /* This interface will need to be widened to enable more uses of
-   * DOrcLocationPolicy */
+   * DOrcPlacementPolicy */
   def allLocations: Set[L]
   def here: L
   def hereSet: Set[L]
@@ -40,11 +40,11 @@ object MigrationDecision {
   case object Remote extends MigrationDecision
 }
 
-/** Convenience DOrcLocationPolicy that specifies that instances of this
+/** Convenience DOrcPlacementPolicy that specifies that instances of this
   * class cannot be migrated.
   *
   * @author jthywiss
   */
-trait PinnedLocationPolicy {
+trait PinnedPlacementPolicy {
   def permittedLocations[L <: AbstractLocation](locations: ClusterLocations[L]): Set[L] = locations.hereSet
 }
