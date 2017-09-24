@@ -12,7 +12,7 @@ object BlackScholesData {
     Stream.continually(rand.nextDouble() * (h - l) + l)
   }
 
-  val dataSize = 300000
+  val dataSize = 100000
 
   val dataSeq = (seededStream(1, 0.01, 100), seededStream(2, 0.01, 100), seededStream(3, 0.1, 5)).zipped.take(dataSize) map {
     case (s, x, t) =>
