@@ -1,6 +1,6 @@
 //
 // package.scala -- Scala package object for package orc.test.util
-// Project project_name
+// Project OrcTests
 //
 // Created by jthywiss on Sep 8, 2017.
 //
@@ -18,6 +18,4 @@ package orc.test
   * Namely, something that used to perform testing, but is not part of
   * the test item, any test data, or a test procedure (q.v).
   */
-package object util {
-  
-}
+package object util {}

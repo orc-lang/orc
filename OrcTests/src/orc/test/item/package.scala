@@ -1,6 +1,6 @@
 //
 // package.scala -- Scala package object for package orc.test.item
-// Project project_name
+// Project OrcTests
 //
 // Created by jthywiss on Sep 8, 2017.
 //
@@ -14,11 +14,9 @@
 package orc.test
 
 /** Test items for Orc testing.
-  *  
+  *
   * A test item is a work product that is an object of testing.
   * (In other words, an item is what's being tested, not just part of
   * the test environment.)
   */
-package object item {
-  
-}
+package object item {}

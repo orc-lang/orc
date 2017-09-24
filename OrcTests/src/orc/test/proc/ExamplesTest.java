@@ -13,7 +13,6 @@ package orc.test.proc;
 
 import java.io.File;
 
-import orc.BackendType$;
 import orc.script.OrcBindings;
 import orc.test.util.ExpectedOutput;
 import orc.test.util.TestUtils;

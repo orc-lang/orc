@@ -1,6 +1,6 @@
 //
 // package.scala -- Scala package object for package orc.test.proc
-// Project project_name
+// Project OrcTests
 //
 // Created by jthywiss on Sep 8, 2017.
 //
@@ -14,14 +14,12 @@
 package orc.test
 
 /** Test procedures and test cases for Orc testing.
-  *  
+  *
   * A test procedure is a sequence of test cases in execution order,
   * and any associated actions that may be required to set up the initial
   * preconditions and any wrap up activities post execution.
-  * 
+  *
   * A test case is a set of test case preconditions, inputs, and expected
   * results, developed to drive the execution of a test item.
   */
-package object proc {
-  
-}
+package object proc {}
