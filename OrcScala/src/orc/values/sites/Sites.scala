@@ -288,20 +288,20 @@ class StructurePairSite(
     "unapply" -> unapplySite.orcType())
 }
 
-trait NonBlockingSite extends Site {
+trait NonBlockingSite extends SiteMetadata {
   override def timeToPublish: Delay = Delay.NonBlocking
   override def timeToHalt: Delay = Delay.NonBlocking
 }
 
-trait EffectFreeSite extends Site {
+trait EffectFreeSite extends SiteMetadata {
   override def effects: Effects = Effects.None
 }
-trait EffectFreeAfterPubSite extends Site {
+trait EffectFreeAfterPubSite extends SiteMetadata {
   override def effects: Effects = Effects.BeforePub
 }
 
-trait TalkativeSite extends Site {
+trait TalkativeSite extends SiteMetadata {
   override def publications: Range = super.publications intersect Range(1, None)
 }
 
-trait FunctionalSite extends Site with NonBlockingSite with EffectFreeSite
+trait FunctionalSite extends SiteMetadata with NonBlockingSite with EffectFreeSite
