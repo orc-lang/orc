@@ -151,7 +151,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         // TODO: Handle internal direct callables.
         val isDirect = {
           potentialTargets.forall({
-            case NodeValue(ConstantNode(Constant(s: orc.values.sites.Site), _)) if s.isDirectCallable =>
+            case NodeValue(ConstantNode(Constant(s: orc.values.sites.SiteMetadata), _)) if s.isDirectCallable =>
               true
             case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), _, _))) =>
               true
