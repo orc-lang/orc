@@ -20,6 +20,8 @@ import java.time.{ Duration, Instant }
 import java.util.jar.Manifest
 
 import scala.collection.JavaConverters.{ enumerationAsScalaIteratorConverter, mapAsScalaMapConverter }
+import java.io.File
+import java.io.FileWriter
 
 /** Captures a snapshot of the execution environment state at time of
   * construction.
@@ -190,9 +192,28 @@ class TestEnvironmentDescription() extends FieldsToMap {
 
 
 object TestEnvironmentDescription {
+
+  private var shutdownHookAdded = false
+  
+  def dumpAtShutdown(): Unit = synchronized {
+    if (!shutdownHookAdded) {
+      Runtime.getRuntime().addShutdownHook(TestEnvironmentDescriptionDumpThread)
+      shutdownHookAdded = true
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     JsonGenerator(System.out)(new TestEnvironmentDescription().toMap)
   }
+
+  private object TestEnvironmentDescriptionDumpThread extends Thread("TestEnvironmentDescriptionDumpThread") {
+    override def run = synchronized {
+      val envDescFile = new File(System.getProperty("orc.executionlog.dir"), s"envDescrip-${ManagementFactory.getRuntimeMXBean().getName()}.json")
+      assert(envDescFile.createNewFile(), s"Event count output file: File already exists: envDescFile")
+      JsonGenerator(new FileWriter(envDescFile))(new TestEnvironmentDescription().toMap)
+    }
+  }
+
 }
 
 
