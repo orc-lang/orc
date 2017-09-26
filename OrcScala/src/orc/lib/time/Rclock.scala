@@ -18,7 +18,7 @@ import orc.CallContext
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.run.extensions.RwaitEvent
 import orc.types.{ IntegerType, RecordType, SignalType, SimpleFunctionType }
-import orc.values.{ Field, OrcRecord }
+import orc.values.{ Field, OrcRecord, Signal }
 import orc.values.sites.{ EffectFreeSite, FunctionalSite, Site1, SiteMetadata, TalkativeSite, TotalSite0, TypedSite }
 
 /**
@@ -65,7 +65,7 @@ object Rwait extends Site1 with EffectFreeSite {
           callContext.setQuiescent()
           callContext.notifyOrc(RwaitEvent(delay, callContext))
         } else if (delay == 0) {
-          callContext.publish()
+          callContext.publish(Signal)
         } else {
           callContext.halt
         }

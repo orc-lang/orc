@@ -16,7 +16,8 @@ import java.net.URL
 
 import orc.{ CallContext, OrcEvent }
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.types.{ JavaObjectType, OverloadedType, SignalType, SimpleFunctionType, StringType, Top }
+import orc.types.{ JavaObjectType, OverloadedType, SignalType, SimpleFunctionType, StringType }
+import orc.values.Signal
 import orc.values.sites.{ Site1, TypedSite }
 
 /** Open a new browser window or tab for the specified URL.
@@ -31,7 +32,7 @@ object Browse extends Site1 with TypedSite {
     v match {
       case url: URL => {
         callContext.notifyOrc(BrowseEvent(url))
-        callContext.publish()
+        callContext.publish(Signal)
       }
       case s: String => call(new URL(s), callContext)
       case a => throw new ArgumentTypeMismatchException(0, "URL", if (a != null) a.getClass().toString() else "null")

@@ -15,6 +15,7 @@ package orc.lib.util
 import orc.CallContext
 import orc.types.SignalType
 import orc.values.sites.{ Site0, TypedSite }
+import orc.values.Signal
 
 /** Cause the execution to dump the token state.
   *
@@ -23,7 +24,7 @@ import orc.values.sites.{ Site0, TypedSite }
 object DumpState extends Site0 with TypedSite {
   def call(callContext: CallContext) {
     callContext.notifyOrc(orc.run.core.DumpState)
-    callContext.publish()
+    callContext.publish(Signal)
   }
 
   def orcType() = SignalType

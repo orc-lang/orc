@@ -17,6 +17,7 @@ import java.util.{ Timer, TimerTask }
 import orc.{ CallContext, OrcEvent }
 import orc.run.Orc
 import orc.run.core.EventHandler
+import orc.values.Signal
 
 /** @author dkitchin
   */
@@ -39,7 +40,7 @@ trait SupportForRwait extends Orc {
         val callback =
           new TimerTask() {
             @Override
-            override def run() { callContext.publish() }
+            override def run() { callContext.publish(Signal) }
           }
         timer.schedule(callback, delay.toLong)
       }

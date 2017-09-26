@@ -16,6 +16,7 @@ import orc.{ CallContext, OrcEvent }
 import orc.types.{ SignalType, SimpleFunctionType, Top }
 import orc.values.Format.formatValue
 import orc.values.sites.{ Range, Site1, TypedSite }
+import orc.values.Signal
 
 /** Display a value on the console or equivalent output device.
   *
@@ -24,7 +25,6 @@ import orc.values.sites.{ Range, Site1, TypedSite }
 case class PrintEvent(val text: String) extends OrcEvent
 
 abstract class PrintSite extends Site1 with TypedSite {
-
   def formatToPrint(v: AnyRef): String =
     v match {
       case s: String => s
@@ -37,19 +37,15 @@ abstract class PrintSite extends Site1 with TypedSite {
 }
 
 object Print extends PrintSite {
-
   def call(a: AnyRef, callContext: CallContext) = {
     callContext.notifyOrc(PrintEvent(formatToPrint(a)))
-    callContext.publish()
+    callContext.publish(Signal)
   }
-
 }
 
 object Println extends PrintSite {
-
   def call(a: AnyRef, callContext: CallContext) = {
     callContext.notifyOrc(PrintEvent(formatToPrint(a) + "\n"))
-    callContext.publish()
+    callContext.publish(Signal)
   }
-
 }
