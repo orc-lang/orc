@@ -14,9 +14,7 @@ package orc.values.sites
 
 import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTargetException }
 
-import scala.language.existentials
-
-import orc.{ Accessor, CallContext, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, UncallableValueInvoker }
+import orc.{ Accessor, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, UncallableValueInvoker }
 import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, UncallableValueException }
 import orc.run.Logger
 import orc.OrcRuntime
@@ -31,7 +29,7 @@ import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocat
   * and getAccessor.
   *
   * This does not apply to objects which "wrap" members and similar since those are not
-  * values with types in Java and hence cannot appear as argument types in other calls.
+  * values with types in Java and hence cannot appear as argument in other calls.
   */
 
 /** Transforms an Orc site call to an appropriate Java invocation
@@ -203,13 +201,13 @@ object JavaCall {
 /** 
   * @author jthywiss, amp
   */
-abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_], val argumentClss: Array[Class[_]]) extends Invoker {
+abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_], val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
   import JavaCall._
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
 
   @throws[UncallableValueException]
-  def invoke(callContext: CallContext, theObject: AnyRef, arguments: Array[AnyRef]): Unit = {
-    orc.run.core.Tracer.traceJavaCall(callContext)
+  def invokeDirect(theObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+    //orc.run.core.Tracer.traceJavaCall(callContext)
     try {
       if (theObject == null && !invocable.isStatic) {
         throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
@@ -234,13 +232,13 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
         convertedArgs
       }
       Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
-      callContext.publish(java2orc(invocable.invoke(theObject, finalArgs.toArray)))
+      java2orc(invocable.invoke(theObject, finalArgs.toArray))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
       case e: InterruptedException => throw e
       case e: Exception => throw new JavaException(e)
     } finally {
-      orc.run.core.Tracer.traceJavaReturn(callContext)
+      //orc.run.core.Tracer.traceJavaReturn(callContext)
     }
   }
 }
@@ -270,8 +268,9 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
             case _ => false
           }
         }
-        override def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-          super.invoke(callContext, target.asInstanceOf[JavaMemberProxy].theObject, arguments)
+        
+        override def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+          super.invokeDirect(target.asInstanceOf[JavaMemberProxy].theObject, arguments)
         }
   
         override def toString() = s"<Member Invoker>($javaClass.$memberName)"
@@ -315,7 +314,7 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
           lazy val valueCls = value.getClass()
           Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
           import JavaCall._
-          // TODO:PERFORMANCE: The hasMember checks on value will actually be quite expensive. However for these semantics they are required. Maybe we could change the semantics. Or maybe I've missed a way to implement it so that all reflection is JIT time constant.
+          // TODO:PERFORMANCE: The has*Member checks on value will actually be quite expensive. However for these semantics they are required. Maybe we could change the semantics. Or maybe I've missed a way to implement it so that all reflection is JIT time constant.
           submemberName match {
             case "read" if value == null || !valueCls.hasInstanceMember("read") =>
               new JavaFieldDerefSite(target.asInstanceOf[JavaMemberProxy].theObject, jf)
