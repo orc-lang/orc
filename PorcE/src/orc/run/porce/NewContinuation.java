@@ -37,7 +37,7 @@ public class NewContinuation extends Expression {
 
 	protected NewContinuation(final Expression[] capturedVariables, final RootNode rootNode) {
 		this.capturedVariables = capturedVariables;
-		this.callTarget = Truffle.getRuntime().createCallTarget(rootNode);
+		this.callTarget = rootNode.getCallTarget();
 	}
 
 	boolean isCachable() {
@@ -90,16 +90,6 @@ public class NewContinuation extends Expression {
 		if (CompilerDirectives.inInterpreter()) {
 			closureCacheUseCount++;
 			long useCount = closureCacheUseCount;
-
-			/*
-			long changeCount = closureCacheChangeCount;
-			long reuseCount = useCount - changeCount;
-
-			if ((useCount % 100) == 0) {
-				Logger.info(() -> this + ": Allocating closure (" + (((float) reuseCount) / useCount) + " | "
-						+ changeCount + "/" + useCount + ") with " + capturedVariables.length + " captured variables");
-			}
-			*/
 
 			if (useCount > 5000) {
 				closureCacheUseCount = 0;

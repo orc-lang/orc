@@ -152,7 +152,7 @@ public class MethodDeclaration {
         }
 
         public static NewMethod create(final Expression closure, final int index, final PorcERootNode rootNode, final boolean isRoutine) {
-            final RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(rootNode);
+            final RootCallTarget callTarget = rootNode.getCallTarget();
             return MethodDeclarationFactory.NewMethodNodeGen.create(index, callTarget, isRoutine, closure);
         }
     }
