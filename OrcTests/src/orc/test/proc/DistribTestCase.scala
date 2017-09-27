@@ -23,7 +23,6 @@ import orc.test.util.{ OsCommand, OsCommandResult, TestUtils }
 import orc.test.util.TestUtils.OrcTestCase
 
 import org.junit.Assume
-import orc.test.util.TestEnvironmentDescription
 
 /** JUnit test case for a distributed-Orc test.
   *
@@ -118,8 +117,6 @@ object DistribTestCase {
   case class DOrcRuntimePlacement(hostname: String, port: Int, isLocal: Boolean, workingDir: String, javaCmd: String, classPath:String, jvmOptions: Seq[String]) { }
 
   def buildSuite() = {
-
-    TestEnvironmentDescription.dumpAtShutdown()
 
     computeLeaderFollowerSpecs()
 
