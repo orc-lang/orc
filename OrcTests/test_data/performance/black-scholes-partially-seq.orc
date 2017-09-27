@@ -5,6 +5,7 @@
 include "benchmark.inc"
 
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+import site Abs = "orc.lib.math.Abs"
 
 import class BlackScholesResult = "orc.test.item.scalabenchmarks.BlackScholesResult"
 import class BlackScholesData = "orc.test.item.scalabenchmarks.BlackScholesData"
@@ -17,7 +18,9 @@ val a4 = -1.821255978
 val a5 = 1.330274429
 val rsqrt2pi = BlackScholes.rsqrt2pi()
 
-def round(x) = x.doubleValue()
+def abs(x) = Sequentialize() >> Abs(x)
+
+def round(x) = Sequentialize() >> x.doubleValue()
 
 -- The cumulative normal distribution function
 def cnd(x) = Sequentialize() >> (

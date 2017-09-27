@@ -5,6 +5,7 @@
 include "benchmark.inc"
 
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+import site Abs = "orc.lib.math.Abs"
 
 import class BlackScholesResult = "orc.test.item.scalabenchmarks.BlackScholesResult"
 import class BlackScholesData = "orc.test.item.scalabenchmarks.BlackScholesData"
@@ -17,7 +18,10 @@ val a4 = -1.821255978
 val a5 = 1.330274429
 val rsqrt2pi = BlackScholes.rsqrt2pi()
 
-def round(x) = x.doubleValue()
+
+def abs(x) = Sequentialize() >> Abs(x)
+
+def round(x) = Sequentialize() >> x.doubleValue()
 
 -- The cumulative normal distribution function
 def cnd(x) = Sequentialize() >> (
@@ -31,8 +35,8 @@ def cnd(x) = Sequentialize() >> (
     )
 
 def compute(s, x, t, r, v) = Sequentialize() >> (
-    val d1 = round((Log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t)))
-    val d2 = round(d1 - v * sqrt(t))
+    val d1 = round((Log(s / x) + (r + v * v / 2) * t) / (v * (t ** 0.5)))
+    val d2 = round(d1 - v * (t ** 0.5))
     --val _ = Println((d1.getClass(), d1, d2.getClass(), d2))
 
     val call = s * cnd(d1) - x * Exp(-r * t) * cnd(d2)
@@ -49,9 +53,6 @@ def sforBy(low, high, step) = Sequentialize() >> (
   )
 
 def sfor(low, high) = Sequentialize() >> sforBy(low, high, 1)
-
--- FIXME: Something is spawning in the Sequential section I think. It could be any of the small functions used in compute and cnd.
--- I need to write a sequentialized version of the math functions for this.
   
 def run(data) =
 	val res = Array(data.length?)
