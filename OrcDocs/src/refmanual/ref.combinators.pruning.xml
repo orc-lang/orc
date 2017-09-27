@@ -27,7 +27,9 @@
 				A killed expression cannot call any <link linkend="ref.sites">sites</link> or publish any values. During the execution of <replaceable>F</replaceable>, 
 				any part of the execution that depends on <replaceable>x</replaceable> 
 				will be <link linkend="ref.concepts.states.block">blocked</link> until <replaceable>x</replaceable> is bound (to
-				the first value published by <replaceable>G</replaceable>). If <replaceable>G</replaceable> never publishes a value, those parts remain blocked forever.
+				the first value published by <replaceable>G</replaceable>). If <replaceable>G</replaceable> never publishes a value without halting, those parts remain blocked forever.
+				If <replaceable>G</replaceable> <link linkend="ref.concepts.states.halt">halts</link> <link linkend="ref.concepts.silent">silently</link>, <replaceable>x</replaceable> will halt silently, too, behaving equivalently to
+				<link linkend="ref.expressions.stop"><code>stop</code></link>.
 			  </para>
 			</listitem>
 			</varlistentry>
