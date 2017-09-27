@@ -139,6 +139,11 @@ object PorcERuntime {
   @inline
   @CompilationFinal
   val allowAllSpawnInlining = false
+  
+  // TODO: Make configurable.
+  @inline
+  @CompilationFinal
+  val allowSpawnInlining = true
 
   
   // Force loading of a few classes in Truffle. Without this the error handling code crashes and destroys the stack trace.

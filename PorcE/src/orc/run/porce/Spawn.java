@@ -43,7 +43,7 @@ public abstract class Spawn extends Expression {
     	
 		boolean canDirectCall = canDirectCallProfile.profile(PorcERuntime.incrementAndCheckStackDepth());		
 		
-		if ((!mustSpawn || PorcERuntime.allowAllSpawnInlining()) && canDirectCall) {
+		if (PorcERuntime.allowSpawnInlining() && (!mustSpawn || PorcERuntime.allowAllSpawnInlining()) && canDirectCall) {
 			try {
 				initializeCall();
 				call.executeDispatch(frame, computation, new Object[] { });

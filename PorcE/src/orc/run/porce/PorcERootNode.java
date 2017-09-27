@@ -117,6 +117,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     @Override
     public String toString() {
-        return "PorcE." + getName();
+        return String.format("PorcE.%s@%08x(%08x)", getName(), hashCode(), getCallTarget() == null ? 0 : getCallTarget().hashCode());
     }
 }

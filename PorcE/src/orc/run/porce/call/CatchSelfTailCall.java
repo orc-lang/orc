@@ -53,7 +53,8 @@ public class CatchSelfTailCall extends Expression {
 		
 		@Override
 		public String toString() {
-			return "CatchSelfTailCallRepeatingNode@" + getRootNode();
+			// TODO: It would be nice to use the root node here. But we cannot since it will sometimes cause an infinite loop because if this is at the root of an OSR loop then this will be called for the root name.
+			return "CatchSelfTailCallRepeatingNode@" + hashCode();
 		}
 
 	}
