@@ -251,6 +251,12 @@ Example:
 import site (:) = "orc.lib.builtin.structured.ConsConstructor"
 
 {--
+@site Abs(Number) :: Number
+Publishes the absolute value of the argument.
+--}
+import site Abs = "orc.lib.math.Abs"
+
+{--
 @def abs(Number) :: Number
 Publishes the absolute value of the argument.
 
