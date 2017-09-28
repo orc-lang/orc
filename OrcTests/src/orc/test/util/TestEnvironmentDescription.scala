@@ -213,7 +213,9 @@ object TestEnvironmentDescription {
       if (outDir != null && outDir.nonEmpty) new File(outDir).mkdir()
       val envDescFile = new File(outDir, s"envDescrip-${ManagementFactory.getRuntimeMXBean().getName()}.json")
       assert(envDescFile.createNewFile(), s"Event count output file: File already exists: envDescFile")
-      JsonGenerator(new FileWriter(envDescFile))(new TestEnvironmentDescription().toMap)
+      val envDescWriter = new FileWriter(envDescFile)
+      JsonGenerator(envDescWriter)(new TestEnvironmentDescription().toMap)
+      envDescWriter.close()
     }
   }
 
