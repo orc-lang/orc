@@ -21,7 +21,7 @@ import orc.util.Config
   *
   * @author jthywiss
   */
-object DistribTestConfig extends Config("DistribTestConfig.properties") {
+object DistribTestConfig extends Config("DistribTestConfig") {
   unexpanded =>
 
   object expanded extends scala.collection.immutable.AbstractMap[String,String] with scala.collection.immutable.DefaultMap[String, String]() {

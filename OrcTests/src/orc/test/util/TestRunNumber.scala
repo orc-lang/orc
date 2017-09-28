@@ -35,7 +35,7 @@ object TestRunNumber {
     }
     result.stdout
   }
-  object Config extends orc.util.Config("TestRunNumberConfig.properties") { }
+  object Config extends orc.util.Config("TestRunNumberConfig") { }
 
   def main(args: Array[String]): Unit = {
     println(getNext())

@@ -16,6 +16,8 @@ package orc.util
 import java.io.{ File, FileInputStream }
 import java.util.Properties
 
+import scala.collection.JavaConverters.propertiesAsScalaMapConverter
+
 /** A map of settings loaded from configuration files.
   *  
   * Rule of thumb for configuration files vs. command line arguments:
@@ -29,17 +31,22 @@ import java.util.Properties
   * format (see the cross-reference below for the format).
   *
   * The directories listed in the given system property ("orc.config.dirs"
-  * by default) are searched for the given filename.  Settings in files found
-  * earlier in the list of directories take precedence.  If the system
-  * property is not set, then no directory-list-based search is performed.
-  * In any case, defaults are loaded from a resource on the class path,
-  * namely a file of the given name in the package of the concrete subclass
-  * of this class.
+  * by default) are searched for the given file basename with an extension
+  * of ".properties".  Settings in files found earlier in the list of
+  * directories take precedence.  If the system property is not set, then no
+  * directory-list-based search is performed.  In any case, defaults are
+  * loaded from a resource on the class path, namely a file of the name
+  * as above, located in the package of the concrete subclass of this class.
+  *
+  * Lastly, Java system properties of the form "orc.fileBasename.key" will
+  * override any setting for "key" read in "fileBasename.properties" files.
   *
   * @see java.util.Properties#load(java.io.Reader)
   * @author jthywiss
   */
-abstract class Config(val filename: String, val systemProperty: String = "orc.config.dirs") extends scala.collection.immutable.AbstractMap[String,String] with scala.collection.immutable.DefaultMap[String, String]() {
+abstract class Config(val fileBasename: String, val systemProperty: String = "orc.config.dirs") extends scala.collection.immutable.AbstractMap[String,String] with scala.collection.immutable.DefaultMap[String, String]() {
+
+  protected val filename: String = fileBasename + ".properties"
 
   protected val settings: Properties = load()
 
@@ -70,11 +77,20 @@ abstract class Config(val filename: String, val systemProperty: String = "orc.co
       defaults
     }
     val configDirProp = System.getProperty(systemProperty)
-    if (configDirProp != null && configDirProp.nonEmpty) {
+    val propertiesFromFiles = if (configDirProp != null && configDirProp.nonEmpty) {
       val configDirs = configDirProp.split(File.pathSeparatorChar)
       wrapProps(configDirs.reverseIterator,defaults)
     } else {
       defaults
+    }
+    val sysPropPrefix = "orc." + fileBasename + "."
+    val sysPropOverrides = System.getProperties.asScala.filterKeys(_.startsWith(sysPropPrefix))
+    if (sysPropOverrides.nonEmpty) {
+      val wrapper = new Properties(propertiesFromFiles)
+      sysPropOverrides.foreach({case (key, value) => wrapper.put(key.stripPrefix(sysPropPrefix), value)})
+      wrapper
+    } else {
+      propertiesFromFiles
     }
   }
 
