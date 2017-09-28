@@ -23,6 +23,7 @@ import orc.test.util.{ OsCommand, OsCommandResult, TestUtils }
 import orc.test.util.TestUtils.OrcTestCase
 
 import org.junit.Assume
+import orc.test.util.TestRunNumber
 
 /** JUnit test case for a distributed-Orc test.
   *
@@ -120,9 +121,14 @@ object DistribTestCase {
 
     computeLeaderFollowerSpecs()
 
+    val runOutputDir = DistribTestConfig.expanded("runOutputDir")
     if (!leaderSpec.isLocal) {
       copyFiles()
+      checkExitValue(s"mkdir -p $runOutputDir on ${leaderSpec.hostname}", OsCommand.getResultFrom(Seq("ssh", leaderSpec.hostname, s"mkdir -p $runOutputDir")))
+    } else {
+      new File(runOutputDir).mkdirs()
     }
+
     val bindings = new orc.Main.OrcCmdLineOptions()
     bindings.backend = orc.BackendType.fromString("porc-distrib")
     bindings.followerSockets = (followerSpecs map { fs => new InetSocketAddress(fs.hostname, fs.port)}).toList.asJava
@@ -148,6 +154,8 @@ object DistribTestCase {
 
     DistribTestConfig.expanded.addVariable("orcVersion", orc.Main.versionProperties.getProperty("orc.version"))
 
+    DistribTestConfig.expanded.addVariable("testRunNumber", TestRunNumber.singletonNumber)
+
     val javaCmd = DistribTestConfig.expanded("javaCmd")
     val dOrcClassPath = DistribTestConfig.expanded.getIterableFor("dOrcClassPath").get.mkString(File.pathSeparator)
     val jvmOpts = DistribTestConfig.expanded.getIterableFor("jvmOpts").get.toSeq
@@ -166,13 +174,6 @@ object DistribTestCase {
 
   @throws(classOf[Exception])
   protected def copyFiles(): Unit = {
-    def checkExitValue(description: String, result: OsCommandResult): Unit = {
-      if (result.exitValue != 0) {
-        print(result.stdout)
-        Console.err.print(result.stderr)
-        throw new CopyFilesException(s"${description} failed: exitValue=${result.exitValue}, stderr=${result.stderr}")
-      }
-    }
 
     def mkdirAndRsync(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
       val localFile = new File(localFilename)
@@ -194,6 +195,15 @@ object DistribTestCase {
     print(".")
     mkdirAndRsync("test_data/functional_valid/distrib/", leaderSpec.hostname, DistribTestConfig.expanded("dOrcTestDataDir"))
     println("done")
+  }
+
+  @throws(classOf[CopyFilesException])
+  protected def checkExitValue(description: String, result: OsCommandResult): Unit = {
+    if (result.exitValue != 0) {
+      print(result.stdout)
+      Console.err.print(result.stderr)
+      throw new CopyFilesException(s"${description} failed: exitValue=${result.exitValue}, stderr=${result.stderr}")
+    }
   }
 
 }

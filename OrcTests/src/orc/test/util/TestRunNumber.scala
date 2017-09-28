@@ -19,6 +19,7 @@ package orc.test.util
   * @author jthywiss
   */
 object TestRunNumber {
+
   def getNext(): String = {
     val runCounterFilename = Config.get("testRunNumberFile")
     /*FIXME: Need a better way to find the script.  This depends on details of our build procedure. */
@@ -33,12 +34,16 @@ object TestRunNumber {
       Console.err.print(result.stderr)
       throw new TestRunNumberCmdException(s"${getNewRunNumCmd.mkString(" ")} failed: exitValue=${result.exitValue}, stderr=${result.stderr}")
     }
-    result.stdout
+    result.stdout.stripLineEnd
   }
-  object Config extends orc.util.Config("TestRunNumberConfig") { }
+
+  /** Unique and constant test run sequence number for this JVM instance. */
+  lazy val singletonNumber = getNext()
+
+  object Config extends orc.util.Config("TestRunNumberConfig") {}
 
   def main(args: Array[String]): Unit = {
-    println(getNext())
+    println(singletonNumber)
   }
 }
 

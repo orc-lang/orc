@@ -88,8 +88,6 @@ object EventCounter {
       }
 
       val outDir = System.getProperty("orc.executionlog.dir")
-      /* Create, if necessary, output directory, but only leaf directory, not full path. */
-      if (outDir != null && outDir.nonEmpty) new File(outDir).mkdir()
       if (outDir != null) {
         val eventCountCsvFile = new File(outDir, s"eventCount-${ManagementFactory.getRuntimeMXBean().getName()}.csv")
         assert(eventCountCsvFile.createNewFile(), s"Event count output file: File already exists: $eventCountCsvFile")

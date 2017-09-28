@@ -137,8 +137,6 @@ object Tracer {
       }
 
       val outDir = System.getProperty("orc.executionlog.dir")
-      /* Create, if necessary, output directory, but only leaf directory, not full path. */
-      if (outDir != null && outDir.nonEmpty) new File(outDir).mkdir()
       if (outDir != null) {
         val traceCsvFile = new File(outDir, s"trace-${ManagementFactory.getRuntimeMXBean().getName()}.csv")
         assert(traceCsvFile.createNewFile(), s"Trace output file: File already exists: $traceCsvFile")

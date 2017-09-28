@@ -209,8 +209,6 @@ object TestEnvironmentDescription {
   private object TestEnvironmentDescriptionDumpThread extends Thread("TestEnvironmentDescriptionDumpThread") {
     override def run = synchronized {
       val outDir = System.getProperty("orc.executionlog.dir")
-      /* Create, if necessary, output directory, but only leaf directory, not full path. */
-      if (outDir != null && outDir.nonEmpty) new File(outDir).mkdir()
       val envDescFile = new File(outDir, s"envDescrip-${ManagementFactory.getRuntimeMXBean().getName()}.json")
       assert(envDescFile.createNewFile(), s"Event count output file: File already exists: envDescFile")
       val envDescWriter = new FileWriter(envDescFile)

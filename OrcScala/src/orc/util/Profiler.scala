@@ -122,8 +122,6 @@ object Profiler {
       }
 
       val outDir = System.getProperty("orc.executionlog.dir")
-      /* Create, if necessary, output directory, but only leaf directory, not full path. */
-      if (outDir != null && outDir.nonEmpty) new File(outDir).mkdir()
       if (outDir != null) {
         val profileCsvFile = new File(outDir, s"profile-${ManagementFactory.getRuntimeMXBean().getName()}.csv")
         assert(profileCsvFile.createNewFile(), s"Profile output file: File already exists: $profileCsvFile")

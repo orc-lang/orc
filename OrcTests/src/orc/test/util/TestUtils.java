@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import orc.error.compiletime.CompilationException;
 import orc.error.compiletime.FeatureNotSupportedException;
@@ -27,6 +28,24 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 public final class TestUtils {
+
+    /**
+     * If the Java system property orc.executionlog.dir has ${testRunNumber} in
+     * it, replace that with the TestRunNumber. Also, create the directory,
+     * including and needed parent directories.
+     */
+    static {
+        final String execLogDir = System.getProperty("orc.executionlog.dir");
+        if (execLogDir != null && execLogDir.contains("${testRunNumber}")) {
+            final String newExecLogDir = Pattern.compile("${testRunNumber}", Pattern.LITERAL).matcher(execLogDir).replaceAll(TestRunNumber.singletonNumber());
+            System.setProperty("orc.executionlog.dir", newExecLogDir);
+        }
+        final String execLogDir2 = System.getProperty("orc.executionlog.dir");
+        if (execLogDir2 != null && !execLogDir2.isEmpty()) {
+            new File(execLogDir2).mkdirs();
+        }
+    }
+
     private TestUtils() {
         /* Only static members */
     }
@@ -63,7 +82,7 @@ public final class TestUtils {
                 if (!expecteds.contains(actual)) {
                     throw new AssertionError("Unexpected output:\n" + actual);
                 }
-            } catch (FeatureNotSupportedException ce) {
+            } catch (final FeatureNotSupportedException ce) {
                 assumeNoException(ce);
             } catch (final CompilationException ce) {
                 throw new AssertionError(ce.getMessageAndDiagnostics());
@@ -84,7 +103,7 @@ public final class TestUtils {
 
         final TestSuite suite = new TestSuite(suitename);
         for (final File examplePath : examplePaths) {
-            final LinkedList<File> files = new LinkedList<File>();
+            final LinkedList<File> files = new LinkedList<>();
             TestUtils.findOrcFiles(examplePath, files);
             TestSuite nestedSuite = null;
             for (final File file : files) {
