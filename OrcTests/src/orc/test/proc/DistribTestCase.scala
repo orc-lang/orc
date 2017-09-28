@@ -170,7 +170,7 @@ object DistribTestCase {
       if (result.exitValue != 0) {
         print(result.stdout)
         Console.err.print(result.stderr)
-        throw new Exception(s"${description} failed: exitValue=${result.exitValue}, stderr=${result.stderr}")
+        throw new CopyFilesException(s"${description} failed: exitValue=${result.exitValue}, stderr=${result.stderr}")
       }
     }
 
@@ -196,4 +196,8 @@ object DistribTestCase {
     println("done")
   }
 
+}
+
+private class CopyFilesException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
+  def this(message: String) = this(message, null)
 }
