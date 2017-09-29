@@ -124,6 +124,7 @@ object DistribTestCase {
     if (!leaderSpec.isLocal) {
       copyFiles()
       checkExitValue(s"mkdir -p $runOutputDir on ${leaderSpec.hostname}", OsCommand.getResultFrom(Seq("ssh", leaderSpec.hostname, s"mkdir -p $runOutputDir")))
+      Runtime.getRuntime().addShutdownHook(DistribTestCopyBackThread)
     } else {
       new File(runOutputDir).mkdirs()
     }
@@ -205,6 +206,16 @@ object DistribTestCase {
     }
   }
 
+  private object DistribTestCopyBackThread extends Thread("DistribTestCopyBackThread") {
+    override def run = synchronized {
+      val remoteRunOutputDir = DistribTestConfig.expanded("runOutputDir").stripSuffix("/") + "/"
+      val localRunOutputDir = ".." + remoteRunOutputDir.stripPrefix(DistribTestConfig.expanded("testRootDir"))
+      print(s"Copying run output from leader to $localRunOutputDir...")
+      new File(localRunOutputDir).mkdirs()
+      checkExitValue(s"rsync of ${leaderSpec.hostname}:$remoteRunOutputDir to $localRunOutputDir", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"${leaderSpec.hostname}:$remoteRunOutputDir", localRunOutputDir)))
+      println("done")
+    }
+  }
 }
 
 
