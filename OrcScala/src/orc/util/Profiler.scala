@@ -13,8 +13,7 @@
 
 package orc.util
 
-import java.io.{ File, FileOutputStream, OutputStreamWriter }
-import java.lang.management.ManagementFactory
+import java.io.OutputStreamWriter
 
 /** Rudimentary profiling facility.
   *
@@ -48,7 +47,7 @@ object Profiler {
   def beginInterval[A](locationId: Long, intervalType: Symbol): IntervalBeginning = {
     if (profilerOn) System.nanoTime else 0L
   }
- 
+
   @inline
   def endInterval[A](locationId: Long, intervalType: Symbol, beginning: IntervalBeginning) = {
     if (profilerOn) {
@@ -121,11 +120,9 @@ object Profiler {
         System.err.append(f"Profiling Accumulators: end\n")
       }
 
-      val outDir = System.getProperty("orc.executionlog.dir")
-      if (outDir != null) {
-        val profileCsvFile = new File(outDir, s"profile-${ManagementFactory.getRuntimeMXBean().getName()}.csv")
-        assert(profileCsvFile.createNewFile(), s"Profile output file: File already exists: $profileCsvFile")
-        val profileCsv = new OutputStreamWriter(new FileOutputStream(profileCsvFile), "UTF-8")
+      val csvOut = ExecutionLogOutputStream("profile", "csv", "Profile output file")
+      if (csvOut.isDefined) {
+        val profileCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
         val csvWriter = new CsvWriter(profileCsv.append(_))
         val tableColumnTitles = Seq("Interval Type", "Count", "Accum. Time (ns)")
         csvWriter.writeHeader(tableColumnTitles)

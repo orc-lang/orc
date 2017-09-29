@@ -13,8 +13,7 @@
 
 package orc.util
 
-import java.io.{ File, FileOutputStream, OutputStreamWriter }
-import java.lang.management.ManagementFactory
+import java.io.OutputStreamWriter
 
 /** Rudimentary event counting facility.
   *
@@ -87,11 +86,9 @@ object EventCounter {
         System.err.append(f"Event Counters: end\n")
       }
 
-      val outDir = System.getProperty("orc.executionlog.dir")
-      if (outDir != null) {
-        val eventCountCsvFile = new File(outDir, s"eventCount-${ManagementFactory.getRuntimeMXBean().getName()}.csv")
-        assert(eventCountCsvFile.createNewFile(), s"Event count output file: File already exists: $eventCountCsvFile")
-        val eventCountCsv = new OutputStreamWriter(new FileOutputStream(eventCountCsvFile), "UTF-8")
+      val csvOut = ExecutionLogOutputStream("eventCount", "csv", "Event count output file")
+      if (csvOut.isDefined) {
+        val eventCountCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
         val csvWriter = new CsvWriter(eventCountCsv.append(_))
         val tableColumnTitles = Seq("Event Type", "Count")
         csvWriter.writeHeader(tableColumnTitles)

@@ -13,7 +13,7 @@
 
 package orc.test.util
 
-import java.io.{ File, FileWriter, IOException }
+import java.io.{ IOException, OutputStreamWriter }
 import java.lang.management.ManagementFactory
 import java.lang.reflect.Modifier
 import java.time.{ Duration, Instant }
@@ -21,13 +21,15 @@ import java.util.jar.Manifest
 
 import scala.collection.JavaConverters.{ enumerationAsScalaIteratorConverter, mapAsScalaMapConverter }
 
+import orc.util.ExecutionLogOutputStream
+
 /** Captures a snapshot of the execution environment state at time of
   * construction.
   *
   * @author jthywiss
   */
 class TestEnvironmentDescription() extends FieldsToMap {
-  
+
   val jvmDescription = new JvmDescription().toMap
   val classPathDescription = new ClassPathDescription().toMap
   val scmStateDescription = new ScmStateDescription().toMap
@@ -153,7 +155,7 @@ class TestEnvironmentDescription() extends FieldsToMap {
     }
 
   }
-  
+
   class ScmStateDescription() extends FieldsToMap {
 
     val gitDescribe = {
@@ -192,7 +194,7 @@ class TestEnvironmentDescription() extends FieldsToMap {
 object TestEnvironmentDescription {
 
   private var shutdownHookAdded = false
-  
+
   def dumpAtShutdown(): Unit = synchronized {
     if (!shutdownHookAdded) {
       Runtime.getRuntime().addShutdownHook(TestEnvironmentDescriptionDumpThread)
@@ -206,11 +208,9 @@ object TestEnvironmentDescription {
 
   private object TestEnvironmentDescriptionDumpThread extends Thread("TestEnvironmentDescriptionDumpThread") {
     override def run = synchronized {
-      val outDir = System.getProperty("orc.executionlog.dir")
-      if (outDir != null) {
-        val envDescFile = new File(outDir, s"envDescrip-${ManagementFactory.getRuntimeMXBean().getName()}.json")
-        assert(envDescFile.createNewFile(), s"Test environment description output file: File already exists: $envDescFile")
-        val envDescWriter = new FileWriter(envDescFile)
+      val envDescOut = ExecutionLogOutputStream("envDescrip", "json", "Test environment description output file")
+      if (envDescOut.isDefined) {
+        val envDescWriter = new OutputStreamWriter(envDescOut.get, "UTF-8")
         JsonGenerator(envDescWriter)(new TestEnvironmentDescription().toMap)
         envDescWriter.close()
       }

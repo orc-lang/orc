@@ -24,7 +24,7 @@ import scala.collection.JavaConverters.seqAsJavaListConverter
   */
 object OsCommand {
 
-  def getResultFrom(command: Seq[String], stdin: String = "", directory: File = null, charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false) = {
+  def getResultFrom(command: Seq[String], stdin: String = "", directory: File = null, charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: OutputStream = java.lang.System.out, stderrTee: OutputStream = java.lang.System.err) = {
     val pb = new ProcessBuilder(command.asJava)
     if (directory != null) pb.directory(directory)
     val p = pb.start()
@@ -35,12 +35,12 @@ object OsCommand {
 
     val outBAOS = new ByteArrayOutputStream()
     /* Copy process stdout to outBAOS and optionally our stdout */
-    val outDrainThread = new StreamDrainThread(p.getInputStream, outBAOS, if (teeStdOutErr) Some(java.lang.System.out) else None, "Subprocess stdout reader")
+    val outDrainThread = new StreamDrainThread(p.getInputStream, outBAOS, if (teeStdOutErr) Some(stdoutTee) else None, "Subprocess stdout reader")
     outDrainThread.start()
 
     val errBAOS = new ByteArrayOutputStream()
     /* Copy process stderr to errBAOS and optionally our stderr */
-    val errDrainThread = new StreamDrainThread(p.getErrorStream, errBAOS, if (teeStdOutErr) Some(java.lang.System.err) else None, "Subprocess stderr reader")
+    val errDrainThread = new StreamDrainThread(p.getErrorStream, errBAOS, if (teeStdOutErr) Some(stderrTee) else None, "Subprocess stderr reader")
     errDrainThread.start()
 
     val exitValue = p.waitFor()

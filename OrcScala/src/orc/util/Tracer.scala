@@ -13,8 +13,7 @@
 
 package orc.util
 
-import java.io.{ File, FileOutputStream, OutputStreamWriter }
-import java.lang.management.ManagementFactory
+import java.io.OutputStreamWriter
 
 /** Rudimentary event tracing facility.
   *
@@ -136,11 +135,9 @@ object Tracer {
         a.append(s"Trace Buffer: end\n")
       }
 
-      val outDir = System.getProperty("orc.executionlog.dir")
-      if (outDir != null) {
-        val traceCsvFile = new File(outDir, s"trace-${ManagementFactory.getRuntimeMXBean().getName()}.csv")
-        assert(traceCsvFile.createNewFile(), s"Trace output file: File already exists: $traceCsvFile")
-        val traceCsv = new OutputStreamWriter(new FileOutputStream(traceCsvFile), "UTF-8")
+      val csvOut = ExecutionLogOutputStream("trace", "csv", "Trace output file")
+      if (csvOut.isDefined) {
+        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
         val csvWriter = new CsvWriter(traceCsv.append(_))
         val tableColumnTitles = Seq("Time (ms)", "Time (ns)", "Thread ID", "Token/Group ID", "Event Type", "From", "To")
         csvWriter.writeHeader(tableColumnTitles)

@@ -35,15 +35,16 @@ class DistribTestCase extends OrcTestCase {
     val options = bindings.asInstanceOf[orc.Main.OrcCmdLineOptions]
     startFollowers()
     println("\n==== Starting " + orcFile + " ====")
+    val outFilenamePrefix = orcFile.getName.stripSuffix(".orc")
     try {
       val leaderOpts = DistribTestConfig.expanded.getIterableFor("leaderOpts").getOrElse(Seq())
       val followerSockets = options.recognizedLongOpts("follower-sockets").getValue
       val actual = if (DistribTestCase.leaderSpec.isLocal) {
         //OrcForTesting.compileAndRun(orcFile.getPath(), 200 /*s*/, bindings)
-        val result = OsCommand.getResultFrom(Seq(DistribTestCase.leaderSpec.javaCmd, "-cp", DistribTestCase.leaderSpec.classPath) ++ DistribTestCase.leaderSpec.jvmOptions ++ Seq(DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--follower-sockets=$followerSockets", orcFile.getPath), directory = new File(DistribTestCase.leaderSpec.workingDir), teeStdOutErr = true)
+        val result = OsCommand.getResultFrom(Seq(DistribTestCase.leaderSpec.javaCmd, "-cp", DistribTestCase.leaderSpec.classPath) ++ DistribTestCase.leaderSpec.jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--follower-sockets=$followerSockets", orcFile.getPath), directory = new File(DistribTestCase.leaderSpec.workingDir), teeStdOutErr = true)
         result.stdout
       } else {
-        val result = OsCommand.getResultFrom(Seq("ssh", DistribTestCase.leaderSpec.hostname, s"cd '${DistribTestCase.leaderSpec.workingDir}' ; '${DistribTestCase.leaderSpec.javaCmd}' -cp '${DistribTestCase.leaderSpec.classPath}' ${DistribTestCase.leaderSpec.jvmOptions.mkString(" ")} ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --follower-sockets=$followerSockets $orcFile"), teeStdOutErr = true)
+        val result = OsCommand.getResultFrom(Seq("ssh", DistribTestCase.leaderSpec.hostname, s"cd '${DistribTestCase.leaderSpec.workingDir}' ; '${DistribTestCase.leaderSpec.javaCmd}' -cp '${DistribTestCase.leaderSpec.classPath}' ${DistribTestCase.leaderSpec.jvmOptions.mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_0 ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --follower-sockets=$followerSockets $orcFile"), teeStdOutErr = true)
         result.stdout
       }
       if (!expecteds.contains(actual)) {
@@ -62,6 +63,7 @@ class DistribTestCase extends OrcTestCase {
   }
 
   def startFollowers() {
+    val outFilenamePrefix = orcFile.getName.stripSuffix(".orc")
 
     for (followerNumber <- 1 to DistribTestCase.followerSpecs.size) {
       val followerSpec = DistribTestCase.followerSpecs(followerNumber - 1)
@@ -71,12 +73,12 @@ class DistribTestCase extends OrcTestCase {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
         Seq(
             Seq("cd", followerSpec.workingDir),
-            Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq(DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(followerNumber.toString, followerSpec.hostname+":"+followerSpec.port),
+            Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq(DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_$followerNumber", followerNumber.toString, followerSpec.hostname+":"+followerSpec.port),
         )
       } else {
         println(s"Launching follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
         /* FIXME: Escape strings for shell */
-        Seq(Seq("ssh", followerSpec.hostname, s"cd '${followerSpec.workingDir}' ; '${followerSpec.javaCmd}' -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} ${DistribTestConfig.expanded("followerClass")} ${followerOpts.mkString(" ")} $followerNumber ${followerSpec.hostname}:${followerSpec.port}"))
+        Seq(Seq("ssh", followerSpec.hostname, s"cd '${followerSpec.workingDir}' ; '${followerSpec.javaCmd}' -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_$followerNumber ${DistribTestConfig.expanded("followerClass")} ${followerOpts.mkString(" ")} $followerNumber ${followerSpec.hostname}:${followerSpec.port}"))
       }
       TerminalWindow(commandSeq, s"Follower $followerNumber", 42, 132)
     }
