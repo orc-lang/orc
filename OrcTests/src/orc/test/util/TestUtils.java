@@ -97,9 +97,7 @@ public final class TestUtils {
 
     public static TestSuite buildSuite(final String suitename, final Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final File... examplePaths) {
 
-        if (System.getProperty("orc.executionlog.dir") != null) {
-            TestEnvironmentDescription.dumpAtShutdown();
-        }
+        TestEnvironmentDescription.dumpAtShutdown();
 
         final TestSuite suite = new TestSuite(suitename);
         for (final File examplePath : examplePaths) {

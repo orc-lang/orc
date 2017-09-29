@@ -1,6 +1,6 @@
 //
 // TestEnvironmentDescription.scala -- Scala class TestEnvironmentDescription
-// Project OrcTest
+// Project OrcTests
 //
 // Created by jthywiss on Sep 4, 2017.
 //
@@ -13,15 +13,13 @@
 
 package orc.test.util
 
-import java.io.IOException
+import java.io.{ File, FileWriter, IOException }
 import java.lang.management.ManagementFactory
 import java.lang.reflect.Modifier
 import java.time.{ Duration, Instant }
 import java.util.jar.Manifest
 
 import scala.collection.JavaConverters.{ enumerationAsScalaIteratorConverter, mapAsScalaMapConverter }
-import java.io.File
-import java.io.FileWriter
 
 /** Captures a snapshot of the execution environment state at time of
   * construction.
@@ -209,11 +207,13 @@ object TestEnvironmentDescription {
   private object TestEnvironmentDescriptionDumpThread extends Thread("TestEnvironmentDescriptionDumpThread") {
     override def run = synchronized {
       val outDir = System.getProperty("orc.executionlog.dir")
-      val envDescFile = new File(outDir, s"envDescrip-${ManagementFactory.getRuntimeMXBean().getName()}.json")
-      assert(envDescFile.createNewFile(), s"Event count output file: File already exists: envDescFile")
-      val envDescWriter = new FileWriter(envDescFile)
-      JsonGenerator(envDescWriter)(new TestEnvironmentDescription().toMap)
-      envDescWriter.close()
+      if (outDir != null) {
+        val envDescFile = new File(outDir, s"envDescrip-${ManagementFactory.getRuntimeMXBean().getName()}.json")
+        assert(envDescFile.createNewFile(), s"Test environment description output file: File already exists: $envDescFile")
+        val envDescWriter = new FileWriter(envDescFile)
+        JsonGenerator(envDescWriter)(new TestEnvironmentDescription().toMap)
+        envDescWriter.close()
+      }
     }
   }
 
