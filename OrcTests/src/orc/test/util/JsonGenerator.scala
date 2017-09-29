@@ -1,6 +1,6 @@
 //
 // JsonGenerator.scala -- Scala object JsonGenerator
-// Project OrcTest
+// Project OrcTests
 //
 // Created by jthywiss on Sep 5, 2017.
 //

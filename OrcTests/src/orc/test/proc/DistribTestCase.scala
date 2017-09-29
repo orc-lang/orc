@@ -16,14 +16,13 @@ package orc.test.proc
 import java.io.File
 import java.net.{ InetAddress, InetSocketAddress, NetworkInterface, SocketException }
 
-import scala.collection.JavaConverters.{ seqAsJavaListConverter }
+import scala.collection.JavaConverters.seqAsJavaListConverter
 
 import orc.error.compiletime.{ CompilationException, FeatureNotSupportedException }
-import orc.test.util.{ OsCommand, OsCommandResult, TestUtils }
+import orc.test.util.{ OsCommand, OsCommandResult, TerminalWindow, TestRunNumber, TestUtils }
 import orc.test.util.TestUtils.OrcTestCase
 
 import org.junit.Assume
-import orc.test.util.TestRunNumber
 
 /** JUnit test case for a distributed-Orc test.
   *
@@ -79,7 +78,7 @@ class DistribTestCase extends OrcTestCase {
         /* FIXME: Escape strings for shell */
         Seq(Seq("ssh", followerSpec.hostname, s"cd '${followerSpec.workingDir}' ; '${followerSpec.javaCmd}' -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} ${DistribTestConfig.expanded("followerClass")} ${followerOpts.mkString(" ")} $followerNumber ${followerSpec.hostname}:${followerSpec.port}"))
       }
-      OsCommand.newTerminalWindowWith(commandSeq, s"Follower $followerNumber", 42, 132)
+      TerminalWindow(commandSeq, s"Follower $followerNumber", 42, 132)
     }
   }
 
@@ -207,6 +206,7 @@ object DistribTestCase {
   }
 
 }
+
 
 private class CopyFilesException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
   def this(message: String) = this(message, null)
