@@ -45,7 +45,7 @@ tell application "Terminal"
 	do script "clear ; " & ${commandsAsString} & " ; exit" in newTab
 end tell
 """
-        val res = OsCommand.getResultFrom(Seq("osascript", "-l", "AppleScript", "-"), script)
+        val res = OsCommand.getResultFrom(Seq("osascript", "-l", "AppleScript", "-"), stdin = script)
         res
       }
       case DesktopType.Gnome => {

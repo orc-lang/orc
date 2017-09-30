@@ -24,7 +24,40 @@ import scala.collection.JavaConverters.seqAsJavaListConverter
   */
 object OsCommand {
 
-  def getResultFrom(command: Seq[String], stdin: String = "", directory: File = null, charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: OutputStream = java.lang.System.out, stderrTee: OutputStream = java.lang.System.err) = {
+  /** Run the given command, either with the given string as stdin, or an
+    * empty stdin; and using this process' stdout and stderr, or to the
+    * given Files.  Returns the command's exit value.
+    */
+  def run(command: Seq[String], directory: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8) = {
+    val p = runNoWait(command, directory, stdin, stdout, stderr, charset)
+
+    val exitValue = p.waitFor()
+
+    exitValue
+  }
+
+  /** Run the given command, either with the given string as stdin, or an
+    * empty stdin; and using this process' stdout and stderr, or to the
+    * given Files.  Returns the command's Process instance.
+    */
+  def runNoWait(command: Seq[String], directory: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8) = {
+    val pb = new ProcessBuilder(command.asJava)
+    if (directory != null) pb.directory(directory)
+    pb.redirectOutput(if (stdout == null) ProcessBuilder.Redirect.INHERIT else ProcessBuilder.Redirect.to(stdout))
+    pb.redirectError(if (stderr == null) ProcessBuilder.Redirect.INHERIT else ProcessBuilder.Redirect.to(stderr))
+    val p = pb.start()
+
+    val stdinStream = p.getOutputStream /* sic. yes, confusing naming */
+    stdinStream.write(stdin.getBytes(charset.name))
+    stdinStream.close()
+
+    p
+  }
+
+  /** Run the given command, saving stdout and stderr, and either with the
+    * given string as stdin, or an empty stdin.
+    */
+  def getResultFrom(command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)) = {
     val pb = new ProcessBuilder(command.asJava)
     if (directory != null) pb.directory(directory)
     val p = pb.start()
@@ -34,13 +67,15 @@ object OsCommand {
     stdinStream.close()
 
     val outBAOS = new ByteArrayOutputStream()
+    val outs = (if (teeStdOutErr) stdoutTee else Seq()) ++ Seq(outBAOS)
     /* Copy process stdout to outBAOS and optionally our stdout */
-    val outDrainThread = new StreamDrainThread(p.getInputStream, outBAOS, if (teeStdOutErr) Some(stdoutTee) else None, "Subprocess stdout reader")
+    val outDrainThread = new StreamDrainThread(p.getInputStream, outs, "Subprocess stdout reader")
     outDrainThread.start()
 
     val errBAOS = new ByteArrayOutputStream()
+    val errs = (if (teeStdOutErr) stderrTee else Seq()) ++ Seq(errBAOS)
     /* Copy process stderr to errBAOS and optionally our stderr */
-    val errDrainThread = new StreamDrainThread(p.getErrorStream, errBAOS, if (teeStdOutErr) Some(stderrTee) else None, "Subprocess stderr reader")
+    val errDrainThread = new StreamDrainThread(p.getErrorStream, errs, "Subprocess stderr reader")
     errDrainThread.start()
 
     val exitValue = p.waitFor()
@@ -59,7 +94,7 @@ object OsCommand {
 }
 
 
-private class StreamDrainThread(sourceStream: InputStream, targetStream1: OutputStream, targetStream2: Option[OutputStream], name: String) extends Thread(name) {
+private class StreamDrainThread(sourceStream: InputStream, targetStreams: Traversable[OutputStream], name: String) extends Thread(name) {
   setDaemon(true)
 
   override def run() {
@@ -69,15 +104,10 @@ private class StreamDrainThread(sourceStream: InputStream, targetStream1: Output
     do {
       bytesRead = sourceStream.read(buff)
       if (bytesRead > 0) {
-        targetStream2 match {
-          case Some(outStream) => {
-            outStream.write(buff, 0, bytesRead)
-            outStream.flush()
-          }
-          case None => { }
+        for (outStream <- targetStreams) {
+          outStream.write(buff, 0, bytesRead)
+          outStream.flush()
         }
-        targetStream1.write(buff, 0, bytesRead)
-        targetStream1.flush()
       }
     } while (bytesRead > 0)
   }
