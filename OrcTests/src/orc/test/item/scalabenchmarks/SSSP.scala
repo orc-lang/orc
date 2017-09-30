@@ -4,6 +4,7 @@ import java.util.ArrayList
 
 import scala.collection.JavaConverters._
 import java.util.concurrent.atomic.AtomicIntegerArray
+import java.util.concurrent.atomic.AtomicLong
 
 case class SSSPNode(initialEdge: Int, nEdges: Int) {
   def edges(edges: Array[SSSPEdge]) = edges.view(initialEdge, initialEdge + nEdges)
@@ -45,6 +46,8 @@ object SSSP extends BenchmarkApplication {
 
   val (nodes, edges, source) = load()
 
+  val counter = new AtomicLong(0)
+
   def ssspSeq(nodes: Array[SSSPNode], edges: Array[SSSPEdge], source: Int): Array[Int] = {
     val colors = Array.fill(nodes.size)(0)
     var gray = 1
@@ -55,6 +58,7 @@ object SSSP extends BenchmarkApplication {
     while (queue.nonEmpty) {
       val index = queue.dequeue()
       val currentCost = result(index)
+      counter.getAndIncrement()
 
       for (SSSPEdge(to, cost) <- nodes(index).edges(edges)) {
         val newCost = currentCost + cost
@@ -174,7 +178,8 @@ object SSSP extends BenchmarkApplication {
       val n = args(0).toInt
       for (_ <- 0 until n) {
         val res = Util.timeIt { ssspSeq(nodes, edges, source) }
-        //println(res.mkString(" "))
+        println(res.take(5).mkString(" "))
+        println(counter.get())
       }
     }
   }
