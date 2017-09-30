@@ -86,10 +86,11 @@ public class Counter extends EvalSite implements TypedSite {
                         if (count > 0) {
                             --count;
                             if (count == 0) {
-                                for (final CallContext waiter : waiters) {
+                                LinkedList<CallContext> oldWaiters = (LinkedList<CallContext>) waiters.clone();
+                                waiters.clear();
+                                for (final CallContext waiter : oldWaiters) {
                                     waiter.publish(signal());
                                 }
-                                waiters.clear();
                             }
                             return signal();
                         } else {
