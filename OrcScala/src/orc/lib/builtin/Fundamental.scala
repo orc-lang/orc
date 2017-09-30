@@ -17,42 +17,49 @@ import orc.types._
 import orc.util.TypeListEnrichment._
 import orc.util.ArrayExtensions.{ Array1, Array2, Array0 }
 import orc.values._
-import orc.values.sites.{ FunctionalSite, PartialSite, TotalSite, TypedSite }
+import orc.values.sites.{ FunctionalSite, TalkativeSite, PartialSite, TotalSite, TypedSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2 }
+import orc.Invoker
+import orc.error.runtime.HaltException
 
-object Ift extends PartialSite with TypedSite with FunctionalSite {
+object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Ift"
-  def evaluate(args: Array[AnyRef]) =
-    args match {
-      case Array1(b: java.lang.Boolean) =>
-        if (b.booleanValue) { Some(Signal) } else { None }
-      case Array1(a) => throw new ArgumentTypeMismatchException(0, "Boolean", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
+  
+  def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
+    invoker(a)(a =>
+      if (a)
+        Signal
+      else
+        throw HaltException.SINGLETON)
+  }
 
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
-object Iff extends PartialSite with TypedSite with FunctionalSite {
+object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Iff"
-  def evaluate(args: Array[AnyRef]) =
-    args match {
-      case Array1(b: java.lang.Boolean) =>
-        if (b.booleanValue) { None } else { Some(Signal) }
-      case Array1(a) => throw new ArgumentTypeMismatchException(0, "Boolean", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
+  
+  def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
+    invoker(a)(a =>
+      if (!a)
+        Signal
+      else
+        throw HaltException.SINGLETON)
+  }
 
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
-object Eq extends TotalSite with TypedSite with FunctionalSite {
+object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite {
   override def name = "Eq"
-  def evaluate(args: Array[AnyRef]) =
-    args match {
-      case Array2(null, b) => new java.lang.Boolean(b == null)
-      case Array2(a, b) => new java.lang.Boolean(a == b)
-      case _ => throw new ArityMismatchException(2, args.size)
-    }
+  
+  def getInvokerSpecialized(a: Any, b: Any): Invoker = {
+    invokerStaticType(a, b)((a, b) => {
+      if (a == null) 
+        b == null
+      else 
+        a == b
+    })
+  }
 
   def orcType() = SimpleFunctionType(Top, Top, BooleanType)
 }

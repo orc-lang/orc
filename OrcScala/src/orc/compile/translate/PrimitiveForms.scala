@@ -25,9 +25,9 @@ import orc.values.sites.Site
 
 object PrimitiveForms {
 
-  def nullaryBuiltinCall(s: Site)() = Call(Constant(s), Nil, None)
-  def unaryBuiltinCall(s: Site)(a: Argument) = Call(Constant(s), List(a), None)
-  def binaryBuiltinCall(s: Site)(a: Argument, b: Argument) = Call(Constant(s), List(a, b), None)
+  def nullaryBuiltinCall(s: AnyRef)() = Call(Constant(s), Nil, None)
+  def unaryBuiltinCall(s: AnyRef)(a: Argument) = Call(Constant(s), List(a), None)
+  def binaryBuiltinCall(s: AnyRef)(a: Argument, b: Argument) = Call(Constant(s), List(a, b), None)
 
   val callIft = unaryBuiltinCall(Ift) _
   val callIff = unaryBuiltinCall(Iff) _

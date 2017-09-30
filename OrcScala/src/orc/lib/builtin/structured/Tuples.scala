@@ -18,12 +18,26 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types._
 import orc.values._
 import orc.values.sites._
+import orc.OrcRuntime
+import orc.Invoker
+import orc.OnlyDirectInvoker
+import orc.error.runtime.HaltException
 
 // TODO: Replace current tuple values with object and _n fields.
 
-object TupleConstructor extends TotalSite with TypedSite with FunctionalSite with TalkativeSite {
+object TupleConstructor extends InvokerMethod with FunctionalSite with TalkativeSite {
   override def name = "Tuple"
-  def evaluate(args: Array[AnyRef]) = OrcTuple(args)
+
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+    new OnlyDirectInvoker {
+      def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+        target eq TupleConstructor
+      }
+      def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+        OrcTuple(arguments)
+      }
+    }
+  }
 
   override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(args.toArray))
 
@@ -37,19 +51,16 @@ object TupleConstructor extends TotalSite with TypedSite with FunctionalSite wit
  * If the check succeeds, the Some(t) is returned,
  * else None.
  */
-object TupleArityChecker extends PartialSite2 with TypedSite with FunctionalSite {
+object TupleArityChecker extends OverloadedDirectInvokerMethod2[OrcTuple, BigInt] with FunctionalSite {
   override def name = "TupleArityChecker"
-  def eval(x: AnyRef, y: AnyRef) =
-    (x, y) match {
-      case (t @ OrcTuple(elems), arity: BigInt) =>
-        if (elems.length == arity.toInt) {
-          Some(t)
-        } else {
-          None
-        }
-      case (_: OrcTuple, a) => throw new ArgumentTypeMismatchException(1, "Integer", if (a != null) a.getClass().toString() else "null")
-      case (a, _) => None // Not a Tuple
-    }
+  def getInvokerSpecialized(t: OrcTuple, arity: BigInt): Invoker = {
+    invoker(t, arity)((t, arity) =>
+      if (t.values.length == arity.toInt) {
+        t
+      } else {
+        throw HaltException.SINGLETON
+      })
+  }
 
   override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = args match {
     case List(_, Some(arity: BigInt)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toArray))

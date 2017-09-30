@@ -14,6 +14,7 @@
 package orc
 
 import orc.error.runtime.{ DoesNotHaveMembersException, HaltException, NoSuchMemberException, UncallableValueException }
+import orc.DirectInvoker
 
 /** A collection of utility methods for writing invokers and accessors.
 	*/
@@ -61,9 +62,14 @@ abstract class OnlyDirectInvoker extends DirectInvoker {
 
 /** A invoker sentinel representing the fact that target is not callable.
 	*/
-case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker {
+case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker with DirectInvoker {
   @throws[UncallableValueException]
   def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    throw new UncallableValueException(target)
+  }
+  
+  @throws[IllegalArgumentException]
+  def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     throw new UncallableValueException(target)
   }
 
@@ -74,9 +80,14 @@ case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker {
 
 /** A invoker sentinel representing the fact that arguments are not valid for this call.
 	*/
-case class IllegalArgumentInvoker(target: AnyRef, arguments: Array[AnyRef]) extends ErrorInvoker {
+case class IllegalArgumentInvoker(target: AnyRef, arguments: Array[AnyRef]) extends ErrorInvoker with DirectInvoker {
   @throws[IllegalArgumentException]
   def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    throw new IllegalArgumentException(s"$target(${arguments.mkString(", ")})")
+  }
+  
+  @throws[IllegalArgumentException]
+  def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     throw new IllegalArgumentException(s"$target(${arguments.mkString(", ")})")
   }
 
