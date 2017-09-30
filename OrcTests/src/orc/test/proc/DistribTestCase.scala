@@ -78,7 +78,7 @@ class DistribTestCase extends OrcTestCase {
 
       if (followerSpec.isLocal) {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
-        val command = Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq(DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", s"-Dorc.executionlog.filesuffix=_$followerNumber", followerNumber.toString, followerSpec.hostname+":"+followerSpec.port)
+        val command = Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", s"-Dorc.executionlog.filesuffix=_$followerNumber", DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(followerNumber.toString, followerSpec.hostname+":"+followerSpec.port)
         OsCommand.runNoWait(command, directory = followerWorkingDir, stdout = followerOutFile, stderr = followerErrFile)
       } else {
         println(s"Launching follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
