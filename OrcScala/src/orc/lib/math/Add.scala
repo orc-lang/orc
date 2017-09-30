@@ -53,12 +53,14 @@ object Add extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite 
           case (a: Number, b: Number) =>
             IllegalArgumentInvoker(this, Array(a, b))
         }
+      case (a: String, b: String) =>
+        invoker(a, b)((a, b) => a + b)
       case (a: String, b) =>
         invokerStaticType(a, b)((a, b) => a + orc.values.Format.formatValue(b, false))
       case (a, b: String) =>
         invokerStaticType(a, b)((a, b) => orc.values.Format.formatValue(a, false) + b)
       case (a: OrcRecord, b: OrcRecord) =>
-        invokerStaticType(a, b)(_ extendWith _)
+        invoker(a, b)(_ extendWith _)
       case (a, b) =>
         IllegalArgumentInvoker(this, Array(a.asInstanceOf[AnyRef], b.asInstanceOf[AnyRef]))
     }

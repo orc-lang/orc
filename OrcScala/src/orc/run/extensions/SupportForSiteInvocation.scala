@@ -39,9 +39,9 @@ trait SupportForSiteInvocation extends InvocationBehavior {
             i
         }
       case ds: DirectSite =>
-        new DirectSiteInvoker(ds)
+        new DirectSiteInvoker(ds.getClass())
       case s: Site =>
-        new SiteInvoker(s)
+        new SiteInvoker(s.getClass())
       case _ =>
         super.getInvoker(target, arguments)
     }
@@ -69,26 +69,28 @@ trait SupportForSiteInvocation extends InvocationBehavior {
   }
 }
 
-class SiteInvoker(val site: Site) extends Invoker {
+class SiteInvoker(val siteCls: Class[_ <: Site]) extends Invoker {
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    (target eq site) || (target == site)
+    siteCls.isInstance(target)
   }
 
   def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]) = {
     try {
-      site.call(arguments, callContext)
+      siteCls.cast(target).call(arguments, callContext)
     } catch {
       case e: OrcException => callContext.halt(e)
       case e: InterruptedException => throw e
       case e: Exception => callContext.halt(new JavaException(e))
     }
   }
+  
+  override def toString(): String = s"${getClass.getSimpleName}(${siteCls.getName})" 
 }
 
-class DirectSiteInvoker(override val site: DirectSite) extends SiteInvoker(site) with DirectInvoker {
+class DirectSiteInvoker(override val siteCls: Class[_ <: DirectSite]) extends SiteInvoker(siteCls) with DirectInvoker {
   def invokeDirect(target: AnyRef, arguments: Array[AnyRef]) = {
     try {
-      site.calldirect(arguments)
+      siteCls.cast(target).calldirect(arguments)
     } catch {
       case e: HaltException => throw e
       case e: Exception => throw new ExceptionHaltException(e)

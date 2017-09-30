@@ -43,7 +43,7 @@ object EndBenchmark extends InvokerMethod {
     if (args.length == 3) {
       new OnlyDirectInvoker {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-          target == StartBenchmark && arguments.length == 3
+          target == EndBenchmark && arguments.length == 3
         }
 
         def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {

@@ -46,6 +46,8 @@ abstract class OverloadedDirectInvokerMethod1[BaseArgumentType1 : ClassTag] exte
     }
     
     def invokeDirectSpecialized(arg1: T1): AnyRef
+    
+    override def toString(): String = s"$thisMethod<invoker>(${clsT1.getName})"
   }
   
   /** Call to create an invoker which is used for all calls with an argument with this **static** type.
@@ -98,7 +100,7 @@ abstract class OverloadedDirectInvokerMethod2[BaseArgumentType1 : ClassTag, Base
   abstract class InvokerBase[-T1 <: BaseArgumentType1, -T2 <: BaseArgumentType2](private[this] val clsT1: Class[_], private[this] val clsT2: Class[_]) extends OnlyDirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       val argumentTypeCorrect1 = clsT1.isInstance(arguments(0)) || (clsT1 eq clsBaseArgumentType1) && arguments(0) == null 
-      val argumentTypeCorrect2 = clsT1.isInstance(arguments(1)) || (clsT2 eq clsBaseArgumentType2) && arguments(1) == null 
+      val argumentTypeCorrect2 = clsT2.isInstance(arguments(1)) || (clsT2 eq clsBaseArgumentType2) && arguments(1) == null 
       target == thisMethod && arguments.length == 2 && argumentTypeCorrect1 && argumentTypeCorrect2
     }
   
@@ -107,6 +109,8 @@ abstract class OverloadedDirectInvokerMethod2[BaseArgumentType1 : ClassTag, Base
     }
     
     def invokeDirectSpecialized(arg1: T1, arg2: T2): AnyRef
+    
+    override def toString(): String = s"$thisMethod<invoker>(${clsT1.getName}, ${clsT2.getName})"
   }
   
   /** @see OverloadedDirectInvokerMethod1.invokerStaticType
