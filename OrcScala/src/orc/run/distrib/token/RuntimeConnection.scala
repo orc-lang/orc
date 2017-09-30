@@ -100,14 +100,18 @@ class RuntimeConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) extends
 object RuntimeConnectionInitiator {
 
   def apply[R, S](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null) = {
-    val socket = new Socket()
-    SocketObjectConnection.configSocket(socket)
-    if (localSockAddr != null) {
-      socket.bind(localSockAddr)
+    try {
+      val socket = new Socket()
+      SocketObjectConnection.configSocket(socket)
+      if (localSockAddr != null) {
+        socket.bind(localSockAddr)
+      }
+      socket.connect(remoteSockAddr)
+      Logger.finer(s"RuntimeConnectionInitiator opening $socket")
+      new RuntimeConnection[R, S](socket)
+    } catch {
+      case ioe: IOException => throw new IOException(s"Unable to connect to $remoteSockAddr: ${ioe.getMessage}", ioe)
     }
-    socket.connect(remoteSockAddr)
-    Logger.finer(s"RuntimeConnectionInitiator opening $socket")
-    new RuntimeConnection[R, S](socket)
   }
 
   def apply[R, S](remoteHostAddr: InetAddress, remotePort: Int): SocketObjectConnection[R, S] = apply[R, S](new InetSocketAddress(remoteHostAddr, remotePort))

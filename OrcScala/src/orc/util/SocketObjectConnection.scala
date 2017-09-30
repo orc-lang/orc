@@ -13,7 +13,7 @@
 
 package orc.util
 
-import java.io.{ EOFException, ObjectInputStream, ObjectOutputStream }
+import java.io.{ EOFException, IOException, ObjectInputStream, ObjectOutputStream }
 import java.net.{ InetAddress, InetSocketAddress, ServerSocket, Socket, SocketException }
 
 /** SocketObjectConnection, given an open Socket, provides Java object stream
@@ -116,7 +116,11 @@ object SocketObjectConnection {
 class ConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) {
 
   val serverSocket = new ServerSocket()
-  serverSocket.bind(bindSockAddr)
+  try {
+    serverSocket.bind(bindSockAddr)
+  } catch {
+    case ioe: IOException => throw new IOException(s"Unable to bind to $bindSockAddr: ${ioe.getMessage}", ioe)
+  }
 
   def acceptConnection() = {
     val acceptedSocket = serverSocket.accept()
@@ -140,14 +144,18 @@ class ConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) {
 object ConnectionInitiator {
 
   def apply[R, S](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null) = {
-    val socket = new Socket()
-    SocketObjectConnection.configSocket(socket)
-    if (localSockAddr != null) {
-      socket.bind(localSockAddr)
+    try {
+      val socket = new Socket()
+      SocketObjectConnection.configSocket(socket)
+      if (localSockAddr != null) {
+        socket.bind(localSockAddr)
+      }
+      socket.connect(remoteSockAddr)
+      SocketObjectConnectionLogger.finer(s"ConnectionInitiator socket $socket")
+      new SocketObjectConnection[R, S](socket)
+    } catch {
+      case ioe: IOException => throw new IOException(s"Unable to connect to $remoteSockAddr: ${ioe.getMessage}", ioe)
     }
-    socket.connect(remoteSockAddr)
-    SocketObjectConnectionLogger.finer(s"ConnectionInitiator socket $socket")
-    new SocketObjectConnection[R, S](socket)
   }
 
   def apply[R, S](remoteHostAddr: InetAddress, remotePort: Int): SocketObjectConnection[R, S] = apply[R, S](new InetSocketAddress(remoteHostAddr, remotePort))

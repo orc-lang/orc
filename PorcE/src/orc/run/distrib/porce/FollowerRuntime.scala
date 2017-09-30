@@ -21,7 +21,7 @@ import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
 
 import orc.{ CaughtEvent, OrcEvent, OrcExecutionOptions }
-import orc.util.CmdLineParser
+import orc.util.{ CmdLineParser, CmdLineUsageException }
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -370,15 +370,23 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 object FollowerRuntime {
 
   def main(args: Array[String]): Unit = {
-    val frOptions = new FollowerRuntimeCmdLineOptions()
-    frOptions.parseCmdLine(args)
-
-    Logger.config(orc.Main.orcImplName + " " + orc.Main.orcVersion)
-    Logger.config("FollowerRuntime options & operands: " + frOptions.composeCmdLine().mkString(" "))
-
-    Logger.Connect.finer("Calling FollowerRuntime.listen")
-    new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
+    try {
+      Logger.config(orc.Main.orcImplName + " " + orc.Main.orcVersion)
+      val frOptions = new FollowerRuntimeCmdLineOptions()
+      frOptions.parseCmdLine(args)
+      Logger.config("FollowerRuntime options & operands: " + frOptions.composeCmdLine().mkString(" "))
+  
+      Logger.Connect.finer("Calling FollowerRuntime.listen")
+      new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
+    } catch {
+      case e: CmdLineUsageException => { Console.err.println("Orc: " + e.getMessage); System.exit(EXIT_USAGE) }
+      case ioe: IOException => { Thread.getDefaultUncaughtExceptionHandler.uncaughtException(Thread.currentThread(), ioe); System.exit(EXIT_IOERR) }
+    }
   }
+
+  /* Exit status codes. Values >= 64 are from BSD conventions in sysexit.h */
+  val EXIT_USAGE = 64
+  val EXIT_IOERR = 74
 
 }
 
