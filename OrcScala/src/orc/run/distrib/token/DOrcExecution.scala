@@ -101,7 +101,7 @@ class DOrcLeaderExecution(
 
   override def notifyOrc(event: OrcEvent) {
     super.notifyOrc(event)
-    Logger.info(s"${Console.REVERSED}${event.toString}${Console.RESET}")
+    Logger.info(event.toString)
   }
 
 }
