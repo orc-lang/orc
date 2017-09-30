@@ -11,3 +11,7 @@
 OUTPUT:
 Error: orc.error.runtime.JavaException: java.lang.ArithmeticException: BigInteger divide by zero
 -}
+{- 
+OUTPUT:
+Error: java.lang.ArithmeticException: BigInteger divide by zero
+-}

@@ -26,10 +26,7 @@ import orc.error.OrcExceptionExtension._
 import orc.error.compiletime._
 import orc.values.{ Field, Signal }
 import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
-import orc.error.compiletime.{ CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException, SiteResolutionException }
-import orc.lib.builtin
-import orc.values.sites.Site
-import orc.compile.Logger
+import orc.error.compiletime.{ CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException }
 
 case class TranslatorContext(context: Map[String, Argument], typecontext: Map[String, Type],
   boundDefs: Set[BoundVar], classContext: Map[String, ClassInfo]) {
@@ -53,7 +50,6 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
     */
   def convert(e: ext.Expression)(implicit ctx: TranslatorContext): Expression = {
     import ctx._
-    implicit val implicit_self = this
 
     e -> {
       case ext.Stop() => Stop()
@@ -389,7 +385,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
   def convertPattern(pat: ext.Pattern, bridge: BoundVar)(implicit ctx: TranslatorContext): (Conversion, Map[String, Argument], Conversion) = {
     import ctx._
 
-    var bindingMap: mutable.Map[String, BoundVar] = new mutable.HashMap()
+    val bindingMap: mutable.Map[String, BoundVar] = new mutable.HashMap()
 
     def bind(name: String, x: BoundVar) {
       if (bindingMap contains name) {
