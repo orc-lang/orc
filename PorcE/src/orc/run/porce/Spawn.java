@@ -40,10 +40,10 @@ public abstract class Spawn extends Expression {
     	// TODO: Figure out how to make this principled.
         // TODO: PERFORMANCE: Track the runtime of the spawned closure in the interpreter. Then if it is below some constant (1ms say) call it directly if the stack is not too deep. This could address issues with load-imbalance at least in predictable cases.
     	// TODO: This could actually cause semantic problem in the case of incorrectly implemented sites which block the calling thread. Metadata is probably needed.
-    	
-		boolean canDirectCall = canDirectCallProfile.profile(PorcERuntime.incrementAndCheckStackDepth());		
 		
-		if (PorcERuntime.allowSpawnInlining() && (!mustSpawn || PorcERuntime.allowAllSpawnInlining()) && canDirectCall) {
+		if (PorcERuntime.allowSpawnInlining() && 
+				(!mustSpawn || PorcERuntime.allowAllSpawnInlining()) && 
+				canDirectCallProfile.profile(PorcERuntime.incrementAndCheckStackDepth())) {
 			try {
 				initializeCall();
 				call.executeDispatch(frame, computation, new Object[] { });
