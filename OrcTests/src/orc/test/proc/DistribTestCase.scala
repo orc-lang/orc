@@ -15,6 +15,7 @@ package orc.test.proc
 
 import java.io.{ File, FileOutputStream }
 import java.net.{ InetAddress, InetSocketAddress, NetworkInterface, SocketException }
+import java.nio.file.Paths
 
 import scala.collection.JavaConverters.seqAsJavaListConverter
 
@@ -72,21 +73,20 @@ class DistribTestCase extends OrcTestCase {
     for (followerNumber <- 1 to DistribTestCase.followerSpecs.size) {
       val followerSpec = DistribTestCase.followerSpecs(followerNumber - 1)
       val followerOpts = DistribTestConfig.expanded.getIterableFor("followerOpts").getOrElse(Seq())
-      val followerWorkingDir = new File(followerSpec.workingDir)
-      val followerOutFile = new File(runOutputDir, s"${outFilenamePrefix}_$followerNumber.out")
-      val followerErrFile = new File(runOutputDir, s"${outFilenamePrefix}_$followerNumber.err")
+      val followerWorkingDir = followerSpec.workingDir
+      val followerOutFile = s"$runOutputDir/${outFilenamePrefix}_$followerNumber.out"
+      val followerErrFile = s"$runOutputDir/${outFilenamePrefix}_$followerNumber.err"
 
       if (followerSpec.isLocal) {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
         val command = Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", s"-Dorc.executionlog.filesuffix=_$followerNumber", DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(followerNumber.toString, followerSpec.hostname+":"+followerSpec.port)
-        OsCommand.runNoWait(command, directory = followerWorkingDir, stdout = followerOutFile, stderr = followerErrFile)
+        OsCommand.runNoWait(command, directory = new File(followerWorkingDir), stdout = new File(followerOutFile), stderr = new File(followerErrFile))
       } else {
         println(s"Launching follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
         /* FIXME: Escape strings for shell */
         val command = Seq("ssh", followerSpec.hostname, s"cd '${followerSpec.workingDir}'; '${followerSpec.javaCmd}' -cp '${followerSpec.classPath}' ${followerSpec.jvmOptions.mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_$followerNumber ${DistribTestConfig.expanded("followerClass")} ${followerOpts.mkString(" ")} $followerNumber ${followerSpec.hostname}:${followerSpec.port} >'$followerOutFile' 2>'$followerErrFile'")
         OsCommand.runNoWait(command)
       }
-      //TerminalWindow(commandSeq, s"Follower $followerNumber", 42, 132)
     }
   }
 
@@ -129,6 +129,12 @@ object DistribTestCase {
     computeLeaderFollowerSpecs()
 
     val runOutputDir = DistribTestConfig.expanded("runOutputDir")
+
+    /* Copy config dir to runOutputDir/../config */
+    val localRunOutputDir = "../" + pathRelativeToTestRoot(runOutputDir)
+    val orcConfigDir = "../" + pathRelativeToTestRoot(DistribTestConfig.expanded("orcConfigDir")).stripSuffix("/")
+    new File(localRunOutputDir).mkdirs()
+    checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.getResultFrom(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir+"/../")))
     if (!leaderSpec.isLocal) {
       copyFiles()
       checkExitValue(s"mkdir -p $runOutputDir on ${leaderSpec.hostname}", OsCommand.getResultFrom(Seq("ssh", leaderSpec.hostname, s"mkdir -p $runOutputDir")))
@@ -178,6 +184,10 @@ object DistribTestCase {
     leaderSpec = DOrcRuntimePlacement(leaderHostname, 0, leaderIsLocal, leaderWorkingDir, javaCmd, dOrcClassPath, jvmOpts)
 
     followerSpecs = followerHostnames.toSeq.map({case (followerNum, hostname) => DOrcRuntimePlacement(hostname, followerPorts(followerNum), isLocalAddress(InetAddress.getByName(hostname)), followerWorkingDir, javaCmd, dOrcClassPath, jvmOpts)})
+  }
+
+  protected def pathRelativeToTestRoot(path: String): String = {
+    Paths.get(DistribTestConfig.expanded("testRootDir")).normalize.relativize(Paths.get(path).normalize).toString
   }
 
   @throws(classOf[Exception])
@@ -230,9 +240,8 @@ object DistribTestCase {
   private object DistribTestCopyBackThread extends Thread("DistribTestCopyBackThread") {
     override def run = synchronized {
       val remoteRunOutputDir = DistribTestConfig.expanded("runOutputDir").stripSuffix("/") + "/"
-      val localRunOutputDir = ".." + remoteRunOutputDir.stripPrefix(DistribTestConfig.expanded("testRootDir"))
+      val localRunOutputDir = "../" + pathRelativeToTestRoot(remoteRunOutputDir)
       print(s"Copying run output from leader to $localRunOutputDir...")
-      new File(localRunOutputDir).mkdirs()
       checkExitValue(s"rsync of ${leaderSpec.hostname}:$remoteRunOutputDir to $localRunOutputDir", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"${leaderSpec.hostname}:$remoteRunOutputDir", localRunOutputDir)))
       println("done")
     }
