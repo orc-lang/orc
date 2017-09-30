@@ -5,6 +5,7 @@
 	<projects>
 		<project>OrcScala</project>
 		<project>OrcSites</project>
+		<project>PorcE</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
