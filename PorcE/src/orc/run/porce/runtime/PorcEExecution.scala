@@ -12,6 +12,9 @@ import orc.{ ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
 import orc.run.core.EventHandler
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, Logger, PorcEUnit }
 import orc.run.distrib.porce.CallTargetManager
+import orc.run.porce.instruments.DumpSpecializations
+import java.io.PrintWriter
+import java.io.OutputStreamWriter
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -56,13 +59,22 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   }
   
   {
-    if (CounterConstants.tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
+    if (false) {
       val timer = new Timer(true)
-      timer.schedule(new TimerTask {
+      /*timer.schedule(new TimerTask {
         def run(): Unit = {
           Counter.report()
         }
-      }, 10000)
+      }, 20000)*/
+      timer.schedule(new TimerTask {
+        def run(): Unit = {
+          val out = new PrintWriter(new OutputStreamWriter(System.out))
+          for (t <- callTargetMap.values) {
+            DumpSpecializations(t.getRootNode, out)
+          }
+          out.flush()
+        }
+      }, 300*1000)
     }
   }
 

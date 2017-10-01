@@ -6,6 +6,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
@@ -26,6 +27,7 @@ import orc.run.porce.runtime.TailCallException;
 import orc.run.porce.runtime.Terminator;
 
 @ImportStatic({ SpecializationConfiguration.class })
+@Introspectable
 public abstract class ExternalCPSDispatch extends Dispatch {
 	protected ExternalCPSDispatch(final PorcEExecutionRef execution) {
 		super(execution);

@@ -3,6 +3,7 @@ package orc.run.porce;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -72,6 +73,7 @@ public class Force {
 
     @NodeChild(value = "join", type = Expression.class)
     @NodeField(name = "execution", type = PorcEExecutionRef.class)
+    @Introspectable
     public static abstract class Finish extends Expression {
         @Child
         Dispatch call = null;

@@ -5,6 +5,7 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -18,6 +19,7 @@ import orc.run.porce.runtime.SelfTailCallException;
 import orc.run.porce.runtime.TailCallException;
 
 @ImportStatic({ SpecializationConfiguration.class })
+@Introspectable
 public abstract class InternalCPSDispatch extends Dispatch {
 	protected InternalCPSDispatch(final PorcEExecutionRef execution) {
 		super(execution);
@@ -46,8 +48,7 @@ public abstract class InternalCPSDispatch extends Dispatch {
     }
     
 	// The RootNode guard is required so that selfTail can be activated even
-	// after universe has activated; without this universal would end up
-	// handling those cases and cause TCO to fail based on optimizations.
+	// after tail has activated.
     @Specialization(guards = { "isTail", "getRootNodeCached() != target.body.getRootNode()" })
     public void tail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
         throw new TailCallException(target, arguments);
