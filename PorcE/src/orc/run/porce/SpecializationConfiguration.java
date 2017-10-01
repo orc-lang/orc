@@ -7,7 +7,7 @@ public abstract class SpecializationConfiguration {
 	@CompilationFinal
     public static int GetFieldMaxCacheSize = 4;
 	@CompilationFinal
-    public static int InternalCallMaxCacheSize = 4;
+    public static int InternalCallMaxCacheSize = 12;
 	@CompilationFinal
     public static int ExternalDirectCallMaxCacheSize = 4;
 	@CompilationFinal

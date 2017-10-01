@@ -68,7 +68,7 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 	// can access as an argument. The problem is I don't know how to make sure
 	// arguments is passed down from the parent call.
 
-	@Specialization(guards = {"invoker != null", "canInvokeWithBoundary(invoker, target, buildArguments(arguments))" }, limit = "ExternalDirectCallMaxCacheSize")
+	@Specialization(guards = { "invoker != null", "canInvokeWithBoundary(invoker, target, buildArguments(arguments))" }, limit = "ExternalDirectCallMaxCacheSize")
 	public void specificDirect(final VirtualFrame frame, final Object target, final Object[] arguments,
 			@Cached("getDirectInvokerWithBoundary(target, buildArguments(arguments))") DirectInvoker invoker) {
 		PorcEClosure pub = (PorcEClosure) arguments[0];
@@ -99,8 +99,7 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 
 	// FIXME: PERFORMANCE: See specificDirect FIXME.
 	
-	@Specialization(guards = {
-			"canInvokeWithBoundary(invoker, target, buildArguments(arguments))" }, limit = "ExternalCPSCallMaxCacheSize")
+	@Specialization(guards = { "isNotDirectInvoker(invoker)", "canInvokeWithBoundary(invoker, target, buildArguments(arguments))" }, limit = "ExternalCPSCallMaxCacheSize")
 	public void specific(final VirtualFrame frame, final Object target, final Object[] arguments,
 			@Cached("getInvokerWithBoundary(target, buildArguments(arguments))") Invoker invoker) {
 		PorcEClosure pub = (PorcEClosure) arguments[0];
@@ -145,6 +144,10 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 	}
 
 	/* Utilties */
+	
+	protected static boolean isNotDirectInvoker(final Invoker invoker) {
+		return !(invoker instanceof DirectInvoker);
+	}
 
 	protected static Object[] buildArguments(Object[] arguments) {
 		CompilerAsserts.compilationConstant(arguments.length);
