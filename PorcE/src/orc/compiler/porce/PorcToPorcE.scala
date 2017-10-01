@@ -203,7 +203,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
         case porc.NewToken.Z(c) =>
           porce.NewToken.create(transform(c))
         case porc.HaltToken.Z(c) =>
-          porce.HaltToken.create(transform(c))
+          porce.HaltToken.create(transform(c), ctx.execution.newRef())
         case porc.Kill.Z(c, t, k) =>
           porce.Kill.create(transform(c), transform(t), transform(k), ctx.execution.newRef())
         case porc.CheckKilled.Z(t) =>
@@ -223,7 +223,8 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             val (f, i) = p
             porce.Resolve.Future.create(porce.Read.Local.create(join), transform(f), i)
           }
-          val finishJoin = porce.Resolve.Finish.create(porce.Read.Local.create(join), ctx.execution.newRef()) // tail
+          val finishJoin = porce.Resolve.Finish.create(porce.Read.Local.create(join), ctx.execution.newRef())
+          finishJoin.setTail(thisCtx.inTailPosition)
           porce.Sequence.create((newJoin +: processors :+ finishJoin).toArray)
         case porc.Force.Z(p, c, t, Seq(future)) =>
           // Special optimized case for only one future.
@@ -236,7 +237,8 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             val (f, i) = p
             porce.Force.Future.create(porce.Read.Local.create(join), transform(f), i)
           }
-          val finishJoin = porce.Force.Finish.create(porce.Read.Local.create(join), ctx.execution.newRef()) // tail
+          val finishJoin = porce.Force.Finish.create(porce.Read.Local.create(join), ctx.execution.newRef())
+          finishJoin.setTail(thisCtx.inTailPosition)
           porce.Sequence.create((newJoin +: processors :+ finishJoin).toArray)
         case porc.SetDiscorporate.Z(c) =>
           porce.SetDiscorporate.create(transform(c))

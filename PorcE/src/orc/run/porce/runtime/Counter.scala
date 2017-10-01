@@ -291,19 +291,43 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
     parent.newToken()
   }
 
+  // TODO: Fix duplication between onHalt and haltTokenOptimized.
+  
   def onHalt(): Unit = {
     // Call the haltContinuation if we didn't discorporate.
     if (!isDiscorporated) {
-      // TODO: PERFORMANCE: Instead of scheduling here consider notifying the caller to haltToken to invoke the closure. It's likely it would be a stable node which could be called directly.
-      //   The tricky part will be handling the cases where instead of being called from a Truffle node we are called from the runtime.
-      //   Maybe we need two ways to halt a token. One which schedules the handler and one which direct calls it.
-
       // Token: from parent
       runtime.potentiallySchedule(CallClosureSchedulable(haltContinuation))
     } else {
       parent.setDiscorporate()
       // Token: from parent
       parent.haltToken()
+    }
+  }
+  
+  def haltTokenOptimized(): PorcEClosure = {
+    // DUPLICATED: from Counter.haltToken()
+    val n = decrementAndGet()
+    if (tracingEnabled) {
+      logChange(s"- Down to $n")
+      if (n < 0) {
+        Counter.report()
+      }
+      assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
+    }
+    if (n == 0) {
+      // Call the haltContinuation if we didn't discorporate.
+      if (!isDiscorporated) {
+        // Token: from parent
+        haltContinuation
+      } else {
+        parent.setDiscorporate()
+        // Token: from parent
+        parent.haltToken()
+        null
+      }
+    } else {
+      null
     }
   }
 }

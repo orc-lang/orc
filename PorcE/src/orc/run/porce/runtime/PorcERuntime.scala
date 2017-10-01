@@ -13,12 +13,14 @@
 
 package orc.run.porce.runtime
 
+import java.util.logging.Level
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 import orc.ExecutionRoot
 import orc.run.Orc
 import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution }
-//import orc.run.porce.Logger
+import orc.run.porce.Logger
 import orc.run.porce.PorcELanguage
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import orc.Schedulable
@@ -63,7 +65,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
           decrementStackDepth()
         }
       } else {
-        //Logger.info(s"Scheduling (${stackDepthThreadLocal.get()}) $s")
+        //Logger.log(Level.INFO, s"Scheduling $s", new RuntimeException())
         schedule(s)
       }
     } else {
@@ -73,9 +75,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
 }
 
 object PorcERuntime {
-  val stackDepthThreadLocal = new ThreadLocal[Int]() {
+  private class IntHolder(var value: Int)
+  private val stackDepthThreadLocal = new ThreadLocal[IntHolder]() {
     override def initialValue() = {
-      0
+      new IntHolder(0)
     }
   }
 
@@ -88,11 +91,11 @@ object PorcERuntime {
     if (PorcERuntime.maxStackDepth > 0) {
       val depth = PorcERuntime.stackDepthThreadLocal.get()
       /*if (depth > PorcERuntime.maxStackDepth / 2)
-        Logger.fine(s"incr depth at $depth.")
+        Logger.log(Level.INFO, s"incr (depth=${depth})")
         */
-      val r = depth < PorcERuntime.maxStackDepth
+      val r = depth.value < PorcERuntime.maxStackDepth
       if (r)
-        PorcERuntime.stackDepthThreadLocal.set(depth + 1)
+        depth.value += 1
       r
     } else {
       false
@@ -108,15 +111,15 @@ object PorcERuntime {
     if (PorcERuntime.maxStackDepth > 0) {
       val depth = PorcERuntime.stackDepthThreadLocal.get()
       /*if (depth > PorcERuntime.maxStackDepth / 2)
-        Logger.fine(s"decr depth at $depth.")
+        Logger.log(Level.INFO, s"decr (depth=${depth})")
         */
-      PorcERuntime.stackDepthThreadLocal.set(depth - 1)
+      depth.value -= 1
     }
   }
 
   def resetStackDepth() = {
     if (PorcERuntime.maxStackDepth > 0) {
-      PorcERuntime.stackDepthThreadLocal.set(0)
+      PorcERuntime.stackDepthThreadLocal.get().value = 0
     }
   }
 
