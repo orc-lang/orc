@@ -12,6 +12,7 @@
 package orc.lib.state;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import scala.collection.JavaConversions;
@@ -183,11 +184,13 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         // collect all values in a list
                         final Object out = JavaConversions.collectionAsScalaIterable(contents).toList();
                         contents.clear();
+                        
+                        ArrayList<CallContext> oldWriters = new ArrayList<>(writers);
+                        writers.clear();
                         // resume all writers
-                        for (final CallContext writer : writers) {
+                        for (final CallContext writer : oldWriters) {
                             writer.publish(signal());
                         }
-                        writers.clear();
                         // notify closer if necessary
                         if (closer != null) {
                             closer.publish(signal());

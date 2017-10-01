@@ -58,8 +58,8 @@ public class Semaphore extends EvalSite implements TypedSite {
 
     protected class SemaphoreInstance extends DotSite implements DOrcPlacementPolicy {
 
-        protected final Queue<CallContext> waiters = new LinkedList<CallContext>();
-        protected final Queue<CallContext> snoopers = new LinkedList<CallContext>();
+        protected final LinkedList<CallContext> waiters = new LinkedList<CallContext>();
+        protected final LinkedList<CallContext> snoopers = new LinkedList<CallContext>();
 
         /* Invariant: n >= 0 */
         protected int n;
@@ -79,10 +79,11 @@ public class Semaphore extends EvalSite implements TypedSite {
                             waiter.setQuiescent();
                             waiters.offer(waiter);
                             if (!snoopers.isEmpty()) {
-                                for (final CallContext snooper : snoopers) {
-                                    snooper.publish(signal());
-                                }
+                                LinkedList<CallContext> oldSnoopers = (LinkedList<CallContext>) snoopers.clone();
                                 snoopers.clear();
+                                for (final CallContext snooper : oldSnoopers) {
+                                	snooper.publish(signal());
+                                }
                             }
                         } else {
                             --n;

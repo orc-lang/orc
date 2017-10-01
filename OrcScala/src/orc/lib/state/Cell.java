@@ -132,20 +132,22 @@ public class Cell extends EvalSite implements TypedSite {
                         /* Set the contents of the cell */
                         contents = val;
 
-                        /*
-                         * Wake up all queued readers and report the written
-                         * value to them.
-                         */
-                        for (final CallContext reader : readQueue) {
-                            reader.publish(object2value(val));
-                        }
-
+                        Queue<CallContext> rq = readQueue;
+                        
                         /*
                          * Null out the read queue. This indicates that the cell
                          * has been written. It also allowed the associated
                          * memory to be reclaimed.
                          */
                         readQueue = null;
+
+                        /*
+                         * Wake up all queued readers and report the written
+                         * value to them.
+                         */
+                        for (final CallContext reader : rq) {
+                            reader.publish(object2value(val));
+                        }
 
                         /* A successful write publishes a signal. */
                         writer.publish(signal());
