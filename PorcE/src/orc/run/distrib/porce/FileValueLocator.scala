@@ -19,20 +19,25 @@ package orc.run.distrib.porce
   * @author jthywiss
   */
 class FileValueLocator(execution: DOrcExecution) extends ValueLocator {
-  val filenameLocationMap = Map(
-      "adventure-1.txt" -> 1,
-      "adventure-2.txt" -> 2,
-      "adventure-3.txt" -> 3,
-      "adventure-4.txt" -> 4,
-      "adventure-5.txt" -> 5,
-      "adventure-6.txt" -> 6,
-      "adventure-7.txt" -> 7,
-      "adventure-8.txt" -> 8,
-      "adventure-9.txt" -> 9,
-      "adventure-10.txt" -> 10,
-      "adventure-11.txt" -> 11,
-      "adventure-12.txt" -> 12
-      )
+  /* Assuming follower numbers are contiguous from 0 (leader) to n-1 */
+  private val numLocations = execution.runtime.allLocations.size
+  val filenameLocationMap = Seq(
+      "adventure-1.txt",
+      "adventure-2.txt",
+      "adventure-3.txt",
+      "adventure-4.txt",
+      "adventure-5.txt",
+      "adventure-6.txt",
+      "adventure-7.txt",
+      "adventure-8.txt",
+      "adventure-9.txt",
+      "adventure-10.txt",
+      "adventure-11.txt",
+      "adventure-12.txt"
+    ).zipWithIndex.map({
+      /* Map files to locations 1 ... n-1, skipping leader (0) */
+      case (fn, i) => (fn, (i % numLocations - 1) + 1)
+    }).toMap
 
   override val currentLocations: PartialFunction[Any, Set[PeerLocation]] = {
     case f: java.io.File if filenameLocationMap.contains(f.getName) => Set(execution.locationForFollowerNum(filenameLocationMap(f.getName)))
