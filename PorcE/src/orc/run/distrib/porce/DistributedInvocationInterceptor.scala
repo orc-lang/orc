@@ -15,7 +15,7 @@ package orc.run.distrib.porce
 
 import java.util.concurrent.atomic.AtomicLong
 
-import orc.Schedulable
+import orc.{ CaughtEvent, Schedulable }
 import orc.run.porce.runtime.{ CPSCallContext, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
@@ -60,7 +60,9 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         if (intersectPermittedLocs.nonEmpty) {
           intersectPermittedLocs
         } else {
-          throw new NoLocationAvailable((target +: arguments.toSeq).map(v => (v,execution.currentLocations(v).map(_.runtimeId))))
+          val nla = new NoLocationAvailable((target +: arguments.toSeq).map(v => (v,execution.currentLocations(v).map(_.runtimeId))))
+          execution.notifyOrc(CaughtEvent(nla))
+          throw nla
         }
       }
     }
