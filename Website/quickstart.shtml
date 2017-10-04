@@ -6,10 +6,10 @@
 <ol>
 <li><a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java SE</a> 1.8 or later.</li>
 <!--<li><a href="https://ant.apache.org/">Ant</a> 1.7.1 or later. (Older versions may also work)</li>-->
-<li><a href="https://www.eclipse.org/downloads/">Eclipse</a> 4.6. 
+<li><a href="https://www.eclipse.org/downloads/">Eclipse</a> 4.7. 
 "Eclipse IDE for Eclipse Committers" (formerly called "Eclipse Standard") is
 sufficient, but any Eclipse package with the JDT can be used.</li>
-<li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.12.2.
+<li><a href="http://www.scala-ide.org/">Scala IDE for Eclipse</a>, corresponding to Scala language version 2.12.3.
 Note that the Scala IDE for Eclipse <a href="http://scala-ide.org/docs/2.0.x/advancedsetup.html">works better with a modified eclipse.ini</a>.</li>
 <li>A Git distribution that includes the <code>git describe</code> command.  Most UNIX systems (including macOS with <a href="https://itunes.apple.com/us/app/xcode/id497799835?mt=12">Xcode</a>),
 Linux distributions, BSD variants, and other OSes include this as part of their base platform.  A few OSes, notably Windows,

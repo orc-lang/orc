@@ -93,7 +93,7 @@
 			<arg value="${orc.orcdoc-out.dir}"/>
 			<classpath>
 				<pathelement location="${orc.location.OrcScala}/lib/scala-library.jar"/>
-				<pathelement location="${orc.location.OrcScala}/lib/scala-parser-combinators_2.12-1.0.5.jar"/>
+				<pathelement location="${orc.location.OrcScala}/lib/scala-parser-combinators_2.12-1.0.6.jar"/>
 				<pathelement location="${orc.location.OrcScala}/lib/scala-xml_2.12-1.0.6.jar"/>
 				<pathelement location="${orc.location.OrcDocgen}/build"/>
 			</classpath>
