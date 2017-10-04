@@ -71,6 +71,14 @@ abstract class DelimeterSeparatedTabularTextWriter(write: String => Unit) {
     rows.foreach(row => writeRow(row))
   }
 
+  def writeRowsOfTraversables(rows: TraversableOnce[TraversableOnce[_]]): Unit = {
+    rows.foreach(row => writeRow(row))
+  }
+
+  def writeRowsOfProducts(rows: TraversableOnce[Product]): Unit = {
+    rows.foreach(row => writeRow(row))
+  }
+
   def writeRow[R: TraversableOrProduct](rowData: R, rowPrefix: String = rowPrefix, delimiter: String = delimiter, lineTerminator: String = lineTerminator): Unit = {
     rowData match {
       case to: TraversableOnce[_] => writeRow(to, rowPrefix, delimiter, lineTerminator)
