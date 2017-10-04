@@ -99,8 +99,7 @@ class MethodTypeMismatchException(val methodName: String, val clazz: Class[_]) e
 // TODO: Add SerialVersionUID
 class UncallableTypeException(uncallable: Class[_]) extends RuntimeTypeException("Type not callable: \"" + uncallable + "\"")
 
-/** Exception raised when an uncallable value occurs in call argPosition.
-  */
+/** Exception raised when an uncallable value occurs as a call target */
 @SerialVersionUID(7171287004340017499L)
 class UncallableValueException(uncallable: Any) extends RuntimeTypeException("Value not callable: \"" + Format.formatValue(uncallable).take(100) + "\"")
 

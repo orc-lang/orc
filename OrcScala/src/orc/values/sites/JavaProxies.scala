@@ -14,8 +14,8 @@ package orc.values.sites
 
 import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTargetException }
 
-import orc.{ Accessor, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, UncallableValueInvoker }
-import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, UncallableValueException }
+import orc.{ Accessor, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, TargetThrowsInvoker, TargetArgsThrowsInvoker }
+import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, MalformedArrayAccessException }
 import orc.run.Logger
 import orc.OrcRuntime
 import orc.util.ArrayExtensions.Array1
@@ -147,8 +147,7 @@ object JavaCall {
       }
       // We should have boxed any java.lang.Integer, java.lang.Short, or java.lang.Byte value into BigInt
       case _ if targetCls.isArray() => 
-        //throw new MalformedArrayAccessException(args)
-        Some(UncallableValueInvoker(target))
+        Some(TargetArgsThrowsInvoker(target, args, new MalformedArrayAccessException(args)))
 
       // CLASSES (Constructors)
       case (target: Class[_], _) => {
@@ -205,7 +204,6 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
   import JavaCall._
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
 
-  @throws[UncallableValueException]
   def invokeDirect(theObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     //orc.run.core.Tracer.traceJavaCall(callContext)
     try {
@@ -276,8 +274,8 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
         override def toString() = s"<Member Invoker>($javaClass.$memberName)"
       }
     } catch {
-      case _: NoSuchMethodException | _: MethodTypeMismatchException =>
-        UncallableValueInvoker(this)
+      case nsme: NoSuchMethodException => TargetThrowsInvoker(this, nsme)
+      case mtme: MethodTypeMismatchException => TargetThrowsInvoker(this, mtme)
     }
   }
 

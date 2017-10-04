@@ -14,7 +14,6 @@
 package orc
 
 import orc.error.runtime.{ DoesNotHaveMembersException, HaltException, NoSuchMemberException, UncallableValueException }
-import orc.DirectInvoker
 
 /** A collection of utility methods for writing invokers and accessors.
 	*/
@@ -60,7 +59,41 @@ abstract class OnlyDirectInvoker extends DirectInvoker {
   }
 }
 
-/** A invoker sentinel representing the fact that target is not callable.
+/** An invoker sentinel that throws a deferred Exception for this target (for any arg values) */
+case class TargetThrowsInvoker(target: AnyRef, e: Throwable) extends ErrorInvoker with DirectInvoker {
+  @throws[Throwable]
+  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    throw e.fillInStackTrace()
+  }
+  
+  @throws[Throwable]
+  def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+    throw e.fillInStackTrace()
+  }
+
+  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    this.target == target
+  }
+}
+
+/** An invoker sentinel that throws a deferred Exception for this target and arg values */
+case class TargetArgsThrowsInvoker(target: AnyRef, arguments: Array[AnyRef], e: Throwable) extends ErrorInvoker with DirectInvoker {
+  @throws[Throwable]
+  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+    throw e.fillInStackTrace()
+  }
+  
+  @throws[Throwable]
+  def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+    throw e.fillInStackTrace()
+  }
+
+  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    this.target == target && this.arguments == arguments
+  }
+}
+
+/** An invoker sentinel representing the fact that target is not callable.
 	*/
 case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker with DirectInvoker {
   @throws[UncallableValueException]
@@ -68,7 +101,7 @@ case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker with Dire
     throw new UncallableValueException(target)
   }
   
-  @throws[IllegalArgumentException]
+  @throws[UncallableValueException]
   def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     throw new UncallableValueException(target)
   }
@@ -78,7 +111,7 @@ case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker with Dire
   }
 }
 
-/** A invoker sentinel representing the fact that arguments are not valid for this call.
+/** An invoker sentinel representing the fact that arguments are not valid for this call.
 	*/
 case class IllegalArgumentInvoker(target: AnyRef, arguments: Array[AnyRef]) extends ErrorInvoker with DirectInvoker {
   @throws[IllegalArgumentException]
