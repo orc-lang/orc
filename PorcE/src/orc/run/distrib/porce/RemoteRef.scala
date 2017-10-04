@@ -96,6 +96,7 @@ class ObjectRemoteRefIdMapping[T >: Null](freshRemoteRefId: () => RemoteRef#Remo
           // This is just an optimization to avoid consuming IDs and constantly writing to remoteIdToObject.
           val newObjId = objectToRemoteId.computeIfAbsent(obj, _ => freshRemoteRefId())
           assert(newObjId != 0L)
+          Logger.Marshal.fine(f"Assigned $newObjId%#x to $obj")
           remoteIdToObject.put(newObjId, obj)
           newObjId
         } else {

@@ -43,7 +43,7 @@ object ExecutionLogOutputStream {
       val fileBasenameSuffix = Pattern.compile("${jvmName}", Pattern.LITERAL).matcher(System.getProperty("orc.executionlog.filesuffix", "")).replaceAll(ManagementFactory.getRuntimeMXBean.getName)
       val outFile = new File(outDir, s"$fileBasenamePrefix$basename$fileBasenameSuffix.$extension")
       if (!outFile.createNewFile()) {
-        throw new IOException(s"$description: File already exists: $outFile")
+        throw new IOException(s"$description: File already exists: ${outFile.getAbsolutePath}")
       }
       Some(new FileOutputStream(outFile))
     } else {
