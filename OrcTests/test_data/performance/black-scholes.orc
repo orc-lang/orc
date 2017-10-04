@@ -4,9 +4,9 @@
 
 include "benchmark.inc"
 
-import class BlackScholesResult = "orc.test.item.scalabenchmarks.BlackScholesResult"
-import class BlackScholesData = "orc.test.item.scalabenchmarks.BlackScholesData"
-import class BlackScholes = "orc.test.item.scalabenchmarks.BlackScholes"
+import class BlackScholesResult = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesResult"
+import class BlackScholesData = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesData"
+import class BlackScholes = "orc.test.item.scalabenchmarks.blackscholes.BlackScholes"
 
 val a1 = 0.31938153
 val a2 = -0.356563782

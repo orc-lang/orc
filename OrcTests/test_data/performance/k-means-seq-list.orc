@@ -30,8 +30,8 @@ val iters = 1
 import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
 import class LongAdder = "java.util.concurrent.atomic.LongAdder"
 
-import class Point = "orc.test.item.scalabenchmarks.Point"
-import class KMeansData = "orc.test.item.scalabenchmarks.KMeansData"
+import class Point = "orc.test.item.scalabenchmarks.kmeans.Point"
+import class KMeansData = "orc.test.item.scalabenchmarks.kmeans.KMeansData"
 
 class PointAdder {
   val x = DoubleAdder()

@@ -1,4 +1,7 @@
-package orc.test.item.scalabenchmarks
+package orc.test.item.scalabenchmarks.blackscholes
+
+import orc.test.item.scalabenchmarks.BenchmarkApplication
+import orc.test.item.scalabenchmarks.Util
 
 object BlackScholesPar extends BenchmarkApplication {
 

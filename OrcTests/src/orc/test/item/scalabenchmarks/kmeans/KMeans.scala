@@ -1,7 +1,12 @@
-package orc.test.item.scalabenchmarks
+package orc.test.item.scalabenchmarks.kmeans
 
 import scala.io.Source
 import scala.math.sqrt
+import orc.test.item.scalabenchmarks.BenchmarkApplication
+import orc.test.item.scalabenchmarks.Util
+import scala.BigDecimal
+import scala.math.BigDecimal.double2bigDecimal
+import scala.math.BigDecimal.int2bigDecimal
 
 object KMeansData  {
   def readPoints(path: String): Array[Point] = {

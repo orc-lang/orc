@@ -1,7 +1,11 @@
-package orc.test.item.scalabenchmarks
+package orc.test.item.scalabenchmarks.kmeans
 
 import java.util.concurrent.atomic.DoubleAdder
 import java.util.concurrent.atomic.LongAdder
+import orc.test.item.scalabenchmarks.BenchmarkApplication
+import orc.test.item.scalabenchmarks.Util
+import scala.math.BigDecimal.double2bigDecimal
+import scala.math.BigDecimal.long2bigDecimal
 
 object KMeansParManual extends BenchmarkApplication {
   val n = 10

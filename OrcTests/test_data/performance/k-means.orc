@@ -11,9 +11,9 @@ type Double = Top
 val n = 10
 val iters = 1
 
-import class Point = "orc.test.item.scalabenchmarks.Point"
-import class KMeansData = "orc.test.item.scalabenchmarks.KMeansData"
-import class KMeans = "orc.test.item.scalabenchmarks.KMeans"
+import class Point = "orc.test.item.scalabenchmarks.kmeans.Point"
+import class KMeansData = "orc.test.item.scalabenchmarks.kmeans.KMeansData"
+import class KMeans = "orc.test.item.scalabenchmarks.kmeans.KMeans"
 
 import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
 import class LongAdder = "java.util.concurrent.atomic.LongAdder"
