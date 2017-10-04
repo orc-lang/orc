@@ -27,6 +27,8 @@ protected object TraversableOrProduct {
   */
 abstract class DelimeterSeparatedTabularTextWriter(write: String => Unit) {
 
+  def this(appendable: Appendable) = this(appendable.append(_))
+
   /** IANA-registered media type of this writer's output.
     * (list at http://www.iana.org/assignments/media-types/ )
     */
@@ -114,6 +116,8 @@ abstract class DelimeterSeparatedTabularTextWriter(write: String => Unit) {
   */
 class CsvWriter(write: String => Unit) extends DelimeterSeparatedTabularTextWriter(write) {
 
+  def this(appendable: Appendable) = this(appendable.append(_))
+
   /** IANA-registered media type of this writer's output.
     * (list at http://www.iana.org/assignments/media-types/ )
     */
@@ -150,6 +154,8 @@ class CsvWriter(write: String => Unit) extends DelimeterSeparatedTabularTextWrit
   */
 class TsvWriter(write: String => Unit) extends DelimeterSeparatedTabularTextWriter(write) {
 
+  def this(appendable: Appendable) = this(appendable.append(_))
+
   /** IANA-registered media type of this writer's output.
     * (list at http://www.iana.org/assignments/media-types/ )
     */
@@ -185,6 +191,8 @@ class TsvWriter(write: String => Unit) extends DelimeterSeparatedTabularTextWrit
   * @author jthywiss
   */
 class WikiCreoleTableWriter(write: String => Unit) extends DelimeterSeparatedTabularTextWriter(write) {
+
+  def this(appendable: Appendable) = this(appendable.append(_))
 
   /** IANA-registered media type of this writer's output.
     * (list at http://www.iana.org/assignments/media-types/ )
