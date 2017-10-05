@@ -15,7 +15,7 @@ package orc.values.sites
 import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTargetException }
 
 import orc.{ Accessor, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, TargetThrowsInvoker, TargetArgsThrowsInvoker }
-import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, MalformedArrayAccessException }
+import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, MalformedArrayAccessException, RuntimeTypeException }
 import orc.run.Logger
 import orc.OrcRuntime
 import orc.util.ArrayExtensions.Array1
@@ -129,45 +129,50 @@ object JavaCall {
   def getInvoker(target: AnyRef, args: Array[AnyRef]): Option[Invoker] = {
     def targetCls = target.getClass()
     val argClss = args.map(InvocationBehaviorUtilities.valueType)
-    (target, args) match {
-      case (null, _) =>
-        None
-        
-      // ARRAYS
-      case (_, Array1(_: BigInt)) if targetCls.isArray() => {
-        Some(new OnlyDirectInvoker {
-          def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-            target.getClass().isArray() && arguments.length == 1 && arguments(0).isInstanceOf[BigInt]
-          }
-          @throws[HaltException]
-          def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-            new JavaArrayElementProxy(target.asInstanceOf[Array[Any]], arguments(0).asInstanceOf[BigInt].toInt)
-          }
-        })
-      }
-      // We should have boxed any java.lang.Integer, java.lang.Short, or java.lang.Byte value into BigInt
-      case _ if targetCls.isArray() => 
-        Some(TargetArgsThrowsInvoker(target, args, new MalformedArrayAccessException(args)))
-
-      // CLASSES (Constructors)
-      case (target: Class[_], _) => {
-        if (target.getConstructors().nonEmpty) {
-          Some(target.getMemberInvokerValueDirected("<init>", argClss))
-        } else if (target.hasStaticMember("apply")) {
-          Some(target.getMemberInvokerValueDirected("apply", argClss))          
-        } else {
+    try {
+      (target, args) match {
+        case (null, _) =>
           None
+          
+        // ARRAYS
+        case (_, Array1(_: BigInt)) if targetCls.isArray() => {
+          Some(new OnlyDirectInvoker {
+            def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+              target.getClass().isArray() && arguments.length == 1 && arguments(0).isInstanceOf[BigInt]
+            }
+            @throws[HaltException]
+            def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+              new JavaArrayElementProxy(target.asInstanceOf[Array[Any]], arguments(0).asInstanceOf[BigInt].toInt)
+            }
+          })
+        }
+        // We should have boxed any java.lang.Integer, java.lang.Short, or java.lang.Byte value into BigInt
+        case _ if targetCls.isArray() => 
+          Some(TargetArgsThrowsInvoker(target, args, new MalformedArrayAccessException(args)))
+  
+        // CLASSES (Constructors)
+        case (target: Class[_], _) => {
+          if (target.getConstructors().nonEmpty) {
+            Some(target.getMemberInvokerValueDirected("<init>", argClss))
+          } else if (target.hasStaticMember("apply")) {
+            Some(target.getMemberInvokerValueDirected("apply", argClss))          
+          } else {
+            None
+          }
+        }
+  
+        // NORMAL CALLS
+        case _ => {
+          if (targetCls.hasInstanceMember("apply")) {
+            Some(targetCls.getMemberInvokerTypeDirected("apply", argClss))
+          } else {
+            None
+          }
         }
       }
-
-      // NORMAL CALLS
-      case _ => {
-        if (targetCls.hasInstanceMember("apply")) {
-          Some(targetCls.getMemberInvokerTypeDirected("apply", argClss))
-        } else {
-          None
-        }
-      }
+    } catch {
+      case e: RuntimeTypeException =>
+        Some(TargetThrowsInvoker(target, e))
     }
   }
 

@@ -101,7 +101,7 @@ class UncallableTypeException(uncallable: Class[_]) extends RuntimeTypeException
 
 /** Exception raised when an uncallable value occurs as a call target */
 @SerialVersionUID(7171287004340017499L)
-class UncallableValueException(uncallable: Any) extends RuntimeTypeException("Value not callable: \"" + Format.formatValue(uncallable).take(100) + "\"")
+class UncallableValueException(uncallable: Any) extends RuntimeTypeException("Value not callable: \"" + Format.formatValue(uncallable).take(2000) + "\"")
 
 /** Attempted dot access at an unknown member.
   */
@@ -112,7 +112,7 @@ class TypeNoSuchMemberException(v: Class[_], val unknownMember: String) extends 
   */
 @SerialVersionUID(7027861135377746868L)
 class NoSuchMemberException(v: AnyRef, val unknownMember: String) 
-  extends RuntimeTypeException(s"Value ${Format.formatValue(v).take(100)} (${if (v == null) "" else v.getClass.getName}) does not have a '$unknownMember' member")
+  extends RuntimeTypeException(s"Value ${Format.formatValue(v).take(2000)} (${if (v == null) "" else v.getClass.getName}) does not have a '$unknownMember' member")
 
 /** Attempted dot access to members on an type without members
   */
@@ -123,7 +123,7 @@ class TypeDoesNotHaveMembersException(val v: Class[_]) extends RuntimeTypeExcept
   */
 // TODO: Add SerialVersionUID
 class DoesNotHaveMembersException(val v: AnyRef) 
-  extends RuntimeTypeException(s"Value ${Format.formatValue(v).take(100)}  (${if (v == null) "" else v.getClass.getName}) does not have members")
+  extends RuntimeTypeException(s"Value ${Format.formatValue(v).take(2000)}  (${if (v == null) "" else v.getClass.getName}) does not have members")
 
 ////////
 // Site exceptions
