@@ -142,7 +142,7 @@ object JavaCall {
             }
             @throws[HaltException]
             def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              new JavaArrayElementProxy(target.asInstanceOf[Array[Any]], arguments(0).asInstanceOf[BigInt].toInt)
+              new JavaArrayElementProxy(target, arguments(0).asInstanceOf[BigInt].toInt)
             }
           })
         }
@@ -298,7 +298,7 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
         }
         def get(target: AnyRef): AnyRef = {
           Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName.read")
-          new JavaArrayLengthPseudofield(target.asInstanceOf[JavaMemberProxy].theObject.asInstanceOf[Array[Any]])
+          new JavaArrayLengthPseudofield(target.asInstanceOf[JavaMemberProxy].theObject)
         }
       }
     } else if (javaField.isEmpty) {
@@ -369,20 +369,20 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
   *
   * @author jthywiss, amp
   */
-case class JavaArrayElementProxy(val theArray: Array[Any], val index: Int) extends AccessorValue {
+case class JavaArrayElementProxy(val theArray: AnyRef, val index: Int) extends AccessorValue {
   def getAccessor(runtime: OrcRuntime, field: OrcField): Accessor = {
     field match {
       case OrcField("read") => 
         new ArrayAccessor {
-          def methodInstance(theArray: Array[Any], index: Int): AnyRef = new JavaArrayDerefSite(theArray, index)
+          def methodInstance(theArray: AnyRef, index: Int): AnyRef = new JavaArrayDerefSite(theArray, index)
         }
       case OrcField("readnb") => 
         new ArrayAccessor {
-          def methodInstance(theArray: Array[Any], index: Int): AnyRef = new JavaArrayDerefSite(theArray, index)
+          def methodInstance(theArray: AnyRef, index: Int): AnyRef = new JavaArrayDerefSite(theArray, index)
         }
       case OrcField("write") => 
         new ArrayAccessor {
-          def methodInstance(theArray: Array[Any], index: Int): AnyRef = new JavaArrayAssignSite(theArray, index)
+          def methodInstance(theArray: AnyRef, index: Int): AnyRef = new JavaArrayAssignSite(theArray, index)
         }
       case OrcField(fieldname) => 
         NoSuchMemberAccessor(this, fieldname)
@@ -391,7 +391,7 @@ case class JavaArrayElementProxy(val theArray: Array[Any], val index: Int) exten
 }
 
 abstract class ArrayAccessor extends Accessor {
-  def methodInstance(theArray: Array[Any], index: Int): AnyRef
+  def methodInstance(theArray: AnyRef, index: Int): AnyRef
   
   def canGet(target: AnyRef): Boolean = {
     target.isInstanceOf[JavaArrayElementProxy]
@@ -408,9 +408,9 @@ abstract class ArrayAccessor extends Accessor {
   *
   * @author jthywiss, amp
   */
-case class JavaArrayDerefSite(val theArray: Array[Any], val index: Int) extends TotalSite0 {
+case class JavaArrayDerefSite(val theArray: AnyRef, val index: Int) extends TotalSite0 {
   def eval(): AnyRef = {
-    java2orc(theArray(index).asInstanceOf[AnyRef])
+    java2orc(JavaArray.get(theArray, index))
   }
 }
 
@@ -418,9 +418,9 @@ case class JavaArrayDerefSite(val theArray: Array[Any], val index: Int) extends 
   *
   * @author jthywiss, amp
   */
-case class JavaArrayAssignSite(val theArray: Array[Any], val index: Int) extends TotalSite1 {
+case class JavaArrayAssignSite(val theArray: AnyRef, val index: Int) extends TotalSite1 {
   def eval(a: AnyRef): AnyRef = {
-    theArray(index) = orc2java(a)
+    JavaArray.set(theArray, index, orc2java(a))
     Signal
   }
 }
@@ -429,8 +429,8 @@ case class JavaArrayAssignSite(val theArray: Array[Any], val index: Int) extends
   *
   * @author jthywiss, amp
   */
-case class JavaArrayLengthPseudofield(val theArray: Array[Any]) extends TotalSite0 {
+case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends TotalSite0 {
   def eval(): AnyRef = {
-    java2orc(theArray.length.asInstanceOf[AnyRef])
+    java2orc(JavaArray.getLength(theArray).asInstanceOf[AnyRef])
   }
 }
