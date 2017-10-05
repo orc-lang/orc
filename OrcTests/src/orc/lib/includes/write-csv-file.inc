@@ -1,10 +1,10 @@
-{- write-csv-file.inc.orc -- Orc program write-csv-file.inc
+{- write-csv-file.inc -- Orc include for writing tabular data (comma-separated value) files
  -
  - Created by jthywiss on Oct 4, 2017 6:39:20 PM
  -}
 
 {--
-@def writeCsvFile(pathname :: String, description :: String, tableColumnTitles :: List[String], rows :: List[List[Top]]) :: Signal =
+@def writeCsvFile(pathname :: String, description :: String, tableColumnTitles :: List[String], rows :: List[List[Top]]) :: Signal
 Write a tabular data (comma-separated value) file,
 with the columns titled per the <code>tableColumnTitles</code> list, and
 the rows of data given in the <code>rows</code> list of lists.
@@ -21,7 +21,6 @@ The <code>description</code> string is used to describe the table in user-
 facing messages (e.g., "Engine power settings" or "Method cumulative elapsed
 time").
 --}
-
 def writeCsvFile(pathname :: String, description :: String, tableColumnTitles :: List[String], rows :: List[List[Top]]) :: Signal =
   import class File = "java.io.File"
   import class FileOutputStream = "java.io.FileOutputStream"
