@@ -78,7 +78,8 @@ public class DistribScaleTest {
                     "-Dorc.config.dirs=config",
                     "-Dorc.executionlog.dir=" + runOutputDir,
                     "-Dorc.executionlog.fileprefix=" + outFilenamePrefix + "_",
-                    "-Dorc.executionlog.filesuffix=_0", testItem.getName()
+                    //"-Dorc.executionlog.filesuffix=_0",
+                    testItem.getName()
             }); //DistribTestConfig.expanded$.MODULE$.getIterableFor("jvmOpts").get().toSeq();
             javaRunCommand.addAll(Arrays.asList(mainArgs));
 

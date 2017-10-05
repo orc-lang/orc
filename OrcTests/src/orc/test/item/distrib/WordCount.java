@@ -29,7 +29,6 @@ import scala.collection.TraversableOnce;
 import orc.test.util.TestEnvironmentDescription;
 import orc.util.CsvWriter;
 import orc.util.ExecutionLogOutputStream;
-import orc.util.WikiCreoleTableWriter;
 
 /**
  * @author jthywiss
@@ -147,8 +146,8 @@ public class WordCount {
         try (
             final OutputStream csvOut = ExecutionLogOutputStream.apply(basename, "csv", description).get();
             final OutputStreamWriter csvOsw = new OutputStreamWriter(csvOut, "UTF-8");
-            final OutputStream creoleOut = ExecutionLogOutputStream.apply(basename, "creole", description).get();
-            final OutputStreamWriter creoleOsw = new OutputStreamWriter(creoleOut, "UTF-8");
+            //final OutputStream creoleOut = ExecutionLogOutputStream.apply(basename, "creole", description).get();
+            //final OutputStreamWriter creoleOsw = new OutputStreamWriter(creoleOut, "UTF-8");
         ) {
             
             final ArrayList<TraversableOnce<?>> newRows = new ArrayList<>(rows.length);
@@ -160,9 +159,9 @@ public class WordCount {
             csvWriter.writeHeader(JavaConverters.collectionAsScalaIterable(Arrays.asList(tableColumnTitles)));
             csvWriter.writeRowsOfTraversables(JavaConverters.collectionAsScalaIterable(newRows));
 
-            final WikiCreoleTableWriter creoleWriter = new WikiCreoleTableWriter(creoleOsw);
-            creoleWriter.writeHeader(JavaConverters.collectionAsScalaIterable(Arrays.asList(tableColumnTitles)));
-            creoleWriter.writeRowsOfTraversables(JavaConverters.collectionAsScalaIterable(newRows));
+            //final WikiCreoleTableWriter creoleWriter = new WikiCreoleTableWriter(creoleOsw);
+            //creoleWriter.writeHeader(JavaConverters.collectionAsScalaIterable(Arrays.asList(tableColumnTitles)));
+            //creoleWriter.writeRowsOfTraversables(JavaConverters.collectionAsScalaIterable(newRows));
         }
         System.out.println(description + " written to " + basename + ".csv");
     }

@@ -31,9 +31,11 @@ def writeCsvFile(pathname :: String, description :: String, tableColumnTitles ::
     then signal
     else Error(description + ": File already exists: " + outFile.getCanonicalPath())
   )  >>
-  OutputStreamWriter(FileOutputStream(outFile), "UTF-8")  >csvOut>
-  CsvWriter(csvOut)  >csvWriter>
+  FileOutputStream(outFile)  >csvOut>
+  OutputStreamWriter(csvOut, "UTF-8")  >csvOsw>
+  CsvWriter(csvOsw)  >csvWriter>
   csvWriter.writeHeader(tableColumnTitles)  >>
   csvWriter.writeRowsOfTraversables(rows)  >>
+  csvOsw.close()  >>
   csvOut.close()  >>
   Println(description + " written to " + outFile.getCanonicalPath())
