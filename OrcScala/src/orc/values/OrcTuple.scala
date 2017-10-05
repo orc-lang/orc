@@ -12,19 +12,15 @@
 //
 package orc.values
 
+import orc.{ ClassDoesNotHaveMembersAccessor, IllegalArgumentInvoker, OnlyDirectInvoker, OrcRuntime }
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, TupleIndexOutOfBoundsException }
 import orc.run.distrib.DOrcMarshalingReplacement
 import orc.util.ArrayExtensions.Array1
-import orc.values.sites.{ NonBlockingSite, PartialSite, UntypedSite }
-import orc.values.sites.{ InvokerMethod, AccessorValue }
-import orc.IllegalArgumentInvoker
-import orc.OnlyDirectInvoker
-import orc.ClassDoesNotHaveMembersAccessor
-import orc.OrcRuntime
+import orc.values.sites.{ AccessorValue, InvokerMethod, NonBlockingSite, PartialSite, UntypedSite }
 
 /** @author dkitchin
   */
-case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorValue with PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement {
+case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorValue with PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement with Product {
   assert(values.length > 1)
   
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
@@ -81,5 +77,9 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
     OrcTuple(values map unmarshaler)
 
   override def toOrcSyntax() = "(" + Format.formatSequence(values) + ")"
+
+  override def productElement(n: Int): Any = values(n)
+
+  override def productArity: Int = values.length
 
 }
