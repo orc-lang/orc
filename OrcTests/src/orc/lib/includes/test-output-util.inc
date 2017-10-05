@@ -18,10 +18,11 @@ def setupOutput() =
   ( if outDir.isEmpty()
     then
       TestRunNumber.getNext()  >testRunNumber>
-      File("runs/" + testRunNumber + "/raw-output")  >outDirName>
+      "runs/" + testRunNumber + "/raw-output"  >outDirName>
       JavaSys.setProperty("orc.executionlog.dir", outDirName)
     else signal
   )  >>
+  File(JavaSys.getProperty("orc.executionlog.dir"))  >outDir>
   ( if outDir.mkdirs()
     then Println("Created output directory: " + outDir.getCanonicalPath())
     else signal
