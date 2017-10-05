@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 
 import orc.error.compiletime.CompilationException;
@@ -79,13 +80,27 @@ public final class TestUtils {
             System.out.println("\n==== Starting " + orcFile + " ====");
             try {
                 final String actual = OrcForTesting.compileAndRun(orcFile.getPath(), TESTING_TIMEOUT, bindings);
-                if (!expecteds.contains(actual)) {
-                    throw new AssertionError("Unexpected output:\n" + actual);
-                }
+                evaluateResult(actual);
             } catch (final FeatureNotSupportedException ce) {
                 assumeNoException(ce);
             } catch (final CompilationException ce) {
                 throw new AssertionError(ce.getMessageAndDiagnostics());
+            }
+        }
+
+        /**
+         * Analyze test result, and throw an AssertionError for failures.
+         */
+        protected void evaluateResult(final int exitStatus, final String actual) throws AssertionError {
+            evaluateResult(actual);
+        }
+
+        /**
+         * Analyze test result, and throw an AssertionError for failures.
+         */
+        protected void evaluateResult(final String actual) throws AssertionError {
+            if (!expecteds.contains(actual)) {
+                throw new AssertionError("Unexpected output:\n" + actual);
             }
         }
 
@@ -96,6 +111,10 @@ public final class TestUtils {
     }
 
     public static TestSuite buildSuite(final String suitename, final Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final File... examplePaths) {
+        return buildSuite(suitename, testCaseClass, bindings, (file, expecteds) -> expecteds.isEmpty(), examplePaths);
+    }
+
+    public static TestSuite buildSuite(final String suitename, final Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final BiPredicate<File, ExpectedOutput> shouldSkip, final File... examplePaths) {
 
         TestEnvironmentDescription.dumpAtShutdown();
 
@@ -111,8 +130,7 @@ public final class TestUtils {
                 } catch (final IOException e) {
                     throw new AssertionError(e);
                 }
-                // skip tests with no expected output
-                if (expecteds.isEmpty()) {
+                if (shouldSkip.test(file, expecteds)) {
                     continue;
                 }
                 if (nestedSuite == null) {

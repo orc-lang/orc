@@ -29,10 +29,10 @@ object TestRunNumber {
       case None => OsCommand.getResultFrom(getNewRunNumCmd)
       case Some(hostname) => OsCommand.getResultFrom(Seq("ssh", hostname) ++ getNewRunNumCmd)
     }
-    if (result.exitValue != 0) {
+    if (result.exitStatus != 0) {
       print(result.stdout)
       Console.err.print(result.stderr)
-      throw new TestRunNumberCmdException(s"${getNewRunNumCmd.mkString(" ")} failed: exitValue=${result.exitValue}, stderr=${result.stderr}")
+      throw new TestRunNumberCmdException(s"${getNewRunNumCmd.mkString(" ")} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
     }
     result.stdout.stripLineEnd
   }

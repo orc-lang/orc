@@ -23,6 +23,7 @@ import orc.error.compiletime.{ CompilationException, FeatureNotSupportedExceptio
 import orc.test.util.{ OsCommand, OsCommandResult, TestRunNumber, TestUtils }
 import orc.test.util.TestUtils.OrcTestCase
 
+import junit.framework.TestSuite
 import org.junit.Assume
 
 /** JUnit test case for a distributed-Orc test.
@@ -43,25 +44,21 @@ class DistribTestCase extends OrcTestCase {
     val leaderOutFile = new File(runOutputDir, s"${outFilenamePrefix}_0.out")
     val leaderErrFile = new File(runOutputDir, s"${outFilenamePrefix}_0.err")
     try {
-      val actual = if (DistribTestCase.leaderSpec.isLocal) {
+      val result = if (DistribTestCase.leaderSpec.isLocal) {
         //OrcForTesting.compileAndRun(orcFile.getPath(), 200 /*s*/, bindings)
-        val result = OsCommand.getResultFrom(Seq(DistribTestCase.leaderSpec.javaCmd, "-cp", DistribTestCase.leaderSpec.classPath) ++ DistribTestCase.leaderSpec.jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--follower-sockets=$followerSockets", orcFile.getPath), directory = new File(DistribTestCase.leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
-        result.stdout
+        OsCommand.getResultFrom(Seq(DistribTestCase.leaderSpec.javaCmd, "-cp", DistribTestCase.leaderSpec.classPath) ++ DistribTestCase.leaderSpec.jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--follower-sockets=$followerSockets", orcFile.getPath), directory = new File(DistribTestCase.leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
       } else {
-        val result = OsCommand.getResultFrom(Seq("ssh", DistribTestCase.leaderSpec.hostname, s"cd '${DistribTestCase.leaderSpec.workingDir}'; { { '${DistribTestCase.leaderSpec.javaCmd}' -cp '${DistribTestCase.leaderSpec.classPath}' ${DistribTestCase.leaderSpec.jvmOptions.mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_0 ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --follower-sockets=$followerSockets '$orcFile' | tee '$leaderOutFile'; } 2>&1 1>&3 | tee '$leaderErrFile'; } 3>&1 1>&2"), teeStdOutErr = true)
-        result.stdout
+        OsCommand.getResultFrom(Seq("ssh", DistribTestCase.leaderSpec.hostname, s"cd '${DistribTestCase.leaderSpec.workingDir}'; { { '${DistribTestCase.leaderSpec.javaCmd}' -cp '${DistribTestCase.leaderSpec.classPath}' ${DistribTestCase.leaderSpec.jvmOptions.mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_0 ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --follower-sockets=$followerSockets '$orcFile' | tee '$leaderOutFile'; } 2>&1 1>&3 | tee '$leaderErrFile'; } 3>&1 1>&2"), teeStdOutErr = true)
       }
-      if (!expecteds.contains(actual)) {
-        throw new AssertionError("Unexpected output:\n" + actual)
-      }
+      evaluateResult(result.exitStatus, result.stdout);
     } catch {
       case fnse: FeatureNotSupportedException => Assume.assumeNoException(fnse)
       case ce: CompilationException => throw new AssertionError(ce.getMessageAndDiagnostics())
     } finally {
       println()
-      Thread.sleep(500 /*ms*/)
+      Thread.sleep(500 /*ms*/ )
       stopFollowers()
-      Thread.sleep(500 /*ms*/)
+      Thread.sleep(500 /*ms*/ )
       println()
     }
   }
@@ -79,7 +76,7 @@ class DistribTestCase extends OrcTestCase {
 
       if (followerSpec.isLocal) {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
-        val command = Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", s"-Dorc.executionlog.filesuffix=_$followerNumber", DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(followerNumber.toString, followerSpec.hostname+":"+followerSpec.port)
+        val command = Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ followerSpec.jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", s"-Dorc.executionlog.filesuffix=_$followerNumber", DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(followerNumber.toString, followerSpec.hostname + ":" + followerSpec.port)
         OsCommand.runNoWait(command, directory = new File(followerWorkingDir), stdout = new File(followerOutFile), stderr = new File(followerErrFile))
       } else {
         println(s"Launching follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
@@ -96,13 +93,13 @@ class DistribTestCase extends OrcTestCase {
 
       if (followerSpec.isLocal) {
         val lsofResult = OsCommand.getResultFrom(Seq("lsof", "-t", "-a", s"-i:${followerSpec.port}", "-sTCP:LISTEN"))
-        if (lsofResult.exitValue == 0) {
+        if (lsofResult.exitStatus == 0) {
           println(s"Terminating follower $followerNumber on port ${followerSpec.port}")
           OsCommand.getResultFrom(Seq("kill", lsofResult.stdout.stripLineEnd))
         }
       } else {
-        val termResult = OsCommand.getResultFrom(Seq("ssh", followerSpec.hostname, "PID=`lsof -t -a -i:"+followerSpec.port+" -sTCP:LISTEN` && kill $PID"))
-        if (termResult.exitValue == 0) {
+        val termResult = OsCommand.getResultFrom(Seq("ssh", followerSpec.hostname, "PID=`lsof -t -a -i:" + followerSpec.port + " -sTCP:LISTEN` && kill $PID"))
+        if (termResult.exitStatus == 0) {
           println(s"Terminated follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
         }
       }
@@ -122,9 +119,13 @@ object DistribTestCase {
       })
   }
 
-  case class DOrcRuntimePlacement(hostname: String, port: Int, isLocal: Boolean, workingDir: String, javaCmd: String, classPath:String, jvmOptions: Seq[String]) { }
+  case class DOrcRuntimePlacement(hostname: String, port: Int, isLocal: Boolean, workingDir: String, javaCmd: String, classPath: String, jvmOptions: Seq[String]) {}
 
-  def buildSuite() = {
+  def buildSuite(programPaths: Array[File]): TestSuite = {
+    buildSuite(classOf[DistribTestCase], programPaths)
+  }
+
+  def buildSuite(testCaseClass: Class[_ <: OrcTestCase], programPaths: Array[File]): TestSuite = {
 
     computeLeaderFollowerSpecs()
 
@@ -134,7 +135,7 @@ object DistribTestCase {
     val localRunOutputDir = "../" + pathRelativeToTestRoot(runOutputDir)
     val orcConfigDir = "../" + pathRelativeToTestRoot(DistribTestConfig.expanded("orcConfigDir")).stripSuffix("/")
     new File(localRunOutputDir).mkdirs()
-    checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.getResultFrom(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir+"/../")))
+    checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.getResultFrom(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir + "/../")))
     if (!leaderSpec.isLocal) {
       copyFiles()
       checkExitValue(s"mkdir -p $runOutputDir on ${leaderSpec.hostname}", OsCommand.getResultFrom(Seq("ssh", leaderSpec.hostname, s"mkdir -p $runOutputDir")))
@@ -145,9 +146,9 @@ object DistribTestCase {
 
     val bindings = new orc.Main.OrcCmdLineOptions()
     bindings.backend = orc.BackendType.fromString("porc-distrib")
-    bindings.followerSockets = (followerSpecs map { fs => new InetSocketAddress(fs.hostname, fs.port)}).toList.asJava
+    bindings.followerSockets = (followerSpecs map { fs => new InetSocketAddress(fs.hostname, fs.port) }).toList.asJava
     bindings.showJavaStackTrace = true
-    TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), classOf[DistribTestCase], bindings, new File(DistribTestConfig.expanded("runProgramsDir")))
+    TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), testCaseClass, bindings, programPaths: _*)
   }
 
   var leaderSpec: DOrcRuntimePlacement = null
@@ -178,12 +179,12 @@ object DistribTestCase {
     val followerHostnames = DistribTestConfig.expanded.getIndexed("followerHostname").get
     val followerPorts = DistribTestConfig.expanded.getIndexed("followerPort").get.mapValues(_.toInt)
     val followerWorkingDir = DistribTestConfig.expanded("followerWorkingDir")
-    assert (followerHostnames.keys == followerPorts.keys, "followerHostnames and followerPorts must cover same indicies")
-    assert (followerHostnames.keys.last == followerHostnames.size, "followerHostnames and followerPorts must cover all indicies from 1 to the number of followers")
+    assert(followerHostnames.keys == followerPorts.keys, "followerHostnames and followerPorts must cover same indicies")
+    assert(followerHostnames.keys.last == followerHostnames.size, "followerHostnames and followerPorts must cover all indicies from 1 to the number of followers")
 
     leaderSpec = DOrcRuntimePlacement(leaderHostname, 0, leaderIsLocal, leaderWorkingDir, javaCmd, dOrcClassPath, jvmOpts)
 
-    followerSpecs = followerHostnames.toSeq.map({case (followerNum, hostname) => DOrcRuntimePlacement(hostname, followerPorts(followerNum), isLocalAddress(InetAddress.getByName(hostname)), followerWorkingDir, javaCmd, dOrcClassPath, jvmOpts)})
+    followerSpecs = followerHostnames.toSeq.map({ case (followerNum, hostname) => DOrcRuntimePlacement(hostname, followerPorts(followerNum), isLocalAddress(InetAddress.getByName(hostname)), followerWorkingDir, javaCmd, dOrcClassPath, jvmOpts) })
   }
 
   protected def pathRelativeToTestRoot(path: String): String = {
@@ -228,13 +229,12 @@ object DistribTestCase {
   //  OsCommand.getResultFrom(Seq("ssh", hostname, s"cd $directory; command >stdout 2>stderr"), null, stdin, charset, teeStdOutErr, stdoutTee, stderrTee)
   //}
 
-
   @throws(classOf[CopyFilesException])
   protected def checkExitValue(description: String, result: OsCommandResult): Unit = {
-    if (result.exitValue != 0) {
+    if (result.exitStatus != 0) {
       print(result.stdout)
       Console.err.print(result.stderr)
-      throw new CopyFilesException(s"${description} failed: exitValue=${result.exitValue}, stderr=${result.stderr}")
+      throw new CopyFilesException(s"${description} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
     }
   }
 
@@ -248,7 +248,6 @@ object DistribTestCase {
     }
   }
 }
-
 
 private class CopyFilesException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
   def this(message: String) = this(message, null)

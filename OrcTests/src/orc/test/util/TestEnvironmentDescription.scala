@@ -56,21 +56,20 @@ class TestEnvironmentDescription() extends FieldsToMap {
     @transient
     private val memoryMXBean = ManagementFactory.getMemoryMXBean
 
-  //  @transient
-  //  private val memoryManagerMXBeans = ManagementFactory.getMemoryManagerMXBeans
-  //
-  //  @transient
-  //  private val memoryPoolMXBeans = ManagementFactory.getMemoryPoolMXBeans
-  //
-  //  @transient
-  //  private val garbageCollectorMXBeans = ManagementFactory.getGarbageCollectorMXBeans
+    //  @transient
+    //  private val memoryManagerMXBeans = ManagementFactory.getMemoryManagerMXBeans
+    //
+    //  @transient
+    //  private val memoryPoolMXBeans = ManagementFactory.getMemoryPoolMXBeans
+    //
+    //  @transient
+    //  private val garbageCollectorMXBeans = ManagementFactory.getGarbageCollectorMXBeans
 
     @transient
     private val classLoadingMXBean = ManagementFactory.getClassLoadingMXBean
 
     @transient
     private val compilationMXBean = ManagementFactory.getCompilationMXBean
-
 
     val hostname = java.net.InetAddress.getLocalHost.getHostName
 
@@ -149,7 +148,7 @@ class TestEnvironmentDescription() extends FieldsToMap {
       val is = manifestUrl.openStream()
       val manifest = new Manifest(is)
       is.close()
-      manifests.put(manifestUrl.toExternalForm, manifest.getMainAttributes.asInstanceOf[java.util.Map[String,String]].asScala)
+      manifests.put(manifestUrl.toExternalForm, manifest.getMainAttributes.asInstanceOf[java.util.Map[String, String]].asScala)
       /* Cast required because java.util.jar.Manifest.getMainAttributes's
        * declared type is Map[AnyRef,AnyRef] for compatibility reasons. */
     }
@@ -190,7 +189,6 @@ class TestEnvironmentDescription() extends FieldsToMap {
 
 }
 
-
 object TestEnvironmentDescription {
 
   private var shutdownHookAdded = false
@@ -213,22 +211,22 @@ object TestEnvironmentDescription {
         val envDescWriter = new OutputStreamWriter(envDescOut.get, "UTF-8")
         JsonGenerator(envDescWriter)(new TestEnvironmentDescription().toMap)
         envDescWriter.close()
+        envDescOut.get.close()
       }
     }
   }
 
 }
 
-
 protected trait FieldsToMap {
 
-  def toMap: scala.collection.Map[String,Any] = mapOfAllFields(this)
+  def toMap: scala.collection.Map[String, Any] = mapOfAllFields(this)
 
   /** All fields as a Map */
-  def mapOfAllFields(source: AnyRef): scala.collection.Map[String,Any] = {
+  def mapOfAllFields(source: AnyRef): scala.collection.Map[String, Any] = {
     val allFields = scala.collection.mutable.Map[String, Any]()
-    val fs = source.getClass.getDeclaredFields.filterNot({f => (f.getModifiers & Modifier.STATIC) != 0 || (f.getModifiers & Modifier.TRANSIENT) != 0 || f.isSynthetic || f.getName.contains("$") })
-    fs.foreach({field =>
+    val fs = source.getClass.getDeclaredFields.filterNot({ f => (f.getModifiers & Modifier.STATIC) != 0 || (f.getModifiers & Modifier.TRANSIENT) != 0 || f.isSynthetic || f.getName.contains("$") })
+    fs.foreach({ field =>
       allFields.put(field.getName, source.getClass.getMethod(field.getName).invoke(source))
     })
     allFields

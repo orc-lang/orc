@@ -31,9 +31,9 @@ object OsCommand {
   def run(command: Seq[String], directory: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8) = {
     val p = runNoWait(command, directory, stdin, stdout, stderr, charset)
 
-    val exitValue = p.waitFor()
+    val exitStatus = p.waitFor()
 
-    exitValue
+    exitStatus
   }
 
   /** Run the given command, either with the given string as stdin, or an
@@ -78,7 +78,7 @@ object OsCommand {
     val errDrainThread = new StreamDrainThread(p.getErrorStream, errs, "Subprocess stderr reader")
     errDrainThread.start()
 
-    val exitValue = p.waitFor()
+    val exitStatus = p.waitFor()
 
     outDrainThread.join(400 /*ms*/)
     errDrainThread.join(400 /*ms*/)
@@ -88,7 +88,7 @@ object OsCommand {
     val stdoutString = outBAOS.toString(charset.name)
     val stderrString = errBAOS.toString(charset.name)
 
-    OsCommandResult(exitValue, stdoutString, stderrString)
+    OsCommandResult(exitStatus, stdoutString, stderrString)
   }
 
 }
@@ -114,4 +114,4 @@ private class StreamDrainThread(sourceStream: InputStream, targetStreams: Traver
 }
 
 
-case class OsCommandResult(val exitValue: Int, val stdout: String, val stderr: String)
+case class OsCommandResult(val exitStatus: Int, val stdout: String, val stderr: String)

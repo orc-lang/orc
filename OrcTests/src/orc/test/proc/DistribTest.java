@@ -13,6 +13,8 @@
 
 package orc.test.proc;
 
+import java.io.File;
+
 import junit.framework.Test;
 
 /**
@@ -22,8 +24,12 @@ import junit.framework.Test;
  */
 public class DistribTest {
 
+    /*
+     * This TestSuite factory is in Java to keep JUnit from being confused by
+     * Scala.
+     */
     public static Test suite() {
-        /* Just a Java shim to keep JUnit from being confused by Scala. */
-        return DistribTestCase.buildSuite();
+        final File[] programPaths = { new File("test_data/functional_valid/distrib") };
+        return DistribTestCase.buildSuite(programPaths);
     }
 }
