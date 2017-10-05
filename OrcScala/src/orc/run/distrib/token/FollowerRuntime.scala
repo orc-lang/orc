@@ -343,7 +343,7 @@ object FollowerRuntime {
       new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
     } catch {
       case e: CmdLineUsageException => { Console.err.println("Orc: " + e.getMessage); System.exit(EXIT_USAGE) }
-      case ioe: IOException => { Thread.getDefaultUncaughtExceptionHandler.uncaughtException(Thread.currentThread(), ioe); System.exit(EXIT_IOERR) }
+      case ioe: IOException => { Thread.currentThread.getUncaughtExceptionHandler.uncaughtException(Thread.currentThread(), ioe); System.exit(EXIT_IOERR) }
     }
   }
 

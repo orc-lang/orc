@@ -80,7 +80,7 @@ object Main {
       case e: CmdLineUsageException => { Console.err.println("Orc: " + e.getMessage); System.exit(EXIT_USAGE) }
       case e: PrintVersionAndMessageException => println(orcImplName + " " + orcVersion + "\n" + orcURL + "\n" + orcCopyright + "\n\n" + e.getMessage)
       case e: FileNotFoundException => { Console.err.println("Orc: File not found: " + e.getMessage); System.exit(EXIT_NOINPUT) }
-      case ioe: IOException => { Thread.getDefaultUncaughtExceptionHandler.uncaughtException(Thread.currentThread(), ioe); System.exit(EXIT_IOERR) }
+      case ioe: IOException => { Thread.currentThread.getUncaughtExceptionHandler.uncaughtException(Thread.currentThread(), ioe); System.exit(EXIT_IOERR) }
       case e: ScriptException if (e.getCause == null) => { Console.err.println(e.getMessage); System.exit(EXIT_RUN_FAIL) }
       case e: ScriptException if (e.getCause.isInstanceOf[CompilationException]) => { System.exit(EXIT_COMPILE_FAIL) } // Ignore compilation errors. They will already have been printed.
       case e: ScriptException => { printException(e.getCause, Console.err, false); System.exit(EXIT_RUN_FAIL) }
