@@ -14,8 +14,7 @@ def setupOutput() =
   import class File = "java.io.File"
   import class TestEnvironmentDescription = "orc.test.util.TestEnvironmentDescription"
   import class TestRunNumber = "orc.test.util.TestRunNumber"
-  JavaSys.getProperty("orc.executionlog.dir", "")  >outDir>
-  ( if outDir.isEmpty()
+  ( if JavaSys.getProperty("orc.executionlog.dir", "").isEmpty()
     then
       TestRunNumber.getNext()  >testRunNumber>
       "runs/" + testRunNumber + "/raw-output"  >outDirName>
@@ -38,4 +37,4 @@ def buildOutputPathname(basename :: String, extension :: String) :: String =
   JavaSys.getProperty("orc.executionlog.dir", ".")  >outDir>
   JavaSys.getProperty("orc.executionlog.fileprefix", "")  >fileBasenamePrefix>
   JavaSys.getProperty("orc.executionlog.filesuffix", "")  >fileBasenameSuffix>
-  outDir + "/" + fileBasenamePrefix + basename + "." + extension
+  outDir + "/" + fileBasenamePrefix + basename + fileBasenameSuffix + "." + extension
