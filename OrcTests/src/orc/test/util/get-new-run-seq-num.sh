@@ -20,7 +20,7 @@ today=$(date "+%Y%m%d")
 yearLetter=$(printf "\x$(printf %x $(( 97 + $(date -u +%Y) - 2004 )) )")
 dayOfYear=$(date "+%j")
 
-userInitial=$(printf "%.1s" "$(logname)")
+userInitial=$(printf "%.1s" "${LOGNAME}")
 
 if [ $# -gt 1 ] ; then
     echo "usage: $0 [run_counter_filename]" 1>&2
