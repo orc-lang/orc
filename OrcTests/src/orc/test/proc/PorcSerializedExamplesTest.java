@@ -33,29 +33,33 @@ import junit.framework.Test;
  */
 public class PorcSerializedExamplesTest {
     public static Test suite() {
-      OrcBindings bindings = new OrcBindings();
+        final OrcBindings bindings = new OrcBindings();
 
-      // Turn on Orctimizer
-      bindings.backend_$eq(orc.BackendType.fromString("porc"));
-      bindings.optimizationLevel_$eq(2);
+        // Turn on Orctimizer
+        bindings.backend_$eq(orc.BackendType.fromString("porc"));
+        bindings.optimizationLevel_$eq(2);
 
-      return TestUtils.buildSuite(PorcSerializedExamplesTest.class.getSimpleName(), PorcSerializedExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));
+        return TestUtils.buildSuite(PorcSerializedExamplesTest.class.getSimpleName(), (s, t, f, e, b) -> new PorcSerializedExamplesTestCase(s, t, f, e, b), bindings, new File("test_data"), new File("../OrcExamples"));
     }
 
     public static class PorcSerializedExamplesTestCase extends OrcTestCase {
+        public PorcSerializedExamplesTestCase(final String suiteName1, final String testName, final File orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
+            super(suiteName1, testName, orcFile1, expecteds1, bindings1);
+        }
+
         @Override
         public void runTest() throws Throwable {
             System.out.println("\n==== Starting " + orcFile + " ====");
             final OrcScriptEngine<Object>.OrcCompiledScript compiledScript = OrcForTesting.compile(orcFile.getPath(), bindings);
             @SuppressWarnings("unchecked")
             final OrcScriptEngine<Object> engine = (OrcScriptEngine<Object>) compiledScript.getEngine();
-            
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+            final ByteArrayOutputStream out = new ByteArrayOutputStream();
             engine.save(compiledScript, out);
             out.close();
-            byte[] data = out.toByteArray();
+            final byte[] data = out.toByteArray();
             System.out.println("Serialized size = " + data.length + " bytes");
-            
+
             final OrcScriptEngine<Object>.OrcCompiledScript compiledScriptAfter = engine.loadDirectly(new ByteArrayInputStream(data));
 
             // Execution

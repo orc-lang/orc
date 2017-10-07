@@ -24,11 +24,11 @@ import orc.util.Config
 object DistribTestConfig extends Config("DistribTestConfig") {
   unexpanded =>
 
-  object expanded extends scala.collection.immutable.AbstractMap[String,String] with scala.collection.immutable.DefaultMap[String, String]() {
+  object expanded extends scala.collection.immutable.AbstractMap[String, String] with scala.collection.immutable.DefaultMap[String, String]() {
 
-    val addedVariables: scala.collection.mutable.Map[String,String] = scala.collection.mutable.Map[String,String]()
+    val addedVariables: scala.collection.mutable.Map[String, String] = scala.collection.mutable.Map[String, String]()
 
-    override def toString: String = iterator.map({case (k, v) => k + "=" + v}).mkString(s"${getClass.getName}(#filename=${unexpanded.filename}; ", ", ", ")")
+    override def toString: String = iterator.map({ case (k, v) => k + "=" + v }).mkString(s"${getClass.getName}(#filename=${unexpanded.filename}; ", ", ", ")")
 
     def addVariable(key: String, value: String): Option[String] = addedVariables.put(key, value)
 
@@ -52,14 +52,17 @@ object DistribTestConfig extends Config("DistribTestConfig") {
     }
 
     override def get(key: String): Option[String] = {
-      unexpanded.get(key) match {
+      addedVariables.get(key) match {
         case Some(v) => Some(expandMacros(v))
-        case None => None
+        case None => unexpanded.get(key) match {
+          case Some(v) => Some(expandMacros(v))
+          case None => None
+        }
       }
     }
 
-    def getIndexed(key: String): Option[SortedMap[Int,String]] = {
-      val elements = SortedMap[Int,String]()
+    def getIndexed(key: String): Option[SortedMap[Int, String]] = {
+      val elements = SortedMap[Int, String]()
       for ((k, v) <- this) {
         if (k.startsWith(key + "[")) {
           val index = try {

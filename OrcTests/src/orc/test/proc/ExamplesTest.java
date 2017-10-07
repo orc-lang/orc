@@ -2,7 +2,7 @@
 // ExamplesTest.java -- Java class ExamplesTest
 // Project OrcTests
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -34,10 +34,13 @@ import junit.framework.Test;
 public class ExamplesTest {
 
     public static Test suite() {
-        return TestUtils.buildSuite(ExamplesTest.class.getSimpleName(), ExamplesTestCase.class, new OrcBindings(), new File("test_data"), new File("../OrcExamples"));
+        return TestUtils.buildSuite(ExamplesTest.class.getSimpleName(), (s, t, f, e, b) -> new ExamplesTestCase(s, t, f, e, b), new OrcBindings(), new File("test_data"), new File("../OrcExamples"));
     }
 
     public static class ExamplesTestCase extends OrcTestCase {
+        public ExamplesTestCase(final String suiteName1, final String testName, final File orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
+            super(suiteName1, testName, orcFile1, expecteds1, bindings1);
+        }
         /* No overrides */
     }
 }

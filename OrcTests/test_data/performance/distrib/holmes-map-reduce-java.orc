@@ -13,9 +13,11 @@
 include "test-output-util.inc"
 include "write-csv-file.inc"
 
+import class JavaSys = "java.lang.System"
+
 {- Number of times to re-read and word count each file. -}
 {- Update the OUTPUT annotation when changing this. -}
-val repeatRead = 3
+val repeatRead = Read(JavaSys.getProperty("orc.test.repeatRead", "3"))
 
 def checkReadableFile(file) =
   import class JavaSys = "java.lang.System"
@@ -74,12 +76,11 @@ afold(reduceOperation, combinedList)
 {--------
  - Test Driver
  --------}
-
-val numRepetitions = 20
+ 
+val numRepetitions = Read(JavaSys.getProperty("orc.test.numRepetitions", "20"))
 
 def timeRepetitions(testPayload, numRepetitions) =
   def timeRepetitions'(thisRepetitionNum, remainingRepetitions, testElapsedTimes) =
-	import class JavaSys = "java.lang.System"
 	Println("Repetition " + thisRepetitionNum + ": start.") >>
 	JavaSys.nanoTime() >startNanos>
 	(testPayload() >p> Println("Repetition " + thisRepetitionNum + ": published " + p) >> stop; signal) >>
@@ -89,11 +90,14 @@ def timeRepetitions(testPayload, numRepetitions) =
 	(if remainingRepetitions :> 0 then timeRepetitions'(thisRepetitionNum + 1, remainingRepetitions - 1, testElapsedTimes') else testElapsedTimes')
   timeRepetitions'(1, numRepetitions - 1, [])
 
+import site NumberOfRuntimeEngines = "orc.lib.NumberOfRuntimeEngines"
+
 setupOutput()  >>
 writeCsvFile(buildOutputPathname("factor-values", "csv"), "Factor values", 
   ["Factor name", "Value", "Units", "Comments"], [
   ["Program", "holmes-map-reduce-java.orc", "", ""],
-  ["Reads per file", repeatRead, "", "Number of concurrent reads of the file"]
+  ["Reads per file", repeatRead, "", "Number of concurrent reads of the file"],
+  ["Cluster size", NumberOfRuntimeEngines(), "", "Number of d-Orc runtime engines running"]
 ])  >>
 timeRepetitions(testPayload, numRepetitions)  >repetitionTimes>
 writeCsvFile(buildOutputPathname("repetition-times", "csv"), "Repetitions' elapsed times output file",

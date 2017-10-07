@@ -1,5 +1,5 @@
 //
-// TypedExamplesTest.java -- Java class TypedExamplesTest
+// PorcExamplesTest.java -- Java class PorcExamplesTest
 // Project OrcTests
 //
 // Created by dkitchin on Mar 30, 2011.
@@ -42,10 +42,13 @@ public class PorcExamplesTest {
         bindings.backend_$eq(orc.BackendType.fromString("porc"));
         bindings.optimizationLevel_$eq(2);
 
-        return TestUtils.buildSuite(PorcExamplesTest.class.getSimpleName(), PorcExamplesTestCase.class, bindings, new File("test_data"), new File("../OrcExamples"));
+        return TestUtils.buildSuite(PorcExamplesTest.class.getSimpleName(), (s, t, f, e, b) -> new PorcExamplesTestCase(s, t, f, e, b), bindings, new File("test_data"), new File("../OrcExamples"));
     }
 
     public static class PorcExamplesTestCase extends OrcTestCase {
+        public PorcExamplesTestCase(final String suiteName1, final String testName, final File orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
+            super(suiteName1, testName, orcFile1, expecteds1, bindings1);
+        }
         /* No overrides */
     }
 

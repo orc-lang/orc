@@ -85,7 +85,7 @@ public class WordCount {
         return counts;
     }
 
-    public static int repeatRead = 3;
+    public static int repeatRead = Integer.parseInt(System.getProperty("orc.test.repeatRead", "3"));
 
     public static int repeatCountFilename(final String filename) throws IOException {
         final File f = new File(filename);
@@ -128,7 +128,7 @@ public class WordCount {
     public static void setupOutput() throws IOException {
         if (System.getProperty("orc.executionlog.dir", "").isEmpty()) {
             throw new IllegalArgumentException("java system property orc.executionlog.dir must be set");
-            //final String testRunNumber = TestRunNumber.getNext();
+            //final String testRunNumber = TestRunNumber.singletonNumber();
             //final String outDirName = "runs/" + testRunNumber + "/raw-output";
             //System.setProperty("orc.executionlog.dir", outDirName);
         }
@@ -146,8 +146,6 @@ public class WordCount {
         try (
             final OutputStream csvOut = ExecutionLogOutputStream.apply(basename, "csv", description).get();
             final OutputStreamWriter csvOsw = new OutputStreamWriter(csvOut, "UTF-8");
-            //final OutputStream creoleOut = ExecutionLogOutputStream.apply(basename, "creole", description).get();
-            //final OutputStreamWriter creoleOsw = new OutputStreamWriter(creoleOut, "UTF-8");
         ) {
             
             final ArrayList<TraversableOnce<?>> newRows = new ArrayList<>(rows.length);
@@ -158,10 +156,6 @@ public class WordCount {
             final CsvWriter csvWriter = new CsvWriter(csvOsw);
             csvWriter.writeHeader(JavaConverters.collectionAsScalaIterable(Arrays.asList(tableColumnTitles)));
             csvWriter.writeRowsOfTraversables(JavaConverters.collectionAsScalaIterable(newRows));
-
-            //final WikiCreoleTableWriter creoleWriter = new WikiCreoleTableWriter(creoleOsw);
-            //creoleWriter.writeHeader(JavaConverters.collectionAsScalaIterable(Arrays.asList(tableColumnTitles)));
-            //creoleWriter.writeRowsOfTraversables(JavaConverters.collectionAsScalaIterable(newRows));
         }
         System.out.println(description + " written to " + basename + ".csv");
     }
@@ -169,7 +163,7 @@ public class WordCount {
     public static void main(final String[] args) throws IOException {
         TestEnvironmentDescription.dumpAtShutdown();
 
-        final int numRepetitions = 20;
+        final int numRepetitions = Integer.parseInt(System.getProperty("orc.test.numRepetitions", "20"));
 
         setupOutput();
 

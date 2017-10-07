@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 
 import orc.error.compiletime.CompilationException;
@@ -36,6 +35,14 @@ public final class TestUtils {
      * including and needed parent directories.
      */
     static {
+        initSystem();
+    }
+
+    private TestUtils() {
+        /* Only static members */
+    }
+
+    public static void initSystem() {
         final String execLogDir = System.getProperty("orc.executionlog.dir");
         if (execLogDir != null && execLogDir.contains("${testRunNumber}")) {
             final String newExecLogDir = Pattern.compile("${testRunNumber}", Pattern.LITERAL).matcher(execLogDir).replaceAll(TestRunNumber.singletonNumber());
@@ -47,8 +54,9 @@ public final class TestUtils {
         }
     }
 
-    private TestUtils() {
-        /* Only static members */
+    @FunctionalInterface
+    public interface OrcTestCaseFactory {
+        OrcTestCase apply(final String suiteName, final String testName, final File orcFile, final ExpectedOutput expecteds, final OrcBindings bindings);
     }
 
     abstract public static class OrcTestCase extends TestCase {
@@ -63,21 +71,17 @@ public final class TestUtils {
         protected ExpectedOutput expecteds;
         protected OrcBindings bindings;
 
-        public OrcTestCase() {
-            super();
-        }
-
-        void otcInit(final String suiteName1, final String testName, final File orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
-            setName(testName);
-            this.suiteName = suiteName1;
-            this.orcFile = orcFile1;
-            this.expecteds = expecteds1;
-            this.bindings = bindings1;
+        public OrcTestCase(final String suiteName1, final String testName, final File orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
+            super(testName);
+            suiteName = suiteName1;
+            orcFile = orcFile1;
+            expecteds = expecteds1;
+            bindings = bindings1;
         }
 
         @Override
-        public void runTest() throws Throwable {
-            System.out.println("\n==== Starting " + orcFile + " ====");
+        protected void runTest() throws Throwable {
+            System.out.println("\n==== Starting " + getName() + " ====");
             try {
                 final String actual = OrcForTesting.compileAndRun(orcFile.getPath(), TESTING_TIMEOUT, bindings);
                 evaluateResult(actual);
@@ -110,11 +114,7 @@ public final class TestUtils {
         }
     }
 
-    public static TestSuite buildSuite(final String suitename, final Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final File... examplePaths) {
-        return buildSuite(suitename, testCaseClass, bindings, (file, expecteds) -> expecteds.isEmpty(), examplePaths);
-    }
-
-    public static TestSuite buildSuite(final String suitename, final Class<? extends OrcTestCase> testCaseClass, final OrcBindings bindings, final BiPredicate<File, ExpectedOutput> shouldSkip, final File... examplePaths) {
+    public static TestSuite buildSuite(final String suitename, final OrcTestCaseFactory testCaseFactory, final OrcBindings bindings, final File... examplePaths) {
 
         TestEnvironmentDescription.dumpAtShutdown();
 
@@ -130,27 +130,15 @@ public final class TestUtils {
                 } catch (final IOException e) {
                     throw new AssertionError(e);
                 }
-                if (shouldSkip.test(file, expecteds)) {
+                if (expecteds.isEmpty()) {
                     continue;
                 }
                 if (nestedSuite == null) {
                     nestedSuite = new TestSuite(examplePath.toString());
                     suite.addTest(nestedSuite);
                 }
-                OrcTestCase tc;
-                try {
-                    tc = testCaseClass.newInstance();
-                } catch (final InstantiationException e) {
-                    // Shouldn't happen -- class is a sibling inner class of
-                    // this class
-                    throw new AssertionError(e);
-                } catch (final IllegalAccessException e) {
-                    // Shouldn't happen -- class is a sibling inner class of
-                    // this class
-                    throw new AssertionError(e);
-                }
                 final String testname = file.toString().startsWith(examplePath.getPath() + File.separator) ? file.toString().substring(examplePath.getPath().length() + 1) : file.toString();
-                tc.otcInit(suitename, testname, file, expecteds, bindings);
+                final OrcTestCase tc = testCaseFactory.apply(suitename, testname, file, expecteds, bindings);
                 nestedSuite.addTest(tc);
             }
         }

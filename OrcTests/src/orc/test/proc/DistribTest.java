@@ -29,6 +29,7 @@ public class DistribTest {
      * Scala.
      */
     public static Test suite() {
+        DistribTestCase.setUpTestSuite();
         final File[] programPaths = { new File("test_data/functional_valid/distrib") };
         return DistribTestCase.buildSuite(programPaths);
     }

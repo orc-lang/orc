@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Apr 04, 2010.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,6 +22,7 @@ import orc.script.OrcBindings
 import orc.test.util.TestUtils
 
 import junit.framework.Test
+import orc.test.util.ExpectedOutput
 
 /** Test suite for examples extracted from documentation.
   *
@@ -36,11 +37,11 @@ object DocExamplesTest extends ExamplesTest {
     refmanualOutDir.mkdirs()
     extractAllExamples(new File("../OrcDocs/src/userguide"), userguideOutDir)
     extractAllExamples(new File("../OrcDocs/src/refmanual"), refmanualOutDir)
-    val bindings = new OrcBindings();
-    TestUtils.buildSuite(getClass.getSimpleName, classOf[DocExamplesTestCase], bindings, new File("build/docexamples"));
+    val bindings = new OrcBindings()
+    TestUtils.buildSuite(getClass.getSimpleName, (s, t, f, e, b) => new DocExamplesTestCase(s, t, f, e, b), bindings, new File("build/docexamples"))
   }
 
-  class DocExamplesTestCase extends TestUtils.OrcTestCase {}
+  class DocExamplesTestCase(suitename: String, testname: String, file: File, expecteds: ExpectedOutput, bindings: OrcBindings) extends TestUtils.OrcTestCase(suitename, testname, file, expecteds, bindings) {}
 
   def extractAllExamples(sourcedir: File, targetdir: File) {
     val files = sourcedir.listFiles().toList filter { isXmlFile(_) }
