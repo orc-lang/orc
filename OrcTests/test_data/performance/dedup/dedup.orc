@@ -83,6 +83,17 @@ def compress(chunk, dedupPool, id) =
 		compChunk.compress(chunk) >> stop |
 	compChunk
 
+def writeChunk(out, cchunk, isAlreadyOutput) =
+	if isAlreadyOutput then
+		--Println("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
+		out.writeBytes("R") >> 
+		out.writeLong(cchunk.outputChunkID?)
+	else
+		--Println("D chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
+		out.writeBytes("D") >> 
+		out.writeLong(cchunk.compressedData().length?) >>
+		out.write(cchunk.compressedData())
+
 {-- Read sequential elements from the pool and write to the provided OutputStream.
 -}
 def write(out, outputPool) =
@@ -101,19 +112,8 @@ def write(out, outputPool) =
 		else
 			cchunk.outputChunkID := id >> stop |
 			outputPool.remove((roughID, fineID)) >> stop |
-			(
-			if alreadyOutput.containsKey(cchunk.uncompressedSHA1) then
-				--Println("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
-				out.writeBytes("R") >> 
-				out.writeLong(cchunk.outputChunkID?)
-			else
-				--Println("D chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
-				alreadyOutput.put(cchunk.uncompressedSHA1, true) >>
-				out.writeBytes("D") >> 
-				out.writeLong(cchunk.compressedData().length?) >>
-				out.write(cchunk.compressedData())
-			) >>
-			out.flush() >>
+			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1)) >>
+			alreadyOutput.put(cchunk.uncompressedSHA1, true) >>
 			process((roughID, fineID + 1), id + 1)
 	process((0, 0), 0)
 
