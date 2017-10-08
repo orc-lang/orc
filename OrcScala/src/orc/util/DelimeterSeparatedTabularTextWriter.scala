@@ -176,7 +176,7 @@ class TsvWriter(write: String => Unit) extends DelimeterSeparatedTabularTextWrit
   val delimiter: String = "\t"
 
   /** The string used at the end of a row. */
-  val lineTerminator: String = "\r\n"
+  val lineTerminator: String = "\n"
 
   /** A set of characters that require a cell be quoted. */
   val requiresQuotes: String = ""
@@ -214,7 +214,7 @@ class WikiCreoleTableWriter(write: String => Unit) extends DelimeterSeparatedTab
   val delimiter: String = "|"
 
   /** The string used at the end of a row. */
-  val lineTerminator: String = "|\r\n"
+  val lineTerminator: String = "|\n"
 
   /** A set of characters that require a cell be quoted. */
   val requiresQuotes: String = ""
