@@ -17,6 +17,7 @@ import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException
 import orc.run.distrib.DOrcMarshalingReplacement
 import orc.util.ArrayExtensions.Array1
 import orc.values.sites.{ AccessorValue, InvokerMethod, NonBlockingSite, PartialSite, UntypedSite }
+import java.util.Arrays
 
 /** @author dkitchin
   */
@@ -81,5 +82,11 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
   override def productElement(n: Int): Any = values(n)
 
   override def productArity: Int = values.length
+
+  override def hashCode() = Arrays.hashCode(values)
+  override def equals(o: Any): Boolean = o match {
+    case o: OrcTuple => Arrays.equals(values, o.values)
+    case _ => false
+  }
 
 }
