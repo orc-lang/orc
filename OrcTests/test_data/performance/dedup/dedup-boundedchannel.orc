@@ -2,7 +2,7 @@
 An implementation of the PARSEC 3.0 dedup benchmark.
 
 This implementation uses Scala/Java classes for core computations but structures the entire computation
-using Orc combinators. It does not use explicit channels making it totally different from the PARSEC
+using Orc combinators. It does not use explicit channels making it totally different from the PARSEC 
 implementation.
 
 -}
@@ -49,27 +49,27 @@ def sha1(chunk) = ArrayKey(
 
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
-def readSegements(minimumSegmentSize, in) =
+def readSegements(minimumSegmentSize, in, callback) =
 	def process(currentChunk, i) =
 		val splitPoint = rabin.segment(currentChunk, minimumSegmentSize)
 		if splitPoint = currentChunk.size() then
 			-- TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
 			Chunk.readFromInputStream(in, readChunkSize) >data>
 			process(currentChunk.append(data), i) ;
-			(currentChunk, i) | {- Println("readSegements " + (i + 1)) >> -} (Chunk.empty(), i + 1) 
+			callback(currentChunk, i) >> callback(Chunk.empty(), i + 1) 
 		else
-			(currentChunk.slice(0, splitPoint), i) |
+			callback(currentChunk.slice(0, splitPoint), i) >>
 			process(currentChunk.slice(splitPoint, currentChunk.size()), i+1)
 	process(Chunk.empty(), 0)
 
 	
 {-- Publish some number of subchunks of chunk where each chunk is at least minimumSegmentSize long.  
 -}
-def segment(minimumSegmentSize, chunk) =
-	def process(chunk, i) if (chunk.size() = 0) = {- Println("segment " + i) >> -} (Chunk.empty(), i)
+def segment(minimumSegmentSize, chunk, callback) =
+	def process(chunk, i) if (chunk.size() = 0) = callback(Chunk.empty(), i)
 	def process(chunk, i) =
 		val splitPoint = rabin.segment(chunk, minimumSegmentSize) #
-		(chunk.slice(0, splitPoint), i) |
+		callback(chunk.slice(0, splitPoint), i) >>
 		process(chunk.slice(splitPoint, chunk.size()), i + 1)
 	process(chunk, 0)
 
@@ -121,12 +121,26 @@ def write(out, outputPool) =
 -}
 def dedup(in, out) =
 	val dedupPool = Map()
-	val outputPool = Map() #
-	readSegements(largeChunkMin, in) >(roughChunk, roughID)> --Println("Rough chunk: " + roughChunk.start() + " " + roughChunk.size()) >>
-	segment(0, roughChunk) >(chunk, fineID)> --(signal | (Ift(chunk.size() = 0) >> Println("Chunk: " + (roughID, fineID) + " " + chunk.size()) >> stop)) >>
-	compress(chunk, dedupPool, (roughID, fineID)) >compressedChunk> --(signal | (Println("Compressed chunk: " + (roughID, fineID) + " " + compressedChunk.uncompressedSHA1 + " " + compressedChunk.compressedData()) >> stop)) >>
-	outputPool.put((roughID, fineID), compressedChunk) >> stop |
-	write(out, outputPool)
+	val outputPool = Map()
+	val roughChunks = BoundedChannel(64)
+	val fineChunks = BoundedChannel(1024)
+
+	def fineSegment(roughChunk, roughID) =
+		segment(0, roughChunk, { fineChunks.put((_, roughID, _)) })
+	def fineSegmentThread() = 
+		repeat({ roughChunks.get() >(roughChunk, roughID)> fineSegment(roughChunk, roughID) }) >> stop
+		
+	def compressThread() = 
+		repeat({ fineChunks.get() >(fineChunk, roughID, fineID)> 
+				 compress(fineChunk, dedupPool, (roughID, fineID)) >compressedChunk>
+				 outputPool.put((roughID, fineID), compressedChunk) }) >> stop
+	
+	readSegements(largeChunkMin, in, lambda(c, i) = roughChunks.put((c, i))) >> stop |
+	signals(8) >> fineSegmentThread() |
+	signals(8) >> compressThread()  |
+	write(out, outputPool) >>
+	roughChunks.close() >>
+	fineChunks.close()
 
 
 benchmark({

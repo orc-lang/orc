@@ -50,7 +50,9 @@ class ControllableThread[+T](op: => T) extends Thread {
 
   def value(): Option[T] = {
     join()
-    assert(result != null)
-    result
+    synchronized {
+      assert(result != null)
+      result
+    }
   }
 }

@@ -1,19 +1,13 @@
 package orc.test.item.scalabenchmarks.dedup
 
-import orc.test.item.scalabenchmarks.BenchmarkApplication
-import orc.test.item.scalabenchmarks.Util
-import java.io.DataOutputStream
-import java.io.FileOutputStream
-import java.io.FileInputStream
-import java.io.IOException
-import scala.annotation.tailrec
+import java.io.{ DataOutputStream, FileInputStream, FileOutputStream, IOException }
 import java.security.MessageDigest
-import java.util.concurrent.ConcurrentHashMap
-import scala.concurrent.Future
-import scala.concurrent.Promise
-import scala.concurrent.Await
+import java.util.concurrent.{ ConcurrentHashMap, ForkJoinPool }
+
+import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration.Duration
-import java.util.concurrent.ForkJoinPool
+
+import orc.test.item.scalabenchmarks.{ BenchmarkApplication, Util }
 
 object Dedup extends BenchmarkApplication {
   val threadPool = new ForkJoinPool()
@@ -105,7 +99,7 @@ object Dedup extends BenchmarkApplication {
       (fineChunk, fineID) <- segment(0, roughChunk)
     } yield (roughChunk, roughID, fineChunk, fineID, compress(fineChunk, dedupMap))
     
-    for ((roughChunk, roughID, fineChunk, fineID, cchunk) <- cchunks) {
+    for ((roughChunk, roughID, fineChunk, fineID, cchunk) <- cchunks if cchunk.uncompressedSize != 0) {
       cchunk.outputChunkID = id
       id += 1
 			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1))
