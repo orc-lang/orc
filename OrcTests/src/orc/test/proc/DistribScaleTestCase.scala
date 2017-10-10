@@ -39,7 +39,7 @@ class DistribScaleTestCase(
 
   override def outFilenamePrefix: String = super.outFilenamePrefix + "_" + factorValues.productIterator.mkString("_")
 
-  @throws(classOf[AssertionError])
+  @throws[AssertionError]
   override protected def evaluateResult(exitStatus: Int, actual: String): Unit = {
     /* Weak failure checking, just look at leader's exit value */
     if (exitStatus != 0) {
@@ -47,7 +47,7 @@ class DistribScaleTestCase(
     }
   }
 
-  @throws(classOf[AssertionError])
+  @throws[AssertionError]
   override protected def evaluateResult(actual: String): Unit = {
     /* No exit value, so just always succeed */
   }

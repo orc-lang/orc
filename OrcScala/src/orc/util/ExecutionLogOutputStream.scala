@@ -21,7 +21,6 @@ import java.util.regex.Pattern
   *
   * @author jthywiss
   */
-@throws(classOf[IOException])
 object ExecutionLogOutputStream {
 
   /** Creates Some(OutputStream) with the given basename.extension if the
@@ -36,6 +35,7 @@ object ExecutionLogOutputStream {
     * "${jvmName}" in the suffix is replaced by the JVM's name. (This is
     * usually a combination of process ID and node name.)
     */
+  @throws[IOException]
   def apply(basename: String, extension: String, description: String): Option[OutputStream] = {
     val outDir = System.getProperty("orc.executionlog.dir")
     if (outDir != null) {

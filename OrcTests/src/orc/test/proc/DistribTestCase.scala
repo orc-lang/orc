@@ -42,7 +42,7 @@ class DistribTestCase(
     val followerSpecs: Seq[DistribTestCase.DOrcRuntimePlacement])
   extends OrcTestCase(suitename, testname, file, expecteds, bindings) {
 
-  @throws(classOf[Throwable])
+  @throws[Throwable]
   override protected def runTest() {
     println("\n==== Starting " + getName() + " ====")
     println("  " + (for ((k, v) <- testContext) yield s"$k=$v").mkString(", "))
@@ -209,7 +209,7 @@ object DistribTestCase {
     Paths.get(DistribTestConfig.expanded("testRootDir")).normalize.relativize(Paths.get(path).normalize).toString
   }
 
-  @throws(classOf[Exception])
+  @throws[Exception]
   protected def copyFiles(): Unit = {
 
     def mkdirAndRsync(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
@@ -247,7 +247,7 @@ object DistribTestCase {
   //  OsCommand.getResultFrom(Seq("ssh", hostname, s"cd $directory; command >stdout 2>stderr"), null, stdin, charset, teeStdOutErr, stdoutTee, stderrTee)
   //}
 
-  @throws(classOf[CopyFilesException])
+  @throws[CopyFilesException]
   protected def checkExitValue(description: String, result: OsCommandResult): Unit = {
     if (result.exitStatus != 0) {
       print(result.stdout)

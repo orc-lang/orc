@@ -36,7 +36,7 @@ class RunMainMethodTestCase(
     this(testItem.getSimpleName, testContext, testItem, mainArgs: _*)
   }
 
-  @throws(classOf[Throwable])
+  @throws[Throwable]
   override protected def runTest(): Unit = {
     println("\n==== Starting " + getName() + " ====")
     println("  " + (for ((k, v) <- testContext) yield s"$k=$v").mkString(", "))
@@ -57,10 +57,10 @@ class RunMainMethodTestCase(
       "-Dsun.io.serialization.extendedDebugInfo=true",
       "-Dorc.config.dirs=config",
       "-Dorc.executionlog.dir=" + runOutputDir,
-      "-Dorc.executionlog.fileprefix=" + outFilenamePrefix + "_") ++ 
+      "-Dorc.executionlog.fileprefix=" + outFilenamePrefix + "_") ++
       //"-Dorc.executionlog.filesuffix=_0"
       (for ((k, v) <- testContext) yield s"-Dorc.test.$k=$v") ++
-      Seq(testItem.getName()) ++ 
+      Seq(testItem.getName()) ++
       mainArgs
 
     val result = OsCommand.getResultFrom(javaRunCommand, directory = new File("."), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(testOutFile)), stderrTee = Seq(System.err, new FileOutputStream(testErrFile)))

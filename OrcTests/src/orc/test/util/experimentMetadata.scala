@@ -1,5 +1,5 @@
 //
-// experimentData.scala -- Scala classes FactorDescription, FactorValue, and trait ExperimentalCondition
+// experimentMetadata.scala -- Scala classes FactorDescription, FactorValue, and trait ExperimentalCondition
 // Project OrcTest
 //
 // Created by jthywiss on Oct 9, 2017.
