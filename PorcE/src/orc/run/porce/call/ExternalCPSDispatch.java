@@ -82,6 +82,7 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 			throw e;
 		} catch (final ExceptionHaltException e) {
 			exceptionProfiles[0].enter();
+			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 			counter.haltToken();
 		} catch (final HaltException e) {
@@ -89,6 +90,7 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 			counter.haltToken();
 		} catch (final Exception e) {
 			exceptionProfiles[2].enter();
+			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 			counter.haltToken();
 		}
@@ -116,6 +118,7 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 			throw e;
 		} catch (final ExceptionHaltException e) {
 			exceptionProfiles[0].enter();
+			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 			counter.haltToken();
 		} catch (final HaltException e) {
@@ -123,6 +126,7 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 			counter.haltToken();
 		} catch (final Exception e) {
 			exceptionProfiles[2].enter();
+			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
 			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
 			counter.haltToken();
 		}
