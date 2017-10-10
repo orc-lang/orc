@@ -124,11 +124,11 @@ def timeRepetitions(testPayload, numRepetitions) =
 import site NumberOfRuntimeEngines = "orc.lib.NumberOfRuntimeEngines"
 
 setupOutput()  >>
-writeCsvFile(buildOutputPathname("factor-values", "csv"), "Factor values", 
-  ["Factor name", "Value", "Units", "Comments"], [
-  ["Program", "holmes-map-reduce.orc", "", ""],
-  ["Reads per file", repeatRead, "", "Number of concurrent reads of the file"],
-  ["Cluster size", NumberOfRuntimeEngines(), "", "Number of d-Orc runtime engines running"]
+writeFactorValuesTable([
+  --Factor name, Value, Units, Comments
+  ("Program", "holmes-map-reduce.orc", "", ""),
+  ("Reads per file", repeatRead, "", "Number of concurrent reads of the file"),
+  ("Cluster size", NumberOfRuntimeEngines(), "", "Number of d-Orc runtime engines running")
 ])  >>
 timeRepetitions(testPayload, numRepetitions)  >repetitionTimes>
 writeCsvFile(buildOutputPathname("repetition-times", "csv"), "Repetitions' elapsed times output file",

@@ -16,15 +16,13 @@ def setupOutput() =
   import class TestRunNumber = "orc.test.util.TestRunNumber"
   ( if JavaSys.getProperty("orc.executionlog.dir", "").isEmpty()
     then
-      TestRunNumber.getNext()  >testRunNumber>
-      "runs/" + testRunNumber + "/raw-output"  >outDirName>
-      JavaSys.setProperty("orc.executionlog.dir", outDirName)
+      Error("java system property orc.executionlog.dir must be set")
     else signal
   )  >>
   File(JavaSys.getProperty("orc.executionlog.dir"))  >outDir>
-  ( if outDir.mkdirs()
-    then Println("Created output directory: " + outDir.getCanonicalPath())
-    else signal
+  ( if outDir.exists()
+    then signal
+    else Error("Directory must exist: " + outDir.getAbsolutePath())
   )  >>  
   TestEnvironmentDescription.dumpAtShutdown()
 
@@ -38,3 +36,13 @@ def buildOutputPathname(basename :: String, extension :: String) :: String =
   JavaSys.getProperty("orc.executionlog.fileprefix", "")  >fileBasenamePrefix>
   JavaSys.getProperty("orc.executionlog.filesuffix", "")  >fileBasenameSuffix>
   outDir + "/" + fileBasenamePrefix + basename + fileBasenameSuffix + "." + extension
+
+{--
+@def writeFactorValuesTable(factorValues)
+Each process in an experiment that writes experimental-condition-
+dependent files should call this method to write a file that associates
+the experimental condition (factor) values with its output files.
+--}
+def writeFactorValuesTable(factorValues) =
+  import class FactorValue = "orc.test.util.FactorValue"
+  FactorValue.writeFactorValuesTable(factorValues)

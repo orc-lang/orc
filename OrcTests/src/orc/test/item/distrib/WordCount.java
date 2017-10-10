@@ -26,6 +26,7 @@ import java.util.Arrays;
 import scala.collection.JavaConverters;
 import scala.collection.TraversableOnce;
 
+import orc.test.util.FactorValue;
 import orc.test.util.TestEnvironmentDescription;
 import orc.util.CsvWriter;
 import orc.util.ExecutionLogOutputStream;
@@ -128,14 +129,8 @@ public class WordCount {
     public static void setupOutput() throws IOException {
         if (System.getProperty("orc.executionlog.dir", "").isEmpty()) {
             throw new IllegalArgumentException("java system property orc.executionlog.dir must be set");
-            //final String testRunNumber = TestRunNumber.singletonNumber();
-            //final String outDirName = "runs/" + testRunNumber + "/raw-output";
-            //System.setProperty("orc.executionlog.dir", outDirName);
         }
         final File outDir = new File(System.getProperty("orc.executionlog.dir"));
-        //if (outDir.mkdirs()) {
-        //    System.out.println("Created output directory: " + outDir.getCanonicalPath());
-        //}
         if (!outDir.exists()) {
             throw new IOException("Directory must exist: " + outDir.getAbsolutePath());
         }
@@ -167,12 +162,11 @@ public class WordCount {
 
         setupOutput();
 
-        final String[] factorValueTitles = { "Factor name", "Value", "Units", "Comments" };
         final Object[][] factorValues = {
                 {"Program", "WordCount.java", "", ""},
                 {"Reads per file", Integer.valueOf(repeatRead), "", "Number of sequential re-reads of the file"}
         };
-        writeCsvFile("factor-values", "Factor values output file", factorValueTitles, factorValues);
+        FactorValue.writeFactorValuesTable(factorValues);
 
         final Long[][] repetitionTimes = timeRepetitions(numRepetitions);
 
