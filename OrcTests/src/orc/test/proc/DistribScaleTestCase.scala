@@ -13,12 +13,11 @@
 
 package orc.test.proc
 
-import java.io.{ File, OutputStreamWriter }
+import java.io.File
 
 import orc.script.OrcBindings
 import orc.test.item.distrib.WordCount
-import orc.test.util.{ ExpectedOutput, TestRunNumber }
-import orc.util.{ CsvWriter, ExecutionLogOutputStream, WikiCreoleTableWriter }
+import orc.test.util.{ ExpectedOutput, ExperimentalCondition, FactorDescription }
 
 import junit.framework.{ Test, TestSuite }
 
@@ -27,7 +26,7 @@ import junit.framework.{ Test, TestSuite }
   * @author jthywiss
   */
 class DistribScaleTestCase(
-    val factorValues: DistribScaleTestCase.Expt,
+    val factorValues: DistribScaleTestCase.DistribScaleExperimentalCondition,
     suiteName: String,
     testName: String,
     orcFile: File,
@@ -38,7 +37,7 @@ class DistribScaleTestCase(
     followerSpecs: Seq[DistribTestCase.DOrcRuntimePlacement])
   extends DistribTestCase(suiteName, testName, orcFile, expecteds, bindings, testContext, leaderSpecs, followerSpecs) {
 
-  override def outFilenamePrefix: String = s"${super.outFilenamePrefix}_${factorValues.repeatRead}_${factorValues.dOrcNumRuntimes}"
+  override def outFilenamePrefix: String = super.outFilenamePrefix + "_" + factorValues.productIterator.mkString("_")
 
   @throws(classOf[AssertionError])
   override protected def evaluateResult(exitStatus: Int, actual: String): Unit = {
@@ -58,7 +57,7 @@ object DistribScaleTestCase {
 
   def buildTestSuite(): Test = {
     val experimentalConditions = readExperimentalConditions()
-    writeExperimentalConditionsTable(experimentalConditions)
+    ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
     DistribTestCase.setUpTestSuite()
     val programPaths = Array(new File("test_data/performance/distrib"))
     val testRunSuite = new TestSuite("DistribScaleTest")
@@ -77,81 +76,29 @@ object DistribScaleTestCase {
     testRunSuite
   }
 
-  def readExperimentalConditions(): Iterable[Expt] = {
-    //FIXME: Read from file
-    Seq(
-      //  | Reads per file | Cluster size |
-      Expt(3, 3),
-      Expt(6, 3),
-      Expt(12, 3),
-      Expt(3, 6),
-      Expt(6, 6),
-      Expt(12, 6),
-      Expt(3, 12),
-      Expt(6, 12),
-      Expt(12, 12))
-  }
-
-  def writeExperimentalConditionsTable(experimentalConditions: Traversable[Expt]): Unit = {
-    System.setProperty("orc.executionlog.dir", System.getProperty("orc.executionlog.dir", "runs/" + TestRunNumber.singletonNumber + "/raw-output"))
-    new File(System.getProperty("orc.executionlog.dir")).mkdirs()
-
-    val tableColumnTitles = factors.map(_.toString)
-
-    val csvOut = ExecutionLogOutputStream.apply("experimental-conditions", "csv", "Experimental conditions table (list of factor values tried)").get
-    val csvOsw = new OutputStreamWriter(csvOut, "UTF-8")
-    val csvWriter = new CsvWriter(csvOsw)
-    csvWriter.writeHeader(tableColumnTitles)
-    csvWriter.writeRows(experimentalConditions)
-    csvOsw.close()
-    csvOut.close()
-
-    val creoleOut = ExecutionLogOutputStream.apply("experimental-conditions", "creole", "Experimental conditions table (list of factor values tried)").get
-    val creoleOsw = new OutputStreamWriter(creoleOut, "UTF-8")
-    val creoleWriter = new WikiCreoleTableWriter(creoleOsw)
-    creoleWriter.writeHeader(tableColumnTitles)
-    creoleWriter.writeRows(experimentalConditions)
-    creoleOsw.close()
-    creoleOut.close()
-  }
-
-  /** Description of a factor of an experiment.
-    *
-    * id is a identifier, for example "fuelFlow".
-    * Syntax: a letter, followed by letters, numbers, and underscores.
-    * Convention: lowerCamelCase.
-    *
-    * name is a human-readable name, for example "Fuel flow".
-    * Convention: Sentence capitalization.
-    *
-    * unit is the unit symbol for the values, for example "kg/s".
-    * Common units: second "s", bit "bit", byte "B", Hertz "Hz".
-    * Note the prefixes (k, M, G, etc.) are decimal.
-    * Prefixes for binary multiples have an "i" (Ki, Mi, Gi, etc.).
-    * I.e., 1 MB = 1000000 B, but 1 MiB = 1048576 B.
-    * Counts of events or entities are considered dimensionless, and have no unit symbol.
-    *
-    * @author jthywiss
-    */
-  case class FactorDescription(id: String, name: String, unit: String, comments: String) {
-    override def toString = name + (if (unit != null && unit.nonEmpty) s" ($unit)" else "")
-  }
-
   val factors = Seq(
     FactorDescription("repeatRead", "Reads per file", "", ""),
     FactorDescription("dOrcNumRuntimes", "Cluster size", "", ""))
   // Add numRepetitions?
 
-  trait ExperimentalCondition extends Product {
-    def factorDescriptions: Iterable[FactorDescription]
-
-    def toMap: Map[String, AnyRef] = Map(factorDescriptions.zipWithIndex.map({ case (fd, i) => ((fd.id, productElement(i).asInstanceOf[AnyRef])) }).toSeq: _*)
-
-  }
-
-  case class Expt(repeatRead: Int, dOrcNumRuntimes: Int) extends ExperimentalCondition {
+  case class DistribScaleExperimentalCondition(repeatRead: Int, dOrcNumRuntimes: Int) extends ExperimentalCondition {
     override def factorDescriptions = factors
     override def toString = s"(repeatRead=${repeatRead}, dOrcNumRuntimes=${dOrcNumRuntimes})"
+  }
+
+  def readExperimentalConditions(): Traversable[DistribScaleExperimentalCondition] = {
+    //FIXME: Read from file
+    Seq(
+      //  | Reads per file | Cluster size |
+      DistribScaleExperimentalCondition(3, 3),
+      DistribScaleExperimentalCondition(6, 3),
+      DistribScaleExperimentalCondition(12, 3),
+      DistribScaleExperimentalCondition(3, 6),
+      DistribScaleExperimentalCondition(6, 6),
+      DistribScaleExperimentalCondition(12, 6),
+      DistribScaleExperimentalCondition(3, 12),
+      DistribScaleExperimentalCondition(6, 12),
+      DistribScaleExperimentalCondition(12, 12))
   }
 
 }
