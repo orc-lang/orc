@@ -43,6 +43,16 @@ def timeItNoPub[A](f :: lambda() :: A, i, size) =
     Println("Time used: " + r + " s; iteration " + (i+1) + " of " + nRuns) >>
     r
   )
+  
+def timeIt[A](f :: lambda() :: A) =
+  val c = Channel[A]()
+  repeat(c.get) |
+  (
+    Rtime() >s>
+    (f() >x> c.put(x) >> stop ; Rtime()) >e> 
+    c.close() >>
+    Println("Time used: " + (e-s) + "ms") >> stop
+  )
 
 def benchmarkSized[A](size :: Number, f :: lambda() :: A) =
 	def h(Integer) :: Signal
