@@ -45,7 +45,7 @@ class DistribTestCase(
   @throws[Throwable]
   override protected def runTest() {
     println("\n==== Starting " + getName() + " ====")
-    println("  " + (for ((k, v) <- testContext) yield s"$k=$v").mkString(", "))
+    if (testContext != null) println("  " + (for ((k, v) <- testContext) yield s"$k=$v").mkString(", "))
     try {
       startFollowers()
       val result = startLeader()
@@ -69,7 +69,7 @@ class DistribTestCase(
 
     val leaderOpts = DistribTestConfig.expanded.getIterableFor("leaderOpts").getOrElse(Seq())
     val followerSockets = options.recognizedLongOpts("follower-sockets").getValue
-    val jvmOptions = leaderSpec.jvmOptions ++ (for ((k, v) <- testContext) yield s"-Dorc.test.$k=$v")
+    val jvmOptions = leaderSpec.jvmOptions ++ (if (testContext != null) for ((k, v) <- testContext) yield s"-Dorc.test.$k=$v" else Seq.empty)
     val leaderOutFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_0.out"
     val leaderErrFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_0.err"
 
@@ -84,7 +84,7 @@ class DistribTestCase(
     for (followerNumber <- 1 to followerSpecs.size) {
       val followerSpec = followerSpecs(followerNumber - 1)
       val followerOpts = DistribTestConfig.expanded.getIterableFor("followerOpts").getOrElse(Seq())
-      val jvmOptions = followerSpec.jvmOptions ++ (for ((k, v) <- testContext) yield s"-Dorc.test.$k=$v")
+      val jvmOptions = followerSpec.jvmOptions ++ (if (testContext != null) for ((k, v) <- testContext) yield s"-Dorc.test.$k=$v" else Seq.empty)
       val followerWorkingDir = followerSpec.workingDir
       val followerOutFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_$followerNumber.out"
       val followerErrFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_$followerNumber.err"
@@ -173,8 +173,10 @@ object DistribTestCase {
   }
 
   def buildSuite(testCaseFactory: DistribTestCaseFactory, testContext: Map[String, AnyRef], programPaths: Array[File]): TestSuite = {
-    /* XXX */
-    for ((key, value) <- testContext) DistribTestConfig.expanded.addVariable(key, value.toString())
+    if (testContext != null) {
+      /* XXX */
+      for ((key, value) <- testContext) DistribTestConfig.expanded.addVariable(key, value.toString())
+    }
     val numRuntimes = DistribTestConfig.expanded.get("dOrcNumRuntimes").get.toInt
     val (leaderSpec, followerSpecs) = computeLeaderFollowerSpecs(numRuntimes)
     val bindings = new orc.Main.OrcCmdLineOptions()
