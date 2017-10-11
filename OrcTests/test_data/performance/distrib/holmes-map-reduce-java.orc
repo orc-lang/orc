@@ -15,9 +15,11 @@ include "write-csv-file.inc"
 
 import class JavaSys = "java.lang.System"
 
+{- Number of files to read. -}
+val numInputFiles = Read(JavaSys.getProperty("orc.test.numInputFiles", "12"))
+
 {- Number of times to re-read and word count each file. -}
-{- Update the OUTPUT annotation when changing this. -}
-val repeatRead = Read(JavaSys.getProperty("orc.test.repeatRead", "3"))
+val repeatRead = Read(JavaSys.getProperty("orc.test.repeatRead", "1"))
 
 def checkReadableFile(file) =
   import class JavaSys = "java.lang.System"
@@ -33,43 +35,34 @@ def countFile(file) =
   counts
 
 def mapOperation(filename) =
+  import class File = "java.io.File"
   -- Run n copies of f to build a list.
   def loop(0, f) = []
   def loop(1, f) = [f()]
   def loop(n, f) = {| f() |} : loop(n-1, f) 
 
-  import class File = "java.io.File"
-  File(filename)  >f>
-  checkReadableFile(f)  >>
+  File(filename)  >file>
+  checkReadableFile(file)  >>
   loop(repeatRead,
-    { countFile(f) }
+    { countFile(file) }
   )
 
 def combineOperation(xs) = afold((+), xs)
 
 def reduceOperation(x, y) = x + y
 
+def listFileNamesRecursively(dirPathName :: String) :: List[String] =
+  import class File = "java.io.File"
+  import class WordCount = "orc.test.item.distrib.WordCount"
+  WordCount.listFileNamesRecursively(File(dirPathName))  >fileNameArray>
+  arrayToList(fileNameArray)
+
+val inputList = take(numInputFiles, listFileNamesRecursively("../OrcTests/test_data/performance/distrib/holmes_test_data/"))
+
 def testPayload() =
-"../OrcTests/test_data/functional_valid/distrib/holmes_test_data/"  >dataDir>
-
-[
-  dataDir + "adventure-1.txt",
-  dataDir + "adventure-2.txt",
-  dataDir + "adventure-3.txt",
-  dataDir + "adventure-4.txt",
-  dataDir + "adventure-5.txt",
-  dataDir + "adventure-6.txt",
-  dataDir + "adventure-7.txt",
-  dataDir + "adventure-8.txt",
-  dataDir + "adventure-9.txt",
-  dataDir + "adventure-10.txt",
-  dataDir + "adventure-11.txt",
-  dataDir + "adventure-12.txt"
-] >inputList>
-
-map(mapOperation, inputList)  >mappedList>
-map(combineOperation, mappedList)  >combinedList>
-afold(reduceOperation, combinedList)
+  map(mapOperation, inputList)  >mappedList>
+  map(combineOperation, mappedList)  >combinedList>
+  afold(reduceOperation, combinedList)
 
 
 {--------
@@ -95,6 +88,7 @@ setupOutput()  >>
 writeFactorValuesTable([
   --Factor name, Value, Units, Comments
   ("Program", "holmes-map-reduce-java.orc", "", ""),
+  ("Number of files", length(inputList), "", "Number of files read"),
   ("Reads per file", repeatRead, "", "Number of concurrent reads of the file"),
   ("Cluster size", NumberOfRuntimeEngines(), "", "Number of d-Orc runtime engines running")
 ])  >>

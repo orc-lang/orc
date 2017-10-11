@@ -22,6 +22,7 @@ import java.io.OutputStreamWriter;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import scala.collection.JavaConverters;
 import scala.collection.TraversableOnce;
@@ -88,25 +89,23 @@ public class WordCount {
 
     public static int repeatRead = Integer.parseInt(System.getProperty("orc.test.repeatRead", "3"));
 
-    public static int repeatCountFilename(final String filename) throws IOException {
-        final File f = new File(filename);
-        if (!f.canRead()) {
-            throw new RuntimeException("Cannot read file: " + f.getCanonicalPath());
+    public static int repeatCountFilename(final File file) throws IOException {
+        if (!file.canRead()) {
+            throw new RuntimeException("Cannot read file: " + file.getCanonicalPath());
         }
         int sum = 0;
         for (int i = 0; i < repeatRead; i++) {
-            sum += countFile(f);
+            sum += countFile(file);
         }
         return sum;
     }
 
-    public static String dataDir = "../OrcTests/test_data/functional_valid/distrib/holmes_test_data/";
-    public static String[] inputList = { dataDir + "adventure-1.txt", dataDir + "adventure-2.txt", dataDir + "adventure-3.txt", dataDir + "adventure-4.txt", dataDir + "adventure-5.txt", dataDir + "adventure-6.txt", dataDir + "adventure-7.txt", dataDir + "adventure-8.txt", dataDir + "adventure-9.txt", dataDir + "adventure-10.txt", dataDir + "adventure-11.txt", dataDir + "adventure-12.txt" };
+    public static List<File> inputList;
 
     public static int testPayload() throws IOException {
         int sum = 0;
-        for (final String fn : inputList) {
-            sum += repeatCountFilename(fn);
+        for (final File file : inputList) {
+            sum += repeatCountFilename(file);
         }
         return sum;
     }
@@ -155,15 +154,44 @@ public class WordCount {
         System.out.println(description + " written to " + basename + ".csv");
     }
 
+    public static void listFilesRecursively(File startFile, ArrayList<File> foundFiles) {
+        if (startFile.isFile() && !startFile.isHidden()) {
+            foundFiles.add(startFile);
+        } else if (startFile.isDirectory() && !startFile.isHidden()) {
+            for (File curFile : startFile.listFiles()) {
+                listFilesRecursively(curFile, foundFiles);
+            }
+        } else {
+            /* Skip this dir. entry */
+        }
+    }
+
+    public static String[] listFileNamesRecursively(File startFile) {
+        ArrayList<File> files = new ArrayList<>();
+        listFilesRecursively(startFile, files);
+        String[] fileNames = new String[files.size()];
+        int i = 0;
+        for (File file: files) {
+            fileNames[i] = file.getPath();
+            ++i;
+        }
+        return fileNames;
+    }
+
     public static void main(final String[] args) throws IOException {
-        TestEnvironmentDescription.dumpAtShutdown();
+        setupOutput();
 
         final int numRepetitions = Integer.parseInt(System.getProperty("orc.test.numRepetitions", "20"));
 
-        setupOutput();
+        String dataDir = "../OrcTests/test_data/performance/distrib/holmes_test_data/";
+        int numInputFiles = Integer.parseInt(System.getProperty("orc.test.numInputFiles", "12"));
+        ArrayList<File> files = new ArrayList<>();
+        listFilesRecursively(new File(dataDir), files);
+        inputList = files.subList(0, numInputFiles);
 
         final Object[][] factorValues = {
                 {"Program", "WordCount.java", "", ""},
+                {"Number of files", Integer.valueOf(inputList.size()), "", "Number of files read"},
                 {"Reads per file", Integer.valueOf(repeatRead), "", "Number of sequential re-reads of the file"}
         };
         FactorValue.writeFactorValuesTable(factorValues);

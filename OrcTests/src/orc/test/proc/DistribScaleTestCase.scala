@@ -69,7 +69,7 @@ object DistribScaleTestCase {
         (s, t, f, e, b, tc, ls, fs) => new DistribScaleTestCase(experimentalCondition, s, t, f, e, b, tc, ls, fs),
         testContext,
         programPaths)
-      suiteForOneCondition.addTest(new RunMainMethodTestCase(s"WordCount_${experimentalCondition.repeatRead}_${experimentalCondition.dOrcNumRuntimes}", testContext, classOf[WordCount]))
+      suiteForOneCondition.addTest(new RunMainMethodTestCase(s"WordCount_${experimentalCondition.productIterator.mkString("_")}", testContext, classOf[WordCount]))
       suiteForOneCondition.setName(experimentalCondition.toString)
       testRunSuite.addTest(suiteForOneCondition)
     }
@@ -77,28 +77,29 @@ object DistribScaleTestCase {
   }
 
   val factors = Seq(
-    FactorDescription("repeatRead", "Reads per file", "", ""),
+    FactorDescription("numInputFiles", "Number of files read", "", ""),
+    //FactorDescription("repeatRead", "Reads per file", "", ""),
     FactorDescription("dOrcNumRuntimes", "Cluster size", "", ""))
   // Add numRepetitions?
 
-  case class DistribScaleExperimentalCondition(repeatRead: Int, dOrcNumRuntimes: Int) extends ExperimentalCondition {
+  case class DistribScaleExperimentalCondition(numInputFiles: Int, /*repeatRead: Int,*/ dOrcNumRuntimes: Int) extends ExperimentalCondition {
     override def factorDescriptions = factors
-    override def toString = s"(repeatRead=${repeatRead}, dOrcNumRuntimes=${dOrcNumRuntimes})"
+    override def toString = s"(numInputFiles=$numInputFiles, dOrcNumRuntimes=$dOrcNumRuntimes)"
   }
 
   def readExperimentalConditions(): Traversable[DistribScaleExperimentalCondition] = {
     //FIXME: Read from file
     Seq(
-      //  | Reads per file | Cluster size |
-      DistribScaleExperimentalCondition(3, 3),
-      DistribScaleExperimentalCondition(6, 3),
-      DistribScaleExperimentalCondition(12, 3),
-      DistribScaleExperimentalCondition(3, 6),
-      DistribScaleExperimentalCondition(6, 6),
+      // Number of files read, Cluster size
+      DistribScaleExperimentalCondition(12, 12),
       DistribScaleExperimentalCondition(12, 6),
-      DistribScaleExperimentalCondition(3, 12),
-      DistribScaleExperimentalCondition(6, 12),
-      DistribScaleExperimentalCondition(12, 12))
+      DistribScaleExperimentalCondition(12, 3),
+      DistribScaleExperimentalCondition(36, 12),
+      DistribScaleExperimentalCondition(36, 6),
+      DistribScaleExperimentalCondition(36, 3),
+      DistribScaleExperimentalCondition(120, 12),
+      DistribScaleExperimentalCondition(120, 6),
+      DistribScaleExperimentalCondition(120, 3))
   }
 
 }
