@@ -119,7 +119,7 @@ setupOutput()  >>
 writeFactorValuesTable([
   --Factor name, Value, Units, Comments
   ("Program", "holmes-map-reduce.orc", "", ""),
-  ("Number of files", length(inputList), "", "Number of files read"),
+  ("Number of files read", length(inputList), "", "Words counted in this number of input text files"),
   ("Reads per file", repeatRead, "", "Number of concurrent reads of the file"),
   ("Cluster size", NumberOfRuntimeEngines(), "", "Number of d-Orc runtime engines running")
 ])  >>
