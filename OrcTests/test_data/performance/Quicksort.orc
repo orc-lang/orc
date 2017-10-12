@@ -27,15 +27,18 @@ def makeRandomArray(n) =
   (upto(n) >x> a(x) := Random(n) >> stop) ;
   a
 
-def runTest() =
-  -- TODO: Change back to 10000 when PorcE can handle it.
-  makeRandomArray(5000) >a>
-  --Println(arrayToList(a)) >>
-  quicksort(a)
-  --Println(arrayToList(a))
-  
-benchmark(runTest) 
+
+val arraySize = problemSizeScaledInt(5000)
+
+def setup() = makeRandomArray(arraySize)
+
+benchmarkSized("Quicksort", arraySize * Log(arraySize), setup, quicksort) 
 
 {-
 BENCHMARK
 -}
+
+{-
+OUTPUT:
+signal
+}

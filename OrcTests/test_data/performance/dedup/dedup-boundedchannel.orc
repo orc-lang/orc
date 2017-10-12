@@ -13,6 +13,7 @@ import class Rabin = "orc.test.item.scalabenchmarks.dedup.Rabin"
 import class Chunk = "orc.test.item.scalabenchmarks.dedup.Chunk"
 import class ArrayKey = "orc.test.item.scalabenchmarks.dedup.ArrayKey"
 import class Map = "java.util.concurrent.ConcurrentHashMap"
+import class File = "java.io.File"
 import class FileInputStream = "java.io.FileInputStream"
 import class FileOutputStream = "java.io.FileOutputStream"
 import class DataOutputStream = "java.io.DataOutputStream"
@@ -143,9 +144,13 @@ def dedup(in, out) =
 	fineChunks.close()
 
 
-benchmark({
+benchmarkSized("Dedup-boundedchannel", File("test.in").length(), { signal }, lambda(_) =
   val (in, out) = (FileInputStream("test.in"), DataOutputStream(FileOutputStream("test.out")))
   dedup(in, out) >>
   in.close() >>
   out.close()
-})
+)
+
+{-
+BENCHMARK
+-}

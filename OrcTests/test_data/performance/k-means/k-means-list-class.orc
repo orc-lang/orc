@@ -107,11 +107,7 @@ def readPoints(path) =
 val data = readPoints("test_data/performance/points.json")
 val points = append(data,append(data, data))
 
-val _ = Println(length(points) + "\n" + unlines(map({ _.toString() }, take(5, points))))
-
-benchmark({
-  run(points)
-})
+benchmarkSized("k-means-list-class", length(points), { points }, run)
 
 {-
 BENCHMARK

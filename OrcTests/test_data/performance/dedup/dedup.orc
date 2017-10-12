@@ -129,9 +129,13 @@ def dedup(in, out) =
 	write(out, outputPool)
 
 
-benchmark({
+benchmarkSized("Dedup-naive", File("test.in").length(), { signal }, lambda(_) =
   val (in, out) = (FileInputStream("test.in"), DataOutputStream(FileOutputStream("test.out")))
   dedup(in, out) >>
   in.close() >>
   out.close()
-})
+)
+
+{-
+BENCHMARK
+-}

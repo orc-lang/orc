@@ -43,8 +43,10 @@ def primes(n) =
   val set = Collections.synchronizedSet[Number](HashSet[Number]())
   joinMap(set.add, candidates(n)) >>
   sieve(n, set)
+  
+val N = problemSizeScaledInt(20000)
 
-benchmarkSized(problemSizeScaledInt(20000), { primes(problemSizeScaledInt(20000)) })
+benchmarkSized("Sieve", N, { signal }, { _ >> primes(N) })
 
 {-
 OUTPUT:

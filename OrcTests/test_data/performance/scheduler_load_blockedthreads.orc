@@ -15,4 +15,6 @@ def snoozie(x) if (x :> 0) = sleep(timestep) >> snoozie(x - timestep)
 
 def f(x) if (x :> 0) = (f(x-1) >> snoozie(500)) | snoozie(500)
 
-benchmark({ f(1000) })
+val N = problemSizeScaledInt(1000)
+
+benchmarkSized("BlockedThreads", N, { signal }, { _ >> f(N) })

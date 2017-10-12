@@ -67,7 +67,9 @@ def takeN(n, chan) =
 
 def makeChannels[A](n :: Integer) = collect({ upto(n) >> Channel[A]() })
 
-benchmark({
+val N = problemSizeScaledInt(400)
+
+benchmarkSized("Hamming", N, { signal }, lambda(_) =
 val [out, out', x2, x3, x5, x2', x3', x5'] as chans = makeChannels[Integer](8)
 
 Fanout(out.get, [x2.put, x3.put, x5.put, out'.put]) >> stop |
@@ -76,13 +78,12 @@ Trans({ _*2 }, x2.get, x2'.put) >> stop |
 Trans({ _*3 }, x3.get, x3'.put) >> stop | 
 Trans({ _*5 }, x5.get, x5'.put) >> stop |
 
-Println(takeN(400, out')) >>
--- The getAll is required because there may be values in the channel and that will cause close to block.
+Println(takeN(N, out')) >>
 each(chans) >c> c.closeD() >> stop
 
 |
 out.put(1) >> stop
-})
+)
 
 {-
 OUTPUT:

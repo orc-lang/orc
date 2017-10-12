@@ -57,6 +57,8 @@ val netlist = NetList(filename)
 val _ = Println(netlist.elements().size()) 
 val _ = Println((nThreads, nSwapsPerThread))
 
-benchmarkSized(nTempSteps * swapsPerTemp, {
-  run(netlist)
-})
+benchmarkSized("Canneal-naive-partitioned-sequentialize", nTempSteps * swapsPerTemp, { netlist }, run)
+
+{-
+BENCHMARK
+-}

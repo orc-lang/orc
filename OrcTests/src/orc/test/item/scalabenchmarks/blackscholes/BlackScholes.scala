@@ -19,12 +19,12 @@ object BlackScholesData {
 
   val dataSize = 100000
 
-  val dataSeq = (seededStream(1, 0.01, 100), seededStream(2, 0.01, 100), seededStream(3, 0.1, 5)).zipped.take(dataSize) map {
-    case (s, x, t) =>
-      BlackScholesStock(s, x, t)
+  def makeData(s: Int): Array[BlackScholesStock] = {
+    (seededStream(1, 0.01, 100), seededStream(2, 0.01, 100), seededStream(3, 0.1, 5)).zipped
+      .take(s).map({ case (s, x, t) => BlackScholesStock(s, x, t) }).toArray
   }
 
-  val data = dataSeq.toArray
+  val data = makeData(dataSize)
 
   val riskless: D = 0.7837868650424492
   val volatility: D = 0.14810754832231288

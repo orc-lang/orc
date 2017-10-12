@@ -52,6 +52,8 @@ val netlist = NetList(filename)
 val _ = Println(netlist.elements().size()) 
 
 
-benchmarkSized(nTempSteps * swapsPerTemp, {
-  run(netlist)
-})
+benchmarkSized("Canneal-naive", nTempSteps * swapsPerTemp, { netlist }, run)
+
+{-
+BENCHMARK
+-}

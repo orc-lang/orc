@@ -34,14 +34,13 @@ def tableToList(n, t) = t(n-1) : tableToList(n-1, t)
 
 def showRow(l) = afold({ _ + _ }, map({ if _ then "@" else "." }, l))
 
-benchmarkSized(size * size, {
-tableToList(size, Table(size, row)) >ll>
-map(compose(showRow, curry(tableToList)(size)), ll) >ls>
-Println(unlines(ls))
-
-| 
-Println("size = " + size + ", resolution = " + resolution + ", offset = " + offset) >> stop
-})
+benchmarkSized("Mandelbrot", size * size, { signal }, lambda(_) =
+  tableToList(size, Table(size, row)) >ll>
+  map(compose(showRow, curry(tableToList)(size)), ll) >ls>
+  Println(unlines(ls))
+  | 
+  Println("size = " + size + ", resolution = " + resolution + ", offset = " + offset) >> stop
+)
 
 {-
 OUTPUT:

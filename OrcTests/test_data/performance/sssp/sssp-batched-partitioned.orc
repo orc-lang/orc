@@ -34,8 +34,6 @@ def sfor(low, high, f) = Sequentialize() >> sforBy(low, high, 1, f)
 
 val nPartitions = 8
 
-val counter = AtomicLong(0)
-
 def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	val outQLock = Semaphore(1)
 	val q1 = ArrayList()
@@ -114,9 +112,9 @@ val nodes = SSSP.nodes()
 val edges = SSSP.edges()
 val source = SSSP.source()
 
-benchmarkSized(nodes.length? * nodes.length?, { 
-	val r = sssp(nodes, edges, source)
-	Println((r.get(0), r.get(1), r.get(2), r.get(3), r.get(4))) >>
-	Println(counter.get())
-})
+benchmarkSized("SSSP-batched-partitioned", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) })
+
+{-
+BENCHMARK
+-}
 

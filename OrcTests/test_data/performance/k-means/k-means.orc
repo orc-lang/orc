@@ -67,9 +67,7 @@ def dist(x :: Point, y :: Point) = x.sub(y).modulus()
 
 val points = KMeansData.data()
 
-benchmarkSized(points.length?, {
-  run(points)
-})
+benchmarkSized("k-means", points.length?, { points }, run)
 
 {-
 BENCHMARK

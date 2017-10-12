@@ -22,7 +22,7 @@ def fibPairTailrec(n) =
   def fib(i, curr, prev) = fib(i+1, curr + prev, curr)
   fib(0, 0, 1)
 
-benchmark({
+benchmarkSized("Fibonacci", 1, { signal }, { _ >> stop ;
 
 fibPairTailrec(3000) >x> Println(x) >> stop
 

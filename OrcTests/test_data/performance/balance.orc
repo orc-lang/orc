@@ -57,10 +57,10 @@ def run(i) =
         ; in.close() >> stop )
     | collect({ repeat(out.get) }) >x> (if length(x) /= 10 then Println("FAIL " + length(x)) >> stop else stop)
     ) ; signal
-    
-benchmark({
-  uptoSeq(200, run)
-})
+
+val iterations = problemSizeScaledInt(200)
+   
+benchmark("Balance", iterations, { signal }, { _ >> uptoSeq(iterations, run) })
 
 {-
 BENCHMARK

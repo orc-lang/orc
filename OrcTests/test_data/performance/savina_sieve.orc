@@ -61,7 +61,7 @@ def primes(n) =
 
 val N = problemSizeScaledInt(20000)
 
-benchmarkSized(N, { primes(N) })
+benchmarkSized("Sieve-savina", N, { signal }, { _ >> primes(N) })
 
 {-
 BENCHMARK

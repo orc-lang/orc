@@ -32,9 +32,7 @@ def factorial(0) = 1
 def factorial(1) = 1
 def factorial(n) = n * factorial(n - 1)
 
-benchmarkSized(factorial(N), {
-  collect(defer(queens, N)) >x> signal
-})
+benchmarkSized("N-Queens", factorial(N), { signal }, { _ >> collect(defer(queens, N)) })
 
 {-
 BENCHMARK

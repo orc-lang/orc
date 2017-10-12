@@ -1,3 +1,6 @@
+include "write-csv-file.inc"
+include "test-output-util.inc"
+
 import class System = "java.lang.System"
 
 import site EndBenchmark = "orc.lib.EndBenchmark"
@@ -11,7 +14,7 @@ value. However, that may not always be possible or practical.
 If a value is not specified the size is 1.
 -}
 val problemSize = (
-    val r = System.getProperty("benchmark.problemSize")
+    val r = System.getProperty("orc.test.benchmark.problemSize")
     Iff(r = null) >>
     Read(r) 
   ) ; 1
@@ -31,7 +34,7 @@ behaves exactly like f().
 The default value is 0.
 -}
 val nRuns = (
-    val r = System.getProperty("benchmark.nRuns")
+    val r = System.getProperty("orc.test.benchmark.nRuns")
     Iff(r = null) >>
     Read(r) 
   ) ; 0
@@ -54,14 +57,23 @@ def timeIt[A](f :: lambda() :: A) =
     Println("Time used: " + (e-s) + "ms") >> stop
   )
 
-def benchmarkSized[A](size :: Number, f :: lambda() :: A) =
-	def h(Integer) :: Signal
-	def h(i) if (i >= nRuns) = stop
-	def h(i) = 
-		timeItNoPub(f, i, size) >r> (r | h(i+1))
+def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A, benchmark :: lambda(A) :: B) =
+	def h(Integer, List[Top]) :: Signal
+	def h(i, results) if (i >= nRuns) = results
+	def h(i, results) = 
+		setup() >d> timeItNoPub({ benchmark(d) }, i, size) >r> h(i+1, r : results)
 	if nRuns >= 1 then
-		Println("Benchmark Enabled: " + nRuns + " runs, problem size " + problemSize + ", O(" + size + ") work") >> h(0)
+		Println("Benchmarking " + name + " (" + nRuns + " runs, problem size " + problemSize + ", O(" + size + ") work)") >>
+		setupOutput() >>
+		writeFactorValuesTable([
+		  --Factor name, Value, Units, Comments
+		  ("Benchmark", name, "", ""),
+		  ("Problem Size", problemSize, "", "")
+		])  >>
+		h(0, []) >results>
+		writeCsvFile(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
+		  ["Repetition number", "Elapsed time (s)", "Process CPU time (s)"], 
+		  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime()], results))  >>
+		results
 	else
-		f()
-		
-def benchmark[A](f :: lambda() :: A) = benchmarkSized(1, f)
+		setup() >d> benchmark(d)

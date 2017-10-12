@@ -66,9 +66,7 @@ def updateCentroids(xs, centroids) =
 
 val points = KMeansData.data()
 
-benchmarkSized(points.length?, {
-  run(points)
-})
+benchmarkSized("k-means-scala-inner", points.length?, { points }, run)
 
 {-
 BENCHMARK

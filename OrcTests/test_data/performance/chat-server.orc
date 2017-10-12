@@ -1,3 +1,7 @@
+{-
+A chat server that stores a backlog of messages and sends them out to new clients on a given room.
+-}
+
 include "net.inc"
 
 import class Queue = "java.util.concurrent.ConcurrentLinkedQueue"
@@ -90,6 +94,3 @@ repeat(chatServlet.get) >ctx> (
   ctx.complete()
 ) >> stop
 
-{-
-A chat server that stores a backlog of messages and sends them out to new clients on a given room.
--}

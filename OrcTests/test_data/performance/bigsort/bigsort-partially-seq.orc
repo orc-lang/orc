@@ -110,10 +110,11 @@ def makeRandomArray(n) =
 
 val arraySize = problemSizeScaledInt(3000)
 
-def runTest() =
-  timeIt({ makeRandomArray(arraySize) }) >a>
-  --Println(arrayToList(a)) >>
-  timeIt({ splitSortMerge(a, quicksort) }) -->b>
-  --Println(arrayToList(b))
+def setup() = makeRandomArray(arraySize)
   
-benchmarkSized(arraySize, runTest) 
+benchmarkSized("BigSort-naive", arraySize * Log(arraySize), setup, { splitSortMerge(_, quicksort) }) 
+
+
+{-
+BENCHMARK
+-}

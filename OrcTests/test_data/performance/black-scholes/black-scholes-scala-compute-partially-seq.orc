@@ -22,12 +22,11 @@ def run(data) =
 	Println((res(0)?, res(1)?, res(2)?, res(3)?, res(5)?))
 
 
-val data = BlackScholesData.data()
-val _ = Println(data(0)?)
+val dataSize = problemSizeScaledInt(100000)
 
-benchmarkSized(data.length?, {
-  run(data)
-})
+val data = BlackScholesData.makeData(dataSize)
+
+benchmarkSized("Black-Scholes-scala-compute-partition", data.length?, { data }, run)
 
 {-
 BENCHMARK

@@ -23,8 +23,6 @@ import class SSSP = "orc.test.item.scalabenchmarks.SSSP"
 
 import class AtomicLong = "java.util.concurrent.atomic.AtomicLong"
 
-val counter = AtomicLong(0)
-
 def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	val queue = Channel()
     val result = (
@@ -36,7 +34,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
     )
     result(source) := 0 >>
 	queue.put(source) >>
-	repeat({ Sequentialize() >> queue.getD() >index> counter.getAndIncrement() >> (
+	repeat({ Sequentialize() >> queue.getD() >index> (
 		val node = nodes(index)?
 		val currentCost = result(index)?
 		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> edges(edgeIndex)? >edge> (
@@ -56,9 +54,10 @@ val nodes = SSSP.nodes()
 val edges = SSSP.edges()
 val source = SSSP.source()
 
-benchmarkSized(nodes.length? * nodes.length?, { 
-	val r = sssp(nodes, edges, source)
-	Println((r(0)?, r(1)?, r(2)?, r(3)?, r(4)?)) >>
-	Println(counter.get())
-})
+
+benchmarkSized("SSSP-naive-seq", nodes.length? * nodes.length?, { signal }, { _ >> sssp(nodes, edges, source) })
+
+{-
+BENCHMARK
+-}
 

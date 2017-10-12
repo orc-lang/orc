@@ -33,10 +33,11 @@ def threadRingRunner(p) =
   upto(N) >i> ring(i).getAll() >> ring(i).closeD() >> stop ; 
   signal
 
-benchmark({
-threadRingRunner(2000) >>
-threadRingRunner(20000) >> stop
+benchmarkSized("ThreadRing-2", problemSizeScaledInt(2000) + problemSizeScaledInt(20000), {signal}, { _ >>
+threadRingRunner(problemSizeScaledInt(2000)) >>
+threadRingRunner(problemSizeScaledInt(20000)) >> stop
 })
+
 {-
 OUTPUT:
 492

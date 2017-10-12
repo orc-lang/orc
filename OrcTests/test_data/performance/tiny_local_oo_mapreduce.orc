@@ -80,8 +80,10 @@ val data2 = [
     ""
   ]
 
+val multiplier = problemSizeScaledInt(300)
+
 def myReader() =  
-  upto(300) >> each(data1) >a> each(data2) >b> a + b 
+  upto(multiplier) >> each(data1) >a> each(data2) >b> a + b 
   
 def openPrintlnOutput() = new ReductionOutput {
   def write(k, v) = Println("OUT: " + k + " -> " + v)
@@ -89,7 +91,7 @@ def openPrintlnOutput() = new ReductionOutput {
 }
 
 
-benchmark({
+benchmarkSized("TinyOOMapReduce", multiplier, { signal }, lambda(_) =
 val task = new MapReduce {
   val map = myMapper
   val reduce = myReducer
@@ -97,8 +99,8 @@ val task = new MapReduce {
   val openOutput = openPrintlnOutput
 } 
 
-executeSimple(task, 2000) >> stop
-})
+executeSimple(task, problemSizeScaledInt(2000)) >> stop
+)
 
 {-
 BENCHMARK

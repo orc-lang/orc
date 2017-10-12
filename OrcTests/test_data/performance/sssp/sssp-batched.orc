@@ -25,8 +25,6 @@ import class AtomicLong = "java.util.concurrent.atomic.AtomicLong"
 import class AtomicIntegerArray = "java.util.concurrent.atomic.AtomicIntegerArray"
 import class ArrayList = "java.util.ArrayList"
 
-val counter = AtomicLong(0)
-
 def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	val outQLock = Semaphore(1)
 	val q1 = ArrayList()
@@ -81,9 +79,10 @@ val nodes = SSSP.nodes()
 val edges = SSSP.edges()
 val source = SSSP.source()
 
-benchmarkSized(nodes.length? * nodes.length?, { 
-	val r = sssp(nodes, edges, source)
-	Println((r.get(0), r.get(1), r.get(2), r.get(3), r.get(4))) >>
-	Println(counter.get())
-})
+
+benchmarkSized("SSSP-batched", nodes.length? * nodes.length?, { signal }, { _ >> sssp(nodes, edges, source) })
+
+{-
+BENCHMARK
+-}
 
