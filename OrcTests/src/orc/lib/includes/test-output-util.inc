@@ -20,9 +20,9 @@ def setupOutput() =
     else signal
   )  >>
   File(JavaSys.getProperty("orc.executionlog.dir"))  >outDir>
-  ( if outDir.exists()
-    then signal
-    else Error("Directory must exist: " + outDir.getAbsolutePath())
+  ( if outDir.mkdirs()
+    then Println("Created output directory: " + outDir.getCanonicalPath())
+    else signal
   )  >>  
   TestEnvironmentDescription.dumpAtShutdown()
 
