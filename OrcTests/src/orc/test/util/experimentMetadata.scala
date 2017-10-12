@@ -79,6 +79,7 @@ object FactorValue {
     writeFactorValuesTable(_.writeRowsOfProducts(factorValues.map(_ match {
       case fv: FactorValue => ((fv.factor.name, fv.value, fv.factor.unit, fv.factor.id, fv.factor.comments))
       case t: Product if t.productArity == 5 => t
+      case _ => throw new IllegalArgumentException("writeFactorValuesTable: factorValues must be either FactorValue instances or 5-tuples")
     })))
   }
 
@@ -92,7 +93,12 @@ object FactorValue {
     */
   @throws[IOException]
   def writeFactorValuesTable(factorValues: Array[Array[AnyRef]]): Unit = {
-    writeFactorValuesTable(_.writeRowsOfTraversables(factorValues.map(_.toTraversable)))
+    writeFactorValuesTable(_.writeRowsOfTraversables(factorValues.map({
+      e => if (e.length == 5) 
+        e.toTraversable
+      else 
+        throw new IllegalArgumentException("writeFactorValuesTable: factorValues must be either FactorValue instances or 5-tuples") 
+    })))
   }
 
   @throws[IOException]
