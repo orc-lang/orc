@@ -119,9 +119,9 @@ setupOutput()  >>
 writeFactorValuesTable([
   --Factor name, Value, Units, Comments
   ("Program", "holmes-map-reduce.orc", "", ""),
-  ("Number of files read", length(inputList), "", "Words counted in this number of input text files"),
-  ("Reads per file", repeatRead, "", "Number of concurrent reads of the file"),
-  ("Cluster size", NumberOfRuntimeEngines(), "", "Number of d-Orc runtime engines running")
+  ("Number of files read", length(inputList), "", "numInputFiles", "Words counted in this number of input text files"),
+  ("Reads per file", repeatRead, "", "repeatRead", "Number of concurrent reads of the file"),
+  ("Cluster size", NumberOfRuntimeEngines(), "", "dOrcNumRuntimes", "Number of d-Orc runtime engines running")
 ])  >>
 timeRepetitions(testPayload, numRepetitions)  >repetitionTimes>
 writeCsvFile(buildOutputPathname("repetition-times", "csv"), "Repetitions' elapsed times output file",
