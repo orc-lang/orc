@@ -39,8 +39,9 @@ import java.io.IOException
   * @author jthywiss
   */
 case class FactorDescription(id: String, name: String, unit: String, comments: String) {
-  override def toString = toFormattedString
+  override def toString = toFormattedStringWithId
   def toFormattedString = name + (if (unit != null && unit.nonEmpty) s" ($unit)" else "")
+  def toFormattedStringWithId = toFormattedString + " [" + id + "]"
   def toDebugString = super.toString
 }
 
@@ -61,7 +62,7 @@ case class FactorValue(factor: FactorDescription, value: Any) {
 
 object FactorValue {
 
-  val factorValuesTableColumnTitles = Seq("Factor name", "Value", "Units", "Comments")
+  val factorValuesTableColumnTitles = Seq("Factor name", "Value", "Units", "ID", "Comments")
 
   /** Each process in an experiment that writes experimental-condition-
     * dependent files should call this method to write a file that associates
@@ -69,15 +70,15 @@ object FactorValue {
     *
     * This overload has a Scala-and-Orc-convenient signature.
     * The elements of factorValues must be either FactorValue instances or
-    * 4-tuples containing Factor name, Value, Units, and Comments.
+    * 5-tuples containing Factor name, Value, Units, ID, and Comments.
     *
     * @see FactorValue
     */
   @throws[IOException]
   def writeFactorValuesTable(factorValues: Traversable[Product]): Unit = {
     writeFactorValuesTable(_.writeRowsOfProducts(factorValues.map(_ match {
-      case fv: FactorValue => ((fv.factor.name, fv.value, fv.factor.unit, fv.factor.comments))
-      case t: Product if t.productArity == 4 => t
+      case fv: FactorValue => ((fv.factor.name, fv.value, fv.factor.unit, fv.factor.id, fv.factor.comments))
+      case t: Product if t.productArity == 5 => t
     })))
   }
 
@@ -86,8 +87,8 @@ object FactorValue {
     * the experimental condition (factor) values with its output files.
     *
     * This overload has a Java-convenient signature.
-    * The inner arrays must contain 4 elements: Factor name, Value, Units,
-    * and Comments.
+    * The inner arrays must contain 5 elements: Factor name, Value, Units,
+    * ID, and Comments.
     */
   @throws[IOException]
   def writeFactorValuesTable(factorValues: Array[Array[AnyRef]]): Unit = {
