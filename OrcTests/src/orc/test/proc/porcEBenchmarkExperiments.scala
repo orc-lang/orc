@@ -36,7 +36,7 @@ object PorcETestExperiment extends PorcEBenchmark {
       for {
         allowSpawnInlining <- Seq(true)
         nCPUs <- Seq(1, 2, 3, 4, 8)
-        optLevel <- Seq(2)
+        optLevel <- Seq(2, 3)
         fn <- args.toSeq
       } yield {
         assert(new File(fn).isFile())

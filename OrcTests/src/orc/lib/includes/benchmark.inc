@@ -73,8 +73,8 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 		])  >>
 		h(0, []) >results>
 		writeCsvFile(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
-		  ["Repetition number", "Elapsed time (s)", "Process CPU time (s)"], 
-		  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime()], reverse(results)))  >>
+		  ["Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", "Runtime compilation time (s) [rtCompTime]"], 
+		  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime(), t.compilationTime()], reverse(results)))  >>
 		results
 	else
 		setup() >d> benchmark(d)
