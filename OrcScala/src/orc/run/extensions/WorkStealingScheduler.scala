@@ -36,9 +36,9 @@ class SimpleWorkStealingScheduler(
 
   val nCores = Runtime.getRuntime().availableProcessors()
   
-  val overrideWorkers = Option(System.getProperty("SimpleWorkStealingScheduler.overrideWorkers")).map(_.toInt)
+  val overrideWorkers = Option(System.getProperty("orc.SimpleWorkStealingScheduler.overrideWorkers")).map(_.toInt)
   overrideWorkers foreach { n =>
-    Logger.info(s"Worker count fixed at $n (read from System property SimpleWorkStealingScheduler.overrideWorkers).")
+    Logger.info(s"Worker count fixed at $n (read from System property orc.SimpleWorkStealingScheduler.overrideWorkers).")
   }
 
   /** The minimum number of worker threads.
