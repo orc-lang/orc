@@ -125,30 +125,26 @@ object PorcERuntime {
 
   @inline
   @CompilationFinal
-  val maxStackDepth = 8
-  // TODO: Make maxStackDepth configurable. Any value >= 0 can theoretically cause a crash in a program that would otherwise have worked.
+  val maxStackDepth = System.getProperty("orc.porce.maxStackDepth", "8").toInt
+  // TODO: Make maxStackDepth user configurable
   
-  // TODO: Make configurable.
   @inline
   @CompilationFinal
-  val actuallySchedule = true
+  val actuallySchedule = System.getProperty("orc.porce.actuallySchedule", "true").toBoolean
   
-  // TODO: Make configurable.
   @inline
   @CompilationFinal
-  val occationallySchedule = true
+  val occationallySchedule = System.getProperty("orc.porce.occationallySchedule", "true").toBoolean
   
-  // TODO: Make configurable.
   @inline
   @CompilationFinal
-  val allowAllSpawnInlining = false
+  val allowAllSpawnInlining = System.getProperty("orc.porce.allowAllSpawnInlining", "true").toBoolean
   
-  // TODO: Make configurable.
   @inline
   @CompilationFinal
-  val allowSpawnInlining = true
+  val allowSpawnInlining = System.getProperty("orc.porce.allowSpawnInlining", "true").toBoolean
 
   
-  // Force loading of a few classes in Truffle. Without this the error handling code crashes and destroys the stack trace.
-  Class.forName("com.oracle.truffle.api.TruffleStackTrace").getFields()
+  // HACK: Force loading of a few classes in Truffle. Without this the error handling code crashes and destroys the stack trace.
+  Option(Class.forName("com.oracle.truffle.api.TruffleStackTrace")).foreach(_.getClassLoader())
 }

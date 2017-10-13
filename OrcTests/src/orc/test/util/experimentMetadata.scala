@@ -17,6 +17,7 @@ import java.io.{ File, OutputStreamWriter }
 
 import orc.util.{ CsvWriter, ExecutionLogOutputStream, WikiCreoleTableWriter }
 import java.io.IOException
+import scala.collection.JavaConverters._
 
 /** Description of a factor of an experiment.
   * A factor is an independent variable, i.e. a parameter to the experiment
@@ -60,6 +61,7 @@ case class FactorValue(factor: FactorDescription, value: Any) {
 }
 
 object FactorValue {
+  val factorPropertyPrefix = "orc.test.factor."
 
   val factorValuesTableColumnTitles = Seq("Factor name", "Value", "Units", "Comments")
 
@@ -79,6 +81,20 @@ object FactorValue {
       case fv: FactorValue => ((fv.factor.name, fv.value, fv.factor.unit, fv.factor.comments))
       case t: Product if t.productArity == 4 => t
     })))
+  }
+  
+  /** Write a set of factors plus factors from system properties.
+    *  
+    * @see FactorValue.writeFactorValuesTable
+    */
+  @throws[IOException]
+  def writeFactorValuesTableWithPropertyFactors(factorValues: Traversable[Product]): Unit = {
+    val properties = System.getProperties.asScala
+    val propertyFactors = properties.filterKeys(_.startsWith(factorPropertyPrefix)).map { case (k, v) =>
+      (k.substring(factorPropertyPrefix.size), v, "", "")
+    }
+    
+    writeFactorValuesTable(propertyFactors ++ factorValues) 
   }
 
   /** Each process in an experiment that writes experimental-condition-

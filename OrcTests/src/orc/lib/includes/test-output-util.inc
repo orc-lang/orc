@@ -46,3 +46,12 @@ the experimental condition (factor) values with its output files.
 def writeFactorValuesTable(factorValues) =
   import class FactorValue = "orc.test.util.FactorValue"
   FactorValue.writeFactorValuesTable(factorValues)
+
+{--
+@def writeFactorValuesTableWithPropertyFactors(factorValues)
+The same as writeFactorValuesTable except it also include factors provided as system properties.
+--}
+def writeFactorValuesTableWithPropertyFactors(factorValues) =
+  import class FactorValue = "orc.test.util.FactorValue"
+  FactorValue.writeFactorValuesTableWithPropertyFactors(factorValues)
+  

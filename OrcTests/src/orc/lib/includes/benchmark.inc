@@ -16,7 +16,7 @@ If a value is not specified the size is 1.
 val problemSize = (
     val r = System.getProperty("orc.test.benchmark.problemSize")
     Iff(r = null) >>
-    Read(r) 
+    Read(r)
   ) ; 1
   
 def problemSizeScaledInt(n :: Integer) :: Integer = 
@@ -65,15 +65,16 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 	if nRuns >= 1 then
 		Println("Benchmarking " + name + " (" + nRuns + " runs, problem size " + problemSize + ", O(" + size + ") work)") >>
 		setupOutput() >>
-		writeFactorValuesTable([
+		writeFactorValuesTableWithPropertyFactors([
 		  --Factor name, Value, Units, Comments
 		  ("Benchmark", name, "", ""),
-		  ("Problem Size", problemSize, "", "")
+		  ("Problem Size", problemSize, "", "The parameter which controls the amount of work."),
+		  ("Work", size, "", "An estimate of the amount of work this benchmark must.")
 		])  >>
 		h(0, []) >results>
 		writeCsvFile(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
 		  ["Repetition number", "Elapsed time (s)", "Process CPU time (s)"], 
-		  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime()], results))  >>
+		  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime()], reverse(results)))  >>
 		results
 	else
 		setup() >d> benchmark(d)
