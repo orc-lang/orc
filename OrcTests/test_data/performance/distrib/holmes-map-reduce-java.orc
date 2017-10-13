@@ -86,8 +86,8 @@ import site NumberOfRuntimeEngines = "orc.lib.NumberOfRuntimeEngines"
 
 setupOutput()  >>
 writeFactorValuesTable([
-  --Factor name, Value, Units, Comments
-  ("Program", "holmes-map-reduce-java.orc", "", ""),
+  --Factor name, Value, Units, ID, Comments
+  ("Program", "holmes-map-reduce-java.orc", "", "", ""),
   ("Number of files read", length(inputList), "", "numInputFiles", "Words counted in this number of input text files"),
   ("Reads per file", repeatRead, "", "repeatRead", "Number of concurrent reads of the file"),
   ("Cluster size", NumberOfRuntimeEngines(), "", "dOrcNumRuntimes", "Number of d-Orc runtime engines running")
