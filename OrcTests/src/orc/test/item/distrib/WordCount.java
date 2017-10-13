@@ -190,9 +190,9 @@ public class WordCount {
         inputList = files.subList(0, numInputFiles);
 
         final Object[][] factorValues = {
-                {"Program", "WordCount.java", "", ""},
-                {"Number of files", Integer.valueOf(inputList.size()), "", "Number of files read"},
-                {"Reads per file", Integer.valueOf(repeatRead), "", "Number of sequential re-reads of the file"}
+                {"Program", "WordCount.java", "", "", ""},
+                {"Number of files read", Integer.valueOf(inputList.size()), "", "numInputFiles", "Words counted in this number of input text files"},
+                {"Reads per file", Integer.valueOf(repeatRead), "", "repeatRead", "Number of sequential re-reads of each file"}
         };
         FactorValue.writeFactorValuesTable(factorValues);
 

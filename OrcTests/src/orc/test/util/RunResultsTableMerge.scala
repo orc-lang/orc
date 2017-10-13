@@ -71,6 +71,9 @@ object RunResultsTableMerge {
 
     val headerPrefix = factorNamesInOrder.mkString(",") + ","
 
+    //TODO: If the same factor ID is used with different names, fail or warn-and-merge
+    //TODO: Maybe: Add unit consistency checks 
+
     var firstHeader: String = null
     for (path <- Files.find(rootPath, 1, (p, a) => p.toString.endsWith(fileBaseName + ".csv") || p.toString.endsWith(fileBaseName + "_0.csv")).iterator.asScala) {
       val reader = Files.newBufferedReader(path)
@@ -123,12 +126,12 @@ object RunResultsTableMerge {
     for (path <- Files.find(rootPath, 99999, (p, a) => p.toString.endsWith("factor-values.csv") || p.toString.endsWith("factor-values_0.csv")).iterator.asScala) {
       val reader = Files.newBufferedReader(path)
       val lines = reader.lines().iterator
-      if (!lines.hasNext() || lines.next() != "Factor name,Value,Units,Comments") {
+      if (!lines.hasNext() || lines.next() != "Factor name,Value,Units,ID,Comments") {
         throw new DataFormatException(s"Empty file or file with unexpected header: ${path.toAbsolutePath}")
       }
       for (line <- lines.asScala) {
         val fields = line.split(",", -1)
-        val factorName = fields(0) + (if (fields(2).nonEmpty) " (" + fields(2) + ")" else "")
+        val factorName = fields(0) + (if (fields(2).nonEmpty) " (" + fields(2) + ")" else "") + (if (fields(3).nonEmpty) " [" + fields(3) + "]" else "")
         if (!factorNames.contains(factorName)) {
           factorNames.append(factorName)
         }
@@ -144,12 +147,12 @@ object RunResultsTableMerge {
     val factorNamesAndValues = scala.collection.mutable.Map.empty[String, Any]
     val reader = Files.newBufferedReader(factorValuesFile)
     val lines = reader.lines().iterator
-    if (!lines.hasNext() || lines.next() != "Factor name,Value,Units,Comments") {
+    if (!lines.hasNext() || lines.next() != "Factor name,Value,Units,ID,Comments") {
       throw new DataFormatException(s"Empty file or file with unexpected header: ${factorValuesFile.toAbsolutePath}")
     }
     for (line <- lines.asScala) {
       val fields = line.split(",", -1)
-      val factorName = fields(0) + (if (fields(2).nonEmpty) " (" + fields(2) + ")" else "")
+      val factorName = fields(0) + (if (fields(2).nonEmpty) " (" + fields(2) + ")" else "") + (if (fields(3).nonEmpty) " [" + fields(3) + "]" else "")
       factorNamesAndValues += ((factorName, fields(1)))
     }
     reader.close()
