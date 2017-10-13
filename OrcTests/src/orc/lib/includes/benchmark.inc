@@ -67,9 +67,9 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 		setupOutput() >>
 		writeFactorValuesTableWithPropertyFactors([
 		  --Factor name, Value, Units, Comments
-		  ("Benchmark", name, "", ""),
-		  ("Problem Size", problemSize, "", "The parameter which controls the amount of work."),
-		  ("Work", size, "", "An estimate of the amount of work this benchmark must.")
+		  ("Benchmark", name, "", "benchmarkName", ""),
+		  ("Problem Size", problemSize, "", "problemSize", "The parameter which controls the amount of work."),
+		  ("Work", size, "", "work", "An estimate of the amount of work this benchmark must.")
 		])  >>
 		h(0, []) >results>
 		writeCsvFile(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",

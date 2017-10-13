@@ -22,7 +22,17 @@ import orc.test.util.FactorValue
 
 trait PorcEExperimentalCondition extends ExperimentalCondition {
   override def toJvmArgs: Iterable[String] = {
-    val sysProps = systemProperties ++ toMap.map({ case (k, v) => s"${FactorValue.factorPropertyPrefix}$k" -> v })
+    val factorProps = factorDescriptions.zipWithIndex.flatMap({ case (fd, i) => 
+      val v = productElement(i).asInstanceOf[AnyRef] 
+      val base = s"${FactorValue.factorPropertyPrefix}${fd.id}"
+      Map(
+          s"$base" -> v,
+          s"$base.name" -> fd.name,
+          s"$base.comments" -> fd.comments,
+          s"$base.unit" -> fd.unit,
+          )
+    })
+    val sysProps = systemProperties ++ factorProps
     val sysPropsAsArgs = for ((k, v) <- sysProps) yield s"-D$k=$v"
     sysPropsAsArgs
   }
@@ -71,7 +81,6 @@ trait PorcEBenchmark {
         bootPath.map(p => s"-Xbootclasspath:$p") ++
         //jvmOptions ++
         //systemPropOptions ++
-        expCondition.toJvmArgs ++
         Seq(
           s"-Dorc.test.benchmark.problemSize=${problemSize}",
           s"-Dorc.test.benchmark.nRuns=${nRuns}",
@@ -82,8 +91,9 @@ trait PorcEBenchmark {
           // Always trace compilation since it will be useful for determining where outlyers come from. 
           "-Dgraal.TraceTruffleCompilation=true", 
           "-Dgraal.TruffleBackgroundCompilation=false",
-          s"-Dgraal.TruffleCompilerThreads=${Runtime.getRuntime.availableProcessors() / 2}", 
-          "orc.Main",
+          s"-Dgraal.TruffleCompilerThreads=${Runtime.getRuntime.availableProcessors() / 2}") ++
+        expCondition.toJvmArgs ++
+        Seq("orc.Main",
           "--backend", "porc",
           "-O", "3",
           "-I", "src/orc/lib/includes") ++

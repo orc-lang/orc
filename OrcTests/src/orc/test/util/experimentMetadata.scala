@@ -84,19 +84,24 @@ object FactorValue {
       case _ => throw new IllegalArgumentException("writeFactorValuesTable: factorValues must be either FactorValue instances or 5-tuples")
     })))
   }
-  
+
   /** Write a set of factors plus factors from system properties.
-    *  
+    *
     * @see FactorValue.writeFactorValuesTable
     */
   @throws[IOException]
   def writeFactorValuesTableWithPropertyFactors(factorValues: Traversable[Product]): Unit = {
     val properties = System.getProperties.asScala
-    val propertyFactors = properties.filterKeys(_.startsWith(factorPropertyPrefix)).map { case (k, v) =>
-      (k.substring(factorPropertyPrefix.size), v, "", "")
-    }
-    
-    writeFactorValuesTable(propertyFactors ++ factorValues) 
+    val propertyFactors = properties.filterKeys(s => s.startsWith(factorPropertyPrefix) && s.indexOf(".", factorPropertyPrefix.size) == -1)
+      .map { case (k, v) =>
+          val id = k.substring(factorPropertyPrefix.size)
+          val name = System.getProperty(s"$k.name", id)
+          val comments = System.getProperty(s"$k.comments", "")
+          val unit = System.getProperty(s"$k.unit", "")
+          (name, v, unit, id, comments)
+      }
+
+    writeFactorValuesTable(propertyFactors ++ factorValues)
   }
 
   /** Each process in an experiment that writes experimental-condition-

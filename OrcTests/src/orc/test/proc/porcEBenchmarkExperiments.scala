@@ -6,11 +6,11 @@ import java.io.File
 object PorcETestExperiment extends PorcEBenchmark {
     
   val factors = Seq(
-    FactorDescription("orcFile", "orcFile", "", "The Orc program file name"),
-    FactorDescription("nCPUs", "nCPUs", "", "The number of CPUs to use"),
-    FactorDescription("TruffleBackgroundCompilation", "TruffleBackgroundCompilation", "", "Should truffle compile in the background"),
-    FactorDescription("allowSpawnInlining", "allowSpawnInlining", "", ""),
-    FactorDescription("optLevel", "optLevel", "", "-O level")
+    FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
+    FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
+    FactorDescription("TruffleBackgroundCompilation", "Truffle Background Compilation", "", "Should truffle compile in the background"),
+    FactorDescription("allowSpawnInlining", "Allow Spawn Inlining", "", ""),
+    FactorDescription("optLevel", "Optimization Level", "", "-O level")
   )
   
   /** This is a list of the all the CPU ids in the order they should be assigned.
