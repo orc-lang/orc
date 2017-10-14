@@ -38,7 +38,7 @@ porc:eta-spawn-reduce
 porc:var-let-elim
 porc:specialize-sitecall
 porc:inline-let
-porc:let-inline-expansion-threshold=30
+porc:let-inline-expansion-threshold=300
 porc:try-catch-elim
 porc:try-finally-elim
 porc:max-passes=10

@@ -138,7 +138,7 @@ object PorcERuntime {
   
   @inline
   @CompilationFinal
-  val allowAllSpawnInlining = System.getProperty("orc.porce.allowAllSpawnInlining", "true").toBoolean
+  val allowAllSpawnInlining = System.getProperty("orc.porce.allowAllSpawnInlining", "false").toBoolean
   
   @inline
   @CompilationFinal
