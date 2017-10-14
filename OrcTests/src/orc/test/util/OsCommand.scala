@@ -1,5 +1,5 @@
 //
-// OsCommand.scala -- Scala object OsCommand and class OsCommandResult
+// OsCommand.scala -- Scala object OsCommand and classes OsCommandResult and OSCommandException
 // Project OrcTests
 //
 // Created by jthywiss on Jul 18, 2017.
@@ -91,8 +91,21 @@ object OsCommand {
     OsCommandResult(exitStatus, stdoutString, stderrString)
   }
 
+
+  
+  @throws[OSCommandException]
+  def checkExitValue(description: String, result: OsCommandResult): Unit = {
+    if (result.exitStatus != 0) {
+      print(result.stdout)
+      Console.err.print(result.stderr)
+      throw new OSCommandException(s"${description} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
+    }
+  }
 }
 
+class OSCommandException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
+  def this(message: String) = this(message, null)
+}
 
 private class StreamDrainThread(sourceStream: InputStream, targetStreams: Traversable[OutputStream], name: String) extends Thread(name) {
   setDaemon(true)
