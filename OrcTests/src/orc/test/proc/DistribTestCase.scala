@@ -26,6 +26,7 @@ import orc.test.util.TestUtils.OrcTestCase
 
 import junit.framework.TestSuite
 import org.junit.Assume
+import orc.test.util.RemoteCommand
 
 /** JUnit test case for a distributed-Orc test.
   *
@@ -155,10 +156,10 @@ object DistribTestCase {
     val localRunOutputDir = "../" + pathRelativeToTestRoot(remoteRunOutputDir)
     val orcConfigDir = "../" + pathRelativeToTestRoot(DistribTestConfig.expanded("orcConfigDir")).stripSuffix("/")
     new File(localRunOutputDir).mkdirs()
-    checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.getResultFrom(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir + "/../")))
+    OsCommand.checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.getResultFrom(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir + "/../")))
     if (!leaderIsLocal) {
       copyFiles()
-      checkExitValue(s"mkdir -p $remoteRunOutputDir on ${leaderHostname}", OsCommand.getResultFrom(Seq("ssh", leaderHostname, s"mkdir -p $remoteRunOutputDir")))
+      RemoteCommand.mkdir(leaderHostname, remoteRunOutputDir)
       Runtime.getRuntime().addShutdownHook(DistribTestCopyBackThread)
     } else {
       new File(remoteRunOutputDir).mkdirs()
@@ -214,26 +215,18 @@ object DistribTestCase {
   @throws[Exception]
   protected def copyFiles(): Unit = {
 
-    def mkdirAndRsync(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
-      val localFile = new File(localFilename)
-      val localFileCanonicalName = localFile.getCanonicalPath + (if (localFile.isDirectory) "/" else "")
-      val remoteDirPath = if (localFile.isDirectory) remoteFilename else new File(remoteFilename).getParent
-      checkExitValue(s"mkdir -p $remoteDirPath on $remoteHostname", OsCommand.getResultFrom(Seq("ssh", remoteHostname, s"mkdir -p $remoteDirPath")))
-      checkExitValue(s"rsync of $localFileCanonicalName to $remoteHostname:$remoteFilename", OsCommand.getResultFrom(Seq("rsync", "-rlpt", localFileCanonicalName, s"${remoteHostname}:${remoteFilename}")))
-    }
-
     print("Copying Orc test files to leader...")
     for (cpEntry <- DistribTestConfig.expanded.getIterableFor("dOrcClassPath").get) {
       print(".")
       val localFilename = ".." + cpEntry.stripPrefix(DistribTestConfig.expanded("testRootDir")).stripSuffix("/*")
       val remoteFilename = cpEntry.stripSuffix("/*")
-      mkdirAndRsync(localFilename, leaderHostname, remoteFilename)
+      RemoteCommand.mkdirAndRsync(localFilename, leaderHostname, remoteFilename)
     }
     print(".")
-    mkdirAndRsync(s"config/logging.properties", leaderHostname, DistribTestConfig.expanded("loggingConfigFile"))
+    RemoteCommand.mkdirAndRsync(s"config/logging.properties", leaderHostname, DistribTestConfig.expanded("loggingConfigFile"))
     print(".")
     val testDataDir = DistribTestConfig.expanded("testDataDir")
-    mkdirAndRsync("../" + pathRelativeToTestRoot(testDataDir), leaderHostname, testDataDir)
+    RemoteCommand.mkdirAndRsync("../" + pathRelativeToTestRoot(testDataDir), leaderHostname, testDataDir)
     println("done")
   }
 
@@ -249,25 +242,12 @@ object DistribTestCase {
   //  OsCommand.getResultFrom(Seq("ssh", hostname, s"cd $directory; command >stdout 2>stderr"), null, stdin, charset, teeStdOutErr, stdoutTee, stderrTee)
   //}
 
-  @throws[CopyFilesException]
-  protected def checkExitValue(description: String, result: OsCommandResult): Unit = {
-    if (result.exitStatus != 0) {
-      print(result.stdout)
-      Console.err.print(result.stderr)
-      throw new CopyFilesException(s"${description} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
-    }
-  }
-
   private object DistribTestCopyBackThread extends Thread("DistribTestCopyBackThread") {
     override def run = synchronized {
       val localRunOutputDir = "../" + pathRelativeToTestRoot(remoteRunOutputDir + "/")
       print(s"Copying run output from leader to $localRunOutputDir...")
-      checkExitValue(s"rsync of ${leaderHostname}:$remoteRunOutputDir/ to $localRunOutputDir", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"${leaderHostname}:$remoteRunOutputDir/", localRunOutputDir)))
+      RemoteCommand.rsyncFromRemote(leaderHostname, remoteRunOutputDir, localRunOutputDir)
       println("done")
     }
   }
-}
-
-private class CopyFilesException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
-  def this(message: String) = this(message, null)
 }
