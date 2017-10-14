@@ -12,12 +12,6 @@ object PorcETestExperiment extends PorcEBenchmark {
     FactorDescription("allowSpawnInlining", "Allow Spawn Inlining", "", ""),
     FactorDescription("optLevel", "Optimization Level", "", "-O level")
   )
-  
-  /** This is a list of the all the CPU ids in the order they should be assigned.
-    * 
-    */
-  val cpuIDList = Seq(0,4,2,6,1,5,3,7)
-  // TODO: This needs to be configurable.
 
   case class MyExperimentalCondition(orcFile: File, nCPUs: Int, truffleBackgroundCompilation: Boolean, allowSpawnInlining: Boolean, optLevel: Int) extends PorcEExperimentalCondition {
     override def factorDescriptions = factors
@@ -28,15 +22,15 @@ object PorcETestExperiment extends PorcEBenchmark {
         
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", optLevel.toString)
     
-    override def wrapperCmd = Seq("taskset", "--cpu-list", cpuIDList.take(nCPUs).mkString(","))
+    override def wrapperCmd = tasksetCommandPrefix(nCPUs)
   }
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
       for {
-        allowSpawnInlining <- Seq(true)
-        nCPUs <- Seq(1, 2, 3, 4, 8)
-        optLevel <- Seq(2, 3)
+        optLevel <- Seq(3)
+        nCPUs <- (Seq(1) ++ (4 to 24 by 4) ++ Seq(32, 48)).reverse 
+        allowSpawnInlining <- Seq(true, false)
         fn <- args.toSeq
       } yield {
         assert(new File(fn).isFile())
