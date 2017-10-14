@@ -238,6 +238,7 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
       java2orc(invocable.invoke(theObject, finalArgs.toArray))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
+      case e: ExceptionInInitializerError => throw new JavaException(e.getCause())
       case e: InterruptedException => throw e
       case e: Exception => throw new JavaException(e)
     } finally {
