@@ -246,7 +246,7 @@ object DistribTestCase {
     override def run = synchronized {
       val localRunOutputDir = "../" + pathRelativeToTestRoot(remoteRunOutputDir + "/")
       print(s"Copying run output from leader to $localRunOutputDir...")
-      RemoteCommand.rsyncFromRemote(leaderHostname, remoteRunOutputDir, localRunOutputDir)
+      RemoteCommand.rsyncFromRemote(leaderHostname, remoteRunOutputDir + "/", localRunOutputDir)
       println("done")
     }
   }
