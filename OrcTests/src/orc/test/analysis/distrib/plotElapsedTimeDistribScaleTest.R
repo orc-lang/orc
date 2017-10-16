@@ -45,9 +45,7 @@ elapsedTimeSummary <- warmRepetitionTimes[warmRepetitionTimes$repetitionNumber >
   group_by(program, repeatRead, numInputFiles, dOrcNumRuntimes) %>%
   summarise(nElapsedTime = length(elapsedTime), meanElapsedTime = mean(elapsedTime), sdElapsedTime = sd(elapsedTime), seElapsedTime = sdElapsedTime / sqrt(nElapsedTime))
 
-#Broken:
-# elapsedTimeSummary <- elapsedTimeSummary %>% addBaseline(vars(meanElapsedTime), c(dOrcNumRuntimes = 1))
-elapsedTimeSummary <- elapsedTimeSummary %>% mutate(meanElapsedTime_baseline = 1.0)
+elapsedTimeSummary <- elapsedTimeSummary %>% addBaseline(meanElapsedTime, c(dOrcNumRuntimes = 1))
 
 for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNumRuntimes > 1 & !is.na(elapsedTimeSummary$dOrcNumRuntimes)])) {
   baseline <- baselineTimes[baselineTimes$program == currProgram,]

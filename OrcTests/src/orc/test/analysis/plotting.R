@@ -22,14 +22,14 @@ geom_col_errorbar <- function (mapping = NULL, ...) {
     geom_col(mapping, position = position_dodge(), ...),
     geom_errorbar(mapping, position = position_dodge(), alpha = 0.3, ...)
   )
-} 
+}
 
 # TODO:
 # geom_col_values <- function (mapping = NULL, ylim, label, position, ...) {
 #   yMin <- ylim[1]
 #   yMax <- ylim[2]
 #   .geom_col_values.computePos <<- function(v) {
-#     pmax(pmin(v + (0.01 * yMax), yMax * 0.9), 0) 
+#     pmax(pmin(v + (0.01 * yMax), yMax * 0.9), 0)
 #   }
 #   list(
 #     geom_text(aes_(label = bquote(format(.(label), digits = 2, nsmall=0)), y = bquote(.geom_col_values.computePos(.(position)))), position = position_dodge(0.9), vjust = 0),
@@ -39,7 +39,7 @@ geom_col_errorbar <- function (mapping = NULL, ...) {
 
 
 # geom_hline(yintercept = 1, alpha = 0.5, color = "blue")
-  
+
 # Create a geom_line (X/Y plot) plot with error lines.
 #
 # Required aesthetics: x (should be continous), y, ymin, ymax
@@ -52,7 +52,6 @@ geom_col_errorbar <- function (mapping = NULL, ...) {
 #
 geom_line_linerange <- function (mapping = NULL, position = position_dodge(0.2), ..., breaks_from = NULL) {
   list(
-    scale_x_continuous_breaks_from(breaks_from),
     geom_line(mapping, ...),
     geom_linerange(mapping, alpha = 0.5, position = position, ...)
   )
