@@ -39,3 +39,21 @@ def writeCsvFile(pathname :: String, description :: String, tableColumnTitles ::
   csvOsw.close()  >>
   csvOut.close()  >>
   Println(description + " written to " + outFile.getCanonicalPath())
+
+-- TODO: Fix code duplication.
+def writeCsvFileOverwrite(pathname :: String, description :: String, tableColumnTitles :: List[String], rows :: List[List[Top]]) :: Signal =
+  import class File = "java.io.File"
+  import class FileOutputStream = "java.io.FileOutputStream"
+  import class OutputStreamWriter = "java.io.OutputStreamWriter"
+  import class CsvWriter = "orc.util.CsvWriter"
+  File(pathname)  >outFile>
+  outFile.createNewFile()  >>
+  FileOutputStream(outFile)  >csvOut>
+  OutputStreamWriter(csvOut, "UTF-8")  >csvOsw>
+  CsvWriter(csvOsw)  >csvWriter>
+  csvWriter.writeHeader(tableColumnTitles)  >>
+  csvWriter.writeRowsOfTraversables(rows)  >>
+  csvOsw.close()  >>
+  csvOut.close()  >>
+  Println(description + " written to " + outFile.getCanonicalPath())
+  

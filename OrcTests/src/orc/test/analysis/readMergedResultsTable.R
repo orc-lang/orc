@@ -7,9 +7,10 @@
 # URL: http://orc.csres.utexas.edu/license.shtml .
 #
 
-# TODO: This should be a package. But that's a pain so for now just use source("utilities.R") or something similar.
+# TODO: This should be a package. But that's a pain so for now just use source("...") or something similar.
 
-scriptDir <- dirname(sys.frame(1)$ofile)
+if(!exists("scriptDir"))
+  scriptDir <- dirname(sys.frame(1)$ofile)
 
 # The file 'config.R' in the same directory as this script should contain
 # a line "orcRepoPath = ..." which sets the path to the orc repository check
@@ -41,7 +42,7 @@ cleanColumnName <- function(name) {
 # If the merged CSV is already available it will not run it unless invalidate
 # is TRUE.
 #
-# The returned value will have the columns named based on the ids of the 
+# The returned value will have the columns named based on the ids of the
 # factors if they are available. If there is no "[...]" block with the id
 # in a column name this will attempt to make something more or less correct.
 readMergedResultsTable <- function(runDirectory, fileBaseName, invalidate = FALSE) {
@@ -53,24 +54,24 @@ readMergedResultsTable <- function(runDirectory, fileBaseName, invalidate = FALS
 
   if (invalidate || !file.exists(outputFile) || file.size(outputFile) == 0) {
     print(paste("Merging raw-output files into", outputFile), quote = FALSE)
-    
+
     orcTestPath <- file.path(orcRepoPath, "OrcTests", "build")
     scalaLibraryPath <- file.path(orcRepoPath, "OrcScala", "lib", "scala-library.jar")
     if (!file.exists(scalaLibraryPath) || !dir.exists(orcTestPath)) {
       stop("Count not find a required file: ", scalaLibraryPath, " OR ", orcTestPath)
     }
     classPath <- file.path(orcTestPath, scalaLibraryPath, fsep = .Platform$path.sep)
-    system2("java", 
-            c("-classpath", classPath, "orc.test.util.RunResultsTableMerge", runDirectory, fileBaseName), 
+    system2("java",
+            c("-classpath", classPath, "orc.test.util.RunResultsTableMerge", runDirectory, fileBaseName),
             stdout = outputFile, wait = TRUE)
   } else {
     print(paste("Reading already computed data from", outputFile), quote = FALSE)
   }
-  
+
   if (file.size(outputFile) == 0) {
     stop("Merge failed. Check runDirectory (", runDirectory,") and fileBaseName (", fileBaseName, ").")
   }
-  
+
   header <- read.csv(outputFile, header = FALSE, nrows = 1)
   names <- vapply(header[1,], cleanColumnName, "")
   res <- read.csv(outputFile, col.names = names)

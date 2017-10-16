@@ -3,7 +3,7 @@ package orc.test.proc
 import orc.test.util.FactorDescription
 import java.io.File
 
-object PorcETestExperiment extends PorcEBenchmark {
+object PorcEStrongScalingExperiment extends PorcEBenchmark {
     
   val factors = Seq(
     FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
@@ -30,7 +30,7 @@ object PorcETestExperiment extends PorcEBenchmark {
       for {
         optLevel <- Seq(3)
         nCPUs <- (Seq(1) ++ (4 to 24 by 4) ++ Seq(32, 48)).reverse 
-        allowSpawnInlining <- Seq(true, false)
+        allowSpawnInlining <- Seq(true)
         fn <- args.toSeq
       } yield {
         assert(new File(fn).isFile())

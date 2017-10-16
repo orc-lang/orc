@@ -139,7 +139,7 @@ trait PorcEBenchmark {
           // Always trace compilation since it will be useful for determining where outlyers come from. 
           "-Dgraal.TraceTruffleCompilation=true", 
           "-Dgraal.TruffleBackgroundCompilation=false",
-          s"-Dgraal.TruffleCompilerThreads=${Runtime.getRuntime.availableProcessors() / 2}") ++
+          s"-Dgraal.TruffleCompilerThreads=8") ++
         expCondition.toJvmArgs ++
         Seq("orc.Main",
           "--backend", "porc",
