@@ -196,7 +196,7 @@ trait CmdLineParser {
   case class SocketListOprd(val getter: Function0[Seq[InetSocketAddress]], val setter: (Seq[InetSocketAddress] => Unit), override val position: Int, override val argName: String = "SOCKET-LIST", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
     def getValue: String = { getter().map( { isa => isa.getHostString + ":" + isa.getPort} ).mkString(",") }
-    def setValue(value: String) { setter(value.split(",").map(oprdString2socket(_, argName))) }
+    def setValue(value: String) { setter(if (value.nonEmpty) value.split(",").map(oprdString2socket(_, argName)) else Seq.empty) }
   }
 
   case class UnitOpt(val getter: Function0[Boolean], val setter: (() => Unit), override val shortName: Char, override val longName: String, override val argName: String = "", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
@@ -300,7 +300,7 @@ trait CmdLineParser {
   case class SocketListOpt(val getter: Function0[Seq[InetSocketAddress]], val setter: (Seq[InetSocketAddress] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "SOCKET-LIST", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = { getter().map( { isa => isa.getHostString + ":" + isa.getPort} ).mkString(",") }
-    def setValue(value: String) { setter(value.split(",").map(optString2socket(_, longName))) }
+    def setValue(value: String) { setter(if (value.nonEmpty) value.split(",").map(optString2socket(_, longName)) else Seq.empty) }
   }
 
   ////////
