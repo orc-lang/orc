@@ -94,7 +94,7 @@ object RunResultsTableMerge {
       val factorValues = readFactorValues(factorValuesFile)
       val rowPrefix = factorNamesInOrder.map(factorValues.getOrElse(_, "")).mkString(",") + ","
       for (line <- lines.asScala) {
-        println(rowPrefix + line)
+        print(rowPrefix + line + "\r\n")
       }
       reader.close()
     }
