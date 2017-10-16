@@ -1,14 +1,12 @@
-{- holmes-map-reduce.orc -- A d-Orc map-reduce -}
+{- wordcount-mixed-orc-java.orc -- Count words in text files, Mixed Orc-Java variant -}
 
-{- This performance test counts words in the 12 data files adventure-*.txt.
- - Each file is counted {{{repeatRead}}} times.  The file is read line-by-
- - line in to an Orc list, then each element (line) of the list is word
- - counted, which results in, for each file, a list (per-iteration) of
- - lists of per-line word counts. The multiple iterations of one file are
- - concatenated, and the resulting list is combined by folding the lists
- - with the + operator.  Then the resulting per-file word counts (times
- - {{{repeatRead}}}) are reduced, again by folding with the + operator.
- - The folds use Orc's associative fold library function (afold).
+{- This performance test counts words in the text files in holmes_test_data.
+ - The holmes_test_data directory is walked, and a list of files is created.
+ - The {{{repeatCountFilename}}} def is applied to each file in the list.
+ - This def uses our WordCount utility Java class {{{repeatRead}}} times to
+ - count the number of words in the given file.  A list of word counts (times
+ - {{{repeatRead}}}) for each file is the result.  These counts are summed
+ - using Orc's associative fold library function (afold).
  -}
 
 include "test-output-util.inc"
@@ -26,61 +24,22 @@ def checkReadableFile(file) =
   import class JavaSys = "java.lang.System"
   if file.canRead() then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
 
-def readFile(file) =
+def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"
+  import class WordCount = "orc.test.item.distrib.WordCount"
   BufferedReader(FileReader(file))  >in>
-  (  def appendLinesFromIn(lines) =
-      (in.readLine() ; null)  >nextLine>
-      ( if nextLine = null
-        then
-          lines
-        else
-          appendLinesFromIn(nextLine:lines)
-      )
-    appendLinesFromIn([])
-  )  >ss>
+  WordCount.countReader(in)  >count>
   in.close()  >>
-  reverse(ss)
+  count
 
-def wordCount(line) =
-  import class BreakIterator = "java.text.BreakIterator"
-  import class Character = "java.lang.Character"
-  def wordCount'(wb, line) =
-    def containsAlphabetic(s, startPos, endPos) =
-      Character.isAlphabetic(s.codePointAt(startPos)) || (if startPos+1 <: endPos then containsAlphabetic(s, startPos+1, endPos) else false)
-    def wordCount''(startPos) =
-      wb.next()  >endPos>
-      ( if endPos >= 0
-        then
-          (if containsAlphabetic(line, startPos, endPos) then 1 else 0) + wordCount''(endPos)
-        else
-          0
-      ) #
-    wb.setText(line)  >>
-    wordCount''(0)
-  BreakIterator.getWordInstance() >wb>
-  wordCount'(wb, line)
-
-def mapOperation(filename) =
+def repeatCountFilename(filename) =
   import class File = "java.io.File"
-  -- Run n copies of f to build a list.
-  def loop(0, f) = []
-  def loop(1, f) = [f()]
-  def loop(n, f) = {| f() |} : loop(n-1, f) 
+  def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0 
 
   File(filename)  >file>
   checkReadableFile(file)  >>
-  loop(repeatRead, 
-    {
-      readFile(file)  >lines>
-      map(wordCount, lines)
-    }
-  )
-
-def combineOperation(xs) = afold((+), concat(xs))
-
-def reduceOperation(x, y) = x + y
+  sumN(repeatRead, { countFile(file) })
 
 def listFileNamesRecursively(dirPathName :: String) :: List[String] =
   import class File = "java.io.File"
@@ -91,9 +50,8 @@ def listFileNamesRecursively(dirPathName :: String) :: List[String] =
 val inputList = take(numInputFiles, listFileNamesRecursively("../OrcTests/test_data/performance/distrib/holmes_test_data/"))
 
 def testPayload() =
-  map(mapOperation, inputList)  >mappedList>
-  map(combineOperation, mappedList)  >combinedList>
-  afold(reduceOperation, combinedList)
+  map(repeatCountFilename, inputList)  >wordCountList>
+  afold((+), wordCountList)
 
 
 {--------
@@ -118,7 +76,7 @@ import site NumberOfRuntimeEngines = "orc.lib.NumberOfRuntimeEngines"
 setupOutput()  >>
 writeFactorValuesTable([
   --Factor name, Value, Units, ID, Comments
-  ("Program", "holmes-map-reduce.orc", "", "", ""),
+  ("Program", "wordcount-mixed-orc-java.orc", "", "", ""),
   ("Number of files read", length(inputList), "", "numInputFiles", "Words counted in this number of input text files"),
   ("Reads per file", repeatRead, "", "repeatRead", "Number of concurrent reads of the file"),
   ("Cluster size", NumberOfRuntimeEngines(), "", "dOrcNumRuntimes", "Number of d-Orc runtime engines running")
@@ -131,5 +89,10 @@ repetitionTimes
 
 {-
 OUTPUT:
-Repetitions' elapsed times output file written to...
+Repetition ...: start.
+Repetition ...: published ...
+Repetition ...: finish.  Elapsed time ... µs
+......
+Repetitions' elapsed times output file written to ...
+[[..., ...], ......]
 -}

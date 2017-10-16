@@ -110,6 +110,34 @@ public class WordCount {
         return sum;
     }
 
+    public static void listFilesRecursively(File startFile, ArrayList<File> foundFiles) {
+        if (startFile.isFile() && !startFile.isHidden()) {
+            foundFiles.add(startFile);
+        } else if (startFile.isDirectory() && !startFile.isHidden()) {
+            for (File curFile : startFile.listFiles()) {
+                listFilesRecursively(curFile, foundFiles);
+            }
+        } else {
+            /* Skip this dir. entry */
+        }
+    }
+
+    public static String[] listFileNamesRecursively(File startFile) {
+        ArrayList<File> files = new ArrayList<>();
+        listFilesRecursively(startFile, files);
+        String[] fileNames = new String[files.size()];
+        int i = 0;
+        for (File file: files) {
+            fileNames[i] = file.getPath();
+            ++i;
+        }
+        return fileNames;
+    }
+
+    ////////
+    // Test Driver
+    ////////
+    
     public static Long[][] timeRepetitions(final int numRepetitions) throws IOException {
         final Long[][] testElapsedTimes = new Long[numRepetitions][2];
         for (int thisRepetitionNum = 1; thisRepetitionNum <= numRepetitions; thisRepetitionNum++) {
@@ -152,30 +180,6 @@ public class WordCount {
             csvWriter.writeRowsOfTraversables(JavaConverters.collectionAsScalaIterable(newRows));
         }
         System.out.println(description + " written to " + basename + ".csv");
-    }
-
-    public static void listFilesRecursively(File startFile, ArrayList<File> foundFiles) {
-        if (startFile.isFile() && !startFile.isHidden()) {
-            foundFiles.add(startFile);
-        } else if (startFile.isDirectory() && !startFile.isHidden()) {
-            for (File curFile : startFile.listFiles()) {
-                listFilesRecursively(curFile, foundFiles);
-            }
-        } else {
-            /* Skip this dir. entry */
-        }
-    }
-
-    public static String[] listFileNamesRecursively(File startFile) {
-        ArrayList<File> files = new ArrayList<>();
-        listFilesRecursively(startFile, files);
-        String[] fileNames = new String[files.size()];
-        int i = 0;
-        for (File file: files) {
-            fileNames[i] = file.getPath();
-            ++i;
-        }
-        return fileNames;
     }
 
     public static void main(final String[] args) throws IOException {
