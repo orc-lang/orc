@@ -87,7 +87,7 @@ public class WordCount {
         return counts;
     }
 
-    public static int repeatRead = Integer.parseInt(System.getProperty("orc.test.repeatRead", "3"));
+    public static int repeatRead = Integer.parseInt(System.getProperty("orc.test.repeatRead", "1"));
 
     public static int repeatCountFilename(final File file) throws IOException {
         if (!file.canRead()) {
