@@ -35,7 +35,7 @@ def countFile(file) =
 
 def repeatCountFilename(filename) =
   import class File = "java.io.File"
-  def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0 
+  def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0
 
   File(filename)  >file>
   checkReadableFile(file)  >>

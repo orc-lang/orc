@@ -4,7 +4,7 @@
  - The holmes_test_data directory is walked, and a list of files is created.
  - The {{{repeatCountFilename}}} def is applied to each file in the list.
  - This def uses the {{{countFile}}} def {{{repeatRead}}} times to count the
- - number the number of words in the given file.  A list of word counts (times
+ - the number of words in the given file.  A list of word counts (times
  - {{{repeatRead}}}) for each file is the result.  These counts are summed
  - using Orc's associative fold library function (afold).
  -}
@@ -51,7 +51,7 @@ def countFile(file) =
 
 def repeatCountFilename(filename) =
   import class File = "java.io.File"
-  def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0 
+  def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0
 
   File(filename)  >file>
   checkReadableFile(file)  >>
