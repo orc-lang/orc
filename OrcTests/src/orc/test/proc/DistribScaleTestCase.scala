@@ -74,7 +74,10 @@ object DistribScaleTestCase {
         (s, t, f, e, b, tc, ls, fs) => new DistribScaleTestCase(experimentalCondition, s, t, f, e, b, tc, ls, fs),
         testContext,
         programPaths)
-      suiteForOneCondition.addTest(new RunMainMethodTestCase(s"WordCount_${experimentalCondition.productIterator.mkString("_")}", testContext, classOf[WordCount]))
+      if (experimentalCondition.dOrcNumRuntimes == 1) {
+        /* Special case: Measure the Java WordCount in the 1 runtime (non-distributed) experimental condition */
+        suiteForOneCondition.addTest(new RunMainMethodTestCase(s"WordCount_${experimentalCondition.productIterator.mkString("_")}", testContext, classOf[WordCount]))
+      }
       suiteForOneCondition.setName(experimentalCondition.toString)
       testRunSuite.addTest(suiteForOneCondition)
     }
