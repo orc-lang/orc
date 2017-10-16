@@ -29,7 +29,7 @@ object SSSP extends BenchmarkApplication {
   def load(): (Array[SSSPNode], Array[SSSPEdge], Int) = {
     import java.util.Scanner
     import java.io.File
-    val scanner = new Scanner(new File("test_data/performance/graph.txt"))
+    val scanner = new Scanner(new File(s"${System.getProperty("orc.test.benchmark.datadir", "")}test_data/performance/graph.txt"))
 
     val nNodes = scanner.nextInt()
     def readNode() = SSSPNode(scanner.nextInt(), scanner.nextInt())

@@ -15,13 +15,13 @@ object KMeansData  {
     data.toArray // ++ data // ++ data
   }
 
-  val dataBase = readPoints("test_data/performance/points.json")
+  lazy val dataBase = readPoints(s"${System.getProperty("orc.test.benchmark.datadir", "")}test_data/performance/points.json")
   
   def data = dataSized(3)
   
   def dataSized(n: Int) = (0 until n).foldLeft(Array[Point]())((acc, _) => acc ++ dataBase)
   
-  println(s"Loaded ${dataBase.size} points from JSON")
+  // println(s"Loaded ${dataBase.size} points from JSON")
 }
 
 case class Point(val x: BigDecimal, val y: BigDecimal) {
