@@ -21,7 +21,7 @@ import scala.collection.JavaConverters.seqAsJavaListConverter
 
 import orc.error.compiletime.{ CompilationException, FeatureNotSupportedException }
 import orc.script.OrcBindings
-import orc.test.util.{ ExpectedOutput, OsCommand, OsCommandResult, TestRunNumber, TestUtils }
+import orc.test.util.{ ExpectedOutput, OsCommand, TestRunNumber, TestUtils }
 import orc.test.util.TestUtils.OrcTestCase
 
 import junit.framework.TestSuite

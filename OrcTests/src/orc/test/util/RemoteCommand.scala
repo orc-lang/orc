@@ -65,6 +65,6 @@ object RemoteCommand {
   }
 }
 
-class RemoteCommandException(message: String, cause: Throwable) extends OSCommandException(message, cause) {
+class RemoteCommandException(message: String, cause: Throwable) extends OsCommandException(message, cause) {
   def this(message: String) = this(message, null)
 }

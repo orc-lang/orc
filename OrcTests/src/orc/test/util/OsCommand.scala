@@ -1,5 +1,5 @@
 //
-// OsCommand.scala -- Scala object OsCommand and classes OsCommandResult and OSCommandException
+// OsCommand.scala -- Scala object OsCommand and classes OsCommandResult and OsCommandException
 // Project OrcTests
 //
 // Created by jthywiss on Jul 18, 2017.
@@ -93,17 +93,17 @@ object OsCommand {
 
 
   
-  @throws[OSCommandException]
+  @throws[OsCommandException]
   def checkExitValue(description: String, result: OsCommandResult): Unit = {
     if (result.exitStatus != 0) {
       print(result.stdout)
       Console.err.print(result.stderr)
-      throw new OSCommandException(s"${description} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
+      throw new OsCommandException(s"${description} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
     }
   }
 }
 
-class OSCommandException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
+class OsCommandException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
   def this(message: String) = this(message, null)
 }
 
