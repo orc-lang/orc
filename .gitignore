@@ -1,2 +1,11 @@
+# .gitignore -- Lists files for git to ignore (not track)
+#
+
+## Various OS desktop UI junk files
+.DS_Store
+Desktop.ini
+Thumbs.db
+
+
 .metadata
 Mission Control/
