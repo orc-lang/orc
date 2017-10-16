@@ -7,7 +7,7 @@
 # URL: http://orc.csres.utexas.edu/license.shtml .
 #
 
-require(ggplot2)
+library(ggplot2)
 
 # Create a geom_col (bar chart) plot with error bars.
 #

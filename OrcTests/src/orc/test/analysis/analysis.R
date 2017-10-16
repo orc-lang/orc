@@ -7,9 +7,9 @@
 # URL: http://orc.csres.utexas.edu/license.shtml .
 #
 
-require(dplyr)
-require(ggplot2)
-require(boot)
+library(dplyr)
+library(ggplot2)
+library(boot)
 
 # Estimate (very poorly) the number of warm-up repetitions in data.
 #
