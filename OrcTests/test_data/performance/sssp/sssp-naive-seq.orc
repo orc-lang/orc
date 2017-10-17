@@ -17,9 +17,9 @@ include "benchmark.inc"
 
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
-import class Node = "orc.test.item.scalabenchmarks.SSSPNode"
-import class Edge = "orc.test.item.scalabenchmarks.SSSPEdge"
-import class SSSP = "orc.test.item.scalabenchmarks.SSSP"
+import class Node = "orc.test.item.scalabenchmarks.sssp.SSSPNode"
+import class Edge = "orc.test.item.scalabenchmarks.sssp.SSSPEdge"
+import class SSSP = "orc.test.item.scalabenchmarks.sssp.SSSP"
 
 import class AtomicLong = "java.util.concurrent.atomic.AtomicLong"
 
