@@ -133,61 +133,66 @@ object OrcJavaCompatibility {
     //* If the member is a fixed arity method with arity n, the arity of the method invocation is equal to n.
     //* If the method invocation includes explicit type parameters, and the member is a generic method, then the number of actual type parameters is equal to the number of formal type parameters.
 
-    // FIXME: REmove this use of structural types and replace with use of Invocable from above.
-    type JavaMethodOrCtor = java.lang.reflect.Member { def getParameterTypes(): Array[java.lang.Class[_]]; def isVarArgs(): Boolean }
-    val methodName = if ("<init>".equals(memberName)) targetClass.getName() else memberName
-    val ms: Traversable[JavaMethodOrCtor] = if ("<init>".equals(memberName)) targetClass.getConstructors() else getAccessibleMethods(targetClass)
-    val potentiallyApplicableMethods = ms.filter({ m =>
-      m.getName().equals(methodName) &&
-        // Modifier PUBLIC (for method & class) already handled
-        // Modifier ABSTRACT is handled later.
-        (m.getParameterTypes().size == argTypes.size ||
-          m.isVarArgs() && m.getParameterTypes().size - 1 <= argTypes.size)
-    })
-    Logger.finest(memberName + " potentiallyApplicableMethods=" + potentiallyApplicableMethods.mkString("{", ", ", "}"))
-    if (potentiallyApplicableMethods.isEmpty) {
-      throw new NoSuchMethodException("No public " + methodName + " with " + argTypes.size + " arguments in " + targetClass.getName() + " [[OrcWiki:NoSuchMethodException]]")
-    }
-
-    //Phase 1: Identify Matching Arity Methods Applicable by Subtyping
-    val phase1Results = potentiallyApplicableMethods.filter({ m =>
-      !m.isVarArgs() &&
-        m.getParameterTypes().corresponds(argTypes)({ (fp, arg) => isApplicable(fp, arg, false) })
-    })
-    Logger.finest(memberName + " phase1Results=" + phase1Results.mkString("{", ", ", "}"))
-    if (phase1Results.nonEmpty) {
-      return Invocable(mostSpecificMethod(phase1Results))
-    }
-
-    //Phase 2: Identify Matching Arity Methods Applicable by Method Invocation Conversion
-    val phase2Results = potentiallyApplicableMethods.filter({ m =>
-      !m.isVarArgs() &&
-        m.getParameterTypes().corresponds(argTypes)({ (fp, arg) => isApplicable(fp, arg, true) })
-    })
-    Logger.finest(memberName + " phase2Results=" + phase2Results.mkString("{", ", ", "}"))
-    if (phase2Results.nonEmpty) {
-      return Invocable(mostSpecificMethod(phase2Results))
-    }
-
-    //Phase 3: Identify Applicable Variable Arity Methods
-    val phase3Results = potentiallyApplicableMethods.filter({ m =>
-      if (m.isVarArgs()) {
-        val normalParams :+ varargParam = m.getParameterTypes().toSeq
-        assert(varargParam.isArray())
-        // Check that all normal params match
-        val normalParamsMatch = normalParams.corresponds(argTypes.take(normalParams.size))((fp, arg) => isApplicable(fp, arg, true))
-        // Check that each arg that will go in the vararg list matches the vararg array type
-        val varargParamsMatch = argTypes.drop(normalParams.size).forall((arg) => isApplicable(varargParam.getComponentType(), arg, true))
-        normalParamsMatch && varargParamsMatch
-      } else false
-    })
-    Logger.finest(memberName + " phase3Results=" + phase3Results.mkString("{", ", ", "}"))
-    if (phase3Results.nonEmpty) {
-      return Invocable(mostSpecificMethod(phase3Results))
+    try {
+      // FIXME: REmove this use of structural types and replace with use of Invocable from above.
+      type JavaMethodOrCtor = java.lang.reflect.Member { def getParameterTypes(): Array[java.lang.Class[_]]; def isVarArgs(): Boolean }
+      val methodName = if ("<init>".equals(memberName)) targetClass.getName() else memberName
+      val ms: Traversable[JavaMethodOrCtor] = if ("<init>".equals(memberName)) targetClass.getConstructors() else getAccessibleMethods(targetClass)
+      val potentiallyApplicableMethods = ms.filter({ m =>
+        m.getName().equals(methodName) &&
+          // Modifier PUBLIC (for method & class) already handled
+          // Modifier ABSTRACT is handled later.
+          (m.getParameterTypes().size == argTypes.size ||
+            m.isVarArgs() && m.getParameterTypes().size - 1 <= argTypes.size)
+      })
+      Logger.finest(memberName + " potentiallyApplicableMethods=" + potentiallyApplicableMethods.mkString("{", ", ", "}"))
+      if (potentiallyApplicableMethods.isEmpty) {
+        throw new NoSuchMethodException("No public " + methodName + " with " + argTypes.size + " arguments in " + targetClass.getName() + " [[OrcWiki:NoSuchMethodException]]")
+      }
+  
+      //Phase 1: Identify Matching Arity Methods Applicable by Subtyping
+      val phase1Results = potentiallyApplicableMethods.filter({ m =>
+        !m.isVarArgs() &&
+          m.getParameterTypes().corresponds(argTypes)({ (fp, arg) => isApplicable(fp, arg, false) })
+      })
+      Logger.finest(memberName + " phase1Results=" + phase1Results.mkString("{", ", ", "}"))
+      if (phase1Results.nonEmpty) {
+        return Invocable(mostSpecificMethod(phase1Results))
+      }
+  
+      //Phase 2: Identify Matching Arity Methods Applicable by Method Invocation Conversion
+      val phase2Results = potentiallyApplicableMethods.filter({ m =>
+        !m.isVarArgs() &&
+          m.getParameterTypes().corresponds(argTypes)({ (fp, arg) => isApplicable(fp, arg, true) })
+      })
+      Logger.finest(memberName + " phase2Results=" + phase2Results.mkString("{", ", ", "}"))
+      if (phase2Results.nonEmpty) {
+        return Invocable(mostSpecificMethod(phase2Results))
+      }
+  
+      //Phase 3: Identify Applicable Variable Arity Methods
+      val phase3Results = potentiallyApplicableMethods.filter({ m =>
+        if (m.isVarArgs()) {
+          val normalParams :+ varargParam = m.getParameterTypes().toSeq
+          assert(varargParam.isArray())
+          // Check that all normal params match
+          val normalParamsMatch = normalParams.corresponds(argTypes.take(normalParams.size))((fp, arg) => isApplicable(fp, arg, true))
+          // Check that each arg that will go in the vararg list matches the vararg array type
+          val varargParamsMatch = argTypes.drop(normalParams.size).forall((arg) => isApplicable(varargParam.getComponentType(), arg, true))
+          normalParamsMatch && varargParamsMatch
+        } else false
+      })
+      Logger.finest(memberName + " phase3Results=" + phase3Results.mkString("{", ", ", "}"))
+      if (phase3Results.nonEmpty) {
+        return Invocable(mostSpecificMethod(phase3Results))
+      }
+    } catch {
+      case e: java.lang.NoSuchMethodException =>
+        throw new orc.error.runtime.MethodTypeMismatchException(argTypes, memberName, targetClass)
     }
 
     // No match
-    throw new orc.error.runtime.MethodTypeMismatchException(memberName, targetClass);
+    throw new orc.error.runtime.MethodTypeMismatchException(argTypes, memberName, targetClass)
   }
 
   /** Given a type (class or interface), returns a sequence of declared or
@@ -358,7 +363,7 @@ object OrcJavaCompatibility {
     if (maximallySpecificMethods.length == 1) {
       return maximallySpecificMethods.head
     } else if (maximallySpecificMethods.isEmpty) {
-      throw new java.lang.NoSuchMethodException() //TODO: throw a MethodTypeMismatchException instead
+      throw new java.lang.NoSuchMethodException()
     } else {
       val concreteMethods = maximallySpecificMethods.filter({ m => !Modifier.isAbstract(m.getModifiers()) })
       concreteMethods.length match {

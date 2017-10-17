@@ -92,7 +92,7 @@ class TupleIndexOutOfBoundsException(val index: Int) extends RuntimeTypeExceptio
 /**
   */
 @SerialVersionUID(-803260225175583163L)
-class MethodTypeMismatchException(val methodName: String, val clazz: Class[_]) extends RuntimeTypeException("Argument types did not match any implementation for method '" + methodName + "' in " + clazz.getName() + ".")
+class MethodTypeMismatchException(val argTypes: Seq[Class[_]], val methodName: String, val clazz: Class[_]) extends RuntimeTypeException(s"Argument types (${argTypes.mkString(",")}) did not match any implementation for method '$methodName' in ${clazz.getName()}.")
 
 /** Exception raised when an uncallable type (JVM class) is used as a call position.
   */

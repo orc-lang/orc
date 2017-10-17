@@ -421,7 +421,8 @@ case class JavaArrayDerefSite(val theArray: AnyRef, val index: Int) extends Tota
   */
 case class JavaArrayAssignSite(val theArray: AnyRef, val index: Int) extends TotalSite1 {
   def eval(a: AnyRef): AnyRef = {
-    JavaArray.set(theArray, index, orc2java(a))
+    val componentType = Option(theArray.getClass.getComponentType).getOrElse(classOf[AnyRef])
+    JavaArray.set(theArray, index, orc2java(a, componentType))
     Signal
   }
 }
