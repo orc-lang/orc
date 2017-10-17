@@ -84,7 +84,7 @@ object RunResultsTableMerge {
       val header = lines.next()
       if (firstHeader == null) {
         firstHeader = header
-        println(headerPrefix + header)
+        print(headerPrefix + header + "\r\n")
       } else {
         if (header != firstHeader) {
           throw new DataFormatException(s"Inconsistent headers: $firstHeader vs. $header: ${path.toAbsolutePath}")
