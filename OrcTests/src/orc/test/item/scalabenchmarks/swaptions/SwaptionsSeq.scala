@@ -4,8 +4,8 @@ import orc.test.item.scalabenchmarks.Util
 
 object SwaptionsSeq {
   def main(args: Array[String]): Unit = {
-    val data = SwaptionData.sizedData(64)
-    val processor = new SwaptionProcessor(SwaptionData.nTrials)
+    val data = SwaptionData.sizedData(SwaptionData.nSwaptions)
+    val processor = new Processor(SwaptionData.nTrials)
     if (args.size == 0) {
       data.map(processor(_))
       //println((data(0).simSwaptionPriceMean, data(0).simSwaptionPriceStdError))

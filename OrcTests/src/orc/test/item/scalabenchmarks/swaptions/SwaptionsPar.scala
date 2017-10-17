@@ -4,8 +4,8 @@ import orc.test.item.scalabenchmarks.Util
 
 object SwaptionsParSwaption {
   def main(args: Array[String]): Unit = {
-    val data = SwaptionData.sizedData(64)
-    val processor = new SwaptionProcessor(SwaptionData.nTrials)
+    val data = SwaptionData.sizedData(SwaptionData.nSwaptions)
+    val processor = new Processor(SwaptionData.nTrials)
     if (args.size == 0) {
       data.par.map(processor(_))
       //println((data(0).simSwaptionPriceMean, data(0).simSwaptionPriceStdError))
@@ -23,8 +23,8 @@ object SwaptionsParSwaption {
 
 object SwaptionsParTrial {
   def main(args: Array[String]): Unit = {
-    val data = SwaptionData.sizedData(64)
-    val processor = new SwaptionProcessor(SwaptionData.nTrials) {
+    val data = SwaptionData.sizedData(SwaptionData.nSwaptions)
+    val processor = new Processor(SwaptionData.nTrials) {
       import SwaptionData._
       override def apply(swaption: Swaption): Unit = {
         val results = (0 until nTrials).toArray.par.map(_ => simulate(swaption))
