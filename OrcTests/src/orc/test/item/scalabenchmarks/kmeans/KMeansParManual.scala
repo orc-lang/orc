@@ -6,11 +6,12 @@ import orc.test.item.scalabenchmarks.BenchmarkApplication
 import orc.test.item.scalabenchmarks.Util
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.long2bigDecimal
+import orc.test.item.scalabenchmarks.BenchmarkConfig
 
 object KMeansParManual extends BenchmarkApplication[Array[Point]] {
   val n = 10
   val iters = 1
-  val nPartitions = 8
+  val nPartitions = BenchmarkConfig.nPartitions
 
   import KMeans._
     

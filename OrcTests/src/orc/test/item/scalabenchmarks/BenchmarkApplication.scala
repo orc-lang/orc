@@ -61,6 +61,7 @@ trait BenchmarkApplication[T] {
       FactorValue.writeFactorValuesTableWithPropertyFactors(Seq(
   		  // Factor name, Value, Units, Comments
   		  ("Benchmark", name, "", "benchmarkName", ""),
+  		  ("Number of Partitions", BenchmarkConfig.nPartitions, "", "nPartitions", "Number of parallel partitions or threads."),
   		  ("Problem Size", BenchmarkConfig.problemSize, "", "problemSize", "The parameter which controls the amount of work."),
   		  ("Work", size, "", "work", "An estimate of the amount of work this benchmark must."),
   		  ("Language", "Scala", "", "language", "")

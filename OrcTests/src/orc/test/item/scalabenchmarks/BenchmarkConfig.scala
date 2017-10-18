@@ -20,4 +20,10 @@ object BenchmarkConfig {
     * The default value is 0.
     */
   val nRuns = System.getProperty("orc.test.benchmark.nRuns", "0").toInt
+
+  /** The number of partitions or threads that should be used by the benchmarks.
+    *
+    * The default value is number of available CPUs * 2.
+    */
+  val nPartitions = Option(System.getProperty("orc.test.benchmark.nPartitions")).map(_.toInt).getOrElse(Runtime.getRuntime.availableProcessors() * 2)
 }

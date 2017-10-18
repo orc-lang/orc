@@ -47,7 +47,7 @@ abstract class BigSortBase extends BenchmarkApplication[Array[Number]] {
     output
   }
   
-  val nPartitions = 8
+  val nPartitions = BenchmarkConfig.nPartitions
   
   def splitSortMerge(input: Array[Number], sort: IndexedSeq[Number] => IndexedSeq[Number]): IndexedSeq[Number] = {
     val partitionSize = (input.size / nPartitions).floor.toInt

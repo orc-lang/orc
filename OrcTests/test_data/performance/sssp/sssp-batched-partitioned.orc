@@ -32,8 +32,6 @@ def sforBy(low, high, step, f) = Sequentialize() >> (
 
 def sfor(low, high, f) = Sequentialize() >> sforBy(low, high, 1, f)
 
-val nPartitions = 8
-
 def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	val outQLock = Semaphore(1)
 	val q1 = ArrayList()

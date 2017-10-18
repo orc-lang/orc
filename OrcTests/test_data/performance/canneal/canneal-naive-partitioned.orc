@@ -19,7 +19,7 @@ val swapsPerTemp = 15000
 val initialTemperature = 2000 
 val filename = "/home/amp/Redownloadable/parsec-3.0/pkgs/kernels/canneal/inputs/2500000.nets"
 val nTempSteps = 128
-val nThreads = 8
+val nThreads = nPartitions
 val nSwapsPerThread = swapsPerTemp / nThreads
 
 def run(netlist) =

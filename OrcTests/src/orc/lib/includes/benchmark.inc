@@ -3,8 +3,11 @@ include "test-output-util.inc"
 
 import class System = "java.lang.System"
 
+import class BenchmarkConfig = "orc.test.item.scalabenchmarks.BenchmarkConfig"
 import site EndBenchmark = "orc.lib.EndBenchmark"
 import site StartBenchmark = "orc.lib.StartBenchmark"
+
+val nPartitions = BenchmarkConfig.nPartitions()
 
 {--
 The benchmark should use this number to change the size of the problem.
@@ -71,6 +74,7 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 		writeFactorValuesTableWithPropertyFactors([
 		  --Factor name, Value, Units, Comments
 		  ("Benchmark", name, "", "benchmarkName", ""),
+  		  ("Number of Partitions", nPartitions, "", "nPartitions", "Number of parallel partitions or threads."),
 		  ("Problem Size", problemSize, "", "problemSize", "The parameter which controls the amount of work."),
 		  ("Work", size, "", "work", "An estimate of the amount of work this benchmark must."),
   		  ("Language", "Orc", "", "language", "")

@@ -45,8 +45,6 @@ def compute(s, x, t, r, v) = Sequentialize() >> (
     BlackScholesResult(call, put)
     )
 
-val nPartitions = 8
-
 def sforBy(low, high, step) = Sequentialize() >> (
   if low >= high then stop
   else ( low | sforBy(low+step, high, step) )

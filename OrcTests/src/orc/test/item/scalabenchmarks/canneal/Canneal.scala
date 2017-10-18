@@ -9,7 +9,7 @@ object Canneal extends BenchmarkApplication[NetList] {
   // FIXME: Generate or include data.
   val filename = "/home/amp/Redownloadable/parsec-3.0/pkgs/kernels/canneal/inputs/2500000.nets"
   val nTempSteps = 128
-  val nPartitions = 8
+  val nPartitions = BenchmarkConfig.nPartitions
 
   val netlist = NetList(filename)    
   

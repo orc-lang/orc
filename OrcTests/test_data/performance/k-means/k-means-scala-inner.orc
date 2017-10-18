@@ -10,7 +10,6 @@ type Double = Top
 
 val n = 10
 val iters = 1
-val nPartitions = 8
 
 import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
 import class LongAdder = "java.util.concurrent.atomic.LongAdder"

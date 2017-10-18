@@ -91,8 +91,6 @@ def mergeSorted(inputs) = Sequentialize() >> (
   merge(0) >> output
   )
 
-val nPartitions = 8
-
 def splitSortMerge(input, sort) =
   val partitionSize = Floor(input.length? / nPartitions)
   val sortedPartitions = collect({
