@@ -64,10 +64,13 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 	def h(Integer, List[Top]) :: Signal
 	def h(i, results) if (i >= nRuns) = results
 	def h(i, results) = 
-		writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
-		  ["Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", "Runtime compilation time (s) [rtCompTime]"], 
-		  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime(), t.compilationTime()], reverse(results))) >>
-		setup() >d> timeItNoPub({ benchmark(d) }, i, size) >r> h(i+1, r : results)
+		setup() >d> timeItNoPub({ benchmark(d) }, i, size) >r> (
+			val results' = r : results
+			writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
+			  ["Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", "Runtime compilation time (s) [rtCompTime]"], 
+			  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime(), t.compilationTime()], reverse(results'))) >>
+			h(i+1, results')
+		)
 	if nRuns >= 1 then
 		Println("Benchmarking " + name + " (" + nRuns + " runs, problem size " + problemSize + ", O(" + size + ") work)") >>
 		setupOutput() >>
