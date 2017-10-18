@@ -38,28 +38,46 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
+      val nCPUsValues = (Seq(1, 4, 8, 16, 24, 32, 48)).reverse 
       val porce = for {
         optLevel <- Seq(3)
-        nCPUs <- (Seq(1) ++ (4 to 24 by 4) ++ Seq(32, 48)).reverse 
+        nCPUs <- nCPUsValues
         allowSpawnInlining <- Seq(true)
-        fn <- args.toSeq
-      } yield {
-        assert(new File(fn).isFile())
-        MyPorcEExperimentalCondition(new File(fn), nCPUs, false, allowSpawnInlining, optLevel)
-      }
-      val scala = for {
-        nCPUs <- (Seq(1) ++ (4 to 24 by 4) ++ Seq(32, 48)).reverse 
-        clsName <- Seq(
-            "orc.test.item.scalabenchmarks.Mandelbrot",
-            "orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial", 
-            "orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption"
+        fn <- Seq(
+            "test_data/performance/Hamming.orc",
+            "test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
+            "test_data/performance/black-scholes/black-scholes.orc",
+            "test_data/performance/k-means/k-means-scala-inner.orc",
+            "test_data/performance/k-means/k-means.orc",
+            "test_data/performance/bigsort/bigsort.orc",
+            "test_data/performance/bigsort/bigsort-partially-seq.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            "test_data/performance/sssp/sssp-batched-partitioned.orc",
             )
       } yield {
-        val cls = Class.forName(clsName)
-        assert(cls != null)
+        assert(new File(fn).isFile(), fn)
+        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, false, allowSpawnInlining, optLevel)
+      }
+      val scala = for {
+        nCPUs <- nCPUsValues
+        benchmark <- Seq(
+            orc.test.item.scalabenchmarks.Hamming,
+            orc.test.item.scalabenchmarks.blackscholes.BlackScholesPar,
+            orc.test.item.scalabenchmarks.kmeans.KMeansPar,
+            orc.test.item.scalabenchmarks.kmeans.KMeansParManual,
+            orc.test.item.scalabenchmarks.BigSortPar,
+            orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial, 
+            orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption,
+            orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar, 
+            )
+      } yield {
+        val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(cls, nCPUs)
       }
-      scala ++ porce
+      porce ++ scala 
     }
     runExperiment(experimentalConditions)
   }
