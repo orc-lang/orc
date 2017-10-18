@@ -7,8 +7,9 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, Util }
 import Util.thread
 import java.util.concurrent.ArrayBlockingQueue
 import scala.annotation.tailrec
+import java.io.File
 
-object DedupBoundedQueue extends BenchmarkApplication {
+object DedupBoundedQueue extends BenchmarkApplication[Unit] {
   import Dedup._
   
   def dedup(inFn: String, outFn: String): Unit = {
@@ -76,16 +77,14 @@ object DedupBoundedQueue extends BenchmarkApplication {
     compressThreads foreach { _.terminate() }
   }
   
-  def main(args: Array[String]): Unit = {
-    if (args.size == 0) {
-      dedup("test.in", "test.out")
-    } else if (args.size == 1) {
-      val n = args(0).toInt
-      for (_ <- 0 until n) {
-        Util.timeIt {
-          dedup("test.in", "test.out")
-        }
-      }
-    }
+  def benchmark(ctx: Unit): Unit = {
+    // FIXME: Generate or include data.
+    dedup("test.in", "test.out")
   }
+
+  def setup(): Unit = ()
+
+  val name: String = "Dedup-boundedqueue"
+
+  val size: Int = new File("test.in").length().toInt
 }

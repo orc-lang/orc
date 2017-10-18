@@ -1,6 +1,6 @@
 package orc.test.item.scalabenchmarks
 
-object Fibonacci extends BenchmarkApplication {
+object Fibonacci extends BenchmarkApplication[Unit] {
   def fibNaive(n: BigInt): BigInt = if (n <= 1) n else fibNaive(n - 1) + fibNaive(n - 2)
 
   def fibPair(n: BigInt): BigInt = {
@@ -24,12 +24,15 @@ object Fibonacci extends BenchmarkApplication {
     }
     fib(0, 0, 1)
   }
-  def main(args: Array[String]) {
-    Util.timeIt {
-      println(fibPairTailrec(3000))
-      println(fibPairTailrec(1000))
-      println(fibPair(1000))
-      println(fibNaive(19))
-    }
+  
+  def setup() = ()
+  val size = 1
+  val name = "Fibonacci"
+  
+  def benchmark(ctx: Unit) = {
+    println(fibPairTailrec(3000))
+    println(fibPairTailrec(1000))
+    println(fibPair(1000))
+    println(fibNaive(19))
   }
 }

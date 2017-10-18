@@ -30,7 +30,8 @@ import java.util.{ Collections, HashSet, Set }
 
 import scala.collection.JavaConverters.asScalaSetConverter
 
-object Sieve extends BenchmarkApplication {
+object Sieve extends BenchmarkApplication[Unit] {
+  val N = BenchmarkConfig.problemSizeScaledInt(20000)
 
   def primes(n: BigInt): List[BigInt] = {
     def candidates(n: BigInt) = BigInt(3) until (n + 1) by 2
@@ -47,8 +48,13 @@ object Sieve extends BenchmarkApplication {
     sieve(n, set)
   }
 
-  def main(args: Array[String]): Unit = {
-    println(Util.timeIt { primes(20000) })
+  def benchmark(ctx: Unit): Unit = {
+    primes(N)
   }
 
+  val name: String = "Sieve"
+
+  val size: Int = N
+
+  def setup(): Unit = ()
 }

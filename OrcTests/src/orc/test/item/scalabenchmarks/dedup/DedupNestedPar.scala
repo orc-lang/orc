@@ -7,8 +7,9 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, Util }
 import java.util.concurrent.ArrayBlockingQueue
 import Util.thread
 import scala.annotation.tailrec
+import java.io.File
 
-object DedupNestedPar extends BenchmarkApplication {
+object DedupNestedPar extends BenchmarkApplication[Unit] {
   import Dedup._
   
   def dedup(inFn: String, outFn: String): Unit = {
@@ -61,16 +62,14 @@ object DedupNestedPar extends BenchmarkApplication {
     loopThread.join()
   }
   
-  def main(args: Array[String]): Unit = {
-    if (args.size == 0) {
-      dedup("test.in", "test.out")
-    } else if (args.size == 1) {
-      val n = args(0).toInt
-      for (_ <- 0 until n) {
-        Util.timeIt {
-          dedup("test.in", "test.out")
-        }
-      }
-    }
+  def benchmark(ctx: Unit): Unit = {
+    // FIXME: Generate or include data.
+    dedup("test.in", "test.out")
   }
+
+  def setup(): Unit = ()
+
+  val name: String = "Dedup-nestedpar"
+
+  val size: Int = new File("test.in").length().toInt
 }

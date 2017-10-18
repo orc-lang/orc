@@ -72,7 +72,8 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 		  --Factor name, Value, Units, Comments
 		  ("Benchmark", name, "", "benchmarkName", ""),
 		  ("Problem Size", problemSize, "", "problemSize", "The parameter which controls the amount of work."),
-		  ("Work", size, "", "work", "An estimate of the amount of work this benchmark must.")
+		  ("Work", size, "", "work", "An estimate of the amount of work this benchmark must."),
+  		  ("Language", "Orc", "", "language", "")
 		])  >>
 		h(0, [])
 	else

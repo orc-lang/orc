@@ -1,18 +1,21 @@
 package orc.test.item.scalabenchmarks
 
+import orc.lib.Benchmark
+import orc.lib.BenchmarkTimes
+
 object Util {
-  def time[T](op: => T): (Double, T) = {
-    val startTime = System.nanoTime()
+  def time[T](iteration: Int, size: Double)(op: => T): (BenchmarkTimes, T) = {
+    val startTime = Benchmark.getTimes()
     val res = op
-    val time = System.nanoTime() - startTime
+    val time = Benchmark.endBenchmark(startTime, iteration, size)
 
     //println("Compute of %s took %fs".format(c.expr.toString, time/1000000000.0))
-    (time / 1000000000.0, res)
+    (time, res)
   }
 
   def timeIt[T](op: => T): T = {
-    val (t, v) = time(op)
-    println("Compute took %fs".format(t))
+    val (t, v) = time(0, 1)(op)
+    println(s"Compute took $t")
     v
   }
 

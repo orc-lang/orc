@@ -86,7 +86,7 @@ def dist(x :: Point, y :: Point) = Sequentialize() >> x.sub(y).modulus()
 
 val points = arrayToList(KMeansData.data())
 
-benchmarkSized("k-means-seq-list", length(points), { points }, run)
+benchmarkSized("KMeans-seq-list", length(points), { points }, run)
 
 {-
 BENCHMARK

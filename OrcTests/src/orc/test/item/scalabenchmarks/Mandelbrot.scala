@@ -1,6 +1,6 @@
 package orc.test.item.scalabenchmarks
 
-object Mandelbrot extends BenchmarkApplication {
+object Mandelbrot extends BenchmarkApplication[Unit] {
   type D = BigDecimal
   val D = BigDecimal
 
@@ -16,9 +16,9 @@ object Mandelbrot extends BenchmarkApplication {
 
   val threshold: D = 100
   val steps: Integer = 10
-  val size: Integer = 48
-  val resolution = D(3.0) / D(size)
-  val offset = D(size) / D(2.0)
+  val gridsize: Integer = BenchmarkConfig.problemSizeSqrtScaledInt(48)
+  val resolution = D(3.0) / D(gridsize)
+  val offset = D(gridsize) / D(2.0)
 
   def point(c: Complex): Boolean = {
     def inner(z: Complex, n: Integer): Boolean = {
@@ -31,19 +31,25 @@ object Mandelbrot extends BenchmarkApplication {
 
   def cell(i: Integer, j: Integer) = point(Complex((D(i) - offset) * resolution, (D(j) - offset) * resolution))
   def row(i: Integer): Array[Boolean] = {
-    (0 until size).map(cell(i, _)).toArray
+    (0 until gridsize).map(cell(i, _)).toArray
   }
 
   def showRow(l: Seq[Boolean]) = {
     l.map(x => if (x) "@" else ".").reduce(_ + _)
   }
 
-  def main(args: Array[String]): Unit = {
-    println("size = " + size + ", resolution = " + resolution + ", offset = " + offset)
+  def benchmark(ctx: Unit): Unit = {
+    println("size = " + gridsize + ", resolution = " + resolution + ", offset = " + offset)
 
-    val ll = Util.timeIt((0 until size).map(row(_)).toArray)
+    val ll = (0 until gridsize).map(row(_))
     val ls = ll.map(showRow(_))
     println(ls.reduce(_ + "\n" + _))
   }
+
+  val name: String = "Mandelbrot"
+
+  def setup(): Unit = ()
+
+  val size: Int = gridsize * gridsize
 
 }

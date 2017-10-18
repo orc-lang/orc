@@ -7,24 +7,20 @@ import orc.test.item.scalabenchmarks.Util
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.long2bigDecimal
 
-object KMeansPar extends BenchmarkApplication {
+object KMeansPar extends BenchmarkApplication[Array[Point]] {
   val n = 10
   val iters = 1
   
-  def main(args: Array[String]): Unit = {
-    if (args.size == 0) {
-      val r = run(KMeansData.data)
-      println(r.size)
-    } else if (args.size == 1) {
-      val n = args(0).toInt
-      for (_ <- 0 until n) {
-        Util.timeIt {
-          val r = run(KMeansData.data)
-          println(r.mkString("\n"))
-        }
-      }
-    }
+  def benchmark(data: Array[Point]): Unit = {
+    run(data)
   }
+
+  def setup(): Array[Point] = {
+    KMeansData.data
+  }
+  
+  val size: Int = KMeansData.data.size
+  val name: String = "KMeans-par"
 
 
   def run(xs: Array[Point]) = {

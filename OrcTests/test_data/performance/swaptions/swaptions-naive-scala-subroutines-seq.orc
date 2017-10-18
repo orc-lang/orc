@@ -83,7 +83,7 @@ def sim(processor, swaption) =
 def simAll(processor) =
 	eachArray(data) >swaption> sim(processor, swaption) >> stop ; "Done"
 
-benchmarkSized("Swaptions-naive-scala-subroutines", data.length? * SwaptionData.nTrials(),
+benchmarkSized("Swaptions-naive-scala-subroutines-seq", data.length? * SwaptionData.nTrials(),
 	{ data >> Processor(SwaptionData.nTrials()) }, simAll)
 
 {-

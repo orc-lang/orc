@@ -13,7 +13,7 @@ import class ThreadLocalRandom = "java.util.concurrent.ThreadLocalRandom"
 
 def random() = ThreadLocalRandom.current().nextDouble()
 
-val swapsPerTemp = 15000
+val swapsPerTemp = problemSizeScaledInt(15000)
 val initialTemperature = 2000 
 val filename = "/home/amp/Redownloadable/parsec-3.0/pkgs/kernels/canneal/inputs/2500000.nets"
 val nTempSteps = 128
@@ -52,7 +52,7 @@ val netlist = NetList(filename)
 val _ = Println(netlist.elements().size()) 
 
 
-benchmarkSized("Canneal-naive", nTempSteps * swapsPerTemp, { netlist }, run)
+benchmarkSized("Canneal-naive", nTempSteps * swapsPerTemp, { netlist.resetLocations() >> netlist }, run)
 
 {-
 BENCHMARK

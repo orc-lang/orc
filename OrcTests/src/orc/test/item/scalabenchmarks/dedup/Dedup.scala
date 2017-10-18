@@ -8,8 +8,9 @@ import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration.Duration
 
 import orc.test.item.scalabenchmarks.{ BenchmarkApplication, Util }
+import java.io.File
 
-object Dedup extends BenchmarkApplication {
+object Dedup extends BenchmarkApplication[Unit] {
   val threadPool = new ForkJoinPool()
   
   case class CompressedChunk(uncompressedSHA1: ArrayKey, uncompressedSize: Int) {
@@ -107,17 +108,15 @@ object Dedup extends BenchmarkApplication {
 			//print(s"$id: ($roughID, $fineID) $roughChunk (${roughChunk.size}), $fineChunk (${fineChunk.size})\r")
     }
   }
-  
-  def main(args: Array[String]): Unit = {
-    if (args.size == 0) {
-      dedup("test.in", "test.out")
-    } else if (args.size == 1) {
-      val n = args(0).toInt
-      for (_ <- 0 until n) {
-        Util.timeIt {
-          dedup("test.in", "test.out")
-        }
-      }
-    }
+
+  def benchmark(ctx: Unit): Unit = {
+    // FIXME: Generate or include data.
+    dedup("test.in", "test.out")
   }
+
+  def setup(): Unit = ()
+
+  val name: String = "Dedup"
+
+  val size: Int = new File("test.in").length().toInt
 }

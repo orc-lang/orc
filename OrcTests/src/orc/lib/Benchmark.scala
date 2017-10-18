@@ -18,6 +18,14 @@ object Benchmark {
   def getTimes(): (Long, Long, Long) = {
     (System.nanoTime(), osmxbean.getProcessCpuTime, compilermxbean.getTotalCompilationTime)
   }
+
+  def nsToS(ns: Long) = ns.toDouble / 1000 / 1000 / 1000
+  def msToS(ns: Long) = ns.toDouble / 1000
+
+  def endBenchmark(start: (Long, Long, Long), iteration: Int, size: Double) = {
+    val end = Benchmark.getTimes()
+    BenchmarkTimes(iteration, nsToS(end._1 - start._1), nsToS(end._2 - start._2), msToS(end._3 - start._3), size)
+  }
 }
 
 object StartBenchmark extends InvokerMethod {
@@ -40,10 +48,7 @@ object StartBenchmark extends InvokerMethod {
 
 case class BenchmarkTimes(iteration: Int, runTime: Double, cpuTime: Double, compilationTime: Double, problemSize: Double)
 
-object EndBenchmark extends InvokerMethod {
-  def nsToS(ns: Long) = ns.toDouble / 1000 / 1000 / 1000
-  def msToS(ns: Long) = ns.toDouble / 1000
-  
+object EndBenchmark extends InvokerMethod {  
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 3) {
       new OnlyDirectInvoker {
@@ -52,11 +57,10 @@ object EndBenchmark extends InvokerMethod {
         }
 
         def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-          val end = Benchmark.getTimes()
           val start = arguments(0).asInstanceOf[(Long, Long, Long)]
           val iteration = arguments(1).asInstanceOf[Number]
           val size = arguments(2).asInstanceOf[Number]
-          BenchmarkTimes(iteration.intValue(), nsToS(end._1 - start._1), nsToS(end._2 - start._2), msToS(end._3 - start._3), size.doubleValue())
+          Benchmark.endBenchmark(start, iteration.intValue(), size.doubleValue())
         }
       }
     } else {

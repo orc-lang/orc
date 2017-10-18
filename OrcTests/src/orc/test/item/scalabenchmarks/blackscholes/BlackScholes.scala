@@ -3,10 +3,10 @@ package orc.test.item.scalabenchmarks.blackscholes
 import BlackScholes.D
 import scala.util.Random
 import orc.test.item.scalabenchmarks.BenchmarkApplication
-import orc.test.item.scalabenchmarks.Util
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.int2bigDecimal
 import scala.runtime.ZippedTraversable3.zippedTraversable3ToTraversable
+import orc.test.item.scalabenchmarks.BenchmarkConfig
 
 case class BlackScholesStock(price: D, strike: D, maturity: D)
 case class BlackScholesResult(call: D, put: D)
@@ -17,20 +17,20 @@ object BlackScholesData {
     Stream.continually(rand.nextDouble() * (h - l) + l)
   }
 
-  val dataSize = 100000
+  val dataSize = BenchmarkConfig.problemSizeScaledInt(100000)
 
   def makeData(s: Int): Array[BlackScholesStock] = {
     (seededStream(1, 0.01, 100), seededStream(2, 0.01, 100), seededStream(3, 0.1, 5)).zipped
       .take(s).map({ case (s, x, t) => BlackScholesStock(s, x, t) }).toArray
   }
 
-  val data = makeData(dataSize)
+  lazy val data = makeData(dataSize)
 
   val riskless: D = 0.7837868650424492
   val volatility: D = 0.14810754832231288
 }
 
-object BlackScholes extends BenchmarkApplication {
+object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock]] {
   type D = BigDecimal
 
   def log(x: D): D = Math.log(x.toDouble)
@@ -71,28 +71,17 @@ object BlackScholes extends BenchmarkApplication {
     }
   }
 
-  def main(args: Array[String]) {
-    if (args.size == 0) {
-      val res = for (BlackScholesStock(s, x, t) <- BlackScholesData.data) yield {
-        compute(s, x, t, BlackScholesData.riskless, BlackScholesData.volatility)
-      }
-
-      println(res.size)
-      println(res.take(5).toSeq)
-    } else if (args.size == 1) {
-      println(BlackScholesData.data.take(5).toSeq)
-
-      val n = args(0).toInt
-      for (_ <- 0 until n) {
-        Util.timeIt {
-          val res = for (BlackScholesStock(s, x, t) <- BlackScholesData.data) yield {
-            compute(s, x, t, BlackScholesData.riskless, BlackScholesData.volatility)
-          }
-  
-          println(res.size)
-          println(res.take(5).toSeq)
-        }
-      }
+  def benchmark(data: Array[BlackScholesStock]): Unit = {
+    for (BlackScholesStock(s, x, t) <- data) yield {
+      compute(s, x, t, BlackScholesData.riskless, BlackScholesData.volatility)
     }
   }
+
+  def setup(): Array[BlackScholesStock] = {
+    BlackScholesData.data
+  }
+
+  val name: String = "Black-Scholes-naive"
+
+  val size: Int = BlackScholesData.data.size
 }

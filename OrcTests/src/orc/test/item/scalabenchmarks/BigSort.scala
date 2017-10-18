@@ -2,9 +2,8 @@ package orc.test.item.scalabenchmarks
 
 import scala.annotation.tailrec
 import java.util.concurrent.ThreadLocalRandom
-import Util.timeIt
 
-object BigSort extends BenchmarkApplication {
+abstract class BigSortBase extends BenchmarkApplication[Array[Number]] {
   implicit val numberOrdering: Ordering[Number] = Ordering.by(_.longValue())
   
   def mergeSorted(inputs: IndexedSeq[IndexedSeq[Number]]): IndexedSeq[Number] = {
@@ -70,19 +69,26 @@ object BigSort extends BenchmarkApplication {
     Array.fill(n)(ThreadLocalRandom.current().nextInt(n).asInstanceOf[Number])
   }
   
-  val arraySize = 3000000
+  val arraySize = BenchmarkConfig.problemSizeScaledInt(3000)
 
-  def main(args: Array[String]): Unit = {
-    if (args.size == 0) {
-      val a = makeRandomArray(arraySize)
-      timeIt(splitSortMerge(a, _.sorted))
-    } else if (args.size == 1) {
-      val n = args(0).toInt
-      for (_ <- 0 until n) {
-        val a = makeRandomArray(arraySize)
-        val b = timeIt(splitSortMerge(a, _.sorted))
-        //println(b)
-      }
-    }
+  
+  val name: String = "BigSort"
+
+  val size: Int = (arraySize.toDouble * math.log(arraySize)).toInt
+
+  def setup(): Array[Number] = {
+    makeRandomArray(arraySize)
+  }
+}
+
+object BigSortSeq extends BigSortBase {
+  def benchmark(a: Array[Number]): Unit = {
+    splitSortMerge(a, _.sorted)
+  }
+}
+
+object BigSortPar extends BigSortBase {
+  def benchmark(a: Array[Number]): Unit = {
+    splitSortMergePar(a, _.sorted)
   }
 }

@@ -19,24 +19,23 @@ import orc.test.item.scalabenchmarks._
   */
 object SSSP {
   val (nodes, edges, source) = SSSPData.generate(BenchmarkConfig.problemSizeSqrtScaledInt(100000))
-
 }
 
-object SSSPSeq extends BenchmarkApplication {
-  import SSSP._
+abstract class SSSPBase extends BenchmarkApplication[(Array[SSSPNode], Array[SSSPEdge], Int)] {
+  def setup(): (Array[SSSPNode], Array[SSSPEdge], Int) = {
+    import SSSP._
+    (nodes, edges, source)
+  }
 
-  def main(args: Array[String]): Unit = {
-    if (args.size == 0) {
-      Util.timeIt { ssspSeq(nodes, edges, source) }
-    } else if (args.size == 1) {
-      println(nodes.size)
-      println(edges.size)
-      val n = args(0).toInt
-      for (_ <- 0 until n) {
-        val res = Util.timeIt { ssspSeq(nodes, edges, source) }
-        println(res.take(5).mkString(" "))
-      }
-    }
+  val size: Int = (SSSP.nodes.length / 100000) * SSSP.nodes.length
+}
+
+object SSSPSeq extends SSSPBase {
+  val name: String = "SSSP-seq"
+
+  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)): Unit = {
+    val (nodes, edges, source) = ctx
+    ssspSeq(nodes, edges, source)
   }
   
   def ssspSeq(nodes: Array[SSSPNode], edges: Array[SSSPEdge], source: Int): Array[Int] = {
@@ -67,22 +66,12 @@ object SSSPSeq extends BenchmarkApplication {
   }
 }
   
-object SSSPBatched extends BenchmarkApplication {
-  import SSSP._
+object SSSPBatched extends SSSPBase {
+  val name: String = "SSSP-batched"
 
-  def main(args: Array[String]): Unit = {
-    if (args.size == 0) {
-      Util.timeIt { ssspBatched(nodes, edges, source) }
-    } else if (args.size == 1) {
-      println(nodes.size)
-      println(edges.size)
-      val n = args(0).toInt
-      for (_ <- 0 until n) {
-        val res = Util.timeIt { ssspBatched(nodes, edges, source) }
-        println(res.take(5).mkString(" "))
-        println(res.contains(Int.MaxValue))
-      }
-    }
+  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)): Unit = {
+    val (nodes, edges, source) = ctx
+    ssspBatched(nodes, edges, source)
   }
 
   def ssspBatched(nodes: Array[SSSPNode], edges: Array[SSSPEdge], source: Int): Array[Int] = {
@@ -124,22 +113,14 @@ object SSSPBatched extends BenchmarkApplication {
   
 }
   
-object SSSPBatchedPar extends BenchmarkApplication {
-  import SSSP._
+object SSSPBatchedPar extends SSSPBase {
+  val name: String = "SSSP-batched-par"
 
-  def main(args: Array[String]): Unit = {
-    if (args.size == 0) {
-      Util.timeIt { ssspBatchedPar(nodes, edges, source) }
-    } else if (args.size == 1) {
-      println(nodes.size)
-      println(edges.size)
-      val n = args(0).toInt
-      for (_ <- 0 until n) {
-        val res = Util.timeIt { ssspBatchedPar(nodes, edges, source) }
-        println(res.take(5).mkString(" "))
-      }
-    }
+  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)): Unit = {
+    val (nodes, edges, source) = ctx
+    ssspBatchedPar(nodes, edges, source)
   }
+
 
   def ssspBatchedPar(nodes: Array[SSSPNode], edges: Array[SSSPEdge], source: Int): Array[Int] = {
     val colors = new AtomicIntegerArray(nodes.size)

@@ -1,29 +1,28 @@
 package orc.test.item.scalabenchmarks.canneal
 
-import orc.test.item.scalabenchmarks.Util
+import orc.test.item.scalabenchmarks.BenchmarkApplication
+import orc.test.item.scalabenchmarks.BenchmarkConfig
 
-object Canneal {
-  object IntFromString {
-    def unapply(s: String): Option[Int] = {
-      if (s != null)
-        Some(s.toInt)
-      else
-        None
-    }
-  }
+object Canneal extends BenchmarkApplication[NetList] {
+  val swapsPerTemp = BenchmarkConfig.problemSizeScaledInt(15000)
+  val initialTemperature = 2000 
+  // FIXME: Generate or include data.
+  val filename = "/home/amp/Redownloadable/parsec-3.0/pkgs/kernels/canneal/inputs/2500000.nets"
+  val nTempSteps = 128
+  val nPartitions = 8
+
+  val netlist = NetList(filename)    
   
-  def main(args: Array[String]): Unit = {
-    val Seq(IntFromString(nThreads), IntFromString(swapsPerTemp), IntFromString(startTemp), filename, IntFromString(nTempSteps)) = args.toSeq
-    val netlist = NetList(filename)    
-    
-    val n = 25
-
-    for (_ <- 0 until n) {
-      netlist.resetLocations()
-      Util.timeIt {
-        new Annealer(netlist, nThreads, swapsPerTemp, startTemp, nTempSteps)() 
-      }
-      println(s"total cost = ${netlist.totalCost().toLong}")
-    }
+  def setup(): NetList = {
+    netlist.resetLocations()
+    netlist
   }
+
+  def benchmark(netlist: NetList): Unit = {
+    new Annealer(netlist, nPartitions, swapsPerTemp, initialTemperature, nTempSteps)() 
+  }
+
+  val size: Int = nTempSteps * swapsPerTemp
+
+  val name: String = "Canneal"
 }
