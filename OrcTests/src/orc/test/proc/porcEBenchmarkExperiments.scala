@@ -4,7 +4,8 @@ import orc.test.util.FactorDescription
 import java.io.File
 
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
-  def softTimeLimit: Double = 60 * 20
+  def softTimeLimit: Double = 60 * 10
+  override def hardTimeLimit: Double = 60 * 12
     
   case class MyPorcEExperimentalCondition(
       orcFile: File, 
@@ -57,6 +58,10 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             "test_data/performance/sssp/sssp-batched-partitioned.orc",
+            "test_data/performance/canneal/canneal-naive.orc",
+            "test_data/performance/canneal/canneal-partitioned.orc",
+            "test_data/performance/dedup/dedup-boundedchannel.orc",
+            "test_data/performance/dedup/dedup.orc",
             )
       } yield {
         assert(new File(fn).isFile(), fn)
@@ -73,6 +78,9 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
             orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial, 
             orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption,
             orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar, 
+            orc.test.item.scalabenchmarks.canneal.Canneal, 
+            orc.test.item.scalabenchmarks.dedup.DedupNestedPar, 
+            orc.test.item.scalabenchmarks.dedup.DedupBoundedQueue, 
             )
       } yield {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
@@ -80,6 +88,71 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       }
       porce ++ scala 
     }
-    runExperiment(experimentalConditions)
+    runExperiment(experimentalConditions.sortBy(_.toFilePrefix.toLowerCase()))
+  }
+}
+
+
+
+object PorcESteadyStateExperiment extends PorcEBenchmark {
+  def softTimeLimit: Double = 60 * 13
+  override def hardTimeLimit: Double = 60 * 15
+    
+  case class MyPorcEExperimentalCondition(
+      orcFile: File, 
+      truffleBackgroundCompilation: Boolean, 
+      truffleCompilationThreshold: Int, 
+      truffleCompilerThreads: Int) 
+      extends ArthursBenchmarkEnv.PorcEExperimentalCondition {
+    override def factorDescriptions = Seq(
+      FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
+      FactorDescription("TruffleBackgroundCompilation", "Truffle Background Compilation", "", "Should truffle compile in the background"),
+      FactorDescription("TruffleCompilationThreshold", "Number of runs before compilation", "", ""),
+      FactorDescription("TruffleCompilerThreads", "Number of truffle compilation threads", "", ""),
+    )
+    override def systemProperties = super.systemProperties ++ Map(
+        "graal.TruffleBackgroundCompilation" -> truffleBackgroundCompilation,
+        "graal.TruffleCompilationThreshold" -> truffleCompilationThreshold,
+        "graal.TruffleCompilerThreads" -> truffleCompilerThreads,
+        )
+  }
+  case class MyScalaExperimentalCondition(
+      benchmarkClass: Class[_]) 
+      extends ArthursBenchmarkEnv.ScalaExperimentalCondition {
+    override def factorDescriptions = Seq(
+      FactorDescription("benchmarkClass", "Benchmark Class", "", "The class run for this benchmark"),
+    )
+  }
+
+  def main(args: Array[String]): Unit = {
+    val experimentalConditions = {
+      val porce = for {
+        bg <- Seq(false)
+        threshold <- Seq(10, 300, 600)
+        compThreads <- Seq(24)
+        fn <- Seq(
+            "test_data/performance/Hamming.orc",
+            "test_data/performance/threadring.orc",
+            "test_data/performance/black-scholes/black-scholes.orc",
+            "test_data/performance/canneal/canneal-naive.orc",
+            )
+      } yield {
+        assert(new File(fn).isFile(), fn)
+        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), bg, threshold, compThreads)
+      }
+      val scala = for {
+        benchmark <- Seq(
+            orc.test.item.scalabenchmarks.Hamming,
+            orc.test.item.scalabenchmarks.ThreadRing,
+            orc.test.item.scalabenchmarks.blackscholes.BlackScholesPar,
+            orc.test.item.scalabenchmarks.canneal.Canneal,
+            )
+      } yield {
+        val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
+        MyScalaExperimentalCondition(cls)
+      }
+      porce ++ scala 
+    }
+    runExperiment(experimentalConditions.sortBy(_.toFilePrefix.toLowerCase()))
   }
 }

@@ -172,7 +172,7 @@ object ArthursBenchmarkEnv {
             // Always trace compilation since it will be useful for determining where outlyers come from. 
             "-Dgraal.TraceTruffleCompilation=true", 
             "-Dgraal.TruffleBackgroundCompilation=false",
-            s"-Dgraal.TruffleCompilerThreads=8") ++
+            ) ++
           Seq("orc.Main",
             "--backend", "porc",
             "-O", "3") ++
@@ -198,6 +198,9 @@ object ArthursBenchmarkEnv {
   
   trait CPUControlExperimentalCondition extends JVMExperimentalCondition {
     val nCPUs: Int
+    
+    override def toJvmArgs = super.toJvmArgs ++ Seq(
+        s"-Dgraal.TruffleCompilerThreads=$nCPUs")
     
     override def wrapperCmd = tasksetCommandPrefix(nCPUs)
   }
