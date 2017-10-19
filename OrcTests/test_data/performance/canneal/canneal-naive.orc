@@ -8,6 +8,7 @@ This is so naive that it isn't even cache-aware. That means this is not even qui
 
 include "benchmark.inc"
 
+import class Canneal = "orc.test.item.scalabenchmarks.canneal.Canneal"
 import class NetList = "orc.test.item.scalabenchmarks.canneal.NetList"
 import class ThreadLocalRandom = "java.util.concurrent.ThreadLocalRandom"
 
@@ -15,7 +16,7 @@ def random() = ThreadLocalRandom.current().nextDouble()
 
 val swapsPerTemp = problemSizeScaledInt(15000)
 val initialTemperature = 2000 
-val filename = "/home/amp/Redownloadable/parsec-3.0/pkgs/kernels/canneal/inputs/2500000.nets"
+val filename = Canneal.localInputFile()
 val nTempSteps = 128
 
 def run(netlist) =

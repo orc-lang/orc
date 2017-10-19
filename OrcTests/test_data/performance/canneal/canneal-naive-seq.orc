@@ -12,14 +12,15 @@ import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
 Sequentialize() >> (
 
+import class Canneal = "orc.test.item.scalabenchmarks.canneal.Canneal"
 import class NetList = "orc.test.item.scalabenchmarks.canneal.NetList"
 import class ThreadLocalRandom = "java.util.concurrent.ThreadLocalRandom"
 
 def random() = ThreadLocalRandom.current().nextDouble()
 
-val swapsPerTemp = 15000
-val initialTemperature = 2000 
-val filename = "/home/amp/Redownloadable/parsec-3.0/pkgs/kernels/canneal/inputs/2500000.nets"
+val swapsPerTemp = problemSizeScaledInt(15000)
+val initialTemperature = 2000
+val filename = Canneal.localInputFile()
 val nTempSteps = 128
 
 def run(netlist) =
@@ -56,7 +57,7 @@ val netlist = NetList(filename)
 val _ = Println(netlist.elements().size()) 
 
 
-benchmarkSized("Canneal-naive-seq", nTempSteps * swapsPerTemp, { netlist }, run)
+benchmarkSized("Canneal-naive-seq", nTempSteps * swapsPerTemp, { netlist.resetLocations() >> netlist }, run)
 
 )
 

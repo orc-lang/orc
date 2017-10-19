@@ -5,6 +5,8 @@ import scala.collection.mutable.HashMap
 import java.util.concurrent.ThreadLocalRandom
 import scala.annotation.tailrec
 import java.util.concurrent.atomic.AtomicReference
+import java.io.FileInputStream
+import java.util.zip.GZIPInputStream
 
 final case class Location(x: Int, y: Int) {
   /** Compute the manhattan distance between this and o.
@@ -136,7 +138,10 @@ object NetList {
   def apply(fn: String): NetList = {
     import java.util.Scanner
     import java.io.File
-    val s = new Scanner(new File(fn))
+    
+    val inStream = new GZIPInputStream(new FileInputStream(new File(fn)))
+    
+    val s = new Scanner(inStream)
 
     val nl = new NetList(s.nextInt(), s.nextInt(), s.nextInt())
     
