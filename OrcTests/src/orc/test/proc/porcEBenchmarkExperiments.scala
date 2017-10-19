@@ -4,6 +4,7 @@ import orc.test.util.FactorDescription
 import java.io.File
 
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
+  def softTimeLimit: Double = 60 * 20
     
   case class MyPorcEExperimentalCondition(
       orcFile: File, 
@@ -38,7 +39,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = (Seq(1, 4, 8, 16, 24, 32, 48)).reverse 
+      val nCPUsValues = (Seq(1, 4, 8, 16, 24, 48)).reverse 
       val porce = for {
         optLevel <- Seq(3)
         nCPUs <- nCPUsValues

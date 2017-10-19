@@ -9,6 +9,9 @@ import site StartBenchmark = "orc.lib.StartBenchmark"
 
 val nPartitions = BenchmarkConfig.nPartitions()
 
+val softTimeLimit = BenchmarkConfig.softTimeLimit()
+val hardTimeLimit = BenchmarkConfig.hardTimeLimit()
+
 {--
 The benchmark should use this number to change the size of the problem.
 Ideally the benchmark should increase in runtime roughly linearly with this 
@@ -61,8 +64,10 @@ def timeIt[A](f :: lambda() :: A) =
   )
 
 def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A, benchmark :: lambda(A) :: B) =
+	val clock = Rclock()
 	def h(Integer, List[Top]) :: Signal
 	def h(i, results) if (i >= nRuns) = results
+	def h(i, results) if (softTimeLimit :> 0 && clock.time() :> (softTimeLimit * 1000)) = results
 	def h(i, results) = 
 		setup() >d> timeItNoPub({ benchmark(d) }, i, size) >r> (
 			val results' = r : results
@@ -72,7 +77,7 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 			h(i+1, results')
 		)
 	if nRuns >= 1 then
-		Println("Benchmarking " + name + " (" + nRuns + " runs, problem size " + problemSize + ", O(" + size + ") work)") >>
+		Println("Benchmarking " + name + " (" + nRuns + " runs, problem size " + problemSize + ", O(" + size + ") work, soft time limit " + softTimeLimit + ", hard time limit " + hardTimeLimit + ")") >>
 		setupOutput() >>
 		writeFactorValuesTableWithPropertyFactors([
 		  --Factor name, Value, Units, Comments
@@ -82,6 +87,7 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 		  ("Work", size, "", "work", "An estimate of the amount of work this benchmark must."),
   		  ("Language", "Orc", "", "language", "")
 		])  >>
+		BenchmarkConfig.startHardTimeLimit() >>
 		h(0, [])
 	else
 		setup() >d> benchmark(d)

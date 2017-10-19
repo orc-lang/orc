@@ -31,7 +31,6 @@ object ArthursBenchmarkEnv {
   def makePathRemotable(p: String) = {
     targetBinariesDir + "/" + p.stripPrefix(testRootDir).stripPrefix("/")
   }
-
       
   /** This is a list of the all the CPU ids in the order they should be assigned.
     * 
@@ -89,7 +88,9 @@ object ArthursBenchmarkEnv {
       //jvmOptions: Seq[String],
       //orcOptions: Seq[String],
       //systemProperties: Map[String, String],
-      runOutputDir: String) = {
+      runOutputDir: String,
+      softTimeLimit: Double, 
+      hardTimeLimit: Double) = {
       new File(runOutputDir).mkdirs()
       targetHost.foreach(RemoteCommand.mkdir(_, remoteOutputDir))
   
@@ -110,6 +111,8 @@ object ArthursBenchmarkEnv {
             s"-Dorc.test.benchmark.datadir=$targetBinariesDir/OrcTests/",
             s"-Dorc.test.benchmark.problemSize=${problemSize}",
             s"-Dorc.test.benchmark.nRuns=${nRuns}",
+            s"-Dorc.test.benchmark.softTimeLimit=${softTimeLimit}",
+            s"-Dorc.test.benchmark.hardTimeLimit=${hardTimeLimit}",
             s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_",
             "-Dorc.executionlog.filesuffix=_0",
             "-Dorc.config.dirs=config",
@@ -202,13 +205,48 @@ object ArthursBenchmarkEnv {
 }
 
 import ArthursBenchmarkEnv._
+import java.time.Duration
 
 trait PorcEBenchmark extends JVMRunner {
   lazy val remoteJavaHome = System.getProperty("orc.test.remoteJavaHome", "LocalInstalls/graalvm-0.28.2/jre")
   
+  def hardTimeLimit: Double = softTimeLimit * 1.1
+  def softTimeLimit: Double 
+  
   def runExperiment(experimentalConditions: Iterable[JVMExperimentalCondition]) = {
-    println(s"Running experiments:\n  ${experimentalConditions.mkString("\n  ")}")
-    ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
+    if (System.getProperty("orc.executionlog.dir") == null)
+      ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
+    else {
+      val runOutputDir = System.getProperty("orc.executionlog.dir")
+      println(s"orc.executionlog.dir is set. Assuming we are continuing an existing run. $runOutputDir/experimental-conditions.csv is not being rewritten. Make sure it's still correct.")
+    }
+    
+    val runOutputDir = System.getProperty("orc.executionlog.dir")
+    
+    val selectedCond = Option(System.getProperty("orc.test.selectedTests")).map(_.split(","))
+    val excludedCond = Option(System.getProperty("orc.test.excludedTests")).map(_.split(",")).getOrElse(Array())
+    
+    val filteredExperimentalConditions = experimentalConditions filter { cond =>
+      val outputFile = s"$runOutputDir/${cond.toFilePrefix}_factor-values_0.csv"
+      if (new File(outputFile).exists()) {
+        println(s"Skipping benchmark because output already exists: $cond")
+        false
+      } else if (excludedCond contains cond.toFilePrefix) {
+        println(s"Skipping benchmark because it is excluded: $cond")
+        false
+      } else if (selectedCond.isDefined && (selectedCond.get contains cond.toFilePrefix)) {
+        true
+      } else if (selectedCond.isDefined) {
+        println(s"Skipping benchmark because it is NOT selected: $cond")
+        false
+      } else {
+        true
+      }
+    }
+    
+    println(s"Running experiments:\n  ${filteredExperimentalConditions.mkString("\n  ")}")
+    println(s"Soft maximum runtime: ${Duration.ofMillis((filteredExperimentalConditions.size * softTimeLimit * 1000).toLong)}")
+    println(s"Hard maximum runtime: ${Duration.ofMillis((filteredExperimentalConditions.size * hardTimeLimit * 1000).toLong)}")
     
     targetHost match {
       case Some(host) => 
@@ -220,9 +258,8 @@ trait PorcEBenchmark extends JVMRunner {
       }
     }
     
-    val runOutputDir = System.getProperty("orc.executionlog.dir")
-    for (expCondition <- experimentalConditions) {
-      runJVM(expCondition, runOutputDir)
+    for (expCondition <- filteredExperimentalConditions) {
+      runJVM(expCondition, runOutputDir, softTimeLimit, hardTimeLimit)
     }
   }
 }

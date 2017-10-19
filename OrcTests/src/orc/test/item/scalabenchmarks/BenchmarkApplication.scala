@@ -68,14 +68,26 @@ trait BenchmarkApplication[T] {
       ))
 
       val results = collection.mutable.Buffer[BenchmarkTimes]()
+     
+      val startTime = System.currentTimeMillis()
+      def totalElapsedTime() = System.currentTimeMillis() - startTime
+      BenchmarkConfig.startHardTimeLimit()
       
-      for (i <- 0 until BenchmarkConfig.nRuns) {
-        val bt = runBenchmark(i)
-        println(bt)
-    		results += bt
-    		writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
-    		  Seq("Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", "Runtime compilation time (s) [rtCompTime]"), 
-    		  results.map(t => Seq[Any](t.iteration, t.runTime, t.cpuTime, t.compilationTime)))
+      try {
+        for (i <- 0 until BenchmarkConfig.nRuns) {
+          if (BenchmarkConfig.softTimeLimit > 0 && totalElapsedTime() > (BenchmarkConfig.softTimeLimit * 1000)) {
+            throw new InterruptedException()
+          }
+          val bt = runBenchmark(i)
+          println(bt)
+      		results += bt
+      		writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
+      		  Seq("Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", "Runtime compilation time (s) [rtCompTime]"), 
+      		  results.map(t => Seq[Any](t.iteration, t.runTime, t.cpuTime, t.compilationTime)))
+        }
+      } catch {
+        case _: InterruptedException =>
+          // Exit normally, we hit soft limit.
       }
     } else if (args.size == 1) {
       val n = args(0).toInt
