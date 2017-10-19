@@ -9,6 +9,7 @@ implementation.
 
 include "benchmark.inc"
 
+import class DedupData = "orc.test.item.scalabenchmarks.dedup.DedupData"
 import class Rabin = "orc.test.item.scalabenchmarks.dedup.Rabin"
 import class Chunk = "orc.test.item.scalabenchmarks.dedup.Chunk"
 import class ArrayKey = "orc.test.item.scalabenchmarks.dedup.ArrayKey"
@@ -144,8 +145,8 @@ def dedup(in, out) =
 	fineChunks.close()
 
 
-benchmarkSized("Dedup-boundedchannel", File("test.in").length(), { signal }, lambda(_) =
-  val (in, out) = (FileInputStream("test.in"), DataOutputStream(FileOutputStream("test.out")))
+benchmarkSized("Dedup-boundedchannel", File(DedupData.localInputFile()).length(), { signal }, lambda(_) =
+  val (in, out) = (FileInputStream(DedupData.localInputFile()), DataOutputStream(FileOutputStream(DedupData.localOutputFile())))
   dedup(in, out) >>
   in.close() >>
   out.close()

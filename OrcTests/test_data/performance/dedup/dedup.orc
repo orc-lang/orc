@@ -9,7 +9,7 @@ implementation.
 
 include "benchmark.inc"
 
-import class Rabin = "orc.test.item.scalabenchmarks.dedup.Rabin"
+import class DedupData = "orc.test.item.scalabenchmarks.dedup.DedupData"
 import class Chunk = "orc.test.item.scalabenchmarks.dedup.Chunk"
 import class ArrayKey = "orc.test.item.scalabenchmarks.dedup.ArrayKey"
 import class Map = "java.util.concurrent.ConcurrentHashMap"
@@ -129,8 +129,8 @@ def dedup(in, out) =
 	write(out, outputPool)
 
 
-benchmarkSized("Dedup-naive", File("test.in").length(), { signal }, lambda(_) =
-  val (in, out) = (FileInputStream("test.in"), DataOutputStream(FileOutputStream("test.out")))
+benchmarkSized("Dedup-naive", File(DedupData.localInputFile()).length(), { signal }, lambda(_) =
+  val (in, out) = (FileInputStream(DedupData.localInputFile()), DataOutputStream(FileOutputStream(DedupData.localOutputFile())))
   dedup(in, out) >>
   in.close() >>
   out.close()

@@ -78,13 +78,12 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit] {
   }
   
   def benchmark(ctx: Unit): Unit = {
-    // FIXME: Generate or include data.
-    dedup("test.in", "test.out")
+    dedup(DedupData.localInputFile, DedupData.localOutputFile)
   }
 
   def setup(): Unit = ()
 
   val name: String = "Dedup-boundedqueue"
 
-  val size: Int = new File("test.in").length().toInt
+  val size: Int = new File(DedupData.localInputFile).length().toInt
 }
