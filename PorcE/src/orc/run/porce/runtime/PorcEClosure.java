@@ -3,6 +3,8 @@ package orc.run.porce.runtime;
 
 import com.oracle.truffle.api.RootCallTarget;
 
+import orc.run.porce.PorcERootNode;
+
 final public class PorcEClosure {
     public final Object[] environment;
     public final RootCallTarget body;
@@ -21,6 +23,15 @@ final public class PorcEClosure {
 		this.environment = environment;
 		this.body = body;
 		this.isRoutine = isRoutine;
+	}
+	
+	public long getTimePerCall() {
+		if (body.getRootNode() instanceof PorcERootNode) {
+			PorcERootNode root = (PorcERootNode)body.getRootNode();
+			return root.getTimePerCall();
+		} else {
+			return Long.MAX_VALUE;
+		}
 	}
 
     public Object callFromRuntimeArgArray(final Object[] values) {

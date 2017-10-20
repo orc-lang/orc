@@ -90,9 +90,9 @@ object PorcERuntime {
   def incrementAndCheckStackDepth() = {
     if (PorcERuntime.maxStackDepth > 0) {
       val depth = PorcERuntime.stackDepthThreadLocal.get()
-      /*if (depth > PorcERuntime.maxStackDepth / 2)
-        Logger.log(Level.INFO, s"incr (depth=${depth})")
-        */
+      //if (depth.value > PorcERuntime.maxStackDepth / 2)
+      //  Logger.log(Level.INFO, s"incr (depth=${depth.value})")
+        
       val r = depth.value < PorcERuntime.maxStackDepth
       if (r)
         depth.value += 1
@@ -110,9 +110,9 @@ object PorcERuntime {
   def decrementStackDepth() = {
     if (PorcERuntime.maxStackDepth > 0) {
       val depth = PorcERuntime.stackDepthThreadLocal.get()
-      /*if (depth > PorcERuntime.maxStackDepth / 2)
-        Logger.log(Level.INFO, s"decr (depth=${depth})")
-        */
+      //if (depth.value > PorcERuntime.maxStackDepth / 2)
+      //  Logger.log(Level.INFO, s"decr (depth=${depth.value})")
+        
       depth.value -= 1
     }
   }

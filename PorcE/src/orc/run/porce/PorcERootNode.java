@@ -4,10 +4,12 @@ package orc.run.porce;
 import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreter;
 
 import java.util.logging.Level;
+import java.util.concurrent.atomic.AtomicLong;
 
 import scala.Option;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -25,6 +27,29 @@ import orc.run.porce.runtime.SourceSectionFromPorc;
 
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final static boolean assertionsEnabled = false;
+    
+    private final AtomicLong totalTime = new AtomicLong(0);
+    private final AtomicLong totalCalls = new AtomicLong(0);
+    @CompilationFinal
+    private long timePerCall = -1;
+    
+    public long getTimePerCall() {
+    	if (timePerCall < 0 || CompilerDirectives.inInterpreter()) {
+        	long t = totalTime.get();
+        	long n = totalCalls.get();
+        	while (t != totalTime.get() || n != totalCalls.get()) {
+        		t = totalTime.get();
+            	n = totalCalls.get();
+        	}
+        	timePerCall = n > 0 ? t / n : Long.MAX_VALUE;
+    	} 
+    	/*{
+        	long t = totalTime.get();
+        	long n = totalCalls.get();
+        	Logger.info(() -> "getTimePerCall " + t + "  /  " + n);
+    	}*/
+		return timePerCall;
+    }
 
     private Option<PorcAST> porcNode = Option.apply(null);
 
@@ -95,6 +120,10 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             }
         }
 
+        long startTime = 0;
+        if (CompilerDirectives.inInterpreter())
+        	startTime = System.currentTimeMillis();
+        
         try {
             final Object ret = body.execute(frame);
             return ret;
@@ -102,6 +131,11 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             transferToInterpreter();
             Logger.log(Level.WARNING, () -> "Caught " + e + " in root node " + this, e);
             return PorcEUnit.SINGLETON;
+        } finally {
+        	if (startTime > 0 && CompilerDirectives.inInterpreter()) {
+        		totalTime.getAndAdd(System.currentTimeMillis() - startTime);
+        		totalCalls.getAndIncrement();
+        	}
         }
     }
 
@@ -117,6 +151,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     @Override
     public String toString() {
-        return String.format("PorcE.%s@%08x(%08x)", getName(), hashCode(), getCallTarget() == null ? 0 : getCallTarget().hashCode());
+        return String.format("PorcE.%s", getName());
     }
 }
