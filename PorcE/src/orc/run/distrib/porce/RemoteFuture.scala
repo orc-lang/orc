@@ -30,6 +30,10 @@ class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRef
     */
   @TruffleBoundary(allowInlining = true) @noinline
   override def bind(v: AnyRef) = {
+    if (raceFreeResolution) {
+      Logger.Futures.finest("Shortcutting bind communication, since raceFreeResolution=true")
+      localBind(v)
+    }
     futureManager.sendFutureResolution(remoteRefId, Some(v))
   }
 
@@ -37,6 +41,10 @@ class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRef
     */
   @TruffleBoundary(allowInlining = true) @noinline
   override def stop(): Unit = {
+    if (raceFreeResolution) {
+      Logger.Futures.finest("Shortcutting bind communication, since raceFreeResolution=true")
+      localStop()
+    }
     futureManager.sendFutureResolution(remoteRefId, None)
   }
 
@@ -92,9 +100,12 @@ trait RemoteFutureManager {
   // TODO: Determine when a served RemoteFutureId is no longer referenced, and remove entries from these maps.
   /** Map from a local ("real") future to its assigned RemoteFutureId. */
   protected val servingLocalFutures = new java.util.concurrent.ConcurrentHashMap[Future, RemoteFutureId]
-  /** Map from a RemoteFutureId for a local future its local proxy for the remote readers. */
+  /** Map from a RemoteFutureId for a local future to its local proxy for the remote readers. */
   protected val servingRemoteFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureId, RemoteFutureReader]
 
+  /** Map from a RemoteFutureId for a remote future to its local proxy
+    * (RemoteFutureRef), which local FutureReaders block on.
+    */
   protected val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureId, RemoteFutureRef]
 
   /** Given a future (local or remote), get its RemoteFutureId.  If the
@@ -118,11 +129,11 @@ trait RemoteFutureManager {
     * location, that future is returned.  Otherwise, a RemoteFutureRef for
     * the future is returned.
     */
-  def futureForId(futureId: RemoteFutureId): Future = {
+  def futureForId(futureId: RemoteFutureId, raceFreeResolution: Boolean): Future = {
     if (execution.homeLocationForRemoteRef(futureId) == execution.runtime.asInstanceOf[DOrcRuntime].here) {
-      servingRemoteFutures.get(futureId).fut
+      servingRemoteFutures.get(futureId).fut ensuring (_.raceFreeResolution == raceFreeResolution)
     } else {
-      waitingReaders.computeIfAbsent(futureId, new RemoteFutureRef(execution, _, false))
+      waitingReaders.computeIfAbsent(futureId, new RemoteFutureRef(execution, _, raceFreeResolution))
     }
   }
 
