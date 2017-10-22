@@ -89,49 +89,40 @@ trait RemoteFutureManager {
   type RemoteFutureId = RemoteFutureRef#RemoteRefId
 
   // These two maps are inverses of each other (sorta)
+  // TODO: Determine when a served RemoteFutureId is no longer referenced, and remove entries from these maps.
+  /** Map from a local ("real") future to its assigned RemoteFutureId. */
   protected val servingLocalFutures = new java.util.concurrent.ConcurrentHashMap[Future, RemoteFutureId]
-  // TODO: MEMORYLEAK: servingRemoteFutures is not cleaned as futures are no longer needed. This is because the future Id
-  //       could be requested from another node with any amount of delay. This will be a problem as programs run longer or
-  //       use more futures. The initial symptom is likely to be programs slowing down as they run, instead of a visible
-  //       increase in the heap size. The object are small, but ConcurrentHashMap does show quite a bit of slowdown as the
-  //       number of entries increases.
+  /** Map from a RemoteFutureId for a local future its local proxy for the remote readers. */
   protected val servingRemoteFutures = new java.util.concurrent.ConcurrentHashMap[RemoteFutureId, RemoteFutureReader]
-  protected val servingGroupsFuturesUpdateLock = new Object()
 
   protected val waitingReaders = new java.util.concurrent.ConcurrentHashMap[RemoteFutureId, RemoteFutureRef]
-  protected val waitingReadersUpdateLock = new Object()
 
-  // TODO: PERFORMANCE: We are using locks here when we could probably use computeIfAbsent and fiends.
-
+  /** Given a future (local or remote), get its RemoteFutureId.  If the
+    * future is a local future that hasn't been exposed as a remote future
+    * previously, set it up to be remotely ref'ed, and return its new ID.
+    */
   def ensureFutureIsRemotelyAccessibleAndGetId(fut: Future): RemoteFutureId = {
     //Logger.Futures.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
     fut match {
       case rfut: RemoteFutureRef => rfut.remoteRefId
-      case _ => servingGroupsFuturesUpdateLock synchronized {
-        if (servingLocalFutures.contains(fut)) {
-          servingLocalFutures.get(fut)
-        } else {
+      case _ => servingLocalFutures.computeIfAbsent(fut, fut => {
           val newFutureId = execution.freshRemoteRefId()
           val newReader = new RemoteFutureReader(fut, execution, newFutureId)
-          servingLocalFutures.put(fut, newFutureId)
           servingRemoteFutures.put(newFutureId, newReader)
           newFutureId
-        }
-      }
+      })
     }
   }
 
+  /** Get the future for the given ID.  If the ID refers to a future at this
+   *  location, that future is returned.  Otherwise, a RemoteFutureRef for
+   *  the future is returned.
+   */
   def futureForId(futureId: RemoteFutureId): Future = {
     if (execution.homeLocationForRemoteRef(futureId) == execution.runtime.asInstanceOf[DOrcRuntime].here) {
       servingRemoteFutures.get(futureId).fut
     } else {
-      waitingReadersUpdateLock synchronized {
-        if (!waitingReaders.contains(futureId)) {
-          val newFuture = new RemoteFutureRef(execution, futureId)
-          waitingReaders.putIfAbsent(futureId, newFuture)
-        }
-      }
-      waitingReaders.get(futureId)
+      waitingReaders.computeIfAbsent(futureId, new RemoteFutureRef(execution, _))
     }
   }
 
