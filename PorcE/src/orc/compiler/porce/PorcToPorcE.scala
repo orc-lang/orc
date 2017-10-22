@@ -21,19 +21,19 @@ object PorcToPorcE {
 
 class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELanguage) {
   case class Context(
-    descriptor: FrameDescriptor, execution: PorcEExecutionHolder,
-    argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
-    runtime: PorcERuntime, inTailPosition: Boolean) {
+      descriptor: FrameDescriptor, execution: PorcEExecutionHolder,
+      argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
+      runtime: PorcERuntime, inTailPosition: Boolean) {
     def withTailPosition = copy(inTailPosition = true)
     def withoutTailPosition = copy(inTailPosition = false)
   }
-  
+
   implicit class AddContextMap[T](val underlying: Seq[T]) {
     def contextMap[B](f: (T, Context) => B)(implicit ctx: Context): Seq[B] = {
       underlying.init.map(f(_, ctx.withoutTailPosition)) :+ f(underlying.last, ctx)
     }
   }
-  
+
   def getEnclosingMethod(e: porc.PorcAST.Z): Option[porc.Variable] = {
     e.parents.
       takeWhile({ case _: porc.Continuation.Z => false; case _ => true }).
@@ -74,7 +74,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
     closureMap += (root.getId() -> callTarget)
     callTarget
   }
-  
+
   def transform(x: porc.Variable)(implicit ctx: Context): porce.Expression = {
     val res = if (ctx.argumentVariables.contains(x)) {
       porce.Read.Argument.create(ctx.argumentVariables.indexOf(x))
@@ -104,16 +104,15 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
     (closure, closureMap)
   }
 
-
   def transform(e: porc.Expression.Z)(implicit ctx: Context): porce.Expression = {
     val thisCtx = ctx
     val innerCtx = ctx.withoutTailPosition
     //Logger.info(s"At ${e.value}: ${thisCtx.inTailPosition} && ${getEnclosingMethod(e)}")
     //*
-   
+
     {
       implicit val ctx = thisCtx.withoutTailPosition
-      
+
       val res = e match {
         case porc.Constant.Z(v) =>
           porce.Read.Constant.create(v)
@@ -131,10 +130,10 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           val descriptor = new FrameDescriptor()
           val capturedVars = normalizeOrder(e.freeVars)
           val capturingExprs = capturedVars.map(transform(_)(innerCtx)).toArray
-  
+
           {
             val ctx = innerCtx.withTailPosition.copy(descriptor = descriptor, closureVariables = capturedVars, argumentVariables = args)
-  
+
             val newBody = transform(body)(ctx)
             val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, args.size, capturedVars.size)
             rootNode.setPorcAST(e.value)
@@ -174,24 +173,25 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           }
         case porc.MethodDeclaration.Z(t, methods, body) =>
           val closure = lookupVariable(LocalVariables.MethodGroupClosure)(innerCtx)
-  
+
           val recCapturedVars = normalizeOrder(methods.map(_.name)).view.force
           val scopeCapturedVars = normalizeOrder(methods.flatMap(m => m.body.freeVars -- m.allArguments).toSet -- recCapturedVars)
           val allCapturedVars = scopeCapturedVars ++ recCapturedVars
-  
+
           val scopeCapturedReads = scopeCapturedVars.map(transform(_)(innerCtx))
-  
-          val constructClosure = porce.Write.Local.create(closure,
+
+          val constructClosure = porce.Write.Local.create(
+            closure,
             porce.MethodDeclaration.NewMethodClosure.create(transform(t), scopeCapturedReads.toArray, recCapturedVars.size))
-  
+
           val methodsOrdered = methods.sortBy(_.name.optionalName)
           assert(methodsOrdered.map(_.name) == recCapturedVars)
-  
+
           val newMethods = methodsOrdered.zipWithIndex.map({ case (m, i) => transform(m, i, closure, allCapturedVars, scopeCapturedVars.size) })
-  
+
           porce.Sequence.create((constructClosure +: newMethods :+ transform(body)(thisCtx)).toArray)
-        case porc.NewFuture.Z() =>
-          porce.NewFuture.create()
+        case porc.NewFuture.Z(raceFreeResolution) =>
+          porce.NewFuture.create(raceFreeResolution)
         case porc.NewSimpleCounter.Z(p, h) =>
           porce.NewCounter.Simple.create(ctx.runtime, transform(p), transform(h))
         case porc.NewServiceCounter.Z(p, p2, t) =>
@@ -217,7 +217,8 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
         case porc.Resolve.Z(p, c, t, futures) =>
           // Due to not generally being on as hot of paths we do not have a single value version of Resolve. It could easily be created if needed.
           val join = lookupVariable(LocalVariables.Join)
-          val newJoin = porce.Write.Local.create(join,
+          val newJoin = porce.Write.Local.create(
+            join,
             porce.Resolve.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
           val processors = futures.zipWithIndex.map { p =>
             val (f, i) = p
@@ -231,7 +232,8 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           porce.Force.SingleFuture.create(transform(p), transform(c), transform(t), transform(future), ctx.execution.newRef())
         case porc.Force.Z(p, c, t, futures) =>
           val join = lookupVariable(LocalVariables.Join)
-          val newJoin = porce.Write.Local.create(join,
+          val newJoin = porce.Write.Local.create(
+            join,
             porce.Force.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
           val processors = futures.zipWithIndex.map { p =>
             val (f, i) = p
@@ -272,7 +274,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
     def process(arguments: Seq[porc.Variable]) = {
       val descriptor = new FrameDescriptor()
       val ctx = oldCtx.withTailPosition.copy(descriptor = descriptor, closureVariables = closureVariables, argumentVariables = arguments)
-      
+
       val newBody = transform(m.body)(ctx)
       val methodSlot = oldCtx.descriptor.findOrAddFrameSlot(m.name)
       val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, arguments.size, closureVariables.size)

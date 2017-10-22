@@ -1,5 +1,5 @@
 //
-// PorcAST.scala -- Scala class/trait/object PorcAST
+// PorcAST.scala -- Scala class and objects for the Porc AST
 // Project OrcScala
 //
 // Created by amp on May 27, 2013.
@@ -12,25 +12,13 @@
 //
 package orc.ast.porc
 
-import orc.ast.AST
-import orc.ast.hasOptionalVariableName
-import orc.values.sites
-import orc.ast.PrecomputeHashcode
-import java.util.logging.Level
-import orc.values.Field
-import orc.ast.ASTForSwivel
-import swivel.root
-import swivel.replacement
-import swivel.leaf
-import swivel.branch
-import swivel.subtree
-import orc.ast.hasAutomaticVariableName
-import scala.PartialFunction
-import swivel.TransformFunction
-import orc.util.Ternary
-import orc.ast.hasOptionalVariableName
-import orc.ast.ASTWithIndex
 import java.io.IOException
+
+import orc.ast.{ ASTForSwivel, ASTWithIndex, PrecomputeHashcode, hasAutomaticVariableName, hasOptionalVariableName }
+import orc.util.Ternary
+import orc.values.Field
+
+import swivel.{ TransformFunction, branch, leaf, root, subtree }
 
 abstract class Transform extends TransformFunction {
   def onExpression: PartialFunction[Expression.Z, Expression] = {
@@ -60,7 +48,7 @@ sealed abstract class PorcAST extends ASTForSwivel with Product {
   override def toString() = prettyprint()
 
   def boundVars: Set[Variable] = Set()
-  
+
   override def transferMetadata[T <: PorcAST](e: T): T = {
     this ->> e
   }
@@ -92,7 +80,7 @@ final case class Constant(v: AnyRef) extends Argument {
   private def writeObject(out: java.io.ObjectOutputStream): Unit = {
     out.writeObject(orc.ast.oil.xml.OrcXML.anyToXML(v))
   }
-  
+
   @throws[IOException]
   @throws[ClassNotFoundException]
   private def readObject(in: java.io.ObjectInputStream): Unit = {
@@ -106,7 +94,6 @@ object Constant {
     vField.set(c, v)
   }
 }
-
 
 @leaf @transform
 final case class PorcUnit() extends Argument
@@ -135,7 +122,7 @@ final case class CallContinuation(@subtree target: Argument, @subtree arguments:
 @leaf @transform
 final case class Let(x: Variable, @subtree v: Expression, @subtree body: Expression) extends Expression with hasOptionalVariableName {
   override def boundVars: Set[Variable] = Set(x)
-  
+
   transferOptionalVariableName(x, this)
   // Set the name of the value to be the same as this. (HACK? This is a bit odd, but I think it makes sense.)
   transferOptionalVariableName(this, v)
@@ -152,7 +139,7 @@ object Sequence {
       case PorcUnit() => Seq()
       case e => Seq(e)
     }).toVector
-    
+
     es1.size match {
       case 0 =>
         PorcUnit()
@@ -168,13 +155,13 @@ object Sequence {
 final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression with hasOptionalVariableName with ASTWithIndex {
   require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
   override def boundVars: Set[Variable] = arguments.toSet
-  
+
   @throws[IOException]
   private def writeObject(out: java.io.ObjectOutputStream): Unit = {
     out.defaultWriteObject()
     out.writeObject(optionalIndex)
   }
-  
+
   @throws[IOException]
   @throws[ClassNotFoundException]
   private def readObject(in: java.io.ObjectInputStream): Unit = {
@@ -198,15 +185,15 @@ sealed abstract class Method extends PorcAST with hasOptionalVariableName with A
   def allArguments: Seq[Variable]
 
   override def boundVars: Set[Variable] = allArguments.toSet
-  
+
   transferOptionalVariableName(name, this)
-  
+
   @throws[IOException]
   private def writeObject(out: java.io.ObjectOutputStream): Unit = {
     out.defaultWriteObject()
     out.writeObject(optionalIndex)
   }
-  
+
   @throws[IOException]
   @throws[ClassNotFoundException]
   private def readObject(in: java.io.ObjectInputStream): Unit = {
@@ -224,7 +211,7 @@ object Method {
     case _ =>
       None
   }
-  
+
   class Z {
     def name: Variable
     def isRoutine: Boolean
@@ -259,19 +246,19 @@ final case class MethodDirect(name: Variable, isRoutine: Boolean, arguments: Seq
 /** Call a CPS method.
   *
   * This consumes a token of c when it is called and then returns a token to each call to p which must return that token to its caller.
-  * 
+  *
   * This call will halt if `target` is killed after discorporating.
   */
 @leaf @transform
 final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression with ASTWithIndex {
   require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
-  
+
   @throws[IOException]
   private def writeObject(out: java.io.ObjectOutputStream): Unit = {
     out.defaultWriteObject()
     out.writeObject(optionalIndex)
   }
-  
+
   @throws[IOException]
   @throws[ClassNotFoundException]
   private def readObject(in: java.io.ObjectInputStream): Unit = {
@@ -329,7 +316,7 @@ object NewCounter {
 
   class Z {
   }
-  
+
   object Z {
     def unapply(o: NewCounter.Z): Boolean = {
       o != null
@@ -343,7 +330,6 @@ final case class NewSimpleCounter(@subtree parentC: Argument, @subtree haltHandl
 final case class NewServiceCounter(@subtree callingC: Argument, @subtree containingC: Argument, @subtree t: Argument) extends NewCounter
 @leaf @transform
 final case class NewTerminatorCounter(@subtree parentC: Argument, @subtree t: Argument) extends NewCounter
-
 
 /** Add a new token to a counter.
   */
@@ -367,7 +353,7 @@ final case class TryFinally(@subtree body: Expression, @subtree handler: Express
 // ==================== FUTURE ===================
 
 @leaf @transform
-final case class NewFuture() extends Expression
+final case class NewFuture(raceFreeResolution: Boolean) extends Expression
 @leaf @transform
 final case class Bind(@subtree future: Argument, @subtree v: Argument) extends Expression
 @leaf @transform

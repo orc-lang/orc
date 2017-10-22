@@ -29,13 +29,13 @@ import orc.values.{ Format, OrcValue }
   * in the critical paths. The trade off is that Future contains an
   * extra couple of pointers.
   */
-class Future() extends OrcValue with orc.Future {
+class Future(val raceFreeResolution: Boolean) extends OrcValue with orc.Future {
   import FutureConstants._
 
   private var _state: AnyRef = Unbound
   private var _blocked: ConcurrentLinkedQueue[FutureReader] = new ConcurrentLinkedQueue()
   //private var _blocked = ConcurrentHashMap.newKeySet[FutureReader]()
-  
+
   /*
   private val lock = new ReentrantReadWriteLock()
   private val readLock = lock.readLock()
@@ -125,7 +125,7 @@ class Future() extends OrcValue with orc.Future {
   @TruffleBoundary(allowInlining = true) @noinline
   final def read(blocked: FutureReader): Unit = {
     val st = {
-      if(_state eq Unbound) {
+      if (_state eq Unbound) {
         readLock.lock()
         try {
           _state match {

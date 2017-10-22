@@ -22,7 +22,7 @@ import orc.run.porce.runtime.Future
   *
   * @author jthywiss
   */
-class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRefId: RemoteFutureRef#RemoteRefId) extends Future() with RemoteRef {
+class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRefId: RemoteFutureRef#RemoteRefId, raceFreeResolution: Boolean) extends Future(raceFreeResolution) with RemoteRef {
 
   override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x)"
 
@@ -106,23 +106,23 @@ trait RemoteFutureManager {
     fut match {
       case rfut: RemoteFutureRef => rfut.remoteRefId
       case _ => servingLocalFutures.computeIfAbsent(fut, fut => {
-          val newFutureId = execution.freshRemoteRefId()
-          val newReader = new RemoteFutureReader(fut, execution, newFutureId)
-          servingRemoteFutures.put(newFutureId, newReader)
-          newFutureId
+        val newFutureId = execution.freshRemoteRefId()
+        val newReader = new RemoteFutureReader(fut, execution, newFutureId)
+        servingRemoteFutures.put(newFutureId, newReader)
+        newFutureId
       })
     }
   }
 
   /** Get the future for the given ID.  If the ID refers to a future at this
-   *  location, that future is returned.  Otherwise, a RemoteFutureRef for
-   *  the future is returned.
-   */
+    * location, that future is returned.  Otherwise, a RemoteFutureRef for
+    * the future is returned.
+    */
   def futureForId(futureId: RemoteFutureId): Future = {
     if (execution.homeLocationForRemoteRef(futureId) == execution.runtime.asInstanceOf[DOrcRuntime].here) {
       servingRemoteFutures.get(futureId).fut
     } else {
-      waitingReaders.computeIfAbsent(futureId, new RemoteFutureRef(execution, _))
+      waitingReaders.computeIfAbsent(futureId, new RemoteFutureRef(execution, _, false))
     }
   }
 
