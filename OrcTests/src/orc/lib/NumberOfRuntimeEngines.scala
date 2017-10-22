@@ -18,13 +18,13 @@ import orc.run.core.CallController
 import orc.run.distrib.ClusterLocations
 import orc.run.porce.runtime.CPSCallContext
 import orc.types.IntegerType
-import orc.values.sites.{ Site0, TypedSite }
+import orc.values.sites.{ FunctionalSite, Range, Site0, TypedSite }
 
 /** Orc site that returns the number of runtime engines in the current cluster.
   *
   * @author jthywiss
   */
-object NumberOfRuntimeEngines extends Site0 with TypedSite {
+object NumberOfRuntimeEngines extends Site0 with FunctionalSite with TypedSite {
 
   def call(callContext: CallContext): Unit = {
     val numRE = callContext match {
@@ -41,5 +41,7 @@ object NumberOfRuntimeEngines extends Site0 with TypedSite {
     callContext.publish(BigDecimal.valueOf(numRE))
   }
 
-  def orcType() = IntegerType
+  override def orcType() = IntegerType
+
+  override def publications = Range(0, 1)
 }
