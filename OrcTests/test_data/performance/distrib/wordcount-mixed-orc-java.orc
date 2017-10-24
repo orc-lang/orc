@@ -60,14 +60,22 @@ def testPayload() =
 
 val numRepetitions = Read(JavaSys.getProperty("orc.test.numRepetitions", "20"))
 
+def getProcessCumulativeCpuTime() =
+  import class ManagementFactory = "java.lang.management.ManagementFactory"
+  ManagementFactory.getOperatingSystemMXBean().getProcessCpuTime()
+
 def timeRepetitions(testPayload, numRepetitions) =
   def timeRepetitions'(thisRepetitionNum, remainingRepetitions, testElapsedTimes) =
 	Println("Repetition " + thisRepetitionNum + ": start.") >>
-	JavaSys.nanoTime() >startNanos>
+	JavaSys.nanoTime() >startElapsed_ns>
+	getProcessCumulativeCpuTime()  >startCpuTime_ns>
 	(testPayload() >p> Println("Repetition " + thisRepetitionNum + ": published " + p) >> stop; signal) >>
-	JavaSys.nanoTime() >finishNanos>
-	Println("Repetition " + thisRepetitionNum + ": finish.  Elapsed time " + (finishNanos - startNanos)/1000 + " µs") >>
-	append(testElapsedTimes, [[thisRepetitionNum, (finishNanos - startNanos)/1000]])  >testElapsedTimes'>
+	getProcessCumulativeCpuTime()  >finishCpuTime_ns>
+	JavaSys.nanoTime() >finishElapsed_ns>
+	(finishElapsed_ns - startElapsed_ns) / 1000  >elapsed_us>
+    (finishCpuTime_ns - startCpuTime_ns) / 1000000  >cpuTime_ms>	
+	Println("Repetition " + thisRepetitionNum + ": finish.  Elapsed time " + elapsed_us + " µs, CPU time " + cpuTime_ms + " ms") >>
+	append(testElapsedTimes, [[thisRepetitionNum, elapsed_us, cpuTime_ms]])  >testElapsedTimes'>
 	(if remainingRepetitions :> 0 then timeRepetitions'(thisRepetitionNum + 1, remainingRepetitions - 1, testElapsedTimes') else testElapsedTimes')
   timeRepetitions'(1, numRepetitions - 1, [])
 
@@ -83,7 +91,7 @@ writeFactorValuesTable([
 ])  >>
 timeRepetitions(testPayload, numRepetitions)  >repetitionTimes>
 writeCsvFile(buildOutputPathname("repetition-times", "csv"), "Repetitions' elapsed times output file",
-  ["Repetition number", "Elapsed time (µs)"], repetitionTimes)  >>
+  ["Repetition number", "Elapsed time (µs)", "CPU time (ms)"], repetitionTimes)  >>
 repetitionTimes
 
 
@@ -91,7 +99,7 @@ repetitionTimes
 OUTPUT:
 Repetition ...: start.
 Repetition ...: published ...
-Repetition ...: finish.  Elapsed time ... µs
+Repetition ...: finish.  Elapsed time ... µs, CPU time ... ms
 ......
 Repetitions' elapsed times output file written to ...
 [[..., ...], ......]

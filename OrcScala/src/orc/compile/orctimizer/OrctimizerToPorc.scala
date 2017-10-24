@@ -26,6 +26,7 @@ case class ConversionContext(
     p: porc.Variable, c: porc.Variable, t: porc.Variable,
     recursives: Set[BoundVar],
     callgraph: CallGraph,
+    publications: PublicationCountAnalysis,
     effects: EffectAnalysis) {
 }
 
@@ -35,18 +36,19 @@ class OrctimizerToPorc(co: CompilerOptions) {
   def apply(prog: Expression, cache: AnalysisCache): porc.MethodCPS = {
     val z = prog.toZipper()
     val callgraph: CallGraph = cache.get(CallGraph)((z, None))
+    val publications: PublicationCountAnalysis = cache.get(PublicationCountAnalysis)((z, None))
     val effects: EffectAnalysis = cache.get(EffectAnalysis)((z, None))
 
     val newP = newVarName("P")
     val newC = newVarName("C")
     val newT = newVarName("T")
-    implicit val clx = ConversionContext(p = newP, c = newC, t = newT, recursives = Set(), callgraph = callgraph, effects = effects)
+    implicit val clx = ConversionContext(p = newP, c = newC, t = newT, recursives = Set(), callgraph = callgraph, publications = publications, effects = effects)
     val body = expression(z)
     prog ->> porc.MethodCPS(newVarName("Prog"), newP, newC, newT, false, Nil, body)
   }
-  
+
   val useDirectCalls = co.options.optimizationFlags("porc:directcalls").asBool(true)
-  val useDirectGetFields = co.options.optimizationFlags("porc:directgetfields").asBool(true)  
+  val useDirectGetFields = co.options.optimizationFlags("porc:directgetfields").asBool(true)
 
   val vars: mutable.Map[BoundVar, porc.Variable] = new mutable.HashMap()
   val usedNames: mutable.Set[String] = new mutable.HashSet()
@@ -60,7 +62,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
     new porc.Variable(Some(name))
   }
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
- 
+
   /** Spawn if we are not in a sequentialized section.
     */
   def probablySpawn(scope: Expression.Z)(mustSpawn: Boolean, comp: porc.Argument)(implicit ctx: ConversionContext): porc.Expression = {
@@ -70,7 +72,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
       porc.Spawn(ctx.c, ctx.t, mustSpawn, comp)
     }
   }
-  
+
   /** Catch porc exceptions and halt the current C.
     */
   def catchExceptions(e: porc.Expression)(implicit ctx: ConversionContext): porc.Expression = {
@@ -80,7 +82,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
       porc.HaltToken(ctx.c)
     })
   }
-  
+
   /** Run expression f to bind future fut.
     *
     * This uses the current counter and terminator, but does not publish any value.
@@ -122,7 +124,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
       }
   }
 
-  // FIXME: If an executing expression is killed, it will not halt it's counter. 
+  // FIXME: If an executing expression is killed, it will not halt it's counter.
   //        I think in all cases Killed and Halted will always be handled the same way. The exception might be otherwise which
   //        could easily remedy the problem by placing a kill check in the LHS branch.
 
@@ -135,7 +137,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
     import CallGraphValues._
     import FlowGraph._
     import orc.ast.porc.PorcInfixNotation._
-    
+
     val oldCtx = ctx
 
     val code = expr match {
@@ -183,7 +185,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         // TODO: Consider a hybrid approach which allows a few direct calls and then bounces. Maybe back these semantics into spawn.
 
         if (!useDirectCalls || !isDirect) {
-          if (isNotRecursive) { 
+          if (isNotRecursive) {
             killCheck :::
             porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).view.force)
           } else {
@@ -247,7 +249,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
           (newP, porc.Continuation(Seq(v),
             let((newK, porc.Continuation(Seq(), {
                 ctx.p(v) :::
-                  porc.HaltToken(newC)    
+                  porc.HaltToken(newC)
               }))) {
               porc.Kill(newC, newT, newK)
             }))) {
@@ -260,7 +262,8 @@ class OrctimizerToPorc(co: CompilerOptions) {
       }
       case Future.Z(f) => {
         val fut = newVarName("fut")
-        let((fut, porc.NewFuture())) {
+        val zeroOrOnePubRhs = ctx.publications.publicationsOf(f) <= 1
+        let((fut, porc.NewFuture(zeroOrOnePubRhs))) {
           buildFuture(fut, f) :::
             ctx.p(fut)
         }
@@ -351,7 +354,8 @@ class OrctimizerToPorc(co: CompilerOptions) {
           val varName = newVarName(f.name)
           val (value, binder) = b match {
             case FieldFuture.Z(e) =>
-              (porc.NewFuture(), Some(buildFuture(varName, e)))
+              val zeroOrOnePubRhs = ctx.publications.publicationsOf(e) <= 1
+              (porc.NewFuture(zeroOrOnePubRhs), Some(buildFuture(varName, e)))
             case FieldArgument.Z(a) =>
               (argument(a), None)
           }
@@ -367,7 +371,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         }
       }
       case GetField.Z(o, f) => {
-        if(useDirectGetFields) {
+        if (useDirectGetFields) {
           val v = o.value ->> newVarName(f.name)
           let((v, porc.GetField(argument(o), f))) {
             ctx.p(v)
@@ -377,7 +381,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         }
       }
       case GetMethod.Z(o) => {
-        if(useDirectGetFields) {
+        if (useDirectGetFields) {
           val v = o.value ->> newVarName()
           let((v, porc.GetMethod(argument(o)))) {
             ctx.p(v)
@@ -407,7 +411,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
 
   def callable(recursiveGroup: Seq[BoundVar], d: Method.Z)(implicit ctx: ConversionContext): porc.Method = {
     import orc.ast.porc.PorcInfixNotation._
-    
+
     val oldCtx = ctx
     val argP = newVarName("P")
     val argC = newVarName("C")
@@ -415,7 +419,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
     val Method.Z(f, formals, body, _, _, _) = d
     val args = formals.map(lookup)
     val name = lookup(f)
-    
+
     val newBody = {
       catchExceptions({
         d match {
@@ -442,7 +446,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         }
       })(oldCtx.copy(c = argC))
     }
-    
+
     d.value ->> porc.MethodCPS(name, argP, argC, argT, d.isInstanceOf[Routine.Z], args, newBody)
   }
 
@@ -450,7 +454,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
     MethodDirectCall(true, porc.Constant(NewFlag), List())
   }
   private def setFlag(p: porc.Variable, c: porc.Variable, t: porc.Variable, flag: porc.Variable): porc.Expression = {
-    if(useDirectCalls) {
+    if (useDirectCalls) {
       MethodDirectCall(true, porc.Constant(SetFlag), List(flag)) :::
       p(porc.Constant(orc.values.Signal))
     } else {
@@ -458,7 +462,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
     }
   }
   private def publishIfNotSet(p: porc.Variable, c: porc.Variable, t: porc.Variable, flag: porc.Variable): porc.Expression = {
-    if(useDirectCalls) {
+    if (useDirectCalls) {
       MethodDirectCall(true, porc.Constant(PublishIfNotSet), List(flag)) :::
       p(porc.Constant(orc.values.Signal))
     } else {

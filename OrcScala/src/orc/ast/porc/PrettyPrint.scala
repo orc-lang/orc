@@ -1,5 +1,5 @@
 //
-// PrettyPrint.scala -- Scala class/trait/object PrettyPrint
+// PrettyPrint.scala -- Scala class PrettyPrint
 // Project OrcScala
 //
 // Created by amp on May 28, 2013.
@@ -35,12 +35,12 @@ class PrettyPrint(includeNestedCode: Boolean = true) {
   def tag(ast: PorcAST, s: FragmentAppender): FragmentAppender = s // pp"${ast.number.map(_ + ": ").getOrElse("")}$s"
 
   def nestedCode(ast: PorcAST): FragmentAppender = {
-     if (includeNestedCode)
-       reduce(ast)
-     else
-       pp"[...]"
+    if (includeNestedCode)
+      reduce(ast)
+    else
+      pp"[...]"
   }
-  
+
   def reduce(ast: PorcAST): FragmentAppender = {
     tag(ast,
       ast match {
@@ -77,7 +77,7 @@ class PrettyPrint(includeNestedCode: Boolean = true) {
         case Kill(c, t, k) => pp"kill $c $t $k"
         case CheckKilled(t) => pp"checkKilled $t"
 
-        case NewFuture() => pp"newFuture"
+        case NewFuture(raceFreeResolution) => pp"newFuture $raceFreeResolution"
         case Bind(f, v) => pp"bind $f $v"
         case BindStop(f) => pp"bind $f stop"
 

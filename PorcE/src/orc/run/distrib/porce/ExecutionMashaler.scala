@@ -56,7 +56,7 @@ trait ExecutionMashaler {
     }
     case (destination, future: Future) => {
       val id = execution.ensureFutureIsRemotelyAccessibleAndGetId(future)
-      FutureReplacement(id)
+      FutureReplacement(id, future.raceFreeResolution)
     }
     case (destination, PublishedEvent(v: AnyRef)) => {
       Logger.Marshal.finer("marshalExecutionObject on PublishedEvent")
@@ -91,8 +91,8 @@ trait ExecutionMashaler {
     case (origin, TerminatorReplacement(proxyId)) => {
       execution.makeProxyTerminatorFor(proxyId, origin)
     }
-    case (origin, FutureReplacement(bindingId)) => {
-      execution.futureForId(bindingId)
+    case (origin, FutureReplacement(bindingId, raceFreeResolution)) => {
+      execution.futureForId(bindingId, raceFreeResolution)
     }
     case (origin, PublishedEvent(v: AnyRef)) => {
       Logger.Marshal.finer("unmarshalExecutionObject on PublishedEvent")
@@ -108,4 +108,4 @@ private final case class CounterReplacement(proxyId: CounterProxyManager#Distrib
 
 private final case class TerminatorReplacement(proxyId: TerminatorProxyManager#TerminatorProxyId) extends Serializable
 
-private final case class FutureReplacement(bindingId: RemoteFutureRef#RemoteRefId) extends Serializable
+private final case class FutureReplacement(bindingId: RemoteFutureRef#RemoteRefId, raceFreeResolution: Boolean) extends Serializable

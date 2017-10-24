@@ -12,11 +12,8 @@
 //
 package orc.ast.porc
 
-import orc.values.sites.{ Site => OrcSite }
-import orc.compile.CompilerOptions
-import orc.compile.OptimizerStatistics
-import orc.compile.NamedOptimization
-import scala.collection.mutable
+import orc.compile.{ CompilerOptions, NamedOptimization, OptimizerStatistics }
+
 import swivel.Zipper
 
 trait Optimization extends ((Expression.Z, AnalysisProvider[PorcAST]) => Option[Expression]) with NamedOptimization {
@@ -151,7 +148,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         Bind(renameVariables(fut), renameVariables(comp))
       case BindStop.Z(fut) =>
         BindStop(renameVariables(fut))
-      case f @ NewFuture.Z() =>
+      case f @ NewFuture.Z(raceFreeResolution) =>
         f.value
     })
   }
@@ -161,7 +158,6 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val referenceThreshold = co.options.optimizationFlags("porc:let-inline-ref-threshold").asInt(5)
 
   val InlineLet = OptFull("inline-let") { (expr, a) =>
-    import a.ImplicitResults._
     expr match {
       case Let.Z(x, lam @ Continuation.Z(formals, impl), scope) =>
         def size = Analysis.cost(impl.value)
@@ -270,7 +266,6 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     case (Let.Z(x, Zipper(y: Variable, _), b), a) => b.value.substAll(Map((x, y)))
   }
 
-
   val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(-1)
 
   val InlineSpawn = OptFull("inline-spawn") { (e, a) =>
@@ -320,7 +315,7 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
   */
-  
+
   val allOpts = List[Optimization](InlineLet, EtaReduce, TryCatchElim, TryFinallyElim, EtaSpawnReduce, InlineSpawn)
 
   val opts = allOpts.filter { o =>
@@ -353,10 +348,10 @@ object Optimizer {
       case _ => None
     }
   }
-  
+
   sealed abstract class BindingStatement {
   }
-  
+
   object BindingStatement {
     case class MethodDeclaration(t: Argument, meths: Seq[Method]) extends BindingStatement
     case class Let(x: Variable, e: Expression) extends BindingStatement
@@ -370,7 +365,7 @@ object Optimizer {
         Some((BindingStatement.Let(x, v) +: bindings, b1))
       case MethodDeclaration(t, meths, b) =>
         val BindingSequence(bindings, b1) = b
-        Some((BindingStatement.MethodDeclaration(t, meths)  +: bindings, b1))
+        Some((BindingStatement.MethodDeclaration(t, meths) +: bindings, b1))
       case s :::> PorcUnit() =>
         Some((Seq(), s))
       case s :::> ss =>
@@ -408,7 +403,7 @@ object Optimizer {
     case (LetIn(x, TupleElem(_, _) in _, b), a) if !b.freevars.contains(x) => b
     case (LetIn(x, v, b), a) if !b.freevars.contains(x) => v ::: b
   }
-  
+
   val DefElim = Opt("def-elim") {
     case (DefDeclarationIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
   }
