@@ -1,6 +1,9 @@
 
 package orc.run.porce.call;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -14,6 +17,7 @@ import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 import orc.run.porce.NodeBase;
+import orc.run.porce.PorcERootNode;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.TailCallException;
@@ -46,24 +50,63 @@ public class TailCallLoop extends NodeBase {
 		CatchTailCallRepeatingNode repeating = (CatchTailCallRepeatingNode) loop.getRepeatingNode();
 		repeating.setNextCall(frame, e.target, e.arguments);
 		loop.executeLoop(frame);
+		repeating.finalizeFrame(frame);
 	}
-	
+
+	public void addSurroundingFunction(VirtualFrame frame, Object target) {
+		if (CompilerDirectives.inInterpreter()) {
+			CatchTailCallRepeatingNode repNode = (CatchTailCallRepeatingNode) getLoopNode(frame).getRepeatingNode();
+			repNode.addSurroundingFunction(frame, target);
+		}
+	}
+
 	public static TailCallLoop create(final PorcEExecutionRef execution) {
 		return new TailCallLoop(execution);
 	}
     
-    protected class CatchTailCallRepeatingNode extends Node implements RepeatingNode {
+    protected final class CatchTailCallRepeatingNode extends Node implements RepeatingNode {
 		private final BranchProfile tailCallProfile = BranchProfile.create();
 		private final BranchProfile returnProfile = BranchProfile.create();
 		private final FrameSlot targetSlot;
 		private final FrameSlot argumentsSlot;
+		private final FrameSlot surroundingFunctionsSlot; 
 		
 		@Child
-		protected InternalCPSDispatch call = InternalCPSDispatch.createBare(execution); 
+		protected InternalCPSDispatch call = InternalCPSDispatch.createBare(execution);
 
 		public CatchTailCallRepeatingNode(FrameDescriptor frameDescriptor) {
+			this.surroundingFunctionsSlot = frameDescriptor.findOrAddFrameSlot("<surroundingFunctions>", FrameSlotKind.Object);
 			this.targetSlot = frameDescriptor.findOrAddFrameSlot("<OSRtailCallTarget>", FrameSlotKind.Object);
 			this.argumentsSlot = frameDescriptor.findOrAddFrameSlot("<OSRtailCallArguments>", FrameSlotKind.Object);
+		}
+		
+		public void finalizeFrame(VirtualFrame frame) {
+			if (CompilerDirectives.inInterpreter())
+				frame.setObject(surroundingFunctionsSlot, null);
+		}
+		
+		public void addSurroundingFunction(VirtualFrame frame, Object target) {
+			if (CompilerDirectives.inInterpreter() && 
+					target instanceof PorcEClosure &&
+					((PorcEClosure)target).body.getRootNode() instanceof PorcERootNode) {
+				PorcERootNode root = (PorcERootNode)((PorcEClosure)target).body.getRootNode();
+				HashSet<PorcERootNode> a = getSurroundingFunctions(frame);
+				a.add(root);
+			}
+		}
+
+		@SuppressWarnings("unchecked")
+		protected HashSet<PorcERootNode> getSurroundingFunctions(VirtualFrame frame) {
+			if (CompilerDirectives.inInterpreter()) {
+				HashSet<PorcERootNode> s = (HashSet<PorcERootNode>) FrameUtil.getObjectSafe(frame, surroundingFunctionsSlot);
+				if (s == null) {
+					s = new HashSet<PorcERootNode>();
+					frame.setObject(surroundingFunctionsSlot, s);
+				}
+				return s;
+			} else {
+				return null;
+			}
 		}
 		
 		public void setNextCall(VirtualFrame frame, PorcEClosure target, Object[] arguments) {
@@ -85,13 +128,30 @@ public class TailCallLoop extends NodeBase {
 
 		@Override
 		public boolean executeRepeating(VirtualFrame frame) {
+	        long startTime = 0;
+	        if (CompilerDirectives.inInterpreter())
+	        	startTime = System.nanoTime();
 			try {
 				Object target = getTarget(frame);
 				Object[] arguments = getArguments(frame);
 			    /*Logger.entering(() -> getClass().getName(), () -> "executeRepeating", 
 			    		() -> scala.collection.JavaConversions.asScalaBuffer(Arrays.asList(target, arguments)).seq());
 			    		*/
-				call.executeDispatch(frame, target, arguments);
+	        	if (CompilerDirectives.inInterpreter()) {
+					try {
+						call.executeDispatch(frame, target, arguments);
+					} finally {
+						if (startTime > 0 && getSurroundingFunctions(frame) != null) {
+							long t = System.nanoTime() - startTime;
+							for (PorcERootNode n : getSurroundingFunctions(frame)) {
+								n.addRunTime(t);
+							}
+				    		addSurroundingFunction(frame, target);
+						}
+					}
+	        	} else {
+					call.executeDispatch(frame, target, arguments);
+	        	}
 				returnProfile.enter();
 				return false;
 			} catch (TailCallException e) {

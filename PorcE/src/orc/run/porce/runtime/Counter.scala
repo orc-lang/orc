@@ -25,6 +25,7 @@ import com.oracle.truffle.api.nodes.{ Node => TruffleNode }
 import orc.ast.porc
 import orc.run.porce.{ HasPorcNode, Logger }
 import orc.util.Tracer
+import orc.run.porce.PorcERootNode
 
 object Counter {
   import CounterConstants._
@@ -274,12 +275,12 @@ abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(
 /** A Counter which forwards it's halting to a parent Counter and executes a closure on halt.
   *
   */
-final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContinuation: PorcEClosure) extends Counter(1, parent.depth + 1) {
+final class CounterNested(execution: PorcEExecution, val parent: Counter, haltContinuation: PorcEClosure) extends Counter(1, parent.depth + 1) {
   import CounterConstants._
   //Tracer.trace(Counter.CounterNestedCreated, hashCode(), parent.hashCode(), 0)
 
   if (CounterConstants.tracingEnabled) {
-    require(runtime != null)
+    require(execution != null)
     require(parent != null)
     require(haltContinuation != null)
   }
@@ -297,7 +298,11 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
     // Call the haltContinuation if we didn't discorporate.
     if (!isDiscorporated) {
       // Token: from parent
-      runtime.potentiallySchedule(CallClosureSchedulable(haltContinuation))
+  		haltContinuation.body.getRootNode() match {
+  		  case n: PorcERootNode => n.incrementHalt()
+  		  case _ => ()
+  		}
+      execution.runtime.potentiallySchedule(CallClosureSchedulable(haltContinuation, execution))
     } else {
       parent.setDiscorporate()
       // Token: from parent
@@ -339,11 +344,11 @@ final class CounterNested(runtime: PorcERuntime, val parent: Counter, haltContin
   * This is specifically designed to handle calls into a Service methods.
   *
   */
-final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, val parentContaining: Counter, terminator: Terminator) extends Counter(1, parentCalling.depth+1) with Terminatable {
+final class CounterService(execution: PorcEExecution, val parentCalling: Counter, val parentContaining: Counter, terminator: Terminator) extends Counter(1, parentCalling.depth+1) with Terminatable {
   //Tracer.trace(Counter.CounterServiceCreated, hashCode(), parentCalling.hashCode(), parentContaining.hashCode())
 
   if (CounterConstants.tracingEnabled) {
-    require(runtime != null)
+    require(execution != null)
     require(terminator != null)
     require(parentCalling != null)
     require(parentContaining != null)
@@ -396,11 +401,11 @@ final class CounterService(runtime: PorcERuntime, val parentCalling: Counter, va
   * This is specifically designed to make sure terminators do not become garbage when there body halts.
   *
   */
-final class CounterTerminator(runtime: PorcERuntime, val parent: Counter, terminator: Terminator) extends Counter(1, parent.depth+1) with Terminatable {
+final class CounterTerminator(execution: PorcEExecution, val parent: Counter, terminator: Terminator) extends Counter(1, parent.depth+1) with Terminatable {
   //Tracer.trace(Counter.CounterTerminatorCreated, hashCode(), parent.hashCode(), terminator.hashCode())
 
   if (CounterConstants.tracingEnabled) {
-    require(runtime != null)
+    require(execution != null)
     require(terminator != null)
     require(parent != null)
   }

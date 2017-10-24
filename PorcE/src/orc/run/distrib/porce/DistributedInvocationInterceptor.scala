@@ -144,7 +144,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
       Tracer.tracePublishReceive(groupMemberProxyId, origin, execution.runtime.here)
       val unmarshaledPubValue = execution.unmarshalValue(origin)(publication.publishedValue)
       Logger.Downcall.fine(s"Scheduling CallClosureSchedulable(${publication.publicationContinuation}, $unmarshaledPubValue)")
-      execution.runtime.schedule(CallClosureSchedulable(publication.publicationContinuation, unmarshaledPubValue))
+      execution.runtime.schedule(CallClosureSchedulable(publication.publicationContinuation, unmarshaledPubValue, execution))
     } else {
       throw new AssertionError(f"Publish by unknown group member proxy $groupMemberProxyId%#x, value=${publication.publishedValue}")
     }

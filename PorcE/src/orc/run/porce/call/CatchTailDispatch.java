@@ -29,6 +29,7 @@ public class CatchTailDispatch extends Dispatch {
     	try {
     		body.executeDispatch(frame, target, arguments);
     	} catch (TailCallException e) {
+    		loop.addSurroundingFunction(frame, target);
 			loop.executeTailCalls(frame, e);
     	}
     }

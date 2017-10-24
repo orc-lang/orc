@@ -1,7 +1,6 @@
 package orc.run.porce.runtime
 
 import java.util.{ Timer, TimerTask }
-import java.util.logging.Level
 
 import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
@@ -15,6 +14,10 @@ import orc.run.distrib.porce.CallTargetManager
 import orc.run.porce.instruments.DumpSpecializations
 import java.io.PrintWriter
 import java.io.OutputStreamWriter
+import orc.util.ExecutionLogOutputStream
+import orc.util.CsvWriter
+import orc.run.porce.PorcERootNode
+import orc.run.porce.InvokeWithTrampolineRootNode
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -57,6 +60,15 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     //Logger.info(s"$callSiteId: $p $c $t $target $arguments => $callTarget(${args.mkString(", ")}")
     callTarget.call(args: _*)
   }
+
+  val trampolineMap = new java.util.concurrent.ConcurrentHashMap[RootNode, RootCallTarget]()
+
+  def invokeClosure(target: PorcEClosure, args: Array[AnyRef]): Unit = {
+    val callTarget = trampolineMap.computeIfAbsent(target.body.getRootNode(), (root) => 
+      truffleRuntime.createCallTarget(new InvokeWithTrampolineRootNode(runtime.language, root, this)))
+    args(0) = target.environment
+    callTarget.call(args: _*)
+  }
   
   {
     if (false) {
@@ -78,6 +90,29 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
   }
 
+  def onProgramHalted() = {
+      val csvOut = ExecutionLogOutputStream("rootnode-statistics", "csv", "RootNode run times data")
+      if (csvOut.isDefined) {
+        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
+        val csvWriter = new CsvWriter(traceCsv.append(_))
+        val tableColumnTitles = Seq(
+            "RootNode Name [name]", "Total Time (ns) [totalTime]", "Total Calls [calls]", "Total Spawns [spawns]", 
+            "Total Bind Single Future [bindSingle]", "Total Bind Multiple Futures [bindJoin]", 
+            "Total Halt Continuation [halt]", "Total Publication Callbacks [publish]")
+        csvWriter.writeHeader(tableColumnTitles)
+        for (t <- callTargetMap.values) {
+          t.getRootNode match {
+            case n: PorcERootNode =>
+              val (time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish) = n.getCollectedCallInformation()
+              csvWriter.writeRow(Seq(n.getName, time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish))
+            case _ =>
+              ()
+          }
+        }
+        traceCsv.close()
+      }
+    
+  }
 }
 
 trait PorcEExecutionWithLaunch extends PorcEExecution {
@@ -126,6 +161,7 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
         execution._isDone = true
         execution.notifyAll()
       }
+      execution.onProgramHalted()
     }
   }
 
@@ -140,7 +176,7 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
     // Token: From initial.
     for (_ <- 0 until nStarts) {
       c.newToken()
-      runtime.schedule(CallClosureSchedulable.varArgs(prog, Array(null, p, c, t)))
+      runtime.schedule(CallClosureSchedulable.varArgs(prog, Array(null, p, c, t), execution))
     }
     c.haltToken()
   }

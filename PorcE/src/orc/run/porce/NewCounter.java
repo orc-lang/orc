@@ -8,15 +8,16 @@ import orc.run.porce.runtime.CounterNested;
 import orc.run.porce.runtime.CounterService;
 import orc.run.porce.runtime.CounterTerminator;
 import orc.run.porce.runtime.PorcERuntime;
+import orc.run.porce.runtime.PorcEExecution;
 
 public abstract class NewCounter extends Expression {
     @Child
     protected Expression parent;
 
-    protected final PorcERuntime runtime;
+    protected final PorcEExecution execution;
 
-    public NewCounter(final PorcERuntime runtime, final Expression parent) {
-        this.runtime = runtime;
+    public NewCounter(final PorcEExecution execution, final Expression parent) {
+        this.execution = execution;
         this.parent = parent;
     }
 
@@ -32,22 +33,22 @@ public abstract class NewCounter extends Expression {
         @Child
         protected Expression haltContinuation;
 
-        public Simple(final PorcERuntime runtime, final Expression parent, final Expression haltContinuation) {
-            super(runtime, parent);
+        public Simple(final PorcEExecution execution, final Expression parent, final Expression haltContinuation) {
+            super(execution, parent);
             this.haltContinuation = haltContinuation;
         }
 
         @Override
         public Counter executeCounter(final VirtualFrame frame) {
             try {
-                return new CounterNested(runtime, parent.executeCounter(frame), haltContinuation.executePorcEClosure(frame));
+                return new CounterNested(execution, parent.executeCounter(frame), haltContinuation.executePorcEClosure(frame));
             } catch (final UnexpectedResultException e) {
                 throw InternalPorcEError.typeError(this, e);
             }
         }
 
-        public static NewCounter create(final PorcERuntime runtime, final Expression parent, final Expression haltContinuation) {
-            return new Simple(runtime, parent, haltContinuation);
+        public static NewCounter create(final PorcEExecution execution, final Expression parent, final Expression haltContinuation) {
+            return new Simple(execution, parent, haltContinuation);
         }
     }
 
@@ -57,8 +58,8 @@ public abstract class NewCounter extends Expression {
         @Child
         protected Expression terminator;
 
-        public Service(final PorcERuntime runtime, final Expression parentCalling, final Expression parentContaining, final Expression terminator) {
-            super(runtime, parentCalling);
+        public Service(final PorcEExecution execution, final Expression parentCalling, final Expression parentContaining, final Expression terminator) {
+            super(execution, parentCalling);
             this.parentContaining = parentContaining;
             this.terminator = terminator;
         }
@@ -66,14 +67,14 @@ public abstract class NewCounter extends Expression {
         @Override
         public Counter executeCounter(final VirtualFrame frame) {
             try {
-                return new CounterService(runtime, parent.executeCounter(frame), parentContaining.executeCounter(frame), terminator.executeTerminator(frame));
+                return new CounterService(execution, parent.executeCounter(frame), parentContaining.executeCounter(frame), terminator.executeTerminator(frame));
             } catch (final UnexpectedResultException e) {
                 throw InternalPorcEError.typeError(this, e);
             }
         }
 
-        public static NewCounter create(final PorcERuntime runtime, final Expression parentCalling, final Expression parentContaining, final Expression haltContinuation) {
-            return new Service(runtime, parentCalling, parentContaining, haltContinuation);
+        public static NewCounter create(final PorcEExecution execution, final Expression parentCalling, final Expression parentContaining, final Expression haltContinuation) {
+            return new Service(execution, parentCalling, parentContaining, haltContinuation);
         }
     }
 
@@ -81,22 +82,22 @@ public abstract class NewCounter extends Expression {
         @Child
         protected Expression terminator;
 
-        public Terminator(final PorcERuntime runtime, final Expression parent, final Expression terminator) {
-            super(runtime, parent);
+        public Terminator(final PorcEExecution execution, final Expression parent, final Expression terminator) {
+            super(execution, parent);
             this.terminator = terminator;
         }
 
         @Override
         public Counter executeCounter(final VirtualFrame frame) {
             try {
-                return new CounterTerminator(runtime, parent.executeCounter(frame), terminator.executeTerminator(frame));
+                return new CounterTerminator(execution, parent.executeCounter(frame), terminator.executeTerminator(frame));
             } catch (final UnexpectedResultException e) {
                 throw InternalPorcEError.typeError(this, e);
             }
         }
 
-        public static NewCounter create(final PorcERuntime runtime, final Expression parent, final Expression haltContinuation) {
-            return new Terminator(runtime, parent, haltContinuation);
+        public static NewCounter create(final PorcEExecution execution, final Expression parent, final Expression haltContinuation) {
+            return new Terminator(execution, parent, haltContinuation);
         }
     }
 }

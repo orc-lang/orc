@@ -24,6 +24,9 @@ import orc.run.porce.Logger
 import orc.run.porce.PorcELanguage
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import orc.Schedulable
+import orc.run.porce.SpecializationConfiguration
+import com.oracle.truffle.api.CompilerDirectives
+import orc.run.porce.PorcERootNode
 
 /** The base runtime for PorcE runtimes.
  *  
@@ -53,8 +56,16 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   
   def potentiallySchedule(s: Schedulable) = {
     if (actuallySchedule) {
-      // TODO: Due to the memory retention caused by retained Counter/Terminator chains it may be useful to call this based on high-memory utilization as well. 
-      if (occationallySchedule && incrementAndCheckStackDepth()) {
+      // TODO: Due to the memory retention caused by retained Counter/Terminator chains it may be useful to call this based on high-memory utilization as well.
+      def isFast = {
+        s match {
+          case s: CallClosureSchedulable =>
+            s.closure.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit
+        }
+      }
+      if (occationallySchedule &&
+          isFast &&
+          incrementAndCheckStackDepth()) {
         try {
           s.run()
         } catch {
@@ -66,6 +77,16 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         }
       } else {
         //Logger.log(Level.INFO, s"Scheduling $s", new RuntimeException())
+  			if (CompilerDirectives.inInterpreter()) {
+  			  s match {
+  			    case s: CallClosureSchedulable =>
+  			      s.closure.body.getRootNode match {
+  			        case r: PorcERootNode => r.incrementSpawn()
+  			        case _ => ()
+  			      }
+  			  }
+  				//Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
+  			}
         schedule(s)
       }
     } else {

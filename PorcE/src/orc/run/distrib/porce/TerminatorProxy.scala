@@ -166,7 +166,7 @@ trait TerminatorProxyManager {
         def run(): Unit = {
           if (g.kill(dc.counter, killing.continuation)) {
             // No reason to schedule here.
-            CallClosureSchedulable(killing.continuation).run()
+            CallClosureSchedulable(killing.continuation, execution).run()
           }
         }
       })

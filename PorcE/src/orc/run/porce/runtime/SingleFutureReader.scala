@@ -2,8 +2,9 @@ package orc.run.porce.runtime
 
 import java.util.concurrent.atomic.AtomicBoolean
 import orc.FutureReader
+import orc.run.porce.PorcERootNode
 
-final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, runtime: PorcERuntime) extends AtomicBoolean with FutureReader with Terminatable {
+final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execution: PorcEExecution) extends AtomicBoolean with FutureReader with Terminatable {
   // The value stored in the AtomicBoolean is a flag saying if we have already halted.
 
   t.addChild(this)
@@ -11,8 +12,12 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, runti
   def publish(v: AnyRef): Unit = {
     if (compareAndSet(false, true)) {
       t.removeChild(this)
+			p.body.getRootNode() match {
+			  case n: PorcERootNode => n.incrementBindSingle()
+  		  case _ => ()
+			}
       // Token: pass to p
-      runtime.potentiallySchedule(CallClosureSchedulable(p, v))
+      execution.runtime.potentiallySchedule(CallClosureSchedulable(p, v, execution))
     }
   }
 

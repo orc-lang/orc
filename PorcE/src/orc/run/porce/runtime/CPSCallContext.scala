@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import orc.{ CallContext, CaughtEvent, OrcEvent }
 import orc.compile.parse.OrcSourceRange
 import orc.error.OrcException
+import orc.run.porce.PorcERootNode
 
 class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator, val callSiteId: Int) extends AtomicBoolean with CallContext with Terminatable {
   // The value stored in the AtomicBoolean is a flag saying if we have already halted.
@@ -16,8 +17,12 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
   }
 
   final def publishNonterminal(v: AnyRef): Unit = {
+		p.body.getRootNode() match {
+		  case n: PorcERootNode => n.incrementPublication()
+  	  case _ => ()
+		}    
     c.newToken() // Token: Passed to p.
-    runtime.potentiallySchedule(CallClosureSchedulable(p, v))
+    runtime.potentiallySchedule(CallClosureSchedulable(p, v, execution))
   }
 
   /** Handle a site call publication.
@@ -27,8 +32,12 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
   override final def publish(v: AnyRef) = {
     // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
     if (compareAndSet(false, true)) {
+  		p.body.getRootNode() match {
+  		  case n: PorcERootNode => n.incrementPublication()
+  		  case _ => ()
+  		}    
       // Token: Pass token to p.
-      runtime.potentiallySchedule(CallClosureSchedulable(p, v))
+      runtime.potentiallySchedule(CallClosureSchedulable(p, v, execution))
       t.removeChild(this)
     }
   }

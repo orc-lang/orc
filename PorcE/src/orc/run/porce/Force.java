@@ -33,7 +33,7 @@ public class Force {
         @Specialization
         public Object run(final int nFutures, final PorcEExecutionRef execution, final PorcEClosure p, final Counter c, final Terminator t) {
             final Object[] values = new Object[nFutures + 1];
-            return new Join(p, c, t, values, execution.get().runtime());
+            return new Join(p, c, t, values, execution.get());
         }
 
         public static New create(final Expression p, final Expression c, final Expression t, final int nFutures, final PorcEExecutionRef execution) {
@@ -154,7 +154,7 @@ public class Force {
                         if (state == orc.run.porce.runtime.FutureConstants.Halt) {
                             c.haltToken();
                         } else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
-                            ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
+                            ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
                         } else {
                             InternalPorcEError.unreachable(this);
                         }
@@ -167,7 +167,7 @@ public class Force {
                     } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
                         c.haltToken();
                     } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
-                        ((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get().runtime()));
+                        ((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
                     } else {
                         InternalPorcEError.unreachable(this);
                     }

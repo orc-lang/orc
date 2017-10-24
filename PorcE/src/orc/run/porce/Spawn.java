@@ -41,10 +41,9 @@ public abstract class Spawn extends Expression {
         // TODO: PERFORMANCE: Track the runtime of the spawned closure in the interpreter. Then if it is below some constant (1ms say) call it directly if the stack is not too deep. This could address issues with load-imbalance at least in predictable cases.
     	// TODO: This could actually cause semantic problem in the case of incorrectly implemented sites which block the calling thread. Metadata is probably needed.
 		
-		//Logger.info(() -> "Spawning call: " + computation + " getTimePerCall() = " + computation.getTimePerCall());
 		if (PorcERuntime.allowSpawnInlining() &&
 				(!mustSpawn || PorcERuntime.allowAllSpawnInlining()) &&
-				computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit &&
+				canDirectCallProfile.profile(computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit) &&
 				canDirectCallProfile.profile(PorcERuntime.incrementAndCheckStackDepth())) {
 			try {
 				initializeCall();
@@ -54,7 +53,11 @@ public abstract class Spawn extends Expression {
 			}
 		} else {
 			t.checkLive();
-			execution.get().runtime().schedule(CallClosureSchedulable.apply(computation));
+			if (CompilerDirectives.inInterpreter() && computation.body.getRootNode() instanceof PorcERootNode) {
+				//Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
+				((PorcERootNode)computation.body.getRootNode()).incrementSpawn();
+			}
+			execution.get().runtime().schedule(CallClosureSchedulable.apply(computation, execution.get()));
 		}
         return PorcEUnit.SINGLETON;
     }

@@ -7,7 +7,7 @@ import com.oracle.truffle.api.frame.{ FrameDescriptor, FrameSlot, FrameSlotKind 
 
 import orc.ast.{ ASTWithIndex, porc }
 import orc.run.porce
-import orc.run.porce.runtime.{ PorcEClosure, PorcEExecutionHolder, PorcERuntime }
+import orc.run.porce.runtime.{ PorcEClosure, PorcEExecution, PorcEExecutionHolder, PorcERuntime }
 import orc.util.{ TFalse, TTrue, TUnknown }
 import orc.values.Field
 import swivel.Zipper
@@ -26,6 +26,10 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
     runtime: PorcERuntime, inTailPosition: Boolean) {
     def withTailPosition = copy(inTailPosition = true)
     def withoutTailPosition = copy(inTailPosition = false)
+  }
+  
+  implicit def unwrapPorcEExecutionHolder(execution: PorcEExecutionHolder): PorcEExecution = {
+    execution.exec
   }
   
   implicit class AddContextMap[T](val underlying: Seq[T]) {
@@ -193,11 +197,11 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
         case porc.NewFuture.Z() =>
           porce.NewFuture.create()
         case porc.NewSimpleCounter.Z(p, h) =>
-          porce.NewCounter.Simple.create(ctx.runtime, transform(p), transform(h))
+          porce.NewCounter.Simple.create(ctx.execution, transform(p), transform(h))
         case porc.NewServiceCounter.Z(p, p2, t) =>
-          porce.NewCounter.Service.create(ctx.runtime, transform(p), transform(p2), transform(t))
+          porce.NewCounter.Service.create(ctx.execution, transform(p), transform(p2), transform(t))
         case porc.NewTerminatorCounter.Z(p, t) =>
-          porce.NewCounter.Terminator.create(ctx.runtime, transform(p), transform(t))
+          porce.NewCounter.Terminator.create(ctx.execution, transform(p), transform(t))
         case porc.NewTerminator.Z(p) =>
           porce.NewTerminator.create(transform(p))
         case porc.NewToken.Z(c) =>

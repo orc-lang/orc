@@ -7,6 +7,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 import orc.FutureReader
 import sun.misc.Unsafe
+import orc.run.porce.PorcERootNode
 
 // TODO: Try to remove redundency between this and Join.
 
@@ -19,7 +20,7 @@ import sun.misc.Unsafe
   *
   * @author amp
   */
-final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val nValues: Int, runtime: PorcERuntime) extends Terminatable {
+final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val nValues: Int, execution: PorcEExecution) extends Terminatable {
   resolver =>
 
   import Resolver._
@@ -198,8 +199,12 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
     */
   def done(): Unit = {
     t.removeChild(this)
+		p.body.getRootNode() match {
+		  case n: PorcERootNode => n.incrementBindJoin()
+		  case _ => ()
+		}
     // Token: Pass to p.
-    runtime.potentiallySchedule(CallClosureSchedulable(p))
+    execution.runtime.potentiallySchedule(CallClosureSchedulable(p, execution))
   }
 
   /** Handle being killed by the terminator.

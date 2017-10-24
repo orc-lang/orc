@@ -29,7 +29,7 @@ public class Resolve extends Expression {
     public static class New extends Expression {
         @Specialization
         public Object run(final int nFutures, final PorcEExecutionRef execution, final PorcEClosure p, final Counter c, final Terminator t) {
-            return new Resolver(p, c, t, nFutures, execution.get().runtime());
+            return new Resolver(p, c, t, nFutures, execution.get());
         }
 
         public static New create(final Expression p, final Expression c, final Expression t, final int nFutures, final PorcEExecutionRef execution) {

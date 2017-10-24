@@ -14,19 +14,18 @@
 package orc.run.porce.runtime
 
 import orc.Schedulable
-import orc.run.porce.Logger
 
 object CallClosureSchedulable {
   /** Create a schedulable which will call `closure` with no arguments.
     */
-  def apply(closure: PorcEClosure): CallClosureSchedulable = {
-    varArgs(closure, null)
+  def apply(closure: PorcEClosure, execution: PorcEExecution): CallClosureSchedulable = {
+    varArgs(closure, null, execution)
   }
 
   /** Create a schedulable which will call `closure` the given argument.
     */
-  def apply(closure: PorcEClosure, arg1: AnyRef): CallClosureSchedulable = {
-    varArgs(closure, Array(null, arg1))
+  def apply(closure: PorcEClosure, arg1: AnyRef, execution: PorcEExecution): CallClosureSchedulable = {
+    varArgs(closure, Array(null, arg1), execution)
   }
 
   /** Create a schedulable which will call `closure` with the given arguments as a normal array.
@@ -34,10 +33,10 @@ object CallClosureSchedulable {
     * This method has to allocate a new array to perform the call. Use `.varArgs` if you can
     * control the input array from creation.
     */
-  def varArgsSlow(closure: PorcEClosure, arguments: Array[AnyRef]): CallClosureSchedulable = {
+  def varArgsSlow(closure: PorcEClosure, arguments: Array[AnyRef], execution: PorcEExecution): CallClosureSchedulable = {
     val args = Array.ofDim[AnyRef](arguments.length + 1)
     System.arraycopy(arguments, 0, args, 1, arguments.length)
-    varArgs(closure, args)
+    varArgs(closure, args, execution)
   }
 
   /** Create a schedulable which will call `closure` the given specially formatted arguments array.
@@ -45,48 +44,23 @@ object CallClosureSchedulable {
     * The `arguments` array must have `null` as it element 0 and then all the arguments as
     * elements 1 through N.
     */
-  def varArgs(closure: PorcEClosure, arguments: Array[AnyRef]): CallClosureSchedulable = {
-    new CallClosureSchedulable(closure, arguments)
+  def varArgs(closure: PorcEClosure, arguments: Array[AnyRef], execution: PorcEExecution): CallClosureSchedulable = {
+    new CallClosureSchedulable(closure, arguments, execution)
   } 
-  
-  @inline
-  def simpleCall(closure: PorcEClosure, arguments: Array[AnyRef]) = {
-    if (arguments == null)
-      closure.callFromRuntime()
-    else
-      closure.callFromRuntimeArgArray(arguments)
-  }
-
 }
 
-final class CallClosureSchedulable private (private var closure: PorcEClosure, private var arguments: Array[AnyRef]) extends Schedulable {
+final class CallClosureSchedulable private (private var _closure: PorcEClosure, private var arguments: Array[AnyRef], execution: PorcEExecution) extends Schedulable {
   override val nonblocking: Boolean = true
+ 
+  def closure = _closure
   
   def run(): Unit = {
-    assert(closure != null)
-    //Logger.entering(getClass.getName, "run", Seq(hashCode().formatted("%x"), closure, arguments))
-    // TODO: This is a Scala implementation of the logic and handling in CatchTailCall. Ideally we could reuse that logic. However to do so we would need access to the runtime and probably execution.
-    try {
-      val (t, a) = (closure, arguments)
-      closure = null
-      arguments = null
-      CallClosureSchedulable.simpleCall(t, a)
-    } catch {
-      case e: TailCallException =>
-        //Logger.entering(getClass.getName, "run", Seq(CallClosureSchedulable.this.hashCode().formatted("%x"), closure, arguments))
-        var exception = e
-        while(exception != null) {
-          try {
-            val (t, a) = (exception.target, exception.arguments)
-            exception = null
-            //Logger.entering(getClass.getName, "run(tail call)", Seq(CallClosureSchedulable.this.hashCode().formatted("%x"), t, a))
-            CallClosureSchedulable.simpleCall(t, null +: a)
-          } catch {
-            case e: TailCallException =>
-              exception = e
-          }
-        }
-    }
-    //Logger.exiting(getClass.getName, "run", CallClosureSchedulable.this.hashCode().formatted("%x"))
+    val (t, a) = (_closure, arguments)
+    _closure = null
+    arguments = null
+    if (a == null)
+      execution.invokeClosure(t, Array(null))
+    else
+      execution.invokeClosure(t, a)
   }
 }

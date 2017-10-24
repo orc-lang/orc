@@ -28,27 +28,80 @@ import orc.run.porce.runtime.SourceSectionFromPorc;
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final static boolean assertionsEnabled = false;
     
+    
+    // FIXME: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters). 
     private final AtomicLong totalTime = new AtomicLong(0);
     private final AtomicLong totalCalls = new AtomicLong(0);
+    private final AtomicLong totalSpawns = new AtomicLong(0);
+    private final AtomicLong totalBindSingle = new AtomicLong(0);
+    private final AtomicLong totalBindJoin = new AtomicLong(0);
+    private final AtomicLong totalHalt = new AtomicLong(0);
+    private final AtomicLong totalPublication = new AtomicLong(0);
     @CompilationFinal
     private long timePerCall = -1;
     
-    public long getTimePerCall() {
+    // FIXME: Do to how the time value is collected (see addRunTime and the calls to it). Calls will be multiple counted in some cases (recursive calls).
+    
+    final public long getTimePerCall() {
     	if (timePerCall < 0 || CompilerDirectives.inInterpreter()) {
         	long t = totalTime.get();
         	long n = totalCalls.get();
-        	while (t != totalTime.get() || n != totalCalls.get()) {
-        		t = totalTime.get();
-            	n = totalCalls.get();
-        	}
         	timePerCall = n > 0 ? t / n : Long.MAX_VALUE;
-    	} 
+    	}
     	/*{
         	long t = totalTime.get();
         	long n = totalCalls.get();
         	Logger.info(() -> "getTimePerCall " + t + "  /  " + n);
     	}*/
 		return timePerCall;
+    }
+    
+    final public void incrementSpawn() {
+    	if (CompilerDirectives.inInterpreter()) {
+    		totalSpawns.getAndIncrement();
+    	}
+    }
+
+    final public void incrementHalt() {
+    	if (CompilerDirectives.inInterpreter()) {
+    		totalHalt.getAndIncrement();
+    	}
+    }
+
+    final public void incrementPublication() {
+    	if (CompilerDirectives.inInterpreter()) {
+    		totalPublication.getAndIncrement();
+    	}
+    }
+
+    final public void incrementBindSingle() {
+    	if (CompilerDirectives.inInterpreter()) {
+    		totalBindSingle.getAndIncrement();
+    	}
+    }
+
+    final public void incrementBindJoin() {
+    	if (CompilerDirectives.inInterpreter()) {
+    		totalBindJoin.getAndIncrement();
+    	}
+    }
+
+
+	final public void addRunTime(long t) {
+    	if (CompilerDirectives.inInterpreter()) {
+    		totalTime.getAndAdd(t);
+    	}
+	}
+
+	public scala.Tuple7<Long, Long, Long, Long, Long, Long, Long> getCollectedCallInformation() {
+		long t = totalTime.get();
+		long n = totalCalls.get();
+		while (t != totalTime.get() || n != totalCalls.get()) {
+			t = totalTime.get();
+			n = totalCalls.get();
+		}
+		return new scala.Tuple7<>(
+				t, n, totalSpawns.get(), totalBindSingle.get(), totalBindJoin.get(), totalHalt.get(), totalPublication.get());
     }
 
     private Option<PorcAST> porcNode = Option.apply(null);
@@ -122,7 +175,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
         long startTime = 0;
         if (CompilerDirectives.inInterpreter())
-        	startTime = System.currentTimeMillis();
+        	startTime = System.nanoTime();
         
         try {
             final Object ret = body.execute(frame);
@@ -132,8 +185,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             Logger.log(Level.WARNING, () -> "Caught " + e + " in root node " + this, e);
             return PorcEUnit.SINGLETON;
         } finally {
-        	if (startTime > 0 && CompilerDirectives.inInterpreter()) {
-        		totalTime.getAndAdd(System.currentTimeMillis() - startTime);
+        	if (CompilerDirectives.inInterpreter() && startTime > 0) {
+        		totalTime.getAndAdd(System.nanoTime() - startTime);
         		totalCalls.getAndIncrement();
         	}
         }

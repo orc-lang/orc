@@ -31,6 +31,8 @@ public class CatchTailCall extends Expression {
     	try {
     		body.executePorcEUnit(frame);
     	} catch (TailCallException e) {
+    		// TODO: This does not add an initial target to the set. It probably should in some cases, but it would be almost impossible to do that here.
+    		// loop.addSurroundingFunction(frame, target);
 			loop.executeTailCalls(frame, e);
     	}
     }

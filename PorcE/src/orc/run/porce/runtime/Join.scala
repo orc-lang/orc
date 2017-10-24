@@ -15,6 +15,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 import orc.FutureReader
 import sun.misc.Unsafe
+import orc.run.porce.PorcERootNode
 
 /** Join a number of futures by blocking on all of them simultaneously.
   *
@@ -26,7 +27,7 @@ import sun.misc.Unsafe
   *
   * @author amp
   */
-final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val values: Array[AnyRef], runtime: PorcERuntime) extends Terminatable {
+final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val values: Array[AnyRef], execution: PorcEExecution) extends Terminatable {
   join =>
 
   import Join._
@@ -254,8 +255,12 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
   def done(): Unit = {
     //Logger.finer(s"Done for $this with: $state ${values.mkString(", ")}")
     t.removeChild(this)
+		p.body.getRootNode() match {
+		  case n: PorcERootNode => n.incrementBindJoin()
+		  case _ => ()
+		}
     // Token: Pass to p.
-    runtime.potentiallySchedule(CallClosureSchedulable.varArgs(p, values))
+    execution.runtime.potentiallySchedule(CallClosureSchedulable.varArgs(p, values, execution))
   }
 
   /** Handle a halting case.
