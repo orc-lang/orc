@@ -36,7 +36,7 @@ object DumpSpecializations {
             val n = s.getInstances()
             if (n > 0) {
               header
-              out.println(s"    ${s.getMethodName()}: (${n}) ${(0 until n).map(s.getCachedData(_).asScala).mkString("; ")}")              
+              out.println(s"    ${s.getMethodName()}: (${n}) ${(0 until n).map(s.getCachedData(_).asScala.mkString("{", ", ", "}")).mkString(";  ")}")              
             } else if (s.isExcluded()) {
               header
               out.println(s"    ${s.getMethodName()}: EXCLUDED")              

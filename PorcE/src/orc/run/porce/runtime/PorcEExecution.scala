@@ -71,47 +71,47 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   }
   
   {
+    // This is disabled debug code for tracing problems related to Counters
     if (false) {
       val timer = new Timer(true)
-      /*timer.schedule(new TimerTask {
+      timer.schedule(new TimerTask {
         def run(): Unit = {
           Counter.report()
         }
-      }, 20000)*/
-      timer.schedule(new TimerTask {
-        def run(): Unit = {
-          val out = new PrintWriter(new OutputStreamWriter(System.out))
-          for (t <- callTargetMap.values) {
-            DumpSpecializations(t.getRootNode, out)
-          }
-          out.flush()
-        }
-      }, 300*1000)
+      }, 20000)
     }
   }
 
   def onProgramHalted() = {
-      val csvOut = ExecutionLogOutputStream("rootnode-statistics", "csv", "RootNode run times data")
-      if (csvOut.isDefined) {
-        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-        val csvWriter = new CsvWriter(traceCsv.append(_))
-        val tableColumnTitles = Seq(
-            "RootNode Name [name]", "Total Time (ns) [totalTime]", "Total Calls [calls]", "Total Spawns [spawns]", 
-            "Total Bind Single Future [bindSingle]", "Total Bind Multiple Futures [bindJoin]", 
-            "Total Halt Continuation [halt]", "Total Publication Callbacks [publish]")
-        csvWriter.writeHeader(tableColumnTitles)
-        for (t <- callTargetMap.values) {
-          t.getRootNode match {
-            case n: PorcERootNode =>
-              val (time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish) = n.getCollectedCallInformation()
-              csvWriter.writeRow(Seq(n.getName, time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish))
-            case _ =>
-              ()
-          }
+    val csvOut = ExecutionLogOutputStream("rootnode-statistics", "csv", "RootNode run times data")
+    if (csvOut.isDefined) {
+      val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
+      val csvWriter = new CsvWriter(traceCsv.append(_))
+      val tableColumnTitles = Seq(
+          "RootNode Name [name]", "Total Time (ns) [totalTime]", "Total Calls [calls]", "Total Spawns [spawns]", 
+          "Total Bind Single Future [bindSingle]", "Total Bind Multiple Futures [bindJoin]", 
+          "Total Halt Continuation [halt]", "Total Publication Callbacks [publish]")
+      csvWriter.writeHeader(tableColumnTitles)
+      for (t <- callTargetMap.values) {
+        t.getRootNode match {
+          case n: PorcERootNode =>
+            val (time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish) = n.getCollectedCallInformation()
+            csvWriter.writeRow(Seq(n.getName, time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish))
+          case _ =>
+            ()
         }
-        traceCsv.close()
       }
-    
+      traceCsv.close()
+    }
+  
+    val specializationsOut = ExecutionLogOutputStream("truffle-node-specializations", "txt", "Truffle node specializations")
+    if (specializationsOut.isDefined) {
+        val out = new PrintWriter(new OutputStreamWriter(specializationsOut.get))
+        for (t <- callTargetMap.values) {
+          DumpSpecializations(t.getRootNode, out)
+        }
+        out.close()
+    }
   }
 }
 
