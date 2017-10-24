@@ -5,7 +5,7 @@ package orc.test.item.scalabenchmarks
 // Solves the n-queens problem for an arbitrary board size
 // Run for a board size of ten: scala nqueen.scala 10
 object NQueens extends BenchmarkApplication[Unit] {
-  val N = 7 + BenchmarkConfig.problemSize
+  val N = 8 + BenchmarkConfig.problemSize
 
   type Queen = (BigInt, BigInt)
   type Solutions = List[List[Queen]]
@@ -35,7 +35,12 @@ object NQueens extends BenchmarkApplication[Unit] {
 
   val name: String = "N-Queens"
 
-  def factorial(n: BigInt): BigInt = n * factorial(n-1)
+  def factorial(n: BigInt): BigInt = {
+    if (n > 1)
+      n * factorial(n-1)
+    else
+      1
+  }
   
   val size: Int = factorial(N).toInt
 }

@@ -199,8 +199,7 @@ object ArthursBenchmarkEnv {
   trait CPUControlExperimentalCondition extends JVMExperimentalCondition {
     val nCPUs: Int
     
-    override def toJvmArgs = super.toJvmArgs ++ Seq(
-        s"-Dgraal.TruffleCompilerThreads=$nCPUs")
+    override def toJvmArgs = Seq(s"-Dgraal.TruffleCompilerThreads=${nCPUs min 4}") ++ super.toJvmArgs 
     
     override def wrapperCmd = tasksetCommandPrefix(nCPUs)
   }

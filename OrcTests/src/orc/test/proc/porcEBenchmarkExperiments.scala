@@ -4,8 +4,7 @@ import orc.test.util.FactorDescription
 import java.io.File
 
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
-  def softTimeLimit: Double = 60 * 10
-  override def hardTimeLimit: Double = 60 * 12
+  def softTimeLimit: Double = 60 * 7
     
   case class MyPorcEExperimentalCondition(
       orcFile: File, 
@@ -46,7 +45,10 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         nCPUs <- nCPUsValues
         allowSpawnInlining <- Seq(true)
         fn <- Seq(
-            "test_data/performance/Hamming.orc",
+            "test_data/performance/Mandelbrot.orc",
+            "test_data/performance/8-queens.orc",
+            "test_data/performance/threadring.orc",
+            "test_data/performance/threadring2.orc",
             "test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
@@ -70,7 +72,9 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       val scala = for {
         nCPUs <- nCPUsValues
         benchmark <- Seq(
-            orc.test.item.scalabenchmarks.Hamming,
+            orc.test.item.scalabenchmarks.Mandelbrot,
+            orc.test.item.scalabenchmarks.NQueens,
+            orc.test.item.scalabenchmarks.ThreadRing,
             orc.test.item.scalabenchmarks.blackscholes.BlackScholesPar,
             orc.test.item.scalabenchmarks.kmeans.KMeansPar,
             orc.test.item.scalabenchmarks.kmeans.KMeansParManual,
@@ -88,15 +92,14 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       }
       porce ++ scala 
     }
-    runExperiment(experimentalConditions.sortBy(_.toFilePrefix.toLowerCase()))
+    runExperiment(experimentalConditions)
   }
 }
 
 
 
 object PorcESteadyStateExperiment extends PorcEBenchmark {
-  def softTimeLimit: Double = 60 * 13
-  override def hardTimeLimit: Double = 60 * 15
+  def softTimeLimit: Double = 60 * 10
     
   case class MyPorcEExperimentalCondition(
       orcFile: File, 
@@ -128,7 +131,7 @@ object PorcESteadyStateExperiment extends PorcEBenchmark {
     val experimentalConditions = {
       val porce = for {
         bg <- Seq(false)
-        threshold <- Seq(10, 300, 600)
+        threshold <- Seq(10, 150, 300, 600, 1000)
         compThreads <- Seq(24)
         fn <- Seq(
             "test_data/performance/Hamming.orc",
@@ -153,6 +156,6 @@ object PorcESteadyStateExperiment extends PorcEBenchmark {
       }
       porce ++ scala 
     }
-    runExperiment(experimentalConditions.sortBy(_.toFilePrefix.toLowerCase()))
+    runExperiment(experimentalConditions)
   }
 }

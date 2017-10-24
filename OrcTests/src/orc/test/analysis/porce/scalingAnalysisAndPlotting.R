@@ -9,6 +9,7 @@
 
 scriptDir <- dirname(dirname(sys.frame(1)$ofile))
 experimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scriptDir))))), "experiment-data")
+localExperimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scriptDir))))), "OrcTests/runs/")
 
 source(file.path(scriptDir, "readMergedResultsTable.R"))
 source(file.path(scriptDir, "analysis.R"))
@@ -21,11 +22,12 @@ plotAllData <- function(data) {
 }
 
 dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171015-a001-merged")
+#dataDir <- file.path(localExperimentDataDir, "20171017-a005")
 
 data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F)
 
 # Turn on to view data and evaluate the number warm up iterations.
-# plotAllData(data)
+plotAllData(data)
 
 prunedData <- data %>% dropWarmupRepetitions(50)
 
@@ -44,7 +46,10 @@ p <- processedData %>% ggplot(aes(
 scalingPlot <- p + geom_line(aes(x = nCPUs, color = benchmarkName)) + scale_x_continuous_breaks_from(breaks_from = processedData$nCPUs)
 fullPerformancePlot <- p + geom_col_errorbar(aes(x = factor(nCPUs)))
 
-ggsave(file.path(dataDir, "scalingPlot.pdf"), scalingPlot, width = 7.5, height = 6)
-ggsave(file.path(dataDir, "fullPlot.pdf"), fullPerformancePlot, width = 7.5, height = 8)
+print(scalingPlot)
+print(fullPerformancePlot)
+
+#ggsave(file.path(dataDir, "scalingPlot.pdf"), scalingPlot, width = 7.5, height = 6)
+#ggsave(file.path(dataDir, "fullPlot.pdf"), fullPerformancePlot, width = 7.5, height = 8)
 
 
