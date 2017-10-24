@@ -137,18 +137,32 @@ public class WordCount {
     ////////
     // Test Driver
     ////////
-    
+
+    private static long getProcessCumulativeCpuTime() {
+        java.lang.management.OperatingSystemMXBean osMXBean = java.lang.management.ManagementFactory.getOperatingSystemMXBean();
+        if (osMXBean instanceof com.sun.management.OperatingSystemMXBean) {
+            return ((com.sun.management.OperatingSystemMXBean)osMXBean).getProcessCpuTime();
+        } else {
+            return -1L;
+        }
+    }
+
     public static Long[][] timeRepetitions(final int numRepetitions) throws IOException {
-        final Long[][] testElapsedTimes = new Long[numRepetitions][2];
+        final Long[][] testElapsedTimes = new Long[numRepetitions][3];
         for (int thisRepetitionNum = 1; thisRepetitionNum <= numRepetitions; thisRepetitionNum++) {
             System.out.println("Repetition " + thisRepetitionNum + ": start.");
-            final long startNanos = System.nanoTime();
+            final long startElapsed_ns = System.nanoTime();
+            final long startCpuTime_ns = getProcessCumulativeCpuTime();
             final int p = testPayload();
+            final long finishCpuTime_ns = getProcessCumulativeCpuTime();
+            final long finishElapsed_ns = System.nanoTime();
             System.out.println("Repetition " + thisRepetitionNum + ": returned " + p);
-            final long finishNanos = System.nanoTime();
-            System.out.println("Repetition " + thisRepetitionNum + ": finish.  Elapsed time " + (finishNanos - startNanos) / 1000 + " µs");
+            final long elapsed_us = (finishElapsed_ns - startElapsed_ns) / 1000L;
+            final long cpuTime_ms = (finishCpuTime_ns - startCpuTime_ns) / 1000000L;
+            System.out.println("Repetition " + thisRepetitionNum + ": finish.  Elapsed time " + elapsed_us + " µs, CPU time " + cpuTime_ms + " ms");
             testElapsedTimes[thisRepetitionNum - 1][0] = Long.valueOf(thisRepetitionNum);
-            testElapsedTimes[thisRepetitionNum - 1][1] = Long.valueOf((finishNanos - startNanos) / 1000);
+            testElapsedTimes[thisRepetitionNum - 1][1] = Long.valueOf(elapsed_us);
+            testElapsedTimes[thisRepetitionNum - 1][2] = Long.valueOf(cpuTime_ms);
         }
         return testElapsedTimes;
     }
@@ -202,7 +216,7 @@ public class WordCount {
 
         final Long[][] repetitionTimes = timeRepetitions(numRepetitions);
 
-        final String[] repetitionTitles = { "Repetition number", "Elapsed time (µs)" };
+        final String[] repetitionTitles = { "Repetition number", "Elapsed time (µs)", "CPU time (ms)" };
         writeCsvFile("repetition-times", "Repetitions' elapsed times output file", repetitionTitles, repetitionTimes);
     }
 
