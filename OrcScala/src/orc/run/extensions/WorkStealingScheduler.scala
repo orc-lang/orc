@@ -28,14 +28,14 @@ import orc.util.ABPWSDeque
   * @author amp
   */
 class SimpleWorkStealingScheduler(
-  maxSiteThreads: Int,
-  val monitorInterval: Int = 100,
-  val goalExtraThreads: Int = 0,
-  val workerQueueLength: Int = 1024 * 2) {
+    maxSiteThreads: Int,
+    val monitorInterval: Int = 100,
+    val goalExtraThreads: Int = 0,
+    val workerQueueLength: Int = 1024 * 2) {
   schedulerThis =>
 
   val nCores = Runtime.getRuntime().availableProcessors()
-  
+
   val overrideWorkers = Option(System.getProperty("orc.SimpleWorkStealingScheduler.overrideWorkers")).map(_.toInt)
   overrideWorkers foreach { n =>
     Logger.info(s"Worker count fixed at $n (read from System property orc.SimpleWorkStealingScheduler.overrideWorkers).")
@@ -64,7 +64,7 @@ class SimpleWorkStealingScheduler(
     * This number should be fairly large to amortize the cost of eviction.
     */
   val itemsToEvictOnOverflow = workerQueueLength / 2
-  
+
   /** The time (ms) that the pool must be underprovisioned before it should add a worker thread.
     */
   val underprovisioningGracePeriod: Int = 2 * 1000
@@ -123,7 +123,7 @@ class SimpleWorkStealingScheduler(
       while (!isSchedulerShuttingDown) {
         val ws = currentWorkers
         val nw = ws.size
-        
+
         val nBlocked = ws.count(t => {
           val state = t.getState
           val isBlocked = if (t.isInternallyBlocked) {
@@ -206,17 +206,15 @@ class SimpleWorkStealingScheduler(
 
     private[this] var prngState: Int = workerID + 1 // Must be non-zero
     private[this] var stealFailureRunLength = 0
+    private[this] var wasIdle = true
 
     override def run() = {
       while (!isSchedulerShuttingDown && !isShuttingDown) {
         val t = next()
         if (t != null) {
           isInternallyBlocked = false
-          // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_beforeExecute) 
           beforeExecute(this, t)
           try {
-            // val tClassName = t.getClass.getSimpleName
-            // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, Symbol(tClassName+"_run *")) 
             {
               if (t.nonblocking) {
                 t.run()
@@ -231,11 +229,9 @@ class SimpleWorkStealingScheduler(
               }
             }
 
-            // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) 
             afterExecute(this, t, null)
           } catch {
             case ex: Exception =>
-              // The symbol is a too expensive for the hot path: orc.util.Profiler.measureInterval(0L, 'SimpleWorkStealingScheduler_afterExecute) 
               afterExecute(this, t, ex)
           }
           isInternallyBlocked = true
@@ -345,13 +341,17 @@ class SimpleWorkStealingScheduler(
         if (stealFailureRunLength == stealAttemptsBeforeBlocking) {
           // Wipe the queue when we are about to start blocking.
           // This is required to prevent previously scheduled tokens or
-          // other schedulables from being kept around by the GC. 
+          // other schedulables from being kept around by the GC.
           // Overwrite is not needed
           // if the thread is active since it will be constantly
           // overwriting previous tasks as the queue is used.
           workQueue.wipe()
         } else if (stealFailureRunLength > stealAttemptsBeforeBlocking) {
           try {
+            if (!wasIdle) {
+              SimpleWorkStealingScheduler.traceWorkerIdle(this)
+              wasIdle = true
+            }
             schedulerThis.synchronized {
               atRemovalSafePoint = true
               schedulerThis.wait((stealFailureRunLength - stealAttemptsBeforeBlocking) min maxStealWait)
@@ -361,6 +361,10 @@ class SimpleWorkStealingScheduler(
             case _: InterruptedException => ()
           }
         }
+      }
+      if (wasIdle && t != null) {
+        SimpleWorkStealingScheduler.traceWorkerBusy(this)
+        wasIdle = false
       }
       t
     }
@@ -470,6 +474,33 @@ class SimpleWorkStealingScheduler(
   def beforeExecute(w: Worker, r: Schedulable): Unit = {}
 
   def afterExecute(w: Worker, r: Schedulable, t: Throwable): Unit = {}
+}
+
+private object SimpleWorkStealingScheduler {
+
+  final val WorkerIdle = 31L
+  orc.util.Tracer.registerEventTypeId(WorkerIdle, "WrkrIdle")
+
+  final val WorkerBusy = 32L
+  orc.util.Tracer.registerEventTypeId(WorkerBusy, "WrkrBusy")
+
+  /* Because of aggressive inlining, changing this flag requires a clean rebuild */
+  final val traceScheduler = false
+
+  @inline
+  def traceWorkerIdle(workerThread: SimpleWorkStealingScheduler#Worker): Unit = {
+    if (traceScheduler) {
+      orc.util.Tracer.trace(WorkerIdle, 0L, 0L, 0L)
+    }
+  }
+
+  @inline
+  def traceWorkerBusy(workerThread: SimpleWorkStealingScheduler#Worker): Unit = {
+    if (traceScheduler) {
+      orc.util.Tracer.trace(WorkerBusy, 0L, 0L, 0L)
+    }
+  }
+
 }
 
 /** An Orc runtime engine extension which
