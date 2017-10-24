@@ -16,7 +16,7 @@ library(ggplot2)
 source("analysis.R")
 
 allRepetitionTimes <- read.csv("repetition-times.csv")
-names(allRepetitionTimes) <- c("program", "repeatRead", "numInputFiles", "dOrcNumRuntimes", "repetitionNumber", "elapsedTime")
+names(allRepetitionTimes) <- c("program", "repeatRead", "numInputFiles", "dOrcNumRuntimes", "repetitionNumber", "elapsedTime", "cpuTime")
 
 warmRepetitionTimes <- allRepetitionTimes[allRepetitionTimes$repetitionNumber >= 3,]
 
@@ -49,7 +49,7 @@ elapsedTimeSummary <- warmRepetitionTimes[!is.na(warmRepetitionTimes$dOrcNumRunt
   group_by(program, repeatRead, numInputFiles, dOrcNumRuntimes) %>%
   summarise(nElapsedTime = length(elapsedTime), meanElapsedTime = mean(elapsedTime), sdElapsedTime = sd(elapsedTime), seElapsedTime = sdElapsedTime / sqrt(nElapsedTime)) %>%
   addBaseline(meanElapsedTime, c(dOrcNumRuntimes = 1)) %>%
-  mutate(speedup = meanElapsedTime_baseline / meanElapsedTime, speedupSeMax = meanElapsedTime_baseline / (meanElapsedTime + seElapsedTime), speedupSeMin = meanElapsedTime_baseline / (meanElapsedTime - seElapsedTime))
+  mutate(speedup = meanElapsedTime_baseline / meanElapsedTime)
 
 options(tibble.print_max = Inf, tibble.width = Inf)
 
@@ -62,7 +62,7 @@ for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNum
   xlab("Number of files read") +
   labs(colour = "Cluster size [Number of d-Orc runtimes]", shape = "Cluster size [Number of d-Orc runtimes]") +
   scale_y_continuous(name = "Speed-up factor over cluster size 1", labels = function(n){format(n, scientific = FALSE)}) +
-  geom_errorbar(aes(ymax = speedupSeMax, ymin = speedupSeMin), width = 0.2, alpha = 0.35) +
+  # geom_errorbar(aes(ymax = speedupSeMax, ymin = speedupSeMin), width = 0.2, alpha = 0.35) +
   theme_minimal() +
   theme(legend.justification = c(0, 1), legend.position = c(0, 1))
 
