@@ -180,7 +180,7 @@ object ExperimentalCondition {
     * created, if needed.
     */
   def writeExperimentalConditionsTable(experimentalConditions: Traversable[ExperimentalCondition]): Unit = {
-    System.setProperty("orc.executionlog.dir", System.getProperty("orc.executionlog.dir", "runs/" + TestRunNumber.singletonNumber + "/raw-output"))
+    System.setProperty("orc.executionlog.dir", Option(System.getProperty("orc.executionlog.dir")).getOrElse("runs/" + TestRunNumber.singletonNumber + "/raw-output"))
     new File(System.getProperty("orc.executionlog.dir")).mkdirs()
 
     val tableColumnTitles = experimentalConditions.head.factorDescriptions.map(_.toString)
