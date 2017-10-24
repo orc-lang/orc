@@ -22,6 +22,22 @@ import java.util.regex.Pattern
   * @author jthywiss
   */
 object ExecutionLogOutputStream {
+  /** Create the output directory for ExecutionLogOutputStream if needed.
+    *
+    * This can be safely called when orc.executionlog.dir is unset.
+    *
+    * This function is a utility to avoid "No such file or directory" errors
+    * when trying to open an output in cases where the test harness does not
+    * create the output directory ahead of time.
+    */
+  def createOutputDirectoryIfNeeded(): Unit = {
+    val out = System.getProperty("orc.executionlog.dir")
+    if (out != null) {
+      val outDir = new File(out)
+      if (outDir.mkdirs())
+        println("Created output directory: " + outDir.getCanonicalPath())
+    }
+  }
 
   /** Creates Some(OutputStream) with the given basename.extension if the
     * orc.executionlog.dir system property is set, else returns None. The

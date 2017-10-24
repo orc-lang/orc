@@ -21,6 +21,8 @@ trait OptimizerStatistics {
   private val _optimizationCounts = mutable.Map[String, Long]().withDefaultValue(0)
 
   def optimizationCounts: collection.Map[String, Long] = _optimizationCounts
+  
+  def resetOptimizationCounts(): Unit = _optimizationCounts.clear()
 
   def countOptimization(s: String, n: Long = 1): Unit = {
     _optimizationCounts(s) += n

@@ -15,7 +15,12 @@ import orc.compile._
 import orc.ast.orctimizer
 import orc.ast.porc
 import orc.error.compiletime.CompileLogger
-import orc.ast.orctimizer.named.AssertedType
+
+import orc.util.{ ExecutionLogOutputStream, CsvWriter }
+import java.io.OutputStreamWriter
+import orc.ast.porc.CallContinuation
+import orc.ast.porc.MethodDirect
+import orc.ast.porc.TryFinally
 
 /** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
   * and specifies that compilation will finish with named.
@@ -26,7 +31,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
   with StandardOrcCompilerEnvInterface[porc.MethodCPS]
   with CoreOrcCompilerPhases {
 
-  private[this] var currentAnalysisCache: Option[AnalysisCache] = None   
+  private[this] var currentAnalysisCache: Option[AnalysisCache] = None
   def cache = currentAnalysisCache match {
     case Some(c) => c
     case None =>
@@ -34,7 +39,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
       currentAnalysisCache.get
   }
   def clearCache() = currentAnalysisCache = None
-  
+
   def clearCachePhase[T] = new CompilerPhase[CompilerOptions, T, T] {
     val phaseName = "clearCache"
     override def apply(co: CompilerOptions) =
@@ -66,42 +71,55 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
       val maxPasses = co.options.optimizationFlags("orct:max-passes").asInt(8)
       val optimizer = StandardOptimizer(co)
 
+      val nodeTypesToOutput = Seq(
+        classOf[Branch], classOf[Parallel], classOf[Otherwise], classOf[Trim], classOf[Future],
+        classOf[Routine], classOf[Service], classOf[IfLenientMethod], classOf[Call],
+        classOf[Force], classOf[GetField], classOf[Resolve], classOf[GetMethod],
+        classOf[New], classOf[FieldFuture], classOf[FieldArgument])
+      val optimizationsToOutput = optimizer.opts.map(_.name)
+
+      ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
+      val statisticsOutputs = ExecutionLogOutputStream("orctimizer-statistics", "csv", "Orctimizer static optimization statistics") map { out =>
+        val traceCsv = new OutputStreamWriter(out, "UTF-8")
+        (new CsvWriter(traceCsv.append(_)), traceCsv)
+      }
+      
+      val statisticsOut = statisticsOutputs map { _._1 }
+
+      statisticsOut foreach {
+        _.writeHeader(
+          Seq("Pass Number [pass]", "Maximum Number of Passes [maxPasses]") ++
+            nodeTypesToOutput.map(c => s"Nodes of Type ${c.getSimpleName} before Pass [${c.getSimpleName}]") ++
+            optimizationsToOutput.map(n => s"# of Applications of $n in Pass [${n.replaceAll(raw"-", raw"_")}]"))
+      }
+
       def opt(prog: Expression, pass: Int): Expression = {
-        def logAnalysis() = {
-          val typeCounts: collection.Map[Class[_], Int] = {
-            val counts = new collection.mutable.HashMap[Class[_], Int]()
-            def add(c: Class[_]) = {
-              counts += c -> (counts.getOrElse(c, 0) + 1)
-            }
-            def process(n: NamedAST): Unit = {
-              add(n.getClass())
-              n.subtrees foreach process
-            }
-            process(prog)
-            counts
+        lazy val typeCounts: collection.Map[Class[_], Int] = {
+          val counts = new collection.mutable.HashMap[Class[_], Int]()
+          def add(c: Class[_]) = {
+            counts += c -> (counts.getOrElse(c, 0) + 1)
           }
-          val stats = typeCounts
-                .filterNot(kv => classOf[Type].isAssignableFrom(kv._1) || 
-                    classOf[DeclareMethods].isAssignableFrom(kv._1) || 
-                    classOf[HasType].isAssignableFrom(kv._1) ||
-                    classOf[AssertedType].isAssignableFrom(kv._1) ||
-                    classOf[Var].isAssignableFrom(kv._1) ||
-                    classOf[DeclareType].isAssignableFrom(kv._1))
-                .map({ case (k, v) => (k.getSimpleName(), v) }) + 
-                ("total" -> typeCounts.values.sum)
-          val s = stats.map(p => s"${p._1}=${p._2}").mkString(", ")
-          s"Orctimizer before pass $pass/$maxPasses: $s"
+          def process(n: NamedAST): Unit = {
+            add(n.getClass())
+            n.subtrees foreach process
+          }
+          process(prog)
+          counts
         }
 
-        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, logAnalysis())
-
+        optimizer.resetOptimizationCounts()
         val prog1 = optimizer(prog.toZipper(), cache)
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1}=${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Orctimizer after pass $pass/$maxPasses: $optimizationCountsStr")
-      
-        //println("=============== AST ---")
-        //println(prog1)
+        
+        statisticsOut foreach {
+          _.writeRow(
+            Seq(pass, maxPasses) ++
+              nodeTypesToOutput.map(c => typeCounts.getOrElse(c, 0)) ++
+              optimizationsToOutput.map(n => optimizer.optimizationCounts.getOrElse(n, 0)))
+        }
+        statisticsOutputs foreach { _._2.flush() }
 
         orctimizer.named.VariableChecker(prog1.toZipper(), co)
         orctimizer.named.PositionChecker(prog1.toZipper(), co)
@@ -113,86 +131,14 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         }
       }
 
-      def shortString(o: AnyRef) = s"'${o.toString().replace('\n', ' ').take(30)}'"
-
-      {
-        val z = ast.toZipper()
-
-        lazy val fg = cache.get(FlowGraph)(z, None)
-        lazy val cg = cache.get(CallGraph)(z, None)
-        lazy val pubs = cache.get(PublicationCountAnalysis)(z, None)
-        lazy val delay = cache.get(DelayAnalysis)(z, None)
-        lazy val effect = cache.get(EffectAnalysis)(z, None)
-        lazy val forces = cache.get(ForceAnalysis)(z, None)
-        lazy val alreadyForced = cache.get(AlreadyForcedAnalysis)(z, None)
-
-        //fg.debugShow()
-
-        //println("=============== results ---")
-        //println(cg.results.filter(p => p._1.ast.isInstanceOf[Var]).map(p => s"${shortString(p._1)}\t----> ${p._2}").mkString("\n"))
-
-        //cg.debugShow()
-
-        //println("=============== publication results ---")
-        //println(pubs.expressions.par.map(p => s"${shortString(p._1.ast)}\t----=========--> ${p._2}").seq.mkString("\n"))
-        //pubs.debugShow()
-
-        //println("=============== delay results ---")
-        //println(delay.results.par.map(p => s"${shortString(p._1.value)}\t----=========--> ${p._2}").seq.mkString("\n"))
-        //delay.debugShow()
-
-        //effect.debugShow()
-
-        //println("=============== force results ---")
-        //println(forces.results.par.map(p => s"${shortString(p._1.value)}\t----=========--> ${p._2}").seq.mkString("\n"))
-        //forces.debugShow()
-        
-        //println("=============== force results ---")
-        //println(alreadyForced.results.par.map(p => s"${shortString(p._1.ast)}\t----=========--> ${p._2}").seq.mkString("\n"))
-        //alreadyForced.debugShow()
-
-        //System.exit(0)
-      }
-
       val e = if (co.options.optimizationFlags("orct").asBool() && pred(co))
         opt(ast, 1)
       else
         ast
+        
+      statisticsOutputs foreach { _._2.close() }
 
       e
-    }
-  }
-  lazy val unroll = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, orctimizer.named.Expression] {
-    import orctimizer.named._
-    val phaseName = "unroll"
-    override def apply(co: CompilerOptions) = { ast =>
-      //println(co.options.optimizationFlags)
-      val maxPasses = co.options.optimizationFlags("orct:unroll-repeats").asInt(2)
-
-      /*
-      def opt(prog: Expression, pass: Int): Expression = {
-        val analyzer = new ExpressionAnalyzer
-        val optimizer = UnrollOptimizer(co)
-        val prog1 = optimizer(prog, analyzer)
-
-        def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
-        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Optimizer unroll pass $pass/$maxPasses: $optimizationCountsStr")
-
-        if ((prog1 == prog && pass > 1) || pass > maxPasses)
-          prog1
-        else {
-          opt(prog1, pass + 1)
-        }
-      }
-
-      val e = if (co.options.optimizationFlags("orct").asBool() &&
-        co.options.optimizationFlags("orct:unroll-def").asBool())
-        opt(ast, 1)
-      else
-        ast
-        */
-
-      ast
     }
   }
 }
@@ -218,24 +164,61 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       val analyzer = new Analyzer
       val optimizer = Optimizer(co)
 
-      def opt(prog: MethodCPS, pass: Int): MethodCPS = {
-        val stats = Map(
-          "forces" -> Analysis.count(prog, _.isInstanceOf[Force]),
-          "spawns" -> Analysis.count(prog, _.isInstanceOf[Spawn]),
-          "closures" -> Analysis.count(prog, _.isInstanceOf[Continuation]),
-          "indirect calls" -> Analysis.count(prog, _.isInstanceOf[MethodCPSCall]),
-          "direct calls" -> Analysis.count(prog, _.isInstanceOf[MethodDirectCall]),
-          "sites" -> Analysis.count(prog, _.isInstanceOf[MethodDeclaration]),
-          "nodes" -> Analysis.count(prog, (_ => true)),
-          "cost" -> Analysis.cost(prog))
-        def s = stats.map(p => s"${p._1} = ${p._2}").mkString(", ")
-        co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $s")
+      val nodeTypesToOutput = Seq(
+        classOf[CallContinuation], classOf[Continuation],
+        classOf[MethodCPS], classOf[MethodDirect], classOf[MethodCPSCall], classOf[MethodDirectCall], classOf[IfLenientMethod],
+        classOf[Force], classOf[GetField], classOf[Resolve], classOf[GetMethod],
+        classOf[New], classOf[NewFuture], classOf[Bind], classOf[BindStop],
+        classOf[Spawn], classOf[NewTerminator], classOf[Kill], classOf[CheckKilled], 
+        classOf[NewSimpleCounter], classOf[NewServiceCounter], classOf[NewTerminatorCounter],
+        classOf[NewToken], classOf[HaltToken], classOf[SetDiscorporate], 
+        classOf[TryOnException], classOf[TryFinally], 
+        )
+      val optimizationsToOutput = optimizer.opts.map(_.name)
 
+      ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
+      val statisticsOutputs = ExecutionLogOutputStream("porc-optimizer-statistics", "csv", "Porc optimizer static optimization statistics") map { out =>
+        val traceCsv = new OutputStreamWriter(out, "UTF-8")
+        (new CsvWriter(traceCsv.append(_)), traceCsv)
+      }
+      
+      val statisticsOut = statisticsOutputs map { _._1 }
+
+      statisticsOut foreach {
+        _.writeHeader(
+          Seq("Pass Number [pass]", "Maximum Number of Passes [maxPasses]") ++
+            nodeTypesToOutput.map(c => s"Nodes of Type ${c.getSimpleName} before Pass [${c.getSimpleName}]") ++
+            optimizationsToOutput.map(n => s"# of Applications of $n in Pass [${n.replaceAll(raw"-", raw"_")}]"))
+      }
+      
+      def opt(prog: MethodCPS, pass: Int): MethodCPS = {
+        lazy val typeCounts: collection.Map[Class[_], Int] = {
+          val counts = new collection.mutable.HashMap[Class[_], Int]()
+          def add(c: Class[_]) = {
+            counts += c -> (counts.getOrElse(c, 0) + 1)
+          }
+          def process(n: PorcAST): Unit = {
+            add(n.getClass())
+            n.subtrees foreach process
+          }
+          process(prog)
+          counts
+        }
+        
+        optimizer.resetOptimizationCounts()
         val prog1 = optimizer(prog, analyzer).asInstanceOf[MethodCPS]
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $optimizationCountsStr")
-        
+                
+        statisticsOut foreach {
+          _.writeRow(
+            Seq(pass, maxPasses) ++
+              nodeTypesToOutput.map(c => typeCounts.getOrElse(c, 0)) ++
+              optimizationsToOutput.map(n => optimizer.optimizationCounts.getOrElse(n, 0)))
+        }
+        statisticsOutputs foreach { _._2.flush() }
+
         porc.VariableChecker(prog1.toZipper(), co)
         porc.PositionChecker(prog1.toZipper(), co)
 
@@ -251,13 +234,12 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       else
         ast
 
-      porc.Statistics(e.body)
-        
+      statisticsOutputs foreach { _._2.close() }
+
       e
     }
   }
 
-  
   val indexPorc = new CompilerPhase[CompilerOptions, porc.MethodCPS, porc.MethodCPS] {
     import orc.ast.porc._
     val phaseName = "porc-index"
@@ -266,7 +248,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       ast
     }
   }
-  
+
   def nullOutput[T >: Null] = new CompilerPhase[CompilerOptions, T, T] {
     val phaseName = "nullOutput"
     override def apply(co: CompilerOptions) =
@@ -296,10 +278,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       outputIR(4) >>>
       optimize().timePhase >>>
       outputIR(5) >>>
-      //unroll >>>
-      //outputIR(6, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
-      //optimize(_.options.optimizationFlags("orct:unroll-def").asBool()) >>>
-      //outputIR(7, _.options.optimizationFlags("orct:unroll-def").asBool()) >>>
       toPorc.timePhase >>>
       clearCachePhase >>>
       outputIR(8) >>>
