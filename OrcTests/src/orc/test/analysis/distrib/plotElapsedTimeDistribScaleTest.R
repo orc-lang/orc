@@ -57,7 +57,7 @@ for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNum
 
   ggplot(elapsedTimeSummary[elapsedTimeSummary$program == currProgram & elapsedTimeSummary$dOrcNumRuntimes > 1,], aes(x = factor(numInputFiles), y = speedup, group = factor(dOrcNumRuntimes), colour = factor(dOrcNumRuntimes), shape = factor(dOrcNumRuntimes))) +
   geom_line() +
-  geom_point(size = 2) +
+  geom_point(size = 3) +
   ggtitle(currProgram) +
   xlab("Number of files read") +
   labs(colour = "Cluster size [Number of d-Orc runtimes]", shape = "Cluster size [Number of d-Orc runtimes]") +
