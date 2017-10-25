@@ -249,7 +249,6 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     * P
     * ```
     *
-    * This is safe since the stack will not grow since we have actually eliminated the call entirely and don't need the trampoline here.
     */
   val EtaSpawnReduce = Opt("eta-spawn-reduce") {
     case (Continuation.Z(formals,
@@ -281,42 +280,59 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
+  
+  def isTail(e: PorcAST.Z): Boolean = {
+    val p = e.parent
+    p map { p => p match {
+        case Let.Z(_, _, `e`) => isTail(p)
+        case Let.Z(_, `e`, _) => false
+        case Continuation.Z(_, `e`) => isTail(p)
+        case MethodDeclaration.Z(_, _, `e`) => isTail(p)
+        case _: Argument.Z => isTail(p)
+        case CallContinuation.Z(t, args) => false
+        case Force.Z(p, c, t, futs) => false
+        case Resolve.Z(p, c, t, futs) => false
+        case Sequence.Z(exprs) if exprs.last == e => isTail(p)
+        case Sequence.Z(_) => false
+        case MethodCPSCall.Z(external, target, p, c, t, args) => false
+        case MethodDirectCall.Z(external, target, args) => false
+        case IfLenientMethod.Z(_, `e`, _) => isTail(p)
+        case IfLenientMethod.Z(_, _, `e`) => isTail(p)
+        case IfLenientMethod.Z(_, _, _) => false
+        case GetField.Z(o, f) => false
+        case GetMethod.Z(o) => false
+        case New.Z(bindings) => false
+        case Spawn.Z(c, t, b, comp) => false
+        case NewTerminator.Z(t) => false
+        case Kill.Z(c, t, k) => false
+        case CheckKilled.Z(t) => false
+        case TryOnException.Z(_, _) => isTail(p)
+        case _: NewCounter.Z => false
+        case HaltToken.Z(c) => false
+        case NewToken.Z(c) => false
+        case SetDiscorporate.Z(c) => false
+        case TryFinally.Z(_, `e`) => isTail(p)
+        case TryFinally.Z(_, _) => false
+        case Bind.Z(fut, comp) => false
+        case BindStop.Z(fut) => false
+        case NewFuture.Z(_) => false
+        case MethodCPS.Z(name, p, c, t, isDef, args, `e`) => true
+        case MethodDirect.Z(name, isDef, args, `e`) => true
+      }
+    } getOrElse true
+  }
 
-  /*
-  This may not be needed because site inlining is already done in Orctimizer
-
-  val siteInlineThreshold = 50
-  val siteInlineCodeExpansionThreshold = 50
-  val siteInlineTinySize = 12
-
-  val InlineSite = OptFull("inline-site") { (e, a) =>
-    import a.ImplicitResults._
+  val TailSpawnElim = OptFull("tail-spawn-elim") { (e, a) =>
     e match {
-      case SiteCallIn((t:Var) in ctx, args, _) => ctx(t) match {
-        case SiteBound(dctx, Site(_,k), d) => {
-          def recursive = d.body.freevars.contains(d.name)
-          lazy val compat = ctx.compatibleForSite(d.body)(dctx)
-          lazy val size = Analysis.cost(d.body)
-          def smallEnough = size <= siteInlineThreshold
-          lazy val referencedN = Analysis.count(k, {
-            case SiteCall(`t`, _) => true
-            case _ => false
-          })
-          def tooMuchExpansion = (referencedN-1)*size > siteInlineCodeExpansionThreshold && size > siteInlineTinySize
-          //println(s"Inline attempt: ${e.e} ($referencedN, $size, $compat)")
-          if ( recursive || !smallEnough || !compat || tooMuchExpansion )
-            None // No inlining of recursive functions or large functions.
-          else
-            Some(d.body.substAll(((d.arguments: List[Var]) zip args).toMap))
-        }
-        case _ => None
+      case Spawn.Z(_, _, _, k) if isTail(e) => {
+        Some(CallContinuation(k.value, Seq()))
       }
       case _ => None
     }
   }
-  */
 
-  val allOpts = List[Optimization](InlineLet, EtaReduce, TryCatchElim, TryFinallyElim, EtaSpawnReduce, InlineSpawn)
+
+  val allOpts = List[Optimization](TailSpawnElim, InlineLet, EtaReduce, TryCatchElim, TryFinallyElim, EtaSpawnReduce, InlineSpawn)
 
   val opts = allOpts.filter { o =>
     val b = co.options.optimizationFlags(s"porc:${o.name}").asBool()
@@ -326,16 +342,6 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 }
 
 object Optimizer {
-  /*
-  object <::: {
-    def unapply(e: PorcAST.Z): Option[(Sequence, Expression)] = e match {
-      case Sequence.Z(l) if !l.isEmpty =>
-        Some((Sequence(l.init.map(_.value)), l.last.value))
-      case _ => None
-    }
-  }
-  */
-
   object :::> {
     def unapply(e: PorcAST.Z): Option[(Expression, Expression)] = e match {
       case Sequence.Z(e :: l) =>
@@ -388,40 +394,5 @@ object Optimizer {
         }
       })
     }
-    /*def apply(bindings: Map[Var, Expr], b: Expr) = {
-      bindings.foldRight(b)((bind, b) => {
-        val (x, v) = bind
-        Let(x, v, b)
-      })
-    }*/
   }
-
-  /*
-  val LetElim = Opt("let-elim") {
-    //case (LetIn(x, v, b), a) if !b.freevars.contains(x) && a(v).doesNotThrowHalt && a(v).sideEffectFree => b
-    case (LetIn(x, ContinuationIn(_, _, _), b), a) if !b.freevars.contains(x) => b
-    case (LetIn(x, TupleElem(_, _) in _, b), a) if !b.freevars.contains(x) => b
-    case (LetIn(x, v, b), a) if !b.freevars.contains(x) => v ::: b
-  }
-
-  val DefElim = Opt("def-elim") {
-    case (DefDeclarationIn(ds, _, b), a) if (b.freevars & ds.map(_.name).toSet).isEmpty => b
-  }
-
-  val SpecializeSiteCall = OptFull("specialize-sitecall") { (e, a) =>
-    import a.ImplicitResults._
-    import PorcInfixNotation._
-    e match {
-      case SiteCallIn(target, p, c, t, args, ctx) if target.siteMetadata.map(_.isDirectCallable).getOrElse(false) =>
-        val v = new Var()
-        Some(
-          TryOnHalted({
-            let((v, SiteCallDirect(target, args))) {
-              p(v)
-            }
-          }, Unit()))
-      case _ => None
-    }
-  }
-  */
 }
