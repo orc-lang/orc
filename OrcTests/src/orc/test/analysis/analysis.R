@@ -32,6 +32,30 @@ estimateWarmupRepetitions <- function(data, threshold = 1, minRemaining = 5) {
   max(min(len - minRemaining, n), 0)
 }
 
+# TODO: Documentation
+dropWarmupRepetitionsTimedRuns <- function(.data, runIDCol, repetitionCol, timeCol, minWarmupReps, maxWarmupReps, maxWarmupTime, minRemaining = 2) {
+  runIDName <- if (is.name(substitute(runIDCol))) {
+    deparse(substitute(runIDCol))
+  } else runIDCol
+  repetitionColName <- if (is.name(substitute(repetitionCol))) {
+    deparse(substitute(repetitionCol))
+  } else repetitionCol
+  timeColName <- if (is.name(substitute(timeCol))) {
+    deparse(substitute(timeCol))
+  } else timeCol
+
+  f <- function(group) {
+    repsMinPred <- group[[repetitionColName]] >= minWarmupReps
+    minRemPred <- group[[repetitionColName]] > (max(group[[repetitionColName]]) - minRemaining)
+    repsPred <- group[[repetitionColName]] >= maxWarmupReps
+    timePred <- lag(cumsum(group[[timeColName]]), default = 0) >= maxWarmupTime
+    pred <- ((repsPred | timePred) & repsMinPred) | minRemPred
+    group[pred, ]
+  }
+  .data %>% group_by_at(runIDName) %>% do(f(.)) %>% ungroup()
+}
+
+
 # Drop the first warmupReps repetitions from every run in data.
 #
 # This guesses the name of the repetition number column. If it fails to
@@ -133,37 +157,67 @@ bootstrapStatistics <- function(.data, col, statistic, confidence = 0.95, R = 10
 # This will add baseline columns for elapsedTime_mean and cpuTime_mean where the baseline is taken
 # from the rows where nCPUs = 1.
 #
-addBaseline <- function(.data, sourceCol, requirements) {
+addBaseline <- function(.data, sourceCol, requirements, baseline = NA) {
   # TODO: Add support for vars arguments.
   sourceColNames <- if (is.name(substitute(sourceCol))) {
     deparse(substitute(sourceCol))
   } else {
     sourceCol
   }
+  baselineName <- if (is.name(substitute(baseline))) {
+    deparse(substitute(baseline))
+  } else {
+    baseline
+  }
+
+  if (length(sourceColNames) > 1 && !is.na(baselineName)) {
+    stop("The baseline parameter can only be used if there is only one source column.")
+  }
 
   matchesRequirements <- function(d) {
-    sapply(names(requirements), function(matchColName) {
+    result <- NULL
+    for(matchColName in names(requirements)) {
       matchValue = requirements[[matchColName]]
-      d[[matchColName]] == matchValue
-    })
+      if (matchColName %in% colnames(d)) {
+        r <- d[[matchColName]] == matchValue
+      } else {
+        stop(matchColName, " is not a column in the data. Check your requirements argument for mispelled names.")
+      }
+      if(is.null(result))
+        result <- r
+      else
+        result <- (result & r)
+    }
+    result
   }
 
   f <- function(group) {
     whichMatch <- which(matchesRequirements(group))
     nMatching = length(whichMatch)
     if (nMatching >= 1) {
-      if (nMatching > 1)
-        warning("There should be exactly 1 matching value: found ", nMatching, " (requirments = ", deparse(requirements), ")")
-
       baselineRow <- group[min(whichMatch), ]
+
+      if (nMatching > 1)
+        warning("There should be exactly 1 matching value: found ", nMatching, ". (requirments = ", deparse(requirements), ")\n",
+                "Arbitrarily choosing:\n", paste(capture.output(baselineRow), collapse="\n"), "\n",
+                "From the available choices:\n", paste(capture.output(group[whichMatch, ]), collapse="\n"))
+
       for (sourceColName in sourceColNames) {
-        baselineColName <- paste(sourceColName, "baseline", sep="_")
+        if (is.na(baselineName)) {
+          baselineColName <- paste(sourceColName, "baseline", sep="_")
+        } else {
+          baselineColName <- baselineName
+        }
         group[[baselineColName]] <- rep(baselineRow[[sourceColName]], length(group[[sourceColName]]))
       }
     } else {
       warning("There should be exactly 1 matching value: found ", nMatching, " (requirments = ", deparse(requirements), ")")
       for (sourceColName in sourceColNames) {
-        baselineColName <- paste(sourceColName, "baseline", sep="_")
+        if (is.na(baselineName)) {
+          baselineColName <- paste(sourceColName, "baseline", sep="_")
+        } else {
+          baselineColName <- baselineName
+        }
         group[[baselineColName]] <- rep(NA, length(group[[sourceColName]]))
       }
     }

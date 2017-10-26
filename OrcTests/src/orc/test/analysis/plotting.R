@@ -8,6 +8,7 @@
 #
 
 library(ggplot2)
+library(RColorBrewer)
 
 # Create a geom_col (bar chart) plot with error bars.
 #
@@ -69,4 +70,3 @@ scale_x_continuous_breaks_from <- function(..., breaks_from = NULL) {
   }
   scale_x_continuous(breaks = breaks, minor_breaks = NULL, ...)
 }
-
