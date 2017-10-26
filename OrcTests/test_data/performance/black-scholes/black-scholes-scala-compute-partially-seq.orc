@@ -26,7 +26,7 @@ val dataSize = problemSizeScaledInt(100000)
 
 val data = BlackScholesData.makeData(dataSize)
 
-benchmarkSized("Black-Scholes-scala-compute-partition", data.length?, { data }, run)
+benchmarkSized("Black-Scholes-scala-compute-partially-seq", data.length?, { data }, run)
 
 {-
 BENCHMARK

@@ -3,8 +3,8 @@ package orc.test.item.scalabenchmarks.blackscholes
 import BlackScholes.D
 import scala.util.Random
 import orc.test.item.scalabenchmarks.BenchmarkApplication
-import scala.math.BigDecimal.double2bigDecimal
-import scala.math.BigDecimal.int2bigDecimal
+//import scala.math.BigDecimal.double2bigDecimal
+//import scala.math.BigDecimal.int2bigDecimal
 import scala.runtime.ZippedTraversable3.zippedTraversable3ToTraversable
 import orc.test.item.scalabenchmarks.BenchmarkConfig
 
@@ -31,13 +31,13 @@ object BlackScholesData {
 }
 
 object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock]] {
-  type D = BigDecimal
+  type D = Double
 
   def log(x: D): D = Math.log(x.toDouble)
   def sqrt(x: D): D = Math.pow(x.toDouble, 0.5)
   def exp(x: D): D = Math.exp(x.toDouble)
 
-  def round(x: D): Double = x.doubleValue()
+  def round(x: D): Double = x //.doubleValue()
 
   def compute(s: D, x: D, t: D, r: D, v: D): BlackScholesResult = {
     val d1 = round((log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t)))
@@ -60,7 +60,7 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock]] {
 
   // The cumulative normal distribution function
   def cnd(x: D): D = {
-    val l = x.abs;
+    val l = math.abs(x)
     val k = round(1.0 / (1.0 + 0.2316419 * l))
     val w = round(1.0 - rsqrt2pi * exp(-l * l / 2) * (a1 * k + a2 * k * k + a3 * k * k * k + a4 * k * k * k * k + a5 * k * k * k * k * k))
 
