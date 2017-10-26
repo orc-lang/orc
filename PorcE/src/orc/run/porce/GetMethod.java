@@ -4,6 +4,7 @@ package orc.run.porce;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import orc.Accessor;
@@ -15,6 +16,7 @@ import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.values.Field;
 
 @NodeChild(value = "object", type = Expression.class)
+@Introspectable
 public class GetMethod extends Expression {
     protected final PorcEExecutionRef execution;
     protected static final Field field = Field.create("apply");
@@ -45,6 +47,7 @@ public class GetMethod extends Expression {
 
     @Specialization(replaces = { "cachedAccessor" })
     public Object slowPath(final Object obj) {
+    	// This additional argument is useful for debugging: , @Cached("getAccessorWithBoundary(obj)") final Accessor firstAccessor
         try {
             final Accessor accessor = getAccessorWithBoundary(obj);
             if (accessor instanceof ErrorAccessor) {

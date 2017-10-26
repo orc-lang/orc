@@ -4,6 +4,7 @@ package orc.run.porce;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import orc.Accessor;
@@ -14,6 +15,7 @@ import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.values.Field;
 
 @NodeChild(value = "object", type = Expression.class)
+@Introspectable
 public abstract class GetField extends Expression {
     protected final Field field;
     protected final PorcEExecutionRef execution;

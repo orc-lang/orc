@@ -79,7 +79,6 @@ object SiteAdaptor {
     * This will mutate the original array.
     */
   def convertArgs(args: Array[AnyRef]) = {
-    val jl = new java.util.ArrayList[Object](args.size)
     for (ind <- 0 until args.length) {
       args(ind) match {
         case i: scala.math.BigInt => args(ind) = i.bigInteger

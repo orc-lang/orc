@@ -14,7 +14,7 @@ package orc.values.sites
 
 import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTargetException }
 
-import orc.{ Accessor, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, TargetThrowsInvoker, TargetArgsThrowsInvoker }
+import orc.{ Accessor, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, ErrorAccessor, OnlyDirectInvoker, TargetThrowsInvoker, TargetArgsThrowsInvoker }
 import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, MalformedArrayAccessException, RuntimeTypeException }
 import orc.run.Logger
 import orc.OrcRuntime
@@ -216,6 +216,8 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
         throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
       }
       val finalArgs = if (invocable.isVarArgs) {        
+        // TODO: PERFORMANCE: It may be worth it to replace all these scala collections calls with some optimized loops. Hot path, mumble, mumble.
+        
         // Group var args into nested array argument.
         val nNormalArgs = invocable.getParameterTypes.size - 1
         val (normalArgs, varArgs) = (arguments.take(nNormalArgs), arguments.drop(nNormalArgs))
@@ -227,15 +229,17 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
         val varArgArray = JavaArray.newInstance(varargType, varArgs.size).asInstanceOf[Array[Object]]
         convertedVarArgs.copyToArray(varArgArray)
 
-        convertedNormalArgs :+ varArgArray
+        (convertedNormalArgs :+ varArgArray).toArray
       } else {
-        // TODO: PERFORMANCE: It may be worth it to replace all these java collections calls with some optimized loops. I know it's terrible, but this is on the path for EVERY java call
         // IT might be good to optimize the vararg case above as well, but it's much less of a hot path and it would be harder to optimizer.
-        val convertedArgs = (arguments, invocable.getParameterTypes).zipped.map(orc2java(_, _))
-        convertedArgs
+        val paramTypes = invocable.getParameterTypes
+        for (i <- 0 until (arguments.length min paramTypes.size)) {
+          arguments(i) = orc2java(arguments(i), paramTypes(i))
+        }
+        arguments
       }
       Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
-      java2orc(invocable.invoke(theObject, finalArgs.toArray))
+      java2orc(invocable.invoke(theObject, finalArgs))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
       case e: ExceptionInInitializerError => throw new JavaException(e.getCause())
@@ -303,7 +307,19 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
         }
       }
     } else if (javaField.isEmpty) {
-        NoSuchMemberAccessor(this, memberName)
+      new ErrorAccessor {
+        @throws[NoSuchMemberException]
+        def get(target: AnyRef): AnyRef = {
+          throw new NoSuchMemberException(theObject, memberName)
+        }
+      
+        def canGet(target: AnyRef): Boolean = {
+          target match {
+            case p: JavaMemberProxy if p.memberName == memberName && p.javaClass == javaClass => true
+            case _ => false
+          }
+        }
+      }
     } else {
       val jf = javaField.get
       new Accessor {

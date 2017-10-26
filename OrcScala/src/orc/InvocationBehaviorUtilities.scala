@@ -89,7 +89,7 @@ case class TargetArgsThrowsInvoker(target: AnyRef, arguments: Array[AnyRef], e: 
   }
 
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    this.target == target && this.arguments == arguments
+    this.target == target && this.arguments.toSeq == arguments.toSeq
   }
 }
 
@@ -141,6 +141,20 @@ case class NoSuchMemberAccessor(target: AnyRef, unknownMember: String) extends E
     this.target == target
   }
 }
+
+case class NoSuchMemberOfClassAccessor(cls: Class[_], unknownMember: String) extends ErrorAccessor {
+  @throws[NoSuchMemberException]
+  def get(target: AnyRef): AnyRef = {
+    throw new NoSuchMemberException(target, unknownMember)
+  }
+
+  def canGet(target: AnyRef): Boolean = {
+    cls.isInstance(target)
+  }
+}
+
+
+
 
 /** A accessor sentinel representing the fact that the value does not have members.
 	*/

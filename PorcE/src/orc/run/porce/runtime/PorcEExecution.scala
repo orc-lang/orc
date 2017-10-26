@@ -54,8 +54,14 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
 
   def invokeCallTarget(callSiteId: Int, p: PorcEClosure, c: Counter, t: Terminator, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-    val callTarget = callSiteMap.computeIfAbsent(callSiteId, (_) => 
+    val callTarget = {
+      val v = callSiteMap.get(callSiteId)
+      if (v == null)
+        callSiteMap.computeIfAbsent(callSiteId, (_) => 
           truffleRuntime.createCallTarget(new InvokeCallRecordRootNode(runtime.language, arguments.length + 3, this)))
+      else
+        v
+    }
     val args = Array(Array.emptyObjectArray, target, p, c, t) ++: arguments
     //Logger.info(s"$callSiteId: $p $c $t $target $arguments => $callTarget(${args.mkString(", ")}")
     callTarget.call(args: _*)
@@ -64,8 +70,15 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   val trampolineMap = new java.util.concurrent.ConcurrentHashMap[RootNode, RootCallTarget]()
 
   def invokeClosure(target: PorcEClosure, args: Array[AnyRef]): Unit = {
-    val callTarget = trampolineMap.computeIfAbsent(target.body.getRootNode(), (root) => 
+    val callTarget = {
+      val key = target.body.getRootNode()
+      val v = trampolineMap.get(key)
+      if (v == null)
+        trampolineMap.computeIfAbsent(key, (root) => 
           truffleRuntime.createCallTarget(new InvokeWithTrampolineRootNode(runtime.language, root, this)))
+      else
+        v
+    }
     args(0) = target.environment
     callTarget.call(args: _*)
   }
