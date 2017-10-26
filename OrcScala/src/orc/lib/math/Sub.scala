@@ -51,4 +51,5 @@ object Sub extends OverloadedDirectInvokerMethod2[Number, Number] with Functiona
         IllegalArgumentInvoker(this, Array(a, b))
     }
   }
+  override def toString = "Sub"
 }

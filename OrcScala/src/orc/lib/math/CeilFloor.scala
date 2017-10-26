@@ -29,6 +29,7 @@ object Ceil extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
       case a: Number => invokerStaticType(a)(a => a)
     }
   }
+  override def toString = "Ceil"
 }
 
 object Floor extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
@@ -45,4 +46,5 @@ object Floor extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite 
       case a: Number => invokerStaticType(a)(a => a)
     }
   }
+  override def toString = "Floor"
 }

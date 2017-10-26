@@ -51,4 +51,6 @@ object Mult extends OverloadedDirectInvokerMethod2[Number, Number] with Function
         IllegalArgumentInvoker(this, Array(a, b))
     }
   }
+  
+  override def toString = "Mult"
 }

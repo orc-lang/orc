@@ -57,4 +57,6 @@ object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with Func
         IllegalArgumentInvoker(this, Array(a, b))
     }
   }
+  
+  override def toString = "Exponent"
 }

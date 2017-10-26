@@ -27,4 +27,6 @@ object Abs extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
         IllegalArgumentInvoker(this, Array(a))
     }
   }
+  
+  override def toString = "Abs"
 }

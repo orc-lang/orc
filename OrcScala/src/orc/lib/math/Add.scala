@@ -65,4 +65,6 @@ object Add extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite 
         IllegalArgumentInvoker(this, Array(a.asInstanceOf[AnyRef], b.asInstanceOf[AnyRef]))
     }
   }
+  
+  override def toString = "Add"
 }
