@@ -135,14 +135,15 @@ object JavaCall {
           None
           
         // ARRAYS
-        case (_, Array1(_: BigInt)) if targetCls.isArray() => {
+        case (_, Array1(_: BigInt | _: java.lang.Long | _: java.lang.Integer)) if targetCls.isArray() => {
           Some(new OnlyDirectInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-              target.getClass().isArray() && arguments.length == 1 && arguments(0).isInstanceOf[BigInt]
+              target.getClass().isArray() && arguments.length == 1 && 
+              (arguments(0).isInstanceOf[BigInt] || arguments(0).isInstanceOf[java.lang.Long] || arguments(0).isInstanceOf[java.lang.Integer]) 
             }
             @throws[HaltException]
             def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              new JavaArrayElementProxy(target, arguments(0).asInstanceOf[BigInt].toInt)
+              new JavaArrayElementProxy(target, arguments(0).asInstanceOf[Number].intValue())
             }
           })
         }

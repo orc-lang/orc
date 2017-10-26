@@ -19,6 +19,7 @@ import java.lang.reflect.{ Constructor => JavaConstructor }
 import java.lang.reflect.{ Method => JavaMethod }
 import java.lang.reflect.Modifier
 import orc.run.Logger
+import orc.values.NumericsConfig
 import scala.collection.generic.Shrinkable
 import java.util.concurrent.ConcurrentHashMap
 
@@ -27,19 +28,30 @@ import java.util.concurrent.ConcurrentHashMap
 object OrcJavaCompatibility {
 
   /** Java to Orc value conversion */
-  def java2orc(javaValue: Object): AnyRef = javaValue match {
+  def java2orc(javaValue: Object): AnyRef = (javaValue match {
     case _: java.lang.Void => orc.values.Signal
+    
+    // Prefer limited precision cases
+    case i: java.lang.Byte if NumericsConfig.preferLong => i.longValue()
+    case i: java.lang.Short if NumericsConfig.preferLong => i.longValue()
+    case i: java.lang.Integer if NumericsConfig.preferLong => i.longValue()
+    case i: java.lang.Long if NumericsConfig.preferLong => i.longValue()
+    case f: java.lang.Float if NumericsConfig.preferDouble => f.doubleValue()
+    case f: java.lang.Double if NumericsConfig.preferDouble => f.doubleValue()
+    
+    // Normal (prefer arbitrary precision) cases
     case i: java.lang.Byte => BigInt(i.byteValue)
     case i: java.lang.Short => BigInt(i.shortValue)
     case i: java.lang.Integer => BigInt(i.intValue)
     case i: java.lang.Long => BigInt(i.longValue)
     case f: java.lang.Float => BigDecimal(f.floatValue.toDouble)
     case f: java.lang.Double => BigDecimal(f.doubleValue)
+    
     case s: java.lang.String => s
     case b: java.lang.Boolean => b
     case null => null
     case v => v
-  }
+  }).asInstanceOf[AnyRef]
 
   /** Convenience method for <code>orc2java(orcValue, classOf[Object])</code> */
   def orc2java(orcValue: AnyRef): Object = orc2java(orcValue, classOf[Object])
@@ -65,7 +77,31 @@ object OrcJavaCompatibility {
           case _ => f
         }
       }
-      //case JavaObjectProxy(j) => j
+      case f: java.lang.Double => {
+        expectedType match {
+          case `floatRefClass` | java.lang.Float.TYPE => f.toFloat.asInstanceOf[java.lang.Float]
+          case `doubleRefClass` | java.lang.Double.TYPE => f.toDouble.asInstanceOf[java.lang.Double]
+          case _ => f
+        }
+      }
+      case f: java.lang.Float => {
+        expectedType match {
+          case `floatRefClass` | java.lang.Float.TYPE => f.toFloat.asInstanceOf[java.lang.Float]
+          case `doubleRefClass` | java.lang.Double.TYPE => f.toDouble.asInstanceOf[java.lang.Double]
+          case _ => f
+        }
+      }
+      case i: java.lang.Number => {
+        expectedType match {
+          case `byteRefClass` | java.lang.Byte.TYPE => i.byteValue().asInstanceOf[java.lang.Byte]
+          case `shortRefClass` | java.lang.Short.TYPE => i.shortValue().asInstanceOf[java.lang.Short]
+          case `intRefClass` | java.lang.Integer.TYPE => i.intValue().asInstanceOf[java.lang.Integer]
+          case `longRefClass` | java.lang.Long.TYPE => i.longValue().asInstanceOf[java.lang.Long]
+          case `floatRefClass` | java.lang.Float.TYPE => i.floatValue().asInstanceOf[java.lang.Float]
+          case `doubleRefClass` | java.lang.Double.TYPE => i.doubleValue().asInstanceOf[java.lang.Double]
+          case _ => i
+        }
+      }
       case _ => orcValue.asInstanceOf[Object]
     }
 

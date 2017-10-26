@@ -25,6 +25,7 @@ import orc.compile.CompilerOptions
 import orc.error.OrcException
 import orc.error.compiletime.IncludeFileException
 import orc.util.SynchronousThreadExec
+import orc.values.NumericsConfig
 
 /** Mix-in for result types from Orc parsers
   *
@@ -199,13 +200,33 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | "false" ^^^ java.lang.Boolean.FALSE
     | "signal" ^^^ orc.values.Signal
     | stringLit
-    | numericLit ^^ { BigInt(_) }
-    | floatLit ^^ { BigDecimal(_) }
+    | numericLit ^^ { s =>
+      if (NumericsConfig.preferLong)
+        s.toLong.asInstanceOf[AnyRef]
+      else
+        BigInt(s)
+    }
+    | floatLit ^^ { s =>
+      if (NumericsConfig.preferDouble)
+        s.toDouble.asInstanceOf[AnyRef]
+      else
+        BigDecimal(s)
+    }
     | "null" ^^^ null)
 
   val parserForReadSite: Parser[Expression] = (
-    "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
-    | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
+    "-" ~> numericLit -> { s => 
+      if (NumericsConfig.preferLong)
+        Constant((-(s.toLong)).asInstanceOf[AnyRef])
+      else
+        Constant(-BigInt(s)) 
+    }
+    | "-" ~> floatLit -> { s => 
+      if (NumericsConfig.preferDouble)
+        Constant((-(s.toDouble)).asInstanceOf[AnyRef])
+      else
+        Constant(-BigDecimal(s))
+    }
     | parseValue -> Constant
     | "(" ~> parserForReadSite <~ ")"
     | ListOf(parserForReadSite) -> ListExpr
@@ -254,8 +275,18 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
 
   val parseUnaryExpr: Parser[Expression] = (
     // First see if it's a unary minus for a numeric literal
-    "-" ~> numericLit -> { s => Constant(-BigInt(s)) }
-    | "-" ~> floatLit -> { s => Constant(-BigDecimal(s)) }
+    "-" ~> numericLit -> { s => 
+      if (NumericsConfig.preferLong)
+        Constant((-(s.toLong)).asInstanceOf[AnyRef])
+      else
+        Constant(-BigInt(s)) 
+    }
+    | "-" ~> floatLit -> { s => 
+      if (NumericsConfig.preferDouble)
+        Constant((-(s.toDouble)).asInstanceOf[AnyRef])
+      else
+        Constant(-BigDecimal(s))
+    }
     | ("-" | "~") ~ parseCallExpression -> PrefixOperator
     | parseCallExpression)
 
@@ -312,8 +343,18 @@ class OrcParsers(inputContext: OrcInputContext, co: CompilerOptions, envServices
     | ")" ^^^ None)
 
   val parseBasePattern = (
-    "-" ~> numericLit -> { s => ConstantPattern(-BigInt(s)) }
-    | "-" ~> floatLit -> { s => ConstantPattern(-BigDecimal(s)) }
+    "-" ~> numericLit -> { s => 
+      if (NumericsConfig.preferLong)
+        ConstantPattern((-(s.toLong)).asInstanceOf[AnyRef])
+      else
+        ConstantPattern(-BigInt(s)) 
+    }
+    | "-" ~> floatLit -> { s => 
+      if (NumericsConfig.preferDouble)
+        ConstantPattern((-(s.toDouble)).asInstanceOf[AnyRef])
+      else
+        ConstantPattern(-BigDecimal(s))
+    }
     | parseValue -> ConstantPattern
     | "_" -> Wildcard
     | ident ~ TupleOf(parsePattern) -> CallPattern
