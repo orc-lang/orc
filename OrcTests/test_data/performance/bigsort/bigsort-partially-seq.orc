@@ -110,7 +110,7 @@ val arraySize = problemSizeScaledInt(3000)
 
 def setup() = makeRandomArray(arraySize)
   
-benchmarkSized("BigSort-naive", arraySize * Log(arraySize), setup, { splitSortMerge(_, quicksort) }) 
+benchmarkSized("BigSort-partially-seq", arraySize * Log(arraySize), setup, { splitSortMerge(_, quicksort) }) 
 
 
 {-
