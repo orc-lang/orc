@@ -3,6 +3,7 @@ package orc.run.porce;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.RootNode;
 
@@ -16,22 +17,35 @@ public class InvokeWithTrampolineRootNode extends RootNode {
     protected TailCallLoop loop;
 	@Child
 	protected DirectCallNode body;
+	
+	final private PorcERootNode root;
 
     public InvokeWithTrampolineRootNode(final PorcELanguage language, final RootNode root, final PorcEExecution execution) {
     	super(language);
         final PorcEExecutionHolder holder = new PorcEExecutionHolder(execution);
+        if (root instanceof PorcERootNode)
+        	this.root = (PorcERootNode) root;
+        else
+        	this.root = null;
     	this.body = DirectCallNode.create(root.getCallTarget());
 		this.loop = TailCallLoop.create(holder.newRef());
     }
     
 	@Override
 	public Object execute(VirtualFrame frame) {
+        long startTime = 0;
+        if (CompilerDirectives.inInterpreter() && root != null)
+        	startTime = System.nanoTime();
     	try {
     		body.call(frame.getArguments());
     	} catch (TailCallException e) {
     		loop.addSurroundingFunction(frame, ((RootCallTarget)body.getCallTarget()).getRootNode());
 			loop.executeTailCalls(frame, e);
-    	}
+    	} finally {
+        	if (CompilerDirectives.inInterpreter() && startTime > 0 && root != null) {
+        		root.addSpawnedCall(System.nanoTime() - startTime);
+        	}
+        }
     	return PorcEUnit.SINGLETON;
     }
 	

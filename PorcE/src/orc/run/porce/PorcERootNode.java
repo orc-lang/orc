@@ -30,6 +30,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     
     
     // FIXME: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters). 
+    private final AtomicLong totalSpawnedTime = new AtomicLong(0);
+    private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
+    
     private final AtomicLong totalTime = new AtomicLong(0);
     private final AtomicLong totalCalls = new AtomicLong(0);
     private final AtomicLong totalSpawns = new AtomicLong(0);
@@ -41,12 +44,25 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private long timePerCall = -1;
     
     // FIXME: Do to how the time value is collected (see addRunTime and the calls to it). Calls will be multiple counted in some cases (recursive calls).
+   
+    final public void addSpawnedCall(long time) {
+        totalSpawnedTime.getAndAdd(time);
+        totalSpawnedCalls.getAndIncrement();        
+    }
     
     final public long getTimePerCall() {
     	if (timePerCall < 0 || CompilerDirectives.inInterpreter()) {
-        	long t = totalTime.get();
-        	long n = totalCalls.get();
-        	timePerCall = n > 0 ? t / n : Long.MAX_VALUE;
+//        	long t = totalTime.get();
+//        	long n = totalCalls.get();
+        	long t = totalSpawnedTime.get();
+        	long n = totalSpawnedCalls.get();
+    		
+    		if (n >= 100) {
+        		CompilerDirectives.transferToInterpreterAndInvalidate();
+        		timePerCall = t / n;
+    		} else {
+    			return Long.MAX_VALUE;
+    		}
     	}
     	/*{
         	long t = totalTime.get();
@@ -93,15 +109,12 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     	}
 	}
 
-	public scala.Tuple7<Long, Long, Long, Long, Long, Long, Long> getCollectedCallInformation() {
-		long t = totalTime.get();
-		long n = totalCalls.get();
-		while (t != totalTime.get() || n != totalCalls.get()) {
-			t = totalTime.get();
-			n = totalCalls.get();
-		}
-		return new scala.Tuple7<>(
-				t, n, totalSpawns.get(), totalBindSingle.get(), totalBindJoin.get(), totalHalt.get(), totalPublication.get());
+	public scala.Tuple9<Long, Long, Long, Long, Long, Long, Long, Long, Long> getCollectedCallInformation() {
+		return new scala.Tuple9<>(
+				totalTime.get(), totalCalls.get(), 
+				totalSpawns.get(), totalBindSingle.get(), totalBindJoin.get(), totalHalt.get(), totalPublication.get(),
+				totalSpawnedTime.get(), totalSpawnedCalls.get()        
+				);
     }
 
     private Option<PorcAST> porcNode = Option.apply(null);

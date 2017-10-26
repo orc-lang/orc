@@ -55,7 +55,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   def invokeCallTarget(callSiteId: Int, p: PorcEClosure, c: Counter, t: Terminator, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     val callTarget = callSiteMap.computeIfAbsent(callSiteId, (_) => 
-      truffleRuntime.createCallTarget(new InvokeCallRecordRootNode(runtime.language, arguments.length + 3, this)))
+          truffleRuntime.createCallTarget(new InvokeCallRecordRootNode(runtime.language, arguments.length + 3, this)))
     val args = Array(Array.emptyObjectArray, target, p, c, t) ++: arguments
     //Logger.info(s"$callSiteId: $p $c $t $target $arguments => $callTarget(${args.mkString(", ")}")
     callTarget.call(args: _*)
@@ -65,7 +65,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   def invokeClosure(target: PorcEClosure, args: Array[AnyRef]): Unit = {
     val callTarget = trampolineMap.computeIfAbsent(target.body.getRootNode(), (root) => 
-      truffleRuntime.createCallTarget(new InvokeWithTrampolineRootNode(runtime.language, root, this)))
+          truffleRuntime.createCallTarget(new InvokeWithTrampolineRootNode(runtime.language, root, this)))
     args(0) = target.environment
     callTarget.call(args: _*)
   }
@@ -90,13 +90,14 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       val tableColumnTitles = Seq(
           "RootNode Name [name]", "Total Time (ns) [totalTime]", "Total Calls [calls]", "Total Spawns [spawns]", 
           "Total Bind Single Future [bindSingle]", "Total Bind Multiple Futures [bindJoin]", 
-          "Total Halt Continuation [halt]", "Total Publication Callbacks [publish]")
+          "Total Halt Continuation [halt]", "Total Publication Callbacks [publish]",
+          "Total Spawned Time (ns) [totalSpawnedTime]", "Total Spawned Calls [spawnedCalls]")
       csvWriter.writeHeader(tableColumnTitles)
       for (t <- callTargetMap.values) {
         t.getRootNode match {
           case n: PorcERootNode =>
-            val (time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish) = n.getCollectedCallInformation()
-            csvWriter.writeRow(Seq(n.getName, time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish))
+            val (time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime) = n.getCollectedCallInformation()
+            csvWriter.writeRow(Seq(n.getName, time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime))
           case _ =>
             ()
         }

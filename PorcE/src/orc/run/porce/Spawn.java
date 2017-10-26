@@ -2,9 +2,12 @@
 package orc.run.porce;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import orc.run.porce.call.Dispatch;
@@ -19,11 +22,8 @@ import orc.run.porce.runtime.PorcERuntime;
 @NodeChild(value = "c", type = Expression.class)
 @NodeChild(value = "t", type = Expression.class)
 @NodeChild(value = "computation", type = Expression.class)
+@Introspectable
 public abstract class Spawn extends Expression {
-	
-    @Child
-    protected volatile Dispatch call = null;
-    private final ConditionProfile canDirectCallProfile = ConditionProfile.createCountingProfile();
     private final PorcEExecutionRef execution;
 	private final boolean mustSpawn;
     
@@ -32,45 +32,56 @@ public abstract class Spawn extends Expression {
 		this.execution = execution;
 	}
 
-    @Specialization
+    @Specialization(guards = { "!shouldInlineSpawn(computation)" } )
     public PorcEUnit spawn(final VirtualFrame frame, final Counter c, final Terminator t, final PorcEClosure computation) {
+		t.checkLive();
+		if (CompilerDirectives.inInterpreter() && computation.body.getRootNode() instanceof PorcERootNode) {
+			//Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
+			((PorcERootNode)computation.body.getRootNode()).incrementSpawn();
+		}
+		execution.get().runtime().schedule(CallClosureSchedulable.apply(computation, execution.get()));
+        return PorcEUnit.SINGLETON;
+    }
+
+    @Specialization(guards = { "shouldInlineSpawn(computation)" }, replaces = { "spawn" })
+    public PorcEUnit inline(final VirtualFrame frame, final Counter c, final Terminator t, final PorcEClosure computation, 
+    		@Cached("makeCall()") Dispatch call, @Cached("create()") BranchProfile spawnProfile) {
     	// Here we can inline spawns speculatively if we have not done that too much on this stack.
     	// This is very heuristic and may cause load imbalance problems in some cases.
-    	
-    	// TODO: Figure out how to make this principled.
-        // TODO: PERFORMANCE: Track the runtime of the spawned closure in the interpreter. Then if it is below some constant (1ms say) call it directly if the stack is not too deep. This could address issues with load-imbalance at least in predictable cases.
+
+    	// TODO: PERFORMANCE: Track the runtime of the spawned closure in the interpreter. Then if it is below some constant (1ms say) call it directly if the stack is not too deep. This could address issues with load-imbalance at least in predictable cases.
     	// TODO: This could actually cause semantic problem in the case of incorrectly implemented sites which block the calling thread. Metadata is probably needed.
 		
-		if (PorcERuntime.allowSpawnInlining() &&
-				(!mustSpawn || PorcERuntime.allowAllSpawnInlining()) &&
-				canDirectCallProfile.profile(computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit) &&
-				canDirectCallProfile.profile(PorcERuntime.incrementAndCheckStackDepth())) {
+    	if (PorcERuntime.incrementAndCheckStackDepth()) {
+    		// This check should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.
 			try {
-				initializeCall();
-				call.executeDispatch(frame, computation, new Object[] { });
+				call.executeDispatch(frame, computation, new Object[] {});
 			} finally {
 				PorcERuntime.decrementStackDepth();
 			}
-		} else {
-			t.checkLive();
-			if (CompilerDirectives.inInterpreter() && computation.body.getRootNode() instanceof PorcERootNode) {
-				//Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
-				((PorcERootNode)computation.body.getRootNode()).incrementSpawn();
-			}
-			execution.get().runtime().schedule(CallClosureSchedulable.apply(computation, execution.get()));
-		}
-        return PorcEUnit.SINGLETON;
-    }
-    
-    private void initializeCall() {
-    	if (call == null) {
-    		CompilerDirectives.transferToInterpreterAndInvalidate();
-	    	computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
-	    		Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
-				n.setTail(isTail);
-				return n;
-	    	});
+			return PorcEUnit.SINGLETON;
+    	} else {
+    		spawnProfile.enter();
+    		return spawn(frame, c, t, computation);
     	}
+    }
+
+    // This duplication of "spawn" allows this node to specialize to only inline and then switch back to both later by adding this specialization.
+    @Specialization(guards = { "!shouldInlineSpawn(computation)" } )
+    public PorcEUnit spawnAfterInline(final VirtualFrame frame, final Object c, final Terminator t, final PorcEClosure computation) {
+		return spawn(frame, (Counter)c, t, computation);
+    }
+
+	protected boolean shouldInlineSpawn(final PorcEClosure computation) {
+		return PorcERuntime.allowSpawnInlining() &&
+			(!mustSpawn || PorcERuntime.allowAllSpawnInlining()) &&
+			computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit;
+	}
+    
+    protected Dispatch makeCall() {
+		Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
+		n.setTail(isTail);
+		return n;
     }
 
     public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn, final Expression computation, final PorcEExecutionRef execution) {
