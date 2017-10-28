@@ -14,4 +14,6 @@ public abstract class SpecializationConfiguration {
     public static final int ExternalCPSCallMaxCacheSize = 4;
 	@CompilationFinal
     public static final int InlineAverageTimeLimit = 1 * 1000000; // In ns
+	@CompilationFinal
+    public static final int MinCallsForTimePerCall = 100;
 }
