@@ -1,6 +1,55 @@
 package orc.values
 
+import scala.math.BigDecimal
+
 object NumericsConfig {
+  def toOrcIntegral(v: Number) = {
+    if (NumericsConfig.preferLong) 
+      v.longValue()
+    else {
+      v match {
+        case d: BigInt =>
+          d
+        case d: BigDecimal =>
+          d.toBigInt()
+        case d: java.lang.Double =>
+          BigDecimal(d).toBigInt()
+        case _ if v.longValue() == v =>
+          BigInt(v.longValue())
+        case _ =>
+          BigInt(v.toString)
+      }
+      if (v.longValue() == v) {
+        BigInt(v.longValue())
+      } else {
+        BigInt(v.toString)
+      }
+    }
+  }
+  def toOrcFloatingPoint(v: Number) = {
+    if (NumericsConfig.preferDouble) 
+      v.doubleValue()
+    else {
+      v match {
+        case d: BigInt =>
+          BigDecimal(d)
+        case d: BigDecimal =>
+          d
+        case d: java.lang.Double =>
+          BigDecimal(d)
+        case _ if v.doubleValue() == v =>
+          BigDecimal(v.doubleValue())
+        case _ =>
+          BigDecimal(v.toString)
+      }
+      if (v.longValue() == v) {
+        BigInt(v.longValue())
+      } else {
+        BigInt(v.toString)
+      }
+    }
+  }
+  
   @inline
   val preferLP = System.getProperty("orc.numerics.preferLP", "false").toBoolean  
   @inline

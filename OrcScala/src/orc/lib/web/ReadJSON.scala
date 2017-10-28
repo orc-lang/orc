@@ -22,6 +22,7 @@ import orc.values.OrcRecord
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, SiteException }
 import orc.util.SynchronousThreadExec
 import orc.util.ArrayExtensions.Array1
+import orc.values.NumericsConfig
 
 /** JSON reader, converting a JSON string to an Orc value.
   *
@@ -130,7 +131,12 @@ object OrcJSONParser extends StdTokenParsers {
     | "true" ^^^ java.lang.Boolean.TRUE
     | "false" ^^^ java.lang.Boolean.FALSE
     | "null" ^^^ null
-    | numericLit ^^ { BigDecimal(_) }
+    | numericLit ^^ { s => 
+      if (NumericsConfig.preferDouble)
+        s.toDouble.asInstanceOf[AnyRef]
+      else
+        BigDecimal(s)
+    }
     | stringLit)
 
   def parse(json: String): AnyRef = {

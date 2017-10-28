@@ -42,14 +42,18 @@ object Add extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite 
             invoker(a, b)(_ + _.doubleValue())
           case (a: Number, b: BigDecimal) => 
             invoker(a, b)(_.doubleValue() + _)
-          case (a: BigInt, b: Number) => 
-            invoker(a, b)(_ + _.longValue())
-          case (a: Number, b: BigInt) => 
-            invoker(a, b)(_.longValue() + _)
           case (a: java.lang.Double, b: Number) =>
             invoker(a, b)(_ + _.doubleValue())
           case (a: Number, b: java.lang.Double) => 
             invoker(a, b)(_.doubleValue() + _)
+          case (a: BigInt, b: Number) => 
+            invoker(a, b)(_ + _.longValue())
+          case (a: Number, b: BigInt) => 
+            invoker(a, b)(_.longValue() + _)
+          case (a: java.lang.Long, b: Number) => 
+            invoker(a, b)(_ + _.longValue())
+          case (a: Number, b: java.lang.Long) => 
+            invoker(a, b)(_.longValue() + _)
           case (a: Number, b: Number) =>
             IllegalArgumentInvoker(this, Array(a, b))
         }

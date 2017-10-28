@@ -51,11 +51,11 @@ object TupleConstructor extends InvokerMethod with FunctionalSite with Talkative
  * If the check succeeds, the Some(t) is returned,
  * else None.
  */
-object TupleArityChecker extends OverloadedDirectInvokerMethod2[OrcTuple, BigInt] with FunctionalSite {
+object TupleArityChecker extends OverloadedDirectInvokerMethod2[OrcTuple, Number] with FunctionalSite {
   override def name = "TupleArityChecker"
-  def getInvokerSpecialized(t: OrcTuple, arity: BigInt): Invoker = {
+  def getInvokerSpecialized(t: OrcTuple, arity: Number): Invoker = {
     invoker(t, arity)((t, arity) =>
-      if (t.values.length == arity.toInt) {
+      if (t.values.length == arity.intValue) {
         t
       } else {
         throw HaltException.SINGLETON

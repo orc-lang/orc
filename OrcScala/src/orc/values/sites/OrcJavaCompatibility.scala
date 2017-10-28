@@ -115,7 +115,6 @@ object OrcJavaCompatibility {
     def invoke(obj: Object, args: Array[Object]): Object
   }
 
-  // TODO: Fix spelling on invo(c|k)able.
   object Invocable {
     def apply(wrapped: java.lang.reflect.Member): Invocable = {
       wrapped match {
@@ -309,11 +308,7 @@ object OrcJavaCompatibility {
   private val longRefClass = classOf[java.lang.Long]
   private val floatRefClass = classOf[java.lang.Float]
   private val doubleRefClass = classOf[java.lang.Double]
-
-  // Orc's numeric types
-  val orcIntegralClass = classOf[BigInt]
-  val orcFloatingPointClass = classOf[BigDecimal]
-
+  
   /** Java boxing conversion per JLS §5.1.7 */
   def box(primType: Class[_]): Class[_] = {
     primType match {
@@ -355,23 +350,40 @@ object OrcJavaCompatibility {
       case java.lang.Float.TYPE => toPrimType == java.lang.Double.TYPE
       case _ => false
     })
+  } 
+  
+  // Orc's numeric types
+  def isOrcIntegralClass(cls: Class[_]) = {
+    val isBigInt = classOf[BigInt].isAssignableFrom(cls)
+    if (NumericsConfig.preferLong)
+      classOf[java.lang.Long].isAssignableFrom(cls) || isBigInt
+    else
+      isBigInt
   }
+  def isOrcFloatingPointClass(cls: Class[_]) = {
+    val isBigDecimal = classOf[BigDecimal].isAssignableFrom(cls)
+    if (NumericsConfig.preferDouble)
+      classOf[java.lang.Double].isAssignableFrom(cls) || isBigDecimal
+    else
+      isBigDecimal
+  }
+
 
   /** "true" if an Orc value conversion applies */
   def isOrcJavaNumConvertable(fromType: Class[_], toType: Class[_]): Boolean = {
     toType match {
-      case `byteRefClass` => orcIntegralClass.isAssignableFrom(fromType)
-      case `shortRefClass` => orcIntegralClass.isAssignableFrom(fromType)
-      case `intRefClass` => orcIntegralClass.isAssignableFrom(fromType)
-      case `longRefClass` => orcIntegralClass.isAssignableFrom(fromType)
-      case `floatRefClass` => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
-      case `doubleRefClass` => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
-      case java.lang.Byte.TYPE => orcIntegralClass.isAssignableFrom(fromType)
-      case java.lang.Short.TYPE => orcIntegralClass.isAssignableFrom(fromType)
-      case java.lang.Integer.TYPE => orcIntegralClass.isAssignableFrom(fromType)
-      case java.lang.Long.TYPE => orcIntegralClass.isAssignableFrom(fromType)
-      case java.lang.Float.TYPE => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
-      case java.lang.Double.TYPE => orcIntegralClass.isAssignableFrom(fromType) || orcFloatingPointClass.isAssignableFrom(fromType)
+      case `byteRefClass` => isOrcIntegralClass(fromType)
+      case `shortRefClass` => isOrcIntegralClass(fromType)
+      case `intRefClass` => isOrcIntegralClass(fromType)
+      case `longRefClass` => isOrcIntegralClass(fromType)
+      case `floatRefClass` => isOrcIntegralClass(fromType) || isOrcFloatingPointClass(fromType)
+      case `doubleRefClass` => isOrcIntegralClass(fromType) || isOrcFloatingPointClass(fromType)
+      case java.lang.Byte.TYPE => isOrcIntegralClass(fromType)
+      case java.lang.Short.TYPE => isOrcIntegralClass(fromType)
+      case java.lang.Integer.TYPE => isOrcIntegralClass(fromType)
+      case java.lang.Long.TYPE => isOrcIntegralClass(fromType)
+      case java.lang.Float.TYPE => isOrcIntegralClass(fromType) || isOrcFloatingPointClass(fromType)
+      case java.lang.Double.TYPE => isOrcIntegralClass(fromType) || isOrcFloatingPointClass(fromType)
       case _ => false
     }
   }

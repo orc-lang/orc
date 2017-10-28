@@ -44,6 +44,24 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
           }
         }
       }
+      case Array1(i: java.lang.Long) => {
+        val size = values.length
+        
+        new OnlyDirectInvoker {
+          def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+            (target, args) match { 
+              case (t: OrcTuple, Array1(bi: java.lang.Long)) =>
+                t.values.length == size
+              case _ =>
+                false
+            }
+          }
+        
+          def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+            target.asInstanceOf[OrcTuple].values(arguments(0).asInstanceOf[java.lang.Long].intValue())
+          }
+        }
+      }
       case _ =>
         IllegalArgumentInvoker(this, args)
     }

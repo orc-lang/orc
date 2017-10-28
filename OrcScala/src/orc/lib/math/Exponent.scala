@@ -33,6 +33,8 @@ object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with Func
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
       case (a: java.lang.Double, b: java.lang.Double) => 
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
+      case (a: java.lang.Double, b: java.lang.Long) => 
+        invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
       case (a: java.lang.Long, b: java.lang.Long) => 
         invoker(a, b)((a, b) => math.pow(a.longValue(), b.longValue()))
       case (a: java.lang.Integer, b: java.lang.Integer) => 
@@ -40,6 +42,14 @@ object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with Func
       case (a: BigInt, b: BigInt) => 
         invoker(a, b)((a, b) => {
           if (b.isValidInt) {
+            a pow b.intValue()
+          } else {
+            throw new ArithmeticException("Exponent out of range");
+          }
+        })
+      case (a: BigInt, b: java.lang.Long) => 
+        invoker(a, b)((a, b) => {
+          if (b < Int.MaxValue) {
             a pow b.intValue()
           } else {
             throw new ArithmeticException("Exponent out of range");
