@@ -24,7 +24,7 @@ final class LocationReference() {
   
   private[this] val ref = new AtomicReference[Location](null)
   
-  // The guarentees provided by this implementation are slightly stronger than those of the C++ implementation. This is due to Java 8 not having release/acquire semantics split. With Java 9 we could fix this.
+  // The guarantees provided by this implementation are slightly stronger than those of the C++ implementation. This is due to Java 8 not having release/acquire semantics split. With Java 9 we could fix this.
   
   @tailrec
   @inline

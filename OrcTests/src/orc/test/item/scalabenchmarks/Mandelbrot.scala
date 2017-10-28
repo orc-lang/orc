@@ -1,8 +1,12 @@
 package orc.test.item.scalabenchmarks
 
 object Mandelbrot extends BenchmarkApplication[Unit] {
-  type D = BigDecimal
-  val D = BigDecimal
+  type D = Double
+  object D {
+    def apply(x: Integer): Double = x.toDouble
+    def apply(x: Double): Double = x
+    def valueOf(x: Double): Double = x    
+  }
 
   implicit class DOps(val d: D) extends AnyVal {
     def nativepow(e: D) = D.valueOf(math.pow(d.toDouble, e.toDouble))
@@ -11,7 +15,7 @@ object Mandelbrot extends BenchmarkApplication[Unit] {
   case class Complex(ri: D, im: D) {
     def +(o: Complex) = Complex(ri + o.ri, im + o.im)
     def squared = Complex(ri * ri - im * im, im * ri * 2)
-    def distance = (ri.pow(2) + im.pow(2)).nativepow(0.5)
+    def distance = (ri*ri + im*im).nativepow(0.5)
   }
 
   val threshold: D = 100

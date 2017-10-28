@@ -4,14 +4,14 @@ import scala.io.Source
 import scala.math.sqrt
 import orc.test.item.scalabenchmarks.BenchmarkApplication
 import orc.test.item.scalabenchmarks.Util
-import scala.BigDecimal
-import scala.math.BigDecimal.double2bigDecimal
-import scala.math.BigDecimal.int2bigDecimal
+import KMeans.D
+
+
 
 object KMeansData  {
   def readPoints(path: String): Array[Point] = {
     val json = Source.fromFile(path).mkString
-    val data = orc.lib.web.ReadJSON(json).asInstanceOf[List[List[BigDecimal]]].map({ case List(a, b) => new Point(a, b) })
+    val data = orc.lib.web.ReadJSON(json).asInstanceOf[List[List[Number]]].map({ case List(a, b) => new Point(a.doubleValue, b.doubleValue) })
     data.toArray // ++ data // ++ data
   }
 
@@ -24,8 +24,8 @@ object KMeansData  {
   // println(s"Loaded ${dataBase.size} points from JSON")
 }
 
-case class Point(val x: BigDecimal, val y: BigDecimal) {
-  def /(k: BigDecimal): Point = new Point(x / k, y / k)
+case class Point(val x: D, val y: D) {
+  def /(k: D): Point = new Point(x / k, y / k)
 
   def +(p: Point) = new Point(x + p.x, y + p.y)
   def -(p: Point) = new Point(x - p.x, y - p.y)
@@ -34,12 +34,19 @@ case class Point(val x: BigDecimal, val y: BigDecimal) {
   def sub(p: Point) = this - p
   def div(k: Int) = this / k
 
-  def modulus: BigDecimal = sqrt((sq(x) + sq(y)).toDouble)
+  def modulus: D = sqrt((sq(x) + sq(y)).toDouble)
   
-  def sq(x: BigDecimal) = x * x
+  def sq(x: D) = x * x
 }
 
 object KMeans extends BenchmarkApplication[Array[Point]] {
+  type D = Double
+  object D {
+    def apply(x: Integer): Double = x.toDouble
+    def apply(x: Double): Double = x
+    def valueOf(x: Double): Double = x    
+  }
+  
   val n = 10
   val iters = 1
 
@@ -78,8 +85,8 @@ object KMeans extends BenchmarkApplication[Array[Point]] {
   */
 
   def sumAndCountClusters(data: Array[Point], centroids: Array[Point], start: Int, end: Int) = {
-    val xs = Array.fill[BigDecimal](centroids.size)(BigDecimal(0))
-    val ys = Array.fill[BigDecimal](centroids.size)(BigDecimal(0))
+    val xs = Array.fill[D](centroids.size)(D(0))
+    val ys = Array.fill[D](centroids.size)(D(0))
     val counts = Array.ofDim[Integer](centroids.size)
     var i = start
     while(i < end) {
@@ -99,7 +106,7 @@ object KMeans extends BenchmarkApplication[Array[Point]] {
   def updateCentroids(data: Array[Point], centroids: Array[Point], start: Int, end: Int): Array[Point] = {
     val (xs, ys, counts) = sumAndCountClusters(data, centroids, start, end)
     centroids.indices.map({ i =>
-      val c: BigDecimal = BigDecimal(counts(i))
+      val c: D = D(counts(i))
       new Point(xs(i)/c, ys(i)/c)
     }).toArray
   }
@@ -123,7 +130,7 @@ object KMeans extends BenchmarkApplication[Array[Point]] {
   def closestIndex(x: Point, choices: Array[Point]): Int = {
     var index = 0
     var closestIndex = -1
-    var closestDist = BigDecimal(0)
+    var closestDist = D(0)
     for(y <- choices) {
       val d = dist(x, y)
       if(closestIndex < 0 || d < closestDist) {

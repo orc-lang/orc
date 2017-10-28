@@ -4,8 +4,6 @@ import java.util.concurrent.atomic.DoubleAdder
 import java.util.concurrent.atomic.LongAdder
 import orc.test.item.scalabenchmarks.BenchmarkApplication
 import orc.test.item.scalabenchmarks.Util
-import scala.math.BigDecimal.double2bigDecimal
-import scala.math.BigDecimal.long2bigDecimal
 
 object KMeansPar extends BenchmarkApplication[Array[Point]] {
   val n = 10
@@ -45,7 +43,7 @@ object KMeansPar extends BenchmarkApplication[Array[Point]] {
       counts(cluster).add(1)
     }
     centroids.indices.map({ i =>
-      val c: BigDecimal = counts(i).sum()
+      val c: D = counts(i).sum()
       new Point(xs(i).sum/c, ys(i).sum/c)
     }).toArray
   }

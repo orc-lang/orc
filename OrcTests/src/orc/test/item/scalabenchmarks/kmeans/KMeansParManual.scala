@@ -50,7 +50,7 @@ object KMeansParManual extends BenchmarkApplication[Array[Point]] {
       (counts zip lcounts).foreach(p => p._1.add(p._2.toLong))
     }
     centroids.indices.map({ i =>
-      val c: BigDecimal = counts(i).sum()
+      val c: D = counts(i).sum()
       new Point(xs(i).sum/c, ys(i).sum/c)
     }).toArray
   }

@@ -11,7 +11,7 @@ def plus((ar, ai), (br, bi)) = (ar + br, ai + bi)
 
 def square((ar, ai)) = (ar*ar - ai*ai, ai*ar*2)
 
-def distance((ar, ai)) = (ar**2 + ai**2) ** 0.5
+def distance((ar, ai)) = (ar*ar + ai*ai) ** 0.5
 
 val threshold = 100
 val steps = 10
@@ -24,7 +24,7 @@ def point(c) =
 		val next = plus(square(z), c) #
 		val isIn = distance(z) <: threshold #
 		(Ift(n :> steps) >> isIn) ; inner(next, n + 1)
-	inner((0,0), 0)
+	inner((0.0,0.0), 0)
 
 def cell(i, j) = point(((i-offset)*resolution, (j-offset)*resolution))
 def row(i) = Table(size, curry(cell)(i))
