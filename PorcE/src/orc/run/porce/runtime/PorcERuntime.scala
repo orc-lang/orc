@@ -27,6 +27,7 @@ import orc.Schedulable
 import orc.run.porce.SpecializationConfiguration
 import com.oracle.truffle.api.CompilerDirectives
 import orc.run.porce.PorcERootNode
+import java.util.concurrent.atomic.LongAdder
 
 /** The base runtime for PorcE runtimes.
  *  
@@ -48,8 +49,13 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   }
   def addRoot(root: ExecutionRoot) = roots.add(root)
 
+	private val spawnCounter = new LongAdder();
+  
+  def spawnCount = spawnCounter.sum()
+
   def beforeExecute(): Unit = {
     //PorcERuntime.resetStackDepth()
+    spawnCounter.increment()
   }
   
   import PorcERuntime._

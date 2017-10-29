@@ -3,6 +3,9 @@ package orc.run.porce;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
+
+import java.util.concurrent.atomic.LongAdder;
+
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.RootNode;
@@ -19,6 +22,8 @@ public class InvokeWithTrampolineRootNode extends RootNode {
 	protected DirectCallNode body;
 	
 	final private PorcERootNode root;
+	
+	final private LongAdder callCount = new LongAdder();
 
     public InvokeWithTrampolineRootNode(final PorcELanguage language, final RootNode root, final PorcEExecution execution) {
     	super(language);
@@ -31,11 +36,20 @@ public class InvokeWithTrampolineRootNode extends RootNode {
 		this.loop = TailCallLoop.create(holder.newRef());
     }
     
+    public long getCallCount() {
+    	return callCount.sum();
+    }
+    
+	public PorcERootNode getRoot() {
+		return root;
+	}
+
 	@Override
 	public Object execute(VirtualFrame frame) {
         long startTime = 0;
         if (CompilerDirectives.inInterpreter() && root != null)
         	startTime = System.nanoTime();
+        callCount.increment();
     	try {
     		body.call(frame.getArguments());
     	} catch (TailCallException e) {
@@ -51,11 +65,11 @@ public class InvokeWithTrampolineRootNode extends RootNode {
 	
     @Override
     public String getName() {
-        return ((RootCallTarget)body.getCallTarget()).getRootNode().getName() + "<trampoline>";
+        return root.getName() + "<trampoline>";
     }
     
     @Override
     public String toString() {
-        return getName();
+        return root.toString() + "<trampoline>";
     }
 }
