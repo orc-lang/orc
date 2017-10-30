@@ -1,7 +1,6 @@
 
 package orc.run.porce.call;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
 import com.oracle.truffle.api.CompilerDirectives;
@@ -122,7 +121,9 @@ public class TailCallLoop extends NodeBase {
 
 		private Object[] getArguments(VirtualFrame frame) {
 			Object[] arguments = (Object[]) FrameUtil.getObjectSafe(frame, argumentsSlot);
-			frame.setObject(argumentsSlot, null); // Clear it to avoid leaking during the call
+			// TODO: Evaluate in depth if this is good or bad. It showed up on a profile and probably will not 
+			//   help much because arguments will still be stored in the frame.
+			//frame.setObject(argumentsSlot, null); // Clear it to avoid leaking during the call
 			return arguments;
 		}
 
@@ -161,6 +162,15 @@ public class TailCallLoop extends NodeBase {
 			}
 		}
 
+		@Override
+		public String toString() {
+			RootNode root = getRootNode();
+			if (root instanceof PorcERootNode) {
+		        return ((PorcERootNode)root).toString() + "<tailrecloop>";
+			} else {
+				return "unknown<tailrecloop@" + hashCode() + ">";
+			}
+		}
 	}
 
 }
