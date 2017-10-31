@@ -39,21 +39,14 @@ def readFile(file) =
 def wordCount(line) =
   import class BreakIterator = "java.text.BreakIterator"
   import class Character = "java.lang.Character"
-  def wordCount'(wb, line) =
-    def containsAlphabetic(s, startPos, endPos) =
-      Character.isAlphabetic(s.codePointAt(startPos)) || (if startPos+1 <: endPos then containsAlphabetic(s, startPos+1, endPos) else false)
-    def wordCount''(startPos) =
-      wb.next()  >endPos>
-      ( if endPos >= 0
-        then
-          (if containsAlphabetic(line, startPos, endPos) then 1 else 0) + wordCount''(endPos)
-        else
-          0
-      ) #
-    wb.setText(line)  >>
-    wordCount''(0)
+  def containsAlphabetic(s, startPos, endPos) =
+    Character.isAlphabetic(s.codePointAt(startPos)) || (if startPos+1 <: endPos then containsAlphabetic(s, startPos+1, endPos) else false)
+  def wordCount'(startPos, wb, accumCount) =
+    wb.next()  >endPos>
+    (if endPos <: 0 then accumCount else (if containsAlphabetic(line, startPos, endPos) then wordCount'(endPos, wb, accumCount + 1) else wordCount'(endPos, wb, accumCount))) #
   BreakIterator.getWordInstance() >wb>
-  wordCount'(wb, line)
+  wb.setText(line)  >>
+  wordCount'(0, wb, 0)
 
 def mapOperation(filename) =
   -- Run n copies of f to build a list.

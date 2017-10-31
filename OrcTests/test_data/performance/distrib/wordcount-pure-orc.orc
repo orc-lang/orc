@@ -27,25 +27,23 @@ def checkReadableFile(file) =
 def countLine(line) =
   import class BreakIterator = "java.text.BreakIterator"
   import class Character = "java.lang.Character"
-  def wordCount'(wb, line) =
-    def containsAlphabetic(s, startPos, endPos) =
-      Character.isAlphabetic(s.codePointAt(startPos)) || (if startPos+1 <: endPos then containsAlphabetic(s, startPos+1, endPos) else false)
-    def wordCount''(startPos) =
-      wb.next()  >endPos>
-      (if endPos <: 0 then 0 else (if containsAlphabetic(line, startPos, endPos) then 1 else 0) + wordCount''(endPos)) #
-    wb.setText(line)  >>
-    wordCount''(0)
+  def containsAlphabetic(s, startPos, endPos) =
+    Character.isAlphabetic(s.codePointAt(startPos)) || (if startPos+1 <: endPos then containsAlphabetic(s, startPos+1, endPos) else false)
+  def wordCount'(startPos, wb, accumCount) =
+    wb.next()  >endPos>
+    (if endPos <: 0 then accumCount else (if containsAlphabetic(line, startPos, endPos) then wordCount'(endPos, wb, accumCount + 1) else wordCount'(endPos, wb, accumCount))) #
   BreakIterator.getWordInstance() >wb>
-  wordCount'(wb, line)
+  wb.setText(line)  >>
+  wordCount'(0, wb, 0)
 
 def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"
-  def countLinesFrom(in) =
+  def countLinesFrom(in, accumCount) =
     (in.readLine() ; null)  >nextLine>
-    (if nextLine = null then 0 else countLine(nextLine) + countLinesFrom(in)) #
+    (if nextLine = null then accumCount else countLinesFrom(in, accumCount + countLine(nextLine))) #
   BufferedReader(FileReader(file))  >in>
-  countLinesFrom(in)  >count>
+  countLinesFrom(in, 0)  >count>
   in.close()  >>
   count
 
