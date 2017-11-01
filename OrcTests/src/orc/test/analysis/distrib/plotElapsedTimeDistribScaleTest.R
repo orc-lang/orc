@@ -58,14 +58,14 @@ options(tibble.print_max = Inf, tibble.width = Inf)
 
 for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNumRuntimes > 1 & !is.na(elapsedTimeSummary$dOrcNumRuntimes)])) {
 
-  ggplot(elapsedTimeSummary[elapsedTimeSummary$program == currProgram & elapsedTimeSummary$dOrcNumRuntimes > 1,], aes(x = factor(dOrcNumRuntimes), y = speedup, group = factor(numInputFiles), colour = factor(numInputFiles), shape = factor(numInputFiles))) +
+  ggplot(elapsedTimeSummary[elapsedTimeSummary$program == currProgram & elapsedTimeSummary$dOrcNumRuntimes > 1,], aes(x = dOrcNumRuntimes, y = speedup, group = factor(numInputFiles), colour = factor(numInputFiles), shape = factor(numInputFiles))) +
   geom_line() +
   geom_point(size = 3) +
   ggtitle(paste(currProgram, "Run", runNumber)) +
   xlab("Cluster size [Number of d-Orc runtimes]") +
   labs(colour = "Number of files read", shape = "Number of files read") +
   scale_y_continuous(name = "Speed-up factor over cluster size 1", labels = function(n){format(n, scientific = FALSE)}) +
-  expand_limits(y = 1.0) +
+  expand_limits(x = 1, y = 1.0) +
   # geom_errorbar(aes(ymax = speedupSeMax, ymin = speedupSeMin), width = 0.2, alpha = 0.35) +
   theme_minimal() +
   theme(legend.justification = c(0, 1), legend.position = c(0, 1))
