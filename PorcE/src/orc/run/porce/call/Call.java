@@ -16,7 +16,7 @@ import orc.run.porce.runtime.PorcEExecutionRef;
 
 public abstract class Call<ExternalDispatch extends Dispatch> extends Expression {
 	@Child
-	protected Dispatch internalCall = null;
+	protected InternalCPSDispatch internalCall = null;
 	@Child
 	protected ExternalDispatch externalCall = null;
 	@Child
@@ -42,7 +42,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 		return InternalCPSDispatch.createBare(execution);
 	}
 
-	protected Dispatch getInternalCall() {
+	protected InternalCPSDispatch getInternalCall() {
 		if (internalCall == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
 			computeAtomicallyIfNull(() -> internalCall, (v) -> this.internalCall = v, () -> {
@@ -89,14 +89,16 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	public Object execute(final VirtualFrame frame) {
 		final Object targetValue = executeTargetObject(frame);
 		final Object[] argumentValues = new Object[arguments.length];
-		executeArguments(argumentValues, frame);
+		executeArguments(frame, argumentValues, 0);
 		
-		//clearFrameIfTail(frame);
-
-		if (profileIsIntercepted.profile(execution.get().shouldInterceptInvocation(targetValue, argumentValues))) {
+		if (profileIsIntercepted.profile(execution.get().shouldInterceptInvocation(targetValue, argumentValues))) {			
 			getInterceptedCall().executeDispatch(frame, targetValue, argumentValues);
 		} else if (profileIsInternal.profile(isInternal(targetValue))) {
-			getInternalCall().executeDispatch(frame, targetValue, argumentValues);
+			final Object[] argumentValuesI = new Object[arguments.length + 1];
+			executeArguments(frame, argumentValuesI, 1);
+			argumentValuesI[0] = ((PorcEClosure)targetValue).environment;
+
+			getInternalCall().internal.execute(frame, targetValue, argumentValuesI);
 		} else {
 			return callExternal(frame, targetValue, argumentValues);
 		}
@@ -146,11 +148,11 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
        }
 	}
 
-	@ExplodeLoop
-	public void executeArguments(final Object[] argumentValues, final VirtualFrame frame) {
-		assert argumentValues.length == arguments.length;
+	@ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
+	public void executeArguments(final VirtualFrame frame, final Object[] argumentValues, int offset) {
+		assert argumentValues.length - offset == arguments.length;
 		for (int i = 0; i < arguments.length; i++) {
-			argumentValues[i] = arguments[i].execute(frame);
+			argumentValues[i + offset] = arguments[i].execute(frame);
 		}
 	}
 

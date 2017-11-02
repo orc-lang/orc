@@ -26,10 +26,44 @@ import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.TailCallException;
 import orc.run.porce.runtime.Terminator;
 
+public class ExternalCPSDispatch extends Dispatch {
+	@Child
+	protected ExternalCPSDispatchInternal internal;
+
+	protected ExternalCPSDispatch(final PorcEExecutionRef execution) {
+		super(execution);
+		internal = ExternalCPSDispatchInternal.createBare(execution);
+	}
+	 
+	@Override
+	public void setTail(boolean v) {
+		super.setTail(v);
+		internal.setTail(v);
+	}
+		
+	public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
+		PorcEClosure pub = (PorcEClosure) arguments[0];
+		Counter counter = (Counter) arguments[1];
+		Terminator term = (Terminator) arguments[2];
+		internal.execute(frame, target, pub, counter, term, buildArguments(arguments));
+	}
+	
+	protected static Object[] buildArguments(Object[] arguments) {
+		CompilerAsserts.compilationConstant(arguments.length);
+		Object[] newArguments = new Object[arguments.length - 3];
+		System.arraycopy(arguments, 3, newArguments, 0, newArguments.length);
+		return newArguments;
+	}
+	
+	static ExternalCPSDispatch createBare(PorcEExecutionRef execution) {
+		return new ExternalCPSDispatch(execution);
+	}
+}
+
 @ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
-public abstract class ExternalCPSDispatch extends Dispatch {
-	protected ExternalCPSDispatch(final PorcEExecutionRef execution) {
+abstract class ExternalCPSDispatchInternal extends DispatchBase {
+	protected ExternalCPSDispatchInternal(final PorcEExecutionRef execution) {
 		super(execution);
 	}
 
@@ -38,46 +72,29 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 			BranchProfile.create(), BranchProfile.create() };
 	
 	@CompilerDirectives.CompilationFinal
-	protected InternalCPSDispatch dispatchP = null;
+	protected InternalCPSDispatchInternal dispatchP = null;
 	
-	protected InternalCPSDispatch getDispatchP() {
+	protected InternalCPSDispatchInternal getDispatchP() {
 		if (dispatchP == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
 			computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
-				InternalCPSDispatch n = InternalCPSDispatch.createBare(execution);
+				InternalCPSDispatchInternal n = InternalCPSDispatchInternal.createBare(execution);
 				n.setTail(isTail);
 				return n;
 			});
 		}
 		return dispatchP;
 	}
-	
-	// FIXME: PERFORMANCE: There are three calls to buildArguments here. They
-	// each allocate a new array and they cannot be eliminated by the compiler.
-	// Somehow I need to move these checks into the body so I can compute only
-	// once.
-	//
-	// The problem is that if I do that I can no longer use the automated
-	// caching which is a significant development cost. Maybe I could eliminate
-	// the new array compute on each call and then the compiler could eliminate
-	// the repeated copy. The problem is that the allocated array would need to
-	// be per CALL not per specialization-callsite. This means we cannot use
-	// Cached.
-	//
-	// It may be possible to use a special child node which the specializations
-	// can access as an argument. The problem is I don't know how to make sure
-	// arguments is passed down from the parent call.
 
-	@Specialization(guards = { "invoker != null", "canInvokeWithBoundary(invoker, target, buildArguments(arguments))" }, limit = "ExternalDirectCallMaxCacheSize")
-	public void specificDirect(final VirtualFrame frame, final Object target, final Object[] arguments,
-			@Cached("getDirectInvokerWithBoundary(target, buildArguments(arguments))") DirectInvoker invoker) {
-		PorcEClosure pub = (PorcEClosure) arguments[0];
-		Counter counter = (Counter) arguments[1];
+	public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter, Terminator term, Object[] arguments);
 
+	@Specialization(guards = { "invoker != null", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalDirectCallMaxCacheSize")
+	public void specificDirect(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
+			@Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker) {
 		// DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
 		try {
-			final Object v = invokeDirectWithBoundary(invoker, target, buildArguments(arguments));
-			getDispatchP().executeDispatch(frame, pub, new Object[] { v });
+			final Object v = invokeDirectWithBoundary(invoker, target, arguments);
+			getDispatchP().execute(frame, pub, new Object[] { pub.environment, v });
 		} catch (final TailCallException e) {
 			throw e;
 		} catch (final ExceptionHaltException e) {
@@ -98,22 +115,16 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 		// call. Calls are not allowed to keep the token if they throw an
 		// exception.
 	}
-
-	// FIXME: PERFORMANCE: See specificDirect FIXME.
 	
-	@Specialization(guards = { "isNotDirectInvoker(invoker)", "canInvokeWithBoundary(invoker, target, buildArguments(arguments))" }, limit = "ExternalCPSCallMaxCacheSize")
-	public void specific(final VirtualFrame frame, final Object target, final Object[] arguments,
-			@Cached("getInvokerWithBoundary(target, buildArguments(arguments))") Invoker invoker) {
-		PorcEClosure pub = (PorcEClosure) arguments[0];
-		Counter counter = (Counter) arguments[1];
-		Terminator term = (Terminator) arguments[2];
-
+	@Specialization(guards = { "isNotDirectInvoker(invoker)", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalCPSCallMaxCacheSize")
+	public void specific(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
+			@Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker) {
 		// Token: Passed to callContext from arguments.
 		final CPSCallContext callContext = new CPSCallContext(execution.get(), pub, counter, term, getCallSiteId());
 
 		try {
 			callContext.begin();
-			invokeWithBoundary(invoker, callContext, target, buildArguments(arguments));
+			invokeWithBoundary(invoker, callContext, target, arguments);
 		} catch (final TailCallException e) {
 			throw e;
 		} catch (final ExceptionHaltException e) {
@@ -133,31 +144,24 @@ public abstract class ExternalCPSDispatch extends Dispatch {
 	}
 
 	@Specialization(replaces = { "specific", "specificDirect" })
-	public void universal(final VirtualFrame frame, final Object target, final Object[] arguments,
+	public void universal(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
 			@Cached("createBinaryProfile()") ConditionProfile isDirectProfile) {
-		final Invoker invoker = getInvokerWithBoundary(target, buildArguments(arguments));
+		final Invoker invoker = getInvokerWithBoundary(target, arguments);
 		if (isDirectProfile.profile(invoker instanceof DirectInvoker)) {
-			specificDirect(frame, target, arguments, (DirectInvoker) invoker);
+			specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker);
 		} else {
-			specific(frame, target, arguments, invoker);
+			specific(frame, target, pub, counter, term, arguments, invoker);
 		}
 	}
 
-	static ExternalCPSDispatch createBare(PorcEExecutionRef execution) {
-		return ExternalCPSDispatchNodeGen.create(execution);
+	static ExternalCPSDispatchInternal createBare(PorcEExecutionRef execution) {
+		return ExternalCPSDispatchInternalNodeGen.create(execution);
 	}
 
 	/* Utilties */
 	
 	protected static boolean isNotDirectInvoker(final Invoker invoker) {
 		return !(invoker instanceof DirectInvoker);
-	}
-
-	protected static Object[] buildArguments(Object[] arguments) {
-		CompilerAsserts.compilationConstant(arguments.length);
-		Object[] newArguments = new Object[arguments.length - 3];
-		System.arraycopy(arguments, 3, newArguments, 0, newArguments.length);
-		return newArguments;
 	}
 
 	protected Invoker getInvokerWithBoundary(final Object target, final Object[] arguments) {

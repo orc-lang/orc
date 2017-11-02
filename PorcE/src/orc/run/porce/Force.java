@@ -88,13 +88,15 @@ public class Force {
 	        		return n;
 	        	});
         	}
-			// FIXME: This extra copy is because Join was optimized for the old
-			// way of calling. If it turns out that we generate lots of copies
-			// then we will need to provide a way to bypass this.
-            Object[] values = join.values();
-            Object[] valuesWithoutPrefix = new Object[values.length - 1];
-            System.arraycopy(values, 1, valuesWithoutPrefix, 0, valuesWithoutPrefix.length);
-            call.executeDispatch(frame, join.p(), valuesWithoutPrefix);
+        	
+            if (call instanceof InternalCPSDispatch) {
+            	((InternalCPSDispatch)call).executeDispatchWithEnvironment(frame, join.p(), join.values());
+            } else {
+                Object[] values = join.values();
+                Object[] valuesWithoutPrefix = new Object[values.length - 1];
+                System.arraycopy(values, 1, valuesWithoutPrefix, 0, valuesWithoutPrefix.length);
+                call.executeDispatch(frame, join.p(), valuesWithoutPrefix);
+            }
             return PorcEUnit.SINGLETON;
         }
 
@@ -176,7 +178,11 @@ public class Force {
                 }
             } catch (final ValueAvailable e) {
                 initializeCall(execution);
-                call.executeDispatch(frame, p, new Object[] { e.value });
+                if (call instanceof InternalCPSDispatch) {
+                	((InternalCPSDispatch)call).executeDispatchWithEnvironment(frame, p, new Object[] { null, e.value });
+                } else {
+                	call.executeDispatch(frame, p, new Object[] { e.value });
+                }
             }
 
             return PorcEUnit.SINGLETON;
