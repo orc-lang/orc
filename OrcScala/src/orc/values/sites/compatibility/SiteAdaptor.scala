@@ -79,12 +79,14 @@ object SiteAdaptor {
     * This will mutate the original array.
     */
   def convertArgs(args: Array[AnyRef]) = {
-    for (ind <- 0 until args.length) {
+    var ind = 0
+    while(ind < args.length) {
       args(ind) match {
         case i: scala.math.BigInt => args(ind) = i.bigInteger
         case d: scala.math.BigDecimal => args(ind) = d.bigDecimal
         case _ => {}
       }
+      ind += 1
     }
     new Args(args)
   }

@@ -135,6 +135,17 @@ object JavaCall {
           None
           
         // ARRAYS
+        case (_, Array1(l: java.lang.Long)) if targetCls.isArray() => {
+          Some(new OnlyDirectInvoker {
+            def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+              target.getClass().isArray() && arguments.length == 1 && arguments(0).isInstanceOf[java.lang.Long]
+            }
+            @throws[HaltException]
+            def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+              new JavaArrayElementProxy(target, arguments(0).asInstanceOf[java.lang.Long].intValue())
+            }
+          })
+        }
         case (_, Array1(_: BigInt | _: java.lang.Long | _: java.lang.Integer)) if targetCls.isArray() => {
           Some(new OnlyDirectInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
@@ -234,8 +245,11 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
       } else {
         // IT might be good to optimize the vararg case above as well, but it's much less of a hot path and it would be harder to optimizer.
         val paramTypes = invocable.getParameterTypes
-        for (i <- 0 until (arguments.length min paramTypes.size)) {
+        val end = arguments.length min paramTypes.size
+        var i = 0
+        while(i < end) {
           arguments(i) = orc2java(arguments(i), paramTypes(i))
+          i += 1
         }
         arguments
       }
@@ -315,9 +329,11 @@ class JavaMemberProxy(val theObject: Object, val memberName: String, val javaFie
         }
       
         def canGet(target: AnyRef): Boolean = {
-          target match {
-            case p: JavaMemberProxy if p.memberName == memberName && p.javaClass == javaClass => true
-            case _ => false
+          if (target.isInstanceOf[JavaMemberProxy]) {
+            val p = target.asInstanceOf[JavaMemberProxy]
+            p.memberName == memberName && p.javaClass == javaClass
+          } else {
+            false
           }
         }
       }
