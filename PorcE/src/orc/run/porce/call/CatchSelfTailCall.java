@@ -7,9 +7,11 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.LoopNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RepeatingNode;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 import orc.run.porce.Expression;
+import orc.run.porce.PorcERootNode;
 import orc.run.porce.PorcEUnit;
 import orc.run.porce.runtime.SelfTailCallException;
 
@@ -53,10 +55,13 @@ public class CatchSelfTailCall extends Expression {
 		
 		@Override
 		public String toString() {
-			// TODO: It would be nice to use the root node here. But we cannot since it will sometimes cause an infinite loop because if this is at the root of an OSR loop then this will be called for the root name.
-			return "CatchSelfTailCallRepeatingNode@" + hashCode();
+			RootNode root = getRootNode();
+			if (root instanceof PorcERootNode) {
+		        return ((PorcERootNode)root).toString() + "<selftailrecloop>";
+			} else {
+				return "unknown<selftailrecloop@" + hashCode() + ">";
+			}
 		}
-
 	}
 
 }

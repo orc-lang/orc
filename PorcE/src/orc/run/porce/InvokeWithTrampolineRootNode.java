@@ -7,6 +7,7 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import java.util.concurrent.atomic.LongAdder;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.RootNode;
 
@@ -44,12 +45,17 @@ public class InvokeWithTrampolineRootNode extends RootNode {
 		return root;
 	}
 
+	@TruffleBoundary
+	private void incrCallCount() {
+        callCount.increment();
+	}
+
 	@Override
 	public Object execute(VirtualFrame frame) {
         long startTime = 0;
         if (CompilerDirectives.inInterpreter() && root != null)
         	startTime = System.nanoTime();
-        callCount.increment();
+        incrCallCount();
     	try {
     		body.call(frame.getArguments());
     	} catch (TailCallException e) {
@@ -65,11 +71,19 @@ public class InvokeWithTrampolineRootNode extends RootNode {
 	
     @Override
     public String getName() {
-        return root.getName() + "<trampoline>";
+    	if (root == null) {
+    		return hashCode() + "<trampoline>";
+    	} else {
+    		return root.getName() + "<trampoline>";
+    	}
     }
     
     @Override
     public String toString() {
-        return root.toString() + "<trampoline>";
+    	if (root == null) {
+    		return hashCode() + "<trampoline>";
+    	} else {
+    		return root.toString() + "<trampoline>";
+    	}
     }
 }

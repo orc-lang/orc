@@ -1,6 +1,7 @@
 
 package orc.run.porce.runtime;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 
 import orc.run.porce.PorcERootNode;
@@ -13,12 +14,14 @@ final public class PorcEClosure {
 
     // TODO: PERFORMANCE: Using a frame instead of an array for captured values may perform better. Though that will mainly be true when we start using native values.
 	public PorcEClosure(final Object[] environment, final RootCallTarget body, final boolean isRoutine) {
-		if (body == null) {
-			throw new IllegalArgumentException("body == null");
-		}
-		if (environment == null) {
-			throw new IllegalArgumentException("environment == null");
-		}
+		CompilerDirectives.interpreterOnly(() -> {
+			if (body == null) {
+				throw new IllegalArgumentException("body == null");
+			}
+			if (environment == null) {
+				throw new IllegalArgumentException("environment == null");
+			}
+		});
 
 		this.environment = environment;
 		this.body = body;
@@ -66,7 +69,7 @@ final public class PorcEClosure {
     
 	@Override
 	public String toString() {
-		return "PorcEClosure@" + hashCode() + "(" + body.getRootNode().toString() + ")";
+		return "Closure(" + body.getRootNode().getName() + ")";
 	}
 
 }

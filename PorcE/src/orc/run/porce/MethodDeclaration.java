@@ -53,7 +53,7 @@ public class MethodDeclaration {
 
 		@Specialization(rewriteOn = StopCachingException.class)
 		@ExplodeLoop
-		public Object cached(final VirtualFrame frame) {
+		public Object cached(final VirtualFrame frame) throws StopCachingException {
 			CompilerAsserts.compilationConstant(capturedExprs.length);
 			int len = capturedExprs.length + nMethods;
 
