@@ -22,10 +22,13 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
     )
     override def systemProperties = super.systemProperties ++ Map(
         "graal.TruffleBackgroundCompilation" -> truffleBackgroundCompilation,
-        "orc.porce.allowSpawnInlining" -> allowSpawnInlining
+        "orc.porce.allowSpawnInlining" -> allowSpawnInlining,
+        "orc.numerics.preferLP" -> "true"
         )
         
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", optLevel.toString)
+    
+    override def toJvmArgs = Seq("-XX:+UseG1GC") ++ super.toJvmArgs
   }
   case class MyScalaExperimentalCondition(
       benchmarkClass: Class[_], 
@@ -35,6 +38,8 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       FactorDescription("benchmarkClass", "Benchmark Class", "", "The class run for this benchmark"),
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use")
     )
+    
+    override def toJvmArgs = Seq("-XX:+UseG1GC") ++ super.toJvmArgs
   }
 
   def main(args: Array[String]): Unit = {
@@ -46,24 +51,25 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         allowSpawnInlining <- Seq(true)
         fn <- Seq(
             "test_data/performance/Mandelbrot.orc",
-            "test_data/performance/8-queens.orc",
-            "test_data/performance/threadring.orc",
-            "test_data/performance/threadring2.orc",
+            //"test_data/performance/8-queens.orc",
+            //"test_data/performance/threadring.orc",
+            //"test_data/performance/threadring2.orc",
             "test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
             "test_data/performance/k-means/k-means-scala-inner.orc",
             "test_data/performance/k-means/k-means.orc",
-            "test_data/performance/bigsort/bigsort.orc",
-            "test_data/performance/bigsort/bigsort-partially-seq.orc",
+            //"test_data/performance/bigsort/bigsort.orc",
+            //"test_data/performance/bigsort/bigsort-partially-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            "test_data/performance/sssp/sssp-batched-partitioned.orc",
+            //"test_data/performance/sssp/sssp-batched-partitioned.orc",
             "test_data/performance/canneal/canneal-naive.orc",
             "test_data/performance/canneal/canneal-partitioned.orc",
-            "test_data/performance/dedup/dedup-boundedchannel.orc",
-            "test_data/performance/dedup/dedup.orc",
+            //"test_data/performance/dedup/dedup-boundedchannel.orc",
+            //"test_data/performance/dedup/dedup.orc",
             )
       } yield {
         assert(new File(fn).isFile(), fn)
@@ -73,18 +79,18 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         nCPUs <- nCPUsValues
         benchmark <- Seq(
             orc.test.item.scalabenchmarks.Mandelbrot,
-            orc.test.item.scalabenchmarks.NQueens,
-            orc.test.item.scalabenchmarks.ThreadRing,
+            //orc.test.item.scalabenchmarks.NQueens,
+            //orc.test.item.scalabenchmarks.ThreadRing,
             orc.test.item.scalabenchmarks.blackscholes.BlackScholesPar,
             orc.test.item.scalabenchmarks.kmeans.KMeansPar,
             orc.test.item.scalabenchmarks.kmeans.KMeansParManual,
-            orc.test.item.scalabenchmarks.BigSortPar,
+            //orc.test.item.scalabenchmarks.BigSortPar,
             orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial, 
             orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption,
-            orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar, 
+            //orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar, 
             orc.test.item.scalabenchmarks.canneal.Canneal, 
-            orc.test.item.scalabenchmarks.dedup.DedupNestedPar, 
-            orc.test.item.scalabenchmarks.dedup.DedupBoundedQueue, 
+            //orc.test.item.scalabenchmarks.dedup.DedupNestedPar, 
+            //orc.test.item.scalabenchmarks.dedup.DedupBoundedQueue, 
             )
       } yield {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))

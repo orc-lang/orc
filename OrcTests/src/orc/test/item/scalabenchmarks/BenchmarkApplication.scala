@@ -82,8 +82,9 @@ trait BenchmarkApplication[T] {
           println(bt)
       		results += bt
       		writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
-      		  Seq("Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", "Runtime compilation time (s) [rtCompTime]"), 
-      		  results.map(t => Seq[Any](t.iteration, t.runTime, t.cpuTime, t.compilationTime)))
+      		  Seq("Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", 
+      		      "Runtime compilation time (s) [rtCompTime]", "GC time (s) [gcTime]"), 
+      		  results.map(t => Seq[Any](t.iteration, t.runTime, t.cpuTime, t.compilationTime, t.gcTime)))
         }
       } catch {
         case _: InterruptedException =>

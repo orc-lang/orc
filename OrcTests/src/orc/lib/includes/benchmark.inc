@@ -72,8 +72,9 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 		setup() >d> timeItNoPub({ benchmark(d) }, i, size) >r> (
 			val results' = r : results
 			writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
-			  ["Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", "Runtime compilation time (s) [rtCompTime]"], 
-			  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime(), t.compilationTime()], reverse(results'))) >>
+			  ["Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", 
+			   "Runtime compilation time (s) [rtCompTime]", "GC time (s) [gcTime]"], 
+			  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime(), t.compilationTime(), t.gcTime()], reverse(results'))) >>
 			h(i+1, results')
 		)
 	if nRuns >= 1 then

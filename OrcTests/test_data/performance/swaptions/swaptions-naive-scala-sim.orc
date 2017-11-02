@@ -16,6 +16,8 @@ val nTrials = SwaptionData.nTrials()
 def eachArray(a) =
 	upto(a.length?) >i> a(i)?
 
+def signals(n) = Ift(n :> 0) >> (signal | signals(n-1))
+
 def sim(processor, swaption) =
 	val sum = DoubleAdder()
 	val sumsq = DoubleAdder()

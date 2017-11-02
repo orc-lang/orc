@@ -6,6 +6,7 @@ import orc.IllegalArgumentInvoker
 import java.lang.management.ManagementFactory
 import orc.OnlyDirectInvoker
 import orc.OrcRuntime
+import collection.JavaConverters._
 
 object Benchmark {
   val osmxbean = ManagementFactory.getOperatingSystemMXBean() match {
@@ -14,17 +15,20 @@ object Benchmark {
   }
   
   val compilermxbean = ManagementFactory.getCompilationMXBean()
+  val gcmxbean = ManagementFactory.getGarbageCollectorMXBeans()
+  
+  def getGCTime() = gcmxbean.asScala.map(_.getCollectionTime).sum
 
-  def getTimes(): (Long, Long, Long) = {
-    (System.nanoTime(), osmxbean.getProcessCpuTime, compilermxbean.getTotalCompilationTime)
+  def getTimes(): (Long, Long, Long, Long) = {
+    (System.nanoTime(), osmxbean.getProcessCpuTime, compilermxbean.getTotalCompilationTime, getGCTime())
   }
 
   def nsToS(ns: Long) = ns.toDouble / 1000 / 1000 / 1000
   def msToS(ns: Long) = ns.toDouble / 1000
 
-  def endBenchmark(start: (Long, Long, Long), iteration: Int, size: Double) = {
+  def endBenchmark(start: (Long, Long, Long, Long), iteration: Int, size: Double) = {
     val end = Benchmark.getTimes()
-    BenchmarkTimes(iteration, nsToS(end._1 - start._1), nsToS(end._2 - start._2), msToS(end._3 - start._3), size)
+    BenchmarkTimes(iteration, nsToS(end._1 - start._1), nsToS(end._2 - start._2), msToS(end._3 - start._3), msToS(end._4 - start._4), size)
   }
 }
 
@@ -46,7 +50,7 @@ object StartBenchmark extends InvokerMethod {
   }
 }
 
-case class BenchmarkTimes(iteration: Int, runTime: Double, cpuTime: Double, compilationTime: Double, problemSize: Double)
+case class BenchmarkTimes(iteration: Int, runTime: Double, cpuTime: Double, compilationTime: Double, gcTime: Double, problemSize: Double)
 
 object EndBenchmark extends InvokerMethod {  
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
@@ -57,7 +61,7 @@ object EndBenchmark extends InvokerMethod {
         }
 
         def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-          val start = arguments(0).asInstanceOf[(Long, Long, Long)]
+          val start = arguments(0).asInstanceOf[(Long, Long, Long, Long)]
           val iteration = arguments(1).asInstanceOf[Number]
           val size = arguments(2).asInstanceOf[Number]
           Benchmark.endBenchmark(start, iteration.intValue(), size.doubleValue())
