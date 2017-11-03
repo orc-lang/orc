@@ -48,7 +48,7 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 
 	protected synchronized FrameSlot getProfilerStateSlot(RootNode n) {
 		return profilerStateSlots.computeIfAbsent(n, (k) -> k.getFrameDescriptor()
-				.findOrAddFrameSlot(PorcNodeExecutionProfiler.KEY(), "profilerState", FrameSlotKind.Object));
+				.findOrAddFrameSlot(PorcNodeExecutionProfiler.KEY(), "<profilerState>", FrameSlotKind.Object));
 	}
 
 	protected class EventFactory implements ExecutionEventNodeFactory {
@@ -106,9 +106,11 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 								if (startTime >= 0) {
 									long time = System.nanoTime() - startTime;
 									Counter parentCounter = state.popCurrentCounter();
-									counter.addTime(time);
-									if (parentCounter != null)
-										parentCounter.addChildTime(time);
+									if(parentCounter != counter) {
+										counter.addTime(time);
+										if (parentCounter != null)
+											parentCounter.addChildTime(time);
+									}
 								} else {
 									// The entry failed to push
 								}

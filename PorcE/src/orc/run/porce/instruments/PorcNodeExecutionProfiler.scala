@@ -2,7 +2,6 @@ package orc.run.porce.instruments
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import java.util.ArrayDeque
-import java.util.concurrent.atomic.AtomicLong
 import java.util.HashMap
 import orc.ast.porc.PorcAST
 import scala.collection.JavaConverters._
@@ -10,6 +9,9 @@ import com.oracle.truffle.api.instrumentation.TruffleInstrument.Env
 import com.oracle.truffle.api.vm.PolyglotEngine
 import java.io.PrintWriter
 import orc.util.CsvWriter
+import java.util.concurrent.atomic.LongAdder
+import orc.util.ExecutionLogOutputStream
+import java.io.OutputStreamWriter
 
 class PorcNodeExecutionProfiler(env: Env) {
   import PorcNodeExecutionProfiler._
@@ -25,13 +27,19 @@ class PorcNodeExecutionProfiler(env: Env) {
     profilerState.get()
   }
 
+  @TruffleBoundary(allowInlining = true) @noinline
   def dispose(): Unit = {
-    dump()
+    val out = ExecutionLogOutputStream("porc-profile-dispose", "csv", "Porc profile dump")
+    if (out.isDefined) {
+      val pout = new PrintWriter(new OutputStreamWriter(out.get))
+      dump(pout)
+    }
   }
   
   
-  def dump(): Unit = synchronized {
-    val out = new PrintWriter(env.out())
+  @TruffleBoundary(allowInlining = true) @noinline
+  def dump(out: PrintWriter): Unit = synchronized {
+    //val out = new PrintWriter(env.out())
     val csv = new CsvWriter(out.write(_))
     csv.writeHeader(Seq("Type", "Porc Expression", "Hits", "Self Time", "Total Time"))
     for (entry <- nodeCounts.entrySet().asScala) {
@@ -45,6 +53,7 @@ class PorcNodeExecutionProfiler(env: Env) {
     out.flush();
   }
 
+  @TruffleBoundary(allowInlining = true) @noinline
   def reset(): Unit = synchronized {
     for (c <- nodeCounts.values().asScala) {
       c.reset()
@@ -106,40 +115,43 @@ object PorcNodeExecutionProfiler {
   }
 
   class Counter {
-    private val hits = new AtomicLong(0L)
-    private val time = new AtomicLong(0L)
-    private val childTime = new AtomicLong(0L)
+    private val hits = new LongAdder()
+    private val time = new LongAdder()
+    private val childTime = new LongAdder()
     
+    @TruffleBoundary(allowInlining = true) @noinline
     def reset() = {
-      hits.set(0)
-      time.set(0)
-      childTime.set(0)
+      hits.reset()
+      time.reset()
+      childTime.reset()
     }
 
+    @TruffleBoundary(allowInlining = true) @noinline
     def addHit(): Unit = {
-      hits.getAndIncrement()
+      hits.increment()
     }
-
+    
+    @TruffleBoundary(allowInlining = true) @noinline
     def addTime(time: Long): Unit = {
-      this.time.getAndAdd(time)
+      this.time.add(time)
     }
-
+    @TruffleBoundary(allowInlining = true) @noinline
     def addChildTime(time: Long): Unit = {
-      childTime.getAndAdd(time)
+      childTime.add(time)
     }
-
+    @TruffleBoundary(allowInlining = true) @noinline
     def getSelfTime() = {
-      time.get() - childTime.get()
+      time.sum() - childTime.sum()
     }
-
+    @TruffleBoundary(allowInlining = true) @noinline
     def getTime() = {
-      time.get()
+      time.sum()
     }
-
+    @TruffleBoundary(allowInlining = true) @noinline
     def getHits() = {
-      hits.get()
+      hits.sum()
     }
-
+    @TruffleBoundary(allowInlining = true) @noinline
     override def toString(): String = {
       s"hits = ${getHits()}, self time = ${toSeconds(getSelfTime())}s, total time = ${toSeconds(getTime())}s";
     }

@@ -47,8 +47,12 @@ public abstract class NodeBase extends Node implements HasPorcNode {
 
     @Override
     protected void onReplace(final Node newNode, final CharSequence reason) {
-        if (newNode instanceof PorcENode && porcNode().isDefined()) {
-            ((PorcENode) newNode).setPorcAST(porcNode().get());
+        if (newNode instanceof PorcENode) {
+        	PorcENode n = (PorcENode) newNode;
+        	if (porcNode().isDefined()) {
+	            n.setPorcAST(porcNode().get());
+	        }
+        	n.setTail(n.isTail);
         }
         super.onReplace(newNode, reason);
     }
@@ -56,7 +60,7 @@ public abstract class NodeBase extends Node implements HasPorcNode {
     @Override
     public Node copy() {
     	Node n = super.copy();
-    	((NodeBase)n).porcNode = Option.apply(null);
+    	//((NodeBase)n).porcNode = Option.apply(null);
     	return n;
     }
     

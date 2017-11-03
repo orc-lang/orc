@@ -8,6 +8,9 @@ import orc.run.porce.PorcELanguage
 import com.oracle.truffle.api.source.Source
 import orc.script.OrcBindings
 import java.io.File
+import java.io.PrintWriter
+import orc.util.ExecutionLogOutputStream
+import java.io.OutputStreamWriter
 
 object PorcEPolyglotLauncher {
   class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
@@ -21,7 +24,7 @@ object PorcEPolyglotLauncher {
     val runtime = PolyglotRuntime.newBuilder().setOut(System.out).setErr(System.err).build()
     val engine = PolyglotEngine.newBuilder().runtime(runtime).build()
 
-    val profilePorcNodes = true
+    val profilePorcNodes = true && System.getProperty("orc.executionlog.dir") != null
     
     if (profilePorcNodes) {
       import orc.run.porce.instruments.PorcNodeExecutionProfiler
@@ -34,13 +37,20 @@ object PorcEPolyglotLauncher {
       insts.get(PorcNodeExecutionProfilerInstrument.ID).setEnabled(true)
       val profiler = PorcNodeExecutionProfiler.get(engine)
       
+      var i = 0
+      
       val timer = new Timer(true)
       timer.scheduleAtFixedRate(new TimerTask {
         def run(): Unit = {
-          profiler.dump()
-          profiler.reset()
+          val out = ExecutionLogOutputStream(s"porc-profile-$i", "csv", "Porc profile dump")
+          i += 1
+          if (out.isDefined) {
+            val pout = new PrintWriter(new OutputStreamWriter(out.get))
+            profiler.dump(pout)
+            profiler.reset()
+          }
         }
-      }, 90 * 1000, 20 * 1000)
+      }, 90 * 1000, 30 * 1000)
     }
 
     engine.eval(Source.newBuilder(new File(options.filename)).mimeType(PorcELanguage.MIME_TYPE).build())
