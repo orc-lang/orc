@@ -21,7 +21,7 @@ import orc.values.sites.{ FunctionalSite, TalkativeSite, PartialSite, TotalSite,
 import orc.Invoker
 import orc.error.runtime.HaltException
 
-object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
+case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Ift"
   
   def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
@@ -35,7 +35,7 @@ object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with Functi
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
-object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
+case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Iff"
   
   def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
@@ -49,7 +49,7 @@ object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with Functi
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
-object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite {
+case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite {
   override def name = "Eq"
   
   def getInvokerSpecialized(a: Any, b: Any): Invoker = {

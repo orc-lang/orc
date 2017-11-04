@@ -22,6 +22,8 @@ import orc.run.Logger
 import orc.values.NumericsConfig
 import scala.collection.generic.Shrinkable
 import java.util.concurrent.ConcurrentHashMap
+import java.lang.invoke.MethodHandle
+import java.lang.invoke.MethodHandles
 
 /** @author jthywiss, dkitchin
   */
@@ -113,6 +115,8 @@ object OrcJavaCompatibility {
     val isVarArgs: Boolean
     val getName: String
     def invoke(obj: Object, args: Array[Object]): Object
+    
+    def toMethodHandle: MethodHandle
   }
 
   object Invocable {
@@ -124,6 +128,8 @@ object OrcJavaCompatibility {
       }
     }
   }
+  
+  val methodLookup = MethodHandles.publicLookup()
 
   case class InvocableMethod(method: JavaMethod) extends Invocable {
     val getParameterTypes: Array[java.lang.Class[_]] = method.getParameterTypes
@@ -131,6 +137,13 @@ object OrcJavaCompatibility {
     val isVarArgs = method.isVarArgs()
     val getName: String = method.getName()
     def invoke(obj: Object, args: Array[Object]): Object = method.invoke(obj, args: _*)
+    
+    def toMethodHandle = if (isStatic) {
+      MethodHandles.dropArguments(methodLookup.unreflect(method), 0, classOf[Object])
+    } else {
+      methodLookup.unreflect(method)
+    }
+      
   }
 
   case class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
@@ -139,6 +152,10 @@ object OrcJavaCompatibility {
     val isVarArgs = ctor.isVarArgs()
     val getName: String = ctor.getName()
     def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
+    
+    def toMethodHandle = {
+      MethodHandles.dropArguments(methodLookup.unreflectConstructor(ctor), 0, classOf[Object])
+    }
   }
 
   // TODO: This cache will be less and less useful as we move to cached invokers. We should consider removing it to save space and cache maintenance costs.

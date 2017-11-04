@@ -21,6 +21,12 @@ import orc.OrcRuntime
 import orc.util.ArrayExtensions.Array1
 import orc.values.{ Field => OrcField, Signal }
 import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocation, java2orc, orc2java }
+import java.lang.invoke.MethodHandles
+import orc.Invoker
+import orc.IllegalArgumentInvoker
+import orc.OnlyDirectInvoker
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 
 /** Due to the way dispatch is handled we cannot pass true wrappers back into Orc. They
   * would interfere with any call to which they were passed as an argument.
@@ -217,9 +223,14 @@ object JavaCall {
 /** 
   * @author jthywiss, amp
   */
-abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_], val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
+abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val targetCls: Class[_], @inline val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
   import JavaCall._
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
+  
+  val mh = {
+    val m = invocable.toMethodHandle
+    m.asSpreader(classOf[Array[Object]], m.`type`().parameterCount() - 1)
+  }
 
   def invokeDirect(theObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     //orc.run.core.Tracer.traceJavaCall(callContext)
@@ -253,8 +264,8 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
         }
         arguments
       }
-      Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
-      java2orc(invocable.invoke(theObject, finalArgs))
+      //Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
+      java2orc(mh.invoke(theObject, finalArgs))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
       case e: ExceptionInInitializerError => throw new JavaException(e.getCause())
@@ -272,7 +283,7 @@ abstract class InvocableInvoker(val invocable: Invocable, val targetCls: Class[_
   *
   * @author jthywiss, amp
   */
-class JavaMemberProxy(val theObject: Object, val memberName: String, val javaField: Option[JavaField]) extends InvokerMethod with AccessorValue {
+class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: String, @inline val javaField: Option[JavaField]) extends InvokerMethod with AccessorValue {
   def javaClass = theObject.getClass()
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
@@ -403,7 +414,7 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
   *
   * @author jthywiss, amp
   */
-case class JavaArrayElementProxy(val theArray: AnyRef, val index: Int) extends AccessorValue {
+case class JavaArrayElementProxy(@inline val theArray: AnyRef, @inline val index: Int) extends AccessorValue {
   def getAccessor(runtime: OrcRuntime, field: OrcField): Accessor = {
     field match {
       case OrcField("read") => 
@@ -442,9 +453,23 @@ abstract class ArrayAccessor extends Accessor {
   *
   * @author jthywiss, amp
   */
-case class JavaArrayDerefSite(val theArray: AnyRef, val index: Int) extends TotalSite0 {
-  def eval(): AnyRef = {
-    java2orc(JavaArray.get(theArray, index))
+case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: Int) extends InvokerMethod with FunctionalSite {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+    if (args.length == 0) {
+      val cls = theArray.getClass
+      val mh = MethodHandles.arrayElementGetter(cls).asType(MethodType.methodType(classOf[Object], classOf[Object], Integer.TYPE))
+      new OnlyDirectInvoker {
+        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+          target.isInstanceOf[JavaArrayDerefSite] && arguments.length == 0 && cls.isInstance(target.asInstanceOf[JavaArrayDerefSite].theArray)
+        }
+        def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+          val self = target.asInstanceOf[JavaArrayDerefSite]
+          java2orc(mh.invokeExact(self.theArray, self.index))
+        }
+      }
+    } else {
+      IllegalArgumentInvoker(this, args)
+    }
   }
 }
 
@@ -452,11 +477,24 @@ case class JavaArrayDerefSite(val theArray: AnyRef, val index: Int) extends Tota
   *
   * @author jthywiss, amp
   */
-case class JavaArrayAssignSite(val theArray: AnyRef, val index: Int) extends TotalSite1 {
-  def eval(a: AnyRef): AnyRef = {
-    val componentType = Option(theArray.getClass.getComponentType).getOrElse(classOf[AnyRef])
-    JavaArray.set(theArray, index, orc2java(a, componentType))
-    Signal
+case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: Int) extends InvokerMethod with NonBlockingSite {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+    if (args.length == 1) {
+      val cls = theArray.getClass
+      val mh = MethodHandles.arrayElementSetter(cls)
+      val componentType = Option(cls.getComponentType).getOrElse[Class[_]](classOf[AnyRef])
+      new OnlyDirectInvoker {
+        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+          target.isInstanceOf[JavaArrayAssignSite] && arguments.length == 1 && cls.isInstance(target.asInstanceOf[JavaArrayAssignSite].theArray)
+        }
+        def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+          val self = target.asInstanceOf[JavaArrayAssignSite]
+          mh.invoke(self.theArray, self.index, orc2java(arguments(0), componentType))
+        }
+      }
+    } else {
+      IllegalArgumentInvoker(this, args)
+    }
   }
 }
 
