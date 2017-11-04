@@ -64,7 +64,7 @@ public class CatchSelfTailCall extends Expression {
 			if (root instanceof PorcERootNode) {
 		        return ((PorcERootNode)root).toString() + "<selftailrecloop>";
 			} else {
-				return "unknown<selftailrecloop@" + hashCode() + ">";
+				return hashCode() + "<selftailrecloop>";
 			}
 		}
 	}

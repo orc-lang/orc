@@ -104,7 +104,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
         val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
         val csvWriter = new CsvWriter(traceCsv.append(_))
         val tableColumnTitles = Seq(
-            "RootNode Name [name]", "Total Time (ns) [totalTime]", "Total Calls [calls]", "Total Spawns [spawns]", 
+            "RootNode Name [name]", "Total Spawns [spawns]", 
             "Total Bind Single Future [bindSingle]", "Total Bind Multiple Futures [bindJoin]", 
             "Total Halt Continuation [halt]", "Total Publication Callbacks [publish]",
             "Total Spawned Time (ns) [totalSpawnedTime]", "Total Spawned Calls [spawnedCalls]")
@@ -112,8 +112,8 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
         for (t <- callTargetMap.values) {
           t.getRootNode match {
             case n: PorcERootNode =>
-              val (time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime) = n.getCollectedCallInformation()
-              csvWriter.writeRow(Seq(n.getName, time, nCalls, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime, 
+              val (nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime) = n.getCollectedCallInformation()
+              csvWriter.writeRow(Seq(n.getName, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime, 
                   n.porcNode.map(_.sourceTextRange.toString).getOrElse("")))
             case _ =>
               ()

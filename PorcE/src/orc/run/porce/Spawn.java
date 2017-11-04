@@ -48,9 +48,6 @@ public abstract class Spawn extends Expression {
     		@Cached("makeCall()") Dispatch call, @Cached("create()") BranchProfile spawnProfile) {
     	// Here we can inline spawns speculatively if we have not done that too much on this stack.
     	// This is very heuristic and may cause load imbalance problems in some cases.
-
-    	// TODO: PERFORMANCE: Track the runtime of the spawned closure in the interpreter. Then if it is below some constant (1ms say) call it directly if the stack is not too deep. This could address issues with load-imbalance at least in predictable cases.
-    	// TODO: This could actually cause semantic problem in the case of incorrectly implemented sites which block the calling thread. Metadata is probably needed.
 		
     	if (PorcERuntime.incrementAndCheckStackDepth()) {
     		// This check should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.

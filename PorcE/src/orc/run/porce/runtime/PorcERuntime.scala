@@ -62,7 +62,6 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   
   def potentiallySchedule(s: Schedulable) = {
     if (actuallySchedule) {
-      // TODO: Due to the memory retention caused by retained Counter/Terminator chains it may be useful to call this based on high-memory utilization as well.
       def isFast = {
         s match {
           case s: CallClosureSchedulable =>

@@ -8,7 +8,7 @@ import orc.run.porce.runtime.Counter;
 @NodeChild(value = "c", type = Expression.class)
 public abstract class SetDiscorporate extends Expression {
     @Specialization
-    public PorcEUnit spawnBindFuture(final Counter c) {
+    public PorcEUnit run(final Counter c) {
         c.setDiscorporate();
         return PorcEUnit.SINGLETON;
     }

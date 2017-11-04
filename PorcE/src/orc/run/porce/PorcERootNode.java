@@ -33,13 +33,12 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
     private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
     
-    private final AtomicLong totalTime = new AtomicLong(0);
-    private final AtomicLong totalCalls = new AtomicLong(0);
     private final AtomicLong totalSpawns = new AtomicLong(0);
     private final AtomicLong totalBindSingle = new AtomicLong(0);
     private final AtomicLong totalBindJoin = new AtomicLong(0);
     private final AtomicLong totalHalt = new AtomicLong(0);
     private final AtomicLong totalPublication = new AtomicLong(0);
+    
     @CompilationFinal
     private long timePerCall = -1;
     
@@ -52,8 +51,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     
     final public long getTimePerCall() {
     	if (timePerCall < 0 || CompilerDirectives.inInterpreter()) {
-//        	long t = totalTime.get();
-//        	long n = totalCalls.get();
         	long t = totalSpawnedTime.get();
         	long n = totalSpawnedCalls.get();
     		
@@ -64,11 +61,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     			return Long.MAX_VALUE;
     		}
     	}
-    	/*{
-        	long t = totalTime.get();
-        	long n = totalCalls.get();
-        	Logger.info(() -> "getTimePerCall " + t + "  /  " + n);
-    	}*/
 		return timePerCall;
     }
     
@@ -102,16 +94,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     	}
     }
 
-
-	final public void addRunTime(long t) {
-    	if (CompilerDirectives.inInterpreter()) {
-    		totalTime.getAndAdd(t);
-    	}
-	}
-
-	public scala.Tuple9<Long, Long, Long, Long, Long, Long, Long, Long, Long> getCollectedCallInformation() {
-		return new scala.Tuple9<>(
-				totalTime.get(), totalCalls.get(), 
+	public scala.Tuple7<Long, Long, Long, Long, Long, Long, Long> getCollectedCallInformation() {
+		return new scala.Tuple7<>(
 				totalSpawns.get(), totalBindSingle.get(), totalBindJoin.get(), totalHalt.get(), totalPublication.get(),
 				totalSpawnedTime.get(), totalSpawnedCalls.get()        
 				);
@@ -194,10 +178,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             }
         }
 
-        long startTime = 0;
-        if (CompilerDirectives.inInterpreter())
-        	startTime = System.nanoTime();
-        
         try {
             final Object ret = body.execute(frame);
             return ret;
@@ -205,11 +185,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             transferToInterpreter();
             Logger.log(Level.WARNING, () -> "Caught " + e + " in root node " + this, e);
             return PorcEUnit.SINGLETON;
-        } finally {
-        	if (CompilerDirectives.inInterpreter() && startTime > 0) {
-        		totalTime.getAndAdd(System.nanoTime() - startTime);
-        		totalCalls.getAndIncrement();
-        	}
         }
     }
 
