@@ -230,18 +230,22 @@ abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(
   /** Increment the count.
     */
   final def newToken(): Unit = {
+    if (newTokenOptimized()) {
+      doResurrect()
+    }
+  }
+  
+  final def newTokenOptimized(): Boolean = {
     val n = getAndIncrement()
     if (tracingEnabled) {
       logChange(s"+ Up from $n")
       assert(n >= 0, s"Spawning is not allowed once we go to zero count. $this")
     }
-    if (n == 0) {
-      doResurrect()
-    }
+    n == 0
   }
 
   @TruffleBoundary(allowInlining = true) @noinline
-  private final def doResurrect() = {
+  final def doResurrect() = {
     if (tracingEnabled) {
       Counter.addCounter(this)
       Logger.fine(s"Resurrected $this")

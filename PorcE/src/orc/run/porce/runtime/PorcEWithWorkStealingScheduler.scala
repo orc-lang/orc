@@ -22,6 +22,7 @@ import orc.Schedulable
 import orc.run.Orc
 import orc.run.extensions.SimpleWorkStealingScheduler
 import orc.run.porce.Logger
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** An Orc runtime engine extension which schedules Orc Tokens to
   * run in an OrcThreadPoolExecutor.
@@ -65,6 +66,7 @@ trait PorcEWithWorkStealingScheduler extends Orc {
     throw new UnsupportedOperationException("Stage not supported in PorcE");
   }
 
+  @TruffleBoundary(allowInlining = true) @noinline
   def schedule(t: Schedulable): Unit = {
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.
     //t.onSchedule()
