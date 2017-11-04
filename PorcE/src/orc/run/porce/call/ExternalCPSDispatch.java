@@ -17,7 +17,6 @@ import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.ExceptionHaltException;
 import orc.error.runtime.HaltException;
-import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
@@ -25,6 +24,8 @@ import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.TailCallException;
 import orc.run.porce.runtime.Terminator;
+import orc.run.porce.SpecializationConfiguration;
+import static orc.run.porce.SpecializationConfiguration.*;
 
 public class ExternalCPSDispatch extends Dispatch {
 	@Child
@@ -88,7 +89,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 
 	public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter, Terminator term, Object[] arguments);
 
-	@Specialization(guards = { "invoker != null", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalDirectCallMaxCacheSize")
+	@Specialization(guards = { "ExternalCPSDirectSpecialization", "invoker != null", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalDirectCallMaxCacheSize")
 	public void specificDirect(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
 			@Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker) {
 		// DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
@@ -116,7 +117,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 		// exception.
 	}
 	
-	@Specialization(guards = { "isNotDirectInvoker(invoker)", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalCPSCallMaxCacheSize")
+	@Specialization(guards = { "isNotDirectInvoker(invoker) || !ExternalCPSDirectSpecialization", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalCPSCallMaxCacheSize")
 	public void specific(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
 			@Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker) {
 		// Token: Passed to callContext from arguments.
@@ -147,7 +148,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 	public void universal(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
 			@Cached("createBinaryProfile()") ConditionProfile isDirectProfile) {
 		final Invoker invoker = getInvokerWithBoundary(target, arguments);
-		if (isDirectProfile.profile(invoker instanceof DirectInvoker)) {
+		if (ExternalCPSDirectSpecialization && isDirectProfile.profile(invoker instanceof DirectInvoker)) {
 			specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker);
 		} else {
 			specific(frame, target, pub, counter, term, arguments, invoker);

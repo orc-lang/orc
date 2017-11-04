@@ -5,6 +5,8 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
+import com.oracle.truffle.api.dsl.ImportStatic;
+import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -23,6 +25,8 @@ public class MethodDeclaration {
         }
     }
 
+    @Introspectable
+    @ImportStatic(SpecializationConfiguration.class)
 	public static class NewMethodClosure extends Expression {
 		@Children
 		protected final Expression[] capturedExprs;
@@ -51,7 +55,7 @@ public class MethodDeclaration {
 			}
 		}
 
-		@Specialization(rewriteOn = StopCachingException.class)
+		@Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
 		@ExplodeLoop
 		public Object cached(final VirtualFrame frame) throws StopCachingException {
 			CompilerAsserts.compilationConstant(capturedExprs.length);

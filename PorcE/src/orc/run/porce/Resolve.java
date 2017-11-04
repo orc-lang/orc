@@ -15,6 +15,7 @@ import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.Resolver;
 import orc.run.porce.runtime.Terminator;
+import static orc.run.porce.SpecializationConfiguration.*;
 
 public class Resolve extends Expression {
     public static boolean isNonFuture(final Object v) {
@@ -69,12 +70,13 @@ public class Resolve extends Expression {
 
     @NodeChild(value = "join", type = Expression.class)
     @NodeField(name = "execution", type = PorcEExecutionRef.class)
+    @ImportStatic(SpecializationConfiguration.class)
     public static abstract class Finish extends Expression {
         volatile static int count = 0;
         @Child
         Dispatch call = null;
 
-        @Specialization(guards = { "join.isResolved()" })
+        @Specialization(guards = { "InlineForceResolved", "join.isResolved()" })
         public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecutionRef execution, final Resolver join) {
         	if (call == null) {
         		CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -90,6 +92,12 @@ public class Resolve extends Expression {
 
         @Specialization(guards = { "join.isBlocked()" })
         public PorcEUnit blocked(final PorcEExecutionRef execution, final Resolver join) {
+            join.finish();
+            return PorcEUnit.SINGLETON;
+        }
+
+        @Specialization(guards = { "!InlineForceResolved" })
+        public PorcEUnit fallback(final PorcEExecutionRef execution, final Resolver join) {
             join.finish();
             return PorcEUnit.SINGLETON;
         }

@@ -18,6 +18,7 @@ import orc.run.porce.runtime.Join;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
 import orc.run.porce.runtime.Terminator;
+import static orc.run.porce.SpecializationConfiguration.*;
 
 public class Force {
     public static boolean isNonFuture(final Object v) {
@@ -74,11 +75,12 @@ public class Force {
     @NodeChild(value = "join", type = Expression.class)
     @NodeField(name = "execution", type = PorcEExecutionRef.class)
     @Introspectable
+    @ImportStatic(SpecializationConfiguration.class)
     public static abstract class Finish extends Expression {
         @Child
         Dispatch call = null;
 
-        @Specialization(guards = { "join.isResolved()" })
+        @Specialization(guards = { "InlineForceResolved", "join.isResolved()" })
         public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecutionRef execution, final Join join) {
         	if (call == null) {
     			CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -100,7 +102,7 @@ public class Force {
             return PorcEUnit.SINGLETON;
         }
 
-        @Specialization(guards = { "join.isHalted()" })
+        @Specialization(guards = { "InlineForceHalted", "join.isHalted()" })
         public PorcEUnit halted(final PorcEExecutionRef execution, final Join join) {
             join.c().haltToken();
             return PorcEUnit.SINGLETON;
@@ -108,6 +110,12 @@ public class Force {
 
         @Specialization(guards = { "join.isBlocked()" })
         public PorcEUnit blocked(final PorcEExecutionRef execution, final Join join) {
+            join.finish();
+            return PorcEUnit.SINGLETON;
+        }
+        
+        @Specialization(guards = { "!InlineForceResolved || !InlineForceHalted" })
+        public PorcEUnit fallback(final PorcEExecutionRef execution, final Join join) {
             join.finish();
             return PorcEUnit.SINGLETON;
         }
@@ -147,13 +155,13 @@ public class Force {
                 } else if (future instanceof orc.run.porce.runtime.Future) {
                     boundPorcEFuture.enter();
                     final Object state = ((orc.run.porce.runtime.Future) future).getInternal();
-                    if (!(state instanceof orc.run.porce.runtime.FutureConstants.Sentinel)) {
+                    if (InlineForceResolved && !(state instanceof orc.run.porce.runtime.FutureConstants.Sentinel)) {
                         throw new ValueAvailable(state);
                     } else {
                         // TODO: PERFORMANCE: It might be very useful to "forgive" a few hits on this branch, to allow futures that are initially unbound, but then bound for the rest of the run.
                         unboundPorcEFuture.enter();
                         assert state instanceof orc.run.porce.runtime.FutureConstants.Sentinel;
-                        if (state == orc.run.porce.runtime.FutureConstants.Halt) {
+                        if (InlineForceHalted && state == orc.run.porce.runtime.FutureConstants.Halt) {
                             c.haltToken();
                         } else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
                             ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
@@ -164,9 +172,9 @@ public class Force {
                 } else if (future instanceof orc.Future) {
                     boundOrcFuture.enter();
                     final FutureState state = ((orc.Future) future).get();
-                    if (state instanceof orc.FutureState.Bound) {
+                    if (InlineForceResolved && state instanceof orc.FutureState.Bound) {
                         throw new ValueAvailable(((orc.FutureState.Bound) state).value());
-                    } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
+                    } else if (InlineForceHalted && state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
                         c.haltToken();
                     } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
                         ((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));

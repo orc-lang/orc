@@ -2,6 +2,7 @@
 package orc.run.porce;
 
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -17,6 +18,7 @@ import orc.run.porce.runtime.PorcEExecutionRef;
 
 @NodeChild("counter")
 @Introspectable
+@ImportStatic(SpecializationConfiguration.class)
 public class HaltToken extends Expression {
 	
 	private final PorcEExecutionRef execution;
@@ -27,7 +29,7 @@ public class HaltToken extends Expression {
 	
 	private static Object[] EMPTY_ARGS = new Object[0];
 	
-    @Specialization
+    @Specialization(guards = { "SpecializeOnCounterStates" })
     public PorcEUnit nested(VirtualFrame frame, final CounterNested counter, 
     		@Cached("createCall()") Dispatch call, @Cached("create()") BranchProfile hasContinuationProfile) {
         PorcEClosure cont = counter.haltTokenOptimized();
@@ -38,18 +40,18 @@ public class HaltToken extends Expression {
         return PorcEUnit.SINGLETON;
     }
     
-    protected Dispatch createCall() {
-    	Dispatch n = InternalCPSDispatch.create(true, execution, isTail);
-		n.setTail(isTail);
-		return n;
-    }
-    
     @Specialization
     public PorcEUnit any(final Counter counter) {
         counter.haltToken();
         return PorcEUnit.SINGLETON;
     }
 
+    protected Dispatch createCall() {
+    	Dispatch n = InternalCPSDispatch.create(true, execution, isTail);
+		n.setTail(isTail);
+		return n;
+    }
+    
     public static HaltToken create(final Expression parent, final PorcEExecutionRef execution) {
         return HaltTokenNodeGen.create(execution, parent);
     }

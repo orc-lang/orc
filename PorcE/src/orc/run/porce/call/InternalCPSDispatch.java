@@ -105,7 +105,7 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
 	
 	// Tail calls
 		
-    @Specialization(guards = { "isTail", "getRootNodeCached() == target.body.getRootNode()" })
+    @Specialization(guards = { "SelfTCO", "isTail", "getRootNodeCached() == target.body.getRootNode()" })
     public void selfTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
         Object[] frameArguments = frame.getArguments();
         System.arraycopy(arguments, 0, frameArguments, 0, arguments.length);
@@ -136,7 +136,7 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
     public void specificInline(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
     		@Cached("target") PorcEClosure expected, 
     		@Cached("getPorcEBody(target)") Expression body, @Cached("getPorcEFrameDescriptor(target)") FrameDescriptor fd) {
-		VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
+		final VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
 		body.execute(nestedFrame);
     }
 	
