@@ -145,8 +145,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             porce.NewContinuation.create(capturingExprs, rootNode)
           }
         case porc.CallContinuation.Z(target, arguments) =>
-          // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an InternalCall of some kind.
-          porce.call.Call.CPS.create(transform(target)(innerCtx), arguments.map(transform(_)(innerCtx)).toArray, ctx.execution.newRef(), thisCtx.inTailPosition)
+          porce.call.CallContinuation.CPS.create(transform(target)(innerCtx), arguments.map(transform(_)(innerCtx)).toArray, ctx.execution.newRef(), thisCtx.inTailPosition)
         case porc.MethodCPSCall.Z(isExt, target, p, c, t, arguments) =>
           lazy val newTarget = transform(target)(innerCtx)
           val newArguments = (p +: c +: t +: arguments).map(transform(_)(innerCtx)).toArray

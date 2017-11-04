@@ -96,7 +96,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 		return invoker.canInvoke(target, arguments);
 	}
 
-	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	@TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
 	protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object target,
 			final Object[] arguments) {
 		return invoker.invokeDirect(target, arguments);

@@ -79,7 +79,7 @@ public class Resolve extends Expression {
         	if (call == null) {
         		CompilerDirectives.transferToInterpreterAndInvalidate();
 	        	computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
-	        		Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
+	        		Dispatch n = insert(InternalCPSDispatch.create(true, execution, isTail));
 	        		n.setTail(isTail);
 	        		return n;
 	        	});

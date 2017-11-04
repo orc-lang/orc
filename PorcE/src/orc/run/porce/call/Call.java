@@ -85,11 +85,18 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 		return interceptedCall;
 	}
 
+	private static final Object[] emptyArguments = new Object[0];
+	
 	@Override
 	public Object execute(final VirtualFrame frame) {
 		final Object targetValue = executeTargetObject(frame);
-		final Object[] argumentValues = new Object[arguments.length];
-		executeArguments(frame, argumentValues, 0);
+		final Object[] argumentValues;
+		if (arguments.length > 0) {
+			argumentValues = new Object[arguments.length];
+			executeArguments(frame, argumentValues, 0);
+		} else {
+			argumentValues = emptyArguments;
+		}
 		
 		if (profileIsIntercepted.profile(execution.get().shouldInterceptInvocation(targetValue, argumentValues))) {			
 			getInterceptedCall().executeDispatch(frame, targetValue, argumentValues);
@@ -153,21 +160,6 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 		assert argumentValues.length - offset == arguments.length;
 		for (int i = 0; i < arguments.length; i++) {
 			argumentValues[i + offset] = arguments[i].execute(frame);
-		}
-	}
-
-	//@ExplodeLoop
-	protected void clearFrameIfTail(VirtualFrame frame) {
-		if(isTail) {
-			FrameDescriptor descriptor = frame.getFrameDescriptor();
-			//CompilerAsserts.partialEvaluationConstant(descriptor);
-			//CompilerAsserts.partialEvaluationConstant(descriptor.getSlots());
-			for(FrameSlot slot : descriptor.getSlots()) {
-				//CompilerAsserts.partialEvaluationConstant(slot);
-				if(slot.getKind() == FrameSlotKind.Object) {
-					frame.setObject(slot, null);
-				}
-			}
 		}
 	}
 

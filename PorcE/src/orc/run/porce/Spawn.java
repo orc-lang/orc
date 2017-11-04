@@ -79,7 +79,7 @@ public abstract class Spawn extends Expression {
 	}
     
     protected Dispatch makeCall() {
-		Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
+		Dispatch n = insert(InternalCPSDispatch.create(true, execution, isTail));
 		n.setTail(isTail);
 		return n;
     }

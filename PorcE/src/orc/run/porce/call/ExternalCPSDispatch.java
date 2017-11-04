@@ -78,7 +78,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 		if (dispatchP == null) {
 			CompilerDirectives.transferToInterpreterAndInvalidate();
 			computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
-				InternalCPSDispatchInternal n = InternalCPSDispatchInternal.createBare(execution);
+				InternalCPSDispatchInternal n = insert(InternalCPSDispatchInternal.createBare(true, execution));
 				n.setTail(isTail);
 				return n;
 			});
@@ -189,13 +189,13 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 		return invoker.canInvoke(target, arguments);
 	}
 
-	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	@TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
 	protected static void invokeWithBoundary(final Invoker invoker, final CPSCallContext callContext,
 			final Object target, final Object[] arguments) {
 		invoker.invoke(callContext, target, arguments);
 	}
 
-	@TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+	@TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
 	protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object target,
 			final Object[] arguments) {
 		return invoker.invokeDirect(target, arguments);

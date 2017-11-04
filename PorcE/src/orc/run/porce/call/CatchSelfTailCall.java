@@ -28,6 +28,11 @@ public class CatchSelfTailCall extends Expression {
     	loop.executeLoop(frame);
 		return PorcEUnit.SINGLETON;
     }
+    
+    public Expression getBody() {
+    	CatchSelfTailCallRepeatingNode rep = (CatchSelfTailCallRepeatingNode) loop.getRepeatingNode();
+    	return rep.body;
+    }
 
     public static CatchSelfTailCall create(final Expression body) {
         return CatchSelfTailCallNodeGen.create(body);

@@ -36,7 +36,7 @@ public class Kill extends Expression {
     }
     
     protected static Dispatch createCallNode(final PorcEExecutionRef execution, boolean isTail) {
-    	return InternalCPSDispatch.create(execution, isTail);
+    	return InternalCPSDispatch.create(true, execution, isTail);
     }
 
     public static Kill create(final Expression counter, final Expression terminator, final Expression continuation, final PorcEExecutionRef execution) {

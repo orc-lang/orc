@@ -39,7 +39,7 @@ public class HaltToken extends Expression {
     }
     
     protected Dispatch createCall() {
-    	Dispatch n = InternalCPSDispatch.create(execution, isTail);
+    	Dispatch n = InternalCPSDispatch.create(true, execution, isTail);
 		n.setTail(isTail);
 		return n;
     }

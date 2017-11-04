@@ -172,6 +172,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         this.nArguments = nArguments;
         this.nCaptured = nCaptured;
     }
+    
+    public Expression getBody() {
+    	if (body instanceof CatchSelfTailCall) {
+    		return ((CatchSelfTailCall) body).getBody();
+    	} else {
+    		return body;
+    	}
+    }
 
     @Override
     public Object execute(final VirtualFrame frame) {

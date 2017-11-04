@@ -1,13 +1,14 @@
-
 package orc.run.porce.call;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
@@ -16,6 +17,8 @@ import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.nodes.Node.Child;
 
+import orc.run.porce.Expression;
+import orc.run.porce.PorcERootNode;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecutionRef;
@@ -27,9 +30,9 @@ public final class InternalCPSDispatch extends Dispatch {
 	@Child
 	protected InternalCPSDispatchInternal internal;
 	
-	protected InternalCPSDispatch(final PorcEExecutionRef execution) {
+	protected InternalCPSDispatch(final boolean forceInline, final PorcEExecutionRef execution) {
 		super(execution);
-		internal = InternalCPSDispatchInternal.createBare(execution);
+		internal = InternalCPSDispatchInternal.createBare(forceInline, execution);
 	}
 	 
 	@Override
@@ -55,15 +58,23 @@ public final class InternalCPSDispatch extends Dispatch {
 		return newArguments;
 	}
 	
+	static InternalCPSDispatch createBare(final boolean forceInline, PorcEExecutionRef execution) {
+		return new InternalCPSDispatch(forceInline, execution);
+	}
+	
 	static InternalCPSDispatch createBare(PorcEExecutionRef execution) {
-		return new InternalCPSDispatch(execution);
+		return new InternalCPSDispatch(false, execution);
 	}
 	
 	public static Dispatch create(final PorcEExecutionRef execution, boolean isTail) {
+		return create(false, execution, isTail);
+	}
+	
+	public static Dispatch create(final boolean forceInline, final PorcEExecutionRef execution, boolean isTail) {
 		if (isTail)
-			return createBare(execution);
+			return createBare(forceInline, execution);
 		else
-			return CatchTailDispatch.create(createBare(execution), execution);
+			return CatchTailDispatch.create(createBare(forceInline, execution), execution);
 	}
 }
 
@@ -71,8 +82,11 @@ public final class InternalCPSDispatch extends Dispatch {
 @ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
 abstract class InternalCPSDispatchInternal extends DispatchBase {
-	protected InternalCPSDispatchInternal(final PorcEExecutionRef execution) {
+	protected final boolean forceInline;
+
+	protected InternalCPSDispatchInternal(final boolean forceInline, final PorcEExecutionRef execution) {
 		super(execution);
+		this.forceInline = forceInline;
     }
 	
 	@CompilationFinal
@@ -100,7 +114,7 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
     
 	// The RootNode guard is required so that selfTail can be activated even
 	// after tail has activated.
-    @Specialization(guards = { "isTail", "getRootNodeCached() != target.body.getRootNode()" })
+    @Specialization(guards = { "UniversalTCO", "isTail", "getRootNodeCached() != target.body.getRootNode()" })
     public void tail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
     		@Cached("createBinaryProfile()") ConditionProfile reuseTCE) {
     	Object[] thisArguments = frame.getArguments();
@@ -116,21 +130,35 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
     }
     
     // Non-tail calls
-    
+ 
+	@Specialization(guards = { "TruffleASTInlining", "forceInline", "body != null", "matchesSpecific(target, expected)" }, 
+			limit = "InternalCallMaxCacheSize")
+    public void specificInline(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
+    		@Cached("target") PorcEClosure expected, 
+    		@Cached("getPorcEBody(target)") Expression body, @Cached("getPorcEFrameDescriptor(target)") FrameDescriptor fd) {
+		VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
+		body.execute(nestedFrame);
+    }
+	
 	@Specialization(guards = { "matchesSpecific(target, expected)" }, limit = "InternalCallMaxCacheSize")
     public void specific(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
     		@Cached("target") PorcEClosure expected, @Cached("create(expected.body)") DirectCallNode call) {
+		CompilerDirectives.interpreterOnly(() -> {
+			if (forceInline)
+				call.forceInlining();
+		});
+		
         call.call(arguments);
     }
 	
-	@Specialization(replaces = { "specific" })
+	@Specialization(replaces = { "specific", "specificInline" })
     public void universal(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments, 
     		@Cached("create()") IndirectCallNode call) {
         call.call(target.body, arguments);
     }
 		
-	static InternalCPSDispatchInternal createBare(final PorcEExecutionRef execution) {
-		return InternalCPSDispatchInternalNodeGen.create(execution);
+	static InternalCPSDispatchInternal createBare(final boolean forceInline, final PorcEExecutionRef execution) {
+		return InternalCPSDispatchInternalNodeGen.create(forceInline, execution);
 	}	
 	
 	
@@ -138,5 +166,23 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
 
 	protected static boolean matchesSpecific(PorcEClosure target, PorcEClosure expected) {
 		return expected.body == target.body;
-	}	
+	}
+	
+	protected static Expression getPorcEBody(PorcEClosure target) {
+		RootNode r = target.body.getRootNode();
+		if (r instanceof PorcERootNode) {
+			return (Expression)((PorcERootNode)r).getBody().copy();
+		} else {
+			return null;
+		}
+	}
+	
+	protected static FrameDescriptor getPorcEFrameDescriptor(PorcEClosure target) {
+		RootNode r = target.body.getRootNode();
+		if (r instanceof PorcERootNode) {
+			return r.getFrameDescriptor();
+		} else {
+			return null;
+		}
+	}
 }
