@@ -12,7 +12,7 @@
 # URL: http://orc.csres.utexas.edu/license.shtml .
 #
 
-set -u
+set -o nounset
 
 CONDOR_CHIRP="$(condor_config_val libexec)/condor_chirp"
 
