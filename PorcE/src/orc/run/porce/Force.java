@@ -110,7 +110,7 @@ public class Force {
 
         @Specialization(guards = { "join.isBlocked()" })
         public PorcEUnit blocked(final PorcEExecutionRef execution, final Join join) {
-            join.finish();
+            join.finishBlocked();
             return PorcEUnit.SINGLETON;
         }
         
@@ -160,13 +160,11 @@ public class Force {
                     } else {
                         // TODO: PERFORMANCE: It might be very useful to "forgive" a few hits on this branch, to allow futures that are initially unbound, but then bound for the rest of the run.
                         unboundPorcEFuture.enter();
-                        assert state instanceof orc.run.porce.runtime.FutureConstants.Sentinel;
+                        //assert state instanceof orc.run.porce.runtime.FutureConstants.Sentinel;
                         if (InlineForceHalted && state == orc.run.porce.runtime.FutureConstants.Halt) {
                             c.haltToken();
-                        } else if (state == orc.run.porce.runtime.FutureConstants.Unbound) {
-                            ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
                         } else {
-                            InternalPorcEError.unreachable(this);
+                            ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
                         }
                     }
                 } else if (future instanceof orc.Future) {
@@ -176,10 +174,8 @@ public class Force {
                         throw new ValueAvailable(((orc.FutureState.Bound) state).value());
                     } else if (InlineForceHalted && state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
                         c.haltToken();
-                    } else if (state == orc.run.porce.runtime.FutureConstants.Orc_Unbound) {
-                        ((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
                     } else {
-                        InternalPorcEError.unreachable(this);
+                        ((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
                     }
                 } else {
                     InternalPorcEError.unreachable(this);

@@ -212,10 +212,25 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     */
   @TruffleBoundary @noinline
   def finish() = {
-    //Logger.fine(s"Finishing $this with: $state ${values.mkString(", ")}")
-
-    assert(isBlocked())
-
+    if(isBlocked()) {
+      finishBlocked()
+    } else {
+      unsafe.fullFence()  
+      t.addChild(this)
+      if(isHaltedST()) {
+        halt()
+      } else {
+        checkComplete(0)
+      }
+    }
+  }
+  
+  /** As finish(), but this must be in the blocked state.
+    *
+    * This is slightly faster and has smaller code-size than finish().  
+    */
+  @TruffleBoundary @noinline
+  def finishBlocked() = {
     // This fence is needed because we are doing non-atomic accesses before this call, but
     // after this we may have updates or reads from other threads.
     unsafe.fullFence()

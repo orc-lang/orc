@@ -72,7 +72,6 @@ public class Resolve extends Expression {
     @NodeField(name = "execution", type = PorcEExecutionRef.class)
     @ImportStatic(SpecializationConfiguration.class)
     public static abstract class Finish extends Expression {
-        volatile static int count = 0;
         @Child
         Dispatch call = null;
 
@@ -92,7 +91,7 @@ public class Resolve extends Expression {
 
         @Specialization(guards = { "join.isBlocked()" })
         public PorcEUnit blocked(final PorcEExecutionRef execution, final Resolver join) {
-            join.finish();
+            join.finishBlocked();
             return PorcEUnit.SINGLETON;
         }
 
