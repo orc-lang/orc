@@ -2,7 +2,9 @@ package orc.run.porce.call;
 
 import java.util.concurrent.locks.Lock;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -48,7 +50,7 @@ public class TailCallLoop extends NodeBase {
 		LoopNode loop = getLoopNode(frame);
 		CatchTailCallRepeatingNode repeating = (CatchTailCallRepeatingNode) loop.getRepeatingNode();
 		repeating.initFrame(frame);
-		repeating.setNextCall(frame, e.target, e.arguments);
+		repeating.setNextCall(frame, e);
 		loop.executeLoop(frame);
 	}
 
@@ -77,21 +79,23 @@ public class TailCallLoop extends NodeBase {
     	@Child
     	protected TailCallNode next;
     	
-    	protected final PorcEClosure target;
-    	protected final ConditionProfile thisOrOtherProfile = ConditionProfile.createCountingProfile();
+    	protected final RootCallTarget target;
+    	protected final ConditionProfile firstCallProfile = ConditionProfile.createCountingProfile();
+    	protected final ConditionProfile nextCallProfile = ConditionProfile.createCountingProfile();
+    	protected final ConditionProfile tceReuseProfile = ConditionProfile.createBinaryProfile();
     	
-    	protected TailCallSpecializationNode(PorcEClosure target, TailCallNode next, PorcEExecutionRef execution) {
+    	protected TailCallSpecializationNode(RootCallTarget target, TailCallNode next, PorcEExecutionRef execution) {
     		super(execution);
     		this.target = target;
-    		this.call = DirectCallNode.create(target.body);
+    		this.call = DirectCallNode.create(target);
     		this.next = next;
 		}
 
-    	protected boolean matchesSpecific(PorcEClosure target) {
-    		return this.target.body == target.body;
+    	protected boolean matchesSpecific(RootCallTarget target) {
+    		return this.target == target;
     	}
     	
-    	public static TailCallNode create(final PorcEClosure target, final TailCallNode next, final PorcEExecutionRef execution) {
+    	public static TailCallNode create(final RootCallTarget target, final TailCallNode next, final PorcEExecutionRef execution) {
 			return new TailCallSpecializationNode(target, next, execution);
     	}
     }
@@ -111,20 +115,17 @@ public class TailCallLoop extends NodeBase {
     	
 		private final BranchProfile tailCallProfile = BranchProfile.create();
 		private final BranchProfile returnProfile = BranchProfile.create();
+		private final ConditionProfile loopTCEReuseProfile = ConditionProfile.createBinaryProfile();
 		
-		private final FrameSlot targetSlot;
-		private final FrameSlot argumentsSlot;
 		private final FrameSlot tceSlot;
 		
 		@Child
-		protected TailCallNode call;
+		protected TailCallNode rootCall;
 
 		public CatchTailCallRepeatingNode(FrameDescriptor frameDescriptor, PorcEExecutionRef execution) {
 			this.execution = execution;
 			this.tceSlot = frameDescriptor.findOrAddFrameSlot("<tailCallException>", FrameSlotKind.Object);
-			this.targetSlot = frameDescriptor.findOrAddFrameSlot("<OSRtailCallTarget>", FrameSlotKind.Object);
-			this.argumentsSlot = frameDescriptor.findOrAddFrameSlot("<OSRtailCallArguments>", FrameSlotKind.Object);
-			this.call = TailCallTerminalNode.create(execution);
+			this.rootCall = TailCallTerminalNode.create(execution);
 		}
 		
 		public void initFrame(VirtualFrame frame) {
@@ -136,83 +137,137 @@ public class TailCallLoop extends NodeBase {
 			return tce;
 		}
 		
-		public void setNextCall(VirtualFrame frame, PorcEClosure target, Object[] arguments) {
-			frame.setObject(targetSlot, target);
-			frame.setObject(argumentsSlot, arguments);
+		public void setNextCall(VirtualFrame frame, ConditionProfile TCEReusedProfile, TailCallException e) {
+			if (TCEReusedProfile.profile(e != getTCE(frame)))
+				getTCE(frame).set(e.getTarget(), e.getArguments());
+		}
+		
+		public void setNextCall(VirtualFrame frame, TailCallException e) {
+			if (e != getTCE(frame))
+				getTCE(frame).set(e.getTarget(), e.getArguments());
 		}
 
-		private Object getTarget(VirtualFrame frame) {
-			Object target = FrameUtil.getObjectSafe(frame, targetSlot);
-			frame.setObject(targetSlot, null); // Clear it to avoid leaking during the call
-			return target;
-		}
-
-		private Object[] getArguments(VirtualFrame frame) {
-			Object[] arguments = (Object[]) FrameUtil.getObjectSafe(frame, argumentsSlot);
-			// TODO: Evaluate in depth if this is good or bad. It showed up on a profile and probably will not 
-			//   help much because arguments will still be stored in the frame.
-			frame.setObject(argumentsSlot, null); // Clear it to avoid leaking during the call
-			return arguments;
+		protected TailCallException throwTCE(final VirtualFrame frame) {
+			TailCallException tce = getTCE(frame);
+			throw tce;
 		}
 
 		@Override
 		public boolean executeRepeating(VirtualFrame frame) {
 			try {
-				Object target = getTarget(frame);
-				Object[] arguments = getArguments(frame);
-				//call.executeDispatch(frame, target, arguments, true);
-				invokeCalls(call, frame, (PorcEClosure)target, arguments);
+				invokeCalls(rootCall, frame);
 				returnProfile.enter();
 				return false;
 			} catch (TailCallException e) {
 				tailCallProfile.enter();
-	    		setNextCall(frame, e.target, e.arguments);
+				assert e == getTCE(frame);
+				//setNextCall(frame, loopTCEReuseProfile, e);
 				return true;
 			}
 		}
 
-		/*
-		private void invokeCalls(final TailCallNode call, final VirtualFrame frame, 
-				final PorcEClosure target, final Object[] arguments, 
-				final boolean isFirstCall) {
+		@ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_EXPLODE_UNTIL_RETURN)
+		protected boolean alreadyContains(final RootCallTarget target) {
+			TailCallNode call = rootCall;
+			while(true) {
+				if (call instanceof TailCallSpecializationNode) {
+					TailCallSpecializationNode spec = (TailCallSpecializationNode) call;
+					if (spec.matchesSpecific(target)) {
+						return true;
+					} else {
+						call = spec.next;
+						continue;
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+		
+		protected TailCallSpecializationNode extendAfter(TailCallNode call, final RootCallTarget target) {
+			Lock lock = getLock();
+			lock.lock();
+			try {
+				TailCallTerminalNode term = (TailCallTerminalNode) call;
+				//Logger.info(() -> "Extending: " + target.toString() + " " + target.hashCode());
+				return (TailCallSpecializationNode) term.replace(
+	    				TailCallSpecializationNode.create(target, TailCallTerminalNode.create(execution), execution), 
+	    				"Extend TailCall chain: " + target.toString() + " " + target.hashCode());
+			} finally {
+				lock.unlock();
+			}
+		}
+
+
+		@ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_EXPLODE_UNTIL_RETURN)
+		private void invokeCalls(TailCallNode call, final VirtualFrame frame) {
+			final RootCallTarget target = getTCE(frame).getTarget();
+			//final Object[] arguments = getTCE(frame).getArguments();
+			while(true) {
+				if (call instanceof TailCallSpecializationNode) {
+					TailCallSpecializationNode spec = (TailCallSpecializationNode) call;
+					if (spec.firstCallProfile.profile(spec.matchesSpecific(target))) {
+						invokeAdditionalCalls(call, frame);
+						break;
+					} else {
+						call = spec.next;
+						continue;
+					}
+				} else {
+		    		CompilerDirectives.transferToInterpreterAndInvalidate();
+					assert call instanceof TailCallTerminalNode;
+		    		extendCalls(extendAfter(call, target), frame);
+		    		break;
+				}
+			}
+		}
+
+		private void extendCalls(TailCallSpecializationNode spec, final VirtualFrame frame) {
+			CompilerAsserts.neverPartOfCompilation();
+			while(true) {
+				try {
+					final Object[] arguments = getTCE(frame).getArguments();
+					spec.call.call(arguments);
+					break;
+				} catch (TailCallException e) {
+					setNextCall(frame, e);
+					//assert e == getTCE(frame);
+					
+					final RootCallTarget target = getTCE(frame).getTarget();
+					
+					if (alreadyContains(target)) {
+						throwTCE(frame);
+						break;
+					}
+					spec = extendAfter(spec.next, target);
+				}
+			}
+		}
+		
+		private void invokeAdditionalCalls(final TailCallNode call, final VirtualFrame frame) {
+			final RootCallTarget target = getTCE(frame).getTarget();
+			final Object[] arguments = getTCE(frame).getArguments();
 			if (call instanceof TailCallSpecializationNode) {
 				TailCallSpecializationNode spec = (TailCallSpecializationNode) call;
-				if (spec.thisOrOtherProfile.profile(spec.matchesSpecific(target))) {
+				if (spec.nextCallProfile.profile(spec.matchesSpecific(target))) {
 					try {
 						spec.call.call(arguments);
 					} catch (TailCallException e) {
-						invokeCalls(spec.next, frame, e.target, e.arguments, false);
+						//assert e == getTCE(frame);
+						setNextCall(frame, spec.tceReuseProfile, e);
+						invokeAdditionalCalls(spec.next, frame);
 					}
 				} else {
-					invokeCalls(spec.next, frame, target, arguments, isFirstCall);
+					throwTCE(frame);
 				}
 			} else {
-				assert call instanceof TailCallTerminalNode;
-				if (isFirstCall) {
-		    		CompilerDirectives.transferToInterpreterAndInvalidate();
-		    		Lock lock = getLock();
-		    		lock.lock();
-		    		try {
-						TailCallTerminalNode term = (TailCallTerminalNode) call;
-			    		term.replace(
-			    				TailCallSpecializationNode.create(target, TailCallTerminalNode.create(execution), execution), 
-			    				"Extend TailCall chain");
-			    		//final Object t = target;
-			    		//Logger.info(() -> "Extending " + getRootNode().getName() + " with " + t);
-		    		} finally {
-		    			lock.unlock();
-		    		}
-				}
-				TailCallException tce = getTCE(frame);
-				tce.target = target;
-				tce.arguments = arguments;
-	    		throw tce;
+				throwTCE(frame);
 			}
 		}
-		*/
-		
+
+		/*
 		@ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
-		private void invokeCalls(TailCallNode call, final VirtualFrame frame, PorcEClosure target, Object[] arguments) {
+		private void invokeCalls(TailCallNode call, final VirtualFrame frame, RootCallTarget target, Object[] arguments) {
 			boolean isFirstCall = true;
 			// getRootNode().getCurrentContext(orc.run.porce.PorcELanguage.class);
 			while(true) {
@@ -260,6 +315,7 @@ public class TailCallLoop extends NodeBase {
 				}
 			}
 		}
+			*/
 		
 		@Override
 		public String toString() {

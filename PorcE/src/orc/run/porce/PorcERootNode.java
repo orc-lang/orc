@@ -24,6 +24,7 @@ import orc.error.runtime.HaltException;
 import orc.run.porce.call.CatchSelfTailCall;
 import orc.run.porce.runtime.KilledException;
 import orc.run.porce.runtime.SourceSectionFromPorc;
+import orc.run.porce.runtime.TailCallException;
 
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final static boolean assertionsEnabled = false;
@@ -181,7 +182,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         try {
             final Object ret = body.execute(frame);
             return ret;
-        } catch (KilledException | HaltException e) {
+        } catch (final TailCallException e) {
+			throw e;
+		} catch (Throwable e) {
             transferToInterpreter();
             Logger.log(Level.WARNING, () -> "Caught " + e + " in root node " + this, e);
             return PorcEUnit.SINGLETON;

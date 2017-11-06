@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
@@ -29,25 +30,37 @@ import orc.run.porce.runtime.TailCallException;
 public final class InternalCPSDispatch extends Dispatch {
 	@Child
 	protected InternalCPSDispatchInternal internal;
+	@Child
+	protected InternalCPSDispatchTailInternal tail;
 	
 	protected InternalCPSDispatch(final boolean forceInline, final PorcEExecutionRef execution) {
 		super(execution);
 		internal = InternalCPSDispatchInternal.createBare(forceInline, execution);
+		tail = InternalCPSDispatchTailInternal.createBare(forceInline, execution);
 	}
 	 
 	@Override
 	public void setTail(boolean v) {
 		super.setTail(v);
 		internal.setTail(v);
+		tail.setTail(v);
 	}
 	
 	public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
 		arguments[0] = ((PorcEClosure)target).environment;
-		internal.execute(frame, (PorcEClosure)target, arguments);
+		if (isTail) {
+			tail.execute(frame, target, arguments, true);
+		} else {
+			internal.execute(frame, (PorcEClosure)target, arguments);
+		}
 	}
 	
 	public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
-		internal.execute(frame, (PorcEClosure)target, buildArguments((PorcEClosure)target, arguments));
+		if (isTail) {
+			tail.execute(frame, target, arguments, false);
+		} else {
+			internal.execute(frame, (PorcEClosure)target, buildArguments((PorcEClosure)target, arguments));
+		}
 	}
 	
 	protected static Object[] buildArguments(PorcEClosure target, Object[] arguments) {
@@ -78,6 +91,109 @@ public final class InternalCPSDispatch extends Dispatch {
 	}
 }
 
+@ImportStatic({ SpecializationConfiguration.class })
+@Introspectable
+abstract class InternalCPSDispatchTailInternal extends DispatchBase {
+	protected final boolean forceInline;
+
+	protected InternalCPSDispatchTailInternal(final boolean forceInline, final PorcEExecutionRef execution) {
+		super(execution);
+		this.forceInline = forceInline;
+    }
+	
+	@CompilationFinal
+	private RootNode rootNode;
+	
+	public RootNode getRootNodeCached() {
+		if (CompilerDirectives.inInterpreter()) {
+			rootNode = getRootNode();
+		}
+		return rootNode;
+	}
+
+	public abstract void execute(VirtualFrame frame, Object target, Object[] arguments, boolean hasEnvironment);
+
+	// Tail calls
+	
+	@Specialization(guards = { "SelfTCO", "isTail", "getRootNodeCached() == target.body.getRootNode()" })
+	public void selfTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments, boolean hasEnvironment) {
+		Object[] frameArguments = frame.getArguments();
+		if (hasEnvironment) {
+		    System.arraycopy(arguments, 0, frameArguments, 0, arguments.length);
+		} else {
+			frameArguments[0] = target.environment;
+		    System.arraycopy(arguments, 0, frameArguments, 1, arguments.length);
+		}
+	    throw new SelfTailCallException();
+	}
+	
+	// The RootNode guard is required so that selfTail can be activated even
+	// after tail has activated.
+	// TODO: PERFORMANCE: I think the TCO loop might perform way better if I had this specialize on the body in target,
+	//           any maybe break up the closure so it can be traced by the compiler. This would allow the compiler
+	//           to more easily determine that this exception will always have a specific body to call meaning that
+	//           it can be handled in the same place in the trampoline.
+	@Specialization(guards = { "UniversalTCO", "isTail", "getRootNodeCached() != target.body.getRootNode()", "target.body == expected" }, 
+			limit = "InternalCallMaxCacheSize")
+	public void tailSpecific(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments, boolean hasEnvironment,
+			@Cached("target.body") RootCallTarget expected,
+			@Cached("createBinaryProfile()") ConditionProfile reuseTCE) {
+    	Object[] thisArguments = frame.getArguments();
+    	if (reuseTCE.profile(
+    			/*arguments.length <= 16 &&*/ thisArguments.length == 17 && thisArguments[16] instanceof TailCallException)) {
+    		TailCallException tce = (TailCallException)thisArguments[16];
+    		if (hasEnvironment) {
+    			System.arraycopy(arguments, 0, tce.arguments, 0, Math.min(arguments.length, 16));
+    		} else {
+    			tce.arguments[0] = target.environment;
+    			System.arraycopy(arguments, 0, tce.arguments, 1, Math.min(arguments.length, 15));    			
+    		}
+    		tce.target = expected;
+    		throw tce;
+    	} else {
+    		if (hasEnvironment) {
+    			throw TailCallException.create(expected, arguments);
+    		} else {
+    			TailCallException tce = TailCallException.create(target.body);
+    			tce.arguments[0] = target.environment;
+    			System.arraycopy(arguments, 0, tce.arguments, 1, Math.min(arguments.length, 15));    			
+    			throw tce;
+    		}
+    	}
+	}
+	
+	@Specialization(guards = { "UniversalTCO", "isTail", "getRootNodeCached() != target.body.getRootNode()" })
+	public void tail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments, boolean hasEnvironment,
+			@Cached("createBinaryProfile()") ConditionProfile reuseTCE) {
+    	Object[] thisArguments = frame.getArguments();
+    	if (reuseTCE.profile(
+    			/*arguments.length <= 16 &&*/ thisArguments.length == 17 && thisArguments[16] instanceof TailCallException)) {
+    		TailCallException tce = (TailCallException)thisArguments[16];
+    		if (hasEnvironment) {
+    			System.arraycopy(arguments, 0, tce.arguments, 0, Math.min(arguments.length, 16));
+    		} else {
+    			tce.arguments[0] = target.environment;
+    			System.arraycopy(arguments, 0, tce.arguments, 1, Math.min(arguments.length, 15));    			
+    		}
+    		tce.target = target.body;
+    		throw tce;
+    	} else {
+    		if (hasEnvironment) {
+    			throw TailCallException.create(target.body, arguments);
+    		} else {
+    			TailCallException tce = TailCallException.create(target.body);
+    			tce.arguments[0] = target.environment;
+    			System.arraycopy(arguments, 0, tce.arguments, 1, Math.min(arguments.length, 15));    			
+    			throw tce;
+    		}
+    	}
+	}
+		
+	static InternalCPSDispatchTailInternal createBare(final boolean forceInline, final PorcEExecutionRef execution) {
+		return InternalCPSDispatchTailInternalNodeGen.create(forceInline, execution);
+	}	
+}
+
 
 @ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
@@ -103,32 +219,35 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
 
 	// TODO: It would probably improve compile times to split tail and non-tail cases into separate classes so only one set has to be checked for any call.
 	
-	// Tail calls
-		
-    @Specialization(guards = { "SelfTCO", "isTail", "getRootNodeCached() == target.body.getRootNode()" })
-    public void selfTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
-        Object[] frameArguments = frame.getArguments();
-        System.arraycopy(arguments, 0, frameArguments, 0, arguments.length);
-        throw new SelfTailCallException();
-    }
-    
-	// The RootNode guard is required so that selfTail can be activated even
-	// after tail has activated.
-    @Specialization(guards = { "UniversalTCO", "isTail", "getRootNodeCached() != target.body.getRootNode()" })
-    public void tail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
-    		@Cached("createBinaryProfile()") ConditionProfile reuseTCE) {
-    	Object[] thisArguments = frame.getArguments();
-    	if (reuseTCE.profile(
-    			/*arguments.length <= 16 &&*/ thisArguments.length == 17 && thisArguments[16] instanceof TailCallException)) {
-    		TailCallException tce = (TailCallException)thisArguments[16];
-    		System.arraycopy(arguments, 0, tce.arguments, 0, arguments.length);
-    		tce.target = target;
-    		throw tce;
-    	}
-    	
-        throw TailCallException.create(target, arguments);
-    }
-    
+//	// Tail calls
+//		
+//    @Specialization(guards = { "SelfTCO", "isTail", "getRootNodeCached() == target.body.getRootNode()" })
+//    public void selfTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
+//        Object[] frameArguments = frame.getArguments();
+//        System.arraycopy(arguments, 0, frameArguments, 0, arguments.length);
+//        throw new SelfTailCallException();
+//    }
+//    
+//	// The RootNode guard is required so that selfTail can be activated even
+//	// after tail has activated.
+//    // TODO: PERFORMANCE: I think the TCO loop might perform way better if I had this specialize on the body in target,
+//    //           any maybe break up the closure so it can be traced by the compiler. This would allow the compiler
+//    //           to more easily determine that this exception will always have a specific body to call meaning that
+//    //           it can be handled in the same place in the trampoline.
+//    @Specialization(guards = { "UniversalTCO", "isTail", "getRootNodeCached() != target.body.getRootNode()", "target.body == expected" }, 
+//    		limit = "InternalCallMaxCacheSize")
+//    public void tailSpecific(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
+//    		@Cached("target.body") RootCallTarget expected,
+//    		@Cached("createBinaryProfile()") ConditionProfile reuseTCE) {
+//    	throw TailCallException.throwReused(frame, reuseTCE, expected, arguments);
+//    }
+//    
+//    @Specialization(guards = { "UniversalTCO", "isTail", "getRootNodeCached() != target.body.getRootNode()" })
+//    public void tail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
+//    		@Cached("createBinaryProfile()") ConditionProfile reuseTCE) {
+//    	throw TailCallException.throwReused(frame, reuseTCE, target.body, arguments);
+//    }
+//    
     // Non-tail calls
  
 	@Specialization(guards = { "TruffleASTInlining", "forceInline", "body != null", "matchesSpecific(target, expected)" }, 
