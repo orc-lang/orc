@@ -152,10 +152,8 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           val exec = ctx.execution.newRef()
           isExt match {
             case TTrue if !usingInvokationInterceptor =>
-              // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
               porce.call.Call.CPS.create(newTarget, newArguments, exec, thisCtx.inTailPosition)
             case TFalse if !usingInvokationInterceptor =>
-              // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
               porce.call.Call.CPS.create(newTarget, newArguments, exec, thisCtx.inTailPosition)
             case _ =>
               porce.call.Call.CPS.create(newTarget, newArguments, exec, thisCtx.inTailPosition)
@@ -166,10 +164,8 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           val exec = ctx.execution.newRef()
           isExt match {
             case TTrue =>
-              // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
               porce.call.Call.Direct.create(newTarget, newArguments, exec)
             case TFalse =>
-              // TODO: COMPILATION PERFORMANCE: This could really cut in directly and call using an specialized Call node.
               porce.call.Call.Direct.create(newTarget, newArguments, exec)
             case TUnknown =>
               porce.call.Call.Direct.create(newTarget, newArguments, exec)

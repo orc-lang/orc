@@ -54,7 +54,7 @@ public class CallContinuation<ExternalDispatch extends Dispatch> extends Express
 		executeArguments(frame, argumentValuesI, 1);
 		argumentValuesI[0] = ((PorcEClosure)targetValue).environment;
 
-		getInternalCall().internal.execute(frame, targetValue, argumentValuesI);
+		getInternalCall().executeDispatchWithEnvironment(frame, targetValue, argumentValuesI);
 		return PorcEUnit.SINGLETON;
 	}
 

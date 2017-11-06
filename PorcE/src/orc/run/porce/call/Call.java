@@ -105,7 +105,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 			executeArguments(frame, argumentValuesI, 1);
 			argumentValuesI[0] = ((PorcEClosure)targetValue).environment;
 
-			getInternalCall().internal.execute(frame, targetValue, argumentValuesI);
+			getInternalCall().executeDispatchWithEnvironment(frame, targetValue, argumentValuesI);
 		} else {
 			return callExternal(frame, targetValue, argumentValues);
 		}
