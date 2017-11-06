@@ -23,14 +23,14 @@ public abstract class SpecializationConfiguration {
 		Integer.parseInt(System.getProperty("orc.porce.cache.externalCPSCallMaxCacheSize", "12"));
 
 	/**
-	 * The maximum number of ns a functions must take and still have the spawn
+	 * The maximum number of ns a functions may take and still have the spawn
 	 * inlined.
 	 * 
 	 * The system property is in floating-point ms.
 	 */
 	@CompilationFinal
 	public static final int InlineAverageTimeLimit = 
-		(int) (Double.parseDouble(System.getProperty("orc.porce.inlineAverageTimeLimit", "1.0")) * 1000000);
+		(int) (Double.parseDouble(System.getProperty("orc.porce.inlineAverageTimeLimit", "10.0")) * 1000000);
 	@CompilationFinal
 	public static final int MinCallsForTimePerCall = 100;
 

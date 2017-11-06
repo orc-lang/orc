@@ -134,8 +134,10 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
         csvWriter.writeHeader(tableColumnTitles)
         for (t <- trampolineMap.values().asScala) {
           t.getRootNode match {
-            case n: InvokeWithTrampolineRootNode =>
+            case n: InvokeWithTrampolineRootNode if n.getRoot() != null =>
               csvWriter.writeRow(Seq(n.getRoot().getName, n.getCallCount, n.getRoot().porcNode.map(_.sourceTextRange.toString).getOrElse("")))
+            case n: InvokeWithTrampolineRootNode =>
+              Logger.warning(s"Failed to dump trampoline call counts since root == null: $n")
             case _ =>
               ()
           }
