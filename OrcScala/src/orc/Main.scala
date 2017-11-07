@@ -12,7 +12,7 @@
 //
 package orc
 
-import java.io.{ FileInputStream, FileNotFoundException, IOException, InputStreamReader, PrintStream }
+import java.io.{ FileInputStream, FileNotFoundException, InputStreamReader, PrintStream }
 
 import scala.collection.JavaConverters.{ asScalaBufferConverter, seqAsJavaListConverter }
 
@@ -21,7 +21,7 @@ import orc.error.compiletime.CompilationException
 import orc.error.runtime.JavaException
 import orc.run.OrcDesktopEventAction
 import orc.script.{ OrcBindings, OrcScriptEngine }
-import orc.util.{ CmdLineParser, CmdLineUsageException, PrintVersionAndMessageException, UnrecognizedCmdLineOptArgException }
+import orc.util.{ CmdLineParser, ExitStatus, MainExit, PrintVersionAndMessageException, UnrecognizedCmdLineOptArgException }
 import orc.values.Format
 
 import javax.script.{ ScriptEngine, ScriptEngineManager, ScriptException }
@@ -32,10 +32,11 @@ import javax.script.ScriptContext.ENGINE_SCOPE
   *
   * @author jthywiss
   */
-object Main {
+object Main extends MainExit {
   class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
+    haltOnUncaughtException()
     try {
       Logger.config(orcImplName + " " + orcVersion)
       val options = new OrcCmdLineOptions()
@@ -76,23 +77,21 @@ object Main {
       }
       compiledOrc.run(printPubs)
 
-    } catch {
-      case e: CmdLineUsageException => { Console.err.println("Orc: " + e.getMessage); System.exit(EXIT_USAGE) }
-      case e: PrintVersionAndMessageException => println(orcImplName + " " + orcVersion + "\n" + orcURL + "\n" + orcCopyright + "\n\n" + e.getMessage)
-      case e: FileNotFoundException => { Console.err.println("Orc: File not found: " + e.getMessage); System.exit(EXIT_NOINPUT) }
-      case ioe: IOException => { Thread.currentThread.getUncaughtExceptionHandler.uncaughtException(Thread.currentThread(), ioe); System.exit(EXIT_IOERR) }
-      case e: ScriptException if (e.getCause == null) => { Console.err.println(e.getMessage); System.exit(EXIT_RUN_FAIL) }
-      case e: ScriptException if (e.getCause.isInstanceOf[CompilationException]) => { System.exit(EXIT_COMPILE_FAIL) } // Ignore compilation errors. They will already have been printed.
-      case e: ScriptException => { printException(e.getCause, Console.err, false); System.exit(EXIT_RUN_FAIL) }
-    }
+    } catch mainUncaughtExceptionHandler
   }
 
-  /* Exit status codes. Values >= 64 are from BSD conventions in sysexit.h */
-  val EXIT_RUN_FAIL = 1
-  val EXIT_COMPILE_FAIL = 2
-  val EXIT_USAGE = 64
-  val EXIT_NOINPUT = 66
-  val EXIT_IOERR = 74
+  private val ourUEH: PartialFunction[Throwable, Unit] = {
+    case e: PrintVersionAndMessageException => println(orcImplName + " " + orcVersion + "\n" + orcURL + "\n" + orcCopyright + "\n\n" + e.getMessage)
+    case e: FileNotFoundException => { failureExit("File not found: " + e.getMessage, ExitStatus.NoInput) }
+    case e: ScriptException if (e.getCause == null) => { Console.err.println(e.getMessage); System.exit(ExitStatusRunFail) }
+    case e: ScriptException if (e.getCause.isInstanceOf[CompilationException]) => { System.exit(ExitStatusCompileFail) } // Ignore compilation errors. They will already have been printed.
+    case e: ScriptException => { printException(e.getCause, Console.err, false); System.exit(ExitStatusRunFail) }
+  }
+  val mainUncaughtExceptionHandler = ourUEH orElse basicUncaughtExceptionHandler
+
+  /* Exit status codes */
+  val ExitStatusRunFail = 1
+  val ExitStatusCompileFail = 2
 
   val versionProperties = {
     val p = new java.util.Properties()

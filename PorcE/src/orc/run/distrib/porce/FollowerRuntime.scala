@@ -21,7 +21,7 @@ import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
 
 import orc.{ CaughtEvent, OrcEvent, OrcExecutionOptions }
-import orc.util.{ CmdLineParser, CmdLineUsageException }
+import orc.util.{ CmdLineParser, MainExit }
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -87,7 +87,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
             val newConnAsLeaderConn = connection.asInstanceOf[RuntimeConnection[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd]]
             val leaderLocation = new LeaderLocation(0, newConnAsLeaderConn)
             val oldMappedValue = runtimeLocationMap.put(0, leaderLocation)
-            assert(oldMappedValue == None)
+            assert(oldMappedValue == None, s"Received DOrcConnectionHeader for leader, but runtimeLocationMap already had ${oldMappedValue.get} for location 0 (leader)")
 
             initiatingWithRuntimeId match {
               case Some(_) =>
@@ -101,7 +101,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
             val newConnAsPeerConn = connection.asInstanceOf[RuntimeConnection[OrcPeerCmd, OrcPeerCmd]]
             val newPeerLoc = new PeerLocationImpl(sid, newConnAsPeerConn)
             val oldMappedValue = runtimeLocationMap.put(sid, newPeerLoc)
-            assert(oldMappedValue == None)
+            assert(oldMappedValue == None, f"Received DOrcConnectionHeader for peer $sid%#x, but runtimeLocationMap already had ${oldMappedValue.get} for location $sid%#x")
 
             initiatingWithRuntimeId match {
               case Some(_) =>
@@ -267,8 +267,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
     Logger.Connect.entering(getClass.getName, "addPeer", Seq(peerRuntimeId.toString, peerListenAddress))
     if (peerListenAddress == boundListenAddress || peerRuntimeId == runtimeId) {
       /* Hey, that's me! */
-      assert(peerRuntimeId == runtimeId)
-      assert(runtimeLocationMap(peerRuntimeId) == here)
+      assert(peerRuntimeId == runtimeId, s"addPeer for self, but runtimeId was $peerRuntimeId instead of $runtimeId")
+      assert(runtimeLocationMap(peerRuntimeId) == here, s"addPeer for self, but runtimeLocationMap != here")
     } else {
       if (shouldOpen(peerListenAddress)) {
         Logger.Connect.finest("New peer; Will open connection")
@@ -319,7 +319,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
   def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions, rootCounterId: CounterProxyManager#DistributedCounterId): Unit = {
     Logger.ProgLoad.entering(getClass.getName, "loadProgram")
 
-    assert(programs.isEmpty) /* For now */
+    assert(programs.isEmpty, "loadProgram with other program(s) loaded") /* For now */
     if (programs.isEmpty) {
       Logger.Downcall.fine("starting scheduler")
       startScheduler(options)
@@ -348,7 +348,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
         //}
     }
 
-    assert(programs.isEmpty) /* For now */
+    assert(programs.isEmpty, "unloadProgram left program(s) loaded") /* For now */
     if (programs.isEmpty) {
       stopScheduler()
       super.stop()
@@ -367,26 +367,22 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
 }
 
-object FollowerRuntime {
+object FollowerRuntime extends MainExit {
 
   def main(args: Array[String]): Unit = {
+    haltOnUncaughtException()
     try {
       Logger.config(orc.Main.orcImplName + " " + orc.Main.orcVersion)
       val frOptions = new FollowerRuntimeCmdLineOptions()
       frOptions.parseCmdLine(args)
       Logger.config("FollowerRuntime options & operands: " + frOptions.composeCmdLine().mkString(" "))
-  
+
       Logger.Connect.finer("Calling FollowerRuntime.listen")
       new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
-    } catch {
-      case e: CmdLineUsageException => { Console.err.println("Orc: " + e.getMessage); System.exit(EXIT_USAGE) }
-      case ioe: IOException => { Thread.currentThread.getUncaughtExceptionHandler.uncaughtException(Thread.currentThread(), ioe); System.exit(EXIT_IOERR) }
-    }
+    } catch mainUncaughtExceptionHandler
   }
 
-  /* Exit status codes. Values >= 64 are from BSD conventions in sysexit.h */
-  val EXIT_USAGE = 64
-  val EXIT_IOERR = 74
+  val mainUncaughtExceptionHandler = basicUncaughtExceptionHandler
 
 }
 

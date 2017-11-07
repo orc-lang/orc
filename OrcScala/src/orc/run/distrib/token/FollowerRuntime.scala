@@ -23,7 +23,7 @@ import scala.xml.XML
 
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.xml.OrcXML
-import orc.util.{ CmdLineParser, CmdLineUsageException }
+import orc.util.{ CmdLineParser, MainExit }
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -330,26 +330,22 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
 }
 
-object FollowerRuntime {
+object FollowerRuntime extends MainExit {
 
   def main(args: Array[String]): Unit = {
+    haltOnUncaughtException()
     try {
       Logger.config(orc.Main.orcImplName + " " + orc.Main.orcVersion)
       val frOptions = new FollowerRuntimeCmdLineOptions()
       frOptions.parseCmdLine(args)
       Logger.config("FollowerRuntime options & operands: " + frOptions.composeCmdLine().mkString(" "))
-  
+
       Logger.finer("Calling FollowerRuntime.listen")
       new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
-    } catch {
-      case e: CmdLineUsageException => { Console.err.println("Orc: " + e.getMessage); System.exit(EXIT_USAGE) }
-      case ioe: IOException => { Thread.currentThread.getUncaughtExceptionHandler.uncaughtException(Thread.currentThread(), ioe); System.exit(EXIT_IOERR) }
-    }
+    } catch mainUncaughtExceptionHandler
   }
 
-  /* Exit status codes. Values >= 64 are from BSD conventions in sysexit.h */
-  val EXIT_USAGE = 64
-  val EXIT_IOERR = 74
+  val mainUncaughtExceptionHandler = basicUncaughtExceptionHandler
 
 }
 
