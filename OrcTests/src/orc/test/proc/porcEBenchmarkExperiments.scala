@@ -196,8 +196,8 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
 
 
 object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
-  def softTimeLimit: Double = 60 * 7
-  override def hardTimeLimit: Double = 60 * 9
+  def softTimeLimit: Double = 60 * 5
+  override def hardTimeLimit: Double = 60 * 6.25
   
   trait Option extends Product with Serializable {
     def optopt(enabled: Boolean): Map[String, String] = Map()
@@ -378,26 +378,15 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
       val porce = for {
         nCPUs <- nCPUsValues
         fn <- Seq(
-            "test_data/performance/Mandelbrot.orc",
-            //"test_data/performance/8-queens.orc",
-            //"test_data/performance/threadring.orc",
-            //"test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
-            //"test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
-            "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
-            //"test_data/performance/black-scholes/black-scholes-scala-compute-partially-seq.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
-            "test_data/performance/k-means/k-means-scala-inner.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
             "test_data/performance/k-means/k-means.orc",
-            //"test_data/performance/bigsort/bigsort.orc",
-            //"test_data/performance/bigsort/bigsort-partially-seq.orc",
+            "test_data/performance/k-means/k-means-scala-inner.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
-            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            //"test_data/performance/sssp/sssp-batched-partitioned.orc",
-            //"test_data/performance/canneal/canneal-naive.orc",
-            //"test_data/performance/canneal/canneal-partitioned.orc",
-            "test_data/performance/dedup/dedup-boundedchannel.orc",
             "test_data/performance/dedup/dedup.orc",
+            "test_data/performance/dedup/dedup-boundedchannel.orc",
+            "test_data/performance/Mandelbrot.orc",
             )
         step <- 0 to Steps.size
       } yield {
