@@ -84,17 +84,26 @@ bootstrapStatistic <- function(data, statistic, confidence = 0.95, R = 10000, st
   if (is.na(statName))
     statName <- deparse(substitute(statistic))
 
-  b <- boot(data, function(d, sel) {
-    statistic(d[sel])
-  }, R)
-  ci <- boot.ci(b, conf=confidence, type="perc")
-  #stopifnot(ci$t0 == statistic(data))
-  s <- ci$t0
-  lowerBound <- ci$percent[4]
-  upperBound <- ci$percent[5]
-  confidence <- ci$percent[1]
-  r <- data.frame(statistic = statName, value = s, upperBound = upperBound, lowerBound = lowerBound, confidence = confidence, nSamples = length(data))
-  r
+  if (length(data) > 2) {
+    b <- boot(data, function(d, sel) {
+      statistic(d[sel])
+    }, R)
+    ci <- boot.ci(b, conf=confidence, type="perc")
+    #stopifnot(ci$t0 == statistic(data))
+    s <- ci$t0
+    lowerBound <- ci$percent[4]
+    upperBound <- ci$percent[5]
+    confidence <- ci$percent[1]
+    r <- data.frame(statistic = statName, value = s, upperBound = upperBound, lowerBound = lowerBound, confidence = confidence, nSamples = length(data))
+    r
+  } else {
+    s <- mean(data)
+    lowerBound <- NA
+    upperBound <- NA
+    confidence <- 0
+    r <- data.frame(statistic = statName, value = s, upperBound = upperBound, lowerBound = lowerBound, confidence = confidence, nSamples = length(data))
+    r
+  }
 }
 
 .bootstrapStatistics_Internal <- function(data, colNames, statistics, confidence, R) {

@@ -19,8 +19,8 @@ source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 
 
-#dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171015-a001-merged")
-dataDir <- file.path(localExperimentDataDir, "20171024-a003")
+#dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
+dataDir <- file.path(localExperimentDataDir, "20171103-a002")
 
 if(!exists("processedData")) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
@@ -30,7 +30,7 @@ if(!exists("processedData")) {
   prunedData <- data %>% dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs"), rep, elapsedTime, 5, 50, 120)
 
   processedData <- prunedData %>%
-    group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>% bootstrapStatistics(c("elapsedTime", "cpuTime"), mean) %>%
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs, allowAllSpawnInlining, universalTCO, truffleASTInlining) %>% bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime"), mean) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_lowerBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_upperBound) %>%
@@ -73,12 +73,19 @@ timeAndUtilizationPlot <- p +
 
 #print(timeAndUtilizationPlot)
 
+utilizationPlot <- function(problemName) {
+  p <- processedData %>% filter(benchmarkProblemName == problemName) %>% ggplot(aes(
+    x = factor(nCPUs),
+    fill = benchmarkName)) +
+    labs(x = "Number of CPUs", color = "Benchmark", fill = "Benchmark") +
+    theme_minimal() + scale_fill_brewer(palette="Dark2")
 
-utilizationPlot <- p + geom_col_errorbar(aes(y = cpuUtilization / nCPUs,
-                                             ymin = cpuUtilization_lowerBound / nCPUs,
-                                             ymax = cpuUtilization_upperBound / nCPUs)) +
-  labs(y = "Avg. Processor Utilization Over Run") +
-  ylim(c(0, 1))
+  p + geom_col_errorbar(aes(y = cpuUtilization / nCPUs,
+                            ymin = cpuUtilization_lowerBound / nCPUs,
+                            ymax = cpuUtilization_upperBound / nCPUs)) +
+    labs(y = "Avg. Processor Utilization Over Run") +
+    ylim(c(0, 1))
+}
 
 #print(utilizationPlot)
 
@@ -154,11 +161,13 @@ normalizedPerformancePlots <- lapply(levels(processedData$benchmarkProblemName),
 
 #print(normalizedPerformancePlots)
 
-sampleCountsPlot <- sampleCounts %>% ggplot(aes(
+sampleCountData <- processedData %>% select(benchmarkName, nCPUs, nSamples) %>% spread(nCPUs, nSamples)
+
+sampleCountsPlot <- sampleCountData %>% ggplot(aes(
   x = factor(nCPUs),
   y = nSamples,
   fill = benchmarkName)) +
-  labs(y = "Speed up over Scala", x = "Number of CPUs", fill = "Benchmark", shape = "Language") +
+  labs(y = "Number of Samples", x = "Number of CPUs", fill = "Benchmark", shape = "Language") +
   theme_minimal() + fillPalette + facet_wrap(~benchmarkProblemName) +
   geom_col(position = position_dodge()) +
   geom_text(aes(label = format(nSamples, digits = 2, nsmall=0),
@@ -167,8 +176,6 @@ sampleCountsPlot <- sampleCounts %>% ggplot(aes(
 # print(sampleCountsPlot)
 
 # Sample count table
-
-sampleCountData <- processedData %>% select(benchmarkName, nCPUs, nSamples) %>% spread(nCPUs, nSamples)
 
 sampleCountTable <- function(format) {
   kable(sampleCountData, format = format, caption = "The number of repetitions which were used for analysis from each run.")
