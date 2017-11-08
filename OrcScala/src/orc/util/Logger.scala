@@ -63,10 +63,10 @@ import scala.annotation.elidable
 class Logger(name: String) {
   lazy val julLogger: java.util.logging.Logger = java.util.logging.Logger.getLogger(name)
 
-  @inline final def log(level: Level, msg: => String): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg)
-  //@inline final def log(level: Level, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, param1)
-  @inline final def log(level: Level, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, params.toArray)
-  @inline final def log(level: Level, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) julLogger.log(level, msg, thrown)
+  @inline final def log(level: Level, msg: => String): Unit = if (julLogger.isLoggable(level)) { val caller = getCaller(); julLogger.logp(level, caller._1, caller._2, msg) }
+  //@inline final def log(level: Level, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) { val caller = getCaller(); julLogger.logp(level, caller._1, caller._2, msg, param1) }
+  @inline final def log(level: Level, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) { val caller = getCaller(); julLogger.logp(level, caller._1, caller._2, msg, params.toArray) }
+  @inline final def log(level: Level, msg: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(level)) { val caller = getCaller(); julLogger.logp(level, caller._1, caller._2, msg, thrown) }
   @inline final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg)
   @inline final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String, param1: Object): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg, param1)
   @inline final def logp(level: Level, sourceClass: => String, sourceMethod: => String, msg: => String, params: => Seq[Object]): Unit = if (julLogger.isLoggable(level)) julLogger.logp(level, sourceClass, sourceMethod, msg, params.toArray)
@@ -77,18 +77,47 @@ class Logger(name: String) {
   @inline final def exiting(sourceClass: => String, sourceMethod: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.exiting(sourceClass, sourceMethod)
   @inline final def exiting(sourceClass: => String, sourceMethod: => String, result: Object): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.exiting(sourceClass, sourceMethod, result)
   @inline final def throwing(sourceClass: => String, sourceMethod: => String, thrown: Throwable): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.throwing(sourceClass, sourceMethod, thrown)
-  @inline final def severe(msg: => String): Unit = if (julLogger.isLoggable(Level.SEVERE)) julLogger.severe(msg)
-  @inline final def warning(msg: => String): Unit = if (julLogger.isLoggable(Level.WARNING)) julLogger.warning(msg)
-  @inline final def info(msg: => String): Unit = if (julLogger.isLoggable(Level.INFO)) julLogger.info(msg)
-  @inline final def config(msg: => String): Unit = if (julLogger.isLoggable(Level.CONFIG)) julLogger.config(msg)
-  @inline final def fine(msg: => String): Unit = if (julLogger.isLoggable(Level.FINE)) julLogger.fine(msg)
-  @inline final def finer(msg: => String): Unit = if (julLogger.isLoggable(Level.FINER)) julLogger.finer(msg)
-  @inline final def finest(msg: => String): Unit = if (julLogger.isLoggable(Level.FINEST)) julLogger.finest(msg)
+  @inline final def severe(msg: => String): Unit = if (julLogger.isLoggable(Level.SEVERE)) { val caller = getCaller(); julLogger.logp(Level.SEVERE, caller._1, caller._2, msg) }
+  @inline final def warning(msg: => String): Unit = if (julLogger.isLoggable(Level.WARNING)) { val caller = getCaller(); julLogger.logp(Level.WARNING, caller._1, caller._2, msg) }
+  @inline final def info(msg: => String): Unit = if (julLogger.isLoggable(Level.INFO)) { val caller = getCaller(); julLogger.logp(Level.INFO, caller._1, caller._2, msg) }
+  @inline final def config(msg: => String): Unit = if (julLogger.isLoggable(Level.CONFIG)) { val caller = getCaller(); julLogger.logp(Level.CONFIG, caller._1, caller._2, msg) }
+  @inline final def fine(msg: => String): Unit = if (julLogger.isLoggable(Level.FINE)) { val caller = getCaller(); julLogger.logp(Level.FINE, caller._1, caller._2, msg) }
+  @inline final def finer(msg: => String): Unit = if (julLogger.isLoggable(Level.FINER)) { val caller = getCaller(); julLogger.logp(Level.FINER, caller._1, caller._2, msg) }
+  @inline final def finest(msg: => String): Unit = if (julLogger.isLoggable(Level.FINEST)) { val caller = getCaller(); julLogger.logp(Level.FINEST, caller._1, caller._2, msg) }
 
   @elidable(elidable.ASSERTION) @inline
   final def check(assertion: Boolean, message: => Any) {
     if (!assertion)
       log(Level.SEVERE, "Check failed.", new java.lang.Exception("check failed: " + message))
+  }
+
+  @inline private def getCaller(): (String, String) = {
+    val stackTrace = new Throwable().getStackTrace
+    var stackIndex = 0;
+    /* First, skip down to the logging method calls */
+    while (!isLoggerClassName(stackTrace(stackIndex).getClassName)) {
+      stackIndex += 1
+      if (stackIndex >= stackTrace.length) return (null, null)
+    }
+    /* Next, skip past the logging (and reflections) method calls */
+    while (isLoggerClassName(stackTrace(stackIndex).getClassName) || isReflectionClassName(stackTrace(stackIndex).getClassName)) {
+      stackIndex += 1
+      if (stackIndex >= stackTrace.length) return (null, null)
+    }
+    /* Now, we're at the caller of the topmost Logging method */
+    (stackTrace(stackIndex).getClassName, stackTrace(stackIndex).getMethodName)
+  }
+
+  @inline private def isLoggerClassName(className: String): Boolean = {
+    className.equals("java.util.logging.Logger") ||
+    className.startsWith("java.util.logging.LoggingProxyImpl") ||
+    className.startsWith("sun.util.logging.") ||
+    className.equals("orc.util.Logger") ||
+    (className.startsWith("orc.") && className.endsWith(".Logger")) 
+  }
+
+  @inline private def isReflectionClassName(className: String): Boolean = {
+    className.startsWith("java.lang.reflect.") || className.startsWith("sun.reflect.")
   }
 
 }
