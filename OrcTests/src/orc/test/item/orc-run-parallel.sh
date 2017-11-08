@@ -39,6 +39,54 @@ get_job_attr_at_submit ()
   printf "%s\n" "$trimback"
 }
 
+is_occupied_tcp_port ()
+{
+  netstat -aln | awk '/^tcp/ {print $4}' | egrep -o '[0-9]+$' | grep "^$1\$" >/dev/null
+}
+
+find_free_tcp_port()
+{
+  filename=$1
+  basePort=$2
+  maxPort=$3
+
+  # Only symlink() is specified as atomic on both POSIX and NFSv3.
+  # Note that shell noclobber and mkdir are NOT necessarily atomic.
+  while ! ln -s "${filename}" "${filename}.lock" 2>/dev/null; do
+    sleep 1
+  done
+
+  trap "mv \"${filename}.lock\" \"${filename}.deleteme\" && rm -f \"${filename}.deleteme\"" 0
+
+  if [ -e "${filename}" ]
+  then
+    read lastPort <"${filename}"
+    nextPort=$((lastPort + 1))
+    if [ ${nextPort} -gt ${maxPort} ]
+    then
+      nextPort=${basePort}
+    fi
+  else
+    nextPort=${basePort}
+  fi
+
+  while is_occupied_tcp_port $nextPort
+  do
+    nextPort=$((nextPort + 1))
+    if [ ${nextPort} -gt ${maxPort} ]
+    then
+      nextPort=${basePort}
+    fi
+  done
+
+  echo ${nextPort} >"${filename}"
+
+  mv "${filename}.lock" "${filename}.deleteme" && rm -f "${filename}.deleteme"
+
+  trap - 0
+
+  echo ${nextPort}
+}
 
 main ()
 {
@@ -51,6 +99,7 @@ main ()
   listen_sockaddr="$(get_job_attr ListenerSockAddrFile)"
   max_wait_listeners="$(get_job_attr ListenerWaitTimeout)"
   base_port_number="$(get_job_attr OrcPortBase)"
+  max_port_number="$(get_job_attr OrcPortMax)"
 
   JavaCmd="$(get_job_attr JavaCmd)"
   JavaClassPath="$(get_job_attr JavaClassPath)"
@@ -61,7 +110,7 @@ main ()
   JavaMainArgumentsOtherNodes="$(get_job_attr JavaMainArgumentsOtherNodes)"
 
   host_fqdn="$(hostname -f)"
-  port=$(( ${base_port_number} + ${_CONDOR_PROCNO} ))
+  port=$(find_free_tcp_port /tmp/.orc-last-port ${base_port_number} ${max_port_number})
 
   echo "${clusterid} ${job_status_timestamp} ${_CONDOR_PROCNO} ${host_fqdn} ${port}" | ${CONDOR_CHIRP} put -mode cwa - ${listen_sockaddr}
 

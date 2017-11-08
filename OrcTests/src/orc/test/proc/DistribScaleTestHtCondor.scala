@@ -96,6 +96,7 @@ object DistribScaleTestHtCondor {
       val followerOpts = DistribTestConfig.expanded.getIterableFor("followerOpts").getOrElse(Seq())
 
       val dOrcPortBase = DistribTestConfig.expanded.get("dOrcPortBase").get.toInt
+      val dOrcPortMax = DistribTestConfig.expanded.get("dOrcPortMax").get.toInt
 
       val remoteRunOutputDir = DistribTestConfig.expanded("runOutputDir").stripSuffix("/")
 
@@ -170,8 +171,9 @@ object DistribScaleTestHtCondor {
         |# Duration for leader to wait for all followers, in seconds:
         |+ListenerWaitTimeout = 1200
         |
-        |# Port number for followers is $(OrcPortBase)+$(Node):
+        |# TCP listen port numbers for dOrc are in $(OrcPortBase) to $(OrcPortMax) range:
         |+OrcPortBase = """ + dOrcPortBase + """
+        |+OrcPortMax = """ + dOrcPortMax + """
         |
         |
         |##
