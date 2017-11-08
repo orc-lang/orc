@@ -113,7 +113,9 @@ class Logger(name: String) {
     className.startsWith("java.util.logging.LoggingProxyImpl") ||
     className.startsWith("sun.util.logging.") ||
     className.equals("orc.util.Logger") ||
-    (className.startsWith("orc.") && className.endsWith(".Logger")) 
+    className.equals("orc.util.Logger$") ||
+    (className.startsWith("orc.") && className.endsWith(".Logger")) ||
+    (className.startsWith("orc.") && className.endsWith(".Logger$"))
   }
 
   @inline private def isReflectionClassName(className: String): Boolean = {
