@@ -33,7 +33,7 @@ object DistribScaleTestHtCondor {
     for (experimentalCondition <- experimentalConditions) {
       configForExperimentalCondition(experimentalCondition)
       for (testProgram <- testPrograms) {
-        //jobClusters.append(new OrcCondorJobCluster(testRunNumber, testProgram, experimentalCondition))
+        jobClusters.append(new OrcCondorJobCluster(testRunNumber, testProgram, experimentalCondition))
       }
       if (experimentalCondition.dOrcNumRuntimes == 1) {
         /* Special case: Measure the Java WordCount in the 1 runtime (non-distributed) experimental condition */
