@@ -91,8 +91,6 @@ object OsCommand {
     OsCommandResult(exitStatus, stdoutString, stderrString)
   }
 
-
-  
   @throws[OsCommandException]
   def checkExitValue(description: String, result: OsCommandResult): Unit = {
     if (result.exitStatus != 0) {
@@ -101,6 +99,30 @@ object OsCommand {
       throw new OsCommandException(s"${description} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
     }
   }
+
+  /** Quotes the given string such that shell parsing will not split it into
+    *  multiple tokens. WARNING: This does not remove all special meaning of
+    *  characters, such as parameter/variable expansions, globbing, comments,
+    *  etc.
+    */
+  def quoteShellToken(str: String): String = {
+    def escape(ch: Char) = if ("\t\n &();<>|".contains(ch)) "\\" + ch else ch.toString
+    str.flatMap(escape(_))
+  }
+
+  /** Quotes the given string such that shell parsing will not affect it. */
+  def quoteShellLiterally(str: String): String = {
+    "'" + str.replaceAllLiterally("'", "'\''") + "'"
+  }
+
+  /** Quotes the given string such that shell parsing does not affect it,
+    * except parameter/variable expansion ${...}, command substitution $(...)
+    * and `...`, and arithmetic expansion $((...)) are still performed.
+    */
+  def quoteShellAllowExpansion(str: String): String = {
+    "\"" + str.replaceAllLiterally("\"", "\\\"") + "\""
+  }
+
 }
 
 class OsCommandException(message: String, cause: Throwable) extends RuntimeException(message, cause) {
