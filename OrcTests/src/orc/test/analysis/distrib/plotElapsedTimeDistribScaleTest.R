@@ -10,7 +10,7 @@
 # URL: http://orc.csres.utexas.edu/license.shtml .
 #
 
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 
 source("analysis.R")
