@@ -73,7 +73,7 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     */
   def abort() {
     SocketObjectConnectionLogger.finer(s"SocketObjectConnection.abort on $socket")
-    if (!socket.isClosed()) socket.setSoLinger(false, 0)
+    socket synchronized { if (!closed) socket.setSoLinger(false, 0) }
     /* Intentionally not closing oos -- causes a flush */
     ois.close()
     socket.close()
