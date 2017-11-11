@@ -216,6 +216,9 @@ trait Schedulable extends Runnable {
     * executed the unit.
     */
   def onComplete() {}
+  
+  // FIXME: This is no only needed for debugging. It should be removed.
+  var id: Long = -1
 }
 
 /** The type of root executions in Orc runtimes.

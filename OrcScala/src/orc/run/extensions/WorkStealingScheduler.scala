@@ -20,6 +20,9 @@ import scala.collection.mutable.ArrayBuffer
 import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
 import orc.util.ABPWSDeque
+import scala.collection.mutable.WeakHashMap
+import java.util.concurrent.atomic.AtomicLong
+import java.lang.management.ManagementFactory
 
 /** @param monitorInterval The interval at which the monitor thread runs and checks that the thread pool is the correct size.
   * @param goalExtraThreads The ideal number of extra idle threads that the pool should contain.
@@ -146,7 +149,7 @@ class SimpleWorkStealingScheduler(
           if (currentTime - beginTimeUnderprovisioned > underprovisioningGracePeriod) {
             Logger.fine(s"Starting new worker due to: nWorkers = $nw nUsableWorkers=$nUsableWorkers goalUsableThreads=$goalUsableThreads nBlocked=$nBlocked")
             addWorker()
-            // Step the beginTimeOverprovisioned forward by an amount so we don't kill a lot of threads all at once.
+            // Step the beginTimeOverprovisioned forward by an amount so we don't start a lot of threads all at once.
             beginTimeUnderprovisioned += threadAddMinPeriod
           }
         } else {
@@ -188,7 +191,7 @@ class SimpleWorkStealingScheduler(
   }
 
   @sun.misc.Contended
-  final class Worker(workerID: Int) extends Thread(s"Worker $workerID") {
+  final class Worker(var workerID: Int) extends Thread(s"Worker $workerID") {
     private[SimpleWorkStealingScheduler] val workQueue = new ABPWSDeque[Schedulable](workerQueueLength)
 
     //@volatile
@@ -216,6 +219,7 @@ class SimpleWorkStealingScheduler(
           beforeExecute(this, t)
           try {
             {
+              SimpleWorkStealingScheduler.enterSchedulable(t, SimpleWorkStealingScheduler.SchedulerExecution)
               if (t.nonblocking) {
                 t.run()
               } else {
@@ -227,6 +231,7 @@ class SimpleWorkStealingScheduler(
                   isPotentiallyBlocked = false
                 }
               }
+              SimpleWorkStealingScheduler.exitSchedulable(t)
             }
 
             afterExecute(this, t, null)
@@ -400,6 +405,7 @@ class SimpleWorkStealingScheduler(
     assert(w.atRemovalSafePoint)
     workers(i) = workers(nWorkers - 1)
     workers(nWorkers - 1) = null
+    workers(i).workerID  = i
     nWorkers -= 1
     w.shutdown()
   }
@@ -455,6 +461,7 @@ class SimpleWorkStealingScheduler(
   }
 
   final def schedule(t: Schedulable): Unit = {
+    SimpleWorkStealingScheduler.traceTaskParent(SimpleWorkStealingScheduler.currentSchedulable, t)
     val w = Thread.currentThread()
     if (w.isInstanceOf[Worker]) {
       w.asInstanceOf[Worker].scheduleLocal(t)
@@ -476,7 +483,7 @@ class SimpleWorkStealingScheduler(
   def afterExecute(w: Worker, r: Schedulable, t: Throwable): Unit = {}
 }
 
-private object SimpleWorkStealingScheduler {
+object SimpleWorkStealingScheduler {
 
   final val WorkerIdle = 31L
   orc.util.Tracer.registerEventTypeId(WorkerIdle, "WrkrIdle")
@@ -498,6 +505,117 @@ private object SimpleWorkStealingScheduler {
   def traceWorkerBusy(workerThread: SimpleWorkStealingScheduler#Worker): Unit = {
     if (traceScheduler) {
       orc.util.Tracer.trace(WorkerBusy, 0L, 0L, 0L)
+    }
+  }
+
+    
+  final val TaskParent = 33L
+  orc.util.Tracer.registerEventTypeId(TaskParent, "TaskPrnt")
+
+  final val TaskStart = 34L
+  orc.util.Tracer.registerEventTypeId(TaskStart, "TaskStrt")
+
+  final val TaskEnd = 35L
+  orc.util.Tracer.registerEventTypeId(TaskEnd, "TaskEnd ")
+
+  /* Because of aggressive inlining, changing this flag requires a clean rebuild */
+  @inline
+  final val traceTasks = true
+  
+  val nextSchedulableID = new AtomicLong(1)
+  
+  @inline
+  def newSchedulableID() = {
+    if (traceTasks) {
+      nextSchedulableID.getAndIncrement()
+    } else {
+      0
+    }
+  }
+  
+  @inline
+  def getSchedulableID(s: Schedulable) = {
+    if (traceTasks) {
+      if (s == null) {
+        0
+      } else {
+        if (s.id < 0) {
+          s.id = newSchedulableID()
+        }
+        s.id
+      }
+    } else {
+      0
+    }
+  }
+  
+  @inline
+  def traceTaskParent(parent: Schedulable, child: Schedulable): Unit = {
+    traceTaskParent(getSchedulableID(parent), getSchedulableID(child))
+  }
+  
+  @inline
+  def traceTaskParent(parent: Schedulable, child: Long): Unit = {
+    traceTaskParent(getSchedulableID(parent), child)
+  }
+  
+  @inline
+  def traceTaskParent(parent: Long, child: Long): Unit = {
+    if (traceTasks) {
+      orc.util.Tracer.trace(TaskParent, 0L, parent, child)
+    }
+  }
+  
+  val currentSchedulableTL = new ThreadLocal[Schedulable]()
+  
+  sealed abstract class SchedulableExecutionType(val id: Long)
+  case object SchedulerExecution extends SchedulableExecutionType(0)
+  case object StackExecution extends SchedulableExecutionType(1)
+  case object InlineExecution extends SchedulableExecutionType(2)
+  
+  object SchedulableExecutionType {
+    def apply(i: Long): SchedulableExecutionType = {
+      i match {
+        case 0 => SchedulerExecution
+        case 1 => StackExecution
+        case 2 => InlineExecution
+      }
+    }
+  }
+  
+  val threadMXBean = ManagementFactory.getThreadMXBean
+  
+  @inline
+  def enterSchedulable(s: Schedulable, t: SchedulableExecutionType): Unit = {
+    if (traceTasks) {
+      orc.util.Tracer.trace(TaskStart, t.id, getSchedulableID(s), threadMXBean.getCurrentThreadCpuTime)
+      currentSchedulableTL.set(s)
+    }
+  }
+  
+  @inline
+  def currentSchedulable: Schedulable = {
+    if (traceTasks) {
+      currentSchedulableTL.get()
+    } else {
+      null
+    }
+  }
+  
+  @inline
+  def exitSchedulable(s: Schedulable): Unit = {
+    if (traceTasks) {
+      require(s == currentSchedulableTL.get())
+      orc.util.Tracer.trace(TaskEnd, 0L, getSchedulableID(s), threadMXBean.getCurrentThreadCpuTime)
+    }
+  }
+  
+  @inline
+  def exitSchedulable(s: Schedulable, old: Schedulable): Unit = {
+    if (traceTasks) {
+      require(s == currentSchedulableTL.get())
+      orc.util.Tracer.trace(TaskEnd, 0L, getSchedulableID(s), 0L)
+      currentSchedulableTL.set(old)
     }
   }
 

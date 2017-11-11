@@ -18,6 +18,7 @@ import orc.util.ExecutionLogOutputStream
 import orc.util.CsvWriter
 import orc.run.porce.PorcERootNode
 import orc.run.porce.InvokeWithTrampolineRootNode
+import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -233,7 +234,9 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
     // Token: From initial.
     for (_ <- 0 until nStarts) {
       c.newToken()
-      runtime.schedule(CallClosureSchedulable.varArgs(prog, Array(null, p, c, t), execution))
+      val s = CallClosureSchedulable.varArgs(prog, Array(null, p, c, t), execution)
+      SimpleWorkStealingSchedulerWrapper.traceTaskParent(-1, SimpleWorkStealingSchedulerWrapper.getSchedulableID(s))
+      runtime.schedule(s)
     }
     c.haltToken()
   }

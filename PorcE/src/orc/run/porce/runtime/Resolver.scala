@@ -8,6 +8,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.FutureReader
 import sun.misc.Unsafe
 import orc.run.porce.PorcERootNode
+import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 // TODO: Try to remove redundency between this and Join.
 
@@ -24,6 +25,9 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
   resolver =>
 
   import Resolver._
+
+  val contID = SimpleWorkStealingSchedulerWrapper.newSchedulableID() 
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
 
   //require(nValues > 0, "Join must have at least one argument. Check before call.")
 
@@ -87,6 +91,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
       if (compareAndSet(false, true)) {
         //Logger.finest(s"$join: Join halted ($i)")
         // Halt if we have not already halted.
+        SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
         resolver.checkComplete(decrementUnboundMT())
       }
     }
@@ -216,8 +221,10 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
 		  case n: PorcERootNode => n.incrementBindJoin()
 		  case _ => ()
 		}
+    val s = CallClosureSchedulable(p, execution)
+    s.id = contID
     // Token: Pass to p.
-    execution.runtime.potentiallySchedule(CallClosureSchedulable(p, execution))
+    execution.runtime.potentiallySchedule(s)
   }
 
   /** Handle being killed by the terminator.

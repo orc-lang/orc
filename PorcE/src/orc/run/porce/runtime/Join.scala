@@ -16,6 +16,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.FutureReader
 import sun.misc.Unsafe
 import orc.run.porce.PorcERootNode
+import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 /** Join a number of futures by blocking on all of them simultaneously.
   *
@@ -31,6 +32,9 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
   join =>
 
   import Join._
+
+  val contID = SimpleWorkStealingSchedulerWrapper.newSchedulableID() 
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
 
   //require(values.length > 1, "Join must have at least one argument. Check before call.")
 
@@ -109,6 +113,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
       // Bind the value, if the array slot is is still this.
       if (unsafe.compareAndSwapObject(values, elementOffset, this, v)) {
         // Now decrement the number of unbound values and see if we are done.
+        SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
         join.checkComplete(decrementUnboundMT())
       }
     }
@@ -275,7 +280,9 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
 		  case _ => ()
 		}
     // Token: Pass to p.
-    execution.runtime.potentiallySchedule(CallClosureSchedulable.varArgs(p, values, execution))
+    val s = CallClosureSchedulable.varArgs(p, values, execution)
+    s.id = contID
+    execution.runtime.potentiallySchedule(s)
   }
 
   /** Handle a halting case.
