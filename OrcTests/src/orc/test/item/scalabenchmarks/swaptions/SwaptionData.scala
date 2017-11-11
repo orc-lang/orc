@@ -30,8 +30,8 @@ object SwaptionData {
   var nextSwaptionID = 0
   
   val nSteps = 11
-  val nTrials = BenchmarkConfig.problemSizeSqrtScaledInt(10000)
-  val nSwaptions = BenchmarkConfig.problemSizeSqrtScaledInt(32)
+  val nTrials = BenchmarkConfig.problemSizeSqrtScaledInt(2000)
+  val nSwaptions = BenchmarkConfig.problemSizeSqrtScaledInt(24)
 
   def makeSwaption() = synchronized {
     val rnd = ThreadLocalRandom.current()

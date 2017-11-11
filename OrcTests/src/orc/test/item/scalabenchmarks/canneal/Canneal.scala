@@ -20,7 +20,7 @@ object Canneal extends BenchmarkApplication[NetList] {
     f.getAbsolutePath
   }
 
-  val swapsPerTemp = BenchmarkConfig.problemSizeScaledInt(15000)
+  val swapsPerTemp = BenchmarkConfig.problemSizeScaledInt(5000)
   val initialTemperature = 2000 
   val filename = localInputFile
   val nTempSteps = 128

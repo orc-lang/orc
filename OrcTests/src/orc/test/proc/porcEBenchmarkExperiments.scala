@@ -196,8 +196,8 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
 
 
 object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
-  def softTimeLimit: Double = 60 * 5
-  override def hardTimeLimit: Double = 60 * 6.25
+  def softTimeLimit: Double = 60 * 15
+  override def hardTimeLimit: Double = 60 * 18
   
   trait Option extends Product with Serializable {
     def optopt(enabled: Boolean): Map[String, String] = Map()
@@ -326,19 +326,18 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
         )
   }
   
+  val LastUsedStep = Seq()
+  
   val Steps = Seq(
-      Orctimizer.PeepholeOptimizations,
-      Orctimizer.Inlining,
-      Porc.PeepholeOptimizations,
-      Porc.Inlining,
-      Orctimizer.ForceElimination,     // 5
+      Orctimizer.PeepholeOptimizations ++ Porc.PeepholeOptimizations,
+      Orctimizer.Inlining ++ Porc.Inlining,
+      Orctimizer.ForceElimination,
       Orctimizer.FutureElimination,
-      PorcE.OccationallySchedule,
-      PorcE.AllowSpawnInlining,
-      PorcE.InlineAverageTimeLimit,
-      PorcE.PolyInlineCaches,          // 10
-      PorcE.SpecializeOnRuntimeStates, // 11
-      LimitedPrecision,      
+      PorcE.OccationallySchedule ++ PorcE.AllowSpawnInlining ++ PorcE.InlineAverageTimeLimit,
+      PorcE.PolyInlineCaches,
+      PorcE.SpecializeOnRuntimeStates,
+      LimitedPrecision,
+      LastUsedStep,
       PorcE.OptimizedTCO,
       )
   
@@ -369,26 +368,25 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
         
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3", "--opt-opt", optoptString)
     
-    override def toJvmArgs = Seq("-XX:+UseG1GC", "-Xms64g", "-Xmx115g") ++ super.toJvmArgs
+    override def toJvmArgs = Seq("-XX:+UseG1GC", "-Xms64g", "-Xmx100g") ++ super.toJvmArgs
   }
   
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = Seq(24, 8)
+      val nCPUsValues = Seq(24)
       val porce = for {
         nCPUs <- nCPUsValues
         fn <- Seq(
+            //"test_data/performance/bigsort/bigsort.orc",
+            "test_data/performance/canneal/canneal-naive.orc",
+            "test_data/performance/sssp/sssp-batched.orc",
+            //"test_data/performance/dedup/dedup.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
-            "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
             "test_data/performance/k-means/k-means.orc",
-            "test_data/performance/k-means/k-means-scala-inner.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            "test_data/performance/dedup/dedup.orc",
-            "test_data/performance/dedup/dedup-boundedchannel.orc",
             "test_data/performance/Mandelbrot.orc",
             )
-        step <- 0 to Steps.size
+        step <- 0 to Steps.indexOf(LastUsedStep)
       } yield {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, step)
