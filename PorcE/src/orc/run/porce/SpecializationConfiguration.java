@@ -30,7 +30,7 @@ public abstract class SpecializationConfiguration {
 	 */
 	@CompilationFinal
 	public static final int InlineAverageTimeLimit = 
-		(int) (Double.parseDouble(System.getProperty("orc.porce.inlineAverageTimeLimit", "10.0")) * 1000000);
+		(int) (Double.parseDouble(System.getProperty("orc.porce.inlineAverageTimeLimit", "0.1")) * 1000000);
 	@CompilationFinal
 	public static final int MinCallsForTimePerCall = 100;
 
