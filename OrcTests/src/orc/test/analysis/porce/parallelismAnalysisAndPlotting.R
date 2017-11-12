@@ -7,7 +7,8 @@
 # URL: http://orc.csres.utexas.edu/license.shtml .
 #
 
-library(igraph)
+#library(igraph)
+library(tikzDevice)
 library(tidyr)
 library(dplyr)
 library(ggplot2)
@@ -17,139 +18,70 @@ to.s <- function(ns) {
   ns / 1000 / 1000 / 1000
 }
 
+usedDigits <- 4
+
 replace_na.numeric <- function(v, d) {
   if_else(is.na(v), d, v)
 }
 
+reduce.time.resolution <- function(.data, roundTo, f) {
+  .data %>% mutate(time = round(time, roundTo)) %>% group_by(time) %>% summarise_all(f)
+}
+
 scriptDir <- normalizePath(".") # dirname(dirname(sys.frame(1)$ofile))
+experimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scriptDir))))), "experiment-data")
+localExperimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scriptDir))))), "OrcTests/runs/")
 
 source(file.path(scriptDir, "readMergedResultsTable.R"))
 
-outputFile <- "/home/amp/shared/orc/runs/20171108_2013/trace_rep9.csv"
+loadProcessParallelism <- function(outputFile) {
+  header <- read.csv(outputFile, header = FALSE, nrows = 1)
+  names <- vapply(header[1,], cleanColumnName, "")
+  vs <- fread(outputFile, col.names = names, data.table = F, integer64 = "double") %>%
+    mutate_all(function(v) round(to.s(v), usedDigits)) %>%
+    filter(realStart > 0)
 
-if (!exists("vs")) {
-  if (!exists("rawdata")) {
-    header <- read.csv(outputFile, header = FALSE, nrows = 1)
-    names <- vapply(header[1,], cleanColumnName, "")
-    rawdata <- fread(outputFile, col.names = names, data.table = F, integer64 = "double")
+  idealParallelism <-
+    with(vs, { tibble(time = c(idealStart, idealEnd), change = c(rep(1, times = length(idealStart)), rep(-1, times = length(idealEnd)))) }) %>%
+    group_by(time) %>% tally(change) %>% filter(n != 0) %>% arrange(time) %>% transmute(time = time, parallelism = cumsum(n)) %>% mutate(kind = "Ideal")
 
-    rawdata <- rawdata %>% transmute(time = time, type = type, value1 = from, value2 = to)
+  realParallelism <-
+    with(vs, { tibble(time = c(realStart, realEnd), change = c(rep(1, times = length(realStart)), rep(-1, times = length(realEnd)))) }) %>%
+    group_by(time) %>% tally(change) %>% filter(n != 0) %>% arrange(time) %>% transmute(time = time, parallelism = cumsum(n)) %>% mutate(kind = "Real")
+
+  parallelismFactor <- function(parallelismTable) {
+    area <- parallelismTable %>% transmute(area = c(0, diff(time)) * parallelism) %>% sum(na.rm	= T)
+    length <- max(parallelismTable$time, na.rm	= T)
+    list(average = area / length, area = area, length = length)
   }
 
-  edges <- rawdata %>% filter(type == "TaskPrnt") %>% transmute(value1 = as.character(value1), value2 = as.character(value2))
-  vertices <- rawdata %>% filter(type != "TaskPrnt") %>%
-    bind_rows(rawdata %>% filter(type == "TaskStrt") %>% transmute(type = "TaskETpe", value1 = value1, time = value2)) %>%
-    select(-value2) %>% mutate(value1 = as.character(value1)) %>%
-    spread(type, time) %>%
-    transmute(name = value1, start = to.s(TaskStrt - min(TaskStrt, na.rm = T)), end = to.s(TaskEnd - min(TaskStrt, na.rm = T)),
-              len = end - start, executionType = TaskETpe)
+  idealStats <- parallelismFactor(idealParallelism)
+  realStats <- parallelismFactor(realParallelism)
 
-  vertices <- full_join(vertices, tibble(name = unique(c(edges$value1, edges$value2))))
+  #print("Real:")
+  #print(str(realStats))
+  #print("Ideal:")
+  #print(str(idealStats))
 
-  edges <- left_join(edges, vertices %>% transmute(value1 = name, weight = -replace_na(len, 0)))
+  g <- bind_rows(reduce.time.resolution(idealParallelism, 2, max), reduce.time.resolution(realParallelism, 2, max)) %>%
+    ggplot(aes(time, parallelism)) +
+    geom_area(aes(fill = kind), alpha = 0.5, position = position_identity()) +
+    geom_hline(data = tibble(kind = c("Ideal", "Real"), average = c(idealStats$average, realStats$average)), aes(yintercept = average, color = kind)) +
+    labs(y = "Number of Parallel Tasks", x = "Time (seconds)", color = "", fill = "") +
+    coord_cartesian() +
+    scale_color_manual(values = c("darkgreen", "darkblue")) +
+    scale_fill_manual(values = c("darkgreen", "darkblue"))
 
-  g <- graph_from_data_frame(edges)
-
-  initialVerts <- which(degree(g, V(g), mode = "in") == 0)
-
-  root <- "root"
-
-  g <- g %>% add_vertices(1, name = root) %>% add_edges(c(rbind("root", names(initialVerts))), weight = 0)
-
-  longestPath <- distances(g, root, mode = "out")
-  V(g)$idealStart <- -c(longestPath)
-
-  # V(g)$level <- -c(distances(g, root, weights = rep(-1, length.out = length(E(g))), mode = "out"))
-
-  vs <- igraph::as_data_frame(g, what = "vertices")
-
-  vs <- left_join(vertices, vs)
-
-  rm(edges, vertices, g, longestPath)
+  list(plot = g, real = realStats, ideal = idealStats)
 }
 
-idealParallelism <-
-  with(vs, { tibble(time = c(idealStart, idealStart + replace_na(len, 0)), change = c(rep(1, times = length(idealStart)), rep(-1, times = length(idealStart)))) }) %>%
-  group_by(time) %>% tally(change) %>% filter(n != 0) %>% arrange(time) %>% transmute(time = time, parallelism = cumsum(n))
+dataDir <- file.path(experimentDataDir, "PorcE", "parallelism", "20171111_a100")
 
-withLen <- which(!is.na(vs$start))
-realParallelism <-
-  with(vs, { tibble(time = c(start[withLen], end[withLen]), change = c(rep(1, times = length(withLen)), rep(-1, times = length(withLen)))) }) %>%
-  group_by(time) %>% tally(change) %>% filter(n != 0) %>% arrange(time) %>% transmute(time = time, parallelism = cumsum(n))
+# Includes: Black-scholes, Swaptions, SSSP
+# Does not yet have: k-Means
+inputs <- Sys.glob(file.path(dataDir, "*", "schedule_rep1.csv"))
 
-parallelismFactor <- function(parallelismTable) {
-  area <- parallelismTable %>% transmute(area = c(0, diff(time)) * parallelism) %>% sum(na.rm	= T)
-  length <- max(parallelismTable$time, na.rm	= T)
-  area / length
+for (i in inputs) {
+  print(i)
+  print(loadProcessParallelism(i))
 }
-
-ggplot(mapping = aes(time, parallelism)) + geom_line(data = idealParallelism, color = "green") + geom_line(data = realParallelism, color = "blue")
-
-#print(max(vs$level))
-#print(max((vs %>% group_by(level) %>% summarise(n = n()))$n))
-
-#ggplot(vs, aes(x = level)) +
-#  geom_bar() + coord_cartesian(ylim=c(0, 100))
-
-vs %>%
-  ggplot(aes(x = level)) +# coord_cartesian(ylim=c(0, 20)) +
-  geom_linerange(aes(
-    ymin = to.s(idealStart),
-    ymax = to.s(idealStart + len)),
-    alpha = 0.8,
-    size = 1
-  ) +
-  geom_point(aes(
-    y = to.s(idealStart),
-    color = is.na(len)),
-    alpha = 0.8,
-    size = 1
-  )
-#+ geom_bar(aes(fill = factor(is.na(len))), position = position_stack(), width = 1)
-
-# vs %>%
-#   ggplot(aes(x = level)) +# coord_cartesian(ylim=c(0, 20)) +
-#   geom_linerange(aes(
-#     ymin = replace_na(to.ms(start)/1000, -1),
-#     ymax = replace_na(to.ms(end)/1000, 0),
-#     #size = replace_na(to.ms(len), 1000),
-#     color = is.na(len)),
-#     alpha = 0.8,
-#     size = 1
-#   ) +
-#   geom_point(aes(
-#     y = if_else(is.na(start), -1, to.ms(start)/100),
-#     color = is.na(len)),
-#     alpha = 0.8,
-#     size = 1
-#   )
-# #+ geom_bar(aes(fill = factor(is.na(len))), position = position_stack(), width = 1)
-#
-
-r <- vs %>% group_by(level) %>% filter(len > 50000)
-
-
-r %>% summarise(n = n()) %>%
-  ggplot(aes(x = level, y = n)) + geom_line()
-
-
-ggplot(r, aes(x = level)) +# coord_cartesian(ylim=c(0, 20)) +
-  geom_linerange(aes(
-    ymin = to.s(idealStart),
-    ymax = to.s(idealStart + len),
-    color = is.na(len)),
-    alpha = 0.8,
-    size = 1
-  ) +
-  geom_point(aes(
-    y = to.s(idealStart),
-    color = is.na(len),
-    size = len),
-    alpha = 0.2
-  )
-  #+ geom_bar(aes(fill = factor(is.na(len))), position = position_stack(), width = 1)
-
-# vs %>%
-#   ggplot(aes(x = len)) + coord_cartesian(xlim=c(0, 200000)) + geom_histogram(binwidth = 1000)
-
-# 50000
