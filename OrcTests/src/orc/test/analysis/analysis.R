@@ -33,7 +33,7 @@ estimateWarmupRepetitions <- function(data, threshold = 1, minRemaining = 5) {
 }
 
 # TODO: Documentation
-dropWarmupRepetitionsTimedRuns <- function(.data, runIDCol, repetitionCol, timeCol, minWarmupReps, maxWarmupReps, maxWarmupTime, minRemaining = 2) {
+dropWarmupRepetitionsTimedRuns <- function(.data, runIDCol, repetitionCol, timeCol, minWarmupReps, maxWarmupReps, maxWarmupTime, minRemaining = 3) {
   runIDName <- if (is.name(substitute(runIDCol))) {
     deparse(substitute(runIDCol))
   } else runIDCol

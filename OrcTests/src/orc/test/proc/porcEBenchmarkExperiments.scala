@@ -333,10 +333,10 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
       Orctimizer.Inlining ++ Porc.Inlining,
       Orctimizer.ForceElimination,
       Orctimizer.FutureElimination,
-      PorcE.OccationallySchedule ++ PorcE.AllowSpawnInlining ++ PorcE.InlineAverageTimeLimit,
       PorcE.PolyInlineCaches,
       PorcE.SpecializeOnRuntimeStates,
-      LimitedPrecision,
+      PorcE.OccationallySchedule ++ PorcE.AllowSpawnInlining ++ PorcE.InlineAverageTimeLimit,
+      //LimitedPrecision,
       LastUsedStep,
       PorcE.OptimizedTCO,
       )
@@ -357,6 +357,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
     
     override def systemProperties = super.systemProperties ++ Map(
         "graal.TruffleBackgroundCompilation" -> "false",
+        "orc.numerics.preferLP" -> "true"
         ) ++ 
         enabledOptions.flatMap(_.sysprop(true)) ++ 
         disabledOptions.flatMap(_.sysprop(false))
@@ -384,7 +385,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
             "test_data/performance/black-scholes/black-scholes.orc",
             "test_data/performance/k-means/k-means.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            "test_data/performance/Mandelbrot.orc",
+            //"test_data/performance/Mandelbrot.orc",
             )
         step <- 0 to Steps.indexOf(LastUsedStep)
       } yield {
