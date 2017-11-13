@@ -33,7 +33,7 @@ estimateWarmupRepetitions <- function(data, threshold = 1, minRemaining = 5) {
 }
 
 # TODO: Documentation
-dropWarmupRepetitionsTimedRuns <- function(.data, runIDCol, repetitionCol, timeCol, minWarmupReps, maxWarmupReps, maxWarmupTime, minRemaining = 3) {
+dropWarmupRepetitionsTimedRuns <- function(.data, runIDCol, repetitionCol, timeCol, minWarmupReps, maxWarmupReps, maxWarmupTime, minRemaining = 3, maxRemaining = NA) {
   runIDName <- if (is.name(substitute(runIDCol))) {
     deparse(substitute(runIDCol))
   } else runIDCol
@@ -50,7 +50,12 @@ dropWarmupRepetitionsTimedRuns <- function(.data, runIDCol, repetitionCol, timeC
     repsPred <- group[[repetitionColName]] >= maxWarmupReps
     timePred <- lag(cumsum(group[[timeColName]]), default = 0) >= maxWarmupTime
     pred <- ((repsPred | timePred) & repsMinPred) | minRemPred
-    group[pred, ]
+    used <- group[pred, ]
+    if (is.na(maxRemaining) || is.null(maxRemaining)) {
+      used
+    } else {
+      used[1:min(length(used[[repetitionColName]]), maxRemaining),]
+    }
   }
   .data %>% group_by_at(runIDName) %>% do(f(.)) %>% ungroup()
 }
