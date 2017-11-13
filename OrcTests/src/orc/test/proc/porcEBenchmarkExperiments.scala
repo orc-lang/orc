@@ -403,7 +403,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
 
 
 object PorcEInlineSpawnTimeExperiment extends PorcEBenchmark {
-  def softTimeLimit: Double = 60 * 10
+  def softTimeLimit: Double = 60 * 8
   override def hardTimeLimit: Double = 60 * 12
   
   case class MyPorcEExperimentalCondition(
@@ -428,7 +428,7 @@ object PorcEInlineSpawnTimeExperiment extends PorcEBenchmark {
         
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3")
     
-    override def toJvmArgs = Seq("-XX:+UseG1GC", "-Xms16g", "-Xmx32g") ++ super.toJvmArgs
+    override def toJvmArgs = Seq("-XX:+UseG1GC", "-Xms64g", "-Xmx100g") ++ super.toJvmArgs
   }
   
   def main(args: Array[String]): Unit = {
@@ -438,15 +438,17 @@ object PorcEInlineSpawnTimeExperiment extends PorcEBenchmark {
         nCPUs <- nCPUsValues
         fn <- Seq(
             //"test_data/performance/bigsort/bigsort.orc",
-            "test_data/performance/canneal/canneal-naive.orc",
+            //"test_data/performance/canneal/canneal-naive.orc",
             "test_data/performance/sssp/sssp-batched.orc",
+            "test_data/performance/sssp/sssp-batched-partitioned.orc",
             //"test_data/performance/dedup/dedup.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
+            "test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
             "test_data/performance/k-means/k-means.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             "test_data/performance/Mandelbrot.orc",
             )
-        (timeLimit, allowSpawnInlining) <- Seq((0.0, false)) ++ Seq(100, 10, 1, 0.1, 0.001, 0.000001, 0.0000001, 0, -1).map((_, true))
+        (timeLimit, allowSpawnInlining) <- Seq((0.0, false)) ++ Seq(1000, 100, 10, 1, 0.1, 0.001, 0.000001, 0.00000001).map((_, true))
       } yield {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, timeLimit, allowSpawnInlining)
