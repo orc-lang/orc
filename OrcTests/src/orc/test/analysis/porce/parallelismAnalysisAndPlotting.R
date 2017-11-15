@@ -1,87 +1,62 @@
-# Utilities for processing and plotting PorcE performance data.
-#
-# Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
-#
-# Use and redistribution of this file is governed by the license terms in
-# the LICENSE file found in the project's top-level directory and also found at
-# URL: http://orc.csres.utexas.edu/license.shtml .
-#
-
-#library(igraph)
-library(tikzDevice)
+library(igraph)
 library(tidyr)
 library(dplyr)
 library(ggplot2)
-library(data.table)
-
-to.s <- function(ns) {
-  ns / 1000 / 1000 / 1000
-}
-
-usedDigits <- 4
-
-replace_na.numeric <- function(v, d) {
-  if_else(is.na(v), d, v)
-}
-
-reduce.time.resolution <- function(.data, roundTo, f) {
-  .data %>% mutate(time = round(time, roundTo)) %>% group_by(time) %>% summarise_all(f)
-}
 
 scriptDir <- normalizePath(".") # dirname(dirname(sys.frame(1)$ofile))
-experimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scriptDir))))), "experiment-data")
-localExperimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scriptDir))))), "OrcTests/runs/")
 
 source(file.path(scriptDir, "readMergedResultsTable.R"))
 
-loadProcessParallelism <- function(outputFile) {
-  header <- read.csv(outputFile, header = FALSE, nrows = 1)
-  names <- vapply(header[1,], cleanColumnName, "")
-  vs <- fread(outputFile, col.names = names, data.table = F, integer64 = "double") %>%
-    mutate_all(function(v) round(to.s(v), usedDigits)) %>%
-    filter(realStart > 0)
+outputFile <- "/home/amp/shared/orc/runs/20171106_2045/trace.csv"
 
-  idealParallelism <-
-    with(vs, { tibble(time = c(idealStart, idealEnd), change = c(rep(1, times = length(idealStart)), rep(-1, times = length(idealEnd)))) }) %>%
-    group_by(time) %>% tally(change) %>% filter(n != 0) %>% arrange(time) %>% transmute(time = time, parallelism = cumsum(n)) %>% mutate(kind = "Ideal")
+header <- read.csv(outputFile, header = FALSE, nrows = 1)
+names <- vapply(header[1,], cleanColumnName, "")
+data <- read.csv(outputFile, col.names = names)
 
-  realParallelism <-
-    with(vs, { tibble(time = c(realStart, realEnd), change = c(rep(1, times = length(realStart)), rep(-1, times = length(realEnd)))) }) %>%
-    group_by(time) %>% tally(change) %>% filter(n != 0) %>% arrange(time) %>% transmute(time = time, parallelism = cumsum(n)) %>% mutate(kind = "Real")
+data <- data %>% transmute(time = Time.1, type = EventType, value1 = From, value2 = To)
 
-  parallelismFactor <- function(parallelismTable) {
-    area <- parallelismTable %>% transmute(area = c(0, diff(time)) * parallelism) %>% sum(na.rm	= T)
-    length <- max(parallelismTable$time, na.rm	= T)
-    list(average = area / length, area = area, length = length)
-  }
+edges <- data %>% filter(type == "TaskPrnt") %>% select(value1, value2)
+vertices <- data %>% filter(type != "TaskPrnt") %>% spread(type, time) %>%
+  transmute(name = value1, start = `TaskStrt`, end = `TaskEnd `, len = end - start) %>%
+  bind_rows(c(name = 0))
 
-  idealStats <- parallelismFactor(idealParallelism)
-  realStats <- parallelismFactor(realParallelism)
+vnames <- unique(vertices$name)
+enames <- unique(c(edges$value1, edges$value2))
+# print(enames[!(enames %in% vnames)])
 
-  #print("Real:")
-  #print(str(realStats))
-  #print("Ideal:")
-  #print(str(idealStats))
+vertices <- full_join(vertices, tibble(name = enames))
 
-  g <- bind_rows(reduce.time.resolution(idealParallelism, 2, max), reduce.time.resolution(realParallelism, 2, max)) %>%
-    ggplot(aes(time, parallelism)) +
-    geom_area(aes(fill = kind), alpha = 0.5, position = position_identity()) +
-    geom_hline(data = tibble(kind = c("Ideal", "Real"), average = c(idealStats$average, realStats$average)), aes(yintercept = average, color = kind)) +
-    labs(y = "Number of Parallel Tasks", x = "Time (seconds)", color = "", fill = "") +
-    coord_cartesian() +
-    scale_color_manual(values = c("darkgreen", "darkblue")) +
-    scale_fill_manual(values = c("darkgreen", "darkblue"))
+g <- graph_from_data_frame(edges, vertices = vertices)
 
-  list(plot = g, real = realStats, ideal = idealStats)
+V(g)$level = -c(distances(g, "0", weights = rep(-1, length.out = length(E(g))), mode = "out"))
+vs <- igraph::as_data_frame(g, what = "vertices")
+print(max(vs$level))
+print(max(vs %>% group_by(level) %>% summarise(n = n())))
+
+#ggplot(vs, aes(x = level)) +
+#  geom_bar() + coord_cartesian(ylim=c(0, 100))
+
+to.ms <- function(ns) {
+  ns / 1000 / 1000
 }
 
-dataDir <- file.path(experimentDataDir, "PorcE", "parallelism", "20171111_a100")
+vs %>%
+  ggplot(aes(x = level)) +# coord_cartesian(ylim=c(0, 20)) +
+  geom_linerange(aes(
+    ymin = if_else(is.na(start), -1, to.ms(start - min(start, na.rm = T))/1000),
+    ymax = if_else(is.na(end), 0, to.ms(end - min(start, na.rm = T))/1000),
+    #size = if_else(is.na(len), 1000, to.ms(len)),
+    color = is.na(len)),
+    alpha = 0.8,
+    size = 1
+  ) +
+  geom_point(aes(
+    y = if_else(is.na(start), -1, to.ms(start - min(start, na.rm = T))/100),
+    color = is.na(len)),
+    alpha = 0.8,
+    size = 1
+  )
+  #+ geom_bar(aes(fill = factor(is.na(len))), position = position_stack(), width = 1)
 
-# Includes: Black-scholes, Swaptions, SSSP
-# Does not yet have: k-Means
-inputs <- Sys.glob(file.path(dataDir, "*", "schedule_rep1.csv"))
-
-for (i in inputs) {
-  print(i)
-  print(loadProcessParallelism(i))
-}
+vs %>% group_by(level) %>% summarise(n = n()) %>%
+  ggplot(aes(x = level, y = n)) + geom_line()

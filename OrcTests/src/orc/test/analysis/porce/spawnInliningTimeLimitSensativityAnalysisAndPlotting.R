@@ -20,21 +20,30 @@ source(file.path(scriptDir, "plotting.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20171112-a002")
+dataDir <- file.path(localExperimentDataDir, "20171113-a007")
 
 if(!exists("processedData")) {
-  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
-    mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1])))
+  data <- readMergedResultsTable(dataDir, "benchmark-times") %>%
+    mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1])),
+           allowSpawnInlining = as.logical(allowSpawnInlining),
+           allowAllSpawnInlining = as.logical(allowAllSpawnInlining))
 
-  prunedData <- data %>% dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "step"), rep, elapsedTime, 5, 50, 120)
+  prunedData <- data %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "timeLimit", "allowSpawnInlining", "allowAllSpawnInlining"), rep, elapsedTime, 5, 50, 120)
 
   processedData <- prunedData %>%
-    group_by(benchmarkProblemName, language, benchmarkName, nCPUs, step) %>% bootstrapStatistics(c("elapsedTime", "cpuTime"), mean) %>%
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs, timeLimit, allowSpawnInlining, allowAllSpawnInlining) %>%
+    bootstrapStatistics(c("elapsedTime", "cpuTime"), mean) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_lowerBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_upperBound) %>%
-    group_by(benchmarkName) %>% addBaseline(elapsedTime_mean, c(step=0.0), baseline = elapsedTime_mean_selfbaseline) %>%
-    ungroup()
+    group_by(benchmarkName) %>% addBaseline(elapsedTime_mean, c(timeLimit=0.0), baseline = elapsedTime_mean_selfbaseline) %>%
+    ungroup() %>%
+    mutate(configuration = paste0(
+      if_else(allowSpawnInlining & allowAllSpawnInlining, "All",
+              if_else(!allowSpawnInlining & !allowAllSpawnInlining, "None", "Old")),
+      ", ", timeLimit*1000, "us")) %>%
+    mutate(configuration = factor(configuration, levels = unique(configuration[order(allowSpawnInlining, allowAllSpawnInlining, timeLimit)])))
 }
 
 paletteValues <- rep(c(rbind(brewer.pal(8, "Dark2"), rev(brewer.pal(12, "Set3")))), 10)
@@ -54,7 +63,7 @@ plotAllData <- function(data) {
 #plotAllData(data)
 
 p <- processedData %>% ggplot(aes(
-  x = factor(step),
+  x = factor(configuration),
   fill = benchmarkName)) +
   labs(x = "Number of CPUs", color = "Benchmark", fill = "Benchmark") +
   theme_minimal() + fillPalette
@@ -73,7 +82,7 @@ timeAndUtilizationPlot <- p +
 
 utilizationPlot <- function(problemName) {
   p <- processedData %>% filter(benchmarkProblemName == problemName) %>% ggplot(aes(
-    x = factor(step),
+    x = factor(configuration),
     fill = benchmarkName)) +
     labs(x = "Number of CPUs", color = "Benchmark", fill = "Benchmark") +
     theme_minimal() + scale_fill_brewer(palette="Dark2")
@@ -89,27 +98,42 @@ utilizationPlot <- function(problemName) {
 
 scalingPlot <- function(problemName) {
   p <- processedData %>% filter(benchmarkProblemName == problemName) %>% ggplot(aes(
-    x = factor(step),
+    x = factor(configuration),
     y = elapsedTime_mean_selfbaseline / elapsedTime_mean,
     ymin = elapsedTime_mean_selfbaseline / elapsedTime_mean_lowerBound,
     ymax = elapsedTime_mean_selfbaseline / elapsedTime_mean_upperBound,
     fill = benchmarkName)) +
-    labs(y = "Speed-up w.r.t. time limit = 0 (large dark bar)\nCPU Utilization Ratio (small light bar)", x = "Time Limit", fill = "Benchmark") +
+    labs(y = "Speed-up w.r.t. no inlining (large bar)\nCPU Utilization Ratio (white outline bar)", x = "", fill = "Benchmark",
+         caption = "All = allow inlining any spawn, None = disallow spawn inlining,\nOld = allow spawn inlining except for recursive calls") +
     ggtitle(problemName) +
-    theme_minimal() + scale_fill_brewer(palette="Dark2")
+    theme_minimal() +
+    facet_wrap(allowSpawnInlining ~ allowAllSpawnInlining, scales = "free_x", nrow = 1, labeller = function(.) "") +
+    theme(axis.text.x = element_text(angle=80, hjust=1)) +
+    scale_fill_brewer(palette="Dark2", guide = guide_legend(
+                          direction = "horizontal",
+                          title.position = "top",
+                          #label.position = "bottom",
+                          label.hjust = -0.5,
+                          label.vjust = -0.5,
+                          label.theme = element_text(angle = 90)
+                        ))
+
 
   scalingPlot <- p + geom_col_errorbar() +
     geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
-    geom_col_errorbar(aes(y = cpuUtilization / nCPUs,
-                          ymin = cpuUtilization_lowerBound / nCPUs,
-                          ymax = cpuUtilization_upperBound / nCPUs
-                        ), fill="white", width = 0.2, alpha = 0.5)
+    geom_col(aes(y = cpuUtilization / nCPUs,
+                 ymin = cpuUtilization_lowerBound / nCPUs,
+                 ymax = cpuUtilization_upperBound / nCPUs
+    ), position = position_dodge(0.9), alpha = 0.5, color = "white", width = 0.2) +
+    geom_errorbar(aes(y = cpuUtilization / nCPUs,
+                      ymin = cpuUtilization_lowerBound / nCPUs,
+                      ymax = cpuUtilization_upperBound / nCPUs
+    ), position = position_dodge(0.9), alpha = 0.3, width = 0.2)
 
   scalingPlot
 }
 
 scalingPlots <- lapply(levels(processedData$benchmarkProblemName), scalingPlot)
-
 
 p <- processedData %>% ggplot(aes(
     y = elapsedTime_mean_selfbaseline / elapsedTime_mean,
@@ -119,5 +143,15 @@ p <- processedData %>% ggplot(aes(
   labs(y = "Speed up", x = "Time Limit", color = "Benchmark", fill = "Benchmark") +
   theme_minimal() + fillPalette + colorPalette
 
-selfScalingPlot <- p + geom_line(aes(x = factor(step), color = benchmarkName))
+selfScalingPlot <- p + geom_line(aes(x = factor(timeLimit), color = benchmarkName))
 #fullPerformancePlot <- p + geom_col_errorbar(aes(x = factor(nCPUs)))
+
+
+outputDir <- file.path(dataDir, "plots")
+if (!dir.exists(outputDir)) {
+  dir.create(outputDir)
+}
+
+for (problem in levels(processedData$benchmarkProblemName)) {
+  ggsave(file.path(outputDir, paste0(problem, "-sensitivity.pdf")), scalingPlot(problem), width = 7, height = 5)
+}

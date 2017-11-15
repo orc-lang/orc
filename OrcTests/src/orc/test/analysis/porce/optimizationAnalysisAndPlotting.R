@@ -7,10 +7,10 @@
 # URL: http://orc.csres.utexas.edu/license.shtml .
 #
 
-library(knitr)
+#library(knitr)
 #library(tikzDevice)
 library(tidyr)
-#library(cowplot)
+library(cowplot)
 
 #theme_set(theme_gray())
 
@@ -23,11 +23,11 @@ source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 
 
-#dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20171111-a003")
+dataDir <- file.path(experimentDataDir, "PorcE", "development", "20171111-a003")
+#dataDir <- file.path(localExperimentDataDir, "20171111-a003")
 
 if(!exists("processedData")) {
-  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
+  data <- readMergedResultsTable(dataDir, "benchmark-times") %>%
     mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1])))
 
   prunedData <- data %>% dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "step"), rep, elapsedTime, 2, 60, 180, maxRemaining = 10)
@@ -37,6 +37,7 @@ if(!exists("processedData")) {
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_lowerBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_upperBound) %>%
+    group_by(benchmarkName) %>% addBaseline(elapsedTime_mean, c(step=0), baseline = elapsedTime_mean_none) %>%
     ungroup()
 }
 
@@ -79,12 +80,12 @@ levels(processedData$benchmarkName) <- vapply(levels(processedData$benchmarkName
 
 processedData$step <- factor(processedData$step, labels = c(
   "None",
-  "Static Peephole",
+  "Static Peephole Opt.",
   "Static Inlining",
   "Static Force Elim.",
   "Static Future Elim.",
   "Dynamic PIC",
-  "Dynamic Peephole",
+  "Dynamic Peephole Opt.",
   "Dynamic Task Inlining"
   # "Limited Prec. Arith."
 ))
@@ -93,18 +94,20 @@ processedData <- left_join(processedData, processedData %>% group_by(benchmarkNa
 
 plotSingleBenchmark <- function(benchmark, labels = TRUE) {
   d <- processedData %>% filter(benchmarkName == benchmark)
-  ymax <- max(d[2:length(d),]$elapsedTime_mean, na.rm = T) * 1.2
+  ymax <- max(d[2:length(d),]$elapsedTime_mean / d[2:length(d),]$elapsedTime_mean_none, na.rm = T) * 1.2
   p <- d %>% ggplot(aes(
     x = step,
     fill = step,
-    y = elapsedTime_mean,
-    ymin = elapsedTime_mean_lowerBound,
-    ymax = elapsedTime_mean_upperBound)) +
-    labs(y = if (labels) "Elapsed Time (seconds)" else NULL, x = NULL) +
+    y = elapsedTime_mean / elapsedTime_mean_none)) +
+    labs(y = if (labels) "Elapsed Time (normalized)" else NULL, x = NULL) +
     theme_minimal() +
+    scale_y_continuous(labels = scales::percent) +
     facet_wrap(~benchmarkName, scales = "free_y") +
-    theme(axis.text.x = if (labels)  element_text(angle=90, hjust=1) else element_blank(),
-          panel.grid.major.x = element_line(linetype = 0)) +
+    theme(
+      text = element_text(size = 7),
+      axis.text.y = element_text(size = 6),
+      axis.text.x = if (labels)  element_text(angle=90, hjust=1, vjust = 0.4, size = 5, color = "black") else element_blank(),
+      panel.grid.major.x = element_line(linetype = 0)) +
     coord_cartesian(ylim = c(0, 1.1 * ymax)) +
     scale_fill_brewer(palette = "Dark2")
 
@@ -112,10 +115,10 @@ plotSingleBenchmark <- function(benchmark, labels = TRUE) {
     geom_col(show.legend = F) +
     geom_text(aes(label = if_else(is.na(elapsedTime_mean), "Timeout", ""), y = elapsedTime_mean_max * 0.95),
               position = position_dodge(0.9), vjust = "center", hjust = "right", angle = 90) +
-    geom_text(aes(label = if_else(elapsedTime_mean > ymax, format(elapsedTime_mean, digits = 2, nsmall=0), ""),
-                  y = pmax(pmin(elapsedTime_mean + (0.01 * ymax), ymax * 0.8), 0)
+    geom_text(aes(label = if_else(elapsedTime_mean / elapsedTime_mean_none > ymax, "100%", ""), # format(elapsedTime_mean / elapsedTime_mean_none, digits = 2, nsmall=0)
+                  y = pmax(pmin(elapsedTime_mean / elapsedTime_mean_none + (0.01 * ymax), ymax * 0.8), 0)
                   ),
-              position = position_dodge(0.9), vjust = "middle", hjust = "left", angle = 90)
+              position = position_dodge(0.9), vjust = "middle", hjust = "left", angle = 90, size = 1.8)
 }
 
 p <- processedData %>% ggplot(aes(
@@ -172,13 +175,14 @@ if (!dir.exists(outputDir)) {
 #alignedPlots <- align_plots(plotlist = basePlots, align = "vh")
 #plot_grid(plotlist = alignedPlots)
 
-tikz(file = file.path(outputDir, "optimizationProgress.tex"), width = 6, height = 4)
-print(plot_grid(
-  plot_grid(plotSingleBenchmark("Black-scholes"), NULL, ncol = 1, axis = "lr", rel_heights = c(1, 0.24)),
+#tikz(file = file.path(outputDir, "optimizationProgress.tex"), width = 6*0.54, height = 4*0.54)
+p <- plot_grid(
+  plot_grid(plotSingleBenchmark("Black-scholes"), NULL, ncol = 1, axis = "lr", rel_heights = c(1, 0.18)),
   plot_grid(plotSingleBenchmark("Canneal", F), plotSingleBenchmark("Swaptions", F), ncol = 1, align = "v"),
   plot_grid(plotSingleBenchmark("SSSP (BFS)", F), plotSingleBenchmark("k-Means", F), ncol = 1, align = "v"),
-  nrow = 1, rel_widths = c(1.04, 1, 1)))
-dev.off()
+  nrow = 1, rel_widths = c(1.12, 1, 1))
+ggsave(p, file = file.path(outputDir, "optimizationProgress.pdf"), width = 6*0.54, height = 4*0.54, units = "in")
+#dev.off()
 
 # ggsave(file.path(outputDir, "optimizationProgress.pdf"), plot_grid(
 #   plot_grid(plotSingleBenchmark("Black-scholes"), NULL, ncol = 1, axis = "lr", rel_heights = c(1, 0.472)),

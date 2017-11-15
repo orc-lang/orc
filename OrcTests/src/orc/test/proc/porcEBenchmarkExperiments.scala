@@ -410,13 +410,15 @@ object PorcEInlineSpawnTimeExperiment extends PorcEBenchmark {
       orcFile: File, 
       nCPUs: Int, 
       timeLimit: Double,
-      allowSpawnInlining: Boolean) 
+      allowSpawnInlining: Boolean,
+      allowAllSpawnInlining: Boolean) 
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
     override def factorDescriptions = Seq(
       FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
       FactorDescription("timeLimit", "Inline Spawn Time Limit", "ms", ""),
       FactorDescription("allowSpawnInlining", "Allow Spawn Inlining", "", ""),
+      FactorDescription("allowAllSpawnInlining", "Allow ALL Spawn Inlining", "", "This includes spawns which are marked as required."),
     )
     
     override def systemProperties = super.systemProperties ++ Map(
@@ -424,6 +426,7 @@ object PorcEInlineSpawnTimeExperiment extends PorcEBenchmark {
         "orc.numerics.preferLP" -> "true",
         "orc.porce.inlineAverageTimeLimit" -> timeLimit,
         "orc.porce.allowSpawnInlining" -> allowSpawnInlining,
+        "orc.porce.allowAllSpawnInlining" -> allowAllSpawnInlining
         )
         
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3")
@@ -446,12 +449,13 @@ object PorcEInlineSpawnTimeExperiment extends PorcEBenchmark {
             "test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
             "test_data/performance/k-means/k-means.orc",
             //"test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            "test_data/performance/Mandelbrot.orc",
+            //"test_data/performance/Mandelbrot.orc",
             )
-        (timeLimit, allowSpawnInlining) <- Seq((0.0, false)) ++ Seq(1000, 100, 10, 1, 0.1, 0.001, 0.000001, 0.00000001).map((_, true))
+        (timeLimit, allowSpawnInlining, allowAllSpawnInlining) <- 
+          Seq((0.0, false, false)) ++ Seq(1000, 100, 10, 1, 0.1, 0.001, 0.000001, 0.00000001).map((_, true, true)) ++ Seq(100, 1, 0.000001).map((_, true, false)) 
       } yield {
         assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, timeLimit, allowSpawnInlining)
+        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, timeLimit, allowSpawnInlining, allowAllSpawnInlining)
       }
       
       /*for(c <- porce) {
