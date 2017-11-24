@@ -103,8 +103,6 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 }
 
 
-
-
 object PorcEInliningTCOExperiment extends PorcEBenchmark {
   def softTimeLimit: Double = 60 * 4
   override def hardTimeLimit: Double = 60 * 5.5
@@ -192,7 +190,6 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
     runExperiment(experimentalConditions)
   }
 }
-
 
 
 object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
@@ -333,10 +330,10 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
       Orctimizer.Inlining ++ Porc.Inlining,
       Orctimizer.ForceElimination,
       Orctimizer.FutureElimination,
-      PorcE.OccationallySchedule ++ PorcE.AllowSpawnInlining ++ PorcE.InlineAverageTimeLimit,
       PorcE.PolyInlineCaches,
       PorcE.SpecializeOnRuntimeStates,
-      LimitedPrecision,
+      PorcE.OccationallySchedule ++ PorcE.AllowSpawnInlining ++ PorcE.InlineAverageTimeLimit,
+      //LimitedPrecision,
       LastUsedStep,
       PorcE.OptimizedTCO,
       )
@@ -357,6 +354,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
     
     override def systemProperties = super.systemProperties ++ Map(
         "graal.TruffleBackgroundCompilation" -> "false",
+        "orc.numerics.preferLP" -> "true"
         ) ++ 
         enabledOptions.flatMap(_.sysprop(true)) ++ 
         disabledOptions.flatMap(_.sysprop(false))
@@ -384,7 +382,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
             "test_data/performance/black-scholes/black-scholes.orc",
             "test_data/performance/k-means/k-means.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            "test_data/performance/Mandelbrot.orc",
+            //"test_data/performance/Mandelbrot.orc",
             )
         step <- 0 to Steps.indexOf(LastUsedStep)
       } yield {
@@ -403,6 +401,73 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
   }
 }
 
+
+object PorcEInlineSpawnTimeExperiment extends PorcEBenchmark {
+  def softTimeLimit: Double = 60 * 8
+  override def hardTimeLimit: Double = 60 * 12
+  
+  case class MyPorcEExperimentalCondition(
+      orcFile: File, 
+      nCPUs: Int, 
+      timeLimit: Double,
+      allowSpawnInlining: Boolean,
+      allowAllSpawnInlining: Boolean) 
+      extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
+    override def factorDescriptions = Seq(
+      FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
+      FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
+      FactorDescription("timeLimit", "Inline Spawn Time Limit", "ms", ""),
+      FactorDescription("allowSpawnInlining", "Allow Spawn Inlining", "", ""),
+      FactorDescription("allowAllSpawnInlining", "Allow ALL Spawn Inlining", "", "This includes spawns which are marked as required."),
+    )
+    
+    override def systemProperties = super.systemProperties ++ Map(
+        "graal.TruffleBackgroundCompilation" -> "false",
+        "orc.numerics.preferLP" -> "true",
+        "orc.porce.inlineAverageTimeLimit" -> timeLimit,
+        "orc.porce.allowSpawnInlining" -> allowSpawnInlining,
+        "orc.porce.allowAllSpawnInlining" -> allowAllSpawnInlining
+        )
+        
+    override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3")
+    
+    override def toJvmArgs = Seq("-XX:+UseG1GC", "-Xms64g", "-Xmx100g") ++ super.toJvmArgs
+  }
+  
+  def main(args: Array[String]): Unit = {
+    val experimentalConditions = {
+      val nCPUsValues = Seq(24)
+      val porce = for {
+        nCPUs <- nCPUsValues
+        fn <- Seq(
+            //"test_data/performance/bigsort/bigsort.orc",
+            //"test_data/performance/canneal/canneal-naive.orc",
+            "test_data/performance/sssp/sssp-batched.orc",
+            "test_data/performance/sssp/sssp-batched-partitioned.orc",
+            //"test_data/performance/dedup/dedup.orc",
+            "test_data/performance/black-scholes/black-scholes.orc",
+            "test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
+            "test_data/performance/k-means/k-means.orc",
+            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            //"test_data/performance/Mandelbrot.orc",
+            )
+        (timeLimit, allowSpawnInlining, allowAllSpawnInlining) <- 
+          Seq((0.0, false, false)) ++ Seq(1000, 100, 10, 1, 0.1, 0.001, 0.000001, 0.00000001).map((_, true, true)) ++ Seq(100, 1, 0.000001).map((_, true, false)) 
+      } yield {
+        assert(new File(fn).isFile(), fn)
+        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, timeLimit, allowSpawnInlining, allowAllSpawnInlining)
+      }
+      
+      /*for(c <- porce) {
+        println(c)
+        println(c.systemProperties.toSeq.sortBy(_._1).map({ case (n, v) => s"$n=$v"}).mkString(", "))
+        println(c.optoptString)
+      }*/
+      porce
+    }
+    runExperiment(experimentalConditions)
+  }
+}
 
 
 object PorcESteadyStateExperiment extends PorcEBenchmark {
