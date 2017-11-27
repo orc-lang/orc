@@ -26,6 +26,7 @@ import orc.ast.porc
 import orc.run.porce.{ HasPorcNode, Logger }
 import orc.util.Tracer
 import orc.run.porce.PorcERootNode
+import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 object Counter {
   import CounterConstants._
@@ -128,7 +129,14 @@ object Counter {
   */
 abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(n) {
   import CounterConstants._
-  
+      
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
+
+  @TruffleBoundary(allowInlining = true) @noinline
+  protected def handleHaltToken() = {
+    SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
+  }
+
   if (depth > maxCounterDepth) {
     throw new StackOverflowError(s"The Orc stack is limited to $maxCounterDepth. Make sure your functions are actually tail recursive.")
   }
@@ -210,6 +218,7 @@ abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(
       }
       assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
     }
+    handleHaltToken()
     if (n == 0) {
       doHalt()
     }
@@ -306,7 +315,9 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
   		  case n: PorcERootNode => n.incrementHalt()
   		  case _ => ()
   		}
-      execution.runtime.potentiallySchedule(CallClosureSchedulable(haltContinuation, execution))
+  		val s = CallClosureSchedulable(haltContinuation, execution)
+      SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
+      execution.runtime.potentiallySchedule(s)
     } else {
       parent.setDiscorporate()
       // Token: from parent

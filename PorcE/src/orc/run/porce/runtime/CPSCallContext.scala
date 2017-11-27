@@ -6,11 +6,14 @@ import orc.{ CallContext, CaughtEvent, OrcEvent }
 import orc.compile.parse.OrcSourceRange
 import orc.error.OrcException
 import orc.run.porce.PorcERootNode
+import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator, val callSiteId: Int) extends AtomicBoolean with CallContext with Terminatable {
   // The value stored in the AtomicBoolean is a flag saying if we have already halted.
 
   val runtime = execution.runtime
+
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
   def begin(): Unit = {
     t.addChild(this)
@@ -22,7 +25,10 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
   	  case _ => ()
 		}    
     c.newToken() // Token: Passed to p.
-    runtime.potentiallySchedule(CallClosureSchedulable(p, v, execution))
+    val s = CallClosureSchedulable(p, v, execution)
+    SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
+    // Token: pass to p
+    runtime.potentiallySchedule(s)
   }
 
   /** Handle a site call publication.
@@ -36,8 +42,10 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
   		  case n: PorcERootNode => n.incrementPublication()
   		  case _ => ()
   		}    
-      // Token: Pass token to p.
-      runtime.potentiallySchedule(CallClosureSchedulable(p, v, execution))
+      val s = CallClosureSchedulable(p, v, execution)
+      SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
+      // Token: pass to p
+      runtime.potentiallySchedule(s)
       t.removeChild(this)
     }
   }

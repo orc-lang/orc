@@ -19,7 +19,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 import orc.ExecutionRoot
 import orc.run.Orc
-import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution }
+import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution, SimpleWorkStealingScheduler }
 import orc.run.porce.Logger
 import orc.run.porce.PorcELanguage
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
@@ -28,6 +28,7 @@ import orc.run.porce.SpecializationConfiguration
 import com.oracle.truffle.api.CompilerDirectives
 import orc.run.porce.PorcERootNode
 import java.util.concurrent.atomic.LongAdder
+import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 /** The base runtime for PorcE runtimes.
  *  
@@ -61,18 +62,21 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   import PorcERuntime._
   
   def potentiallySchedule(s: Schedulable) = {
-    if (actuallySchedule) {
+    if (allowSpawnInlining || actuallySchedule) {
       def isFast = {
         s match {
           case s: CallClosureSchedulable =>
             s.closure.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit
         }
       }
-      if (occationallySchedule &&
+      if (allowSpawnInlining && occationallySchedule &&
           isFast &&
           incrementAndCheckStackDepth()) {
         try {
+          val old = SimpleWorkStealingSchedulerWrapper.currentSchedulable
+          SimpleWorkStealingSchedulerWrapper.enterSchedulable(s, SimpleWorkStealingScheduler.StackExecution)
           s.run()
+          SimpleWorkStealingSchedulerWrapper.exitSchedulable(s, old)
         } catch {
           case e: StackOverflowError =>
             // FIXME: Make this error fatal for the whole runtime and make sure the message describes how to fix it.
@@ -95,7 +99,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         schedule(s)
       }
     } else {
+      val old = SimpleWorkStealingSchedulerWrapper.currentSchedulable
+      SimpleWorkStealingSchedulerWrapper.enterSchedulable(s, SimpleWorkStealingScheduler.StackExecution)
       s.run()
+      SimpleWorkStealingSchedulerWrapper.exitSchedulable(s, old)
     }
   }
 }
