@@ -1,11 +1,12 @@
 package orc.run.porce
 
 import orc.run.extensions.{ SimpleWorkStealingScheduler }
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import com.oracle.truffle.api.CompilerDirectives.{ TruffleBoundary, CompilationFinal }
 import orc.Schedulable
 
 object SimpleWorkStealingSchedulerWrapper {
-  import SimpleWorkStealingScheduler.traceTasks
+  @CompilationFinal
+  private val traceTasks = SimpleWorkStealingScheduler.traceTasks
 
   def shareSchedulableID(d: AnyRef, s: AnyRef): Unit = {
     if (traceTasks) {
