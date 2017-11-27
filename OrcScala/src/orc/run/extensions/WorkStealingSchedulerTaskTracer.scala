@@ -291,37 +291,39 @@ object WorkStealingSchedulerTaskTracer {
   }
   
   def dumpSchedule(suffix: String) = synchronized {
-    val g = Graph.fromTrace(orc.util.Tracer.takeBuffers())
-    val csvOut = ExecutionLogOutputStream(s"schedule_$suffix", "csv", "Schedule output file")
-    if (csvOut.isDefined) {
-      println(s"Eliminating zero-length. (${g.tasks.size})")
-      g.removeZeroLength()
-      println(s"Assigning ideal starts. (${g.tasks.size})")
-      g.assignIdealStarts()
-      println(s"Writing output file. (${g.tasks.size})")
-      val timeZero = g.tasks.valuesIterator.filter(t => t.realStartTime != Long.MinValue && t.outEdges.nonEmpty).map(_.realStartTime).min
-      
-      val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-      val csvWriter = new CsvWriter(traceCsv.append(_))
-      val tableColumnTitles = Seq(
-          //"Task ID [id]",
-          "Real Start Time [realStart]",
-          "Real End Time [realEnd]",
-          "Ideal Start Time [idealStart]",
-          "Ideal End Time [idealEnd]",
-          //"Length [length]"
-          )
-      csvWriter.writeHeader(tableColumnTitles)
-      csvWriter.writeRows(g.tasks.valuesIterator.map(t => 
-        (
-            //t.id, 
-            if (t.realStartTime == Long.MinValue) "" else t.realStartTime - timeZero, 
-            if (t.realEndTime == Long.MinValue) "" else t.realEndTime - timeZero, 
-            t.idealStartTime, 
-            t.idealEndTime, 
-            //t.length
-            )))
-      traceCsv.close()
+    if (SimpleWorkStealingScheduler.traceTasks) {
+      val g = Graph.fromTrace(orc.util.Tracer.takeBuffers())
+      val csvOut = ExecutionLogOutputStream(s"schedule_$suffix", "csv", "Schedule output file")
+      if (csvOut.isDefined) {
+        println(s"Eliminating zero-length. (${g.tasks.size})")
+        g.removeZeroLength()
+        println(s"Assigning ideal starts. (${g.tasks.size})")
+        g.assignIdealStarts()
+        println(s"Writing output file. (${g.tasks.size})")
+        val timeZero = g.tasks.valuesIterator.filter(t => t.realStartTime != Long.MinValue && t.outEdges.nonEmpty).map(_.realStartTime).min
+        
+        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
+        val csvWriter = new CsvWriter(traceCsv.append(_))
+        val tableColumnTitles = Seq(
+            //"Task ID [id]",
+            "Real Start Time [realStart]",
+            "Real End Time [realEnd]",
+            "Ideal Start Time [idealStart]",
+            "Ideal End Time [idealEnd]",
+            //"Length [length]"
+            )
+        csvWriter.writeHeader(tableColumnTitles)
+        csvWriter.writeRows(g.tasks.valuesIterator.map(t => 
+          (
+              //t.id, 
+              if (t.realStartTime == Long.MinValue) "" else t.realStartTime - timeZero, 
+              if (t.realEndTime == Long.MinValue) "" else t.realEndTime - timeZero, 
+              t.idealStartTime, 
+              t.idealEndTime, 
+              //t.length
+              )))
+        traceCsv.close()
+      }
     }
   }
 }
