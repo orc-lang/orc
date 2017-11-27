@@ -6,72 +6,109 @@ import orc.Schedulable
 
 object SimpleWorkStealingSchedulerWrapper {
   import SimpleWorkStealingScheduler.traceTasks
-  
-  @TruffleBoundary @noinline
-  def newSchedulableID() = {
+
+  def shareSchedulableID(d: AnyRef, s: AnyRef): Unit = {
     if (traceTasks) {
-      SimpleWorkStealingScheduler.newSchedulableID()
+      Boundaries.shareSchedulableID(d, s)
+    }
+  }
+
+  def getSchedulableID(s: AnyRef) = {
+    if (traceTasks) {
+      Boundaries.getSchedulableID(s)
     } else {
       0
     }
   }
-  
-  @TruffleBoundary @noinline
-  def getSchedulableID(s: Schedulable) = {
+
+  def traceTaskParent(parent: AnyRef, child: AnyRef): Unit = {
     if (traceTasks) {
-      SimpleWorkStealingScheduler.getSchedulableID(s)
-    } else {
-      0
+      Boundaries.traceTaskParent(parent, child)
     }
   }
-  
-  @TruffleBoundary @noinline
-  def traceTaskParent(parent: Schedulable, child: Schedulable): Unit = {
+
+  /*
+  def traceTaskParent(parent: AnyRef, child: Long): Unit = {
     if (traceTasks) {
-      SimpleWorkStealingScheduler.traceTaskParent(parent, child)
+      Boundaries.traceTaskParent(parent, child)
     }
-  }
-  
-  @TruffleBoundary @noinline
-  def traceTaskParent(parent: Schedulable, child: Long): Unit = {
-    if (traceTasks) {
-      SimpleWorkStealingScheduler.traceTaskParent(parent, child)
-    }
-  }
-  
-  @TruffleBoundary @noinline
+  }*/
+
   def traceTaskParent(parent: Long, child: Long): Unit = {
     if (traceTasks) {
-      SimpleWorkStealingScheduler.traceTaskParent(parent, child)
-    }
-  }  
-  
-  @TruffleBoundary @noinline
-  def enterSchedulable(s: Schedulable, t: SimpleWorkStealingScheduler.SchedulableExecutionType): Unit = {
-    if (traceTasks) {
-      SimpleWorkStealingScheduler.enterSchedulable(s, t)
+      Boundaries.traceTaskParent(parent, child)
     }
   }
-  
-  @TruffleBoundary @noinline
+
+  def enterSchedulable(s: Schedulable, t: SimpleWorkStealingScheduler.SchedulableExecutionType): Unit = {
+    if (traceTasks) {
+      Boundaries.enterSchedulable(s, t)
+    }
+  }
+
   def currentSchedulable: Schedulable = {
     if (traceTasks) {
-      SimpleWorkStealingScheduler.currentSchedulable
+      Boundaries.currentSchedulable
     } else {
       null
     }
   }
-  
-  @TruffleBoundary @noinline
+
   def exitSchedulable(s: Schedulable): Unit = {
     if (traceTasks) {
-      SimpleWorkStealingScheduler.exitSchedulable(s)
+      Boundaries.exitSchedulable(s)
     }
   }
-  
-  @TruffleBoundary @noinline
+
   def exitSchedulable(s: Schedulable, old: Schedulable): Unit = {
     if (traceTasks) {
+      Boundaries.exitSchedulable(s, old)
+    }
+  }
+
+  object Boundaries {
+    @TruffleBoundary(allowInlining = true) @noinline
+    def shareSchedulableID(d: AnyRef, s: AnyRef): Unit = {
+      SimpleWorkStealingScheduler.shareSchedulableID(d, s)
+    }
+
+    @TruffleBoundary(allowInlining = true) @noinline
+    def getSchedulableID(s: AnyRef) = {
+      SimpleWorkStealingScheduler.getSchedulableID(s)
+    }
+
+    @TruffleBoundary(allowInlining = true) @noinline
+    def traceTaskParent(parent: AnyRef, child: AnyRef): Unit = {
+      SimpleWorkStealingScheduler.traceTaskParent(parent, child)
+    }
+
+    @TruffleBoundary(allowInlining = true) @noinline
+    def traceTaskParent(parent: AnyRef, child: Long): Unit = {
+      SimpleWorkStealingScheduler.traceTaskParent(parent, child)
+    }
+
+    @TruffleBoundary(allowInlining = true) @noinline
+    def traceTaskParent(parent: Long, child: Long): Unit = {
+      SimpleWorkStealingScheduler.traceTaskParent(parent, child)
+    }
+
+    @TruffleBoundary(allowInlining = true) @noinline
+    def enterSchedulable(s: Schedulable, t: SimpleWorkStealingScheduler.SchedulableExecutionType): Unit = {
+      SimpleWorkStealingScheduler.enterSchedulable(s, t)
+    }
+
+    @TruffleBoundary(allowInlining = true) @noinline
+    def currentSchedulable: Schedulable = {
+      SimpleWorkStealingScheduler.currentSchedulable
+    }
+
+    @TruffleBoundary(allowInlining = true) @noinline
+    def exitSchedulable(s: Schedulable): Unit = {
+      SimpleWorkStealingScheduler.exitSchedulable(s)
+    }
+
+    @TruffleBoundary(allowInlining = true) @noinline
+    def exitSchedulable(s: Schedulable, old: Schedulable): Unit = {
       SimpleWorkStealingScheduler.exitSchedulable(s, old)
     }
   }

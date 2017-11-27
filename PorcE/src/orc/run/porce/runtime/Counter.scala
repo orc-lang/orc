@@ -130,12 +130,11 @@ object Counter {
 abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(n) {
   import CounterConstants._
       
-  val haltContID = SimpleWorkStealingSchedulerWrapper.newSchedulableID() 
-  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, haltContID)
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
   @TruffleBoundary(allowInlining = true) @noinline
-  protected def handleHaltToken() = { 
-    SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, haltContID)
+  protected def handleHaltToken() = {
+    SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
   }
 
   if (depth > maxCounterDepth) {
@@ -317,7 +316,7 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
   		  case _ => ()
   		}
   		val s = CallClosureSchedulable(haltContinuation, execution)
-  		s.id = haltContID
+      SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
       execution.runtime.potentiallySchedule(s)
     } else {
       parent.setDiscorporate()

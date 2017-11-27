@@ -20,9 +20,10 @@ import scala.collection.mutable.ArrayBuffer
 import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
 import orc.util.ABPWSDeque
-import scala.collection.mutable.WeakHashMap
 import java.util.concurrent.atomic.AtomicLong
 import java.lang.management.ManagementFactory
+import java.util.Collections
+import java.util.WeakHashMap
 
 /** @param monitorInterval The interval at which the monitor thread runs and checks that the thread pool is the correct size.
   * @param goalExtraThreads The ideal number of extra idle threads that the pool should contain.
@@ -524,8 +525,10 @@ object SimpleWorkStealingScheduler {
   
   val nextSchedulableID = new AtomicLong(1)
   
+  val idMap = Collections.synchronizedMap(new WeakHashMap[AnyRef, Long]())
+  
   @inline
-  def newSchedulableID() = {
+  private def newSchedulableID() = {
     if (traceTasks) {
       nextSchedulableID.getAndIncrement()
     } else {
@@ -534,15 +537,17 @@ object SimpleWorkStealingScheduler {
   }
   
   @inline
-  def getSchedulableID(s: Schedulable) = {
+  def shareSchedulableID(dst: AnyRef, src: AnyRef): Unit = {
+    idMap.put(dst, getSchedulableID(src))
+  }
+  
+  @inline
+  def getSchedulableID(s: AnyRef): Long = {
     if (traceTasks) {
       if (s == null) {
         0
       } else {
-        if (s.id < 0) {
-          s.id = newSchedulableID()
-        }
-        s.id
+        idMap.computeIfAbsent(s, _ => newSchedulableID())
       }
     } else {
       0
@@ -550,12 +555,12 @@ object SimpleWorkStealingScheduler {
   }
   
   @inline
-  def traceTaskParent(parent: Schedulable, child: Schedulable): Unit = {
+  def traceTaskParent(parent: AnyRef, child: AnyRef): Unit = {
     traceTaskParent(getSchedulableID(parent), getSchedulableID(child))
   }
   
   @inline
-  def traceTaskParent(parent: Schedulable, child: Long): Unit = {
+  def traceTaskParent(parent: AnyRef, child: Long): Unit = {
     traceTaskParent(getSchedulableID(parent), child)
   }
   

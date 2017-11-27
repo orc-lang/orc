@@ -12,9 +12,8 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
   // The value stored in the AtomicBoolean is a flag saying if we have already halted.
 
   val runtime = execution.runtime
-  
-  val contID = SimpleWorkStealingSchedulerWrapper.newSchedulableID() 
-  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
+
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
   def begin(): Unit = {
     t.addChild(this)
@@ -27,7 +26,7 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
 		}    
     c.newToken() // Token: Passed to p.
     val s = CallClosureSchedulable(p, v, execution)
-    s.id = contID
+    SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
     // Token: pass to p
     runtime.potentiallySchedule(s)
   }
@@ -44,7 +43,7 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
   		  case _ => ()
   		}    
       val s = CallClosureSchedulable(p, v, execution)
-      s.id = contID
+      SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
       // Token: pass to p
       runtime.potentiallySchedule(s)
       t.removeChild(this)

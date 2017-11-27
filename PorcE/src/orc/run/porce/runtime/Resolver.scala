@@ -26,8 +26,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
 
   import Resolver._
 
-  val contID = SimpleWorkStealingSchedulerWrapper.newSchedulableID() 
-  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
   //require(nValues > 0, "Join must have at least one argument. Check before call.")
 
@@ -91,7 +90,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
       if (compareAndSet(false, true)) {
         //Logger.finest(s"$join: Join halted ($i)")
         // Halt if we have not already halted.
-        SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
+        SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
         resolver.checkComplete(decrementUnboundMT())
       }
     }
@@ -222,7 +221,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
 		  case _ => ()
 		}
     val s = CallClosureSchedulable(p, execution)
-    s.id = contID
+    SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
     // Token: Pass to p.
     execution.runtime.potentiallySchedule(s)
   }

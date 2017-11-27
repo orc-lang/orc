@@ -33,8 +33,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
 
   import Join._
 
-  val contID = SimpleWorkStealingSchedulerWrapper.newSchedulableID() 
-  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
   //require(values.length > 1, "Join must have at least one argument. Check before call.")
 
@@ -113,7 +112,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
       // Bind the value, if the array slot is is still this.
       if (unsafe.compareAndSwapObject(values, elementOffset, this, v)) {
         // Now decrement the number of unbound values and see if we are done.
-        SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
+        SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
         join.checkComplete(decrementUnboundMT())
       }
     }
@@ -281,7 +280,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
 		}
     // Token: Pass to p.
     val s = CallClosureSchedulable.varArgs(p, values, execution)
-    s.id = contID
+    SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
     execution.runtime.potentiallySchedule(s)
   }
 

@@ -10,8 +10,7 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execu
 
   t.addChild(this)
   
-  val contID = SimpleWorkStealingSchedulerWrapper.newSchedulableID() 
-  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, contID)
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
   def publish(v: AnyRef): Unit = {
     if (compareAndSet(false, true)) {
@@ -21,7 +20,7 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execu
   		  case _ => ()
 			}
       val s = CallClosureSchedulable(p, v, execution)
-      s.id = contID
+      SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
       // Token: pass to p
       execution.runtime.potentiallySchedule(s)
     }
