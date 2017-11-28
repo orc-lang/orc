@@ -51,6 +51,7 @@ public class Resolve extends Expression {
 
         // TODO: PERFORMANCE: It may be worth playing with specializing by
         // future states. Futures that are always bound may be common.
+        // This would only be worth it if resolve is called frequently.
         @Specialization
         public PorcEUnit porceFuture(final int index, final Resolver join, final orc.run.porce.runtime.Future future) {
             join.force(index, future);

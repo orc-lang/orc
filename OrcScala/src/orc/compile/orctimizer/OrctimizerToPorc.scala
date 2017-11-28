@@ -279,7 +279,6 @@ class OrctimizerToPorc(co: CompilerOptions) {
       case Resolve.Z(futures, e) => {
         val newP = newVarName("P")
         val v = argument(e)
-        // TODO: PERFORMANCE: Add an instruction here that allows v to rewrite itself when based on the fact futures are resolved.
         let((newP, porc.Continuation(Seq(), ctx.p(v)))) {
           porc.Resolve(newP, ctx.c, ctx.t, futures.map(argument).view.force)
         }
