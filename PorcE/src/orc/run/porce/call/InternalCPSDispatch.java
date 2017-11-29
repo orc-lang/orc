@@ -131,6 +131,10 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
     
     // Non-tail calls
  
+    // This is disabled since it's not likely to be useful and the trick with createVirtualFrame might be a problem.
+    // This just guarentees that is cannot be an issue.
+    // If you reenable it also add specificInline back into the replaces clause of universal.
+    /*
 	@Specialization(guards = { "TruffleASTInlining", "forceInline", "body != null", "matchesSpecific(target, expected)" }, 
 			limit = "InternalCallMaxCacheSize")
     public void specificInline(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
@@ -139,6 +143,7 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
 		final VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
 		body.execute(nestedFrame);
     }
+    */
 	
 	@Specialization(guards = { "matchesSpecific(target, expected)" }, limit = "InternalCallMaxCacheSize")
     public void specific(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
@@ -151,7 +156,7 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
         call.call(arguments);
     }
 	
-	@Specialization(replaces = { "specific", "specificInline" })
+	@Specialization(replaces = { "specific" })
     public void universal(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments, 
     		@Cached("create()") IndirectCallNode call) {
         call.call(target.body, arguments);

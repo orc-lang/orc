@@ -4,9 +4,17 @@ package orc.run.porce;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 
 public abstract class SpecializationConfiguration {
+	
+	static {
+		if (System.getProperty("orc.porce.truffleASTInlining") != null) {
+			throw new Error("truffleASTInlining is disabled in the source code. See InternalCPSDispatch.java.");
+		}
+	}
+	/*
 	@CompilationFinal
 	public static final boolean TruffleASTInlining = Boolean
 			.parseBoolean(System.getProperty("orc.porce.truffleASTInlining", "false"));
+	*/
 	
 	@CompilationFinal
 	public static final int GetFieldMaxCacheSize = 
