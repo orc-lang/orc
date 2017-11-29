@@ -22,7 +22,10 @@ trait InvocationInterceptor {
 
   /** Return true iff the invocation is distributed.
     *
-    * This call must be as fast as possible since it is called before every external call.
+    * This call must be as fast as possible since it is called before every external call. In
+    * addition, this method is partially evaluated (inlined) by Truffle unless the implementation
+    * is marked with @TruffleBoundary and @noinline (the second one is to prevent Scala 
+    * inlining problems).
     */
   def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean
 

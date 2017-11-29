@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 import orc.{ CaughtEvent, Schedulable }
 import orc.run.porce.runtime.{ CPSCallContext, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
   *
@@ -26,12 +27,19 @@ import orc.run.porce.runtime.{ CPSCallContext, CallClosureSchedulable, Invocatio
 trait DistributedInvocationInterceptor extends InvocationInterceptor {
   execution: DOrcExecution =>
 
+  // TODO: Optimize shouldInterceptInvocation to have the initial checks partially evaluated.
+  // Currently there is no partial evaluation for simplicity, but it may be useful to have some initial
+  // checks inlined. It may also be desirable to convert ShouldInterceptInvocation into
+  // a Truffle node so that it can have true per site specialization.
+  // TODO: PERFORMANCE: This would probably gain a lot by specializing on the number of arguments. That will probably require a simpler structure for the loops.
+  
+  @noinline
+  @TruffleBoundary(allowInlining = true)
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     //Logger.Invoke.entering(getClass.getName, "shouldInterceptInvocation", Seq(target.getClass.getName, target) ++ arguments)
     //Logger.Invoke.finest("class names: "+target.getClass.getName+arguments.map(_.getClass.getName).mkString("(", ",", ")"))
     //Logger.Invoke.finest("isInstanceOf[RemoteRef]: "+target.isInstanceOf[RemoteRef]+arguments.map(_.isInstanceOf[RemoteRef]).mkString("(", ",", ")"))
 
-    // TODO: PERFORMANCE: This would probably gain a lot by specializing on the number of arguments. That will probably require a simpler structure for the loops.
     if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
       //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
       true
@@ -60,7 +68,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         if (intersectPermittedLocs.nonEmpty) {
           intersectPermittedLocs
         } else {
-          val nla = new NoLocationAvailable((target +: arguments.toSeq).map(v => (v,execution.currentLocations(v).map(_.runtimeId))))
+          val nla = new NoLocationAvailable((target +: arguments.toSeq).map(v => (v, execution.currentLocations(v).map(_.runtimeId))))
           execution.notifyOrc(CaughtEvent(nla))
           throw nla
         }
@@ -89,12 +97,13 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     val marshaledTarget = execution.marshalValue(destination)(callTarget)
     val marshaledArgs = callArguments map { execution.marshalValue(destination)(_) }
 
-    val callMemento = new CallMemento(callContext, 
-        counterId = distributedCounter.id, 
-        credit = credit, 
-        terminatorProxyId = terminatorProxyId, 
-        target = marshaledTarget, 
-        arguments = marshaledArgs)
+    val callMemento = new CallMemento(
+      callContext,
+      counterId = distributedCounter.id,
+      credit = credit,
+      terminatorProxyId = terminatorProxyId,
+      target = marshaledTarget,
+      arguments = marshaledArgs)
 
     val callCorrelationId = callCorrelationCounter.getAndIncrement()
     Tracer.traceCallSend(callCorrelationId, execution.runtime.here, destination)
@@ -114,7 +123,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     val unmarshaledArgs = callMemento.arguments map { execution.unmarshalValue(origin)(_) }
 
     val callInvoker = new Schedulable {
-      override def toString: String = s"execution.invokeCallTarget(${callMemento.callSiteId}, ${callMemento.publicationContinuation}, ${distributedCounter.counter}, ${proxyTerminator}, ${unmarshaledTarget}(${unmarshaledArgs.mkString(", ")}))" 
+      override def toString: String = s"execution.invokeCallTarget(${callMemento.callSiteId}, ${callMemento.publicationContinuation}, ${distributedCounter.counter}, ${proxyTerminator}, ${unmarshaledTarget}(${unmarshaledArgs.mkString(", ")}))"
       def run(): Unit = {
         // Token: Pass local token to the invocation.
         execution.invokeCallTarget(callMemento.callSiteId, callMemento.publicationContinuation, distributedCounter.counter, proxyTerminator, unmarshaledTarget, unmarshaledArgs)
