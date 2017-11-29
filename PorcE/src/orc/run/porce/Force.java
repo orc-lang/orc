@@ -10,6 +10,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.profiles.BranchProfile;
+import com.oracle.truffle.api.profiles.ConditionProfile;
+
 import orc.FutureState;
 import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
@@ -136,9 +138,12 @@ public class Force {
     public static abstract class SingleFuture extends Expression {
         @Child
         protected Dispatch call = null;
-        private final BranchProfile boundPorcEFuture = BranchProfile.create();
-        private final BranchProfile unboundPorcEFuture = BranchProfile.create();
-        private final BranchProfile boundOrcFuture = BranchProfile.create();
+        private final ResettableBranchProfile boundFuture = ResettableBranchProfile.create();
+        private final ResettableBranchProfile unboundFuture = ResettableBranchProfile.create();
+        private final ConditionProfile orcFuture = ConditionProfile.createBinaryProfile();
+        private final ConditionProfile porcEFuture = ConditionProfile.createBinaryProfile();
+        private final ConditionProfile nonFuture = ConditionProfile.createBinaryProfile();
+        
 
         @SuppressWarnings("serial")
         private static final class ValueAvailable extends ControlFlowException {
@@ -152,38 +157,46 @@ public class Force {
         @Specialization
         public Object run(final VirtualFrame frame, final PorcEExecutionRef execution, final PorcEClosure p, final Counter c, final Terminator t, final Object future) {
             try {
-                if (isNonFuture(future)) {
+                if (nonFuture.profile(isNonFuture(future))) {
                     throw new ValueAvailable(future);
-                } else if (future instanceof orc.run.porce.runtime.Future) {
-                    boundPorcEFuture.enter();
+                } else if (porcEFuture.profile(future instanceof orc.run.porce.runtime.Future)) {
                     final Object state = ((orc.run.porce.runtime.Future) future).getInternal();
                     if (InlineForceResolved && !(state instanceof orc.run.porce.runtime.FutureConstants.Sentinel)) {
+                    	if (boundFuture.enter()) {
+                        	unboundFuture.reset();
+                        }
                         throw new ValueAvailable(state);
                     } else {
-                        // TODO: PERFORMANCE: It might be very useful to "forgive" a few hits on this branch, to allow futures that are initially unbound, but then bound for the rest of the run.
-                        unboundPorcEFuture.enter();
-                        //assert state instanceof orc.run.porce.runtime.FutureConstants.Sentinel;
+                        unboundFuture.enter();
                         if (InlineForceHalted && state == orc.run.porce.runtime.FutureConstants.Halt) {
+                        	// TODO: PERFORMANCE: This cannot inline the halt continuation. Using a version of HaltToken would allow that.
                             c.haltToken();
                         } else {
                             ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
                         }
                     }
-                } else if (future instanceof orc.Future) {
-                    boundOrcFuture.enter();
+                } else if (orcFuture.profile(future instanceof orc.Future)) {
                     final FutureState state = ((orc.Future) future).get();
                     if (InlineForceResolved && state instanceof orc.FutureState.Bound) {
+                    	if (boundFuture.enter()) {
+                        	unboundFuture.reset();
+                        }
                         throw new ValueAvailable(((orc.FutureState.Bound) state).value());
-                    } else if (InlineForceHalted && state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
-                        c.haltToken();
                     } else {
-                        ((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
+                        unboundFuture.enter();
+                    	if (InlineForceHalted && state == orc.run.porce.runtime.FutureConstants.Orc_Stopped) {
+                        	// TODO: PERFORMANCE: This cannot inline the halt continuation. Using a version of HaltToken would allow that.
+	                        c.haltToken();
+	                    } else {
+	                        ((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
+	                    }
                     }
                 } else {
                     InternalPorcEError.unreachable(this);
                 }
             } catch (final ValueAvailable e) {
                 initializeCall(execution);
+                	
                 if (call instanceof InternalCPSDispatch) {
                 	((InternalCPSDispatch)call).executeDispatchWithEnvironment(frame, p, new Object[] { null, e.value });
                 } else {
@@ -194,7 +207,12 @@ public class Force {
             return PorcEUnit.SINGLETON;
         }
 
-        private void initializeCall(final PorcEExecutionRef execution) {
+        /**
+         * 
+         * @param execution
+         * @return true if this did transferToInterpreterAndInvalidate.
+         */
+        private boolean initializeCall(final PorcEExecutionRef execution) {
 			if (call == null) {
 				CompilerDirectives.transferToInterpreterAndInvalidate();
 				computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
@@ -202,7 +220,9 @@ public class Force {
 					n.setTail(isTail);
 					return n;
 				});
+				return true;
 			}
+			return false;
         }
 
         public static SingleFuture create(final Expression p, final Expression c, final Expression t, final Expression future, final PorcEExecutionRef execution) {
