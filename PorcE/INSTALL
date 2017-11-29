@@ -13,10 +13,9 @@ Overview
 This project contain a Truffle-based interpreter for Orc. Truffle and 
 associated technologies are also called, variously, GraalVM, Polyglot, and 
 PolyglotVM. This is not to be confused with the Graal backend compiler which
-is used by truffle and may eventually replace the C2 JVM compiler. Also, the
+is used by Truffle and may eventually replace the C2 JVM compiler. Also, the
 SubstrateVM (also occasionally called the GraalVM) is a separate non-JVM way
-to use Graal (the backend compiler) and not directly related to Truffle per 
-se.
+to use Graal (the backend compiler) and not directly related to Truffle.
 
 You will note that this ecosystem is very confusing and a total mess. That is
 because it is currently a technology demo which is expected to be included in
@@ -27,21 +26,21 @@ instructions for setting up a launch configuration for PorcE.
 Setup instructions
 ------------------
 
-1. Download GraalVM 0.28.2 from 
+1. Download GraalVM 0.29 from 
    http://www.oracle.com/technetwork/oracle-labs/program-languages/downloads/index.html 
    (requires login) and unpack it to $UNPACK (any directory). You will need to replace 
    "$UNPACK" with the absolute path you unpacked to in all the further instructions.
 2. Add a new JRE in Eclipse (Eclipse Preferences -> Java / Installed JREs -> Add),
    type "Standard VM".
 3. Set:
-    * JRE home: $UNPACK/graalvm-0.28.2/jre (NOT the root graalvm-0.28.2 directory)
-    * JRE name: graalvm-0.28.2
+    * JRE home: $UNPACK/graalvm-0.29/jre (NOT the root graalvm-0.29 directory)
+    * JRE name: graalvm-0.29
     * Default VM arguments: -XX:-UseJVMCIClassLoader
 4. Under JRE system libraries, Add External JARs:
-    * $UNPACK/graalvm-0.28.2/jre/lib/truffle/truffle-api.jar
-    * $UNPACK/graalvm-0.28.2/jre/lib/jvmci/graal.jar
+    * $UNPACK/graalvm-0.29/jre/lib/truffle/truffle-api.jar
+    * $UNPACK/graalvm-0.29/jre/lib/jvmci/graal.jar
 5. Add a Classpath Variable (Eclipse Preferences -> Java -> Build Path -> Classpath 
-   Variables) named GRAALVM_JRE and set it to "$UNPACK/graalvm-0.28.2/jre". This allows
+   Variables) named GRAALVM_JRE and set it to "$UNPACK/graalvm-0.29/jre". This allows
    PorcE to find the annotation processor used by the Truffle code.
 6. Rebuild the PorcE project.
 
@@ -54,8 +53,10 @@ Launch instructions
     * Name: PorcE [or your choice]
     * Project: PorcE
     * Main class: orc.Main
-2. In the JRE tab, ensure that the project JRE is set to your new graalvm JRE.
-3. Set the command line arguments as needed to launch the Orc program you need.
+2. In the JRE tab, ensure that the run configuration JRE is set to your new graalvm JRE.
+3. Add the command line arguments "--backend porc -O 3" (the "-O 3" is optional, 
+   but strongly recommended, since PorcE is not heavily tested without it). 
+3. Add command line arguments as needed to launch the desired Orc program.
 
 Running PorcE from the Orc Eclipse plug-in is unsupported for now.
 
