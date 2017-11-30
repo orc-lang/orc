@@ -12,7 +12,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 import orc.run.porce.Expression;
 import orc.run.porce.PorcEUnit;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 
 public abstract class Call<ExternalDispatch extends Dispatch> extends Expression {
 	@Child
@@ -30,9 +30,9 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	@Children
 	private final Expression[] arguments;
 	
-	private final PorcEExecutionRef execution;
+	private final PorcEExecution execution;
 
-	protected Call(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
+	protected Call(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
 		this.target = target;
 		this.arguments = arguments;
 		this.execution = execution;
@@ -98,7 +98,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 			argumentValues = emptyArguments;
 		}
 		
-		if (profileIsIntercepted.profile(execution.get().shouldInterceptInvocation(targetValue, argumentValues))) {			
+		if (profileIsIntercepted.profile(execution.shouldInterceptInvocation(targetValue, argumentValues))) {			
 			getInterceptedCall().executeDispatch(frame, targetValue, argumentValues);
 		} else if (profileIsInternal.profile(isInternal(targetValue))) {
 			final Object[] argumentValuesI = new Object[arguments.length + 1];
@@ -113,7 +113,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	}
 
     public static class Direct {
-        public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
+        public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
             return new Call<DirectDispatch>(target, arguments, execution) {
                 @Override
                 protected DirectDispatch makeExternalCall() {
@@ -129,17 +129,17 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
    }
 
    public static class CPS {
-       public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution, boolean isTail) {
+       public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution, boolean isTail) {
     	   if (isTail) {
     		   return createTail(target, arguments, execution);
     	   } else {
     		   return createNontail(target, arguments, execution);
     	   }
        }
-       public static Expression createNontail(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
+       public static Expression createNontail(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
            return CatchTailCall.create(createTail(target, arguments, execution), execution);
        }
-       public static Expression createTail(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
+       public static Expression createTail(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
            return new Call<Dispatch>(target, arguments, execution) {
                @Override
                protected Dispatch makeExternalCall() {

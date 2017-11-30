@@ -10,16 +10,16 @@ import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.Terminator;
 
 @NodeChild("counter")
 @NodeChild("terminator")
 @NodeChild("continuation")
 public class Kill extends Expression {
-    protected final PorcEExecutionRef execution;
+    protected final PorcEExecution execution;
 
-    public Kill(final PorcEExecutionRef execution) {
+    public Kill(final PorcEExecution execution) {
         this.execution = execution;
     }
 
@@ -34,11 +34,11 @@ public class Kill extends Expression {
         return PorcEUnit.SINGLETON;
     }
     
-    protected static Dispatch createCallNode(final PorcEExecutionRef execution, boolean isTail) {
+    protected static Dispatch createCallNode(final PorcEExecution execution, boolean isTail) {
     	return InternalCPSDispatch.create(true, execution, isTail);
     }
 
-    public static Kill create(final Expression counter, final Expression terminator, final Expression continuation, final PorcEExecutionRef execution) {
+    public static Kill create(final Expression counter, final Expression terminator, final Expression continuation, final PorcEExecution execution) {
         return KillNodeGen.create(execution, counter, terminator, continuation);
     }
 }

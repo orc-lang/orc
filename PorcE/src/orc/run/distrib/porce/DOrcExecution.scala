@@ -21,7 +21,7 @@ import orc.{ OrcEvent, OrcExecutionOptions, PublishedEvent }
 import orc.compile.parse.OrcSourceRange
 import orc.compiler.porce.PorcToPorcE
 import orc.run.porce.{ HasId, PorcEUnit }
-import orc.run.porce.runtime.{ CPSCallContext, PorcEClosure, PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch }
+import orc.run.porce.runtime.{ CPSCallContext, PorcEClosure, PorcEExecution, PorcEExecutionWithLaunch }
 import orc.run.distrib.DOrcPlacementPolicy
 
 /** Top level Group, associated with a program running in a dOrc runtime
@@ -56,7 +56,7 @@ abstract class DOrcExecution(
   with RemoteObjectManager
   with RemoteRefIdManager {
 
-  val (programPorceAst, programCallTargetMap) = PorcToPorcE(programAst, new PorcEExecutionHolder(this), true)
+  val (programPorceAst, programCallTargetMap) = PorcToPorcE(programAst, this, true)
 
   type ExecutionId = String
 
@@ -185,7 +185,7 @@ class DOrcFollowerExecution(
   }
 
   {
-    val (_, map) = PorcToPorcE(programAst, new PorcEExecutionHolder(this), true)
+    val (_, map) = PorcToPorcE(programAst, this, true)
 
     setCallTargetMap(map)
 

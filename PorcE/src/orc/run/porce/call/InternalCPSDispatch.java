@@ -21,7 +21,7 @@ import orc.run.porce.Expression;
 import orc.run.porce.PorcERootNode;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.SelfTailCallException;
 import orc.run.porce.runtime.TailCallException;
 
@@ -30,7 +30,7 @@ public final class InternalCPSDispatch extends Dispatch {
 	@Child
 	protected InternalCPSDispatchInternal internal;
 	
-	protected InternalCPSDispatch(final boolean forceInline, final PorcEExecutionRef execution) {
+	protected InternalCPSDispatch(final boolean forceInline, final PorcEExecution execution) {
 		super(execution);
 		internal = InternalCPSDispatchInternal.createBare(forceInline, execution);
 	}
@@ -58,19 +58,19 @@ public final class InternalCPSDispatch extends Dispatch {
 		return newArguments;
 	}
 	
-	static InternalCPSDispatch createBare(final boolean forceInline, PorcEExecutionRef execution) {
+	static InternalCPSDispatch createBare(final boolean forceInline, PorcEExecution execution) {
 		return new InternalCPSDispatch(forceInline, execution);
 	}
 	
-	static InternalCPSDispatch createBare(PorcEExecutionRef execution) {
+	static InternalCPSDispatch createBare(PorcEExecution execution) {
 		return new InternalCPSDispatch(false, execution);
 	}
 	
-	public static Dispatch create(final PorcEExecutionRef execution, boolean isTail) {
+	public static Dispatch create(final PorcEExecution execution, boolean isTail) {
 		return create(false, execution, isTail);
 	}
 	
-	public static Dispatch create(final boolean forceInline, final PorcEExecutionRef execution, boolean isTail) {
+	public static Dispatch create(final boolean forceInline, final PorcEExecution execution, boolean isTail) {
 		if (isTail)
 			return createBare(forceInline, execution);
 		else
@@ -84,7 +84,7 @@ public final class InternalCPSDispatch extends Dispatch {
 abstract class InternalCPSDispatchInternal extends DispatchBase {
 	protected final boolean forceInline;
 
-	protected InternalCPSDispatchInternal(final boolean forceInline, final PorcEExecutionRef execution) {
+	protected InternalCPSDispatchInternal(final boolean forceInline, final PorcEExecution execution) {
 		super(execution);
 		this.forceInline = forceInline;
     }
@@ -162,7 +162,7 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
         call.call(target.body, arguments);
     }
 		
-	static InternalCPSDispatchInternal createBare(final boolean forceInline, final PorcEExecutionRef execution) {
+	static InternalCPSDispatchInternal createBare(final boolean forceInline, final PorcEExecution execution) {
 		return InternalCPSDispatchInternalNodeGen.create(forceInline, execution);
 	}	
 	

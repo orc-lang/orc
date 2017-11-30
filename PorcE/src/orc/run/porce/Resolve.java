@@ -12,7 +12,7 @@ import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.Resolver;
 import orc.run.porce.runtime.Terminator;
 import static orc.run.porce.SpecializationConfiguration.*;
@@ -26,14 +26,14 @@ public class Resolve extends Expression {
     @NodeChild(value = "c", type = Expression.class)
     @NodeChild(value = "t", type = Expression.class)
     @NodeField(name = "nFutures", type = int.class)
-    @NodeField(name = "execution", type = PorcEExecutionRef.class)
+    @NodeField(name = "execution", type = PorcEExecution.class)
     public static class New extends Expression {
         @Specialization
-        public Object run(final int nFutures, final PorcEExecutionRef execution, final PorcEClosure p, final Counter c, final Terminator t) {
-            return new Resolver(p, c, t, nFutures, execution.get());
+        public Object run(final int nFutures, final PorcEExecution execution, final PorcEClosure p, final Counter c, final Terminator t) {
+            return new Resolver(p, c, t, nFutures, execution);
         }
 
-        public static New create(final Expression p, final Expression c, final Expression t, final int nFutures, final PorcEExecutionRef execution) {
+        public static New create(final Expression p, final Expression c, final Expression t, final int nFutures, final PorcEExecution execution) {
             return ResolveFactory.NewNodeGen.create(p, c, t, nFutures, execution);
         }
     }
@@ -70,14 +70,14 @@ public class Resolve extends Expression {
     }
 
     @NodeChild(value = "join", type = Expression.class)
-    @NodeField(name = "execution", type = PorcEExecutionRef.class)
+    @NodeField(name = "execution", type = PorcEExecution.class)
     @ImportStatic(SpecializationConfiguration.class)
     public static abstract class Finish extends Expression {
         @Child
         Dispatch call = null;
 
         @Specialization(guards = { "InlineForceResolved", "join.isResolved()" })
-        public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecutionRef execution, final Resolver join) {
+        public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecution execution, final Resolver join) {
         	if (call == null) {
         		CompilerDirectives.transferToInterpreterAndInvalidate();
 	        	computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
@@ -91,18 +91,18 @@ public class Resolve extends Expression {
         }
 
         @Specialization(guards = { "join.isBlocked()" })
-        public PorcEUnit blocked(final PorcEExecutionRef execution, final Resolver join) {
+        public PorcEUnit blocked(final PorcEExecution execution, final Resolver join) {
             join.finishBlocked();
             return PorcEUnit.SINGLETON;
         }
 
         @Specialization(guards = { "!InlineForceResolved" })
-        public PorcEUnit fallback(final PorcEExecutionRef execution, final Resolver join) {
+        public PorcEUnit fallback(final PorcEExecution execution, final Resolver join) {
             join.finish();
             return PorcEUnit.SINGLETON;
         }
 
-        public static Finish create(final Expression join, final PorcEExecutionRef execution) {
+        public static Finish create(final Expression join, final PorcEExecution execution) {
             return ResolveFactory.FinishNodeGen.create(join, execution);
         }
     }

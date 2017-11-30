@@ -3,7 +3,7 @@ package orc.run.porce.call;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.TailCallException;
 
 public class CatchTailDispatch extends Dispatch {
@@ -18,7 +18,7 @@ public class CatchTailDispatch extends Dispatch {
 		body.setTail(v);
 	}
 
-    protected CatchTailDispatch(final Dispatch body, final PorcEExecutionRef execution) {
+    protected CatchTailDispatch(final Dispatch body, final PorcEExecution execution) {
     	super(execution);
     	this.body = body;
 		this.loop = TailCallLoop.create(execution);
@@ -34,7 +34,7 @@ public class CatchTailDispatch extends Dispatch {
     	}
     }
 
-    public static CatchTailDispatch create(final Dispatch body, final PorcEExecutionRef execution) {
+    public static CatchTailDispatch create(final Dispatch body, final PorcEExecution execution) {
         return new CatchTailDispatch(body, execution);
     }
 }

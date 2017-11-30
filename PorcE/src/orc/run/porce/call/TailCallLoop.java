@@ -22,16 +22,16 @@ import orc.run.porce.Logger;
 import orc.run.porce.NodeBase;
 import orc.run.porce.PorcERootNode;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.TailCallException;
 
 public class TailCallLoop extends NodeBase {
 	@Child
     protected volatile LoopNode loop = null;
 	
-	protected final PorcEExecutionRef execution; 
+	protected final PorcEExecution execution; 
 	
-    protected TailCallLoop(final PorcEExecutionRef execution) {
+    protected TailCallLoop(final PorcEExecution execution) {
 		this.execution = execution;
     }
     
@@ -55,16 +55,16 @@ public class TailCallLoop extends NodeBase {
 	public final void addSurroundingFunction(VirtualFrame frame, Object target) {
 	}
 
-	public static TailCallLoop create(final PorcEExecutionRef execution) {
+	public static TailCallLoop create(final PorcEExecution execution) {
 		return new TailCallLoop(execution);
 	}
 	
 	
 	
     protected abstract static class TailCallNode extends NodeBase {
-    	protected final PorcEExecutionRef execution;
+    	protected final PorcEExecution execution;
 
-    	protected TailCallNode(PorcEExecutionRef execution) {
+    	protected TailCallNode(PorcEExecution execution) {
     		this.execution = execution;
     	}
     	
@@ -80,7 +80,7 @@ public class TailCallLoop extends NodeBase {
     	protected final PorcEClosure target;
     	protected final ConditionProfile thisOrOtherProfile = ConditionProfile.createCountingProfile();
     	
-    	protected TailCallSpecializationNode(PorcEClosure target, TailCallNode next, PorcEExecutionRef execution) {
+    	protected TailCallSpecializationNode(PorcEClosure target, TailCallNode next, PorcEExecution execution) {
     		super(execution);
     		this.target = target;
     		this.call = DirectCallNode.create(target.body);
@@ -91,23 +91,23 @@ public class TailCallLoop extends NodeBase {
     		return this.target.body == target.body;
     	}
     	
-    	public static TailCallNode create(final PorcEClosure target, final TailCallNode next, final PorcEExecutionRef execution) {
+    	public static TailCallNode create(final PorcEClosure target, final TailCallNode next, final PorcEExecution execution) {
 			return new TailCallSpecializationNode(target, next, execution);
     	}
     }
     
     protected final static class TailCallTerminalNode extends TailCallNode {
-    	protected TailCallTerminalNode(PorcEExecutionRef execution) {
+    	protected TailCallTerminalNode(PorcEExecution execution) {
     		super(execution);
 		}
 
-    	public static TailCallNode create(final PorcEExecutionRef execution) {
+    	public static TailCallNode create(final PorcEExecution execution) {
 			return new TailCallTerminalNode(execution);
     	}
     }
     
     protected static final class CatchTailCallRepeatingNode extends Node implements RepeatingNode {
-    	private final PorcEExecutionRef execution;
+    	private final PorcEExecution execution;
     	
 		private final BranchProfile tailCallProfile = BranchProfile.create();
 		private final BranchProfile returnProfile = BranchProfile.create();
@@ -119,7 +119,7 @@ public class TailCallLoop extends NodeBase {
 		@Child
 		protected TailCallNode call;
 
-		public CatchTailCallRepeatingNode(FrameDescriptor frameDescriptor, PorcEExecutionRef execution) {
+		public CatchTailCallRepeatingNode(FrameDescriptor frameDescriptor, PorcEExecution execution) {
 			this.execution = execution;
 			this.tceSlot = frameDescriptor.findOrAddFrameSlot("<tailCallException>", FrameSlotKind.Object);
 			this.targetSlot = frameDescriptor.findOrAddFrameSlot("<OSRtailCallTarget>", FrameSlotKind.Object);

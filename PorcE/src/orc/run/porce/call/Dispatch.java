@@ -2,10 +2,10 @@ package orc.run.porce.call;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 
 public abstract class Dispatch extends DispatchBase {
-	protected Dispatch(final PorcEExecutionRef execution) {
+	protected Dispatch(final PorcEExecution execution) {
 		super(execution);
 	}
 	

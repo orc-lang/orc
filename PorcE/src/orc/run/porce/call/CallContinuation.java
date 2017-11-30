@@ -12,7 +12,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 import orc.run.porce.Expression;
 import orc.run.porce.PorcEUnit;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 
 public class CallContinuation<ExternalDispatch extends Dispatch> extends Expression {
 	@Child
@@ -23,9 +23,9 @@ public class CallContinuation<ExternalDispatch extends Dispatch> extends Express
 	@Children
 	private final Expression[] arguments;
 	
-	private final PorcEExecutionRef execution;
+	private final PorcEExecution execution;
 
-	protected CallContinuation(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
+	protected CallContinuation(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
 		this.target = target;
 		this.arguments = arguments;
 		this.execution = execution;
@@ -59,17 +59,17 @@ public class CallContinuation<ExternalDispatch extends Dispatch> extends Express
 	}
 
    public static class CPS {
-       public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution, boolean isTail) {
+       public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution, boolean isTail) {
     	   if (isTail) {
     		   return createTail(target, arguments, execution);
     	   } else {
     		   return createNontail(target, arguments, execution);
     	   }
        }
-       public static Expression createNontail(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
+       public static Expression createNontail(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
            return CatchTailCall.create(createTail(target, arguments, execution), execution);
        }
-       public static Expression createTail(final Expression target, final Expression[] arguments, final PorcEExecutionRef execution) {
+       public static Expression createTail(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
            return new CallContinuation<Dispatch>(target, arguments, execution);
        }
 	}

@@ -15,7 +15,7 @@ package orc
 
 import orc.ast.porc.MethodCPS
 import orc.compiler.porce.PorcToPorcE
-import orc.run.porce.runtime.{ PorcEExecution, PorcEExecutionHolder, PorcEExecutionWithLaunch, PorcERuntime }
+import orc.run.porce.runtime.{ PorcEExecution, PorcEExecutionWithLaunch, PorcERuntime }
 import orc.run.porce.PorcELanguage
 
 case class PorcEBackendType() extends BackendType {
@@ -37,8 +37,7 @@ case class PorcEBackend(language: PorcELanguage = null) extends PorcBackend {
 
     private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecutionWithLaunch = synchronized {
       val execution = new PorcEExecution(this, k) with PorcEExecutionWithLaunch
-      val executionHolder = new PorcEExecutionHolder(execution)
-      val (porceAst, map) = PorcToPorcE(ast, executionHolder, false, language)
+      val (porceAst, map) = PorcToPorcE(ast, execution, false, language)
       addRoot(execution)
       execution.scheduleProgram(porceAst, map)
       execution

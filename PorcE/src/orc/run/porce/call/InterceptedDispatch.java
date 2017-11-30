@@ -9,7 +9,7 @@ import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Terminator;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 
 @Instrumentable(factory = InterceptedDispatchWrapper.class)
 public abstract class InterceptedDispatch extends Dispatch {
@@ -17,7 +17,7 @@ public abstract class InterceptedDispatch extends Dispatch {
 		this(orig.execution);
 	}
 	
-	protected InterceptedDispatch(PorcEExecutionRef execution) {
+	protected InterceptedDispatch(PorcEExecution execution) {
 		super(execution);
 	}
 
@@ -28,7 +28,7 @@ public abstract class InterceptedDispatch extends Dispatch {
 		final Terminator term = (Terminator) newArguments[2];
 
 		// Token: Passed to callContext from arguments.
-		final CPSCallContext callContext = new CPSCallContext(execution.get(), pub, counter, term, getCallSiteId());
+		final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
 
 		invokeInterceptedWithBoundary(callContext, newTarget, newArguments);
 	}
@@ -36,7 +36,7 @@ public abstract class InterceptedDispatch extends Dispatch {
 	@TruffleBoundary
 	private void invokeInterceptedWithBoundary(final CPSCallContext callContext, final Object newTarget,
 			final Object[] newArguments) {
-		execution.get().invokeIntercepted(callContext, newTarget, buildArgumentValues(newArguments));
+		execution.invokeIntercepted(callContext, newTarget, buildArgumentValues(newArguments));
 	}
 
 	protected Object[] buildArgumentValues(final Object[] newArguments) {
@@ -45,7 +45,7 @@ public abstract class InterceptedDispatch extends Dispatch {
 		return argumentValues;
 	}
 
-	static InterceptedDispatch create(PorcEExecutionRef execution) {
+	static InterceptedDispatch create(PorcEExecution execution) {
 		return InterceptedDispatchNodeGen.create(execution);
 	}
 }

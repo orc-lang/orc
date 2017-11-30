@@ -11,16 +11,16 @@ import orc.Accessor;
 import orc.CaughtEvent;
 import orc.ErrorAccessor;
 import orc.error.runtime.HaltException;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.values.Field;
 
 @NodeChild(value = "object", type = Expression.class)
 @Introspectable
 public abstract class GetField extends Expression {
     protected final Field field;
-    protected final PorcEExecutionRef execution;
+    protected final PorcEExecution execution;
 
-    protected GetField(final Field field, final PorcEExecutionRef execution) {
+    protected GetField(final Field field, final PorcEExecution execution) {
         this.field = field;
         this.execution = execution;
     }
@@ -31,7 +31,7 @@ public abstract class GetField extends Expression {
             return accessWithBoundary(accessor, obj);
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
-            execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+            execution.notifyOrcWithBoundary(new CaughtEvent(e));
             throw HaltException.SINGLETON();
         }
     }
@@ -44,14 +44,14 @@ public abstract class GetField extends Expression {
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-            execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+            execution.notifyOrcWithBoundary(new CaughtEvent(e));
             throw HaltException.SINGLETON();
         }
     }
 
     @TruffleBoundary
     protected Accessor getAccessorWithBoundary(final Object t) {
-        return execution.get().runtime().getAccessor(t, field);
+        return execution.runtime().getAccessor(t, field);
     }
 
     @TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
@@ -72,7 +72,7 @@ public abstract class GetField extends Expression {
         return SpecializationConfiguration.GetFieldMaxCacheSize;
     }
 
-    public static GetField create(final Expression object, final Field field, final PorcEExecutionRef execution) {
+    public static GetField create(final Expression object, final Field field, final PorcEExecution execution) {
         return GetFieldNodeGen.create(field, execution, object);
     }
 }

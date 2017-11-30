@@ -7,12 +7,12 @@ import orc.ast.ASTWithIndex;
 import orc.ast.porc.PorcAST;
 import orc.run.porce.HasPorcNode;
 import orc.run.porce.NodeBase;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 
 public abstract class DispatchBase extends NodeBase {
-	protected final PorcEExecutionRef execution;
+	protected final PorcEExecution execution;
 
-	protected DispatchBase(PorcEExecutionRef execution) {
+	protected DispatchBase(PorcEExecution execution) {
 		this.execution = execution;
 	}
 

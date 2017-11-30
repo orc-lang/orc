@@ -12,16 +12,16 @@ import orc.CaughtEvent;
 import orc.ErrorAccessor;
 import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.values.Field;
 
 @NodeChild(value = "object", type = Expression.class)
 @Introspectable
 public class GetMethod extends Expression {
-    protected final PorcEExecutionRef execution;
+    protected final PorcEExecution execution;
     protected static final Field field = Field.create("apply");
 
-    protected GetMethod(final PorcEExecutionRef execution) {
+    protected GetMethod(final PorcEExecution execution) {
         this.execution = execution;
     }
 
@@ -40,7 +40,7 @@ public class GetMethod extends Expression {
             }
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
-            execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+            execution.notifyOrcWithBoundary(new CaughtEvent(e));
             throw HaltException.SINGLETON();
         }
     }
@@ -57,14 +57,14 @@ public class GetMethod extends Expression {
             }
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
-            execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+            execution.notifyOrcWithBoundary(new CaughtEvent(e));
             throw HaltException.SINGLETON();
         }
     }
 
     @TruffleBoundary
     protected Accessor getAccessorWithBoundary(final Object t) {
-        return execution.get().runtime().getAccessor(t, field);
+        return execution.runtime().getAccessor(t, field);
     }
 
     @TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
@@ -85,7 +85,7 @@ public class GetMethod extends Expression {
         return SpecializationConfiguration.GetFieldMaxCacheSize;
     }
 
-    public static GetMethod create(final Expression object, final PorcEExecutionRef execution) {
+    public static GetMethod create(final Expression object, final PorcEExecution execution) {
         return GetMethodNodeGen.create(execution, object);
     }
 }

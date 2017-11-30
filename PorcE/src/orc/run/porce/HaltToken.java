@@ -14,16 +14,16 @@ import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.CounterNested;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 
 @NodeChild("counter")
 @Introspectable
 @ImportStatic(SpecializationConfiguration.class)
 public class HaltToken extends Expression {
 	
-	private final PorcEExecutionRef execution;
+	private final PorcEExecution execution;
 
-	protected HaltToken(final PorcEExecutionRef execution) {
+	protected HaltToken(final PorcEExecution execution) {
 		this.execution = execution;
 	}
 	
@@ -52,7 +52,7 @@ public class HaltToken extends Expression {
 		return n;
     }
     
-    public static HaltToken create(final Expression parent, final PorcEExecutionRef execution) {
+    public static HaltToken create(final Expression parent, final PorcEExecution execution) {
         return HaltTokenNodeGen.create(execution, parent);
     }
 }

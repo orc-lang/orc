@@ -14,7 +14,6 @@ import com.oracle.truffle.api.nodes.RootNode;
 import orc.run.porce.call.TailCallLoop;
 import orc.run.porce.runtime.TailCallException;
 import orc.run.porce.runtime.PorcEExecution;
-import orc.run.porce.runtime.PorcEExecutionHolder;
 
 public class InvokeWithTrampolineRootNode extends RootNode {
 	@Child
@@ -28,13 +27,12 @@ public class InvokeWithTrampolineRootNode extends RootNode {
 
     public InvokeWithTrampolineRootNode(final PorcELanguage language, final RootNode root, final PorcEExecution execution) {
     	super(language);
-        final PorcEExecutionHolder holder = new PorcEExecutionHolder(execution);
         if (root instanceof PorcERootNode)
         	this.root = (PorcERootNode) root;
         else
         	this.root = null;
     	this.body = DirectCallNode.create(root.getCallTarget());
-		this.loop = TailCallLoop.create(holder.newRef());
+		this.loop = TailCallLoop.create(execution);
     }
     
     public long getCallCount() {

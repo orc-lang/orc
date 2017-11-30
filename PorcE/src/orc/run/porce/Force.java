@@ -18,7 +18,7 @@ import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Join;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.Terminator;
 import static orc.run.porce.SpecializationConfiguration.*;
 
@@ -31,15 +31,15 @@ public class Force {
     @NodeChild(value = "c", type = Expression.class)
     @NodeChild(value = "t", type = Expression.class)
     @NodeField(name = "nFutures", type = int.class)
-    @NodeField(name = "execution", type = PorcEExecutionRef.class)
+    @NodeField(name = "execution", type = PorcEExecution.class)
     public static class New extends Expression {
         @Specialization
-        public Object run(final int nFutures, final PorcEExecutionRef execution, final PorcEClosure p, final Counter c, final Terminator t) {
+        public Object run(final int nFutures, final PorcEExecution execution, final PorcEClosure p, final Counter c, final Terminator t) {
             final Object[] values = new Object[nFutures + 1];
-            return new Join(p, c, t, values, execution.get());
+            return new Join(p, c, t, values, execution);
         }
 
-        public static New create(final Expression p, final Expression c, final Expression t, final int nFutures, final PorcEExecutionRef execution) {
+        public static New create(final Expression p, final Expression c, final Expression t, final int nFutures, final PorcEExecution execution) {
             return ForceFactory.NewNodeGen.create(p, c, t, nFutures, execution);
         }
     }
@@ -77,7 +77,7 @@ public class Force {
     }
 
     @NodeChild(value = "join", type = Expression.class)
-    @NodeField(name = "execution", type = PorcEExecutionRef.class)
+    @NodeField(name = "execution", type = PorcEExecution.class)
     @Introspectable
     @ImportStatic(SpecializationConfiguration.class)
     public static abstract class Finish extends Expression {
@@ -85,7 +85,7 @@ public class Force {
         Dispatch call = null;
 
         @Specialization(guards = { "InlineForceResolved", "join.isResolved()" })
-        public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecutionRef execution, final Join join) {
+        public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecution execution, final Join join) {
         	if (call == null) {
     			CompilerDirectives.transferToInterpreterAndInvalidate();
 	        	computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
@@ -107,24 +107,24 @@ public class Force {
         }
 
         @Specialization(guards = { "InlineForceHalted", "join.isHalted()" })
-        public PorcEUnit halted(final PorcEExecutionRef execution, final Join join) {
+        public PorcEUnit halted(final PorcEExecution execution, final Join join) {
             join.c().haltToken();
             return PorcEUnit.SINGLETON;
         }
 
         @Specialization(guards = { "join.isBlocked()" })
-        public PorcEUnit blocked(final PorcEExecutionRef execution, final Join join) {
+        public PorcEUnit blocked(final PorcEExecution execution, final Join join) {
             join.finishBlocked();
             return PorcEUnit.SINGLETON;
         }
         
         @Specialization(guards = { "!InlineForceResolved || !InlineForceHalted" })
-        public PorcEUnit fallback(final PorcEExecutionRef execution, final Join join) {
+        public PorcEUnit fallback(final PorcEExecution execution, final Join join) {
             join.finish();
             return PorcEUnit.SINGLETON;
         }
 
-        public static Finish create(final Expression join, final PorcEExecutionRef execution) {
+        public static Finish create(final Expression join, final PorcEExecution execution) {
             return ForceFactory.FinishNodeGen.create(join, execution);
         }
     }
@@ -133,7 +133,7 @@ public class Force {
     @NodeChild(value = "c", type = Expression.class)
     @NodeChild(value = "t", type = Expression.class)
     @NodeChild(value = "future", type = Expression.class)
-    @NodeField(name = "execution", type = PorcEExecutionRef.class)
+    @NodeField(name = "execution", type = PorcEExecution.class)
     @ImportStatic({ Force.class })
     public static abstract class SingleFuture extends Expression {
         @Child
@@ -155,7 +155,7 @@ public class Force {
         }
 
         @Specialization
-        public Object run(final VirtualFrame frame, final PorcEExecutionRef execution, final PorcEClosure p, final Counter c, final Terminator t, final Object future) {
+        public Object run(final VirtualFrame frame, final PorcEExecution execution, final PorcEClosure p, final Counter c, final Terminator t, final Object future) {
             try {
                 if (nonFuture.profile(isNonFuture(future))) {
                     throw new ValueAvailable(future);
@@ -172,7 +172,7 @@ public class Force {
                         	// TODO: PERFORMANCE: This cannot inline the halt continuation. Using a version of HaltToken would allow that.
                             c.haltToken();
                         } else {
-                            ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
+                            ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
                         }
                     }
                 } else if (orcFuture.profile(future instanceof orc.Future)) {
@@ -188,7 +188,7 @@ public class Force {
                         	// TODO: PERFORMANCE: This cannot inline the halt continuation. Using a version of HaltToken would allow that.
 	                        c.haltToken();
 	                    } else {
-	                        ((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution.get()));
+	                        ((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 	                    }
                     }
                 } else {
@@ -212,7 +212,7 @@ public class Force {
          * @param execution
          * @return true if this did transferToInterpreterAndInvalidate.
          */
-        private boolean initializeCall(final PorcEExecutionRef execution) {
+        private boolean initializeCall(final PorcEExecution execution) {
 			if (call == null) {
 				CompilerDirectives.transferToInterpreterAndInvalidate();
 				computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
@@ -225,7 +225,7 @@ public class Force {
 			return false;
         }
 
-        public static SingleFuture create(final Expression p, final Expression c, final Expression t, final Expression future, final PorcEExecutionRef execution) {
+        public static SingleFuture create(final Expression p, final Expression c, final Expression t, final Expression future, final PorcEExecution execution) {
             return ForceFactory.SingleFutureNodeGen.create(p, c, t, future, execution);
         }
     }

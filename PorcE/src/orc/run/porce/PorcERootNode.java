@@ -29,7 +29,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final static boolean assertionsEnabled = false;
     
     
-    // FIXME: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters). 
+    // TODO: PERFORMANCE: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters).
+    // The challange of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
     private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
     
@@ -41,8 +42,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     
     @CompilationFinal
     private long timePerCall = -1;
-    
-    // FIXME: Do to how the time value is collected (see addRunTime and the calls to it). Calls will be multiple counted in some cases (recursive calls).
    
     final public void addSpawnedCall(long time) {
         totalSpawnedTime.getAndAdd(time);

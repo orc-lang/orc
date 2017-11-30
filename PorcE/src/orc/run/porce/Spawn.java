@@ -16,7 +16,7 @@ import orc.run.porce.runtime.CallClosureSchedulable;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Terminator;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 
 @NodeChild(value = "c", type = Expression.class)
@@ -24,10 +24,10 @@ import orc.run.porce.runtime.PorcERuntime;
 @NodeChild(value = "computation", type = Expression.class)
 @Introspectable
 public abstract class Spawn extends Expression {
-    private final PorcEExecutionRef execution;
+    private final PorcEExecution execution;
 	private final boolean mustSpawn;
     
-    protected Spawn(boolean mustSpawn, PorcEExecutionRef execution) {
+    protected Spawn(boolean mustSpawn, PorcEExecution execution) {
 		this.mustSpawn = mustSpawn;
 		this.execution = execution;
 	}
@@ -39,7 +39,7 @@ public abstract class Spawn extends Expression {
 			//Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
 			((PorcERootNode)computation.body.getRootNode()).incrementSpawn();
 		}
-		execution.get().runtime().schedule(CallClosureSchedulable.apply(computation, execution.get()));
+		execution.runtime().schedule(CallClosureSchedulable.apply(computation, execution));
         return PorcEUnit.SINGLETON;
     }
 
@@ -81,7 +81,7 @@ public abstract class Spawn extends Expression {
 		return n;
     }
 
-    public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn, final Expression computation, final PorcEExecutionRef execution) {
+    public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn, final Expression computation, final PorcEExecution execution) {
         return SpawnNodeGen.create(mustSpawn, execution, c, t, computation);
     }
 }

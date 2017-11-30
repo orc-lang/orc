@@ -20,7 +20,7 @@ import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.TailCallException;
 import orc.run.porce.runtime.Terminator;
@@ -31,7 +31,7 @@ public class ExternalCPSDispatch extends Dispatch {
 	@Child
 	protected ExternalCPSDispatchInternal internal;
 
-	protected ExternalCPSDispatch(final PorcEExecutionRef execution) {
+	protected ExternalCPSDispatch(final PorcEExecution execution) {
 		super(execution);
 		internal = ExternalCPSDispatchInternal.createBare(execution);
 	}
@@ -56,7 +56,7 @@ public class ExternalCPSDispatch extends Dispatch {
 		return newArguments;
 	}
 	
-	static ExternalCPSDispatch createBare(PorcEExecutionRef execution) {
+	static ExternalCPSDispatch createBare(PorcEExecution execution) {
 		return new ExternalCPSDispatch(execution);
 	}
 }
@@ -64,7 +64,7 @@ public class ExternalCPSDispatch extends Dispatch {
 @ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
 abstract class ExternalCPSDispatchInternal extends DispatchBase {
-	protected ExternalCPSDispatchInternal(final PorcEExecutionRef execution) {
+	protected ExternalCPSDispatchInternal(final PorcEExecution execution) {
 		super(execution);
 	}
 
@@ -101,7 +101,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 		} catch (final ExceptionHaltException e) {
 			exceptionProfiles[0].enter();
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+			execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 			counter.haltToken();
 		} catch (final HaltException e) {
 			exceptionProfiles[1].enter();
@@ -109,7 +109,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 		} catch (final Exception e) {
 			exceptionProfiles[2].enter();
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+			execution.notifyOrcWithBoundary(new CaughtEvent(e));
 			counter.haltToken();
 		}
 		// Token: All exception handlers halt the token that was passed to this
@@ -121,7 +121,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 	public void specific(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
 			@Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker) {
 		// Token: Passed to callContext from arguments.
-		final CPSCallContext callContext = new CPSCallContext(execution.get(), pub, counter, term, getCallSiteId());
+		final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
 
 		try {
 			callContext.begin();
@@ -131,7 +131,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 		} catch (final ExceptionHaltException e) {
 			exceptionProfiles[0].enter();
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+			execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 			counter.haltToken();
 		} catch (final HaltException e) {
 			exceptionProfiles[1].enter();
@@ -139,7 +139,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 		} catch (final Exception e) {
 			exceptionProfiles[2].enter();
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+			execution.notifyOrcWithBoundary(new CaughtEvent(e));
 			counter.haltToken();
 		}
 	}
@@ -155,7 +155,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 		}
 	}
 
-	static ExternalCPSDispatchInternal createBare(PorcEExecutionRef execution) {
+	static ExternalCPSDispatchInternal createBare(PorcEExecution execution) {
 		return ExternalCPSDispatchInternalNodeGen.create(execution);
 	}
 
@@ -166,11 +166,11 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 	}
 
 	protected Invoker getInvokerWithBoundary(final Object target, final Object[] arguments) {
-		return getInvokerWithBoundary(execution.get().runtime(), target, arguments);
+		return getInvokerWithBoundary(execution.runtime(), target, arguments);
 	}
 
 	protected DirectInvoker getDirectInvokerWithBoundary(final Object target, final Object[] arguments) {
-		Invoker invoker = getInvokerWithBoundary(execution.get().runtime(), target, arguments);
+		Invoker invoker = getInvokerWithBoundary(execution.runtime(), target, arguments);
 		if (invoker instanceof DirectInvoker) {
 			return (DirectInvoker) invoker;
 		} else {

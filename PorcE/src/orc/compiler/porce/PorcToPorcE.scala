@@ -7,29 +7,25 @@ import com.oracle.truffle.api.frame.{ FrameDescriptor, FrameSlot, FrameSlotKind 
 
 import orc.ast.{ ASTWithIndex, porc }
 import orc.run.porce
-import orc.run.porce.runtime.{ PorcEClosure, PorcEExecution, PorcEExecutionHolder, PorcERuntime }
+import orc.run.porce.runtime.{ PorcEClosure, PorcEExecution, PorcERuntime }
 import orc.util.{ TFalse, TTrue, TUnknown }
 import orc.values.Field
 import swivel.Zipper
 import orc.run.porce.PorcELanguage
 
 object PorcToPorcE {
-  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder, usingInvokationInterceptor: Boolean, language: PorcELanguage = null): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
+  def apply(m: porc.MethodCPS, execution: PorcEExecution, usingInvokationInterceptor: Boolean, language: PorcELanguage = null): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
     new PorcToPorcE(usingInvokationInterceptor, language)(m, execution)
   }
 }
 
 class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELanguage) {
   case class Context(
-      descriptor: FrameDescriptor, execution: PorcEExecutionHolder,
+      descriptor: FrameDescriptor, execution: PorcEExecution,
       argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
       runtime: PorcERuntime, inTailPosition: Boolean) {
     def withTailPosition = copy(inTailPosition = true)
     def withoutTailPosition = copy(inTailPosition = false)
-  }
-  
-  implicit def unwrapPorcEExecutionHolder(execution: PorcEExecutionHolder): PorcEExecution = {
-    execution.exec
   }
   
   implicit class AddContextMap[T](val underlying: Seq[T]) {
@@ -91,14 +87,14 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
     res
   }
 
-  def apply(m: porc.MethodCPS, execution: PorcEExecutionHolder): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
+  def apply(m: porc.MethodCPS, execution: PorcEExecution): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
     val descriptor = new FrameDescriptor()
     implicit val ctx = Context(
       descriptor = descriptor,
       execution = execution,
       argumentVariables = Seq(m.pArg, m.cArg, m.tArg),
       closureVariables = Seq(),
-      runtime = execution.newRef().get().runtime,
+      runtime = execution.runtime,
       inTailPosition = true)
     val newBody = transform(m.body.toZipper())
     val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, 3, 0)
@@ -145,11 +141,11 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             porce.NewContinuation.create(capturingExprs, rootNode)
           }
         case porc.CallContinuation.Z(target, arguments) =>
-          porce.call.CallContinuation.CPS.create(transform(target)(innerCtx), arguments.map(transform(_)(innerCtx)).toArray, ctx.execution.newRef(), thisCtx.inTailPosition)
+          porce.call.CallContinuation.CPS.create(transform(target)(innerCtx), arguments.map(transform(_)(innerCtx)).toArray, ctx.execution, thisCtx.inTailPosition)
         case porc.MethodCPSCall.Z(isExt, target, p, c, t, arguments) =>
           lazy val newTarget = transform(target)(innerCtx)
           val newArguments = (p +: c +: t +: arguments).map(transform(_)(innerCtx)).toArray
-          val exec = ctx.execution.newRef()
+          val exec = ctx.execution
           isExt match {
             case TTrue if !usingInvokationInterceptor =>
               porce.call.Call.CPS.create(newTarget, newArguments, exec, thisCtx.inTailPosition)
@@ -161,7 +157,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
         case porc.MethodDirectCall.Z(isExt, target, arguments) =>
           val newTarget = transform(target)
           val newArguments = arguments.map(transform(_)(innerCtx)).toArray
-          val exec = ctx.execution.newRef()
+          val exec = ctx.execution
           isExt match {
             case TTrue =>
               porce.call.Call.Direct.create(newTarget, newArguments, exec)
@@ -202,9 +198,9 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
         case porc.NewToken.Z(c) =>
           porce.NewToken.create(transform(c))
         case porc.HaltToken.Z(c) =>
-          porce.HaltToken.create(transform(c), ctx.execution.newRef())
+          porce.HaltToken.create(transform(c), ctx.execution)
         case porc.Kill.Z(c, t, k) =>
-          porce.Kill.create(transform(c), transform(t), transform(k), ctx.execution.newRef())
+          porce.Kill.create(transform(c), transform(t), transform(k), ctx.execution)
         case porc.CheckKilled.Z(t) =>
           porce.CheckKilled.create(transform(t))
         case porc.Bind.Z(fut, v) =>
@@ -212,33 +208,33 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
         case porc.BindStop.Z(fut) =>
           porce.BindStop.create(transform(fut))
         case porc.Spawn.Z(c, t, must, comp) =>
-          porce.Spawn.create(transform(c), transform(t), must, transform(comp), ctx.execution.newRef())
+          porce.Spawn.create(transform(c), transform(t), must, transform(comp), ctx.execution)
         case porc.Resolve.Z(p, c, t, futures) =>
           // Due to not generally being on as hot of paths we do not have a single value version of Resolve. It could easily be created if needed.
           val join = lookupVariable(LocalVariables.Join)
           val newJoin = porce.Write.Local.create(
             join,
-            porce.Resolve.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
+            porce.Resolve.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution))
           val processors = futures.zipWithIndex.map { p =>
             val (f, i) = p
             porce.Resolve.Future.create(porce.Read.Local.create(join), transform(f), i)
           }
-          val finishJoin = porce.Resolve.Finish.create(porce.Read.Local.create(join), ctx.execution.newRef())
+          val finishJoin = porce.Resolve.Finish.create(porce.Read.Local.create(join), ctx.execution)
           finishJoin.setTail(thisCtx.inTailPosition)
           porce.Sequence.create((newJoin +: processors :+ finishJoin).toArray)
         case porc.Force.Z(p, c, t, Seq(future)) =>
           // Special optimized case for only one future.
-          porce.Force.SingleFuture.create(transform(p), transform(c), transform(t), transform(future), ctx.execution.newRef())
+          porce.Force.SingleFuture.create(transform(p), transform(c), transform(t), transform(future), ctx.execution)
         case porc.Force.Z(p, c, t, futures) =>
           val join = lookupVariable(LocalVariables.Join)
           val newJoin = porce.Write.Local.create(
             join,
-            porce.Force.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution.newRef()))
+            porce.Force.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution))
           val processors = futures.zipWithIndex.map { p =>
             val (f, i) = p
             porce.Force.Future.create(porce.Read.Local.create(join), transform(f), i)
           }
-          val finishJoin = porce.Force.Finish.create(porce.Read.Local.create(join), ctx.execution.newRef())
+          val finishJoin = porce.Force.Finish.create(porce.Read.Local.create(join), ctx.execution)
           finishJoin.setTail(thisCtx.inTailPosition)
           porce.Sequence.create((newJoin +: processors :+ finishJoin).toArray)
         case porc.SetDiscorporate.Z(c) =>
@@ -250,9 +246,9 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
         case porc.IfLenientMethod.Z(arg, l, r) =>
           porce.IfLenientMethod.create(transform(arg), transform(l), transform(r))
         case porc.GetField.Z(o, f) =>
-          porce.GetField.create(transform(o), f, ctx.execution.newRef())
+          porce.GetField.create(transform(o), f, ctx.execution)
         case porc.GetMethod.Z(o) =>
-          porce.GetMethod.create(transform(o), ctx.execution.newRef())
+          porce.GetMethod.create(transform(o), ctx.execution)
         case porc.New.Z(bindings) =>
           val newBindings = bindings.mapValues(transform(_)).view.force
           val fieldOrdering = normalizeFieldOrder(bindings.keys)

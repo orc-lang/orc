@@ -16,13 +16,13 @@ import orc.Invoker;
 import orc.error.runtime.ExceptionHaltException;
 import orc.error.runtime.HaltException;
 import orc.run.porce.SpecializationConfiguration;
-import orc.run.porce.runtime.PorcEExecutionRef;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 
 @ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
 public abstract class ExternalDirectDispatch extends DirectDispatch {
-	protected ExternalDirectDispatch(final PorcEExecutionRef execution) {
+	protected ExternalDirectDispatch(final PorcEExecution execution) {
 		super(execution);
 	}
 
@@ -40,7 +40,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 		} catch (final ExceptionHaltException e) {
 			exceptionProfiles[0].enter();
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+			execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 			throw HaltException.SINGLETON();
 		} catch (final HaltException e) {
 			exceptionProfiles[1].enter();
@@ -48,7 +48,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 		} catch (final Exception e) {
 			exceptionProfiles[2].enter();
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+			execution.notifyOrcWithBoundary(new CaughtEvent(e));
 			throw HaltException.SINGLETON();
 		}
 	}
@@ -61,7 +61,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 		} catch (final ExceptionHaltException e) {
 			exceptionProfiles[0].enter();
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.get().notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+			execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
 			throw HaltException.SINGLETON();
 		} catch (final HaltException e) {
 			exceptionProfiles[1].enter();
@@ -69,19 +69,19 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 		} catch (final Exception e) {
 			exceptionProfiles[2].enter();
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.get().notifyOrcWithBoundary(new CaughtEvent(e));
+			execution.notifyOrcWithBoundary(new CaughtEvent(e));
 			throw HaltException.SINGLETON();
 		}
 	}
 
-	static ExternalDirectDispatch createBare(final PorcEExecutionRef execution) {
+	static ExternalDirectDispatch createBare(final PorcEExecution execution) {
 		return ExternalDirectDispatchNodeGen.create(execution);
 	}
 
 	/* Utilties */
 
 	protected DirectInvoker getInvokerWithBoundary(final Object target, final Object[] arguments) {
-		return (DirectInvoker) getInvokerWithBoundary(execution.get().runtime(), target, arguments);
+		return (DirectInvoker) getInvokerWithBoundary(execution.runtime(), target, arguments);
 	}
 
 	@TruffleBoundary(allowInlining = true)
