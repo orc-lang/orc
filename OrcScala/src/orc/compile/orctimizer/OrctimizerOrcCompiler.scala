@@ -14,6 +14,7 @@ package orc.compile.orctimizer
 import orc.compile._
 import orc.ast.orctimizer
 import orc.ast.porc
+import orc.ast.ASTWithIndex
 import orc.error.compiletime.CompileLogger
 
 import orc.util.{ ExecutionLogOutputStream, CsvWriter }
@@ -245,6 +246,30 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     val phaseName = "porc-index"
     override def apply(co: CompilerOptions) = { ast =>
       IndexAST(ast)
+
+      ExecutionLogOutputStream("porc-ast-indicies", "csv", "Porc AST index dump") foreach { out =>
+        val traceCsv = new OutputStreamWriter(out, "UTF-8")
+        val statisticsOut = new CsvWriter(traceCsv.append(_))
+        
+        statisticsOut.writeHeader(Seq("AST Index [i]", "Source Position [position]", "Porc AST [porc]"))
+            
+        def process(ast: PorcAST): Unit = {
+          ast match {
+            case a: ASTWithIndex if a.optionalIndex.isDefined =>
+              val i = a.optionalIndex.get
+              statisticsOut.writeRow((i, a.sourceTextRange.map(_.toString).getOrElse(""), a.toString))
+            case _ =>
+              ()
+          }
+          ast.subtrees.foreach(process)
+        }
+        
+        process(ast)
+        
+        out.close()
+      }
+      
+      
       ast
     }
   }

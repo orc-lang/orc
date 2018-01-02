@@ -267,7 +267,7 @@ final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @
   }
 }
 @leaf @transform
-final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression {
+final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression with ASTWithIndex {
   require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
 }
 
