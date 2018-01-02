@@ -11,6 +11,11 @@ library(dplyr)
 library(ggplot2)
 library(boot)
 
+trimVector <- function(data, fraction) {
+  nDrop <- floor(length(data) * fraction)
+  data[order(data)[nDrop : (length(data)-nDrop)]]
+}
+
 # Estimate (very poorly) the number of warm-up repetitions in data.
 #
 # This finds the first index, n, in data such that:
@@ -85,13 +90,16 @@ dropWarmupRepetitions <- function(data, warmupReps, repetitionColName = NA) {
 # data should be a vector. statistic should be a function.
 # confidence and R are specify the confidence of the bounds and the number of
 # bootstrap replicas respectively.
-bootstrapStatistic <- function(data, statistic, confidence = 0.95, R = 10000, statName = NA) {
+bootstrapStatistic <- function(data, statistic, confidence = 0.95, R = 10000, trim = 0, statName = NA) {
   if (is.na(statName))
     statName <- deparse(substitute(statistic))
 
-  if (length(data) > 2) {
+  if (length(data) > 2 && R > 1) {
     b <- boot(data, function(d, sel) {
-      statistic(d[sel])
+      if(trim > 0)
+        statistic(d[sel], trim = trim)
+      else
+        statistic(d[sel])
     }, R)
     ci <- boot.ci(b, conf=confidence, type="perc")
     #stopifnot(ci$t0 == statistic(data))
@@ -102,21 +110,33 @@ bootstrapStatistic <- function(data, statistic, confidence = 0.95, R = 10000, st
     r <- data.frame(statistic = statName, value = s, upperBound = upperBound, lowerBound = lowerBound, confidence = confidence, nSamples = length(data))
     r
   } else {
-    s <- mean(data)
-    lowerBound <- NA
-    upperBound <- NA
+    s <- if(trim > 0)
+      statistic(data, trim = trim)
+    else
+      statistic(data)
+    if(identical(statistic, mean)) {
+      sd <- if(trim > 0)
+        sd(trimVector(data, trim))
+      else
+        sd(data)
+      lowerBound <- s - sd
+      upperBound <- s + sd
+    } else {
+      lowerBound <- NA
+      upperBound <- NA
+    }
     confidence <- 0
     r <- data.frame(statistic = statName, value = s, upperBound = upperBound, lowerBound = lowerBound, confidence = confidence, nSamples = length(data))
     r
   }
 }
 
-.bootstrapStatistics_Internal <- function(data, colNames, statistics, confidence, R) {
+.bootstrapStatistics_Internal <- function(data, colNames, statistics, confidence, R, trim) {
   r <- data.frame()
   for (colName in colNames) {
     for (statName in names(statistics)) {
       stat = statistics[[statName]]
-      results <- bootstrapStatistic(data[[colName]], stat, confidence, R, statName = statName)
+      results <- bootstrapStatistic(data[[colName]], stat, confidence, R, trim, statName = statName)
       statColName <- function(n) paste(colName, statName, n, sep = "_")
       r[1, paste(colName, statName, sep = "_")] <- results["value"]
       r[statColName("upperBound")] <- results["upperBound"]
@@ -143,7 +163,7 @@ bootstrapStatistic <- function(data, statistic, confidence = 0.95, R = 10000, st
 #   rawData %>% group_by(benchmarkName, nCPUs) %>% bootstrapStatistics(elapsedTime, mean)
 # rawData can be data from readMergedResultsTable or almost any source.
 #
-bootstrapStatistics <- function(.data, col, statistic, confidence = 0.95, R = 10000) {
+bootstrapStatistics <- function(.data, col, statistic, confidence = 0.95, R = 10000, trim = 0) {
   # TODO: Add support for vars arguments.
   colName <- if (is.name(substitute(col))) {
     deparse(substitute(col))
@@ -154,7 +174,7 @@ bootstrapStatistics <- function(.data, col, statistic, confidence = 0.95, R = 10
     l[[deparse(substitute(statistic))]] <- statistic
     l
   } else statistic
-  do(.data, .bootstrapStatistics_Internal(., colName, statistics, confidence, R))
+  do(.data, .bootstrapStatistics_Internal(., colName, statistics, confidence, R, trim))
 }
 
 # Add a baseline column for sourceCol (or each if it is a vector of column names).
