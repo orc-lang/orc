@@ -11,6 +11,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import orc.run.porce.Expression;
 import orc.run.porce.PorcEUnit;
+import orc.run.porce.RuntimeProfilerWrapper;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
@@ -89,27 +90,32 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	
 	@Override
 	public Object execute(final VirtualFrame frame) {
-		final Object targetValue = executeTargetObject(frame);
-		final Object[] argumentValues;
-		if (arguments.length > 0) {
-			argumentValues = new Object[arguments.length];
-			executeArguments(frame, argumentValues, 0);
-		} else {
-			argumentValues = emptyArguments;
+		RuntimeProfilerWrapper.traceEnter(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+		try {
+			final Object targetValue = executeTargetObject(frame);
+			final Object[] argumentValues;
+			if (arguments.length > 0) {
+				argumentValues = new Object[arguments.length];
+				executeArguments(frame, argumentValues, 0);
+			} else {
+				argumentValues = emptyArguments;
+			}
+			
+			if (profileIsIntercepted.profile(execution.shouldInterceptInvocation(targetValue, argumentValues))) {			
+				getInterceptedCall().executeDispatch(frame, targetValue, argumentValues);
+			} else if (profileIsInternal.profile(isInternal(targetValue))) {
+				final Object[] argumentValuesI = new Object[arguments.length + 1];
+				executeArguments(frame, argumentValuesI, 1);
+				argumentValuesI[0] = ((PorcEClosure)targetValue).environment;
+	
+				getInternalCall().executeDispatchWithEnvironment(frame, targetValue, argumentValuesI);
+			} else {
+				return callExternal(frame, targetValue, argumentValues);
+			}
+			return PorcEUnit.SINGLETON;
+		} finally {
+			RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
 		}
-		
-		if (profileIsIntercepted.profile(execution.shouldInterceptInvocation(targetValue, argumentValues))) {			
-			getInterceptedCall().executeDispatch(frame, targetValue, argumentValues);
-		} else if (profileIsInternal.profile(isInternal(targetValue))) {
-			final Object[] argumentValuesI = new Object[arguments.length + 1];
-			executeArguments(frame, argumentValuesI, 1);
-			argumentValuesI[0] = ((PorcEClosure)targetValue).environment;
-
-			getInternalCall().executeDispatchWithEnvironment(frame, targetValue, argumentValuesI);
-		} else {
-			return callExternal(frame, targetValue, argumentValues);
-		}
-		return PorcEUnit.SINGLETON;
 	}
 
     public static class Direct {

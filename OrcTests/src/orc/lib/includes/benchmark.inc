@@ -8,6 +8,7 @@ import site EndBenchmark = "orc.lib.EndBenchmark"
 import site StartBenchmark = "orc.lib.StartBenchmark"
 import class OrcTracer = "orc.util.Tracer"
 import class WorkStealingSchedulerTaskTracer = "orc.run.extensions.WorkStealingSchedulerTaskTracer"
+import class RuntimeProfiler = "orc.run.RuntimeProfiler"
 
 
 val nPartitions = BenchmarkConfig.nPartitions()
@@ -79,6 +80,7 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 			   "Runtime compilation time (s) [rtCompTime]", "GC time (s) [gcTime]"], 
 			  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime(), t.compilationTime(), t.gcTime()], reverse(results'))) >>
 			WorkStealingSchedulerTaskTracer.dumpSchedule("rep" + i) >>
+			RuntimeProfiler.dump("rep" + i) >>
 			h(i+1, results')
 		)
 	if nRuns >= 1 then

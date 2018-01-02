@@ -233,7 +233,7 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
   }
 
   def invokeDirect(theObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-    //orc.run.core.Tracer.traceJavaCall(callContext)
+    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.JavaDispatch)
     try {
       if (theObject == null && !invocable.isStatic) {
         throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
@@ -265,6 +265,7 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
         arguments
       }
       //Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
+      orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
       java2orc(mh.invoke(theObject, finalArgs))
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
@@ -272,7 +273,10 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
       case e: InterruptedException => throw e
       case e: Exception => throw new JavaException(e)
     } finally {
-      //orc.run.core.Tracer.traceJavaReturn(callContext)
+      if (orc.run.RuntimeProfiler.profileRuntime) {
+        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.JavaDispatch)
+      }
     }
   }
 }

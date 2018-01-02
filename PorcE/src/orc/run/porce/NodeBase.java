@@ -10,6 +10,8 @@ import com.oracle.truffle.api.source.SourceSection;
 
 import orc.ast.porc.PorcAST;
 import orc.run.porce.runtime.SourceSectionFromPorc;
+import orc.ast.ASTWithIndex;
+import orc.run.porce.HasPorcNode;
 import orc.run.porce.instruments.ProfiledPorcNodeTag;
 import scala.Option;
 
@@ -79,6 +81,41 @@ public abstract class NodeBase extends Node implements HasPorcNode {
 	
 	public void setTail(boolean v) {
 		isTail = v;
+	}
+
+	@CompilerDirectives.CompilationFinal
+	private int callSiteId = -1;
+
+	protected int getCallSiteId() {
+		if (callSiteId >= 0) {
+			return callSiteId;
+		} else {
+			CompilerDirectives.transferToInterpreterAndInvalidate();
+			callSiteId = findCallSiteId(this);
+			return callSiteId;
+		}
+	}
+
+	/**
+	 * Climb the Truffle AST searching for a node with a PorcAST with an index.
+	 */
+	private int findCallSiteId(final Node e) {
+		if (e instanceof HasPorcNode) {
+			HasPorcNode pn = (HasPorcNode) e;
+			if (pn.porcNode().isDefined()) {
+				final PorcAST ast = pn.porcNode().get();
+				if (ast instanceof ASTWithIndex && ((ASTWithIndex) ast).optionalIndex().isDefined()) {
+					return ((Integer) ((ASTWithIndex) ast).optionalIndex().get()).intValue();
+				}
+			}
+		}
+		final Node p = e.getParent();
+		if (p instanceof NodeBase) {
+			return ((NodeBase) p).getCallSiteId();
+		} else if (p != null) {
+			return findCallSiteId(p);
+		}
+		return -1;
 	}
 
 	/**

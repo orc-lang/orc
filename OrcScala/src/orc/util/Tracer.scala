@@ -37,8 +37,6 @@ import java.lang.IndexOutOfBoundsException
   */
 object Tracer {
 
-  //TODO: Rolling buffer alloc/swap/resize
-
   //TODO: "Who wants to be a macro?" "Oooh, pick me, pick me!!"
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
