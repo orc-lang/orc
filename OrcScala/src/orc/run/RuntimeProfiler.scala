@@ -3,6 +3,8 @@ package orc.run
 import orc.util.ExecutionLogOutputStream
 import java.io.OutputStreamWriter
 import orc.util.CsvWriter
+import java.util.zip.GZIPOutputStream
+import java.io.FileOutputStream
 
 /** A tracer object for profiling the runtime.
   *
@@ -139,13 +141,14 @@ object RuntimeProfiler {
       //orc.util.Tracer.dumpBuffers(suffix)
       val buffers = orc.util.Tracer.takeBuffers()
       
-      val (calibrationInnerTime, calibrationOuterTime) = calibration()
+      //val (calibrationInnerTime, calibrationOuterTime) = calibration()
+      val (calibrationInnerTime, calibrationOuterTime) = (0, 0)
       
-      Logger.info(s"Measured calibration values ($calibrationInnerTime, $calibrationOuterTime)")
+      //Logger.info(s"Measured calibration values ($calibrationInnerTime, $calibrationOuterTime)")
       
-      val csvOut = ExecutionLogOutputStream(s"runtime_profile_$suffix", "csv", "Runtime profile file")
+      val csvOut = ExecutionLogOutputStream(s"runtime_profile_$suffix", "csv.gz", "Runtime profile file")
       if (csvOut.isDefined) {
-        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
+        val traceCsv = new OutputStreamWriter(new GZIPOutputStream(csvOut.get), "UTF-8")
         val csvWriter = new CsvWriter(traceCsv.append(_))
         val tableColumnTitles = Seq(
             "Call Site ID [callId]",

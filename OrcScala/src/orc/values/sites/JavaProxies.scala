@@ -94,6 +94,7 @@ object JavaCall {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
           cls == target.getClass() && valuesHaveType(arguments, argClss)
         }
+        override def toString() = s"<Member Invoker>($cls.$methodName)"
       }
     }
 
@@ -104,6 +105,7 @@ object JavaCall {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
           cls == target && valuesHaveType(arguments, argClss)
         }
+        override def toString() = s"<Member Invoker>($cls.$methodName)"
       }
     }
 
@@ -116,6 +118,7 @@ object JavaCall {
         def get(target: AnyRef): AnyRef = {
           new JavaMemberProxy(target, memberName, javaField)
         }
+        override def toString() = s"<Member Accessor>($cls.$memberName)"
       }
     }
     
@@ -128,6 +131,7 @@ object JavaCall {
         def get(target: AnyRef): AnyRef = {
           new JavaStaticMemberProxy(target.asInstanceOf[Class[_ <: AnyRef]], memberName, javaField)
         }
+        override def toString() = s"<Static Member Accessor>($cls.$memberName)"
       }
     }
   }
@@ -266,7 +270,14 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
       }
       //Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
       orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-      java2orc(mh.invoke(theObject, finalArgs))
+      val r = try {
+        mh.invoke(theObject, finalArgs)
+      } finally {
+        if (orc.run.RuntimeProfiler.profileRuntime) {
+          orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+        }
+      }
+      java2orc(r)
     } catch {
       case e: InvocationTargetException => throw new JavaException(e.getCause())
       case e: ExceptionInInitializerError => throw new JavaException(e.getCause())
@@ -274,7 +285,6 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
       case e: Exception => throw new JavaException(e)
     } finally {
       if (orc.run.RuntimeProfiler.profileRuntime) {
-        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
         orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.JavaDispatch)
       }
     }

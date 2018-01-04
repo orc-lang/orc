@@ -177,6 +177,10 @@ bootstrapStatistics <- function(.data, col, statistic, confidence = 0.95, R = 10
   do(.data, .bootstrapStatistics_Internal(., colName, statistics, confidence, R, trim))
 }
 
+dropBounds <- function(.data) {
+  select(.data, -ends_with("Bound"))
+}
+
 # Add a baseline column for sourceCol (or each if it is a vector of column names).
 #
 # requirements should be a vector of named values, for example c(nCPUs = 1),

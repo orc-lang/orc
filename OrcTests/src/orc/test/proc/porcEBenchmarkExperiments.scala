@@ -531,3 +531,55 @@ object PorcESteadyStateExperiment extends PorcEBenchmark {
     runExperiment(experimentalConditions)
   }
 }
+
+
+object PorcEInvokationOverheadsExperiment extends PorcEBenchmark {
+  def softTimeLimit: Double = 60 * 10
+    
+  case class MyPorcEExperimentalCondition(
+      orcFile: File,
+      problemSize: Int)
+      extends ArthursBenchmarkEnv.PorcEExperimentalCondition {
+    override def factorDescriptions = Seq(
+      FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
+    )
+    
+    override def systemProperties = super.systemProperties ++ Map(
+        "orc.numerics.preferLP" -> "true",
+        "orc.test.benchmark.problemSize" -> problemSize,
+        )
+        
+    override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3")
+    
+    override def toJvmArgs = Seq("-XX:+UseG1GC", "-Xms64g", "-Xmx115g") ++ super.toJvmArgs
+  }
+
+  def main(args: Array[String]): Unit = {
+    val experimentalConditions = {
+      val nCPUsValues = (Seq(24)).reverse 
+      val porce = for {
+        (fn, size) <- Seq(
+            ("test_data/performance/black-scholes/black-scholes-scala-compute.orc", 5),
+            ("test_data/performance/black-scholes/black-scholes.orc", 5),
+            ("test_data/performance/k-means/k-means-scala-inner.orc", 5),
+            ("test_data/performance/k-means/k-means.orc", 1),
+            ("test_data/performance/bigsort/bigsort.orc", 1),
+            //("test_data/performance/bigsort/bigsort-partially-seq.orc", 1),
+            ("test_data/performance/swaptions/swaptions-naive-scala-sim.orc", 5),
+            ("test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc", 1),
+            ("test_data/performance/sssp/sssp-batched-partitioned.orc", 3),
+            ("test_data/performance/canneal/canneal-naive.orc", 1),
+            //("test_data/performance/canneal/canneal-partitioned.orc", 1),
+            //("test_data/performance/dedup/dedup-boundedchannel.orc", 1),
+            //("test_data/performance/dedup/dedup.orc", 1),
+            )
+        nCPUs <- nCPUsValues
+      } yield {
+        assert(new File(fn).isFile(), fn)
+        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), size)
+      }
+      porce 
+    }
+    runExperiment(experimentalConditions)
+  }
+}

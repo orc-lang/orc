@@ -90,31 +90,35 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	
 	@Override
 	public Object execute(final VirtualFrame frame) {
-		RuntimeProfilerWrapper.traceEnter(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+		final Object targetValue = executeTargetObject(frame);
+		final Object[] argumentValues;
+		if (!profileIsInternal.profile(isInternal(targetValue))) {
+			RuntimeProfilerWrapper.traceEnter(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+		}
 		try {
-			final Object targetValue = executeTargetObject(frame);
-			final Object[] argumentValues;
 			if (arguments.length > 0) {
 				argumentValues = new Object[arguments.length];
 				executeArguments(frame, argumentValues, 0);
 			} else {
 				argumentValues = emptyArguments;
 			}
-			
-			if (profileIsIntercepted.profile(execution.shouldInterceptInvocation(targetValue, argumentValues))) {			
+
+			if (profileIsIntercepted.profile(execution.shouldInterceptInvocation(targetValue, argumentValues))) {
 				getInterceptedCall().executeDispatch(frame, targetValue, argumentValues);
 			} else if (profileIsInternal.profile(isInternal(targetValue))) {
 				final Object[] argumentValuesI = new Object[arguments.length + 1];
 				executeArguments(frame, argumentValuesI, 1);
-				argumentValuesI[0] = ((PorcEClosure)targetValue).environment;
-	
+				argumentValuesI[0] = ((PorcEClosure) targetValue).environment;
+
 				getInternalCall().executeDispatchWithEnvironment(frame, targetValue, argumentValuesI);
 			} else {
 				return callExternal(frame, targetValue, argumentValues);
 			}
 			return PorcEUnit.SINGLETON;
 		} finally {
-			RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+			if (!profileIsInternal.profile(isInternal(targetValue))) {
+				RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+			}
 		}
 	}
 
