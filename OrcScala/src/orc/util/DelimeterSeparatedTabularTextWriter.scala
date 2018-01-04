@@ -101,19 +101,29 @@ abstract class DelimeterSeparatedTabularTextWriter(write: String => Unit) {
   }
 
   def writeCell(value: Any): Unit = {
-    def escape(badChars: String, esc: String)(inCh: Char) =
-      if (badChars.contains(inCh)) esc + inCh else inCh.toString
+    def writeEscapedString(str: String) = {
+      def writeEscapedChar(inCh: Char): Unit = {
+        if (requiresEscape.contains(inCh)) {
+          write(escapePrefix)
+        }
+        write(inCh.toString)
+      }
+      if (requiresEscape.nonEmpty) {
+        str.foreach(writeEscapedChar)
+      } else {
+        write(str)
+      }
+    }
     val str = if (value != null) value.toString else ""
     val mustQuote =
         (str.nonEmpty && (whitespace.contains(str.head) || whitespace.contains(str.last))) ||
         (requiresQuotes.nonEmpty && requiresQuotes.exists(str.contains(_)))
-    val escapedStr = if (requiresEscape.nonEmpty) str.flatMap(escape(requiresEscape, escapePrefix)(_)) else str
     if (mustQuote) {
       write(quoteCharacter)
-      write(escapedStr)
+      writeEscapedString(str)
       write(quoteCharacter)
     } else {
-      write(escapedStr)
+      writeEscapedString(str)
     }
   }
 }
