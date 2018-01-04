@@ -170,46 +170,6 @@ public class TailCallLoop extends NodeBase {
 				return true;
 			}
 		}
-
-		/*
-		private void invokeCalls(final TailCallNode call, final VirtualFrame frame, 
-				final PorcEClosure target, final Object[] arguments, 
-				final boolean isFirstCall) {
-			if (call instanceof TailCallSpecializationNode) {
-				TailCallSpecializationNode spec = (TailCallSpecializationNode) call;
-				if (spec.thisOrOtherProfile.profile(spec.matchesSpecific(target))) {
-					try {
-						spec.call.call(arguments);
-					} catch (TailCallException e) {
-						invokeCalls(spec.next, frame, e.target, e.arguments, false);
-					}
-				} else {
-					invokeCalls(spec.next, frame, target, arguments, isFirstCall);
-				}
-			} else {
-				assert call instanceof TailCallTerminalNode;
-				if (isFirstCall) {
-		    		CompilerDirectives.transferToInterpreterAndInvalidate();
-		    		Lock lock = getLock();
-		    		lock.lock();
-		    		try {
-						TailCallTerminalNode term = (TailCallTerminalNode) call;
-			    		term.replace(
-			    				TailCallSpecializationNode.create(target, TailCallTerminalNode.create(execution), execution), 
-			    				"Extend TailCall chain");
-			    		//final Object t = target;
-			    		//Logger.info(() -> "Extending " + getRootNode().getName() + " with " + t);
-		    		} finally {
-		    			lock.unlock();
-		    		}
-				}
-				TailCallException tce = getTCE(frame);
-				tce.target = target;
-				tce.arguments = arguments;
-	    		throw tce;
-			}
-		}
-		*/
 		
 		@ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
 		private void invokeCalls(TailCallNode call, final VirtualFrame frame, PorcEClosure target, Object[] arguments) {

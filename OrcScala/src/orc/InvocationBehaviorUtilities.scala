@@ -37,7 +37,7 @@ object InvocationBehaviorUtilities {
     }
   }
 
-  /** Get the class of v, or null is v == null.
+  /** Get the class of v, or null if v == null.
     */
   def valueType(v: AnyRef): Class[_] = {
     if (v == null)
