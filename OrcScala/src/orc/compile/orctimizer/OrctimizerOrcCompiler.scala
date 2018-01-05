@@ -251,13 +251,14 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
         val statisticsOut = new CsvWriter(traceCsv.append(_))
         
-        statisticsOut.writeHeader(Seq("AST Index [i]", "Source Position [position]", "Porc AST [porc]"))
+        statisticsOut.writeHeader(Seq("AST Index [i]", "Source Position [position]", "Porc AST truncated [porc]"))
             
         def process(ast: PorcAST): Unit = {
           ast match {
             case a: ASTWithIndex if a.optionalIndex.isDefined =>
               val i = a.optionalIndex.get
-              statisticsOut.writeRow((i, a.sourceTextRange.map(_.toString).getOrElse(""), a.toString))
+              import orc.util.StringExtension._
+              statisticsOut.writeRow((i, a.sourceTextRange.map(_.toString).getOrElse(""), a.toString.replace("\n", "").truncateTo(100)))
             case _ =>
               ()
           }
