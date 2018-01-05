@@ -34,7 +34,12 @@ object TupleConstructor extends InvokerMethod with FunctionalSite with Talkative
         target eq TupleConstructor
       }
       def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-        OrcTuple(arguments)
+        orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+        try {
+          OrcTuple(arguments)
+        } finally {
+          orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+        }
       }
     }
   }

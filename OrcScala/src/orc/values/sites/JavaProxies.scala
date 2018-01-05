@@ -152,7 +152,14 @@ object JavaCall {
             }
             @throws[HaltException]
             def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              new JavaArrayElementProxy(target, arguments(0).asInstanceOf[java.lang.Long].intValue())
+              orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+              try {
+                new JavaArrayElementProxy(target, arguments(0).asInstanceOf[java.lang.Long].intValue())
+              } finally {
+                if (orc.run.RuntimeProfiler.profileRuntime) {
+                  orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+                }
+              }
             }
           })
         }
@@ -164,7 +171,14 @@ object JavaCall {
             }
             @throws[HaltException]
             def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              new JavaArrayElementProxy(target, arguments(0).asInstanceOf[Number].intValue())
+              orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+              try {
+                new JavaArrayElementProxy(target, arguments(0).asInstanceOf[Number].intValue())
+              } finally {
+                if (orc.run.RuntimeProfiler.profileRuntime) {
+                  orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+                }
+              }
             }
           })
         }
@@ -477,8 +491,16 @@ case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: I
           target.isInstanceOf[JavaArrayDerefSite] && arguments.length == 0 && cls.isInstance(target.asInstanceOf[JavaArrayDerefSite].theArray)
         }
         def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-          val self = target.asInstanceOf[JavaArrayDerefSite]
-          java2orc(mh.invokeExact(self.theArray, self.index))
+          orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+          val r = try {
+            val self = target.asInstanceOf[JavaArrayDerefSite]
+            mh.invokeExact(self.theArray, self.index)
+          } finally {
+            if (orc.run.RuntimeProfiler.profileRuntime) {
+              orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+            }
+          }
+          java2orc(r)
         }
       }
     } else {
@@ -502,8 +524,15 @@ case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: 
           target.isInstanceOf[JavaArrayAssignSite] && arguments.length == 1 && cls.isInstance(target.asInstanceOf[JavaArrayAssignSite].theArray)
         }
         def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-          val self = target.asInstanceOf[JavaArrayAssignSite]
-          mh.invoke(self.theArray, self.index, orc2java(arguments(0), componentType))
+          orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+          try {
+            val self = target.asInstanceOf[JavaArrayAssignSite]
+            mh.invoke(self.theArray, self.index, orc2java(arguments(0), componentType))
+          } finally {
+            if (orc.run.RuntimeProfiler.profileRuntime) {
+              orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+            }
+          }
         }
       }
     } else {

@@ -40,7 +40,12 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
           }
         
           def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-            target.asInstanceOf[OrcTuple].values(arguments(0).asInstanceOf[BigInt].intValue())
+            orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+            try {
+              target.asInstanceOf[OrcTuple].values(arguments(0).asInstanceOf[BigInt].intValue())
+            } finally {
+              orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+            }
           }
         }
       }
@@ -56,9 +61,14 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
                 false
             }
           }
-        
+
           def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-            target.asInstanceOf[OrcTuple].values(arguments(0).asInstanceOf[java.lang.Long].intValue())
+            orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+            try {
+              target.asInstanceOf[OrcTuple].values(arguments(0).asInstanceOf[java.lang.Long].intValue())
+            } finally {
+              orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+            }
           }
         }
       }

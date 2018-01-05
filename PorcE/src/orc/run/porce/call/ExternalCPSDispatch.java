@@ -24,6 +24,7 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.TailCallException;
 import orc.run.porce.runtime.Terminator;
+import orc.run.porce.RuntimeProfilerWrapper;
 import orc.run.porce.SpecializationConfiguration;
 import static orc.run.porce.SpecializationConfiguration.*;
 
@@ -94,7 +95,12 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 			@Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker) {
 		// DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
 		try {
-			final Object v = invokeDirectWithBoundary(invoker, target, arguments);
+			final Object v;
+			try {
+				v = invokeDirectWithBoundary(invoker, target, arguments);
+			} finally {
+				RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+			}
 			getDispatchP().execute(frame, pub, new Object[] { pub.environment, v });
 		} catch (final TailCallException e) {
 			throw e;
@@ -141,6 +147,8 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
 			execution.notifyOrcWithBoundary(new CaughtEvent(e));
 			counter.haltToken();
+		} finally {
+			RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
 		}
 	}
 

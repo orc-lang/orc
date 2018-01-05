@@ -27,7 +27,12 @@ abstract class SiteAdaptor extends Site {
   import SiteAdaptor._
 
   def call(args: Array[AnyRef], callContext: CallContext) {
-    callSite(convertArgs(args), callContext)
+    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+    try {
+      callSite(convertArgs(args), callContext)
+    } finally {
+      orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+    }
   }
 
   /** Must be implemented by subclasses to implement the site behavior
@@ -108,6 +113,11 @@ abstract class EvalSite extends SiteAdaptor with DirectSite {
   def evaluate(args: Args): Object
 
   def calldirect(args: Array[AnyRef]): AnyRef = {
-    object2value(evaluate(convertArgs(args)))
+    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+    try {
+      object2value(evaluate(convertArgs(args)))
+    } finally {
+      orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+    }
   }
 }
