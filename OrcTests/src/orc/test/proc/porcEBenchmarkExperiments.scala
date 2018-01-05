@@ -546,6 +546,7 @@ object PorcEInvokationOverheadsExperiment extends PorcEBenchmark {
     
     override def systemProperties = super.systemProperties ++ Map(
         "orc.numerics.preferLP" -> "true",
+        "orc.SimpleWorkStealingScheduler.overrideWorkers" -> 24,
         "orc.test.benchmark.problemSize" -> problemSize,
         )
         
@@ -559,17 +560,17 @@ object PorcEInvokationOverheadsExperiment extends PorcEBenchmark {
       val nCPUsValues = (Seq(24)).reverse 
       val porce = for {
         (fn, size) <- Seq(
-            ("test_data/performance/black-scholes/black-scholes-scala-compute.orc", 5),
-            ("test_data/performance/black-scholes/black-scholes.orc", 5),
+            ("test_data/performance/black-scholes/black-scholes-scala-compute.orc", 3),
+            ("test_data/performance/black-scholes/black-scholes.orc", 3),
             ("test_data/performance/k-means/k-means-scala-inner.orc", 5),
             ("test_data/performance/k-means/k-means.orc", 1),
-            ("test_data/performance/bigsort/bigsort.orc", 1),
+            //("test_data/performance/bigsort/bigsort.orc", 1),
             //("test_data/performance/bigsort/bigsort-partially-seq.orc", 1),
             ("test_data/performance/swaptions/swaptions-naive-scala-sim.orc", 5),
             ("test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc", 1),
             ("test_data/performance/sssp/sssp-batched-partitioned.orc", 3),
             ("test_data/performance/canneal/canneal-naive.orc", 1),
-            //("test_data/performance/canneal/canneal-partitioned.orc", 1),
+            ("test_data/performance/canneal/canneal-partitioned.orc", 1),
             //("test_data/performance/dedup/dedup-boundedchannel.orc", 1),
             //("test_data/performance/dedup/dedup.orc", 1),
             )
