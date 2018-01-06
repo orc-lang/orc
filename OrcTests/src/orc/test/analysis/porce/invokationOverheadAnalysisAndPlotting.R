@@ -15,8 +15,8 @@ readMergedResultsTableCached <- addMemoization(readMergedResultsTable)
 source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 
-#dataDir <- file.path(experimentDataDir, "PorcE", "invokationOverhead", "20180102-a004")
-dataDir <- file.path(localExperimentDataDir, "20180104-a003")
+dataDir <- file.path(experimentDataDir, "PorcE", "invocation-overhead", "20180104-a003")
+#dataDir <- file.path(localExperimentDataDir, "20180104-a003")
 
 overallTime <- readMergedResultsTableCached(dataDir, "benchmark-times", invalidate=T)
 
@@ -77,15 +77,16 @@ computeOverheads <- function(data) {
   times <- computeTotalTimes(data)
   times$cpuTime <- cpuTime
   times$elapsedTime <- overall$elapsedTime
-  mutate_at(times, ends_with("_sum", vars = colnames(times)), function(v) v / cpuTime)
+  #mutate_at(times, ends_with("_sum", vars = colnames(times)), function(v) v / cpuTime)
+  times
 }
 
-overheads <- addMemoization(function(x) {
+overheads <- addMemoization(function(...) {
   programReps %>% rowwise() %>%
     do(computeOverheads(readRuntimeProfileCached(as.character(.$program), .$lastRep))) %>%
     ungroup() %>%
     mutate_if(is.character, factor)
-})(programReps)
+})(programReps, 1)
 
 siteAverages <- addMemoization(function(x) {
   programReps %>% rowwise() %>%
@@ -115,6 +116,7 @@ siteAveragesPlotPointsOnly <- siteAveragesPlotData %>%
   guides(alpha = FALSE) +
   myTheme
 
+
 siteAveragesPlot <- siteAveragesPlotData %>%
   ggplot(aes(x = program, y = overhead_us, weight = proportion)) +
   geom_violin(adjust = 0.5) +
@@ -126,17 +128,62 @@ siteAveragesPlot <- siteAveragesPlotData %>%
   guides(alpha = FALSE) +
   myTheme
 
-overheadsPlot <- overheads %>% mutate(elapsedProportion = elapsedTime / cpuTime) %>%
-  gather(key = region, value = time_sum, cdTime_sum, jdTime_sum, siteTime_sum, elapsedProportion) %>%
-  mutate(region = factor(region, levels = c("cdTime_sum", "jdTime_sum", "siteTime_sum", "elapsedProportion"), labels = c("Dispatch", "Java Disp.", "Invoked Site", "Total Elapsed"))) %>%
-  ggplot(aes(x = program, y = time_sum, fill = region)) +
+minDispatchImprovement <- 0.50 # 2x
+maxDispatchImprovement <- 0.90 # 10x
+
+overheadsPlot <- overheads %>%
+  mutate(overhead = cdTime_sum + jdTime_sum, overheadProportion = (cdTime_sum + jdTime_sum) / cpuTime) %>%
+  mutate(elapsedTimeAfter = elapsedTime * (1 - overheadProportion)) %>%
+  gather(key = region, value = time_sum, overhead, siteTime_sum, cpuTime, elapsedTime, elapsedTimeAfter) %>%
+  mutate(region = factor(
+    region,
+    levels = c("overhead", "siteTime_sum", "cpuTime", "elapsedTime", "elapsedTimeAfter"),
+    labels = c("Dispatch", "Invoked Site", "CPU", "Elapsed", "Elapsed After"))) %>%
+  ggplot(aes(x = 0, y = time_sum, fill = region)) +
   geom_col(position = position_dodge()) +
-  labs(y = "Proportion of time", fill = "") +
-  coord_cartesian(ylim = c(0, 1)) +
-  myTheme
+  labs(y = "Time in seconds", fill = "") +
+  facet_wrap(~program, scales = "free") +
+  myTheme +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+
+performanceGains <- overheads %>%
+  mutate(overhead = cdTime_sum + jdTime_sum, overheadProportion = (cdTime_sum + jdTime_sum) / cpuTime) %>%
+  mutate(minImprove = overheadProportion * minDispatchImprovement, maxImprove = overheadProportion * maxDispatchImprovement)
+
+performanceGainsPlot <- performanceGains %>% transmute(program = as.character(program), overheadProportion, minImprove, maxImprove) %>%
+  rbind(list("geomean", geomean(performanceGains$overheadProportion), geomean(performanceGains$minImprove), geomean(performanceGains$maxImprove))) %>%
+  gather(key = region, value = time_sum, overheadProportion, minImprove, maxImprove) %>%
+  mutate(region = factor(
+    region,
+    levels = c("overheadProportion", "minImprove", "maxImprove"),
+    labels = c("Dispatch", "Min. Improve. (2x)", "Max. Improve. (10x)"))) %>%
+  ggplot(aes(x = 0, y = time_sum, fill = region)) +
+  geom_col(position = position_dodge()) +
+  labs(y = "Time in seconds", fill = "") +
+  facet_wrap(~program, scales = "free") +
+  myTheme +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+
+print(noquote(paste("Overhead:", geomean(performanceGains$overheadProportion),
+              " Min Improvement (2x):", geomean(performanceGains$minImprove),
+              " Max Improvement (10x):", geomean(performanceGains$maxImprove))))
+
+# overheads %>% mutate(overhead = cdTime_sum + jdTime_sum, elapsedProportion = elapsedTime / cpuTime) %>%
+#   gather(key = region, value = time_sum, overhead, siteTime_sum, elapsedProportion) %>%
+#   mutate(region = factor(region, levels = c("overhead", "siteTime_sum", "elapsedProportion"), labels = c("Dispatch", "Invoked Site", "Total Elapsed"))) %>%
+#   ggplot(aes(x = program, y = time_sum, fill = region)) +
+#   geom_col(position = position_dodge()) +
+#   labs(y = "Proportion of time", fill = "") +
+#   coord_cartesian(ylim = c(0, 1)) +
+#   myTheme
 
 print(siteAveragesPlot)
 print(overheadsPlot)
+print(performanceGainsPlot)
 
 # Output
 
@@ -147,5 +194,6 @@ if (!dir.exists(outputDir)) {
 
 ggsave(file.path(outputDir, "siteAveragesPlot"), siteAveragesPlot, "png", width = 7.5, height = 6)
 ggsave(file.path(outputDir, "overheadsPlot"), overheadsPlot, "png", width = 7.5, height = 6)
+ggsave(file.path(outputDir, "performanceGainsPlot"), performanceGainsPlot, "png", width = 7.5, height = 6)
 
 

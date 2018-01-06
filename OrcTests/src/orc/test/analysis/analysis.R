@@ -263,3 +263,8 @@ addBaseline <- function(.data, sourceCol, requirements, baseline = NA) {
   }
   do(.data, f(.))
 }
+
+
+geomean <- function(x, na.rm = TRUE) {
+  exp(sum(log(x[x > 0]), na.rm = na.rm) / length(x))
+}
