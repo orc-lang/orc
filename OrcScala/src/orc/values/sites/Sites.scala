@@ -64,7 +64,7 @@ trait SpecificArity extends Site {
 /* Enforce totality */
 trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
   def call(args: Array[AnyRef], callContext: CallContext) {
-    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
     try {
       try {
@@ -77,7 +77,7 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
     }
   }
   def calldirect(args: Array[AnyRef]): AnyRef = {
-    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
     try {
       try {
@@ -100,7 +100,7 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
 /* Enforce nonblocking, but do not enforce totality */
 trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
   def call(args: Array[AnyRef], callContext: CallContext) {
-    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
     try {
       evaluate(args) match {
@@ -113,7 +113,7 @@ trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
   }
   
   def calldirect(args: Array[AnyRef]): AnyRef = {
-    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
     (try {
       evaluate(args)

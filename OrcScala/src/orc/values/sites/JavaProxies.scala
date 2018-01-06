@@ -356,7 +356,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
           }
         }
         def get(target: AnyRef): AnyRef = {
-          Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName.read")
+          //Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName.read")
           new JavaArrayLengthPseudofield(target.asInstanceOf[JavaMemberProxy].theObject)
         }
       }
@@ -388,7 +388,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
         def get(target: AnyRef): AnyRef = {
           val value = jf.get(target.asInstanceOf[JavaMemberProxy].theObject)
           lazy val valueCls = value.getClass()
-          Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
+          //Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
           import JavaCall._
           // TODO:PERFORMANCE: The has*Member checks on value will actually be quite expensive. However for these semantics they are required. Maybe we could change the semantics. Or maybe I've missed a way to implement it so that all reflection is JIT time constant.
           submemberName match {

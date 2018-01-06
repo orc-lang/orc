@@ -99,7 +99,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 			try {
 				v = invokeDirectWithBoundary(invoker, target, arguments);
 			} finally {
-				RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+				RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 			}
 			getDispatchP().execute(frame, pub, new Object[] { pub.environment, v });
 		} catch (final TailCallException e) {
@@ -148,7 +148,7 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 			execution.notifyOrcWithBoundary(new CaughtEvent(e));
 			counter.haltToken();
 		} finally {
-			RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+			RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 		}
 	}
 

@@ -93,7 +93,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 		final Object targetValue = executeTargetObject(frame);
 		final Object[] argumentValues;
 		if (!profileIsInternal.profile(isInternal(targetValue))) {
-			RuntimeProfilerWrapper.traceEnter(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+			RuntimeProfilerWrapper.traceEnter(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 			// The traceExit is in Direct below and in ExternalCPSDispatch
 		}
 		if (arguments.length > 0) {
@@ -130,7 +130,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 					try {
 						return getExternalCall().executeDirectDispatch(frame, target, arguments);
 					} finally {
-						RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch(), getCallSiteId());
+						RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 					}
 				}
             };
