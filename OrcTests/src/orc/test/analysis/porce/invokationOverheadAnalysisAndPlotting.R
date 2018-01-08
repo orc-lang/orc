@@ -81,19 +81,15 @@ computeOverheads <- function(data) {
   times
 }
 
-overheads <- addMemoization(function(...) {
-  programReps %>% rowwise() %>%
+overheads <- programReps %>% rowwise() %>%
     do(computeOverheads(readRuntimeProfileCached(as.character(.$program), .$lastRep))) %>%
     ungroup() %>%
     mutate_if(is.character, factor)
-})(programReps, 1)
 
-siteAverages <- addMemoization(function(x) {
-  programReps %>% rowwise() %>%
+siteAverages <- programReps %>% rowwise() %>%
     do(computeSiteAverages(readRuntimeProfileCached(as.character(.$program), .$lastRep))) %>%
     ungroup() %>%
     mutate_if(is.character, factor)
-})(programReps)
 
 myTheme <- list(
   theme_minimal(),
@@ -168,9 +164,11 @@ performanceGainsPlot <- performanceGains %>% transmute(program = as.character(pr
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank())
 
-print(noquote(paste("Overhead:", geomean(performanceGains$overheadProportion),
-              " Min Improvement (2x):", geomean(performanceGains$minImprove),
-              " Max Improvement (10x):", geomean(performanceGains$maxImprove))))
+formattedGains <- paste("Overhead:", geomean(performanceGains$overheadProportion),
+                        " Min Improvement (2x):", geomean(performanceGains$minImprove),
+                        " Max Improvement (10x):", geomean(performanceGains$maxImprove))
+
+print(noquote(formattedGains))
 
 # overheads %>% mutate(overhead = cdTime_sum + jdTime_sum, elapsedProportion = elapsedTime / cpuTime) %>%
 #   gather(key = region, value = time_sum, overhead, siteTime_sum, elapsedProportion) %>%
@@ -183,17 +181,28 @@ print(noquote(paste("Overhead:", geomean(performanceGains$overheadProportion),
 
 print(siteAveragesPlot)
 print(overheadsPlot)
-print(performanceGainsPlot)
+#print(performanceGainsPlot)
 
 # Output
+
+
+outputDir <- file.path(dataDir, "processed")
+if (!dir.exists(outputDir)) {
+  dir.create(outputDir)
+}
+
+cat(formattedGains, file = file.path(outputDir, "gains.txt"))
+
+write.csv(overheads, file = file.path(outputDir, "overheads.csv"))
+write.csv(siteAverages, file = file.path(outputDir, "siteAverages.csv"))
 
 outputDir <- file.path(dataDir, "plots")
 if (!dir.exists(outputDir)) {
   dir.create(outputDir)
 }
 
-ggsave(file.path(outputDir, "siteAveragesPlot"), siteAveragesPlot, "png", width = 7.5, height = 6)
-ggsave(file.path(outputDir, "overheadsPlot"), overheadsPlot, "png", width = 7.5, height = 6)
-ggsave(file.path(outputDir, "performanceGainsPlot"), performanceGainsPlot, "png", width = 7.5, height = 6)
+ggsave(file.path(outputDir, "siteAveragesPlot.png"), siteAveragesPlot, "png", width = 7.5, height = 6)
+ggsave(file.path(outputDir, "overheadsPlot.png"), overheadsPlot, "png", width = 7.5, height = 6)
+#ggsave(file.path(outputDir, "performanceGainsPlot"), performanceGainsPlot, "png", width = 7.5, height = 6)
 
 
