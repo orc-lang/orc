@@ -47,7 +47,7 @@ class SimpleWorkStealingScheduler(
 
   /** The minimum number of worker threads.
     */
-  val minWorkers = overrideWorkers.getOrElse(math.max(4, nCores * 2))
+  val minWorkers = overrideWorkers.getOrElse(math.max(4, nCores * 1))
   /** The maximum number of worker threads.
     */
   val maxWorkers = overrideWorkers.getOrElse(minWorkers + maxSiteThreads)
