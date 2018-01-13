@@ -10,7 +10,7 @@ object SwaptionsSeq extends BenchmarkApplication[Array[Swaption]] {
   }
 
   def setup(): Array[Swaption] = {
-    SwaptionData.sizedData(SwaptionData.nSwaptions)
+    SwaptionData.data
   }
 
   val name: String = "Swaptions-seq"

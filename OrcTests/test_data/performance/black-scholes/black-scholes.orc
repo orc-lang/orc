@@ -46,9 +46,7 @@ def run(data) =
 	Println(res.length?) >>
 	Println((res(0)?, res(1)?, res(2)?, res(3)?, res(5)?))
 
-val dataSize = problemSizeScaledInt(10000)
-
-val data = BlackScholesData.makeData(dataSize)
+val data = BlackScholesData.data()
 
 benchmarkSized("Black-Scholes-naive", data.length?, { data }, run)
 

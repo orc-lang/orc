@@ -156,7 +156,7 @@ object ArthursBenchmarkEnv {
       })
       val sysProps = systemProperties ++ factorProps
       val sysPropsAsArgs = for ((k, v) <- sysProps) yield s"-D$k=$v"
-      sysPropsAsArgs
+      Seq("-XX:-UseJVMCIClassLoader", "-XX:-UseJVMCICompiler") ++ sysPropsAsArgs
     }
       
     def systemProperties: Map[String, Any] = Map()
@@ -168,7 +168,7 @@ object ArthursBenchmarkEnv {
 
   trait PorcEExperimentalCondition extends JVMExperimentalCondition {
     override def toJvmArgs = super.toJvmArgs ++
-          Seq("-XX:-UseJVMCIClassLoader", "-XX:-UseJVMCICompiler",
+          Seq(
             // Always trace compilation since it will be useful for determining where outlyers come from. 
             "-Dgraal.TraceTruffleCompilation=true", 
             "-Dgraal.TruffleBackgroundCompilation=false",

@@ -20,7 +20,7 @@ object Mandelbrot extends BenchmarkApplication[Unit] {
 
   val threshold: D = 100
   val steps: Integer = 10
-  val gridsize: Integer = BenchmarkConfig.problemSizeSqrtScaledInt(48)
+  val gridsize: Integer = BenchmarkConfig.problemSizeSqrtScaledInt(100)
   val resolution = D(3.0) / D(gridsize)
   val offset = D(gridsize) / D(2.0)
 
@@ -43,11 +43,12 @@ object Mandelbrot extends BenchmarkApplication[Unit] {
   }
 
   def benchmark(ctx: Unit): Unit = {
-    println("size = " + gridsize + ", resolution = " + resolution + ", offset = " + offset)
+    //println("size = " + gridsize + ", resolution = " + resolution + ", offset = " + offset)
 
     val ll = (0 until gridsize).map(row(_))
-    val ls = ll.map(showRow(_))
-    println(ls.reduce(_ + "\n" + _))
+    ll.toList
+    //val ls = ll.map(showRow(_))
+    //println(ls.reduce(_ + "\n" + _))
   }
 
   val name: String = "Mandelbrot"

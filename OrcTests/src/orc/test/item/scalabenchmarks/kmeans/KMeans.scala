@@ -5,6 +5,7 @@ import scala.math.sqrt
 import orc.test.item.scalabenchmarks.BenchmarkApplication
 import orc.test.item.scalabenchmarks.Util
 import KMeans.D
+import orc.test.item.scalabenchmarks.BenchmarkConfig
 
 
 
@@ -12,14 +13,14 @@ object KMeansData  {
   def readPoints(path: String): Array[Point] = {
     val json = Source.fromFile(path).mkString
     val data = orc.lib.web.ReadJSON(json).asInstanceOf[List[List[Number]]].map({ case List(a, b) => new Point(a.doubleValue, b.doubleValue) })
-    data.toArray // ++ data // ++ data
+    data.toArray
   }
 
   lazy val dataBase = readPoints(s"${System.getProperty("orc.test.benchmark.datadir", "")}test_data/performance/points.json")
   
-  def data = dataSized(3)
+  def data = dataSized((BenchmarkConfig.problemSize / 3.0).ceil.toInt)
   
-  def dataSized(n: Int) = (0 until n).foldLeft(Array[Point]())((acc, _) => acc ++ dataBase)
+  private def dataSized(n: Int) = (0 until n).foldLeft(Array[Point]())((acc, _) => acc ++ dataBase)
   
   // println(s"Loaded ${dataBase.size} points from JSON")
 }

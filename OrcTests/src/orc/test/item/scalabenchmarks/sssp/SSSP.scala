@@ -18,7 +18,7 @@ import orc.test.item.scalabenchmarks._
   * otherwise not optimized.
   */
 object SSSP {
-  val (nodes, edges, source) = SSSPData.generate(BenchmarkConfig.problemSizeSqrtScaledInt(100000))
+  val (nodes, edges, source) = SSSPData.generate(BenchmarkConfig.problemSizeSqrtScaledInt(40000))
 }
 
 abstract class SSSPBase extends BenchmarkApplication[(Array[SSSPNode], Array[SSSPEdge], Int)] {

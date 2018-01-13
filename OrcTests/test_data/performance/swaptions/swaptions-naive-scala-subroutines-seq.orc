@@ -15,7 +15,7 @@ import class SwaptionData = "orc.test.item.scalabenchmarks.swaptions.SwaptionDat
 import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
-val data = SwaptionData.sizedData(SwaptionData.nSwaptions())
+def loadData() = SwaptionData.data()
 val nTrials = SwaptionData.nTrials()
 val nSteps = SwaptionData.nSteps()
 
@@ -80,11 +80,12 @@ def sim(processor, swaption) =
     swaption.setSimSwaptionPriceMean(sum.sum() / nTrials) >>
     swaption.setSimSwaptionPriceStdError(sqrt((sumsq.sum() - sum.sum()*sum.sum()/nTrials) / (nTrials - 1.0)) / sqrt(nTrials))
 
-def simAll(processor) =
+def simAll(data) =
+	val processor = Processor(SwaptionData.nTrials())
 	eachArray(data) >swaption> sim(processor, swaption) >> stop ; "Done"
 
-benchmarkSized("Swaptions-naive-scala-subroutines-seq", data.length? * SwaptionData.nTrials(),
-	{ data >> Processor(SwaptionData.nTrials()) }, simAll)
+benchmarkSized("Swaptions-naive-scala-subroutines-seq", SwaptionData.nSwaptions() * SwaptionData.nTrials(),
+	{ loadData() }, simAll)
 
 {-
 BENCHMARK

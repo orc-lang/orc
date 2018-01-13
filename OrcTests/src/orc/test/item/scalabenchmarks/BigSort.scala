@@ -69,7 +69,7 @@ abstract class BigSortBase extends BenchmarkApplication[Array[Number]] {
     Array.fill(n)(ThreadLocalRandom.current().nextInt(n).asInstanceOf[Number])
   }
   
-  val arraySize = BenchmarkConfig.problemSizeScaledInt(3000)
+  val arraySize = BenchmarkConfig.problemSizeScaledInt(1000)
 
   
   val name: String = "BigSort"

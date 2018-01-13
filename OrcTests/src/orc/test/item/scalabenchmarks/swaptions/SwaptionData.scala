@@ -30,8 +30,8 @@ object SwaptionData {
   var nextSwaptionID = 0
   
   val nSteps = 11
-  val nTrials = BenchmarkConfig.problemSizeSqrtScaledInt(2000)
-  val nSwaptions = BenchmarkConfig.problemSizeSqrtScaledInt(24)
+  val nTrials = BenchmarkConfig.problemSizeSqrtScaledInt(1000)
+  val nSwaptions = BenchmarkConfig.problemSizeSqrtScaledInt(12)
 
   def makeSwaption() = synchronized {
     val rnd = ThreadLocalRandom.current()
@@ -41,5 +41,7 @@ object SwaptionData {
     Swaption(id, factors(), yields(), random(5, 60, 0.25), random(0.1, 49, 0.1))
   }
   
-  def sizedData(nSwaptions: Int) = Array.fill(nSwaptions)(makeSwaption())
+  private def sizedData(nSwaptions: Int) = Array.fill(nSwaptions)(makeSwaption())
+  
+  def data = sizedData(nSwaptions)
 }

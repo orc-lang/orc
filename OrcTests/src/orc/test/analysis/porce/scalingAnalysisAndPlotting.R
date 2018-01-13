@@ -20,23 +20,27 @@ source(file.path(scriptDir, "plotting.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20171103-a002")
+dataDir <- file.path(localExperimentDataDir, "20180111-a004")
 
 if(!exists("processedData")) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
     mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1]))) %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
-  prunedData <- data %>% dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs"), rep, elapsedTime, 5, 50, 120)
+  prunedData <- data %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 50, 120, minRemaining = 1, maxRemaining = 40) #%>%
+    # Drop any reps which have more than 1% compilation time.
+    #filter(rtCompTime < cpuTime * 0.01)
 
   processedData <- prunedData %>%
-    group_by(benchmarkProblemName, language, benchmarkName, nCPUs, allowAllSpawnInlining, universalTCO, truffleASTInlining) %>% bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime"), mean) %>%
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>% bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime"), mean, confidence = 0.5) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
-           cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_lowerBound,
-           cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_upperBound) %>%
+           cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
+           cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
     group_by(benchmarkName) %>% addBaseline(elapsedTime_mean, c(nCPUs=1), baseline = elapsedTime_mean_selfbaseline) %>%
     group_by(benchmarkProblemName) %>% addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1), baseline = elapsedTime_mean_problembaseline) %>%
-    ungroup()
+    ungroup() %>%
+    filter(benchmarkName != "KMeans (Orc)")
 }
 
 paletteValues <- rep(c(rbind(brewer.pal(8, "Dark2"), rev(brewer.pal(12, "Set3")))), 10)
@@ -87,7 +91,7 @@ utilizationPlot <- function(problemName) {
     ylim(c(0, 1))
 }
 
-#print(utilizationPlot)
+#print(utilizationPlot("Black"))
 
 ## Seperate Scaling Plots for each problem.
 
@@ -112,6 +116,17 @@ scalingPlot <- function(problemName) {
 
 scalingPlots <- lapply(levels(processedData$benchmarkProblemName), scalingPlot)
 
+
+# Visualize the distribution of implementations of a given problem.
+
+# p <- processedData %>%
+#   ggplot(aes(x = benchmarkProblemName, y = elapsedTime_mean)) +
+#   geom_violin(scale = "width") +
+#   geom_point(position = position_jitter(0.3))
+#
+# print(p)
+# print(p + coord_cartesian(ylim = c(0, 10)))
+
 # print(scalingPlots)
 
 elapsedTimePlot <- function(problemName) {
@@ -135,7 +150,7 @@ elapsedTimePlot <- function(problemName) {
 
 elapsedTimePlots <- lapply(levels(processedData$benchmarkProblemName), elapsedTimePlot)
 
-# print(elapsedTimePlots)
+print(elapsedTimePlots)
 
 normalizedPerformancePlot <- function(problemName) {
   p <- processedData %>% filter(benchmarkProblemName == problemName) %>% ggplot(aes(
@@ -149,9 +164,9 @@ normalizedPerformancePlot <- function(problemName) {
     theme_minimal() + scale_fill_brewer(palette="Dark2")
 
   fullPerformancePlot <- p + geom_col_errorbar() + geom_point(position = position_dodge(0.9)) +
-    geom_text(aes(label = format((elapsedTime_mean_problembaseline / elapsedTime_mean), digits = 2, nsmall=0),
-                  y = pmax(pmin((elapsedTime_mean_problembaseline / elapsedTime_mean) + (0.01 * 1.5), 1.5 * 0.9), 0)),
-              position = position_dodge(0.9), vjust = 0) +
+    #geom_text(aes(label = format((elapsedTime_mean_problembaseline / elapsedTime_mean), digits = 2, nsmall=0),
+    #              y = pmax(pmin((elapsedTime_mean_problembaseline / elapsedTime_mean) + (0.01 * 1.5), 1.5 * 0.9), 0)),
+    #          position = position_dodge(0.9), vjust = 0) +
     geom_hline(yintercept = 1, alpha = 0.4, color = "blue")
 
   fullPerformancePlot
@@ -159,7 +174,7 @@ normalizedPerformancePlot <- function(problemName) {
 
 normalizedPerformancePlots <- lapply(levels(processedData$benchmarkProblemName), normalizedPerformancePlot)
 
-#print(normalizedPerformancePlots)
+print(normalizedPerformancePlots)
 
 sampleCountData <- processedData %>% select(benchmarkName, nCPUs, nSamples) %>% spread(nCPUs, nSamples)
 
@@ -197,39 +212,4 @@ capture.output(sampleCountTable("rst"), file = file.path(outputDir, "usedSampleC
 capture.output(sampleCountTable("latex"), file = file.path(outputDir, "usedSampleCounts.tex"), type = "output")
 
 
-
-## Facetted plots
-
-# p <- processedData %>% ggplot(aes(
-#     y = elapsedTime_mean_selfbaseline / elapsedTime_mean,
-#     ymin = elapsedTime_mean_selfbaseline / elapsedTime_mean_lowerBound,
-#     ymax = elapsedTime_mean_selfbaseline / elapsedTime_mean_upperBound,
-#     fill = benchmarkName)) + facet_wrap(~benchmarkProblemName) +
-#   labs(y = "Speed up", x = "Number of CPUs", color = "Benchmark", fill = "Benchmark") +
-#   theme_minimal() + fillPalette + colorPalette
-#
-# selfScalingPlot <- p + geom_line(aes(x = nCPUs, color = benchmarkName)) + scale_x_continuous_breaks_from(breaks_from = processedData$nCPUs)
-# #fullPerformancePlot <- p + geom_col_errorbar(aes(x = factor(nCPUs)))
-#
-# # This plot is probably useless.
-# p <- processedData %>% ggplot(aes(
-#   y = elapsedTime_mean_problembaseline / elapsedTime_mean,
-#   ymin = elapsedTime_mean_problembaseline / elapsedTime_mean_lowerBound,
-#   ymax = elapsedTime_mean_problembaseline / elapsedTime_mean_upperBound,
-#   fill = benchmarkName)) +
-#   labs(y = "Speed up", x = "Number of CPUs", color = "Benchmark", fill = "Benchmark") +
-#   theme_minimal() + fillPalette + colorPalette + facet_wrap(~benchmarkProblemName)
-#
-# scalingPlot <- p + geom_line(aes(x = nCPUs, color = benchmarkName)) +
-#   geom_point(aes(x = nCPUs, color = benchmarkName, shape = language)) +
-#   scale_x_continuous_breaks_from(breaks_from = processedData$nCPUs) +
-#   geom_hline(yintercept = 1, alpha = 0.5, color = "blue")
-# fullPerformancePlot <- p + geom_col_errorbar(aes(x = factor(nCPUs)))
-
-#print(scalingPlot)
-#print(fullPerformancePlot)
-
-#ggsave(file.path(dataDir, "scalingPlot.pdf"), scalingPlot, width = 7.5, height = 6)
-#ggsave(file.path(dataDir, "fullPlot.pdf"), fullPerformancePlot, width = 7.5, height = 8)
-
-
+sampleCountTable("rst")

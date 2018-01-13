@@ -17,9 +17,9 @@ object BlackScholesData {
     Stream.continually(rand.nextDouble() * (h - l) + l)
   }
 
-  val dataSize = BenchmarkConfig.problemSizeScaledInt(100000)
+  val dataSize = BenchmarkConfig.problemSizeScaledInt(50000)
 
-  def makeData(s: Int): Array[BlackScholesStock] = {
+  private def makeData(s: Int): Array[BlackScholesStock] = {
     (seededStream(1, 0.01, 100), seededStream(2, 0.01, 100), seededStream(3, 0.1, 5)).zipped
       .take(s).map({ case (s, x, t) => BlackScholesStock(s, x, t) }).toArray
   }

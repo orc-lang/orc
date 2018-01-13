@@ -98,7 +98,7 @@ def makeRandomArray(n) =
   (upto(n) >x> a(x) := Random(n) >> stop) ;
   a
 
-val arraySize = problemSizeScaledInt(3000)
+val arraySize = problemSizeScaledInt(1000)
 
 def setup() = makeRandomArray(arraySize)
   

@@ -14,7 +14,7 @@ import class ThreadLocalRandom = "java.util.concurrent.ThreadLocalRandom"
 
 def random() = ThreadLocalRandom.current().nextDouble()
 
-val swapsPerTemp = problemSizeScaledInt(5000)
+val swapsPerTemp = problemSizeScaledInt(3750)
 val initialTemperature = 2000 
 val filename = Canneal.localInputFile()
 val nTempSteps = 128

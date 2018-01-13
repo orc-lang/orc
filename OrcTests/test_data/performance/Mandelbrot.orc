@@ -15,7 +15,7 @@ def distance((ar, ai)) = (ar*ar + ai*ai) ** 0.5
 
 val threshold = 100
 val steps = 10
-val size = problemSizeSqrtScaledInt(48)
+val size = problemSizeSqrtScaledInt(100)
 val resolution = 3.0 / size
 val offset = size / 2.0
 
@@ -35,15 +35,14 @@ def tableToList(n, t) = t(n-1) : tableToList(n-1, t)
 def showRow(l) = afold({ _ + _ }, map({ if _ then "@" else "." }, l))
 
 benchmarkSized("Mandelbrot", size * size, { signal }, lambda(_) =
-  tableToList(size, Table(size, row)) >ll>
-  map(compose(showRow, curry(tableToList)(size)), ll) >ls>
-  Println(unlines(ls))
-  | 
-  Println("size = " + size + ", resolution = " + resolution + ", offset = " + offset) >> stop
+  tableToList(size, Table(size, row)) -- >ll>
+  --map(compose(showRow, curry(tableToList)(size)), ll) >ls>
+  --Println(unlines(ls)) |
+  --Println("size = " + size + ", resolution = " + resolution + ", offset = " + offset) >> stop
 )
 
 {-
-OUTPUT:
+--OUTPUT:
 size = 48, resolution = 0.0625, offset = 24
 ................................................
 ................................................

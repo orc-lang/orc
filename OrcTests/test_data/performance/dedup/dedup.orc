@@ -10,9 +10,11 @@ implementation.
 include "benchmark.inc"
 
 import class DedupData = "orc.test.item.scalabenchmarks.dedup.DedupData"
+import class Rabin = "orc.test.item.scalabenchmarks.dedup.Rabin"
 import class Chunk = "orc.test.item.scalabenchmarks.dedup.Chunk"
 import class ArrayKey = "orc.test.item.scalabenchmarks.dedup.ArrayKey"
 import class Map = "java.util.concurrent.ConcurrentHashMap"
+import class File = "java.io.File"
 import class FileInputStream = "java.io.FileInputStream"
 import class FileOutputStream = "java.io.FileOutputStream"
 import class DataOutputStream = "java.io.DataOutputStream"

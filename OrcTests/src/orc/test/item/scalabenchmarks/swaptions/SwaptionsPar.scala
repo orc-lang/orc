@@ -9,7 +9,7 @@ object SwaptionsParSwaption extends BenchmarkApplication[Array[Swaption]] {
   }
 
   def setup(): Array[Swaption] = {
-    SwaptionData.sizedData(SwaptionData.nSwaptions)
+    SwaptionData.data
   }
 
   val name: String = "Swaptions-par-swaption"
@@ -33,7 +33,7 @@ object SwaptionsParTrial extends BenchmarkApplication[Array[Swaption]] {
   }
 
   def setup(): Array[Swaption] = {
-    SwaptionData.sizedData(SwaptionData.nSwaptions)
+    SwaptionData.data
   }
 
   val name: String = "Swaptions-par-trial"
