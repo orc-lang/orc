@@ -85,7 +85,13 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
     args match {
       case Array1(bi: BigInt) => {
         val i: Int = bi.intValue
-        // TODO: PERFORMANCE: It would probably be faster to let the array reference throw IndexOutOfBounds. The JVM knows how to optimize that better I suspect.
+        // TODO: PERFORMANCE: It would probably be faster to let the array reference throw IndexOutOfBounds. The JVM will guess better branch probabilities.
+        if (0 <= i && i < values.size) { Some(values(i)) }
+        else { throw new TupleIndexOutOfBoundsException(i) }
+      }
+      case Array1(l: java.lang.Long) => {
+        val i: Int = l.intValue
+        // TODO: PERFORMANCE: It would probably be faster to let the array reference throw IndexOutOfBounds. The JVM will guess better branch probabilities.
         if (0 <= i && i < values.size) { Some(values(i)) }
         else { throw new TupleIndexOutOfBoundsException(i) }
       }
