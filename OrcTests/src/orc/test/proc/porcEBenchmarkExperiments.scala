@@ -21,7 +21,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
     )
     override def systemProperties = super.systemProperties ++ Map(
-        "graal.TruffleBackgroundCompilation" -> "true",
+        "graal.TruffleBackgroundCompilation" -> "false",
         "orc.numerics.preferLP" -> "true",
         "graal.TruffleCompilationThreshold" -> 100,
         )
