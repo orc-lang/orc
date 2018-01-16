@@ -2,6 +2,9 @@ package orc.run.porce.instruments
 
 import orc.ast.porc.PorcAST
 
+class TailTag private () {
+}
+
 class ProfiledPorcNodeTag private () {
 }
 

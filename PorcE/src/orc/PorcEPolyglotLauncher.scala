@@ -11,6 +11,7 @@ import java.io.File
 import java.io.PrintWriter
 import orc.util.ExecutionLogOutputStream
 import java.io.OutputStreamWriter
+import orc.util.DumperRegistry
 
 object PorcEPolyglotLauncher {
   class OrcCmdLineOptions() extends OrcBindings() with CmdLineOptions
@@ -29,28 +30,20 @@ object PorcEPolyglotLauncher {
     if (profilePorcNodes) {
       import orc.run.porce.instruments.PorcNodeExecutionProfiler
       import orc.run.porce.instruments.PorcNodeExecutionProfilerInstrument
-      import java.util.Timer
-      import java.util.TimerTask
 
       val insts = runtime.getInstruments()
 
       insts.get(PorcNodeExecutionProfilerInstrument.ID).setEnabled(true)
-      val profiler = PorcNodeExecutionProfiler.get(engine)
+      val profiler = PorcNodeExecutionProfiler.get(engine)      
       
-      var i = 0
-      
-      val timer = new Timer(true)
-      timer.scheduleAtFixedRate(new TimerTask {
-        def run(): Unit = {
-          val out = ExecutionLogOutputStream(s"porc-profile-$i", "csv", "Porc profile dump")
-          i += 1
-          if (out.isDefined) {
-            val pout = new PrintWriter(new OutputStreamWriter(out.get))
-            profiler.dump(pout)
-            profiler.reset()
-          }
+      DumperRegistry.register { name =>
+        val out = ExecutionLogOutputStream(s"porc-profile-$name", "csv", "Porc profile dump")
+        if (out.isDefined) {
+          val pout = new PrintWriter(new OutputStreamWriter(out.get))
+          profiler.dump(pout)
         }
-      }, 90 * 1000, 30 * 1000)
+        profiler.reset()
+      }
     }
     
     val profilePorcEClasses = true && System.getProperty("orc.executionlog.dir") != null
@@ -58,28 +51,20 @@ object PorcEPolyglotLauncher {
     if (profilePorcEClasses) {
       import orc.run.porce.instruments.PorcENodeClassExecutionProfiler
       import orc.run.porce.instruments.PorcENodeClassExecutionProfilerInstrument
-      import java.util.Timer
-      import java.util.TimerTask
 
       val insts = runtime.getInstruments()
 
       insts.get(PorcENodeClassExecutionProfilerInstrument.ID).setEnabled(true)
       val profiler = PorcENodeClassExecutionProfiler.get(engine)
       
-      var i = 0
-      
-      val timer = new Timer(true)
-      timer.scheduleAtFixedRate(new TimerTask {
-        def run(): Unit = {
-          val out = ExecutionLogOutputStream(s"porce-class-profile-$i", "csv", "Porc profile dump")
-          i += 1
-          if (out.isDefined) {
-            val pout = new PrintWriter(new OutputStreamWriter(out.get))
-            profiler.dump(pout)
-            profiler.reset()
-          }
+      DumperRegistry.register { name =>
+        val out = ExecutionLogOutputStream(s"porce-class-profile-$name", "csv", "PorcE class profile dump")
+        if (out.isDefined) {
+          val pout = new PrintWriter(new OutputStreamWriter(out.get))
+          profiler.dump(pout)
         }
-      }, 90 * 1000, 60 * 1000)
+        profiler.reset()
+      }
     }
 
     engine.eval(Source.newBuilder(new File(options.filename)).mimeType(PorcELanguage.MIME_TYPE).build())

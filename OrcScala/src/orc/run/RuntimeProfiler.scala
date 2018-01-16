@@ -5,6 +5,7 @@ import java.io.OutputStreamWriter
 import orc.util.CsvWriter
 import java.util.zip.GZIPOutputStream
 import java.io.FileOutputStream
+import orc.util.DumperRegistry
 
 /** A tracer object for profiling the runtime.
   *
@@ -18,6 +19,10 @@ object RuntimeProfiler {
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
   @inline
   final val profileRuntime = false
+  
+  if (profileRuntime) {
+    DumperRegistry.register(dump)
+  }
   
   /* Regions of interest:
    * 
@@ -185,27 +190,34 @@ object RuntimeProfiler {
                   nested = stack.head.copy(end = Some(buf.nanotimes(i))) :: nested
                   stack = stack.tail
                 }
-                if (region == CallDispatch && nested.nonEmpty) {
-                  def selfType(region: Long): Long = {
-                    val i = nested.indexWhere(_.tpe == region)
-                    val n = nested.drop(i)
-                    if (n.nonEmpty && i >= 0)
-                      n.head.len.get - calibrationInnerTime -
-                        n.tail.headOption.flatMap(_.len).getOrElse(0L) - calibrationOuterTime
-                    else
-                      0
+                if (region == CallDispatch) {
+                  if(nested.nonEmpty) {
+                    if(stack.nonEmpty)
+                      println(s"Stored Regions: $nested ;;; $stack")
+                    
+                    def selfType(region: Long): Long = {
+                      val i = nested.indexWhere(_.tpe == region)
+                      val n = nested.drop(i)
+                      if (n.nonEmpty && i >= 0)
+                        n.head.len.get - calibrationInnerTime -
+                          n.tail.headOption.flatMap(_.len).getOrElse(0L) - calibrationOuterTime
+                      else
+                        0
+                    }
+                    csvWriter.writeRow((
+                        buf.locationIds(i),
+                        //if (nested.tail.exists(_.tpe == JavaDispatch)) "J" else "O",
+                        selfType(CallDispatch),
+                        selfType(JavaDispatch),
+                        selfType(SiteImplementation)
+                        ))
+                    
+                    // Clear stack assuming calls cannot be nested.
+                    stack = Nil
+                    nested = Nil
+                  } else {
+                    println(s"Dropped Regions: $nested ;;; $stack")
                   }
-                  csvWriter.writeRow((
-                      buf.locationIds(i),
-                      //if (nested.tail.exists(_.tpe == JavaDispatch)) "J" else "O",
-                      selfType(CallDispatch),
-                      selfType(JavaDispatch),
-                      selfType(SiteImplementation)
-                      ))
-                  
-                  // Clear stack assuming calls cannot be nested.
-                  stack = Nil
-                  nested = Nil
                 }
               case _ => ()
             }

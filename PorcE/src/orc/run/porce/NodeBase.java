@@ -13,6 +13,7 @@ import orc.run.porce.runtime.SourceSectionFromPorc;
 import orc.ast.ASTWithIndex;
 import orc.run.porce.HasPorcNode;
 import orc.run.porce.instruments.ProfiledPorcNodeTag;
+import orc.run.porce.instruments.TailTag;
 import scala.Option;
 
 public abstract class NodeBase extends Node implements HasPorcNode {
@@ -23,14 +24,14 @@ public abstract class NodeBase extends Node implements HasPorcNode {
 		CompilerAsserts.neverPartOfCompilation();
 		porcNode = Option.apply(ast);
 		section = SourceSectionFromPorc.apply(ast);
-		/*getChildren().forEach((n) -> {
-			if (n instanceof PorcENode) {
-				final Expression e = (Expression) n;
+		getChildren().forEach((n) -> {
+			if (n instanceof NodeBase) {
+				final NodeBase e = (NodeBase) n;
 				if (e.porcNode().isEmpty()) {
 					e.setPorcAST(ast);
 				}
 			}
-		});*/
+		});
 	}
 
     @Override
@@ -68,8 +69,9 @@ public abstract class NodeBase extends Node implements HasPorcNode {
     
 	@Override
 	protected boolean isTaggedWith(Class<?> tag) {
-		// TODO: Provide tail information as a Tag.
-		if (tag == ProfiledPorcNodeTag.class) {
+		if (tag == TailTag.class) {
+			return isTail;
+		} else if (tag == ProfiledPorcNodeTag.class) {
 			return porcNode().isDefined() && ProfiledPorcNodeTag.isProfiledPorcNode(porcNode().get());
 		} else {
 			return super.isTaggedWith(tag);

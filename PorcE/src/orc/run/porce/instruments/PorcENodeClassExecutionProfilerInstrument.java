@@ -62,57 +62,63 @@ public final class PorcENodeClassExecutionProfilerInstrument extends TruffleInst
 			final RootNode rootNode = n.getRootNode();
 			final PorcENodeClassExecutionProfiler profiler = PorcENodeClassExecutionProfilerInstrument.this.profiler;
 			return rootNode.atomic(() -> {
-				final Counter counter = profiler.getCounter(n.getClass());
-				final FrameSlot profilerStateSlot = getProfilerStateSlot(rootNode);
-				final ConditionProfile setStateProfile = ConditionProfile.createBinaryProfile();
-				return new ExecutionEventNode() {
-					@Override
-					protected void onEnter(VirtualFrame frame) {
-						try {
-							ProfilerState state = (ProfilerState) frame.getObject(profilerStateSlot);
-							if (setStateProfile.profile(state == null)) {
-								state = profiler.getProfilerState();
-								frame.setObject(profilerStateSlot, state);
-							}
-
-							if (state.pushCurrentCounter(counter)) {
-								counter.addHit();
-								state.pushStartTime(System.nanoTime());
-							} else {
-								state.pushStartTime(-1);
-							}
-						} catch (FrameSlotTypeException e) {
-							throw new Error(e);
-						}
-					}
-
-					@Override
-					protected void onReturnExceptional(VirtualFrame frame, Throwable exception) {
-						onReturnValue(frame, null);
-					}
-
-					@Override
-					protected void onReturnValue(VirtualFrame frame, Object result) {
-						try {
-							ProfilerState state = (ProfilerState) frame.getObject(profilerStateSlot);
-							long startTime = state.popStartTime();
-
-							if (startTime >= 0) {
-								long time = System.nanoTime() - startTime;
-								Counter parentCounter = state.popCurrentCounter();
-								if(parentCounter != counter) {
-									counter.addTime(time);
-									if (parentCounter != null)
-										parentCounter.addChildTime(time);
+				if (PorcENodeClassExecutionProfiler.nonTrivialNode(n)) {
+					final Counter counter = profiler.getCounter(n.getClass());
+					final FrameSlot profilerStateSlot = getProfilerStateSlot(rootNode);
+					final ConditionProfile setStateProfile = ConditionProfile.createBinaryProfile();
+					return new ExecutionEventNode() {
+						@Override
+						protected void onEnter(VirtualFrame frame) {
+							try {
+								ProfilerState state = (ProfilerState) frame.getObject(profilerStateSlot);
+								if (setStateProfile.profile(state == null)) {
+									state = profiler.getProfilerState();
+									frame.setObject(profilerStateSlot, state);
 								}
-							} else {
-								// The entry failed to push
+	
+								if (state.pushCurrentCounter(counter)) {
+									counter.addHit();
+									state.pushStartTime(System.nanoTime());
+								} else {
+									state.pushStartTime(-1);
+								}
+							} catch (FrameSlotTypeException e) {
+								throw new Error(e);
 							}
-						} catch (FrameSlotTypeException e) {
-							throw new Error(e);
 						}
-					}
-				};
+	
+						@Override
+						protected void onReturnExceptional(VirtualFrame frame, Throwable exception) {
+							onReturnValue(frame, null);
+						}
+	
+						@Override
+						protected void onReturnValue(VirtualFrame frame, Object result) {
+							try {
+								ProfilerState state = (ProfilerState) frame.getObject(profilerStateSlot);
+								long startTime = state.popStartTime();
+	
+								if (startTime >= 0) {
+									long time = System.nanoTime() - startTime;
+									Counter parentCounter = state.popCurrentCounter();
+									if(parentCounter != counter) {
+										counter.addTime(time);
+										if (parentCounter != null)
+											parentCounter.addChildTime(time);
+									}
+								} else {
+									// The entry failed to push
+								}
+							} catch (FrameSlotTypeException e) {
+								throw new Error(e);
+							}
+						}
+					};
+				} else {
+					return new ExecutionEventNode() {
+					  /* Empty body to make concrete */
+					};
+				}
 			});
 		}
 	}

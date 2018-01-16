@@ -11,6 +11,7 @@ import orc.util.CsvWriter
 import orc.util.ExecutionLogOutputStream
 import java.io.OutputStreamWriter
 import orc.run.porce.instruments.ProfilerUtils.ProfilerBase
+import com.oracle.truffle.api.nodes.Node
 
 class PorcENodeClassExecutionProfiler(env: Env) extends ProfilerBase {
   import ProfilerUtils._
@@ -29,13 +30,12 @@ class PorcENodeClassExecutionProfiler(env: Env) extends ProfilerBase {
   def dump(out: PrintWriter): Unit = synchronized {
     //val out = new PrintWriter(env.out())
     val csv = new CsvWriter(out.write(_))
-    csv.writeHeader(Seq("Type", "Porc Expression", "Hits", "Self Time", "Total Time"))
+    csv.writeHeader(Seq("Class [class]", "Hits [hits]", "Self Time (ns) [self]", "Total Time (ns) [total]"))
     for (entry <- nodeCounts.entrySet().asScala) {
       val k = entry.getKey();
       val count = entry.getValue();
       if (count.getHits() > 0) {
-        import orc.util.StringExtension._
-        csv.writeRow(Seq(k.getClass.getSimpleName, k.toString().replace('\n', ' ').truncateTo(200), count.getHits(), count.getSelfTime(), count.getTime()))
+        csv.writeRow(Seq(k.getName.toString(), count.getHits(), count.getSelfTime(), count.getTime()))
       }
     }
     out.flush();
@@ -69,4 +69,16 @@ object PorcENodeClassExecutionProfiler {
   }
 
   val KEY = PorcENodeClassExecutionProfiler;
+  
+  def nonTrivialNode(n: Node): Boolean = {
+    n match {
+      case _: orc.run.porce.Read.Argument => false
+      case _: orc.run.porce.Read.Local => false
+      case _: orc.run.porce.Read.Closure => false
+      case _: orc.run.porce.Write.Local => false
+      case _: orc.run.porce.NewFuture => false
+      case _ =>
+        true
+    }
+  }
 }

@@ -6,7 +6,7 @@ import orc.Schedulable
 
 object SimpleWorkStealingSchedulerWrapper {
   @CompilationFinal
-  private val traceTasks = SimpleWorkStealingScheduler.traceTasks
+  final val traceTasks = SimpleWorkStealingScheduler.traceTasks
 
   def shareSchedulableID(d: AnyRef, s: AnyRef): Unit = {
     if (traceTasks) {

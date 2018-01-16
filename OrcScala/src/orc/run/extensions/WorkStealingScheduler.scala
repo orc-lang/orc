@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong
 import java.lang.management.ManagementFactory
 import java.util.Collections
 import java.util.WeakHashMap
+import orc.util.DumperRegistry
 
 /** @param monitorInterval The interval at which the monitor thread runs and checks that the thread pool is the correct size.
   * @param goalExtraThreads The ideal number of extra idle threads that the pool should contain.
@@ -509,6 +510,8 @@ object SimpleWorkStealingScheduler {
     }
   }
 
+  
+  
     
   final val TaskParent = 33L
   orc.util.Tracer.registerEventTypeId(TaskParent, "TaskPrnt")
@@ -522,6 +525,10 @@ object SimpleWorkStealingScheduler {
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
   @inline
   final val traceTasks = false
+  
+  if (traceTasks) {
+    DumperRegistry.register(WorkStealingSchedulerTaskTracer.dumpSchedule)
+  }
   
   val nextSchedulableID = new AtomicLong(1)
   
