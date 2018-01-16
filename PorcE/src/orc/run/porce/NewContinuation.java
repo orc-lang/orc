@@ -11,6 +11,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.nodes.SlowPathException;
+
 import orc.ast.porc.PorcAST;
 import orc.run.porce.runtime.PorcEClosure;
 
@@ -28,7 +30,7 @@ public class NewContinuation extends Expression {
 	@CompilerDirectives.CompilationFinal
 	private volatile long closureCacheUseCount = 0;
 
-	static class StopCachingException extends ControlFlowException {
+	static final class StopCachingException extends SlowPathException {
 		private static final long serialVersionUID = 1L;
 	}
 
@@ -43,7 +45,7 @@ public class NewContinuation extends Expression {
 		this.callTarget = rootNode.getCallTarget();
 	}
 
-	boolean isCachable() {
+	private boolean isCachable() {
 		if (CompilerDirectives.inInterpreter() && closureCacheChangeCount > 0) {
 			long usePerChange = closureCacheUseCount / closureCacheChangeCount;
 			return usePerChange >= 7 || closureCacheUseCount < 100;
@@ -54,13 +56,15 @@ public class NewContinuation extends Expression {
 
 	@Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
 	@ExplodeLoop
-	public Object cached(final VirtualFrame frame) {
+	public Object cached(final VirtualFrame frame) throws StopCachingException {
 		CompilerAsserts.compilationConstant(capturedVariables.length);
 
+		/*
 		if (!isCachable()) {
 			CompilerAsserts.neverPartOfCompilation("Cache invalidation should not be in compiled code.");
 			throw new StopCachingException();
 		}
+		*/
 
 		PorcEClosure closure = closureCache;
 
@@ -70,7 +74,8 @@ public class NewContinuation extends Expression {
 			for (int i = 0; i < capturedVariables.length; i++) { // Contains break
 				if (closure.environment[i] != capturedVariables[i].execute(frame)) {
 					closure = null;
-					break;
+					// If we had a cached closure and invalidated it, don't cache again.
+					throw new StopCachingException();
 				}
 			}
 		}
@@ -86,10 +91,13 @@ public class NewContinuation extends Expression {
 			closure = new PorcEClosure(capturedValues, callTarget, false);
 			closureCache = closure;
 
+			/*
 			if (CompilerDirectives.inInterpreter())
 				closureCacheChangeCount++;
+				*/
 		}
 
+		/*
 		if (CompilerDirectives.inInterpreter()) {
 			closureCacheUseCount++;
 			long useCount = closureCacheUseCount;
@@ -99,6 +107,7 @@ public class NewContinuation extends Expression {
 				closureCacheChangeCount = 0;
 			}
 		}
+		*/
 
 		return closure;
 	}
