@@ -12,12 +12,12 @@ import orc.util.ExecutionLogOutputStream
 import java.io.OutputStreamWriter
 import orc.run.porce.instruments.ProfilerUtils.ProfilerBase
 
-class PorcNodeExecutionProfiler(env: Env) extends ProfilerBase {
+class PorcENodeClassExecutionProfiler(env: Env) extends ProfilerBase {
   import ProfilerUtils._
-
+  
   @TruffleBoundary(allowInlining = true) @noinline
   def dispose(): Unit = {
-    val out = ExecutionLogOutputStream("porc-profile-dispose", "csv", "Porc profile dump")
+    val out = ExecutionLogOutputStream("porce-class-profile-dispose", "csv", "PorcE profile dump")
     if (out.isDefined) {
       val pout = new PrintWriter(new OutputStreamWriter(out.get))
       dump(pout)
@@ -48,25 +48,25 @@ class PorcNodeExecutionProfiler(env: Env) extends ProfilerBase {
     }
   }
 
-  val nodeCounts = new HashMap[PorcAST, Counter]();
+  val nodeCounts = new HashMap[Class[_], Counter]();
 
   @TruffleBoundary(allowInlining = true) @noinline
-  def getCounter(n: PorcAST): Counter = synchronized {
+  def getCounter(n: Class[_]): Counter = synchronized {
     nodeCounts.computeIfAbsent(n, (_) => new Counter())
   }
 }
 
-object PorcNodeExecutionProfiler {
+object PorcENodeClassExecutionProfiler {
   /** Finds profiler associated with given engine. There is at most one profiler associated with
     * any {@link PolyglotEngine}. One can access it by calling this static method.
     */
-  def get(engine: PolyglotEngine): PorcNodeExecutionProfiler = {
-    val instrument = engine.getRuntime().getInstruments().get(PorcNodeExecutionProfilerInstrument.ID);
+  def get(engine: PolyglotEngine): PorcENodeClassExecutionProfiler = {
+    val instrument = engine.getRuntime().getInstruments().get(PorcENodeClassExecutionProfilerInstrument.ID);
     if (instrument == null) {
       throw new IllegalStateException();
     }
-    return instrument.lookup(classOf[PorcNodeExecutionProfiler]);
+    return instrument.lookup(classOf[PorcENodeClassExecutionProfiler]);
   }
 
-  val KEY = PorcNodeExecutionProfiler;
+  val KEY = PorcENodeClassExecutionProfiler;
 }

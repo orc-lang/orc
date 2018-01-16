@@ -17,8 +17,8 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import orc.ast.porc.PorcAST;
 import orc.run.porce.HasPorcNode;
-import orc.run.porce.instruments.PorcNodeExecutionProfiler.ProfilerState;
-import orc.run.porce.instruments.PorcNodeExecutionProfiler.Counter;
+import orc.run.porce.instruments.ProfilerUtils.ProfilerState;
+import orc.run.porce.instruments.ProfilerUtils.Counter;
 
 @TruffleInstrument.Registration(id = PorcNodeExecutionProfilerInstrument.ID, services = { PorcNodeExecutionProfiler.class })
 public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument {

@@ -24,7 +24,7 @@ object PorcEPolyglotLauncher {
     val runtime = PolyglotRuntime.newBuilder().setOut(System.out).setErr(System.err).build()
     val engine = PolyglotEngine.newBuilder().runtime(runtime).build()
 
-    val profilePorcNodes = true && System.getProperty("orc.executionlog.dir") != null
+    val profilePorcNodes = false && System.getProperty("orc.executionlog.dir") != null
     
     if (profilePorcNodes) {
       import orc.run.porce.instruments.PorcNodeExecutionProfiler
@@ -51,6 +51,35 @@ object PorcEPolyglotLauncher {
           }
         }
       }, 90 * 1000, 30 * 1000)
+    }
+    
+    val profilePorcEClasses = true && System.getProperty("orc.executionlog.dir") != null
+    
+    if (profilePorcEClasses) {
+      import orc.run.porce.instruments.PorcENodeClassExecutionProfiler
+      import orc.run.porce.instruments.PorcENodeClassExecutionProfilerInstrument
+      import java.util.Timer
+      import java.util.TimerTask
+
+      val insts = runtime.getInstruments()
+
+      insts.get(PorcENodeClassExecutionProfilerInstrument.ID).setEnabled(true)
+      val profiler = PorcENodeClassExecutionProfiler.get(engine)
+      
+      var i = 0
+      
+      val timer = new Timer(true)
+      timer.scheduleAtFixedRate(new TimerTask {
+        def run(): Unit = {
+          val out = ExecutionLogOutputStream(s"porce-class-profile-$i", "csv", "Porc profile dump")
+          i += 1
+          if (out.isDefined) {
+            val pout = new PrintWriter(new OutputStreamWriter(out.get))
+            profiler.dump(pout)
+            profiler.reset()
+          }
+        }
+      }, 90 * 1000, 60 * 1000)
     }
 
     engine.eval(Source.newBuilder(new File(options.filename)).mimeType(PorcELanguage.MIME_TYPE).build())
