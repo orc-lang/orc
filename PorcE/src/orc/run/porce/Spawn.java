@@ -69,9 +69,11 @@ public abstract class Spawn extends Expression {
 		return spawn(frame, (Counter)c, t, computation);
     }
 
+    private static final boolean allowSpawnInlining = PorcERuntime.allowSpawnInlining();
+    private static final boolean allowAllSpawnInlining = PorcERuntime.allowAllSpawnInlining();
+    
 	protected boolean shouldInlineSpawn(final PorcEClosure computation) {
-		return PorcERuntime.allowSpawnInlining() &&
-			(!mustSpawn || PorcERuntime.allowAllSpawnInlining()) &&
+		return allowSpawnInlining && (!mustSpawn || allowAllSpawnInlining) &&
 			computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit;
 	}
     

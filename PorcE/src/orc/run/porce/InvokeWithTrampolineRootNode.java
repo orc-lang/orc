@@ -53,7 +53,8 @@ public class InvokeWithTrampolineRootNode extends RootNode {
         long startTime = 0;
         if (CompilerDirectives.inInterpreter() && root != null)
         	startTime = System.nanoTime();
-        incrCallCount();
+        if (CompilerDirectives.inInterpreter())
+        	incrCallCount();
     	try {
     		body.call(frame.getArguments());
     	} catch (TailCallException e) {

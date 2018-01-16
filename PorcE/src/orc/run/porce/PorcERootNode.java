@@ -67,7 +67,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     	if (CompilerDirectives.inInterpreter()) {
     		totalSpawns.getAndIncrement();
     	}
-    }
+    } 
+    
+    // TODO: PERFORMANCE: Determine performance impact of these and calls to them
 
     final public void incrementHalt() {
     	if (CompilerDirectives.inInterpreter()) {

@@ -92,7 +92,7 @@ class Future(val raceFreeResolution: Boolean) extends OrcValue with orc.Future {
     */
   @TruffleBoundary(allowInlining = true) @noinline
   final def localStop(): Unit = {
-    val done = synchronized {
+    val done = {
       bindLock.lock()
       try {
         if (_state eq Unbound) {
