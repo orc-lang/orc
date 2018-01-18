@@ -48,13 +48,18 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         totalSpawnedCalls.getAndIncrement();        
     }
     
+    final public boolean shouldTimeCall() {
+    	return timePerCall < 0 || CompilerDirectives.inInterpreter();
+    }
+    
     final public long getTimePerCall() {
     	if (timePerCall < 0 || CompilerDirectives.inInterpreter()) {
-        	long t = totalSpawnedTime.get();
         	long n = totalSpawnedCalls.get();
     		
     		if (n >= SpecializationConfiguration.MinCallsForTimePerCall) {
         		CompilerDirectives.transferToInterpreterAndInvalidate();
+            	long t = totalSpawnedTime.get();
+            	n = totalSpawnedCalls.get();
         		timePerCall = t / n;
     		} else {
     			return Long.MAX_VALUE;

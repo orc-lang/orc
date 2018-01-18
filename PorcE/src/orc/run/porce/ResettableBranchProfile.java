@@ -50,13 +50,13 @@ public final class ResettableBranchProfile {
 	 * returned true.
 	 */
 	public void reset() {
-		CompilerAsserts.neverPartOfCompilation("Only call reset in a transferToInterpreterAndInvalidate branch.");
+		CompilerAsserts.neverPartOfCompilation("Only call ResettableBranchProfile.reset() in a transferToInterpreterAndInvalidate branch.");
 		visited = false;
 	}
 
 	@Override
 	public String toString() {
-		return "ResettableBranchProfile(" + visited + ")@" + Integer.toHexString(this.hashCode());
+		return "ResettableBranchProfile(visited=" + visited + ")@" + Integer.toHexString(this.hashCode());
 	}
 	
 	static public ResettableBranchProfile create() {

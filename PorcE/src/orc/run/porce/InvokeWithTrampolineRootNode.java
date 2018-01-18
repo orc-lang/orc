@@ -47,11 +47,15 @@ public class InvokeWithTrampolineRootNode extends RootNode {
 	private void incrCallCount() {
         callCount.increment();
 	}
+	
+	private boolean shouldTimeRoot() {
+		return root != null && root.shouldTimeCall();
+	}
 
 	@Override
 	public Object execute(VirtualFrame frame) {
         long startTime = 0;
-        if (CompilerDirectives.inInterpreter() && root != null)
+        if (shouldTimeRoot())
         	startTime = System.nanoTime();
         if (CompilerDirectives.inInterpreter())
         	incrCallCount();
@@ -61,7 +65,7 @@ public class InvokeWithTrampolineRootNode extends RootNode {
     		loop.addSurroundingFunction(frame, ((RootCallTarget)body.getCallTarget()).getRootNode());
 			loop.executeTailCalls(frame, e);
     	} finally {
-        	if (CompilerDirectives.inInterpreter() && startTime > 0 && root != null) {
+        	if (shouldTimeRoot() && startTime > 0) {
         		root.addSpawnedCall(System.nanoTime() - startTime);
         	}
         }
