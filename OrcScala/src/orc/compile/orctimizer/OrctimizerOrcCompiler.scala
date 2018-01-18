@@ -79,7 +79,6 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         classOf[New], classOf[FieldFuture], classOf[FieldArgument])
       val optimizationsToOutput = optimizer.opts.map(_.name)
 
-      ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
       val statisticsOutputs = ExecutionLogOutputStream("orctimizer-statistics", "csv", "Orctimizer static optimization statistics") map { out =>
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
         (new CsvWriter(traceCsv.append(_)), traceCsv)
@@ -177,7 +176,6 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         )
       val optimizationsToOutput = optimizer.opts.map(_.name)
 
-      ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
       val statisticsOutputs = ExecutionLogOutputStream("porc-optimizer-statistics", "csv", "Porc optimizer static optimization statistics") map { out =>
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
         (new CsvWriter(traceCsv.append(_)), traceCsv)
@@ -288,26 +286,26 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
   ////////
   val phases =
     parse.timePhase >>>
-      outputIR(1) >>>
+      outputIR(1, "ext") >>>
       translate.timePhase >>>
       vClockTrans.timePhase >>>
       noUnboundVars.timePhase >>>
       fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
       noUnguardedRecursion.timePhase >>>
-      outputIR(2) >>>
+      outputIR(2, "oil-complete") >>>
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
-      outputIR(3) >>>
+      outputIR(3, "oil-pruned") >>>
       abortOnError >>>
       toOrctimizer.timePhase >>>
-      outputIR(4) >>>
+      outputIR(4, "orct") >>>
       optimize().timePhase >>>
-      outputIR(5) >>>
+      outputIR(5, "orct-opt") >>>
       toPorc.timePhase >>>
       clearCachePhase >>>
-      outputIR(8) >>>
+      outputIR(8, "porc") >>>
       optimizePorc.timePhase >>>
       indexPorc.timePhase >>>
-      outputIR(9)
+      outputIR(9, "porc-opt")
 }

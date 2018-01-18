@@ -22,6 +22,9 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.Terminator;
 import static orc.run.porce.SpecializationConfiguration.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Force {
     public static boolean isNonFuture(final Object v) {
         return !(v instanceof orc.Future);
@@ -135,6 +138,7 @@ public class Force {
     @NodeChild(value = "future", type = Expression.class)
     @NodeField(name = "execution", type = PorcEExecution.class)
     @ImportStatic({ Force.class })
+    @Introspectable
     public static abstract class SingleFuture extends Expression {
         @Child
         protected Dispatch call = null;
@@ -223,6 +227,17 @@ public class Force {
 				return true;
 			}
 			return false;
+        }
+        
+        @Override
+        public Map<String, Object> getDebugProperties() {
+            Map<String, Object> properties = super.getDebugProperties();
+            properties.put("boundFuture", boundFuture);
+            properties.put("unboundFuture", unboundFuture);
+            properties.put("orcFuture", orcFuture);
+            properties.put("porcEFuture", porcEFuture);
+            properties.put("nonFuture", nonFuture);
+            return properties;
         }
 
         public static SingleFuture create(final Expression p, final Expression c, final Expression t, final Expression future, final PorcEExecution execution) {

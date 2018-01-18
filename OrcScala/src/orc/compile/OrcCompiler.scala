@@ -13,7 +13,7 @@
 
 package orc.compile
 
-import java.io.{ BufferedReader, File, FileNotFoundException, FileOutputStream, IOException }
+import java.io.{ BufferedReader, File, FileNotFoundException, FileOutputStream, OutputStreamWriter, IOException }
 import java.net.{ MalformedURLException, URI, URISyntaxException }
 
 import scala.collection.JavaConverters._
@@ -33,6 +33,7 @@ import orc.error.compiletime.{ ContinuableSeverity, ParsingException, UnboundTyp
 import orc.error.compiletime.CompileLogger.Severity
 import orc.progress.ProgressMonitor
 import orc.values.sites.SiteClassLoading
+import orc.util.ExecutionLogOutputStream
 
 /** Represents a configuration state for a compiler.
   */
@@ -214,15 +215,26 @@ trait CoreOrcCompilerPhases {
     override def apply(co: CompilerOptions) = { ast => ast.withoutNames }
   }
 
-  def outputIR[A](irNumber: Int, pred: (CompilerOptions) => Boolean = (co) => true) = new CompilerPhase[CompilerOptions, A, A] {
+  def outputIR[A](irNumber: Int, name: String, pred: (CompilerOptions) => Boolean = (co) => true) = new CompilerPhase[CompilerOptions, A, A] {
     val phaseName = s"Output IR #$irNumber"
     override def apply(co: CompilerOptions) = { ast =>
       val irMask = 1 << (irNumber - 1)
       val echoIR = co.options.echoIR
-      if ((echoIR & irMask) == irMask && pred(co)) {
-        println(s"============ Begin Dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")
-        println(ast)
-        println(s"============ End dump IR #$irNumber with type ${ast.getClass.getCanonicalName} ============")
+      if (pred(co)) {
+        lazy val astStr = ast.toString
+        if ((echoIR & irMask) == irMask) {
+          println(s"============ Begin Dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============")
+          println(astStr)
+          println(s"============ End dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============")
+        }
+        
+        ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
+        ExecutionLogOutputStream(s"ir-$name", "txt", s"$name dump") foreach { out =>
+          val wr = new OutputStreamWriter(out, "UTF-8")
+          wr.write(s"============ Dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============\n\n")
+          wr.write(astStr)
+          wr.close()
+        }
       }
 
       ast
@@ -310,17 +322,17 @@ class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expre
 
   val phases =
     parse.timePhase >>>
-      outputIR(1) >>>
+      outputIR(1, "ext") >>>
       translate.timePhase >>>
       vClockTrans.timePhase >>>
       noUnboundVars.timePhase >>>
       fractionDefs.timePhase >>>
       typeCheck.timePhase >>>
       noUnguardedRecursion.timePhase >>>
-      outputIR(2) >>>
+      outputIR(2, "oil-complete") >>>
       removeUnusedDefs.timePhase >>>
       removeUnusedTypes.timePhase >>>
-      outputIR(3) >>>
+      outputIR(3, "oil-pruned") >>>
       deBruijn.timePhase >>>
       outputOil
 }

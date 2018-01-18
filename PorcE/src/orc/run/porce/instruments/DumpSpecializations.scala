@@ -28,8 +28,9 @@ object DumpSpecializations {
                 val ss = node.getSourceSection
                 out.println(s"  ${node.getClass} ${ss.getSource.getName}:${ss.getStartLine} (${ss}) $specsStr")
               case _ =>
-                out.println(s"  ${node.getClass} $node $specsStr")
+                out.println(s"  ${node.getClass} $specsStr")
             }
+            out.println(s"   | $node")
             ()
           }
           for (s <- specs) {
