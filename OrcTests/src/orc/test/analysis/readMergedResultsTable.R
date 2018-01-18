@@ -77,3 +77,10 @@ readMergedResultsTable <- function(runDirectory, fileBaseName, invalidate = FALS
   res <- read.csv(outputFile, col.names = names)
   res
 }
+
+readResultsTable <- function(fileName) {
+  header <- read.csv(fileName, header = FALSE, nrows = 1)
+  names <- vapply(header[1,], cleanColumnName, "")
+  res <- read.csv(fileName, col.names = names)
+  res
+}

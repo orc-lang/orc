@@ -28,12 +28,12 @@ if(!exists("processedData")) {
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
   prunedData <- data %>%
-    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 50, 120, minRemaining = 1, maxRemaining = 40) #%>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 50, 120, minRemaining = 1, maxRemaining = 40) %>%
     # Drop any reps which have more than 1% compilation time.
-    #filter(rtCompTime < cpuTime * 0.01)
+    filter(rtCompTime < cpuTime * 0.01)
 
   processedData <- prunedData %>%
-    group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>% bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime"), mean, confidence = 0.5) %>%
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>% bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.5) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
