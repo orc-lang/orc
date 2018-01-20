@@ -311,10 +311,12 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
     // Call the haltContinuation if we didn't discorporate.
     if (!isDiscorporated) {
       // Token: from parent
+      /* ROOTNODE-STATISTICS
   		haltContinuation.body.getRootNode() match {
   		  case n: PorcERootNode => n.incrementHalt()
   		  case _ => ()
   		}
+  		*/
   		val s = CallClosureSchedulable(haltContinuation, execution)
       SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
       execution.runtime.potentiallySchedule(s)

@@ -86,6 +86,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         }
       } else {
         //Logger.log(Level.INFO, s"Scheduling $s", new RuntimeException())
+        /* ROOTNODE-STATISTICS
   			if (CompilerDirectives.inInterpreter()) {
   			  s match {
   			    case s: CallClosureSchedulable =>
@@ -96,6 +97,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   			  }
   				//Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
   			}
+  			*/
         schedule(s)
       }
     } else {

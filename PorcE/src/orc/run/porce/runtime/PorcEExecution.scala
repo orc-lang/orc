@@ -98,7 +98,8 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   def onProgramHalted() = {
     import scala.collection.JavaConverters._
-      
+     
+    /* ROOTNODE-STATISTICS
     {
       val csvOut = ExecutionLogOutputStream("rootnode-statistics", "csv", "RootNode run times data")
       if (csvOut.isDefined) {
@@ -123,6 +124,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
         traceCsv.close()
       }
     }
+    */
   
     {
       val csvOut = ExecutionLogOutputStream("trampoline-calls", "csv", "Trampoline call counts")

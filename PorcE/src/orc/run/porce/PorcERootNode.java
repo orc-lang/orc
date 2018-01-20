@@ -34,12 +34,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
     private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
     
-    private final AtomicLong totalSpawns = new AtomicLong(0);
-    private final AtomicLong totalBindSingle = new AtomicLong(0);
-    private final AtomicLong totalBindJoin = new AtomicLong(0);
-    private final AtomicLong totalHalt = new AtomicLong(0);
-    private final AtomicLong totalPublication = new AtomicLong(0);
-    
     @CompilationFinal
     private long timePerCall = -1;
    
@@ -67,14 +61,19 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     	}
 		return timePerCall;
     }
-    
+
+    /* ROOTNODE-STATISTICS
+    private final AtomicLong totalSpawns = new AtomicLong(0);
+    private final AtomicLong totalBindSingle = new AtomicLong(0);
+    private final AtomicLong totalBindJoin = new AtomicLong(0);
+    private final AtomicLong totalHalt = new AtomicLong(0);
+    private final AtomicLong totalPublication = new AtomicLong(0);
+
     final public void incrementSpawn() {
     	if (CompilerDirectives.inInterpreter()) {
     		totalSpawns.getAndIncrement();
     	}
     } 
-    
-    // TODO: PERFORMANCE: Determine performance impact of these and calls to them
 
     final public void incrementHalt() {
     	if (CompilerDirectives.inInterpreter()) {
@@ -106,6 +105,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 				totalSpawnedTime.get(), totalSpawnedCalls.get()        
 				);
     }
+    */
 
     private Option<PorcAST> porcNode = Option.apply(null);
 

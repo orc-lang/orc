@@ -216,10 +216,12 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
     */
   def done(): Unit = {
     t.removeChild(this)
+    /* ROOTNODE-STATISTICS
 		p.body.getRootNode() match {
 		  case n: PorcERootNode => n.incrementBindJoin()
 		  case _ => ()
 		}
+		*/
     val s = CallClosureSchedulable(p, execution)
     SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
     // Token: Pass to p.

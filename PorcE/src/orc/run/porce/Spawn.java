@@ -35,10 +35,12 @@ public abstract class Spawn extends Expression {
     @Specialization(guards = { "!shouldInlineSpawn(computation)" } )
     public PorcEUnit spawn(final VirtualFrame frame, final Counter c, final Terminator t, final PorcEClosure computation) {
 		t.checkLive();
+	    /* ROOTNODE-STATISTICS
 		if (CompilerDirectives.inInterpreter() && computation.body.getRootNode() instanceof PorcERootNode) {
 			//Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
 			((PorcERootNode)computation.body.getRootNode()).incrementSpawn();
 		}
+		*/
 		execution.runtime().schedule(CallClosureSchedulable.apply(computation, execution));
         return PorcEUnit.SINGLETON;
     }
