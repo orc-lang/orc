@@ -133,7 +133,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             val capturedVars = e.freeVars
             val isSubset = capturedVars.forall(thisCtx.closureVariables.contains)
             val nDropped = thisCtx.closureVariables.count(!capturedVars.contains(_))
-            println(s"${if (isSubset) 1 else 0},$nDropped,'${thisCtx.closureVariables}','${normalizeOrder(capturedVars)}'")
+            //println(s"${if (isSubset) 1 else 0},$nDropped,'${thisCtx.closureVariables}','${normalizeOrder(capturedVars)}'")
             isSubset && nDropped <= 0
           }
           
