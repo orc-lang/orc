@@ -25,6 +25,7 @@ import java.lang.management.ManagementFactory
 import java.util.Collections
 import java.util.WeakHashMap
 import orc.util.DumperRegistry
+import orc.run.StopWatches
 
 /** @param monitorInterval The interval at which the monitor thread runs and checks that the thread pool is the correct size.
   * @param goalExtraThreads The ideal number of extra idle threads that the pool should contain.
@@ -215,6 +216,7 @@ class SimpleWorkStealingScheduler(
 
     override def run() = {
       while (!isSchedulerShuttingDown && !isShuttingDown) {
+        val workerStart = StopWatches.workerTime.start()
         val t = next()
         if (t != null) {
           isInternallyBlocked = false
@@ -223,14 +225,18 @@ class SimpleWorkStealingScheduler(
             {
               SimpleWorkStealingScheduler.enterSchedulable(t, SimpleWorkStealingScheduler.SchedulerExecution)
               if (t.nonblocking) {
+                val workStart = StopWatches.workerWorkingTime.start()
                 t.run()
+                StopWatches.workerWorkingTime.stop(workStart)
               } else {
                 // PERFORMANCE: Manually inlined from potentiallyBlocking.
+                val workStart = StopWatches.workerWorkingTime.start()
                 isPotentiallyBlocked = true
                 try {
                   t.run()
                 } finally {
                   isPotentiallyBlocked = false
+                  StopWatches.workerWorkingTime.stop(workStart)
                 }
               }
               SimpleWorkStealingScheduler.exitSchedulable(t)
@@ -243,6 +249,7 @@ class SimpleWorkStealingScheduler(
           }
           isInternallyBlocked = true
         }
+        StopWatches.workerTime.stop(workerStart)
       }
     }
 
@@ -354,6 +361,7 @@ class SimpleWorkStealingScheduler(
           // overwriting previous tasks as the queue is used.
           workQueue.wipe()
         } else if (stealFailureRunLength > stealAttemptsBeforeBlocking) {
+          val waitingStart = StopWatches.workerWaitingTime.start()
           try {
             if (!wasIdle) {
               SimpleWorkStealingScheduler.traceWorkerIdle(this)
@@ -367,6 +375,7 @@ class SimpleWorkStealingScheduler(
           } catch {
             case _: InterruptedException => ()
           }
+          StopWatches.workerWaitingTime.stop(waitingStart)
         }
       }
       if (wasIdle && t != null) {

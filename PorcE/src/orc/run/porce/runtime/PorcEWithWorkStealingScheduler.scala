@@ -22,6 +22,8 @@ import orc.Schedulable
 import orc.run.Orc
 import orc.run.extensions.SimpleWorkStealingScheduler
 import orc.run.porce.Logger
+import orc.run.StopWatches
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** An Orc runtime engine extension which schedules Orc Tokens to
@@ -68,9 +70,11 @@ trait PorcEWithWorkStealingScheduler extends Orc {
 
   @TruffleBoundary(allowInlining = true) @noinline
   def schedule(t: Schedulable): Unit = {
+    val sStart = StopWatches.workerSchedulingTime.start()
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.
     //t.onSchedule()
     scheduler.schedule(t)
+    StopWatches.workerSchedulingTime.stop(sStart)
   }
 
   def stopScheduler(): Unit = {

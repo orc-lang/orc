@@ -149,20 +149,6 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       }
     }
   
-    {
-      val csvOut = ExecutionLogOutputStream("porce-statistics", "csv", "Global statistics about PorcE executions and runtime")
-      if (csvOut.isDefined) {
-        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-        val csvWriter = new CsvWriter(traceCsv.append(_))
-        val tableColumnTitles = Seq(
-            "Measurement Name [name]", 
-            "Value [value]")
-        csvWriter.writeHeader(tableColumnTitles)
-        csvWriter.writeRow(Seq("spawns", runtime.spawnCount))
-        traceCsv.close()
-      }
-    }
-  
     val specializationsOut = ExecutionLogOutputStream("truffle-node-specializations", "txt", "Truffle node specializations")
     if (specializationsOut.isDefined) {
         val out = new PrintWriter(new OutputStreamWriter(specializationsOut.get))
