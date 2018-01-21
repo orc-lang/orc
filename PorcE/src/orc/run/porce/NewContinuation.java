@@ -22,6 +22,7 @@ public class NewContinuation extends Expression {
 	@Children
 	protected final Expression[] capturedVariables;
 	protected final RootCallTarget callTarget;
+	protected final boolean reuseClosure;
 
 	private volatile PorcEClosure closureCache = null;
 
@@ -40,9 +41,10 @@ public class NewContinuation extends Expression {
 		super.setPorcAST(ast);
 	}
 
-	protected NewContinuation(final Expression[] capturedVariables, final RootNode rootNode) {
+	protected NewContinuation(final Expression[] capturedVariables, final RootNode rootNode, final boolean reuseClosure) {
 		this.capturedVariables = capturedVariables;
 		this.callTarget = rootNode.getCallTarget();
+		this.reuseClosure = reuseClosure;
 	}
 
 	private boolean isCachable() {
@@ -54,6 +56,12 @@ public class NewContinuation extends Expression {
 		}
 	}
 
+	@Specialization(guards = { "reuseClosure" })
+	public Object reuse(final VirtualFrame frame) {
+		final Object[] capturedValues = (Object[]) frame.getArguments()[0];
+		return new PorcEClosure(capturedValues, callTarget, false);
+	}
+	
 	@Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
 	@ExplodeLoop
 	public Object cached(final VirtualFrame frame) throws StopCachingException {
@@ -122,7 +130,7 @@ public class NewContinuation extends Expression {
 		return new PorcEClosure(capturedValues, callTarget, false);
 	}
 
-	public static NewContinuation create(final Expression[] capturedVariables, final RootNode rootNode) {
-		return NewContinuationNodeGen.create(capturedVariables, rootNode);
+	public static NewContinuation create(final Expression[] capturedVariables, final RootNode rootNode, final boolean reuseClosure) {
+		return NewContinuationNodeGen.create(capturedVariables, rootNode, reuseClosure);
 	}
 }

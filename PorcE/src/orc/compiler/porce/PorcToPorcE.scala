@@ -128,7 +128,17 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             transform(body)(thisCtx)))
         case porc.Continuation.Z(args, body) =>
           val descriptor = new FrameDescriptor()
-          val capturedVars = normalizeOrder(e.freeVars)
+          
+          val reuse = {
+            val capturedVars = e.freeVars
+            val isSubset = capturedVars.forall(thisCtx.closureVariables.contains)
+            val nDropped = thisCtx.closureVariables.count(!capturedVars.contains(_))
+            println(s"${if (isSubset) 1 else 0},$nDropped,'${thisCtx.closureVariables}','${normalizeOrder(capturedVars)}'")
+            isSubset && nDropped <= 0
+          }
+          
+          val capturedVars = if (reuse) thisCtx.closureVariables else normalizeOrder(e.freeVars)
+          
           val capturingExprs = capturedVars.map(transform(_)(innerCtx)).toArray
 
           {
@@ -138,7 +148,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, args.size, capturedVars.size)
             rootNode.setPorcAST(e.value)
             makeCallTarget(rootNode)
-            porce.NewContinuation.create(capturingExprs, rootNode)
+            porce.NewContinuation.create(capturingExprs, rootNode, reuse)
           }
         case porc.CallContinuation.Z(target, arguments) =>
           porce.call.CallContinuation.CPS.create(transform(target)(innerCtx), arguments.map(transform(_)(innerCtx)).toArray, ctx.execution, thisCtx.inTailPosition)
