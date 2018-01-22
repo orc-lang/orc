@@ -67,9 +67,10 @@ object StopWatches {
 
     val tableColumnTitles = Seq(
         "Dump ID [id]",
-        "Worker task selection overhead [workerOverhead",
+        "Worker task selection overhead [workerOverhead]",
         "Scheduling overhead [schedulingOverhead]",
         "Actual working time [workTime]",
+        "Number of tasks [nTasks]",
         )
     csvWriter.writeHeader(tableColumnTitles)
 

@@ -72,15 +72,15 @@ readMergedResultsTable <- function(runDirectory, fileBaseName, invalidate = FALS
     stop("Merge failed. Check runDirectory (", runDirectory,") and fileBaseName (", fileBaseName, ").")
   }
 
-  header <- read.csv(outputFile, header = FALSE, nrows = 1)
+  header <- read.csv(outputFile, header = FALSE, nrows = 1, row.names = NULL)
   names <- vapply(header[1,], cleanColumnName, "")
-  res <- read.csv(outputFile, col.names = names)
+  res <- read.csv(outputFile, col.names = names, row.names = NULL)
   res
 }
 
 readResultsTable <- function(fileName) {
-  header <- read.csv(fileName, header = FALSE, nrows = 1)
+  header <- read.csv(fileName, header = FALSE, nrows = 1, row.names = NULL)
   names <- vapply(header[1,], cleanColumnName, "")
-  res <- read.csv(fileName, col.names = names)
+  res <- read.csv(fileName, col.names = names, row.names = NULL)
   res
 }
