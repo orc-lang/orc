@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 29, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,19 +14,16 @@
 package orc.test.proc
 
 import java.io.{ File, FileOutputStream }
-import java.net.{ InetAddress, InetSocketAddress, NetworkInterface, SocketException }
+import java.net.{ InetAddress, NetworkInterface, SocketException }
 import java.nio.file.Paths
-
-import scala.collection.JavaConverters.seqAsJavaListConverter
 
 import orc.error.compiletime.{ CompilationException, FeatureNotSupportedException }
 import orc.script.OrcBindings
-import orc.test.util.{ ExpectedOutput, OsCommand, TestRunNumber, TestUtils }
+import orc.test.util.{ ExpectedOutput, OsCommand, RemoteCommand, TestRunNumber, TestUtils }
 import orc.test.util.TestUtils.OrcTestCase
 
 import junit.framework.TestSuite
 import org.junit.Assume
-import orc.test.util.RemoteCommand
 
 /** JUnit test case for a distributed-Orc test.
   *
@@ -49,7 +46,7 @@ class DistribTestCase(
     if (testContext != null) println("  " + (for ((k, v) <- testContext) yield s"$k=$v").mkString(", "))
     try {
       startFollowers()
-      val result = startLeader()
+      val result = runLeader()
       evaluateResult(result.exitStatus, result.stdout);
     } catch {
       case fnse: FeatureNotSupportedException => Assume.assumeNoException(fnse)
@@ -65,19 +62,17 @@ class DistribTestCase(
 
   def outFilenamePrefix = orcFile.getName.stripSuffix(".orc")
 
-  protected def startLeader() = {
-    val options = bindings.asInstanceOf[orc.Main.OrcCmdLineOptions]
-
+  protected def runLeader() = {
     val leaderOpts = DistribTestConfig.expanded.getIterableFor("leaderOpts").getOrElse(Seq())
-    val followerSockets = options.recognizedLongOpts("follower-sockets").getValue
+
     val jvmOptions = leaderSpec.jvmOptions ++ (if (testContext != null) for ((k, v) <- testContext) yield s"-Dorc.test.$k=$v" else Seq.empty)
     val leaderOutFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_0.out"
     val leaderErrFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_0.err"
 
     if (leaderSpec.isLocal) {
-      OsCommand.getResultFrom(Seq(leaderSpec.javaCmd, "-cp", leaderSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--follower-sockets=$followerSockets", orcFile.getPath), directory = new File(leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
+      OsCommand.getResultFrom(Seq(leaderSpec.javaCmd, "-cp", leaderSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--listen=${leaderSpec.hostname}:${leaderSpec.port}", s"--follower-count=${bindings.followerCount}", orcFile.getPath), directory = new File(leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
     } else {
-      OsCommand.getResultFrom(Seq("ssh", leaderSpec.hostname, s"cd '${leaderSpec.workingDir}'; { { '${leaderSpec.javaCmd}' -cp '${leaderSpec.classPath}' ${jvmOptions.map("'" + _ + "'").mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_0 ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --follower-sockets=$followerSockets '$orcFile' | tee '$leaderOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee '$leaderErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"), teeStdOutErr = true)
+      OsCommand.getResultFrom(Seq("ssh", leaderSpec.hostname, s"cd '${leaderSpec.workingDir}'; { { '${leaderSpec.javaCmd}' -cp '${leaderSpec.classPath}' ${jvmOptions.map("'" + _ + "'").mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_0 ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --listen=${leaderSpec.hostname}:${leaderSpec.port} --follower-count=${bindings.followerCount} '$orcFile' | tee '$leaderOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee '$leaderErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"), teeStdOutErr = true)
     }
   }
 
@@ -97,14 +92,14 @@ class DistribTestCase(
       } else {
         println(s"Launching follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
         /* FIXME: Escape strings for shell */
-        val command = Seq("ssh", followerSpec.hostname, s"cd '${followerSpec.workingDir}'; '${followerSpec.javaCmd}' -cp '${followerSpec.classPath}' ${jvmOptions.map("'" + _ + "'").mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_$followerNumber ${DistribTestConfig.expanded("followerClass")} ${followerOpts.mkString(" ")} $followerNumber ${followerSpec.hostname}:${followerSpec.port} >'$followerOutFile' 2>'$followerErrFile'")
+        val command = Seq("ssh", followerSpec.hostname, s"cd '${followerSpec.workingDir}'; '${followerSpec.javaCmd}' -cp '${followerSpec.classPath}' ${jvmOptions.map("'" + _ + "'").mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_$followerNumber ${DistribTestConfig.expanded("followerClass")} ${followerOpts.mkString(" ")} --listen=${followerSpec.hostname}:${followerSpec.port} $followerNumber ${leaderSpec.hostname}:${leaderSpec.port} >'$followerOutFile' 2>'$followerErrFile'")
         OsCommand.runNoWait(command)
       }
     }
   }
 
   protected def stopFollowers() {
-    for (followerNumber <- 1 to bindings.followerSockets.size) {
+    for (followerNumber <- 1 to bindings.followerCount) {
       val followerSpec = followerSpecs(followerNumber - 1)
 
       if (followerSpec.isLocal) {
@@ -180,11 +175,12 @@ object DistribTestCase {
     }
     val numRuntimes = DistribTestConfig.expanded.get("dOrcNumRuntimes").get.toInt
     val (leaderSpec, followerSpecs) = computeLeaderFollowerSpecs(numRuntimes)
-    val bindings = new orc.Main.OrcCmdLineOptions()
-    bindings.backend = orc.BackendType.fromString("porc-distrib")
-    bindings.followerSockets = (followerSpecs map { fs => new InetSocketAddress(fs.hostname, fs.port) }).toList.asJava
-    bindings.showJavaStackTrace = true
-    TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), (s, t, f, e, b) => testCaseFactory(s, t, f, e, b, testContext, leaderSpec, followerSpecs), bindings, programPaths: _*)
+    val options = new orc.Main.OrcCmdLineOptions()
+    //options.parseCmdLine(DistribTestConfig.expanded.getIterableFor("leaderOpts").getOrElse(Seq()))
+    options.backend = orc.BackendType.fromString("porc-distrib")
+    options.showJavaStackTrace = true
+    options.followerCount = followerSpecs.size
+    TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), (s, t, f, e, b) => testCaseFactory(s, t, f, e, b, testContext, leaderSpec, followerSpecs), options, programPaths: _*)
   }
 
   def computeLeaderFollowerSpecs(numRuntimes: Int): (DOrcRuntimePlacement, Seq[DOrcRuntimePlacement]) = {
@@ -198,7 +194,7 @@ object DistribTestCase {
     val dOrcPortBase = DistribTestConfig.expanded.get("dOrcPortBase").get.toInt
     val followerWorkingDir = DistribTestConfig.expanded("followerWorkingDir")
 
-    val leaderSpec = DOrcRuntimePlacement(leaderHostname, 0, leaderIsLocal, leaderWorkingDir, javaCmd, dOrcClassPath, jvmOpts)
+    val leaderSpec = DOrcRuntimePlacement(leaderHostname, dOrcPortBase, leaderIsLocal, leaderWorkingDir, javaCmd, dOrcClassPath, jvmOpts)
 
     val followerSpecs = for (followerNum <- 1 until numRuntimes) yield {
       val hostname = followerHostnames((followerNum - 1) % followerHostnames.size + 1)

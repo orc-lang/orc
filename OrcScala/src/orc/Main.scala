@@ -4,12 +4,13 @@
 //
 // Created by jthywiss on Jul 20, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc
 
 import java.io.{ FileInputStream, FileNotFoundException, InputStreamReader, PrintStream }
@@ -166,5 +167,9 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   IntOpt(() => optimizationLevel, optimizationLevel = _, 'O', "optimize", usage = "Set a general optimization level. This selects a set of default optimization options. --opt-opt may be used to override these default.")
 
-  SocketListOpt(() => followerSockets.asScala, fs => followerSockets = fs.asJava, ' ', "follower-sockets", usage = "Set the list of sockets (host:port pairs) of follower distributed-Orc runtimes to use")
+  SocketOpt(() => listenSocketAddress, listenSocketAddress = _, ' ', "listen", usage = "Local socket address (host:port) to listen on. Default is to listen on a random free dynamic port on all local interfaces.")
+
+  IntOpt(() => followerCount, followerCount = _, ' ', "follower-count", usage = "Wait for this number of followers to join cluster before running program. Default is 0.")
+
+  FileOpt(() => listenSockAddrFile.getOrElse(null), f => listenSockAddrFile = Some(f), ' ', "listen-sockaddr-file", usage = "Write the actual bound listen socket address to this file. Useful when listening on a random port.")
 }

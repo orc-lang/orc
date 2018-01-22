@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 21, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -82,8 +82,8 @@ case class NotifyLeaderCmd(executionId: DOrcExecution#ExecutionId, event: OrcEve
 ////////
 
 /** Header -- always the first message on a new connection */
-case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime#RuntimeId, receivingRuntimeId: DOrcRuntime#RuntimeId) extends OrcPeerCmd {
-  override def toString(): String = f"${getClass.getSimpleName}($sendingRuntimeId%#x,$receivingRuntimeId%#x)"
+case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime#RuntimeId, receivingRuntimeId: DOrcRuntime#RuntimeId, senderListenSocketAddress: InetSocketAddress) extends OrcPeerCmd {
+  override def toString(): String = f"${getClass.getSimpleName}($sendingRuntimeId%#x,$receivingRuntimeId%#x, $senderListenSocketAddress)"
 }
 
 ////////

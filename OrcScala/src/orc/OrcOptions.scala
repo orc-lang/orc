@@ -4,7 +4,7 @@
 //
 // Created by amp on July 12, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -78,6 +78,10 @@ trait OrcExecutionOptions extends OrcCommonOptions {
   def setRight(rightName: String, newVal: Boolean)
 
   // For distributed runtime:
-  def followerSockets: java.util.List[InetSocketAddress]
-  def followerSockets_=(newVal: java.util.List[InetSocketAddress])
+  def listenSocketAddress: InetSocketAddress
+  def listenSocketAddress_=(newVal: InetSocketAddress)
+  def followerCount: Int
+  def followerCount_=(newVal: Int)
+  def listenSockAddrFile: Option[File]
+  def listenSockAddrFile_=(newVal: Option[File])
 }

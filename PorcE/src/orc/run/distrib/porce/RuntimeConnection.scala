@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 12, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,7 +14,8 @@
 package orc.run.distrib.porce
 
 import java.io.{ IOException, InputStream, ObjectInputStream, ObjectOutputStream, OutputStream }
-import java.net.{ InetAddress, InetSocketAddress, Socket }
+import java.net.{ ConnectException, InetAddress, InetSocketAddress, Socket }
+import java.util.logging.Level
 
 import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
 
@@ -65,10 +66,10 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
     }
     maybeReset()
   }
-  
+
   private def maybeReset() = {
-    val now = System.currentTimeMillis()    
-    if(now > lastReset + RESET_PERIOD) {
+    val now = System.currentTimeMillis()
+    if (now > lastReset + RESET_PERIOD) {
       oos.reset()
       lastReset = now
     }
@@ -111,19 +112,30 @@ class RuntimeConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) extends
   */
 object RuntimeConnectionInitiator {
 
-  def apply[R, S](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null): RuntimeConnection[R, S] = {
-    try {
-      val socket = new Socket()
-      SocketObjectConnection.configSocket(socket)
-      if (localSockAddr != null) {
-        socket.bind(localSockAddr)
+  def apply[R, S](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null, retryTimes: Int = 8, retryPeriodInitial: Int = 400): RuntimeConnection[R, S] = {
+    var retryDelay = retryPeriodInitial
+    for (retryNum <- 0 to retryTimes) {
+      val rc = try {
+        val socket = new Socket()
+        SocketObjectConnection.configSocket(socket)
+        if (localSockAddr != null) {
+          socket.bind(localSockAddr)
+        }
+        socket.connect(remoteSockAddr)
+        Logger.Connect.finer(s"RuntimeConnectionInitiator opening $socket")
+        new RuntimeConnection[R, S](socket)
+      } catch {
+        case ce: ConnectException if retryNum < retryTimes =>
+          Logger.Connect.log(Level.FINEST, s"Caught ConnectException when connecting to $remoteSockAddr, will retry in $retryDelay ms", ce)
+          null
+        case ioe: IOException =>
+          throw new IOException(s"Unable to connect to $remoteSockAddr: ${ioe.getMessage}", ioe)
       }
-      socket.connect(remoteSockAddr)
-      Logger.Message.finer(s"RuntimeConnectionInitiator opening $socket")
-      new RuntimeConnection[R, S](socket)
-    } catch {
-      case ioe: IOException => throw new IOException(s"Unable to connect to $remoteSockAddr: ${ioe.getMessage}", ioe)
+      if (rc != null) return rc
+      Thread.sleep(retryDelay)
+      retryDelay = retryDelay + (retryDelay / 2)
     }
+    throw new AssertionError("Control should not reach this point")
   }
 
   def apply[R, S](remoteHostAddr: InetAddress, remotePort: Int): SocketObjectConnection[R, S] = apply[R, S](new InetSocketAddress(remoteHostAddr, remotePort))

@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 21, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -16,7 +16,7 @@ package orc.run.distrib.token
 import java.io.EOFException
 import java.net.InetSocketAddress
 
-import scala.collection.JavaConverters.{ asScalaBufferConverter, mapAsScalaConcurrentMap }
+import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
 
 import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions }
@@ -53,8 +53,6 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcLeaderExecution])
 
   override def run(programAst: Expression, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
-    val followers = Map(options.followerSockets.asScala.toSeq.zipWithIndex.map( { case (s, i) => (i+1, s) } ): _*)
-    connectToFollowers(followers)
 
     val programOil = OrcXML.astToXml(programAst).toString
     val thisExecutionId = DOrcExecution.freshExecutionId()

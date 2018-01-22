@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on May 26, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -143,14 +143,17 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def setRight(capName: String, newVal: Boolean) {
     capabilities.put(capName, newVal)
   }
-
-  private def string2socket(s: String) = {
-    val lastColon = s.lastIndexOf(":")
-    new InetSocketAddress(s.substring(0, lastColon), s.substring(lastColon + 1).toInt)
+  def listenSocketAddress: InetSocketAddress = getSocket("orc.listenSocketAddress", null)
+  def listenSocketAddress_=(newVal: InetSocketAddress) = putSocket("orc.listenSocketAddress", newVal)
+  def followerCount: Int = getInt("orc.followerCount", 0)
+  def followerCount_=(newVal: Int) = putInt("orc.followerCount", newVal)
+  def listenSockAddrFile: Option[File] = {
+    getString("orc.listenSockAddrFile", "") match {
+      case "" => None
+      case f => Some(new File(f))
+    }
   }
-
-  def followerSockets: java.util.List[InetSocketAddress] = getStringList("orc.distrib.followerSockets", List().asJava, ",").asScala.map(string2socket(_)).asJava
-  def followerSockets_=(newVal: java.util.List[InetSocketAddress]) = putStringList("orc.distrib.followerSockets", newVal.asScala.map({ isa => isa.getHostString + ":" + isa.getPort }).asJava, ",")
+  def listenSockAddrFile_=(newVal: Option[File]) = putString("orc.listenSockAddrFile", newVal.map(_.toString).getOrElse(""))
 
   /** @param key
     * @param value
@@ -294,6 +297,30 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
     value match {
       case s: String if (s.length == 0) => new java.util.ArrayList[String](0)
       case s: String => new java.util.ArrayList[String](java.util.Arrays.asList(s.split(separator): _*))
+      case _ => default
+    }
+  }
+
+  private def string2socket(s: String) = {
+    val lastColon = s.lastIndexOf(":")
+    new InetSocketAddress(s.substring(0, lastColon), s.substring(lastColon + 1).toInt)
+  }
+
+  /** @param key
+    * @param value
+    */
+  def putSocket(key: String, value: InetSocketAddress) {
+    put(key, value.getHostString + ":" + value.getPort)
+  }
+
+  /** @param key
+    * @param default
+    * @return
+    */
+  def getSocket(key: String, default: InetSocketAddress): InetSocketAddress = {
+    val value = get(key)
+    value match {
+      case s: String => string2socket(s)
       case _ => default
     }
   }

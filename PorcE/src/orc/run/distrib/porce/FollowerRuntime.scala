@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 21, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,7 @@
 
 package orc.run.distrib.porce
 
-import java.io.{ EOFException, IOException, ObjectOutputStream }
+import java.io.{ EOFException, File, FileWriter, IOException, ObjectOutputStream }
 import java.net.{ InetSocketAddress, SocketException }
 import java.util.logging.Level
 
@@ -27,7 +27,7 @@ import orc.util.{ CmdLineParser, MainExit }
   *
   * @author jthywiss
   */
-class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocketAddress) extends DOrcRuntime(runtimeId, s"dOrc $runtimeId @ ${listenAddress.toString()}") {
+class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runtimeId, s"dOrc follower $runtimeId") {
 
   protected var listener: RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd] = null
   protected var boundListenAddress: InetSocketAddress = null
@@ -37,19 +37,33 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
   override def allLocations: Set[PeerLocation] = runtimeLocationMap.values.toSet
 
-  def listen(): Unit = {
-    Logger.Connect.info(s"Listening on $listenAddress")
-
+  def listenAndContactLeader(listenAddress: InetSocketAddress, leaderAddress: InetSocketAddress, listenSockAddrFile: Option[File]): Unit = {
     runtimeLocationMap.put(runtimeId, here)
 
     listener = new RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd](listenAddress)
     boundListenAddress = new InetSocketAddress(listener.serverSocket.getInetAddress, listener.serverSocket.getLocalPort)
+    Logger.Connect.info(s"Listening on $boundListenAddress")
+
+    listenSockAddrFile match {
+      case Some(f) =>
+        val fw = new FileWriter(f)
+        try {
+          fw.write(boundListenAddress.toString)
+          fw.write('\n')
+        } finally {
+          fw.close()
+        }
+      case None =>
+    }
+
+    contactLeader(leaderAddress)
+
     try {
       while (!listener.serverSocket.isClosed()) {
         val newConn = listener.acceptConnection()
         Logger.Connect.finer(s"accepted ${newConn.socket}")
 
-        MessageProcessorThread(newConn).start()
+        new MessageProcessorThread(newConn, None).start()
 
       }
     } catch {
@@ -64,9 +78,14 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
       }
       runtimeLocationMap.clear()
       listener.close()
-      Logger.Connect.info(s"Closed $listenAddress")
+      listener = null
+      Logger.Connect.info(s"Closed $boundListenAddress")
       boundListenAddress = null
     }
+  }
+
+  protected def contactLeader(leaderAddress: InetSocketAddress): Unit = {
+    new MessageProcessorThread(RuntimeConnectionInitiator[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd](leaderAddress), Some(0)).start()
   }
 
   protected class MessageProcessorThread[R <: OrcCmd, S <: OrcCmd](connection: RuntimeConnection[R, S], initiatingWithRuntimeId: Option[DOrcRuntime#RuntimeId])
@@ -76,12 +95,12 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
       Logger.Connect.entering(getClass.getName, "run")
       try {
         initiatingWithRuntimeId match {
-          case Some(otherId) => connection.send(DOrcConnectionHeader(runtimeId, otherId).asInstanceOf[S])
+          case Some(otherId) => connection.send(DOrcConnectionHeader(runtimeId, otherId, boundListenAddress).asInstanceOf[S])
           case None =>
         }
 
         connection.receive() match {
-          case DOrcConnectionHeader(0, rid) if (rid == runtimeId && (initiatingWithRuntimeId == None || initiatingWithRuntimeId.get == 0)) => {
+          case DOrcConnectionHeader(0, rid, _) if (rid == runtimeId && (initiatingWithRuntimeId == None || initiatingWithRuntimeId.get == 0)) => {
             setName(s"dOrc follower receiver for leader @ ${connection.socket}")
             /* Ugly: The ids in the connection header tell us the type of the subsequent commands */
             val newConnAsLeaderConn = connection.asInstanceOf[RuntimeConnection[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd]]
@@ -91,11 +110,11 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
             initiatingWithRuntimeId match {
               case Some(_) =>
-              case None => connection.send(DOrcConnectionHeader(runtimeId, 0).asInstanceOf[S])
+              case None => connection.send(DOrcConnectionHeader(runtimeId, 0, boundListenAddress).asInstanceOf[S])
             }
             followLeader(leaderLocation)
           }
-          case DOrcConnectionHeader(sid, rid) if (rid == runtimeId && (initiatingWithRuntimeId == None || initiatingWithRuntimeId.get == sid)) => {
+          case DOrcConnectionHeader(sid, rid, _) if (rid == runtimeId && (initiatingWithRuntimeId == None || initiatingWithRuntimeId.get == sid)) => {
             setName(f"dOrc follower receiver for peer $sid%#x @ ${connection.socket}")
             /* Ugly: The ids in the connection header tell us the type of the subsequent commands */
             val newConnAsPeerConn = connection.asInstanceOf[RuntimeConnection[OrcPeerCmd, OrcPeerCmd]]
@@ -105,11 +124,11 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
             initiatingWithRuntimeId match {
               case Some(_) =>
-              case None => connection.send(DOrcConnectionHeader(runtimeId, sid).asInstanceOf[S])
+              case None => connection.send(DOrcConnectionHeader(runtimeId, sid, boundListenAddress).asInstanceOf[S])
             }
             communicateWithPeer(sid, newPeerLoc)
           }
-          case DOrcConnectionHeader(sid, rid) => throw new AssertionError(f"Received DOrcConnectionHeader with wrong runtime ids: sender=$sid%#x, receiver=$rid%#x")
+          case DOrcConnectionHeader(sid, rid, _) => throw new AssertionError(f"Received DOrcConnectionHeader with wrong runtime ids: sender=$sid%#x, receiver=$rid%#x")
           case m => throw new AssertionError(s"Received message before DOrcConnectionHeader: $m")
         }
       } catch {
@@ -130,11 +149,6 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
       }
       Logger.Connect.exiting(getClass.getName, "run")
     }
-  }
-
-  protected object MessageProcessorThread {
-    def apply(connection: RuntimeConnection[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd]) = new MessageProcessorThread(connection, None)
-    def apply(connection: RuntimeConnection[OrcPeerCmd, OrcPeerCmd], initiatingWithRuntimeId: DOrcRuntime#RuntimeId) = new MessageProcessorThread(connection, Some(initiatingWithRuntimeId))
   }
 
   protected def followLeader(leaderLocation: LeaderLocation): Unit = {
@@ -168,7 +182,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case ResolveFutureCmd(xid, futureId, value) => programs(xid).receiveFutureResolution(leaderLocation, futureId, value)
           case UnloadProgramCmd(xid) => unloadProgram(xid)
           case EOF => done = true
-          case DOrcConnectionHeader(sid, rid) => throw new AssertionError(f"Received extraneous DOrcConnectionHeader: sender=$sid%#x, receiver=$rid%#x")
+          case connHdr: DOrcConnectionHeader => throw new AssertionError(s"Received extraneous $connHdr")
         }
       }
     } finally {
@@ -205,7 +219,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case DeliverFutureResultCmd(xid, futureId, value) => programs(xid).deliverFutureResult(peerLocation, futureId, value)
           case ResolveFutureCmd(xid, futureId, value) => programs(xid).receiveFutureResolution(peerLocation, futureId, value)
           case EOF => { Logger.Message.fine(s"EOF, aborting peerLocation"); peerLocation.connection.abort() }
-          case DOrcConnectionHeader(sid, rid) => throw new AssertionError(f"Received extraneous DOrcConnectionHeader: sender=$sid%#x, receiver=$rid%#x")
+          case connHdr: DOrcConnectionHeader => throw new AssertionError(s"Received extraneous $connHdr")
         }
       }
     } finally {
@@ -281,7 +295,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
           case Some(pl) => throw new AssertionError(s"addPeer: adding $peerRuntimeId => $peerListenAddress, but $peerRuntimeId is already mapped to $pl")
           case None => {
             Logger.Connect.finest("Opening connection")
-            MessageProcessorThread(RuntimeConnectionInitiator[OrcPeerCmd, OrcPeerCmd](peerListenAddress), peerRuntimeId).start()
+            new MessageProcessorThread(RuntimeConnectionInitiator[OrcPeerCmd, OrcPeerCmd](peerListenAddress), Some(peerRuntimeId)).start()
           }
         }
 
@@ -378,7 +392,7 @@ object FollowerRuntime extends MainExit {
       Logger.config("FollowerRuntime options & operands: " + frOptions.composeCmdLine().mkString(" "))
 
       Logger.Connect.finer("Calling FollowerRuntime.listen")
-      new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
+      new FollowerRuntime(frOptions.runtimeId).listenAndContactLeader(frOptions.listenSocketAddress, frOptions.leaderSocketAddress, frOptions.listenSockAddrFile)
     } catch mainUncaughtExceptionHandler
   }
 
@@ -390,13 +404,23 @@ class FollowerRuntimeCmdLineOptions() extends CmdLineParser {
   private var runtimeId_ = 0
   def runtimeId: Int = runtimeId_
   def runtimeId_=(newVal: Int): Unit = runtimeId_ = newVal
-  private var socket_ : InetSocketAddress = null
-  def socket: InetSocketAddress = socket_
-  def socket_=(newVal: InetSocketAddress): Unit = socket_ = newVal
+  private var leaderSocketAddress_ : InetSocketAddress = null
+  def leaderSocketAddress: InetSocketAddress = leaderSocketAddress_
+  def leaderSocketAddress_=(newVal: InetSocketAddress): Unit = leaderSocketAddress_ = newVal
+  private var listenSocketAddress_ : InetSocketAddress = null
+  def listenSocketAddress: InetSocketAddress = listenSocketAddress_
+  def listenSocketAddress_=(newVal: InetSocketAddress): Unit = listenSocketAddress_ = newVal
+  private var listenSockAddrFile_ : Option[File] = None
+  def listenSockAddrFile: Option[File] = listenSockAddrFile_
+  def listenSockAddrFile_=(newVal: Option[File]): Unit = listenSockAddrFile_ = newVal
 
   IntOprd(() => runtimeId, runtimeId = _, position = 0, argName = "runtime-id", required = true, usage = "d-Orc runtime (follower) ID")
 
-  SocketOprd(() => socket, socket = _, position = 1, argName = "socket", required = true, usage = "Local socket (host:port) to listen on")
+  SocketOprd(() => leaderSocketAddress, leaderSocketAddress = _, position = 1, argName = "leader", required = true, usage = "Leader's socket address (host:port) to connect to")
+
+  SocketOpt(() => listenSocketAddress, listenSocketAddress = _, ' ', "listen", usage = "Local socket address (host:port) to listen on. Default is to listen on a random free dynamic port on all local interfaces.")
+
+  FileOpt(() => listenSockAddrFile.getOrElse(null), f => listenSockAddrFile = Some(f), ' ', "listen-sockaddr-file", usage = "Write the actual bound listen socket address to this file. Useful when listening on a random port.")
 }
 
 trait ClosableConnection {
