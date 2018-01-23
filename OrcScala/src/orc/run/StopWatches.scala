@@ -60,6 +60,7 @@ object StopWatches {
   }
   
 
+  ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
   private val csvOut = ExecutionLogOutputStream(s"worker-times", "csv", "Worker time output file")
   if (csvOut.isDefined) {
     val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
