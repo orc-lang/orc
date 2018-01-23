@@ -15,6 +15,7 @@ package orc.run.distrib.porce
 
 import java.io.{ EOFException, File, FileWriter, IOException, ObjectOutputStream }
 import java.net.{ InetSocketAddress, SocketException }
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
 import scala.collection.JavaConverters.mapAsScalaConcurrentMap
@@ -36,6 +37,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
   override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
 
   override def allLocations: Set[PeerLocation] = runtimeLocationMap.values.toSet
+
+  val orderlyShutdown = new AtomicBoolean(false)
 
   def listenAndContactLeader(listenAddress: InetSocketAddress, leaderAddress: InetSocketAddress, listenSockAddrFile: Option[File]): Unit = {
     runtimeLocationMap.put(runtimeId, here)
@@ -63,21 +66,23 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
         val newConn = listener.acceptConnection()
         Logger.Connect.finer(s"accepted ${newConn.socket}")
 
-        new MessageProcessorThread(newConn, None).start()
+        MessageProcessorThread.accept(newConn)
 
       }
     } catch {
       case se: SocketException if se.getMessage == "Socket closed" => /* Ignore */
       case se: SocketException if se.getMessage == "Connection reset" => /* Ignore */
     } finally {
-      runtimeLocationMap.valuesIterator.foreach {
-        _ match {
-          case a: ClosableConnection => a.abort()
-          case _ => /* Ignore */
+      if (!orderlyShutdown.get()) {
+        runtimeLocationMap.valuesIterator.foreach {
+          _ match {
+            case a: ClosableConnection => a.abort()
+            case _ => /* Ignore */
+          }
         }
+        runtimeLocationMap.clear()
+        listener.close()
       }
-      runtimeLocationMap.clear()
-      listener.close()
       listener = null
       Logger.Connect.info(s"Closed $boundListenAddress")
       boundListenAddress = null
@@ -85,51 +90,27 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
   }
 
   protected def contactLeader(leaderAddress: InetSocketAddress): Unit = {
-    new MessageProcessorThread(RuntimeConnectionInitiator[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd](leaderAddress), Some(0)).start()
+    MessageProcessorThread.initiateToLeader(leaderAddress)
   }
 
-  protected class MessageProcessorThread[R <: OrcCmd, S <: OrcCmd](connection: RuntimeConnection[R, S], initiatingWithRuntimeId: Option[DOrcRuntime#RuntimeId])
-    extends Thread(s"dOrc follower connection with ${connection.socket}") {
+  protected abstract class MessageProcessorThread[R <: OrcCmd, S <: OrcCmd](name: String)
+    extends Thread(name) {
 
     override def run(): Unit = {
       Logger.Connect.entering(getClass.getName, "run")
+
+      val connection = getOrOpenConnection
+
       try {
-        initiatingWithRuntimeId match {
-          case Some(otherId) => connection.send(DOrcConnectionHeader(runtimeId, otherId, boundListenAddress).asInstanceOf[S])
-          case None =>
-        }
+        sendConnectionHeaderBeforePeer(connection)
 
-        connection.receive() match {
-          case DOrcConnectionHeader(0, rid, _) if (rid == runtimeId && (initiatingWithRuntimeId == None || initiatingWithRuntimeId.get == 0)) => {
-            setName(s"dOrc follower receiver for leader @ ${connection.socket}")
-            /* Ugly: The ids in the connection header tell us the type of the subsequent commands */
-            val newConnAsLeaderConn = connection.asInstanceOf[RuntimeConnection[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd]]
-            val leaderLocation = new LeaderLocation(0, newConnAsLeaderConn)
-            val oldMappedValue = runtimeLocationMap.put(0, leaderLocation)
-            assert(oldMappedValue == None, s"Received DOrcConnectionHeader for leader, but runtimeLocationMap already had ${oldMappedValue.get} for location 0 (leader)")
+        val newPeerLocation = receiveConnectionHeader(connection)
 
-            initiatingWithRuntimeId match {
-              case Some(_) =>
-              case None => connection.send(DOrcConnectionHeader(runtimeId, 0, boundListenAddress).asInstanceOf[S])
-            }
-            followLeader(leaderLocation)
-          }
-          case DOrcConnectionHeader(sid, rid, _) if (rid == runtimeId && (initiatingWithRuntimeId == None || initiatingWithRuntimeId.get == sid)) => {
-            setName(f"dOrc follower receiver for peer $sid%#x @ ${connection.socket}")
-            /* Ugly: The ids in the connection header tell us the type of the subsequent commands */
-            val newConnAsPeerConn = connection.asInstanceOf[RuntimeConnection[OrcPeerCmd, OrcPeerCmd]]
-            val newPeerLoc = new PeerLocationImpl(sid, newConnAsPeerConn)
-            val oldMappedValue = runtimeLocationMap.put(sid, newPeerLoc)
-            assert(oldMappedValue == None, f"Received DOrcConnectionHeader for peer $sid%#x, but runtimeLocationMap already had ${oldMappedValue.get} for location $sid%#x")
+        sendConnectionHeaderAfterPeer(connection, newPeerLocation.runtimeId)
 
-            initiatingWithRuntimeId match {
-              case Some(_) =>
-              case None => connection.send(DOrcConnectionHeader(runtimeId, sid, boundListenAddress).asInstanceOf[S])
-            }
-            communicateWithPeer(sid, newPeerLoc)
-          }
-          case DOrcConnectionHeader(sid, rid, _) => throw new AssertionError(f"Received DOrcConnectionHeader with wrong runtime ids: sender=$sid%#x, receiver=$rid%#x")
-          case m => throw new AssertionError(s"Received message before DOrcConnectionHeader: $m")
+        newPeerLocation match {
+          case leaderLocation: LeaderLocation => followLeader(leaderLocation)
+          case newPeerLoc: PeerLocationImpl => communicateWithPeer(newPeerLoc)
         }
       } catch {
         case e: Throwable => {
@@ -149,6 +130,86 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
       }
       Logger.Connect.exiting(getClass.getName, "run")
     }
+
+    /** Get the connection that this thread will handle.  Either return an already-open one, or create a fresh one. */
+    protected def getOrOpenConnection: RuntimeConnection[R, S]
+
+    /** Opportunity to send connection header before receiving peer's */
+    protected def sendConnectionHeaderBeforePeer(connection: RuntimeConnection[R, S]): Unit
+
+    protected def receiveConnectionHeader(connection: RuntimeConnection[R, S]) = {
+      connection.receive() match {
+        /* Ugly: The ids in the connection header tell us the type of the subsequent commands */
+        case hdr @ DOrcConnectionHeader(0, rid, leaderListenAddress) if (checkConnectionHeader(hdr)) => {
+          setName(s"dOrc MessageProcessor for leader @ ${connection.socket}")
+
+          val newConnAsLeaderConn = connection.asInstanceOf[RuntimeConnection[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd]]
+          val leaderLocation = new LeaderLocation(0, newConnAsLeaderConn)
+          addPeerToLocationMap(leaderLocation, leaderListenAddress)
+        }
+        case hdr @ DOrcConnectionHeader(sid, rid, peerListenAddress) if (checkConnectionHeader(hdr)) => {
+          setName(s"dOrc MessageProcessor for peer $sid @ ${connection.socket}")
+
+          val newConnAsPeerConn = connection.asInstanceOf[RuntimeConnection[OrcPeerCmd, OrcPeerCmd]]
+          val newPeerLoc = new PeerLocationImpl(sid, newConnAsPeerConn, peerListenAddress)
+          addPeerToLocationMap(newPeerLoc, peerListenAddress)
+        }
+        case DOrcConnectionHeader(sid, rid, _) => throw new AssertionError(s"Received DOrcConnectionHeader with wrong runtime ids: sender=$sid, receiver=$rid")
+        case m => throw new AssertionError(s"Received message before DOrcConnectionHeader: $m")
+      }
+    }
+
+    protected def checkConnectionHeader(receivedHeader: DOrcConnectionHeader) = {
+      receivedHeader.receivingRuntimeId == runtimeId
+    }
+
+    /** Add newPeerLoc to runtimeLocationMap if absent. Ignore new value if in map, but identical.  Throw is inconsistent new value. */
+    protected def addPeerToLocationMap(newPeerLoc: PeerLocation, newPeerListenAddress: InetSocketAddress): PeerLocation = {
+      /* We can have redundant adds of non-leader peers, but the leader can only be added once. */
+      runtimeLocationMap.putIfAbsent(newPeerLoc.runtimeId, newPeerLoc) match {
+        case Some(pl: PeerLocationImpl) if (pl.connection.socket.getRemoteSocketAddress == newPeerListenAddress) => pl /* We already know this peer */
+        case Some(pl) => throw new AssertionError(s"Received DOrcConnectionHeader for peer $newPeerLoc, but runtimeLocationMap already had $pl")
+        case None => newPeerLoc /* New peer */
+      }
+    }
+
+    /** Opportunity to send connection header after receiving peer's */
+    protected def sendConnectionHeaderAfterPeer(connection: RuntimeConnection[R, S], peerRuntimeId: DOrcRuntime#RuntimeId): Unit
+
+    protected def sendConnectionHeader(connection: RuntimeConnection[R, S], peerRuntimeId: DOrcRuntime#RuntimeId) = connection.send(DOrcConnectionHeader(runtimeId, peerRuntimeId, boundListenAddress).asInstanceOf[S])
+
+  }
+
+  protected class MessageProcessorAThread[R <: OrcCmd, S <: OrcCmd](connection: RuntimeConnection[R, S])
+    extends MessageProcessorThread[R, S](s"dOrc MessageProcessor for unidentified peer @ ${connection.socket} [ACCEPTING]") {
+
+    override protected def getOrOpenConnection = connection
+
+    override protected def sendConnectionHeaderBeforePeer(connection: RuntimeConnection[R, S]) = { }
+
+    override protected def sendConnectionHeaderAfterPeer(connection: RuntimeConnection[R, S], peerRuntimeId: DOrcRuntime#RuntimeId) = sendConnectionHeader(connection, peerRuntimeId)
+
+  }
+
+  protected class MessageProcessorIThread[R <: OrcCmd, S <: OrcCmd](peerRuntimeId: DOrcRuntime#RuntimeId, peerListenAddress: InetSocketAddress)
+    extends MessageProcessorThread[R, S](s"dOrc MessageProcessor for peer $peerRuntimeId @ $peerListenAddress [INITIATING]") {
+
+    override protected lazy val getOrOpenConnection = RuntimeConnectionInitiator[R, S](peerListenAddress)
+
+    override protected def sendConnectionHeaderBeforePeer(connection: RuntimeConnection[R, S]) = sendConnectionHeader(connection, peerRuntimeId)
+
+    protected override def checkConnectionHeader(receivedHeader: DOrcConnectionHeader) = {
+      super.checkConnectionHeader(receivedHeader) && receivedHeader.sendingRuntimeId == peerRuntimeId
+    }
+
+    override protected def sendConnectionHeaderAfterPeer(connection: RuntimeConnection[R, S], peerRuntimeId: DOrcRuntime#RuntimeId) = { }
+
+  }
+
+  protected object MessageProcessorThread {
+    def initiateToLeader(leaderListenAddress: InetSocketAddress) = new MessageProcessorIThread(0, leaderListenAddress).start()
+    def initiateToPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerListenAddress: InetSocketAddress) = new MessageProcessorIThread(peerRuntimeId, peerListenAddress).start()
+    def accept[R <: OrcCmd, S <: OrcCmd](connection: RuntimeConnection[R, S]) = new MessageProcessorAThread[R, S](connection).start()
   }
 
   protected def followLeader(leaderLocation: LeaderLocation): Unit = {
@@ -196,7 +257,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
     Logger.Connect.exiting(getClass.getName, "followLeader")
   }
 
-  protected def communicateWithPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerLocation: PeerLocationImpl): Unit = {
+  protected def communicateWithPeer(peerLocation: PeerLocationImpl): Unit = {
     try {
       Logger.Connect.fine(s"Reading events from ${peerLocation.connection.socket}")
       while (!peerLocation.connection.closed && !peerLocation.connection.socket.isInputShutdown) {
@@ -223,7 +284,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
         }
       }
     } finally {
-      runtimeLocationMap.remove(peerRuntimeId)
+      runtimeLocationMap.remove(peerLocation.runtimeId)
     }
   }
 
@@ -277,6 +338,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
     Logger.exiting(getClass.getName, "sendEvent")
   }
 
+  private val initiatedPeers = scala.collection.mutable.Set[DOrcRuntime#RuntimeId]()
+
   def addPeer(peerRuntimeId: DOrcRuntime#RuntimeId, peerListenAddress: InetSocketAddress): Unit = {
     Logger.Connect.entering(getClass.getName, "addPeer", Seq(peerRuntimeId.toString, peerListenAddress))
     if (peerListenAddress == boundListenAddress || peerRuntimeId == runtimeId) {
@@ -285,22 +348,15 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
       assert(runtimeLocationMap(peerRuntimeId) == here, s"addPeer for self, but runtimeLocationMap != here")
     } else {
       if (shouldOpen(peerListenAddress)) {
-        Logger.Connect.finest("New peer; Will open connection")
-
-        /* FIXME:Race: If two addPeer calls for the same peerRuntimeId run simultaneously, an assertion will fail in MessageProcessorThread.run */
-        runtimeLocationMap.get(peerRuntimeId) match {
-          case Some(pl: PeerLocationImpl) if (pl.connection.socket.getRemoteSocketAddress == peerListenAddress) => {
-            Logger.Connect.fine(s"addPeer: redundant add of $peerRuntimeId => $peerListenAddress")
-          }
-          case Some(pl) => throw new AssertionError(s"addPeer: adding $peerRuntimeId => $peerListenAddress, but $peerRuntimeId is already mapped to $pl")
-          case None => {
-            Logger.Connect.finest("Opening connection")
-            new MessageProcessorThread(RuntimeConnectionInitiator[OrcPeerCmd, OrcPeerCmd](peerListenAddress), Some(peerRuntimeId)).start()
-          }
+        val alreadyInited = initiatedPeers synchronized initiatedPeers.add(peerRuntimeId)
+        if (!alreadyInited) {
+          Logger.Connect.finest(s"Add peer $peerRuntimeId; Will initiate connection")
+          MessageProcessorThread.initiateToPeer(peerRuntimeId, peerListenAddress)
+        } else {
+          Logger.Connect.finest(s"Add peer $peerRuntimeId; Already initiated connection")
         }
-
       } else {
-        Logger.Connect.finest("Expecting peer to initiate connection (it may have already)")
+        Logger.Connect.finest(s"Add peer $peerRuntimeId; Expecting peer to initiate connection (it may have already)")
       }
     }
     Logger.Connect.exiting(getClass.getName, "addPeer")
@@ -318,6 +374,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
     if (peerRuntimeId == runtimeId) {
       /* If the leader sends RemovePeer with our ID, we shutdown */
       Logger.Connect.fine("Closing listen socket")
+      orderlyShutdown.set(true)
       listener.close()
     } else {
       runtimeLocationMap.remove(peerRuntimeId) match {
@@ -436,8 +493,8 @@ class LeaderLocation(val runtimeId: DOrcRuntime#RuntimeId, val connection: Runti
   override def abort(): Unit = connection.abort()
 }
 
-class PeerLocationImpl(val runtimeId: DOrcRuntime#RuntimeId, val connection: RuntimeConnection[OrcPeerCmd, OrcPeerCmd]) extends PeerLocation with ClosableConnection {
-  override def toString: String = s"${getClass.getName}(runtimeId=$runtimeId)"
+class PeerLocationImpl(val runtimeId: DOrcRuntime#RuntimeId, val connection: RuntimeConnection[OrcPeerCmd, OrcPeerCmd], val listenAddress: InetSocketAddress) extends PeerLocation with ClosableConnection {
+  override def toString: String = s"${getClass.getName}(runtimeId=$runtimeId, listenAddress=$listenAddress)"
   override def send(message: OrcPeerCmd): Unit = connection.send(message)
   override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd): Unit = connection.sendInContext(execution, this)(message)
   override def close(): Unit = connection.close()

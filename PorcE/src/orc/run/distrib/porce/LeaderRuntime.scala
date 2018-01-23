@@ -15,6 +15,7 @@ package orc.run.distrib.porce
 
 import java.io.{ EOFException, FileWriter }
 import java.net.{ InetSocketAddress, SocketException }
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
 import scala.collection.JavaConverters.mapAsScalaConcurrentMap
@@ -54,6 +55,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     protected val boundListenAddress = new InetSocketAddress(listener.serverSocket.getInetAddress, listener.serverSocket.getLocalPort)
     def getBoundListenAddress = boundListenAddress
 
+    val orderlyShutdown = new AtomicBoolean(false)
+
     override def run(): Unit = {
       runtimeLocationMap.put(runtimeId, here)
       followersChanged synchronized followersChanged.notifyAll()
@@ -72,20 +75,23 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
         case se: SocketException if se.getMessage == "Socket closed" => /* Ignore */
         case se: SocketException if se.getMessage == "Connection reset" => /* Ignore */
       } finally {
-        runtimeLocationMap.valuesIterator.foreach {
-          _ match {
-            case a: ClosableConnection => a.abort()
-            case _ => /* Ignore */
+        if (!orderlyShutdown.get) {
+          runtimeLocationMap.valuesIterator.foreach {
+            _ match {
+              case a: ClosableConnection => a.abort()
+              case _ => /* Ignore */
+            }
           }
+          runtimeLocationMap.clear()
+          followersChanged synchronized followersChanged.notifyAll()
+          listener.close()
         }
-        runtimeLocationMap.clear()
-        followersChanged synchronized followersChanged.notifyAll()
-        listener.close()
         Logger.Connect.info(s"Closed $boundListenAddress")
       }
     }
 
     def shutdown(): Unit = {
+      orderlyShutdown.set(true)
       listener.close()
     }
 
@@ -173,7 +179,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     extends Thread(f"dOrc leader connection with ${connection.socket}") {
 
     override def run(): Unit = {
-      Logger.Connect.entering(getClass.getName, "run")
+      Logger.Connect.entering(getClass.getName, "run", Seq(connection))
       try {
         connection.receive() match {
           case DOrcConnectionHeader(sid, rid, listenSockAddr) if (rid == runtimeId) => {
@@ -300,29 +306,40 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   }
 
   override def stop(): Unit = {
-    synchronized {
-      listenerThread.shutdown()
-      listenerThread = null
+    val doShutdown = synchronized {
+      if (listenerThread != null) {
+        listenerThread.shutdown()
+        listenerThread = null
+        true
+      } else {
+        false
+      }
     }
 
-    followerLocations foreach { subjectFollower =>
-      followerLocations foreach { recipientFollower =>
-        try {
-          recipientFollower.send(RemovePeerCmd(subjectFollower.runtimeId))
-        } catch {
-          case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore send RemovePeerCmd failures at this point */
+    if (doShutdown) {
+
+      followerLocations foreach { subjectFollower =>
+        followerLocations foreach { recipientFollower =>
+          try {
+            recipientFollower.send(RemovePeerCmd(subjectFollower.runtimeId))
+          } catch {
+            case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore send RemovePeerCmd failures at this point */
+          }
         }
       }
-    }
-    followerLocations foreach { follower =>
-      runtimeLocationMap.remove(follower.runtimeId)
-      followersChanged synchronized followersChanged.notifyAll()
-      try {
-        follower.connection.socket.shutdownOutput()
-      } catch {
-        case NonFatal(e) => Logger.Connect.finer(s"Ignoring $e") /* Ignore shutdownOutput failures at this point */
+
+      followerLocations foreach { follower =>
+        runtimeLocationMap.remove(follower.runtimeId)
+        followersChanged synchronized followersChanged.notifyAll()
+        try {
+          follower.connection.socket.shutdownOutput()
+        } catch {
+          case NonFatal(e) => Logger.Connect.finer(s"Ignoring $e") /* Ignore shutdownOutput failures at this point */
+        }
       }
+
     }
+
     super.stop()
   }
 
