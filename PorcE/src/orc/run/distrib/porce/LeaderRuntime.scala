@@ -118,7 +118,9 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
       case Some(f) =>
         val fw = new FileWriter(f)
         try {
-          fw.write(boundListenAddress.toString)
+          fw.write(boundListenAddress.getHostName)
+          fw.write(':')
+          fw.write(boundListenAddress.getPort.toString)
           fw.write('\n')
         } finally {
           fw.close()

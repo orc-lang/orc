@@ -51,7 +51,9 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
       case Some(f) =>
         val fw = new FileWriter(f)
         try {
-          fw.write(boundListenAddress.toString)
+          fw.write(boundListenAddress.getHostName)
+          fw.write(':')
+          fw.write(boundListenAddress.getPort.toString)
           fw.write('\n')
         } finally {
           fw.close()
