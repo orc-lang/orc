@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 21, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -23,7 +23,7 @@ import scala.xml.XML
 
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.xml.OrcXML
-import orc.util.{ CmdLineParser, MainExit }
+import orc.util.{ CmdLineParser, CmdLineUsageException, ExitStatus, MainExit }
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -342,7 +342,12 @@ object FollowerRuntime extends MainExit {
 
       Logger.finer("Calling FollowerRuntime.listen")
       new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
-    } catch mainUncaughtExceptionHandler
+    } catch {
+      case e: CmdLineUsageException => failureExit(e.getMessage, ExitStatus.Usage)
+      case e: java.net.UnknownHostException => failureExit(e.toString, ExitStatus.NoHost)
+      case e: java.net.ConnectException => failureExit(e.toString, ExitStatus.Unavailable)
+      case e: java.io.IOException => failureExit(e.toString, ExitStatus.IoErr)
+    }
   }
 
   val mainUncaughtExceptionHandler = basicUncaughtExceptionHandler

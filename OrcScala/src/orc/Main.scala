@@ -22,7 +22,7 @@ import orc.error.compiletime.CompilationException
 import orc.error.runtime.JavaException
 import orc.run.OrcDesktopEventAction
 import orc.script.{ OrcBindings, OrcScriptEngine }
-import orc.util.{ CmdLineParser, ExitStatus, MainExit, PrintVersionAndMessageException, UnrecognizedCmdLineOptArgException }
+import orc.util.{ CmdLineParser, CmdLineUsageException, ExitStatus, MainExit, PrintVersionAndMessageException, UnrecognizedCmdLineOptArgException }
 import orc.values.Format
 
 import javax.script.{ ScriptEngine, ScriptEngineManager, ScriptException }
@@ -77,13 +77,22 @@ object Main extends MainExit {
         }
       }
       compiledOrc.run(printPubs)
-
-    } catch mainUncaughtExceptionHandler
+    } catch {
+      /* Exceptions caught here don't get logged or stack traces printed */
+      case e: PrintVersionAndMessageException => println(orcImplName + " " + orcVersion + "\n" + orcURL + "\n" + orcCopyright + "\n\n" + e.getMessage)
+      case e: FileNotFoundException => failureExit("File not found: " + e.getMessage, ExitStatus.NoInput)
+      case e: ScriptException if (e.getCause == null) => { Console.err.println(e.getMessage); System.exit(ExitStatusRunFail) }
+      case e: ScriptException if (e.getCause.isInstanceOf[CompilationException]) => System.exit(ExitStatusCompileFail) // Ignore compilation errors. They will already have been printed.
+      case e: ScriptException => printException(e.getCause, Console.err, false); System.exit(ExitStatusRunFail)
+      case e: CmdLineUsageException => failureExit(e.getMessage, ExitStatus.Usage)
+      case e: java.net.UnknownHostException => failureExit(e.toString, ExitStatus.NoHost)
+      case e: java.net.ConnectException => failureExit(e.toString, ExitStatus.Unavailable)
+      case e: java.io.IOException => failureExit(e.toString, ExitStatus.IoErr)
+    }
   }
 
   private val ourUEH: PartialFunction[Throwable, Unit] = {
-    case e: PrintVersionAndMessageException => println(orcImplName + " " + orcVersion + "\n" + orcURL + "\n" + orcCopyright + "\n\n" + e.getMessage)
-    case e: FileNotFoundException => { failureExit("File not found: " + e.getMessage, ExitStatus.NoInput) }
+    /* If a ScriptException is thrown on another thread, print it to stderr and set the exit status code. */
     case e: ScriptException if (e.getCause == null) => { Console.err.println(e.getMessage); System.exit(ExitStatusRunFail) }
     case e: ScriptException if (e.getCause.isInstanceOf[CompilationException]) => { System.exit(ExitStatusCompileFail) } // Ignore compilation errors. They will already have been printed.
     case e: ScriptException => { printException(e.getCause, Console.err, false); System.exit(ExitStatusRunFail) }

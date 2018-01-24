@@ -22,7 +22,7 @@ import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
 
 import orc.{ CaughtEvent, OrcEvent, OrcExecutionOptions }
-import orc.util.{ CmdLineParser, MainExit }
+import orc.util.{ CmdLineParser, CmdLineUsageException, ExitStatus, MainExit }
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -450,7 +450,12 @@ object FollowerRuntime extends MainExit {
 
       Logger.Connect.finer("Calling FollowerRuntime.listen")
       new FollowerRuntime(frOptions.runtimeId).listenAndContactLeader(frOptions.listenSocketAddress, frOptions.leaderSocketAddress, frOptions.listenSockAddrFile)
-    } catch mainUncaughtExceptionHandler
+    } catch {
+      case e: CmdLineUsageException => failureExit(e.getMessage, ExitStatus.Usage)
+      case e: java.net.UnknownHostException => failureExit(e.toString, ExitStatus.NoHost)
+      case e: java.net.ConnectException => failureExit(e.toString, ExitStatus.Unavailable)
+      case e: java.io.IOException => failureExit(e.toString, ExitStatus.IoErr)
+    }
   }
 
   val mainUncaughtExceptionHandler = basicUncaughtExceptionHandler
