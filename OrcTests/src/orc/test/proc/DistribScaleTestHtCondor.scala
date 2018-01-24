@@ -101,9 +101,6 @@ object DistribScaleTestHtCondor {
       val followerClass = DistribTestConfig.expanded("followerClass")
       val followerOpts = DistribTestConfig.expanded.getIterableFor("followerOpts").getOrElse(Seq())
 
-      val dOrcPortBase = DistribTestConfig.expanded.get("dOrcPortBase").get.toInt
-      val dOrcPortMax = DistribTestConfig.expanded.get("dOrcPortMax").get.toInt
-
       val remoteRunOutputDir = DistribTestConfig.expanded("runOutputDir").stripSuffix("/")
 
       val jobEventNotification = HtCondorConfig("jobEventNotification")
@@ -149,8 +146,8 @@ object DistribScaleTestHtCondor {
         |+JavaMainClassNode0 = """" + leaderClass + """"
         |+JavaMainClassOtherNodes = """" + followerClass + """"
         |
-        |+JavaMainArgumentsNode0 = """" + leaderOpts.mkString(" ") + """ --follower-sockets=#Orc:followerSockets# $(orc_program)"
-        |+JavaMainArgumentsOtherNodes = """" + followerOpts.mkString(" ") + """ $(Node) $$(Machine):#Orc:port#"
+        |+JavaMainArgumentsNode0 = """" + leaderOpts.mkString(" ") + """ --follower-count=""" + (experimentalCondition.dOrcNumRuntimes - 1) + """ --listen-sockaddr-file=$(listener_sock_addr_file) $(orc_program)"
+        |+JavaMainArgumentsOtherNodes = """" + followerOpts.mkString(" ") + """ $(Node) #Orc:leaderListenAddress#"
         |
         |# arguments are ignored by orc-run-parallel.sh, but displayed in some places, so to make those more usable, we supply informational arguments here:
         |arguments = """ + testProgram.getName + " " + experimentalCondition.toString + """
@@ -173,15 +170,12 @@ object DistribScaleTestHtCondor {
         |# Inter-node communication for Orc
         |###
         |
-        |# Location of temporary file on submit node where listen socket addresses are exchanged:
-        |+ListenerSockAddrFile = "$(job_filename_pre).listen-sockaddr"
+        |# Location of temporary file where leader's listen socket addresses is written:
+        |listener_sock_addr_file = $(job_filename_pre).listen-sockaddr
+        |+ListenerSockAddrFile = "$(listener_sock_addr_file)"
         |
-        |# Duration for leader to wait for all followers, in seconds:
+        |# Duration for followers to wait for leader's listen address, in seconds:
         |+ListenerWaitTimeout = 1200
-        |
-        |# TCP listen port numbers for dOrc are in $(OrcPortBase) to $(OrcPortMax) range:
-        |+OrcPortBase = """ + dOrcPortBase + """
-        |+OrcPortMax = """ + dOrcPortMax + """
         |
         |
         |##
