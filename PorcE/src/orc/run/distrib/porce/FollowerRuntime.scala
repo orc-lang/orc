@@ -14,7 +14,7 @@
 package orc.run.distrib.porce
 
 import java.io.{ EOFException, File, FileWriter, IOException, ObjectOutputStream }
-import java.net.{ InetSocketAddress, SocketException }
+import java.net.{ InetAddress, InetSocketAddress, SocketException }
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
@@ -32,6 +32,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
 
   protected var listener: RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd] = null
   protected var boundListenAddress: InetSocketAddress = null
+  protected var listenFQDN: String = null
+
   protected val runtimeLocationMap = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcRuntime#RuntimeId, PeerLocation]())
 
   override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
@@ -45,13 +47,15 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
 
     listener = new RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd](listenAddress)
     boundListenAddress = new InetSocketAddress(listener.serverSocket.getInetAddress, listener.serverSocket.getLocalPort)
-    Logger.Connect.info(s"Listening on $boundListenAddress")
+    listenFQDN = (if (listener.serverSocket.getInetAddress.isAnyLocalAddress) InetAddress.getLocalHost else listener.serverSocket.getInetAddress).getCanonicalHostName
+
+    Logger.Connect.info(s"Listening on $boundListenAddress, which we'll advertise as $listenFQDN:${boundListenAddress.getPort}")
 
     listenSockAddrFile match {
       case Some(f) =>
         val fw = new FileWriter(f)
         try {
-          fw.write(boundListenAddress.getHostName)
+          fw.write(listenFQDN)
           fw.write(':')
           fw.write(boundListenAddress.getPort.toString)
           fw.write('\n')
@@ -106,9 +110,11 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
       try {
         sendConnectionHeaderBeforePeer(connection)
 
-        val newPeerLocation = receiveConnectionHeader(connection)
+        val (newPeerLocation, newPeerListenAddress) = receiveConnectionHeader(connection)
 
         sendConnectionHeaderAfterPeer(connection, newPeerLocation.runtimeId)
+
+        addPeerToLocationMap(newPeerLocation, newPeerListenAddress)
 
         newPeerLocation match {
           case leaderLocation: LeaderLocation => followLeader(leaderLocation)
@@ -147,14 +153,14 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
 
           val newConnAsLeaderConn = connection.asInstanceOf[RuntimeConnection[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd]]
           val leaderLocation = new LeaderLocation(0, newConnAsLeaderConn)
-          addPeerToLocationMap(leaderLocation, leaderListenAddress)
+          (leaderLocation, leaderListenAddress)
         }
         case hdr @ DOrcConnectionHeader(sid, rid, peerListenAddress) if (checkConnectionHeader(hdr)) => {
           setName(s"dOrc MessageProcessor for peer $sid @ ${connection.socket}")
 
           val newConnAsPeerConn = connection.asInstanceOf[RuntimeConnection[OrcPeerCmd, OrcPeerCmd]]
           val newPeerLoc = new PeerLocationImpl(sid, newConnAsPeerConn, peerListenAddress)
-          addPeerToLocationMap(newPeerLoc, peerListenAddress)
+          (newPeerLoc, peerListenAddress)
         }
         case DOrcConnectionHeader(sid, rid, _) => throw new AssertionError(s"Received DOrcConnectionHeader with wrong runtime ids: sender=$sid, receiver=$rid")
         case m => throw new AssertionError(s"Received message before DOrcConnectionHeader: $m")
@@ -178,7 +184,9 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
     /** Opportunity to send connection header after receiving peer's */
     protected def sendConnectionHeaderAfterPeer(connection: RuntimeConnection[R, S], peerRuntimeId: DOrcRuntime#RuntimeId): Unit
 
-    protected def sendConnectionHeader(connection: RuntimeConnection[R, S], peerRuntimeId: DOrcRuntime#RuntimeId) = connection.send(DOrcConnectionHeader(runtimeId, peerRuntimeId, boundListenAddress).asInstanceOf[S])
+    protected def sendConnectionHeader(connection: RuntimeConnection[R, S], peerRuntimeId: DOrcRuntime#RuntimeId) = {
+      connection.send(DOrcConnectionHeader(runtimeId, peerRuntimeId, new InetSocketAddress(listenFQDN, boundListenAddress.getPort)).asInstanceOf[S])
+    }
 
   }
 

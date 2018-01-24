@@ -14,7 +14,7 @@
 package orc.run.distrib.porce
 
 import java.io.{ EOFException, FileWriter }
-import java.net.{ InetSocketAddress, SocketException }
+import java.net.{ InetAddress, InetSocketAddress, SocketException }
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
@@ -45,15 +45,20 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
   protected var listenerThread: ListenerThread = null
 
   protected def boundListenAddress = synchronized {
-    listenerThread.getBoundListenAddress
+    listenerThread.boundListenAddress
+  }
+
+  protected def listenFQDN = synchronized {
+    listenerThread.listenFQDN
   }
 
   protected class ListenerThread(listenAddress: InetSocketAddress)
     extends Thread(s"dOrc leader listener on ${listenAddress}") {
 
     protected val listener = new RuntimeConnectionListener[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](listenAddress)
-    protected val boundListenAddress = new InetSocketAddress(listener.serverSocket.getInetAddress, listener.serverSocket.getLocalPort)
-    def getBoundListenAddress = boundListenAddress
+    val boundListenAddress = new InetSocketAddress(listener.serverSocket.getInetAddress, listener.serverSocket.getLocalPort)
+    val listenFQDN =
+      (if (listener.serverSocket.getInetAddress.isAnyLocalAddress) InetAddress.getLocalHost else listener.serverSocket.getInetAddress).getCanonicalHostName
 
     val orderlyShutdown = new AtomicBoolean(false)
 
@@ -61,7 +66,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
       runtimeLocationMap.put(runtimeId, here)
       followersChanged synchronized followersChanged.notifyAll()
 
-      Logger.Connect.info(s"Listening on $boundListenAddress")
+      Logger.Connect.info(s"Listening on $boundListenAddress, which we'll advertise as $listenFQDN:${boundListenAddress.getPort}")
       /* this Thread */ setName(s"dOrc leader listener on $boundListenAddress")
 
       try {
@@ -118,7 +123,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
       case Some(f) =>
         val fw = new FileWriter(f)
         try {
-          fw.write(boundListenAddress.getHostName)
+          fw.write(listenFQDN)
           fw.write(':')
           fw.write(boundListenAddress.getPort.toString)
           fw.write('\n')
@@ -187,11 +192,13 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
           case DOrcConnectionHeader(sid, rid, listenSockAddr) if (rid == runtimeId) => {
             setName(f"dOrc leader receiver for follower $sid%#x @ $listenSockAddr")
             val newFollowerLoc = new FollowerLocation(sid, connection, listenSockAddr)
+
+            connection.send(DOrcConnectionHeader(runtimeId, sid, new InetSocketAddress(listenFQDN, boundListenAddress.getPort)))
+
             val oldMappedValue = runtimeLocationMap.put(sid, newFollowerLoc)
             followersChanged synchronized followersChanged.notifyAll()
             assert(oldMappedValue == None, f"Received DOrcConnectionHeader for follower $sid%#x, but runtimeLocationMap already had ${oldMappedValue.get} for location $sid%#x")
 
-            connection.send(DOrcConnectionHeader(runtimeId, sid, boundListenAddress))
             followerLocations foreach { follower =>
               if (follower.runtimeId != sid) {
                 /* Let new follower know of existing peer */
