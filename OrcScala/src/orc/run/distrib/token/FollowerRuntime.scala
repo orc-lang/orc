@@ -23,7 +23,7 @@ import scala.xml.XML
 
 import orc.{ OrcEvent, OrcExecutionOptions }
 import orc.ast.oil.xml.OrcXML
-import orc.util.{ CmdLineParser, CmdLineUsageException, ExitStatus, MainExit }
+import orc.util.{ CmdLineParser, CmdLineUsageException, ExitStatus, MainExit, PrintVersionAndMessageException }
 
 /** Orc runtime engine running as part of a dOrc cluster.
   *
@@ -344,6 +344,7 @@ object FollowerRuntime extends MainExit {
       new FollowerRuntime(frOptions.runtimeId, frOptions.socket).listen()
     } catch {
       case e: CmdLineUsageException => failureExit(e.getMessage, ExitStatus.Usage)
+      case e: PrintVersionAndMessageException => println(orc.Main.orcImplName + " " + orc.Main.orcVersion + "\n" + orc.Main.orcURL + "\n" + orc.Main.orcCopyright + "\n\n" + e.getMessage)
       case e: java.net.UnknownHostException => failureExit(e.toString, ExitStatus.NoHost)
       case e: java.net.ConnectException => failureExit(e.toString, ExitStatus.Unavailable)
       case e: java.io.IOException => failureExit(e.toString, ExitStatus.IoErr)
