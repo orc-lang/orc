@@ -8,6 +8,7 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 import orc.CaughtEvent;
@@ -21,9 +22,14 @@ import orc.run.porce.runtime.PorcERuntime;
 
 @ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
+@Instrumentable(factory = ExternalDirectDispatchWrapper.class)
 public abstract class ExternalDirectDispatch extends DirectDispatch {
 	protected ExternalDirectDispatch(final PorcEExecution execution) {
 		super(execution);
+	}
+
+	protected ExternalDirectDispatch(final ExternalDirectDispatch orig) {
+		super(orig.execution);
 	}
 
 	@CompilerDirectives.CompilationFinal(dimensions = 1)

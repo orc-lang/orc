@@ -136,19 +136,32 @@ public class Force {
     @NodeChild(value = "c", type = Expression.class)
     @NodeChild(value = "t", type = Expression.class)
     @NodeChild(value = "future", type = Expression.class)
-    @NodeField(name = "execution", type = PorcEExecution.class)
     @ImportStatic({ Force.class })
     @Introspectable
     public static abstract class SingleFuture extends Expression {
         @Child
-        protected Dispatch call = null;
+        protected Dispatch call;
+        
+        private final PorcEExecution execution;
+        
         private final ResettableBranchProfile boundFuture = ResettableBranchProfile.create();
         private final ResettableBranchProfile unboundFuture = ResettableBranchProfile.create();
         private final ConditionProfile orcFuture = ConditionProfile.createBinaryProfile();
         private final ConditionProfile porcEFuture = ConditionProfile.createBinaryProfile();
         private final ConditionProfile nonFuture = ConditionProfile.createBinaryProfile();
         
-
+        protected SingleFuture(final PorcEExecution execution) {
+        	super();
+        	this.execution = execution;
+            call = InternalCPSDispatch.create(true, execution, false);     	
+        }
+        
+        @Override 
+    	public void setTail(boolean v) {
+    		super.setTail(v);
+    		call.setTail(v);
+    	}
+        
         @SuppressWarnings("serial")
         private static final class ValueAvailable extends ControlFlowException {
             public final Object value;
@@ -159,7 +172,7 @@ public class Force {
         }
 
         @Specialization
-        public Object run(final VirtualFrame frame, final PorcEExecution execution, final PorcEClosure p, final Counter c, final Terminator t, final Object future) {
+        public Object run(final VirtualFrame frame, final PorcEClosure p, final Counter c, final Terminator t, final Object future) {
             try {
                 if (nonFuture.profile(isNonFuture(future))) {
                     throw new ValueAvailable(future);
@@ -199,8 +212,6 @@ public class Force {
                     InternalPorcEError.unreachable(this);
                 }
             } catch (final ValueAvailable e) {
-                initializeCall(execution);
-                	
                 if (call instanceof InternalCPSDispatch) {
                 	((InternalCPSDispatch)call).executeDispatchWithEnvironment(frame, p, new Object[] { null, e.value });
                 } else {
@@ -209,24 +220,6 @@ public class Force {
             }
 
             return PorcEUnit.SINGLETON;
-        }
-
-        /**
-         * 
-         * @param execution
-         * @return true if this did transferToInterpreterAndInvalidate.
-         */
-        private boolean initializeCall(final PorcEExecution execution) {
-			if (call == null) {
-				CompilerDirectives.transferToInterpreterAndInvalidate();
-				computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
-					Dispatch n = insert(InternalCPSDispatch.create(true, execution, isTail));
-					n.setTail(isTail);
-					return n;
-				});
-				return true;
-			}
-			return false;
         }
         
         @Override
@@ -241,7 +234,7 @@ public class Force {
         }
 
         public static SingleFuture create(final Expression p, final Expression c, final Expression t, final Expression future, final PorcEExecution execution) {
-            return ForceFactory.SingleFutureNodeGen.create(p, c, t, future, execution);
+            return ForceFactory.SingleFutureNodeGen.create(execution, p, c, t, future);
         }
     }
 }

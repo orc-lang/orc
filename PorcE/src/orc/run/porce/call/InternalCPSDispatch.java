@@ -10,6 +10,7 @@ import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.RootNode;
@@ -26,13 +27,19 @@ import orc.run.porce.runtime.SelfTailCallException;
 import orc.run.porce.runtime.TailCallException;
 
 
-public final class InternalCPSDispatch extends Dispatch {
+@Instrumentable(factory = InternalCPSDispatchWrapper.class)
+public class InternalCPSDispatch extends Dispatch {
 	@Child
 	protected InternalCPSDispatchInternal internal;
 	
 	protected InternalCPSDispatch(final boolean forceInline, final PorcEExecution execution) {
 		super(execution);
 		internal = InternalCPSDispatchInternal.createBare(forceInline, execution);
+	}
+	 
+	protected InternalCPSDispatch(final InternalCPSDispatch orig) {
+		super(orig.internal.execution);
+		internal = InternalCPSDispatchInternal.createBare(orig.internal.forceInline, orig.internal.execution);
 	}
 	 
 	@Override

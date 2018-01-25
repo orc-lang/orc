@@ -9,6 +9,7 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
@@ -28,6 +29,7 @@ import orc.run.porce.RuntimeProfilerWrapper;
 import orc.run.porce.SpecializationConfiguration;
 import static orc.run.porce.SpecializationConfiguration.*;
 
+@Instrumentable(factory = ExternalCPSDispatchWrapper.class)
 public class ExternalCPSDispatch extends Dispatch {
 	@Child
 	protected ExternalCPSDispatchInternal internal;
@@ -35,6 +37,11 @@ public class ExternalCPSDispatch extends Dispatch {
 	protected ExternalCPSDispatch(final PorcEExecution execution) {
 		super(execution);
 		internal = ExternalCPSDispatchInternal.createBare(execution);
+	}
+
+	protected ExternalCPSDispatch(final ExternalCPSDispatch orig) {
+		super(orig.internal.execution);
+		internal = ExternalCPSDispatchInternal.createBare(orig.internal.execution);
 	}
 	 
 	@Override
