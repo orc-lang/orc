@@ -60,25 +60,27 @@ object StopWatches {
   }
   
 
-  ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
-  private val csvOut = ExecutionLogOutputStream(s"worker-times", "csv", "Worker time output file")
-  if (csvOut.isDefined) {
-    val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-    val csvWriter = new CsvWriter(traceCsv.append(_))
-
-    val tableColumnTitles = Seq(
-        "Dump ID [id]",
-        "Worker task selection overhead [workerOverhead]",
-        "Scheduling overhead [schedulingOverhead]",
-        "Actual working time [workTime]",
-        "Number of tasks [nTasks]",
-        )
-    csvWriter.writeHeader(tableColumnTitles)
-
-    DumperRegistry.register { name => 
-      val (a, b, c, d) = getAndResetWorkerTimes()
-      csvWriter.writeRow((name, a, b, c, d))
-      traceCsv.flush()
+  if (SummingStopWatch.enabled) {
+    ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
+    val csvOut = ExecutionLogOutputStream(s"worker-times", "csv", "Worker time output file")
+    if (csvOut.isDefined) {
+      val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
+      val csvWriter = new CsvWriter(traceCsv.append(_))
+  
+      val tableColumnTitles = Seq(
+          "Dump ID [id]",
+          "Worker task selection overhead [workerOverhead]",
+          "Scheduling overhead [schedulingOverhead]",
+          "Actual working time [workTime]",
+          "Number of tasks [nTasks]",
+          )
+      csvWriter.writeHeader(tableColumnTitles)
+  
+      DumperRegistry.register { name => 
+        val (a, b, c, d) = getAndResetWorkerTimes()
+        csvWriter.writeRow((name, a, b, c, d))
+        traceCsv.flush()
+      }
     }
   }
 

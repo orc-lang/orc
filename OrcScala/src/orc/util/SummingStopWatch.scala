@@ -47,17 +47,6 @@ object SummingStopWatch {
     private var sum = new LongAdder()
     private var count = new LongAdder()
   
-    /*
-    @inline
-    def temporaryStop(): Long = start()
-    
-    @inline
-    def temporaryRestart(temporaryStop: Long): Unit = {
-      val end = System.nanoTime()
-      sum.add(start - end)
-    }
-    */
-    
     @inline
     def start(): Long = {
       System.nanoTime()
