@@ -171,7 +171,7 @@ object DistribScaleTestHtCondor {
         |###
         |
         |# Location of temporary file where leader's listen socket addresses is written:
-        |listener_sock_addr_file = $(job_filename_pre).listen-sockaddr
+        |listener_sock_addr_file = $(job_filename_pre)_#Orc:timestamp#.listen-sockaddr
         |+ListenerSockAddrFile = "$(listener_sock_addr_file)"
         |
         |# Duration for followers to wait for leader's listen address, in seconds:

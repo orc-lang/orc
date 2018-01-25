@@ -39,12 +39,28 @@ get_job_attr_at_submit ()
   printf "%s\n" "$trimback"
 }
 
+substitute_orc_keywords ()
+{
+  result="$@"
+  result="${result//#Orc:timestamp#/${job_status_timestamp}}"
+  printf "%s\n" "$result"
+}
+
+get_job_attr_substituted ()
+{
+  result="$(get_job_attr $@)"
+  result="$(substitute_orc_keywords $result)"
+  printf "%s\n" "$result"
+}
+
 main ()
 {
 
   ${CONDOR_CHIRP} ulog "Greetings and felicitations from node ${_CONDOR_PROCNO} of ${_CONDOR_NPROCS}, running $0 on $(uname -n)"
 
-  listen_sockaddr="$(get_job_attr ListenerSockAddrFile)"
+  job_status_timestamp="$(get_job_attr_at_submit EnteredCurrentStatus)"
+
+  listen_sockaddr="$(get_job_attr_substituted ListenerSockAddrFile)"
   max_wait_listeners="$(get_job_attr ListenerWaitTimeout)"
 
   JavaCmd="$(get_job_attr JavaCmd)"
@@ -52,8 +68,8 @@ main ()
   JavaVMArguments="$(get_job_attr JavaVMArguments)"
   JavaMainClassNode0="$(get_job_attr JavaMainClassNode0)"
   JavaMainClassOtherNodes="$(get_job_attr JavaMainClassOtherNodes)"
-  JavaMainArgumentsNode0="$(get_job_attr JavaMainArgumentsNode0)"
-  JavaMainArgumentsOtherNodes="$(get_job_attr JavaMainArgumentsOtherNodes)"
+  JavaMainArgumentsNode0="$(get_job_attr_substituted JavaMainArgumentsNode0)"
+  JavaMainArgumentsOtherNodes="$(get_job_attr_substituted JavaMainArgumentsOtherNodes)"
 
   if [[ ${_CONDOR_PROCNO} -ne 0 ]]; then
 
