@@ -364,8 +364,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
       assert(runtimeLocationRegister(peerRuntimeId) == here, s"addPeer for self, but runtimeLocationMap != here")
     } else {
       if (shouldOpen(peerListenAddress)) {
-        val alreadyInited = initiatedPeers synchronized initiatedPeers.add(peerRuntimeId)
-        if (!alreadyInited) {
+        val haventInitedYet = initiatedPeers synchronized initiatedPeers.add(peerRuntimeId)
+        if (haventInitedYet) {
           Logger.Connect.finest(s"Add peer $peerRuntimeId; Will initiate connection")
           MessageProcessorThread.initiateToPeer(peerRuntimeId, peerListenAddress)
         } else {
