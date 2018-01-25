@@ -181,7 +181,7 @@ object ArthursBenchmarkEnv {
 
     def toOrcArgs: Iterable[String] = Seq()
     
-    def toFilePrefix = orcFile.getName.stripSuffix(".orc") + "_" + productIterator.filterNot(v => v.asInstanceOf[AnyRef] eq orcFile).mkString("_")
+    def toFilePrefix = orcFile.getName.stripSuffix(".orc") + "_orc_" + productIterator.filterNot(v => v.asInstanceOf[AnyRef] eq orcFile).mkString("_")
     
     val orcFile: File
   }
@@ -191,7 +191,7 @@ object ArthursBenchmarkEnv {
           Seq(benchmarkClass.getCanonicalName,
             "--benchmark")
           
-    def toFilePrefix = benchmarkClass.getSimpleName.stripSuffix("$") + "_" + productIterator.filterNot(v => v.asInstanceOf[AnyRef] eq benchmarkClass).mkString("_")
+    def toFilePrefix = benchmarkClass.getSimpleName.stripSuffix("$") + "_scala_" + productIterator.filterNot(v => v.asInstanceOf[AnyRef] eq benchmarkClass).mkString("_")
     
     val benchmarkClass: Class[_]
   }

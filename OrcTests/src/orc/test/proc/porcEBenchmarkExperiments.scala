@@ -23,7 +23,8 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
     override def systemProperties = super.systemProperties ++ Map(
         "graal.TruffleBackgroundCompilation" -> "false",
         "orc.numerics.preferLP" -> "true",
-        "graal.TruffleCompilationThreshold" -> 100,
+        "orc.porce.universalTCO" -> "true",
+        "graal.TruffleCompilationThreshold" -> 800,
         )
         
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3")
@@ -47,9 +48,8 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
       val nCPUsValues = (Seq(4, 8, 16, 24)).reverse 
-      val runNum = 0 until 3
       val porce = for {
-        run <- runNum 
+        run <- 0 until 3 
         nCPUs <- nCPUsValues
         fn <- Seq(
             "test_data/performance/Mandelbrot.orc",
@@ -68,9 +68,9 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
             "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            "test_data/performance/sssp/sssp-batched-partitioned.orc",
+            //"test_data/performance/sssp/sssp-batched-partitioned.orc",
             //"test_data/performance/canneal/canneal-naive.orc",
-            "test_data/performance/canneal/canneal-partitioned.orc",
+            //"test_data/performance/canneal/canneal-partitioned.orc",
             //"test_data/performance/dedup/dedup-boundedchannel.orc",
             //"test_data/performance/dedup/dedup.orc",
             )
@@ -79,7 +79,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs)
       }
       val scala = for {
-        run <- runNum 
+        run <- 0 until 2 
         nCPUs <- 1 +: nCPUsValues
         benchmark <- Seq(
             orc.test.item.scalabenchmarks.Mandelbrot,
@@ -91,8 +91,8 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
             //orc.test.item.scalabenchmarks.BigSortPar,
             orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial, 
             orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption,
-            orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar, 
-            orc.test.item.scalabenchmarks.canneal.Canneal, 
+            //orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar, 
+            //orc.test.item.scalabenchmarks.canneal.Canneal, 
             //orc.test.item.scalabenchmarks.dedup.DedupNestedPar, 
             //orc.test.item.scalabenchmarks.dedup.DedupBoundedQueue, 
             )
