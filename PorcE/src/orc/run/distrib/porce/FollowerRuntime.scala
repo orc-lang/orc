@@ -41,7 +41,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
 
   protected var listener: RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd] = null
   protected var boundListenAddress: InetSocketAddress = null
-  protected var listenFQDN: String = null
+  protected var canonicalListenAddress: InetSocketAddress = null
 
   val orderlyShutdown = new AtomicBoolean(false)
 
@@ -50,17 +50,20 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
 
     listener = new RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd](listenAddress)
     boundListenAddress = new InetSocketAddress(listener.serverSocket.getInetAddress, listener.serverSocket.getLocalPort)
-    listenFQDN = (if (listener.serverSocket.getInetAddress.isAnyLocalAddress) InetAddress.getLocalHost else listener.serverSocket.getInetAddress).getCanonicalHostName
+    canonicalListenAddress = {
+      val hostname = (if (listener.serverSocket.getInetAddress.isAnyLocalAddress) InetAddress.getLocalHost else listener.serverSocket.getInetAddress).getCanonicalHostName
+      new InetSocketAddress(hostname, listener.serverSocket.getLocalPort)
+    }
 
-    Logger.Connect.info(s"Listening on $boundListenAddress, which we'll advertise as $listenFQDN:${boundListenAddress.getPort}")
+    Logger.Connect.info(s"Listening on $boundListenAddress, which we'll advertise as $canonicalListenAddress")
 
     listenSockAddrFile match {
       case Some(f) =>
         val fw = new FileWriter(f)
         try {
-          fw.write(listenFQDN)
+          fw.write(canonicalListenAddress.getHostName)
           fw.write(':')
-          fw.write(boundListenAddress.getPort.toString)
+          fw.write(canonicalListenAddress.getPort.toString)
           fw.write('\n')
         } finally {
           fw.close()
@@ -188,7 +191,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
     protected def sendConnectionHeaderAfterPeer(connection: RuntimeConnection[R, S], peerRuntimeId: DOrcRuntime#RuntimeId): Unit
 
     protected def sendConnectionHeader(connection: RuntimeConnection[R, S], peerRuntimeId: DOrcRuntime#RuntimeId) = {
-      connection.send(DOrcConnectionHeader(runtimeId, peerRuntimeId, new InetSocketAddress(listenFQDN, boundListenAddress.getPort)).asInstanceOf[S])
+      connection.send(DOrcConnectionHeader(runtimeId, peerRuntimeId, canonicalListenAddress).asInstanceOf[S])
     }
 
   }
@@ -377,9 +380,9 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
 
   protected def shouldOpen(peerListenAddress: InetSocketAddress): Boolean = {
     /* Convention: Peer with "lower" address initiates connection */
-    val bla = (boundListenAddress.getAddress.getAddress map { _.toInt }) :+ boundListenAddress.getPort
+    val cla = (canonicalListenAddress.getAddress.getAddress map { _.toInt }) :+ canonicalListenAddress.getPort
     val pla = (peerListenAddress.getAddress.getAddress map { _.toInt }) :+ peerListenAddress.getPort
-    scala.math.Ordering.Iterable[Int].lt(bla, pla)
+    scala.math.Ordering.Iterable[Int].lt(cla, pla)
   }
 
   def removePeer(peerRuntimeId: DOrcRuntime#RuntimeId): Unit = {

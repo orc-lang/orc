@@ -46,8 +46,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     listenerThread.boundListenAddress
   }
 
-  protected def listenFQDN = synchronized {
-    listenerThread.listenFQDN
+  protected def canonicalListenAddress = synchronized {
+    listenerThread.canonicalListenAddress
   }
 
   protected class ListenerThread(listenAddress: InetSocketAddress)
@@ -55,15 +55,17 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
     protected val listener = new RuntimeConnectionListener[OrcFollowerToLeaderCmd, OrcLeaderToFollowerCmd](listenAddress)
     val boundListenAddress = new InetSocketAddress(listener.serverSocket.getInetAddress, listener.serverSocket.getLocalPort)
-    val listenFQDN =
-      (if (listener.serverSocket.getInetAddress.isAnyLocalAddress) InetAddress.getLocalHost else listener.serverSocket.getInetAddress).getCanonicalHostName
+    val canonicalListenAddress = {
+      val hostname = (if (listener.serverSocket.getInetAddress.isAnyLocalAddress) InetAddress.getLocalHost else listener.serverSocket.getInetAddress).getCanonicalHostName
+      new InetSocketAddress(hostname, listener.serverSocket.getLocalPort)
+    }
 
     val orderlyShutdown = new AtomicBoolean(false)
 
     override def run(): Unit = {
       runtimeLocationRegister.put(runtimeId, here)
 
-      Logger.Connect.info(s"Listening on $boundListenAddress, which we'll advertise as $listenFQDN:${boundListenAddress.getPort}")
+      Logger.Connect.info(s"Listening on $boundListenAddress, which we'll advertise as $canonicalListenAddress")
       /* this Thread */ setName(s"dOrc leader listener on $boundListenAddress")
 
       try {
@@ -119,9 +121,9 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
       case Some(f) =>
         val fw = new FileWriter(f)
         try {
-          fw.write(listenFQDN)
+          fw.write(canonicalListenAddress.getHostName)
           fw.write(':')
-          fw.write(boundListenAddress.getPort.toString)
+          fw.write(canonicalListenAddress.getPort.toString)
           fw.write('\n')
         } finally {
           fw.close()
@@ -189,7 +191,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
             setName(f"dOrc leader receiver for follower $sid%#x @ $listenSockAddr")
             val newFollowerLoc = new FollowerLocation(sid, connection, listenSockAddr)
 
-            connection.send(DOrcConnectionHeader(runtimeId, sid, new InetSocketAddress(listenFQDN, boundListenAddress.getPort)))
+            connection.send(DOrcConnectionHeader(runtimeId, sid, canonicalListenAddress))
 
             val oldMappedValue = runtimeLocationRegister.put(sid, newFollowerLoc)
             assert(oldMappedValue == None, f"Received DOrcConnectionHeader for follower $sid%#x, but runtimeLocationMap already had ${oldMappedValue.get} for location $sid%#x")
