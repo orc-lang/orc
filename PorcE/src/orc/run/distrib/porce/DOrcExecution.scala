@@ -82,8 +82,8 @@ abstract class DOrcExecution(
   }
 
   def permittedLocations(v: Any): Set[PeerLocation] = {
-  	def pfp(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
-  	  { case vl if vl.permittedLocations.isDefinedAt(v) => vl.permittedLocations(v) }
+    def pfp(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
+      { case vl if vl.permittedLocations.isDefinedAt(v) => vl.permittedLocations(v) }
     val pl = v match {
       case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))

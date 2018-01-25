@@ -30,20 +30,23 @@ import orc.util.{ CmdLineParser, CmdLineUsageException, ExitStatus, MainExit, Pr
   */
 class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runtimeId, s"dOrc follower $runtimeId") {
 
+  override val here = Here
+  override val hereSet = Set(here)
+
+  protected val runtimeLocationRegister = new LocationMap[PeerLocation](here)
+
+  override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationRegister(runtimeId)
+
+  override def allLocations: Set[PeerLocation] = runtimeLocationRegister.locationSnapshot
+
   protected var listener: RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd] = null
   protected var boundListenAddress: InetSocketAddress = null
   protected var listenFQDN: String = null
 
-  protected val runtimeLocationMap = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcRuntime#RuntimeId, PeerLocation]())
-
-  override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
-
-  override def allLocations: Set[PeerLocation] = runtimeLocationMap.values.toSet
-
   val orderlyShutdown = new AtomicBoolean(false)
 
   def listenAndContactLeader(listenAddress: InetSocketAddress, leaderAddress: InetSocketAddress, listenSockAddrFile: Option[File]): Unit = {
-    runtimeLocationMap.put(runtimeId, here)
+    runtimeLocationRegister.put(runtimeId, here)
 
     listener = new RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd](listenAddress)
     boundListenAddress = new InetSocketAddress(listener.serverSocket.getInetAddress, listener.serverSocket.getLocalPort)
@@ -80,13 +83,13 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
       case se: SocketException if se.getMessage == "Connection reset" => /* Ignore */
     } finally {
       if (!orderlyShutdown.get()) {
-        runtimeLocationMap.valuesIterator.foreach {
-          _ match {
+        runtimeLocationRegister.locationSnapshot foreach { location =>
+          location match {
             case a: ClosableConnection => a.abort()
             case _ => /* Ignore */
           }
+          runtimeLocationRegister.remove(location.runtimeId)
         }
-        runtimeLocationMap.clear()
         listener.close()
       }
       listener = null
@@ -174,7 +177,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
     /** Add newPeerLoc to runtimeLocationMap if absent. Ignore new value if in map, but identical.  Throw is inconsistent new value. */
     protected def addPeerToLocationMap(newPeerLoc: PeerLocation, newPeerListenAddress: InetSocketAddress): PeerLocation = {
       /* We can have redundant adds of non-leader peers, but the leader can only be added once. */
-      runtimeLocationMap.putIfAbsent(newPeerLoc.runtimeId, newPeerLoc) match {
+      runtimeLocationRegister.putIfAbsent(newPeerLoc.runtimeId, newPeerLoc) match {
         case Some(pl: PeerLocationImpl) if (pl.connection.socket.getRemoteSocketAddress == newPeerListenAddress) => pl /* We already know this peer */
         case Some(pl) => throw new AssertionError(s"Received DOrcConnectionHeader for peer $newPeerLoc, but runtimeLocationMap already had $pl")
         case None => newPeerLoc /* New peer */
@@ -260,10 +263,10 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
       if (!programs.isEmpty) Logger.ProgLoad.warning(s"Shutting down with ${programs.size} programs still loaded: ${programs.keys.mkString(",")}")
       programs.clear()
       stopScheduler()
-      runtimeLocationMap.remove(0)
+      runtimeLocationRegister.remove(0)
       FollowerRuntime.this.stop()
     }
-    Logger.Connect.finer(s"runtimeLocationMap.size = ${runtimeLocationMap.size}; runtimeLocationMap = $runtimeLocationMap")
+    Logger.Connect.finer(s"runtimeLocationMap.size = ${runtimeLocationRegister.size}; runtimeLocationMap = $runtimeLocationRegister")
     Logger.Connect.exiting(getClass.getName, "followLeader")
   }
 
@@ -294,7 +297,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
         }
       }
     } finally {
-      runtimeLocationMap.remove(peerLocation.runtimeId)
+      runtimeLocationRegister.remove(peerLocation.runtimeId)
     }
   }
 
@@ -355,7 +358,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
     if (peerListenAddress == boundListenAddress || peerRuntimeId == runtimeId) {
       /* Hey, that's me! */
       assert(peerRuntimeId == runtimeId, s"addPeer for self, but runtimeId was $peerRuntimeId instead of $runtimeId")
-      assert(runtimeLocationMap(peerRuntimeId) == here, s"addPeer for self, but runtimeLocationMap != here")
+      assert(runtimeLocationRegister(peerRuntimeId) == here, s"addPeer for self, but runtimeLocationMap != here")
     } else {
       if (shouldOpen(peerListenAddress)) {
         val alreadyInited = initiatedPeers synchronized initiatedPeers.add(peerRuntimeId)
@@ -387,7 +390,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
       orderlyShutdown.set(true)
       listener.close()
     } else {
-      runtimeLocationMap.remove(peerRuntimeId) match {
+      runtimeLocationRegister.remove(peerRuntimeId) match {
         case Some(removedLocation: LeaderLocation) => /* leave leader connection open */
         case Some(removedLocation: ClosableConnection) => removedLocation.abort()
         case _ => /* Nothing to do */
@@ -435,9 +438,6 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
       super.stop()
     }
   }
-
-  override val here = Here
-  override val hereSet = Set(here)
 
   object Here extends PeerLocation {
     override def toString: String = s"${getClass.getName}(runtimeId=$runtimeId)"

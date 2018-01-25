@@ -55,3 +55,60 @@ abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceN
   override def runtimeDebugThreadId: Int = runtimeId << 24 | Thread.currentThread().getId.asInstanceOf[Int]
 
 }
+
+/** A RuntimeId to Location map.  Needed instead of 
+  * scala.collection.concurrent.Map to provide bulk operation semantics with
+  * concurrent updates. This just implements the few operations we need
+  * here.  Also notifies waiters upon any changes. */
+class LocationMap[L](here: L) {
+  protected val theMap = scala.collection.mutable.Map[DOrcRuntime#RuntimeId, L]()
+  protected var cachedLocationSnapshot: Option[scala.collection.immutable.Set[L]] = None
+  protected var cachedOtherLocationsSnapshot: Option[scala.collection.immutable.Set[L]] = None
+
+  def size: Int = synchronized { theMap.size }
+
+  def apply(id: DOrcRuntime#RuntimeId): L = synchronized { theMap(id) }
+
+  def put(id: DOrcRuntime#RuntimeId, loc: L): Option[L] = synchronized {
+    val r = theMap.put(id, loc)
+    invalidateCaches()
+    notifyAll()
+    r
+  }
+
+  def putIfAbsent(id: DOrcRuntime#RuntimeId, loc: L): Option[L] = synchronized {
+    val existingLoc = theMap.get(id)
+    if (existingLoc.isEmpty) {
+      theMap.put(id, loc)
+      invalidateCaches()
+      notifyAll()
+    }
+    existingLoc
+  }
+
+  def remove(id: DOrcRuntime#RuntimeId): Option[L] = synchronized {
+    val r = theMap.remove(id)
+    invalidateCaches()
+    notifyAll()
+    r
+  }
+
+  def locationSnapshot: scala.collection.immutable.Set[L] = synchronized {
+    if (cachedLocationSnapshot.isEmpty) {
+      cachedLocationSnapshot = Some(theMap.values.toSet)
+    }
+    cachedLocationSnapshot.get
+  }
+
+  def otherLocationsSnapshot: scala.collection.immutable.Set[L] = synchronized {
+    if (cachedOtherLocationsSnapshot.isEmpty) {
+      cachedOtherLocationsSnapshot = Some(theMap.values.filterNot({ _ == here }).toSet)
+    }
+    cachedOtherLocationsSnapshot.get
+  }
+
+  protected def invalidateCaches(): Unit = {
+    cachedLocationSnapshot = None
+    cachedOtherLocationsSnapshot = None
+  }
+}

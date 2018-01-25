@@ -31,16 +31,14 @@ import orc.util.LatchingSignal
   */
 class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
-  protected val runtimeLocationMap: scala.collection.mutable.Map[Int, FollowerLocation] =
-    mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcRuntime#RuntimeId, FollowerLocation]())
+  override val here = Here
+  override val hereSet = Set(here)
 
-  protected val followersChanged = new Object()
+  protected val runtimeLocationRegister = new LocationMap[FollowerLocation](here)
 
-  protected def followerLocations: Iterable[FollowerLocation] = runtimeLocationMap.values.filterNot({ _ == here })
+  override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationRegister(runtimeId)
 
-  override def locationForRuntimeId(runtimeId: DOrcRuntime#RuntimeId): PeerLocation = runtimeLocationMap(runtimeId)
-
-  override def allLocations: Set[PeerLocation] = runtimeLocationMap.values.toSet
+  override def allLocations: Set[PeerLocation] = runtimeLocationRegister.locationSnapshot.asInstanceOf[Set[PeerLocation]]
 
   protected var listenerThread: ListenerThread = null
 
@@ -63,8 +61,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     val orderlyShutdown = new AtomicBoolean(false)
 
     override def run(): Unit = {
-      runtimeLocationMap.put(runtimeId, here)
-      followersChanged synchronized followersChanged.notifyAll()
+      runtimeLocationRegister.put(runtimeId, here)
 
       Logger.Connect.info(s"Listening on $boundListenAddress, which we'll advertise as $listenFQDN:${boundListenAddress.getPort}")
       /* this Thread */ setName(s"dOrc leader listener on $boundListenAddress")
@@ -81,14 +78,13 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
         case se: SocketException if se.getMessage == "Connection reset" => /* Ignore */
       } finally {
         if (!orderlyShutdown.get) {
-          runtimeLocationMap.valuesIterator.foreach {
-            _ match {
+          runtimeLocationRegister.locationSnapshot foreach { follower =>
+            follower match {
               case a: ClosableConnection => a.abort()
               case _ => /* Ignore */
             }
+            runtimeLocationRegister.remove(follower.runtimeId)
           }
-          runtimeLocationMap.clear()
-          followersChanged synchronized followersChanged.notifyAll()
           listener.close()
         }
         Logger.Connect.info(s"Closed $boundListenAddress")
@@ -104,8 +100,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
   def awaitFollowers(count: Int): Unit = {
     /* runtimeLocationMap.size includes leader */
-    while (runtimeLocationMap.size <= count) {
-      followersChanged synchronized followersChanged.wait()
+    while (runtimeLocationRegister.size <= count) {
+      runtimeLocationRegister synchronized runtimeLocationRegister.wait()
     }
   }
 
@@ -146,7 +142,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
     val rootCounterId = leaderExecution.getDistributedCounterForCounter(leaderExecution.c).id
 
-    followerLocations foreach { follower =>
+    runtimeLocationRegister.otherLocationsSnapshot foreach { follower =>
       leaderExecution.followerStarting(follower.runtimeId)
       schedule(new Schedulable {
         def run(): Unit = {
@@ -174,7 +170,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
         Logger.info(s"Stop run $executionId")
 
-        followerLocations foreach { _.send(UnloadProgramCmd(executionId)) }
+        runtimeLocationRegister.otherLocationsSnapshot foreach { _.send(UnloadProgramCmd(executionId)) }
         programs.remove(executionId)
         if (programs.isEmpty) stop()
       }
@@ -195,11 +191,10 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
             connection.send(DOrcConnectionHeader(runtimeId, sid, new InetSocketAddress(listenFQDN, boundListenAddress.getPort)))
 
-            val oldMappedValue = runtimeLocationMap.put(sid, newFollowerLoc)
-            followersChanged synchronized followersChanged.notifyAll()
+            val oldMappedValue = runtimeLocationRegister.put(sid, newFollowerLoc)
             assert(oldMappedValue == None, f"Received DOrcConnectionHeader for follower $sid%#x, but runtimeLocationMap already had ${oldMappedValue.get} for location $sid%#x")
 
-            followerLocations foreach { follower =>
+            runtimeLocationRegister.otherLocationsSnapshot foreach { follower =>
               if (follower.runtimeId != sid) {
                 /* Let new follower know of existing peer */
                 connection.send(AddPeerCmd(follower.runtimeId, follower.listenAddress))
@@ -270,9 +265,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
         case NonFatal(e) => Logger.Connect.finer(s"Ignoring $e") /* Ignore close failures at this point */
       }
       Logger.Connect.fine(s"Stopped reading events from ${followerLocation.connection.socket}")
-      runtimeLocationMap.remove(followerLocation.runtimeId)
-      followersChanged synchronized followersChanged.notifyAll()
-      followerLocations foreach { follower =>
+      runtimeLocationRegister.remove(followerLocation.runtimeId)
+      runtimeLocationRegister.otherLocationsSnapshot foreach { follower =>
         try {
           follower.send(RemovePeerCmd(followerLocation.runtimeId))
         } catch {
@@ -294,7 +288,7 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
     val doneSignal = new LatchingSignal()
     def syncAction(event: OrcEvent): Unit = {
       event match {
-        case FollowerConnectionClosedEvent(_) => { if (followerLocations.isEmpty) doneSignal.signal() }
+        case FollowerConnectionClosedEvent(_) => { if (runtimeLocationRegister.otherLocationsSnapshot.isEmpty) doneSignal.signal() }
         case _ => {}
       }
       eventHandler(event)
@@ -327,8 +321,10 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
     if (doShutdown) {
 
-      followerLocations foreach { subjectFollower =>
-        followerLocations foreach { recipientFollower =>
+      val followers = runtimeLocationRegister.otherLocationsSnapshot
+
+      followers foreach { subjectFollower =>
+        followers foreach { recipientFollower =>
           try {
             recipientFollower.send(RemovePeerCmd(subjectFollower.runtimeId))
           } catch {
@@ -337,9 +333,8 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
         }
       }
 
-      followerLocations foreach { follower =>
-        runtimeLocationMap.remove(follower.runtimeId)
-        followersChanged synchronized followersChanged.notifyAll()
+      followers foreach { follower =>
+        runtimeLocationRegister.remove(follower.runtimeId)
         try {
           follower.connection.socket.shutdownOutput()
         } catch {
@@ -351,9 +346,6 @@ class LeaderRuntime() extends DOrcRuntime(0, "dOrc leader") {
 
     super.stop()
   }
-
-  override val here = Here
-  override val hereSet = Set(here)
 
   object Here extends FollowerLocation(0, null, null) {
     override def send(message: OrcLeaderToFollowerCmd): Unit = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
