@@ -22,7 +22,7 @@ import sun.misc.Unsafe;
  * @author amp
  */
 @sun.misc.Contended
-public final class ABPWSDeque<T> {
+public final class ABPWSDeque<T> implements SchedulingQueue<T> {
   private static final Object ABORT = null;
 
   // age contains a 16-bit top field followed by a 48-bit tag.
@@ -73,7 +73,8 @@ public final class ABPWSDeque<T> {
   /**
    * 
    */
-  public boolean pushBottom(T v) {
+  @Override
+  public boolean push(T v) {
     int localBot = bot;
 
     // Check for deque overflow.
@@ -89,8 +90,9 @@ public final class ABPWSDeque<T> {
   /**
    * 
    */
+  @Override
   @SuppressWarnings("unchecked")
-  public T popBottom() {
+  public T pop() {
     int localBot = bot;
     if (localBot == 0)
       return null;
@@ -104,6 +106,7 @@ public final class ABPWSDeque<T> {
 
     // If we didn't get the last element return without CAS
     if (localBot > oldTop) {
+      deq[localBot] = null;
       return (T) v;
     }
 
@@ -112,6 +115,7 @@ public final class ABPWSDeque<T> {
     bot = 0;
     long newAge = makeAge(0, oldTag + 1);
     if (localBot == oldTop && casAge(oldAge, newAge)) {
+      deq[localBot] = null;
       return (T) v;
     }
 
@@ -123,8 +127,9 @@ public final class ABPWSDeque<T> {
   /**
    * 
    */
+  @Override
   @SuppressWarnings("unchecked")
-  public T popTop() {
+  public T steal() {
     long oldAge = age;
     int localBot = bot;
     int oldTop = getTop(oldAge);
@@ -145,6 +150,7 @@ public final class ABPWSDeque<T> {
    * from the owner thread and the number may decrease (but not increase) at any
    * time due to calls to popTop().
    */
+  @Override
   public int size() {
     long oldAge = age;
     int localBot = bot;
@@ -156,9 +162,10 @@ public final class ABPWSDeque<T> {
    * Clear all locations to null in an empty deque. This may only be called on
    * an empty deque and may only be called form the owner thread.
    */
-  public void wipe() {
+  @Override
+  public void clean() {
     if (size() > 0) {
-      throw new IllegalStateException("ABPWSDeque must be empty to be wiped");
+      throw new IllegalStateException("ABPWSDeque must be empty to be cleaned");
     }
 
     Arrays.fill(deq, null);

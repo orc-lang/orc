@@ -25,7 +25,9 @@ import java.lang.management.ManagementFactory
 import java.util.Collections
 import java.util.WeakHashMap
 import orc.util.DumperRegistry
+import orc.util.SchedulingQueue
 import orc.run.StopWatches
+import orc.Schedulable
 
 /** @param monitorInterval The interval at which the monitor thread runs and checks that the thread pool is the correct size.
   * @param goalExtraThreads The ideal number of extra idle threads that the pool should contain.
@@ -195,7 +197,7 @@ class SimpleWorkStealingScheduler(
 
   @sun.misc.Contended
   final class Worker(var workerID: Int) extends Thread(s"Worker $workerID") {
-    private[SimpleWorkStealingScheduler] val workQueue = new ABPWSDeque[Schedulable](workerQueueLength)
+    private[SimpleWorkStealingScheduler] val workQueue: SchedulingQueue[Schedulable] = new ABPWSDeque(workerQueueLength)
 
     //@volatile
     var isPotentiallyBlocked = false
@@ -266,17 +268,17 @@ class SimpleWorkStealingScheduler(
 
     //@inline
     def scheduleLocal(t: Schedulable): Unit = {
-      val r = workQueue.pushBottom(t)
+      val r = workQueue.push(t)
       //println(s"$workerID: Scheduled $r")
       if (!r) {
         // The push failed and our queue has overflowed.
         overflows += 1
         // To handle this empty the workQueue into the global workQueue
-        var v: Schedulable = workQueue.popBottom()
+        var v: Schedulable = workQueue.steal()
         var i = 1
         while (v != null && i < itemsToEvictOnOverflow) {
           inputQueue.add(v)
-          v = workQueue.popBottom()
+          v = workQueue.steal()
           i += 1
         }
         if (v != null)
@@ -317,7 +319,7 @@ class SimpleWorkStealingScheduler(
       @inline
       def ourWork(t: Schedulable): Schedulable = {
         if (t == null) {
-          workQueue.popBottom()
+          workQueue.pop()
         } else {
           t
         }
@@ -359,7 +361,7 @@ class SimpleWorkStealingScheduler(
           // Overwrite is not needed
           // if the thread is active since it will be constantly
           // overwriting previous tasks as the queue is used.
-          workQueue.wipe()
+          workQueue.clean()
         } else if (stealFailureRunLength > stealAttemptsBeforeBlocking) {
           val waitingStart = StopWatches.workerWaitingTime.start()
           try {
@@ -392,7 +394,7 @@ class SimpleWorkStealingScheduler(
         val index = (getLocalRandomNumber() % nWorkers).abs
         val w = workers(index)
         if (w != null) {
-          t = w.workQueue.popTop()
+          t = w.workQueue.steal()
         }
       }
       t
@@ -444,7 +446,7 @@ class SimpleWorkStealingScheduler(
     val overflows = ws.map(_.overflows).sum
     statLine(s"overflows = ${overflows}")
     val (avgQueueSize, maxQueueSize, minQueueSize) = {
-      val queueSizes = ws.map(_.workQueue.size())
+      val queueSizes = ws.map(_.workQueue.size)
       (queueSizes.sum / queueSizes.size, queueSizes.max, queueSizes.min)
     }
     statLine(s"(avgQueueSize, maxQueueSize, minQueueSize) = ${(avgQueueSize, maxQueueSize, minQueueSize)}")
