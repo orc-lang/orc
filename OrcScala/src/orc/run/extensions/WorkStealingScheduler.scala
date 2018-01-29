@@ -224,25 +224,23 @@ class SimpleWorkStealingScheduler(
           isInternallyBlocked = false
           beforeExecute(this, t)
           try {
-            {
-              SimpleWorkStealingScheduler.enterSchedulable(t, SimpleWorkStealingScheduler.SchedulerExecution)
-              if (t.nonblocking) {
-                val workStart = StopWatches.workerWorkingTime.start()
+            SimpleWorkStealingScheduler.enterSchedulable(t, SimpleWorkStealingScheduler.SchedulerExecution)
+            if (t.nonblocking) {
+              val workStart = StopWatches.workerWorkingTime.start()
+              t.run()
+              StopWatches.workerWorkingTime.stop(workStart)
+            } else {
+              // PERFORMANCE: Manually inlined from potentiallyBlocking.
+              val workStart = StopWatches.workerWorkingTime.start()
+              isPotentiallyBlocked = true
+              try {
                 t.run()
+              } finally {
+                isPotentiallyBlocked = false
                 StopWatches.workerWorkingTime.stop(workStart)
-              } else {
-                // PERFORMANCE: Manually inlined from potentiallyBlocking.
-                val workStart = StopWatches.workerWorkingTime.start()
-                isPotentiallyBlocked = true
-                try {
-                  t.run()
-                } finally {
-                  isPotentiallyBlocked = false
-                  StopWatches.workerWorkingTime.stop(workStart)
-                }
               }
-              SimpleWorkStealingScheduler.exitSchedulable(t)
             }
+            SimpleWorkStealingScheduler.exitSchedulable(t)
 
             afterExecute(this, t, null)
           } catch {
@@ -274,11 +272,11 @@ class SimpleWorkStealingScheduler(
         // The push failed and our queue has overflowed.
         overflows += 1
         // To handle this empty the workQueue into the global workQueue
-        var v: Schedulable = workQueue.steal()
+        var v: Schedulable = workQueue.pop()
         var i = 1
         while (v != null && i < itemsToEvictOnOverflow) {
           inputQueue.add(v)
-          v = workQueue.steal()
+          v = workQueue.pop()
           i += 1
         }
         if (v != null)
