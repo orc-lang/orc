@@ -27,7 +27,7 @@ import java.io.OutputStreamWriter
   */
 object EventCounter {
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
-  final val counterOn = true
+  final val counterOn = false
 
   private final val eventCountsTL = if (counterOn) new ThreadLocal[EventCounts]() {
     override protected def initialValue = new EventCounts(Thread.currentThread().getId)
