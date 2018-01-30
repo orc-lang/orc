@@ -87,7 +87,7 @@ class DistribTestCase(
 
       if (followerSpec.isLocal) {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
-        val command = Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", s"-Dorc.executionlog.filesuffix=_$followerNumber", DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(followerNumber.toString, followerSpec.hostname + ":" + followerSpec.port)
+        val command = Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", s"-Dorc.executionlog.filesuffix=_$followerNumber", DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(s"--listen=${followerSpec.hostname}:${followerSpec.port}", followerNumber.toString, leaderSpec.hostname + ":" + leaderSpec.port)
         OsCommand.runNoWait(command, directory = new File(followerWorkingDir), stdout = new File(followerOutFile), stderr = new File(followerErrFile))
       } else {
         println(s"Launching follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
