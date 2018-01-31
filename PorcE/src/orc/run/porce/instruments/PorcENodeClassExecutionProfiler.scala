@@ -76,7 +76,6 @@ object PorcENodeClassExecutionProfiler {
       case _: orc.run.porce.Read.Local => false
       case _: orc.run.porce.Read.Closure => false
       case _: orc.run.porce.Write.Local => false
-      case _: orc.run.porce.NewFuture => false
       case _ =>
         true
     }
