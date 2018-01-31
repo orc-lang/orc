@@ -59,17 +59,20 @@ class Rtime(startTime: Long) extends TotalSite0 with FunctionalSite {
 object Rwait extends Site1 with EffectFreeSite {
 
   def call(a: AnyRef, callContext: CallContext) {
-    a match {
-      case delay: BigInt => {
-        if (delay > 0) {
-          callContext.setQuiescent()
-          callContext.notifyOrc(RwaitEvent(delay, callContext))
-        } else if (delay == 0) {
-          callContext.publish(Signal)
-        } else {
-          callContext.halt
-        }
+    def doit(delay: BigInt) = {
+      if (delay > 0) {
+        callContext.setQuiescent()
+        callContext.notifyOrc(RwaitEvent(delay, callContext))
+      } else if (delay == 0) {
+        callContext.publish(Signal)
+      } else {
+        callContext.halt
       }
+    }
+    a match {
+      case delay: BigInt => doit(delay)
+      case delay: java.lang.Long => doit(BigInt(delay))
+      case delay: java.lang.Number => doit(BigInt(delay.longValue()))
       case _ => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")
     }
   }

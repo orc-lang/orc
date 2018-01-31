@@ -509,6 +509,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
       value match {
         case Signal => SignalType
         case _: java.lang.Boolean => BooleanType
+        // TODO: Will need to be updated for typing to work in LP (limited precision -- long/double -- mode)
         case i: BigInt => IntegerConstantType(i)
         case _: BigDecimal => NumberType
         case _: String => StringType

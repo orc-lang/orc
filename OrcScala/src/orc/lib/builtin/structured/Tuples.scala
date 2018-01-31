@@ -69,6 +69,7 @@ object TupleArityChecker extends OverloadedDirectInvokerMethod2[OrcTuple, Number
 
   override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = args match {
     case List(_, Some(arity: BigInt)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toArray))
+    case List(_, Some(arity: java.lang.Long)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toArray))
     case _ => None
   }
 
