@@ -4,6 +4,7 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
@@ -152,9 +153,9 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
     }
     */
 	
-	@Specialization(guards = { "matchesSpecific(target, expected)" }, limit = "InternalCallMaxCacheSize")
+	@Specialization(guards = { "target.body == expected" }, limit = "InternalCallMaxCacheSize")
     public void specific(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
-    		@Cached("target") PorcEClosure expected, @Cached("create(expected.body)") DirectCallNode call) {
+    		@Cached("target.body") RootCallTarget expected, @Cached("create(expected)") DirectCallNode call) {
 		CompilerDirectives.interpreterOnly(() -> {
 			if (forceInline)
 				call.forceInlining();
@@ -175,10 +176,6 @@ abstract class InternalCPSDispatchInternal extends DispatchBase {
 	
 	
 	/* Utilties */
-
-	protected static boolean matchesSpecific(PorcEClosure target, PorcEClosure expected) {
-		return expected.body == target.body;
-	}
 	
 	protected static Expression getPorcEBody(PorcEClosure target) {
 		RootNode r = target.body.getRootNode();

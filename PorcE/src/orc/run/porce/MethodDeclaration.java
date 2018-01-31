@@ -58,13 +58,15 @@ public class MethodDeclaration {
 		@Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
 		@ExplodeLoop
 		public Object cached(final VirtualFrame frame) throws StopCachingException {
-			CompilerAsserts.compilationConstant(capturedExprs.length);
-			int len = capturedExprs.length + nMethods;
+			final int len = capturedExprs.length + nMethods;
+			CompilerAsserts.compilationConstant(len);
 
+			/*
 			if (!isCachable()) {
 				CompilerAsserts.neverPartOfCompilation("Cache invalidation should not be in compiled code.");
 				throw new StopCachingException();
 			}
+			*/
 
 			MethodClosure closure = closureCache;
 
@@ -74,7 +76,9 @@ public class MethodDeclaration {
 				for (int i = 0; i < capturedExprs.length; i++) { // Contains break
 					if (closure.environment[i] != capturedExprs[i].execute(frame)) {
 						closure = null;
-						break;
+						// If we had a cached closure and invalidated it, don't cache again.
+						closureCache = null;
+						throw new StopCachingException();
 					}
 				}
 			}
@@ -88,32 +92,25 @@ public class MethodDeclaration {
 				}
 				closure = new MethodClosure(capturedValues);
 
-				closureCacheChangeCount++;
 				closureCache = closure;
 
+				/*
 				if (CompilerDirectives.inInterpreter())
 					closureCacheChangeCount++;
+					*/
 			}
 
+			/*
 			if (CompilerDirectives.inInterpreter()) {
 				closureCacheUseCount++;
 				long useCount = closureCacheUseCount;
-
-				/*
-				long changeCount = closureCacheChangeCount;
-				long reuseCount = useCount - changeCount;
-
-				if ((useCount % 100) == 0) {
-					Logger.info(() -> this + ": Allocating closure (" + (((float) reuseCount) / useCount) + " | "
-							+ changeCount + "/" + useCount + ") with " + len + " captured variables");
-				}
-				*/
 
 				if (useCount > 5000) {
 					closureCacheUseCount = 0;
 					closureCacheChangeCount = 0;
 				}
 			}
+			 */
 
 			return closure;
 		}

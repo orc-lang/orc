@@ -89,6 +89,7 @@ object JavaCall {
 
     @throws[NoSuchMethodException]
     def getMemberInvokerTypeDirected(methodName: String, argClss: Array[Class[_]]): Invoker = {
+      val cls = this.cls
       val invocable = selectMethod(cls, methodName, argClss)
       new InvocableInvoker(invocable, cls, argClss) {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
@@ -100,6 +101,7 @@ object JavaCall {
 
     @throws[NoSuchMethodException]
     def getMemberInvokerValueDirected(methodName: String, argClss: Array[Class[_]]): Invoker = {
+      val cls = this.cls
       val invocable = selectMethod(cls, methodName, argClss)
       new InvocableInvoker(invocable, cls, argClss) {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
@@ -110,6 +112,7 @@ object JavaCall {
     }
 
     def getMemberAccessor(memberName: String): Accessor = {
+      val cls = this.cls
       val javaField = cls.getFieldOption(memberName)
       new Accessor {
         def canGet(target: AnyRef): Boolean = {
@@ -123,6 +126,7 @@ object JavaCall {
     }
     
     def getStaticMemberAccessor(memberName: String): Accessor = {
+      val cls = this.cls
       val javaField = cls.getFieldOption(memberName)
       new Accessor {
         def canGet(target: AnyRef): Boolean = {
@@ -318,6 +322,8 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
     import JavaCall._
     import orc.InvocationBehaviorUtilities._
     try {
+      val memberName = this.memberName
+      val javaClass = this.javaClass
       val argClss = args.map(valueType)
       val invocable = selectMethod(javaClass, memberName, argClss)
       new InvocableInvoker(invocable, javaClass, argClss) {
@@ -361,10 +367,12 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
         }
       }
     } else if (javaField.isEmpty) {
+      val memberName = this.memberName
+      val javaClass = this.javaClass
       new ErrorAccessor {
         @throws[NoSuchMemberException]
         def get(target: AnyRef): AnyRef = {
-          throw new NoSuchMemberException(theObject, memberName)
+          throw new NoSuchMemberException(javaClass, memberName)
         }
       
         def canGet(target: AnyRef): Boolean = {
@@ -378,6 +386,8 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
       }
     } else {
       val jf = javaField.get
+      val memberName = this.memberName
+      val javaClass = this.javaClass
       new Accessor {
         def canGet(target: AnyRef): Boolean = {
           target match {
@@ -387,7 +397,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
         }
         def get(target: AnyRef): AnyRef = {
           val value = jf.get(target.asInstanceOf[JavaMemberProxy].theObject)
-          lazy val valueCls = value.getClass()
+          val valueCls = value.getClass()
           //Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
           import JavaCall._
           // TODO:PERFORMANCE: The has*Member checks on value will actually be quite expensive. However for these semantics they are required. Maybe we could change the semantics. Or maybe I've missed a way to implement it so that all reflection is JIT time constant.

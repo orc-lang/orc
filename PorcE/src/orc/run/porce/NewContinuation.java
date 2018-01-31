@@ -83,6 +83,7 @@ public class NewContinuation extends Expression {
 				if (closure.environment[i] != capturedVariables[i].execute(frame)) {
 					closure = null;
 					// If we had a cached closure and invalidated it, don't cache again.
+					closureCache = null;
 					throw new StopCachingException();
 				}
 			}

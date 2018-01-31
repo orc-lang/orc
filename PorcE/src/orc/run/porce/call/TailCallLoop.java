@@ -3,6 +3,7 @@ package orc.run.porce.call;
 import java.util.concurrent.locks.Lock;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -77,18 +78,18 @@ public class TailCallLoop extends NodeBase {
     	@Child
     	protected TailCallNode next;
     	
-    	protected final PorcEClosure target;
+    	protected final RootCallTarget target;
     	protected final ConditionProfile thisOrOtherProfile = ConditionProfile.createCountingProfile();
     	
     	protected TailCallSpecializationNode(PorcEClosure target, TailCallNode next, PorcEExecution execution) {
     		super(execution);
-    		this.target = target;
+    		this.target = target.body;
     		this.call = DirectCallNode.create(target.body);
     		this.next = next;
 		}
 
     	protected boolean matchesSpecific(PorcEClosure target) {
-    		return this.target.body == target.body;
+    		return this.target == target.body;
     	}
     	
     	public static TailCallNode create(final PorcEClosure target, final TailCallNode next, final PorcEExecution execution) {
