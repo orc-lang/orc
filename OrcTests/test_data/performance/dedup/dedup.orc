@@ -58,7 +58,7 @@ def readSegements(minimumSegmentSize, in) =
 			-- TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
 			Chunk.readFromInputStream(in, readChunkSize) >data>
 			process(currentChunk.append(data), i) ;
-			(currentChunk, i) | {- Println("readSegements " + (i + 1)) >> -} (Chunk.empty(), i + 1) 
+			(currentChunk, i) | printLogLine("Done: readSegements " + (i + 1)) >> (Chunk.empty(), i + 1) 
 		else
 			(currentChunk.slice(0, splitPoint), i) |
 			process(currentChunk.slice(splitPoint, currentChunk.size()), i+1)
@@ -68,7 +68,7 @@ def readSegements(minimumSegmentSize, in) =
 {-- Publish some number of subchunks of chunk where each chunk is at least minimumSegmentSize long.  
 -}
 def segment(minimumSegmentSize, chunk) =
-	def process(chunk, i) if (chunk.size() = 0) = {- Println("segment " + i) >> -} (Chunk.empty(), i)
+	def process(chunk, i) if (chunk.size() = 0) = {- printLogLine("segment " + i) >> -} (Chunk.empty(), i)
 	def process(chunk, i) =
 		val splitPoint = rabin.segment(chunk, minimumSegmentSize) #
 		(chunk.slice(0, splitPoint), i) |
@@ -81,17 +81,17 @@ def compress(chunk, dedupPool, id) =
 	val hash = sha1(chunk)
 	val old = dedupPool.putIfAbsent(hash, CompressedChunk(hash, chunk.size()))
 	val compChunk = old >> dedupPool.get(hash)
-	Ift(old = null) >> --Println("Compressing CompressedChunk: " + compChunk.uncompressedSHA1) >> 
+	Ift(old = null) >> --printLogLine("Compressing CompressedChunk: " + compChunk.uncompressedSHA1) >> 
 		compChunk.compress(chunk) >> stop |
 	compChunk
 
 def writeChunk(out, cchunk, isAlreadyOutput) =
 	if isAlreadyOutput then
-		--Println("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
+		--printLogLine("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
 		out.writeBytes("R") >> 
 		out.writeLong(cchunk.outputChunkID?)
 	else
-		--Println("D chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
+		--printLogLine("D chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
 		out.writeBytes("D") >> 
 		out.writeLong(cchunk.compressedData().length?) >>
 		out.write(cchunk.compressedData())
@@ -103,11 +103,11 @@ def write(out, outputPool) =
 	def process((roughID, fineID), id) = 
 		val cchunk = outputPool.get((roughID, fineID))
 		if cchunk = null then
-			--Println("Pool: " + (roughID, fineID) + " " + outputPool) >>
+			--printLogLine("Pool: " + (roughID, fineID) + " " + outputPool) >>
 			Rwait(100) >> process((roughID, fineID), id)
 		else if cchunk.uncompressedSize = 0 then
 			if fineID = 0 then
-				Println("Done") >>
+				printLogLine("Done") >>
 				signal
 			else
 				process((roughID + 1, 0), id)
@@ -124,9 +124,12 @@ def write(out, outputPool) =
 def dedup(in, out) =
 	val dedupPool = Map()
 	val outputPool = Map() #
-	readSegements(largeChunkMin, in) >(roughChunk, roughID)> --Println("Rough chunk: " + roughChunk.start() + " " + roughChunk.size()) >>
-	segment(0, roughChunk) >(chunk, fineID)> --(signal | (Ift(chunk.size() = 0) >> Println("Chunk: " + (roughID, fineID) + " " + chunk.size()) >> stop)) >>
-	compress(chunk, dedupPool, (roughID, fineID)) >compressedChunk> --(signal | (Println("Compressed chunk: " + (roughID, fineID) + " " + compressedChunk.uncompressedSHA1 + " " + compressedChunk.compressedData()) >> stop)) >>
+	readSegements(largeChunkMin, in) >(roughChunk, roughID)> 
+	--printLogLine("Rough chunk: " + roughChunk.start() + " " + roughChunk.size()) >>
+	segment(0, roughChunk) >(chunk, fineID)> 
+	--(signal | (Ift(chunk.size() = 0) >> printLogLine("Chunk: " + (roughID, fineID) + " " + chunk.size()) >> stop)) >>
+	compress(chunk, dedupPool, (roughID, fineID)) >compressedChunk> 
+	--(signal | (printLogLine("Compressed chunk: " + (roughID, fineID) + " " + compressedChunk.uncompressedSHA1 + " " + compressedChunk.compressedData()) >> stop)) >>
 	outputPool.put((roughID, fineID), compressedChunk) >> stop |
 	write(out, outputPool)
 

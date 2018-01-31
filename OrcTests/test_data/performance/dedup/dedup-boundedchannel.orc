@@ -19,7 +19,7 @@ import class FileInputStream = "java.io.FileInputStream"
 import class FileOutputStream = "java.io.FileOutputStream"
 import class DataOutputStream = "java.io.DataOutputStream"
 import class MessageDigest = "java.security.MessageDigest"
-import class Integer = "java.lang.Integer" 
+import class Integer = "java.lang.Integer"
 
 def logHalt(name, f) =
 	val c = Channel() #
@@ -52,6 +52,7 @@ def sha1(chunk) = ArrayKey(
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
 def readSegements(minimumSegmentSize, in, callback) =
+	val _ = printLogLine("Start: readSegements")
 	def process(currentChunk, i) =
 		val splitPoint = rabin.segment(currentChunk, minimumSegmentSize)
 		if splitPoint = currentChunk.size() then
@@ -62,7 +63,8 @@ def readSegements(minimumSegmentSize, in, callback) =
 		else
 			callback(currentChunk.slice(0, splitPoint), i) >>
 			process(currentChunk.slice(splitPoint, currentChunk.size()), i+1)
-	process(Chunk.empty(), 0)
+	process(Chunk.empty(), 0) >> stop ;
+	printLogLine("Done: readSegements")
 
 	
 {-- Publish some number of subchunks of chunk where each chunk is at least minimumSegmentSize long.  
@@ -74,24 +76,24 @@ def segment(minimumSegmentSize, chunk, callback) =
 		callback(chunk.slice(0, splitPoint), i) >>
 		process(chunk.slice(splitPoint, chunk.size()), i + 1)
 	process(chunk, 0)
-
+	
 {-- Compress a chunk with deduplication by publishing an existing compressed chuck if an identical one exists.
 -} 
 def compress(chunk, dedupPool, id) =
 	val hash = sha1(chunk)
 	val old = dedupPool.putIfAbsent(hash, CompressedChunk(hash, chunk.size()))
 	val compChunk = old >> dedupPool.get(hash)
-	Ift(old = null) >> --Println("Compressing CompressedChunk: " + compChunk.uncompressedSHA1) >> 
+	Ift(old = null) >> --printLogLine("Compressing CompressedChunk: " + compChunk.uncompressedSHA1) >> 
 		compChunk.compress(chunk) >> stop |
 	compChunk
 
 def writeChunk(out, cchunk, isAlreadyOutput) =
 	if isAlreadyOutput then
-		--Println("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
+		--printLogLine("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
 		out.writeBytes("R") >> 
 		out.writeLong(cchunk.outputChunkID?)
 	else
-		--Println("D chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
+		--printLogLine("D chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
 		out.writeBytes("D") >> 
 		out.writeLong(cchunk.compressedData().length?) >>
 		out.write(cchunk.compressedData())
@@ -99,15 +101,16 @@ def writeChunk(out, cchunk, isAlreadyOutput) =
 {-- Read sequential elements from the pool and write to the provided OutputStream.
 -}
 def write(out, outputPool) =
+	val _ = printLogLine("Start: write")
 	val alreadyOutput = Map()
 	def process((roughID, fineID), id) = 
 		val cchunk = outputPool.get((roughID, fineID))
 		if cchunk = null then
-			--Println("Pool: " + (roughID, fineID) + " " + outputPool) >>
+			--printLogLine("Pool: " + (roughID, fineID) + " " + outputPool) >>
 			Rwait(100) >> process((roughID, fineID), id)
 		else if cchunk.uncompressedSize = 0 then
 			if fineID = 0 then
-				Println("Done") >>
+				printLogLine("Done") >>
 				signal
 			else
 				process((roughID + 1, 0), id)
@@ -117,29 +120,35 @@ def write(out, outputPool) =
 			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1)) >>
 			alreadyOutput.put(cchunk.uncompressedSHA1, true) >>
 			process((roughID, fineID + 1), id + 1)
-	process((0, 0), 0)
+	process((0, 0), 0) >> stop ;
+	printLogLine("Done: write")
 
 {-- Connect the various stages using branch combinators
 -}
 def dedup(in, out) =
 	val dedupPool = Map()
 	val outputPool = Map()
-	val roughChunks = BoundedChannel(64)
-	val fineChunks = BoundedChannel(1024)
+	val roughChunks = BoundedChannel(4)
+	val fineChunks = BoundedChannel(4)
 
 	def fineSegment(roughChunk, roughID) =
 		segment(0, roughChunk, { fineChunks.put((_, roughID, _)) })
 	def fineSegmentThread() = 
-		repeat({ roughChunks.get() >(roughChunk, roughID)> fineSegment(roughChunk, roughID) }) >> stop
+		val _ = printLogLine("Start: segment")
+		repeat({ roughChunks.get() >(roughChunk, roughID)> fineSegment(roughChunk, roughID) }) >> stop ;
+		printLogLine("Done: segment") >> stop
 		
 	def compressThread() = 
+		val _ = printLogLine("Start: compress")
 		repeat({ fineChunks.get() >(fineChunk, roughID, fineID)> 
 				 compress(fineChunk, dedupPool, (roughID, fineID)) >compressedChunk>
-				 outputPool.put((roughID, fineID), compressedChunk) }) >> stop
+				 outputPool.put((roughID, fineID), compressedChunk) }) >> stop ;
+		printLogLine("Done: compress") >> stop
+		
 	
 	readSegements(largeChunkMin, in, lambda(c, i) = roughChunks.put((c, i))) >> stop |
-	signals(8) >> fineSegmentThread() |
-	signals(8) >> compressThread()  |
+	signals(nPartitions / 2) >> fineSegmentThread() |
+	signals(nPartitions / 2) >> compressThread()  |
 	write(out, outputPool) >>
 	roughChunks.close() >>
 	fineChunks.close()

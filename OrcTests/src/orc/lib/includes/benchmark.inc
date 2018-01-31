@@ -66,13 +66,18 @@ def timeIt[A](f :: lambda() :: A) =
     Println("Time used: " + (e-s) + "ms") >> stop
   )
 
+val repStartTime = Ref(Rtime())
+
+def setRepStartTime() = repStartTime := Rtime()
+def getRepTime() = Rtime() - repStartTime?
+
 def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A, benchmark :: lambda(A) :: B) =
 	val clock = Rclock()
 	def h(Integer, List[Top]) :: Signal
 	def h(i, results) if (i >= nRuns) = results
 	def h(i, results) if (softTimeLimit :> 0 && clock.time() :> (softTimeLimit * 1000)) = results
 	def h(i, results) = 
-		setup() >d> timeItNoPub({ benchmark(d) }, i, size) >r> (
+		setup() >d> setRepStartTime() >> timeItNoPub({ benchmark(d) }, i, size) >r> (
 			val results' = r : results
 			writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
 			  ["Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", 
@@ -96,3 +101,7 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 		h(0, [])
 	else
 		setup() >d> benchmark(d)
+
+
+
+def printLogLine(s :: String) :: Signal = Println(getRepTime() + ": " + s)
