@@ -14,9 +14,9 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit] {
   
   def dedup(inFn: String, outFn: String): Unit = {
     val dedupMap = new ConcurrentHashMap[ArrayKey, CompressedChunk]()
-    val roughChunks = new ArrayBlockingQueue[(Chunk, Int)](1024)
-    val fineChunks = new ArrayBlockingQueue[(Chunk, Int, Int)](2 * 1025)
-    val compressedChunks = new ArrayBlockingQueue[(CompressedChunk, Int, Int)](2 * 1024)
+    val roughChunks = new ArrayBlockingQueue[(Chunk, Int)](4)
+    val fineChunks = new ArrayBlockingQueue[(Chunk, Int, Int)](4)
+    val compressedChunks = new ArrayBlockingQueue[(CompressedChunk, Int, Int)](4)
         
     val in = new FileInputStream(inFn)
     

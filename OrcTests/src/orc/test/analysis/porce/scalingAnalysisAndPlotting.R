@@ -20,7 +20,8 @@ source(file.path(scriptDir, "plotting.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20180111-a004")
+#dataDir <- file.path(localExperimentDataDir, "20180130-a002")
+dataDir <- file.path(localExperimentDataDir, "20180130-a003")
 
 if(!exists("processedData")) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
@@ -28,12 +29,12 @@ if(!exists("processedData")) {
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
   prunedData <- data %>%
-    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 50, 120, minRemaining = 1, maxRemaining = 40) %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 3, maxRemaining = 40) %>%
     # Drop any reps which have more than 1% compilation time.
     filter(rtCompTime < cpuTime * 0.01)
 
   processedData <- prunedData %>%
-    group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>% bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.5) %>%
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>% bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
@@ -203,13 +204,14 @@ if (!dir.exists(outputDir)) {
   dir.create(outputDir)
 }
 
+print(levels(processedData$benchmarkProblemName))
+
 for (problem in levels(processedData$benchmarkProblemName)) {
   ggsave(file.path(outputDir, paste0(problem, "-scaling.pdf")), scalingPlot(problem), width = 7.5, height = 6)
   ggsave(file.path(outputDir, paste0(problem, "-normPerformance.pdf")), normalizedPerformancePlot(problem), width = 7.5, height = 8)
 }
 
 capture.output(sampleCountTable("rst"), file = file.path(outputDir, "usedSampleCounts.rst"), type = "output")
-capture.output(sampleCountTable("latex"), file = file.path(outputDir, "usedSampleCounts.tex"), type = "output")
-
 
 sampleCountTable("rst")
+

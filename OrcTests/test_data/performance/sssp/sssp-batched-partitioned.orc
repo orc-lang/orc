@@ -70,6 +70,8 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 		)) >>
 		signal
 		-}
+		--val _ = Println("processNode " + index + " " + gray + " " + nodes.length? + " " + edges.length?)
+		--val _ = Println("processNode " + (node.initialEdge(), node.initialEdge() + node.nEdges()))
 		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> edges(edgeIndex)? >edge> (
 			val to = edge.to()
 			val newCost = currentCost + edge.cost()
@@ -81,7 +83,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	)
 	
 	def processBatch(inQ, indexStart, indexEnd, outQ, gray) = Sequentialize() >> (
-		val _ = Println("processBatch " + indexStart + " " + indexEnd + " " + gray)
+		val _ = Println("processBatch " + indexStart + " " + indexEnd + " " + gray + " " + inQ.size())
 		val localQ = ArrayList()
 		val localLock = Semaphore(1)
 		sfor(indexStart, indexEnd, lambda(index) = processNode(inQ.get(index), localQ, localLock, gray)) >>
@@ -94,7 +96,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 		  processBatch(inQ, partitionIndex, min(partitionIndex + partitionSize, inQ.size()), outQ, gray) >>
 		  stop ;
 		  
-		inQ.clear() >> {- Println("Batch " + gray + " done " + outQ) >> -} (
+		inQ.clear() >> Println("Batch " + gray + " done " + outQ.size()) >> (
 		if outQ.size() :> 0 then
 			h(outQ, inQ, gray + 1)
 		else
