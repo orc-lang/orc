@@ -51,6 +51,15 @@ object CallClosureSchedulable {
 
 final class CallClosureSchedulable private (private var _closure: PorcEClosure, private var arguments: Array[AnyRef], execution: PorcEExecution) extends Schedulable {
   override val nonblocking: Boolean = true
+  
+  override val priority: Int = {
+    val t = closure.getTimePerCall
+    if (t < Long.MaxValue) {
+      (t / 1000 min Int.MaxValue).toInt
+    } else {
+      100
+    }
+  }
  
   def closure = _closure
   
@@ -62,5 +71,9 @@ final class CallClosureSchedulable private (private var _closure: PorcEClosure, 
       execution.invokeClosure(t, Array(null))
     else
       execution.invokeClosure(t, a)
+  }
+  
+  override def toString(): String = {
+    s"$closure%$priority"
   }
 }

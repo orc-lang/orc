@@ -205,6 +205,13 @@ trait Schedulable extends Runnable {
     * It is assumed by default that a schedulable unit might block.
     */
   val nonblocking: Boolean = false
+  
+  /** The priority of this schedulable.
+    * 
+    * This should not change after it is first requested, so this should
+    * be implemented as val or lazy val.
+    */
+  def priority: Int = 0
 
   /** Invoked just before this schedulable unit is scheduled or staged.
     * It is run in the thread that made the enqueueing call.

@@ -69,7 +69,7 @@ final public class PorcEClosure {
     
 	@Override
 	public String toString() {
-		return "Closure(" + body.getRootNode().getName() + ")";
+		return body.getRootNode().getName();
 	}
 
 }
