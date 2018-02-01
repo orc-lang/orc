@@ -73,3 +73,20 @@ for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNum
   ggsave(paste0("speedup_", currProgram, ".pdf"), width = 7, height = 7)
 }
 
+# Small version of 120-file case only, for printing at a small size
+
+for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNumRuntimes > 1 & !is.na(elapsedTimeSummary$dOrcNumRuntimes)])) {
+
+  ggplot(elapsedTimeSummary[elapsedTimeSummary$program == currProgram & elapsedTimeSummary$dOrcNumRuntimes > 1 & elapsedTimeSummary$numInputFiles == 120,], aes(x = dOrcNumRuntimes, y = speedup, group = factor(numInputFiles), colour = factor(numInputFiles), shape = factor(numInputFiles))) +
+  geom_line(size = 2) +
+  geom_point(size = 7) +
+  xlab("Cluster size [Number of runtimes]") +
+  labs(colour = "Number of files read", shape = "Number of files read") +
+  scale_y_continuous(name = "Speed-up factor over cluster size 1", labels = function(n){format(n, scientific = FALSE)}) +
+  expand_limits(x = 1, y = 1.0) +
+  # geom_errorbar(aes(ymax = speedupSeMax, ymin = speedupSeMin), width = 0.2, alpha = 0.35) +
+  theme_minimal() +
+  theme(legend.position = "none", axis.text=element_text(size=24), axis.title=element_text(size=28))
+
+  ggsave(paste0("speedup_", currProgram, "_120_sm.pdf"), width = 7, height = 7)
+}
