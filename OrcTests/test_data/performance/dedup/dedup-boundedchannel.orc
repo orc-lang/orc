@@ -128,8 +128,8 @@ def write(out, outputPool) =
 def dedup(in, out) =
 	val dedupPool = Map()
 	val outputPool = Map()
-	val roughChunks = BoundedChannel(4)
-	val fineChunks = BoundedChannel(4)
+	val roughChunks = BoundedChannel(nPartitions)
+	val fineChunks = BoundedChannel(nPartitions)
 
 	def fineSegment(roughChunk, roughID) =
 		segment(0, roughChunk, { fineChunks.put((_, roughID, _)) })

@@ -23,31 +23,34 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
     override def systemProperties = super.systemProperties ++ Map(
         "graal.TruffleBackgroundCompilation" -> "false",
         "orc.numerics.preferLP" -> "true",
-        "orc.porce.universalTCO" -> "false",
+        //"orc.porce.universalTCO" -> "false",
         "graal.TruffleCompilationThreshold" -> 800,
         )
         
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3")
     
-    override def toJvmArgs = Seq("-XX:+UseParallelGC", "-Xms64g", "-Xmx64g") ++ super.toJvmArgs
+    override def toJvmArgs = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g") ++ super.toJvmArgs
   }
   case class MyScalaExperimentalCondition(
       run: Int,
       benchmarkClass: Class[_], 
       nCPUs: Int) 
       extends ArthursBenchmarkEnv.ScalaExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
+    override def nRuns = super.nRuns / 2
+    
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
       FactorDescription("benchmarkClass", "Benchmark Class", "", "The class run for this benchmark"),
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use")
     )
     
-    override def toJvmArgs = Seq("-XX:+UseParallelGC", "-Xms64g", "-Xmx64g") ++ super.toJvmArgs
+    override def toJvmArgs = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g") ++ super.toJvmArgs
   }
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = (Seq(8, 24)).reverse 
+      //val nCPUsValues = (Seq(4, 8, 16, 20, 24)).reverse
+      val nCPUsValues = (Seq(8, 16, 24)).reverse
       val porce = for {
         run <- 0 until 3 
         nCPUs <- nCPUsValues
@@ -101,7 +104,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      (porce/* ++ scala*/).sortBy(o => (o.run, o.nCPUs, o.toString))
+      (porce ++ scala).sortBy(o => (o.run, o.nCPUs, o.toString))
     }
     runExperiment(experimentalConditions)
   }

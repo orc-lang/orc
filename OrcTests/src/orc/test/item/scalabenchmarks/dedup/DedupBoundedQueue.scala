@@ -8,15 +8,16 @@ import Util.thread
 import java.util.concurrent.ArrayBlockingQueue
 import scala.annotation.tailrec
 import java.io.File
+import orc.test.item.scalabenchmarks.BenchmarkConfig
 
 object DedupBoundedQueue extends BenchmarkApplication[Unit] {
   import Dedup._
   
   def dedup(inFn: String, outFn: String): Unit = {
     val dedupMap = new ConcurrentHashMap[ArrayKey, CompressedChunk]()
-    val roughChunks = new ArrayBlockingQueue[(Chunk, Int)](4)
-    val fineChunks = new ArrayBlockingQueue[(Chunk, Int, Int)](4)
-    val compressedChunks = new ArrayBlockingQueue[(CompressedChunk, Int, Int)](4)
+    val roughChunks = new ArrayBlockingQueue[(Chunk, Int)](BenchmarkConfig.nPartitions)
+    val fineChunks = new ArrayBlockingQueue[(Chunk, Int, Int)](BenchmarkConfig.nPartitions)
+    val compressedChunks = new ArrayBlockingQueue[(CompressedChunk, Int, Int)](BenchmarkConfig.nPartitions)
         
     val in = new FileInputStream(inFn)
     
@@ -25,7 +26,7 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit] {
         roughChunks.put(p)   
       }
     }
-    val segmentThreads = for (_ <- 0 until 8) yield thread {
+    val segmentThreads = for (_ <- 0 until BenchmarkConfig.nPartitions / 2) yield thread {
       while (true) {
         val (roughChunk, roughID) = roughChunks.take()
         for ((fineChunk, fineID) <- segment(0, roughChunk)) {
@@ -33,7 +34,7 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit] {
         }
       }
     }
-    val compressThreads = for (_ <- 0 until 8) yield thread {
+    val compressThreads = for (_ <- 0 until BenchmarkConfig.nPartitions / 2) yield thread {
       while (true) {
         val (fineChunk, roughID, fineID) = fineChunks.take()
         compressedChunks.put((compress(fineChunk, dedupMap), roughID, fineID))
