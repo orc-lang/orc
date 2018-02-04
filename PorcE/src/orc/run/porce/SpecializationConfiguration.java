@@ -44,7 +44,7 @@ public abstract class SpecializationConfiguration {
 
 	@CompilationFinal
 	public static final boolean UniversalTCO = Boolean
-			.parseBoolean(System.getProperty("orc.porce.universalTCO", "true"));
+			.parseBoolean(System.getProperty("orc.porce.universalTCO", "false"));
 		
 	@CompilationFinal
 	public static final boolean SelfTCO = Boolean

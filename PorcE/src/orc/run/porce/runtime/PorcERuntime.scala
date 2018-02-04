@@ -102,10 +102,8 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       SimpleWorkStealingSchedulerWrapper.exitSchedulable(s, old)
     }
   }
-}
 
-object PorcERuntime {
-  private class IntHolder(var value: Int)
+    private class IntHolder(var value: Int)
   private val stackDepthThreadLocal = new ThreadLocal[IntHolder]() {
     override def initialValue() = {
       new IntHolder(0)
@@ -118,12 +116,12 @@ object PorcERuntime {
     */
   @TruffleBoundary(allowInlining = true) @noinline
   def incrementAndCheckStackDepth() = {
-    if (PorcERuntime.maxStackDepth > 0) {
-      val depth = PorcERuntime.stackDepthThreadLocal.get()
+    if (maxStackDepth > 0) {
+      val depth = stackDepthThreadLocal.get()
       //if (depth.value > PorcERuntime.maxStackDepth / 2)
       //  Logger.log(Level.INFO, s"incr (depth=${depth.value})")
         
-      val r = depth.value < PorcERuntime.maxStackDepth
+      val r = depth.value < maxStackDepth
       if (r)
         depth.value += 1
       r
@@ -138,8 +136,8 @@ object PorcERuntime {
     */
   @TruffleBoundary(allowInlining = true) @noinline
   def decrementStackDepth() = {
-    if (PorcERuntime.maxStackDepth > 0) {
-      val depth = PorcERuntime.stackDepthThreadLocal.get()
+    if (maxStackDepth > 0) {
+      val depth = stackDepthThreadLocal.get()
       //if (depth.value > PorcERuntime.maxStackDepth / 2)
       //  Logger.log(Level.INFO, s"decr (depth=${depth.value})")
         
@@ -148,16 +146,34 @@ object PorcERuntime {
   }
 
   def resetStackDepth() = {
-    if (PorcERuntime.maxStackDepth > 0) {
-      PorcERuntime.stackDepthThreadLocal.get().value = 0
+    if (maxStackDepth > 0) {
+      stackDepthThreadLocal.get().value = 0
     }
   }
 
   @inline
   @CompilationFinal
-  val maxStackDepth = System.getProperty("orc.porce.maxStackDepth", "8").toInt
+  val maxStackDepth = System.getProperty("orc.porce.maxStackDepth", "16").toInt
   // TODO: Make maxStackDepth user configurable
   
+  @inline
+  @CompilationFinal
+  val actuallySchedule = PorcERuntime.actuallySchedule
+  
+  @inline
+  @CompilationFinal
+  val occationallySchedule = PorcERuntime.occationallySchedule
+  
+  @inline
+  @CompilationFinal
+  val allowAllSpawnInlining = PorcERuntime.allowAllSpawnInlining
+  
+  @inline
+  @CompilationFinal
+  val allowSpawnInlining = PorcERuntime.allowSpawnInlining
+}
+
+object PorcERuntime {
   @inline
   @CompilationFinal
   val actuallySchedule = System.getProperty("orc.porce.actuallySchedule", "true").toBoolean
@@ -168,12 +184,11 @@ object PorcERuntime {
   
   @inline
   @CompilationFinal
-  val allowAllSpawnInlining = System.getProperty("orc.porce.allowAllSpawnInlining", "false").toBoolean
+  val allowAllSpawnInlining = System.getProperty("orc.porce.allowAllSpawnInlining", "true").toBoolean
   
   @inline
   @CompilationFinal
   val allowSpawnInlining = System.getProperty("orc.porce.allowSpawnInlining", "true").toBoolean
-
   
   // HACK: Force loading of a few classes in Truffle. Without this the error handling code crashes and destroys the stack trace.
   Option(Class.forName("com.oracle.truffle.api.TruffleStackTrace")).foreach(_.getClassLoader())

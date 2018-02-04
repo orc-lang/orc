@@ -18,6 +18,7 @@ import orc.run.porce.runtime.Terminator;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
+import orc.run.porce.runtime.PorcERuntime$;
 
 @NodeChild(value = "c", type = Expression.class)
 @NodeChild(value = "t", type = Expression.class)
@@ -50,18 +51,25 @@ public abstract class Spawn extends Expression {
     		@Cached("makeCall()") Dispatch call, @Cached("create()") BranchProfile spawnProfile) {
     	// Here we can inline spawns speculatively if we have not done that too much on this stack.
     	// This is very heuristic and may cause load imbalance problems in some cases.
+    	final PorcERuntime r = execution.runtime();
 		
-    	if (PorcERuntime.incrementAndCheckStackDepth()) {
-    		// This check should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.
-			try {
-				call.executeDispatch(frame, computation, new Object[] {});
-			} finally {
-				PorcERuntime.decrementStackDepth();
-			}
-			return PorcEUnit.SINGLETON;
+    	if (r.actuallySchedule()) {
+    		if(r.incrementAndCheckStackDepth()) {
+	    		// This check should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.
+				try {
+					call.executeDispatch(frame, computation, new Object[] {});
+				} finally {
+					if(r.actuallySchedule())
+						r.decrementStackDepth();
+				}
+				return PorcEUnit.SINGLETON;
+	    	} else {
+	    		spawnProfile.enter();
+	    		return spawn(frame, c, t, computation);
+	    	}
     	} else {
-    		spawnProfile.enter();
-    		return spawn(frame, c, t, computation);
+			call.executeDispatch(frame, computation, new Object[] {});
+			return PorcEUnit.SINGLETON;
     	}
     }
 
@@ -71,8 +79,8 @@ public abstract class Spawn extends Expression {
 		return spawn(frame, (Counter)c, t, computation);
     }
 
-    private static final boolean allowSpawnInlining = PorcERuntime.allowSpawnInlining();
-    private static final boolean allowAllSpawnInlining = PorcERuntime.allowAllSpawnInlining();
+    private static final boolean allowSpawnInlining = PorcERuntime$.MODULE$.allowSpawnInlining();
+    private static final boolean allowAllSpawnInlining = PorcERuntime$.MODULE$.allowAllSpawnInlining();
     
 	protected boolean shouldInlineSpawn(final PorcEClosure computation) {
 		return allowSpawnInlining && (!mustSpawn || allowAllSpawnInlining) &&
