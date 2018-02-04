@@ -46,7 +46,6 @@ object ArthursBenchmarkEnv {
     def remoteJavaHome: String
     
     val problemSize = System.getProperty("orc.test.benchmark.problemSize", "1").toInt
-    val nRuns = System.getProperty("orc.test.benchmark.nRuns", "50").toInt
   
     val remoteOutputDir = "runs"
     
@@ -110,7 +109,7 @@ object ArthursBenchmarkEnv {
           Seq(
             s"-Dorc.test.benchmark.datadir=$targetBinariesDir/OrcTests/",
             s"-Dorc.test.benchmark.problemSize=${problemSize}",
-            s"-Dorc.test.benchmark.nRuns=${nRuns}",
+            s"-Dorc.test.benchmark.nRuns=${expCondition.nRuns}",
             s"-Dorc.test.benchmark.softTimeLimit=${softTimeLimit}",
             s"-Dorc.test.benchmark.hardTimeLimit=${hardTimeLimit}",
             s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_",
@@ -143,6 +142,8 @@ object ArthursBenchmarkEnv {
 
   
   trait JVMExperimentalCondition extends ExperimentalCondition {
+    def nRuns = System.getProperty("orc.test.benchmark.nRuns", "50").toInt
+    
     override def toJvmArgs: Iterable[String] = {
       val factorProps = factorDescriptions.zipWithIndex.flatMap({ case (fd, i) => 
         val v = productElement(i).asInstanceOf[AnyRef] 
