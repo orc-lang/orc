@@ -43,7 +43,7 @@ object KMeansParManual extends BenchmarkApplication[Array[Point]] {
     val partitionSize = (data.size.toDouble / nPartitions).ceil.toInt
     for (index <- (0 until data.size by partitionSize).par) {
       println(s"Partition: $index to ${index + partitionSize} (${data.size})")
-      val (lxs, lys, lcounts) = sumAndCountClusters(data, centroids, index, index + partitionSize)
+      val (lxs, lys, lcounts) = sumAndCountClusters(data, centroids, index, index + partitionSize min data.size)
 
       (xs zip lxs).foreach(p => p._1.add(p._2.toDouble))
       (ys zip lys).foreach(p => p._1.add(p._2.toDouble))

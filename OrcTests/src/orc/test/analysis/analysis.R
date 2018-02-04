@@ -11,6 +11,9 @@ library(dplyr)
 library(ggplot2)
 library(boot)
 
+options(boot.parallel = "multicore", boot.ncpus = 8)
+
+
 trimVector <- function(data, fraction) {
   nDrop <- floor(length(data) * fraction)
   data[order(data)[nDrop : (length(data)-nDrop)]]

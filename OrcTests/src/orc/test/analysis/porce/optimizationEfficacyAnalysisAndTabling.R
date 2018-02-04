@@ -20,8 +20,8 @@ source(file.path(scriptDir, "plotting.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20180130-a003")
-
+dataDir <- file.path(localExperimentDataDir, "20180203-a009")
+#
 # Load main data
 
 dataOrct <- readMergedResultsTable(dataDir, "orctimizer-statistics", invalidate = F) %>% filter(run == 0)

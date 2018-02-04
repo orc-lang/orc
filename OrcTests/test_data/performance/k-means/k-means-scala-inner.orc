@@ -51,8 +51,8 @@ def updateCentroids(xs, centroids) =
   val pointAdders = listToArray(map({ PointAdder() }, arrayToList(centroids)))
   val partitionSize = Ceil((0.0 + xs.length?) / nPartitions)
   forBy(0, xs.length?, partitionSize) >index> (
-    val _ = Println("Partition: " + index + " to " + (index + partitionSize) + " (" + xs.length? + ")")
-    val p = KMeans.sumAndCountClusters(xs, centroids, index, index + partitionSize)
+    -- val _ = Println("Partition: " + index + " to " + (index + partitionSize) + " (" + xs.length? + ")")
+    val p = KMeans.sumAndCountClusters(xs, centroids, index, min(index + partitionSize, xs.length?))
     val xs = p.productElement(0)
     val ys = p.productElement(1)
     val counts = p.productElement(2)

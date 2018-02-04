@@ -36,7 +36,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       benchmarkClass: Class[_], 
       nCPUs: Int) 
       extends ArthursBenchmarkEnv.ScalaExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
-    override def nRuns = super.nRuns / 2
+    //override def nRuns = super.nRuns / 2
     
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
