@@ -60,8 +60,8 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
             "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
-            //"test_data/performance/k-means/k-means-scala-inner.orc",
-            //"test_data/performance/k-means/k-means.orc",
+            "test_data/performance/k-means/k-means-scala-inner.orc",
+            "test_data/performance/k-means/k-means.orc",
 //            "test_data/performance/bigsort/bigsort.orc",
 //            "test_data/performance/bigsort/bigsort-partially-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
@@ -87,9 +87,9 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
             //orc.test.item.scalabenchmarks.NQueens,
             //orc.test.item.scalabenchmarks.ThreadRing,
             orc.test.item.scalabenchmarks.blackscholes.BlackScholesPar,
-            //orc.test.item.scalabenchmarks.kmeans.KMeansPar,
-            //orc.test.item.scalabenchmarks.kmeans.KMeansParManual,
-            orc.test.item.scalabenchmarks.BigSortPar,
+            orc.test.item.scalabenchmarks.kmeans.KMeansPar,
+            orc.test.item.scalabenchmarks.kmeans.KMeansParManual,
+//            orc.test.item.scalabenchmarks.BigSortPar,
             orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial, 
             orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption,
             orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar, 
@@ -142,8 +142,8 @@ object PorcEOptimizationStatisticsExperiment extends PorcEBenchmark {
             "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
-            //"test_data/performance/k-means/k-means-scala-inner.orc",
-            //"test_data/performance/k-means/k-means.orc",
+            "test_data/performance/k-means/k-means-scala-inner.orc",
+            "test_data/performance/k-means/k-means.orc",
             //"test_data/performance/bigsort/bigsort.orc",
             //"test_data/performance/bigsort/bigsort-partially-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
@@ -169,15 +169,15 @@ object PorcEOptimizationStatisticsExperiment extends PorcEBenchmark {
 
 
 object PorcEInliningTCOExperiment extends PorcEBenchmark {
-  def softTimeLimit: Double = 60 * 4
-  override def hardTimeLimit: Double = 60 * 5.5
+  def softTimeLimit: Double = 60 * 3.5
+  //override def hardTimeLimit: Double = 60 * 5.5
     
   case class MyPorcEExperimentalCondition(
       orcFile: File, 
       nCPUs: Int, 
       allowAllSpawnInlining: Boolean, 
-      truffleASTInlining: Boolean, 
       universalTCO: Boolean, 
+      actuallySchedule: Boolean, 
       optLevel: Int) 
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
     override def factorDescriptions = Seq(
@@ -185,7 +185,7 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
       FactorDescription("allowAllSpawnInlining", "Allow All Spawn Inlining", "", ""),
       FactorDescription("universalTCO", "Use universal TCO", "", ""),
-      FactorDescription("truffleASTInlining", "truffleASTInlining", "", ""),
+      FactorDescription("actuallySchedule", "Allow scheduling in potentiallySchedule", "", "When false spawning only happens at spawn."),
       FactorDescription("optLevel", "Optimization Level", "", "-O level"),
     )
     
@@ -194,61 +194,52 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
         "orc.porce.allowSpawnInlining" -> true,
         "orc.porce.allowAllSpawnInlining" -> allowAllSpawnInlining,
         "orc.numerics.preferLP" -> "true",
-        "orc.porce.truffleASTInlining" -> truffleASTInlining,
         "orc.porce.universalTCO" -> universalTCO,
+        "orc.porce.actuallySchedule" -> actuallySchedule,
+        "graal.TruffleCompilationThreshold" -> 150,
         )
         
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", optLevel.toString)
     
-    override def toJvmArgs = Seq("-XX:+UseG1GC", "-Xms64g", "-Xmx115g") ++ super.toJvmArgs
-  }
-  case class MyScalaExperimentalCondition(
-      benchmarkClass: Class[_], 
-      nCPUs: Int) 
-      extends ArthursBenchmarkEnv.ScalaExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
-    override def factorDescriptions = Seq(
-      FactorDescription("benchmarkClass", "Benchmark Class", "", "The class run for this benchmark"),
-      FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use")
-    )
-    
-    override def toJvmArgs = Seq("-XX:+UseG1GC", "-Xms64g", "-Xmx115g") ++ super.toJvmArgs
+    override def toJvmArgs = Seq("-XX:+UseParallelGC", "-Xms6g", "-Xmx64g") ++ super.toJvmArgs
   }
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = (Seq(1, 4, 8, 16, 24)).reverse 
+      val nCPUsValues = (Seq(24)).reverse 
       val porce = for {
         optLevel <- Seq(3)
         fn <- Seq(
-            //"test_data/performance/Mandelbrot.orc",
+//            "test_data/performance/Mandelbrot.orc",
             //"test_data/performance/8-queens.orc",
             //"test_data/performance/threadring.orc",
             //"test_data/performance/threadring2.orc",
             //"test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
-            "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
-            "test_data/performance/black-scholes/black-scholes-scala-compute-partially-seq.orc",
-            //"test_data/performance/black-scholes/black-scholes.orc",
+//            "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
+//            "test_data/performance/black-scholes/black-scholes.orc",
             //"test_data/performance/k-means/k-means-scala-inner.orc",
             //"test_data/performance/k-means/k-means.orc",
             //"test_data/performance/bigsort/bigsort.orc",
             //"test_data/performance/bigsort/bigsort-partially-seq.orc",
-            //"test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
-            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
-            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            //"test_data/performance/sssp/sssp-batched-partitioned.orc",
+//            "test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
+//            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
+//            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            "test_data/performance/sssp/sssp-batched-partitioned.orc",
+//            "test_data/performance/sssp/sssp-batched.orc",
             //"test_data/performance/canneal/canneal-naive.orc",
             //"test_data/performance/canneal/canneal-partitioned.orc",
-            //"test_data/performance/dedup/dedup-boundedchannel.orc",
-            //"test_data/performance/dedup/dedup.orc",
+            "test_data/performance/dedup/dedup-boundedchannel.orc",
+//            "test_data/performance/dedup/dedup.orc",
             )
         nCPUs <- nCPUsValues
         allowAllSpawnInlining <- Seq(true, false)
-        truffleASTInlining <- Seq(true, false)
         universalTCO <- Seq(true, false)
+        actuallySchedule <- Seq(true, false)
       } yield {
         assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, allowAllSpawnInlining, truffleASTInlining, universalTCO, optLevel)
+        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, allowAllSpawnInlining, universalTCO, actuallySchedule, optLevel)
       }
       porce 
     }

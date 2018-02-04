@@ -122,7 +122,9 @@ t <- r %>% transmute(
   percentSpawns = percentStaticSpawns + percentDynamicSpawns
 ) %>% mutate_if(is.numeric, round)
 
-
+print(geomean(t$percentFutures / 100) * 100)
+print(geomean(t$percentForces / 100) * 100)
+print(geomean(t$percentSpawns / 100) * 100)
 
 outputDir <- file.path(dataDir, "plots")
 if (!dir.exists(outputDir)) {
