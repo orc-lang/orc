@@ -14,6 +14,8 @@
 
 set -o nounset
 
+progname=$(basename "$0")
+
 CONDOR_CHIRP="$(condor_config_val libexec)/condor_chirp"
 
 cleanfilename ()
@@ -56,7 +58,7 @@ get_job_attr_substituted ()
 main ()
 {
 
-  ${CONDOR_CHIRP} ulog "Greetings and felicitations from node ${_CONDOR_PROCNO} of ${_CONDOR_NPROCS}, running $0 on $(uname -n)"
+  ${CONDOR_CHIRP} ulog "Greetings and felicitations from node ${_CONDOR_PROCNO} of ${_CONDOR_NPROCS}, running ${progname} on $(uname -n)"
 
   job_status_timestamp="$(get_job_attr_at_submit EnteredCurrentStatus)"
 

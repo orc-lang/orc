@@ -15,6 +15,8 @@
 set -u
 set +C
 
+progname=$(basename "$0")
+
 today=$(date "+%Y%m%d")
 # epoch year "a" = 2004, year of first Orc paper
 yearLetter=$(printf "\x$(printf %x $(( 97 + $(date -u +%Y) - 2004 )) )")
@@ -23,7 +25,7 @@ dayOfYear=$(date "+%j")
 userInitial=$(printf "%.1s" "${LOGNAME}")
 
 if [ $# -gt 1 ] ; then
-    echo "usage: $0 [run_counter_filename]" 1>&2
+    echo "usage: ${progname} [run_counter_filename]" 1>&2
     echo '    where run_counter_filename defaults to ${HOME}/.orc-test-run-counter' 1>&2
     exit 64 # usage
 fi
