@@ -16,25 +16,27 @@ library(ggplot2)
 source("analysis.R")
 
 runNumber <- commandArgs(trailingOnly = TRUE)[1]
+warmupReps <- 9
+fileSize <- 1.302393420 # GB
 
 allRepetitionTimes <- read.csv("repetition-times.csv")
 names(allRepetitionTimes) <- c("program", "repeatRead", "numInputFiles", "dOrcNumRuntimes", "repetitionNumber", "elapsedTime", "cpuTime")
 
-warmRepetitionTimes <- allRepetitionTimes[allRepetitionTimes$repetitionNumber >= 10,]
+warmRepetitionTimes <- allRepetitionTimes[allRepetitionTimes$repetitionNumber >= (warmupReps + 1),]
 
 baselineTimeSummary <- warmRepetitionTimes[warmRepetitionTimes$dOrcNumRuntimes == 1 | is.na(warmRepetitionTimes$dOrcNumRuntimes),] %>%
   group_by(program, repeatRead, numInputFiles, dOrcNumRuntimes) %>%
-  summarise(nElapsedTime = length(elapsedTime), meanElapsedTime = mean(elapsedTime), sdElapsedTime = sd(elapsedTime), seElapsedTime = sdElapsedTime / sqrt(nElapsedTime))
-
+  summarise(nElapsedTime = length(elapsedTime), meanElapsedTime = mean(elapsedTime), sdElapsedTime = sd(elapsedTime), seElapsedTime = sdElapsedTime / sqrt(nElapsedTime)) %>%
+  rowwise() %>% mutate(sizeInput = numInputFiles * fileSize)
 
 # Plot baseline elapsed times
 
 for (currProgram in unique(baselineTimeSummary$program)) {
-  ggplot(baselineTimeSummary[baselineTimeSummary$program == currProgram,], aes(x = factor(numInputFiles), y = meanElapsedTime, group = 1)) +
+  ggplot(baselineTimeSummary[baselineTimeSummary$program == currProgram,], aes(x = sizeInput, y = meanElapsedTime, group = 1)) +
   geom_point() +
   stat_summary(fun.y = mean, geom = "line") +
   ggtitle(paste(currProgram, "Run", runNumber)) +
-  xlab("Number of files read") +
+  xlab("Input size (GB)") +
   labs(fill = "Cluster size [Number of d-Orc runtimes]") +
   scale_y_continuous(name = "Elapsed time (s)", labels = function(n){format(n / 1000000, scientific = FALSE)}) +
   expand_limits(y = 0.0) +
@@ -52,18 +54,19 @@ elapsedTimeSummary <- warmRepetitionTimes[!is.na(warmRepetitionTimes$dOrcNumRunt
   group_by(program, repeatRead, numInputFiles, dOrcNumRuntimes) %>%
   summarise(nElapsedTime = length(elapsedTime), meanElapsedTime = mean(elapsedTime), sdElapsedTime = sd(elapsedTime), seElapsedTime = sdElapsedTime / sqrt(nElapsedTime)) %>%
   addBaseline(meanElapsedTime, c(dOrcNumRuntimes = 1)) %>%
-  mutate(speedup = meanElapsedTime_baseline / meanElapsedTime)
+  mutate(speedup = meanElapsedTime_baseline / meanElapsedTime) %>%
+  rowwise() %>% mutate(sizeInput = numInputFiles * fileSize)
 
 options(tibble.print_max = Inf, tibble.width = Inf)
 
 for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNumRuntimes > 1 & !is.na(elapsedTimeSummary$dOrcNumRuntimes)])) {
 
-  ggplot(elapsedTimeSummary[elapsedTimeSummary$program == currProgram & elapsedTimeSummary$dOrcNumRuntimes > 1,], aes(x = dOrcNumRuntimes, y = speedup, group = factor(numInputFiles), colour = factor(numInputFiles), shape = factor(numInputFiles))) +
+  ggplot(elapsedTimeSummary[elapsedTimeSummary$program == currProgram & elapsedTimeSummary$dOrcNumRuntimes > 1,], aes(x = dOrcNumRuntimes, y = speedup, group = factor(sizeInput), colour = factor(sizeInput), shape = factor(sizeInput))) +
   geom_line() +
   geom_point(size = 3) +
   ggtitle(paste(currProgram, "Run", runNumber)) +
   xlab("Cluster size [Number of d-Orc runtimes]") +
-  labs(colour = "Number of files read", shape = "Number of files read") +
+  labs(colour = "Input size (GB)", shape = "Input size (GB)") +
   scale_y_continuous(name = "Speed-up factor over cluster size 1", labels = function(n){format(n, scientific = FALSE)}) +
   expand_limits(x = 1, y = 1.0) +
   # geom_errorbar(aes(ymax = speedupSeMax, ymin = speedupSeMin), width = 0.2, alpha = 0.35) +
@@ -73,20 +76,37 @@ for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNum
   ggsave(paste0("speedup_", currProgram, ".pdf"), width = 7, height = 7)
 }
 
-# Small version of 120-file case only, for printing at a small size
+# Small version of max-file case only, for printing at a small size
+
+maxNumFiles <- max(elapsedTimeSummary$numInputFiles)
 
 for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNumRuntimes > 1 & !is.na(elapsedTimeSummary$dOrcNumRuntimes)])) {
 
-  ggplot(elapsedTimeSummary[elapsedTimeSummary$program == currProgram & elapsedTimeSummary$dOrcNumRuntimes > 1 & elapsedTimeSummary$numInputFiles == 120,], aes(x = dOrcNumRuntimes, y = speedup, group = factor(numInputFiles), colour = factor(numInputFiles), shape = factor(numInputFiles))) +
+  ggplot(elapsedTimeSummary[elapsedTimeSummary$program == currProgram & elapsedTimeSummary$dOrcNumRuntimes > 1 & elapsedTimeSummary$numInputFiles == maxNumFiles,], aes(x = dOrcNumRuntimes, y = speedup, group = factor(sizeInput), colour = factor(sizeInput), shape = factor(sizeInput))) +
   geom_line(size = 2) +
   geom_point(size = 7) +
   xlab("Cluster size [Number of runtimes]") +
-  labs(colour = "Number of files read", shape = "Number of files read") +
+  labs(colour = "Input size (GB)", shape = "Input size (GB)") +
   scale_y_continuous(name = "Speed-up factor over cluster size 1", labels = function(n){format(n, scientific = FALSE)}) +
   expand_limits(x = 1, y = 1.0) +
   # geom_errorbar(aes(ymax = speedupSeMax, ymin = speedupSeMin), width = 0.2, alpha = 0.35) +
   theme_minimal() +
   theme(legend.position = "none", axis.text=element_text(size=24), axis.title=element_text(size=28))
 
-  ggsave(paste0("speedup_", currProgram, "_120_sm.pdf"), width = 7, height = 7)
+  ggsave(paste0("speedup_", currProgram, "_", maxNumFiles, "_sm.pdf"), width = 7, height = 7)
+}
+
+# Small version of baseline elapsed times for cluster size 1 case only, for printing at a small size
+
+{
+  ggplot(baselineTimeSummary[(is.na(baselineTimeSummary$dOrcNumRuntimes) | baselineTimeSummary$dOrcNumRuntimes == 1) & baselineTimeSummary$numInputFiles == maxNumFiles,], aes(x = program, y = meanElapsedTime, group = 1)) +
+  geom_col() +
+  xlab("Program variant") +
+  scale_y_continuous(name = "Elapsed time (s)", labels = function(n){format(n / 1000000, scientific = FALSE)}) +
+  expand_limits(y = 0.0) +
+  geom_errorbar(aes(ymax = meanElapsedTime + seElapsedTime, ymin = meanElapsedTime - seElapsedTime), width = 0.2, alpha = 0.35, position = "dodge") +
+  theme_minimal() +
+  theme(legend.position = "none", axis.text=element_text(size=24), axis.title=element_text(size=28))
+
+  ggsave("elapsedTime_programs_1_sm.pdf", width = 7, height = 7)
 }
