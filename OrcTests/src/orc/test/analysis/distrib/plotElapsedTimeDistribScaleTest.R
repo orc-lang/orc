@@ -99,12 +99,12 @@ for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNum
 # Small version of baseline elapsed times for cluster size 1 case only, for printing at a small size
 
 {
-  ggplot(baselineTimeSummary[(is.na(baselineTimeSummary$dOrcNumRuntimes) | baselineTimeSummary$dOrcNumRuntimes == 1) & baselineTimeSummary$numInputFiles == maxNumFiles,], aes(x = program, y = meanElapsedTime, group = 1)) +
+  ggplot(baselineTimeSummary[(is.na(baselineTimeSummary$dOrcNumRuntimes) | baselineTimeSummary$dOrcNumRuntimes == 1) & baselineTimeSummary$numInputFiles == maxNumFiles,], aes(x = program, y = meanElapsedTime, group = 1, colour = program, fill = program)) +
   geom_col() +
   xlab("Program variant") +
   scale_y_continuous(name = "Elapsed time (s)", labels = function(n){format(n / 1000000, scientific = FALSE)}) +
   expand_limits(y = 0.0) +
-  geom_errorbar(aes(ymax = meanElapsedTime + seElapsedTime, ymin = meanElapsedTime - seElapsedTime), width = 0.2, alpha = 0.35, position = "dodge") +
+  geom_errorbar(aes(ymax = meanElapsedTime + seElapsedTime, ymin = meanElapsedTime - seElapsedTime), colour = "black", width = 0.2, alpha = 0.35, position = "dodge") +
   theme_minimal() +
   theme(legend.position = "none", axis.text=element_text(size=24), axis.title=element_text(size=28))
 
