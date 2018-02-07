@@ -18,6 +18,7 @@ source("analysis.R")
 runNumber <- commandArgs(trailingOnly = TRUE)[1]
 warmupReps <- 9
 fileSize <- 1.302393420 # GB
+programNameMap <- c("WordCount.java"="Java 1 thr", "wordcount−pure−orc.orc"="pure dOrc", "wordcount−mixed−orc−java.orc"="Java+dOrc", "HolmesWordCountHadoop.java"="Hadoop")
 
 allRepetitionTimes <- read.csv("repetition-times.csv")
 names(allRepetitionTimes) <- c("program", "repeatRead", "numInputFiles", "dOrcNumRuntimes", "repetitionNumber", "elapsedTime", "cpuTime")
@@ -98,8 +99,11 @@ for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNum
 
 # Small version of baseline elapsed times for cluster size 1 case only, for printing at a small size
 
+baselineTimeSummaryRc <- baselineTimeSummary
+baselineTimeSummaryRc$program <- programNameMap[baselineTimeSummaryRc$program]
+
 {
-  ggplot(baselineTimeSummary[(is.na(baselineTimeSummary$dOrcNumRuntimes) | baselineTimeSummary$dOrcNumRuntimes == 1) & baselineTimeSummary$numInputFiles == maxNumFiles,], aes(x = program, y = meanElapsedTime, group = 1, colour = program, fill = program)) +
+  ggplot(baselineTimeSummaryRc[(is.na(baselineTimeSummaryRc$dOrcNumRuntimes) | baselineTimeSummaryRc$dOrcNumRuntimes == 1) & baselineTimeSummaryRc$numInputFiles == maxNumFiles,], aes(x = program, y = meanElapsedTime, group = 1, colour = program, fill = program)) +
   geom_col() +
   xlab("Program variant") +
   scale_y_continuous(name = "Elapsed time (s)", labels = function(n){format(n / 1000000, scientific = FALSE)}) +
