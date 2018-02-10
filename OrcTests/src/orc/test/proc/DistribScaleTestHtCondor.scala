@@ -211,7 +211,9 @@ object DistribScaleTestHtCondor {
         |# Placement policy
         |##
         |
-        |requirements = TARGET.HasJava
+        |requirements = TARGET.HasJava && NPR
+        |
+        |request_cpus = 8
         |
         |
         |##
@@ -336,7 +338,9 @@ object DistribScaleTestHtCondor {
         |# Placement policy
         |##
         |
-        |requirements = TARGET.HasJava
+        |requirements = TARGET.HasJava && NPR
+        |
+        |request_cpus = 8
         |
         |
         |##
