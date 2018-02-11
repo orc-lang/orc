@@ -9,6 +9,8 @@ implementation.
 
 include "benchmark.inc"
 
+import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+
 import class DedupData = "orc.test.item.scalabenchmarks.dedup.DedupData"
 import class Rabin = "orc.test.item.scalabenchmarks.dedup.Rabin"
 import class Chunk = "orc.test.item.scalabenchmarks.dedup.Chunk"
@@ -52,7 +54,7 @@ def sha1(chunk) = ArrayKey(
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
 def readSegements(minimumSegmentSize, in) =
-	def process(currentChunk, i) =
+	def process(currentChunk, i) = Sequentialize() >> (
 		val splitPoint = rabin.segment(currentChunk, minimumSegmentSize)
 		if splitPoint = currentChunk.size() then
 			-- TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
@@ -62,6 +64,7 @@ def readSegements(minimumSegmentSize, in) =
 		else
 			(currentChunk.slice(0, splitPoint), i) |
 			process(currentChunk.slice(splitPoint, currentChunk.size()), i+1)
+			)
 	process(Chunk.empty(), 0)
 
 	
@@ -69,23 +72,25 @@ def readSegements(minimumSegmentSize, in) =
 -}
 def segment(minimumSegmentSize, chunk) =
 	def process(chunk, i) if (chunk.size() = 0) = {- printLogLine("segment " + i) >> -} (Chunk.empty(), i)
-	def process(chunk, i) =
+	def process(chunk, i) = Sequentialize() >> (
 		val splitPoint = rabin.segment(chunk, minimumSegmentSize) #
 		(chunk.slice(0, splitPoint), i) |
 		process(chunk.slice(splitPoint, chunk.size()), i + 1)
+		)
 	process(chunk, 0)
 
 {-- Compress a chunk with deduplication by publishing an existing compressed chuck if an identical one exists.
 -} 
-def compress(chunk, dedupPool, id) =
+def compress(chunk, dedupPool, id) = Sequentialize() >> (
 	val hash = sha1(chunk)
 	val old = dedupPool.putIfAbsent(hash, CompressedChunk(hash, chunk.size()))
 	val compChunk = old >> dedupPool.get(hash)
 	Ift(old = null) >> --printLogLine("Compressing CompressedChunk: " + compChunk.uncompressedSHA1) >> 
 		compChunk.compress(chunk) >> stop |
 	compChunk
+	)
 
-def writeChunk(out, cchunk, isAlreadyOutput) =
+def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> (
 	if isAlreadyOutput then
 		--printLogLine("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
 		out.writeBytes("R") >> 
@@ -95,12 +100,13 @@ def writeChunk(out, cchunk, isAlreadyOutput) =
 		out.writeBytes("D") >> 
 		out.writeLong(cchunk.compressedData().length?) >>
 		out.write(cchunk.compressedData())
+	)
 
 {-- Read sequential elements from the pool and write to the provided OutputStream.
 -}
 def write(out, outputPool) =
 	val alreadyOutput = Map()
-	def process((roughID, fineID), id) = 
+	def process((roughID, fineID), id) = Sequentialize() >> (
 		val cchunk = outputPool.get((roughID, fineID))
 		if cchunk = null then
 			--printLogLine("Pool: " + (roughID, fineID) + " " + outputPool) >>
@@ -117,6 +123,7 @@ def write(out, outputPool) =
 			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1)) >>
 			alreadyOutput.put(cchunk.uncompressedSHA1, true) >>
 			process((roughID, fineID + 1), id + 1)
+			)
 	process((0, 0), 0)
 
 {-- Connect the various stages using branch combinators

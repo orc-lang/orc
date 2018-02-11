@@ -8,6 +8,8 @@ include "benchmark.inc"
 import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 type Double = Top
 
+import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+
 val n = 10
 val iters = 1
 
@@ -50,7 +52,7 @@ def run(xs) =
 def updateCentroids(xs, centroids) = 
   val pointAdders = listToArray(map({ PointAdder() }, arrayToList(centroids)))
   val partitionSize = Ceil((0.0 + xs.length?) / nPartitions)
-  forBy(0, xs.length?, partitionSize) >index> (
+  forBy(0, xs.length?, partitionSize) >index> Sequentialize() >> (
     -- val _ = Println("Partition: " + index + " to " + (index + partitionSize) + " (" + xs.length? + ")")
     val p = KMeans.sumAndCountClusters(xs, centroids, index, min(index + partitionSize, xs.length?))
     val xs = p.productElement(0)

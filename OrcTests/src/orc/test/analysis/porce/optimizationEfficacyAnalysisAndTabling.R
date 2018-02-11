@@ -24,8 +24,8 @@ dataDir <- file.path(localExperimentDataDir, "20180203-a009")
 #
 # Load main data
 
-dataOrct <- readMergedResultsTable(dataDir, "orctimizer-statistics", invalidate = F) %>% filter(run == 0)
-dataPorc <- readMergedResultsTable(dataDir, "porc-optimizer-statistics", invalidate = F) %>% filter(run == 0)
+dataOrct <- readMergedResultsTable(dataDir, "orctimizer-statistics", invalidate = T) %>% filter(run == 0)
+dataPorc <- readMergedResultsTable(dataDir, "porc-optimizer-statistics", invalidate = T) %>% filter(run == 0)
 
 dropMiddle <- function(d) {
   d %>% arrange(pass) %>% group_by(benchmarkName) %>% slice(c(1, n())) %>% mutate(optimized = pass != 1, pass = NULL) %>% ungroup()
@@ -36,13 +36,15 @@ dataPorc <- dataPorc %>% dropMiddle()
 
 # Load truffle specialization information
 
-countMatchingLines <- function(str, lines) {
-  sum(grepl(str, lines, fixed = T))
+countMatchingLines <- function(str, lines, fixed = T) {
+  sum(grepl(str, lines, fixed = fixed))
 }
 
 loadTruffleData <- function(benchmarkName, orcFile) {
   n <- sub("^.*/([^/.]*).orc", "\\1", orcFile)
-  fp <- file.path(dataDir, "raw-output", paste0(n, "_orc*_truffle-node-specializations_*.txt"))
+  fp <- file.path(dataDir, "raw-output", paste0(n, "_orc*_24*_truffle-node-specializations_*.txt"))
+  #print(fp)
+  #print(Sys.glob(fp))
   fn <- first(Sys.glob(fp))
   if (length(fn) > 0) {
     txt <- readLines(fn)
@@ -53,14 +55,16 @@ loadTruffleData <- function(benchmarkName, orcFile) {
 
     forcesSingle <- countMatchingLines("| SingleFutureNodeGen", txt)
     nonforcesSingle <- countMatchingLines("SingleFutureNodeGen<nonFuture=Binary(wasTrue=true, wasFalse=false)", txt)
+    blockedForcesSingle <- countMatchingLines("SingleFutureNodeGen<.*,unboundFuture=ResettableBranchProfile\\(visited=true\\).*>", txt, fixed = F)
+
     forcesMulti <- countMatchingLines("| FinishNodeGen", txt)
     blockedForcesMulti <- countMatchingLines("blocked: (1) {}", txt)
 
     data.frame(benchmarkName,
                unoptSpawns = unoptSpawns + deinlinedSpawns,
                inlinedSpawns = inlinedSpawns - deinlinedSpawns,
-               remainingForces = forcesSingle - nonforcesSingle + blockedForcesMulti,
-               eliminatedForces = nonforcesSingle + forcesMulti - blockedForcesMulti
+               remainingForces = blockedForcesSingle + blockedForcesMulti,
+               eliminatedForces = forcesSingle - blockedForcesSingle + forcesMulti - blockedForcesMulti
                )
   } else {
     data.frame(benchmarkName,
@@ -73,8 +77,48 @@ loadTruffleData <- function(benchmarkName, orcFile) {
 }
 
 
+benchmarkProperties <- {
+  csv <- "
+benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline
+Black-Scholes-naive ,                               Fine,        F,            Naïve,       F
+Black-Scholes-partially-seq ,                       Fine,        F,            Naïve,       F
+Black-Scholes-par (Scala),                               Fine,        NA,           Par. Col.,   TRUE
+Black-Scholes-partitioned-seq ,                     Coarse,      F,            Partition,   F
+Black-Scholes-scala-compute ,                       Fine,        T,            Naïve,       F
+Black-Scholes-scala-compute-partially-seq ,         Fine,        T,            Naïve,       F
+Black-Scholes-scala-compute-partitioned-seq ,       Coarse,      T,            Partition,   F
+Dedup-boundedchannel ,                              Coarse,      T,            Thread,      F
+Dedup-boundedqueue (Scala),                              Coarse,      NA,           Thread,      F
+Dedup-naive ,                                       Fine,        T,            Naïve,       F
+Dedup-nestedpar (Scala),                                 Fine,        NA,           Par. Col.,   TRUE
+KMeans ,                                            Fine,        F,            Naïve,       F
+KMeans-par (Scala),                                      Fine,        NA,           Par. Col.,   TRUE
+KMeans-par-manual (Scala),                               Coarse,      NA,           Partition,   F
+KMeans-scala-inner ,                                Coarse,      T,            Partition,   F
+SSSP-batched ,                                      Fine,        F,            Naïve,       F
+SSSP-batched-par (Scala),                                Fine,        NA,           Par. Col.,   TRUE
+SSSP-batched-partitioned ,                          Coarse,      F,            Partition,   F
+Swaptions-naive-scala-sim ,                         Coarse,      T,            Naïve,       F
+Swaptions-naive-scala-subroutines-seq ,             Fine,        T,            Naïve,       F
+Swaptions-naive-scala-swaption ,                    Coarse,      T,            Naïve,       F
+Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F
+Swaptions-par-trial (Scala),                             Coarse,      NA,           Par. Col.,   TRUE
+  "
+  r <- read.csv(text = csv, strip.white = T, header = T) %>%
+    replace_na(list(scalaCompute = T)) %>%
+    mutate(granularity = factor(granularity, c("Super Fine", "Fine", "Coarse"), ordered = T)) %>%
+    mutate(parallelism = factor(if_else(parallelism == "Par. Col.", "Naïve", as.character(parallelism))))
+
+  levels(r$granularity) <- c("S. Fine", "Fine", "Coarse")
+
+  r
+}
+
 starting <- dataOrct %>% filter(optimized == FALSE)
 ending <- dataPorc %>% filter(optimized == TRUE)
+
+dataPorcE <- dataOrct %>% group_by(benchmarkName) %>%
+  do(loadTruffleData(first(.$benchmarkName), first(.$orcFile)))
 
 values <- list(
   starting %>% transmute(benchmarkName, startingFutures = Future),
@@ -84,8 +128,8 @@ values <- list(
   starting %>% transmute(benchmarkName, startingSpawns = Future + Parallel + Branch),
   dataPorc %>% filter(optimized == FALSE) %>% transmute(benchmarkName, startingPorcSpawns = Spawn),
   ending %>% transmute(benchmarkName, endingSpawns = Spawn),
-  dataOrct %>% group_by(benchmarkName) %>%
-    do(loadTruffleData(first(.$benchmarkName), first(.$orcFile)))
+  dataPorcE,
+  benchmarkProperties
 )
 
 join_all <- function(ds, by = NULL) {
@@ -100,7 +144,32 @@ join_all <- function(ds, by = NULL) {
   d
 }
 
-r <- join_all(values, by = "benchmarkName")
+
+
+r <- join_all(values, by = "benchmarkName") %>% mutate(benchmarkName = factor(benchmarkName))
+
+includedBenchmarks <- {
+  txt <- "
+  #Black-Scholes-naive
+  #Black-Scholes-partially-seq
+  Black-Scholes-partitioned-seq
+  #Black-Scholes-scala-compute
+  Black-Scholes-scala-compute-partially-seq
+  Black-Scholes-scala-compute-partitioned-seq
+  Dedup-boundedchannel
+  Dedup-naive
+  KMeans
+  KMeans-scala-inner
+  SSSP-batched
+  SSSP-batched-partitioned
+  Swaptions-naive-scala-sim
+  Swaptions-naive-scala-subroutines-seq
+  #Swaptions-naive-scala-swaption
+"
+  read.csv(text = txt, strip.white = T, header = F, stringsAsFactors = F)[[1]]
+}
+
+r <- r %>% filter(is.element(benchmarkName, includedBenchmarks))
 
 # formatOpt <- function(remaining, starting, percentStatic, percentDynamic) {
 #   sprintf("% 4d (% 4d, %2.0f%% + %2.0f%% = %2.0f%%)", remaining, starting, percentStatic * 100, percentDynamic * 100, percentStatic * 100 + percentDynamic * 100)
@@ -108,6 +177,8 @@ r <- join_all(values, by = "benchmarkName")
 
 t <- r %>% transmute(
   benchmarkName,
+  if_else(scalaCompute, "Scala", "Orc"),
+  parallelism,
 
   remainingFutures = endingFutures, startingFutures = startingFutures,
   percentStaticFutures = (startingFutures - endingFutures) / startingFutures * 100, percentDynamicFutures = 0,
@@ -122,9 +193,12 @@ t <- r %>% transmute(
   percentSpawns = percentStaticSpawns + percentDynamicSpawns
 ) %>% mutate_if(is.numeric, round)
 
-print(geomean(t$percentFutures / 100) * 100)
-print(geomean(t$percentForces / 100) * 100)
-print(geomean(t$percentSpawns / 100) * 100)
+print("percentFutures")
+print(round(geomean(t$percentFutures / 100) * 100))
+print("percentForces")
+print(round(geomean(t$percentForces / 100) * 100))
+print("percentSpawns")
+print(round(geomean(t$percentSpawns / 100) * 100))
 
 outputDir <- file.path(dataDir, "plots")
 if (!dir.exists(outputDir)) {
@@ -133,4 +207,4 @@ if (!dir.exists(outputDir)) {
 
 write.csv(t, file = file.path(outputDir, "optimization.csv"), row.names = F)
 
-kable(t, "latex")
+print(kable(t, "latex"))

@@ -4,6 +4,8 @@
 
 include "benchmark.inc"
 
+import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+
 import class BlackScholesResult = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesResult"
 import class BlackScholesData = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesData"
 import class BlackScholes = "orc.test.item.scalabenchmarks.blackscholes.BlackScholes"

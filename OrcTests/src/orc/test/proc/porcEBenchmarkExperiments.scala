@@ -50,9 +50,9 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
       //val nCPUsValues = (Seq(4, 8, 16, 20, 24)).reverse
-      val nCPUsValues = (Seq(8, 16, 24)).reverse
+      val nCPUsValues = (Seq(1, 8, 16, 24)).reverse
       val porce = for {
-        run <- 0 until 3 
+        run <- 0 until 2
         nCPUs <- nCPUsValues
         fn <- Seq(
             //"test_data/performance/Mandelbrot.orc",
@@ -60,9 +60,11 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
             //"test_data/performance/threadring.orc",
             //"test_data/performance/threadring2.orc",
             "test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
-            "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-compute-partially-seq.orc",
+            //"test_data/performance/black-scholes/black-scholes-scala-compute.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
-            "test_data/performance/black-scholes/black-scholes.orc",
+            "test_data/performance/black-scholes/black-scholes-partially-seq.orc",
+            //"test_data/performance/black-scholes/black-scholes.orc",
             "test_data/performance/k-means/k-means-scala-inner.orc",
             "test_data/performance/k-means/k-means.orc",
 //            "test_data/performance/bigsort/bigsort.orc",
@@ -104,7 +106,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      (porce ++ scala).sortBy(o => (o.run, o.nCPUs, o.toString))
+      (porce ++ scala).sortBy(o => (o.run, -o.nCPUs, o.toString))
     }
     runExperiment(experimentalConditions)
   }

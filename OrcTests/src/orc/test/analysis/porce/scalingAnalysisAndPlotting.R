@@ -20,9 +20,9 @@ source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 
 
-#dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
+dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
 #dataDir <- file.path(localExperimentDataDir, "20180130-a002")
-dataDir <- file.path(localExperimentDataDir, "20180203-a009")
+#dataDir <- file.path(localExperimentDataDir, "20180203-a009")
 
 if(!exists("processedData")) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
@@ -33,7 +33,7 @@ if(!exists("processedData")) {
   levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "KMeans", "K-Means", levels(data$benchmarkProblemName))
 
   prunedData <- data %>%
-    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 3, maxRemaining = 40) %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
     # Drop any reps which have more than 1% compilation time.
     filter(rtCompTime < cpuTime * 0.01)
 
@@ -42,7 +42,7 @@ if(!exists("processedData")) {
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
-    group_by(benchmarkName) %>% addBaseline(elapsedTime_mean, c(nCPUs=1), baseline = elapsedTime_mean_selfbaseline) %>%
+    #group_by(benchmarkName) %>% addBaseline(elapsedTime_mean, c(nCPUs=1), baseline = elapsedTime_mean_selfbaseline) %>%
     #group_by(benchmarkProblemName) %>% addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1), baseline = elapsedTime_mean_problembaseline) %>%
     ungroup()
 }
@@ -51,42 +51,82 @@ clear__ <- function() {
   rm("processedData")
 }
 
+print(levels(processedData$benchmarkName))
+
 benchmarkProperties <- {
   csv <- "
-benchmarkName,                                           granularity, scalaCompute, manualPartitioning
-Black-Scholes-naive (Orc),                               Tiny,        F,            F
-Black-Scholes-par (Scala),                               Small,       NA,           F
-Black-Scholes-partitioned-seq (Orc),                     Large,       F,            T
-Black-Scholes-scala-compute (Orc),                       Large,       T,            F
-Black-Scholes-scala-compute-partitioned-seq (Orc),       Large,       T,            T
-Dedup-boundedchannel (Orc),                              Large,       T,            T
-Dedup-boundedqueue (Scala),                              Large,       NA,           T
-Dedup-naive (Orc),                                       Small,       T,            F
-Dedup-nestedpar (Scala),                                 Small,       NA,           F
-KMeans (Orc),                                            Small,       F,            F
-KMeans-par (Scala),                                      Small,       NA,           F
-KMeans-par-manual (Scala),                               Large,       NA,           T
-KMeans-scala-inner (Orc),                                Large,       T,            F
-SSSP-batched (Orc),                                      Small,       F,            F
-SSSP-batched-par (Scala),                                Small,       NA,           F
-SSSP-batched-partitioned (Orc),                          Large,       F,            T
-Swaptions-naive-scala-sim (Orc),                         Small,       T,            F
-Swaptions-naive-scala-subroutines-seq (Orc),             Tiny,        T,            F
-Swaptions-naive-scala-swaption (Orc),                    Large,       T,            F
-Swaptions-par-swaption (Scala),                          Large,       NA,           F
-Swaptions-par-trial (Scala),                             Small,       NA,           F
+benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline
+Black-Scholes-naive (Orc),                               Fine,        F,            Naïve,       F
+Black-Scholes-partially-seq (Orc),                       Fine,        F,            Naïve,       F
+Black-Scholes-par (Scala),                               Fine,        NA,           Par. Col.,   TRUE
+Black-Scholes-partitioned-seq (Orc),                     Coarse,      F,            Partition,   F
+Black-Scholes-scala-compute (Orc),                       Fine,        T,            Naïve,       F
+Black-Scholes-scala-compute-partially-seq (Orc),         Fine,        T,            Naïve,       F
+Black-Scholes-scala-compute-partitioned-seq (Orc),       Coarse,      T,            Partition,   F
+Dedup-boundedchannel (Orc),                              Coarse,      T,            Thread,      F
+Dedup-boundedqueue (Scala),                              Coarse,      NA,           Thread,      F
+Dedup-naive (Orc),                                       Fine,        T,            Naïve,       F
+Dedup-nestedpar (Scala),                                 Fine,        NA,           Par. Col.,   TRUE
+KMeans (Orc),                                            Fine,        F,            Naïve,       F
+KMeans-par (Scala),                                      Fine,        NA,           Par. Col.,   TRUE
+KMeans-par-manual (Scala),                               Coarse,      NA,           Partition,   F
+KMeans-scala-inner (Orc),                                Coarse,      T,            Partition,   F
+SSSP-batched (Orc),                                      Fine,        F,            Naïve,       F
+SSSP-batched-par (Scala),                                Fine,        NA,           Par. Col.,   TRUE
+SSSP-batched-partitioned (Orc),                          Coarse,      F,            Partition,   F
+Swaptions-naive-scala-sim (Orc),                         Coarse,      T,            Naïve,       F
+Swaptions-naive-scala-subroutines-seq (Orc),             Fine,        T,            Naïve,       F
+Swaptions-naive-scala-swaption (Orc),                    Coarse,      T,            Naïve,       F
+Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F
+Swaptions-par-trial (Scala),                             Coarse,      NA,           Par. Col.,   TRUE
   "
-  read.csv(text = csv, strip.white = T, header = T) %>%
+  r <- read.csv(text = csv, strip.white = T, header = T) %>%
     replace_na(list(scalaCompute = T)) %>%
-    mutate(granularity = factor(granularity, c("Tiny", "Small", "Large"), ordered = T))
+    mutate(granularity = factor(granularity, c("Super Fine", "Fine", "Coarse"), ordered = T)) %>%
+    mutate(parallelism = factor(if_else(parallelism == "Par. Col.", "Naïve", as.character(parallelism))))
+
+  levels(r$granularity) <- c("S. Fine", "Fine", "Coarse")
+
+  r
 }
 
 processedData <- processedData %>%
-  select(everything(), -contains("granularity"), -contains("scalaCompute"), -contains("manualPartitioning")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
+  select(everything(), -contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
   left_join(benchmarkProperties, by = "benchmarkName") %>%
   group_by(benchmarkProblemName) %>%
-  addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, granularity = "Small"), baseline = elapsedTime_mean_problembaseline) %>%
+  addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T), baseline = elapsedTime_mean_problembaseline) %>%
   ungroup()
+
+includedBenchmarks <- {
+  txt <- "
+  #Black-Scholes-naive (Orc)
+  #Black-Scholes-partially-seq (Orc)
+  Black-Scholes-par (Scala)
+  Black-Scholes-partitioned-seq (Orc)
+  #Black-Scholes-scala-compute (Orc)
+  Black-Scholes-scala-compute-partially-seq (Orc)
+  Black-Scholes-scala-compute-partitioned-seq (Orc)
+  Dedup-boundedchannel (Orc)
+  Dedup-boundedqueue (Scala)
+  Dedup-naive (Orc)
+  Dedup-nestedpar (Scala)
+  KMeans (Orc)
+  KMeans-par (Scala)
+  KMeans-par-manual (Scala)
+  KMeans-scala-inner (Orc)
+  SSSP-batched (Orc)
+  SSSP-batched-par (Scala)
+  SSSP-batched-partitioned (Orc)
+  Swaptions-naive-scala-sim (Orc)
+  Swaptions-naive-scala-subroutines-seq (Orc)
+  #Swaptions-naive-scala-swaption (Orc)
+  #Swaptions-par-swaption (Scala)
+  Swaptions-par-trial (Scala)
+"
+  read.csv(text = txt, strip.white = T, header = F, stringsAsFactors = F)[[1]]
+}
+
+processedData <- processedData %>% filter(is.element(benchmarkName, includedBenchmarks))
 
 plotAllData <- function(data) {
   paletteValues <- rep(c(rbind(brewer.pal(8, "Dark2"), rev(brewer.pal(12, "Set3")))), 10)
@@ -203,14 +243,14 @@ normalizedPerformancePlot <- function(problemName) {
     y = elapsedTime_mean_problembaseline / elapsedTime_mean,
     ymin = elapsedTime_mean_problembaseline / elapsedTime_mean_lowerBound,
     ymax = elapsedTime_mean_problembaseline / elapsedTime_mean_upperBound,
-    fill = granularity,
-    color = scalaCompute,
-    group = benchmarkName,
-    shape = language)) +
-    labs(y = "Speed up", x = "Number of CPUs") +
+    linetype = parallelism,
+    fill = factor(if_else((language == "Orc") & scalaCompute, "Orc+Scala", as.character(language)), levels = c("Orc+Scala", "Orc", "Scala")),
+    color = granularity,
+    group = benchmarkName)) +
+    labs(y = "Speed up", x = "Number of CPUs", fill = "Language") +
     theme_minimal() + scale_fill_brewer(palette="Dark2")
 
-  fullPerformancePlot <- p + geom_col_errorbar() + geom_point(position = position_dodge(0.9)) +
+  fullPerformancePlot <- p + geom_col_errorbar() +
     #geom_text(aes(label = format((elapsedTime_mean_problembaseline / elapsedTime_mean), digits = 2, nsmall=0),
     #              y = pmax(pmin((elapsedTime_mean_problembaseline / elapsedTime_mean) + (0.01 * 1.5), 1.5 * 0.9), 0)),
     #          position = position_dodge(0.9), vjust = 0) +
@@ -221,7 +261,7 @@ normalizedPerformancePlot <- function(problemName) {
 
 normalizedPerformancePlots <- lapply(levels(processedData$benchmarkProblemName), normalizedPerformancePlot)
 
-print(normalizedPerformancePlots)
+# print(normalizedPerformancePlots)
 
 sampleCountData <- processedData %>% select(benchmarkName, nCPUs, nSamples) %>% spread(nCPUs, nSamples)
 
@@ -252,10 +292,10 @@ if (!dir.exists(outputDir)) {
 
 print(levels(processedData$benchmarkProblemName))
 
-for (problem in levels(processedData$benchmarkProblemName)) {
-  ggsave(file.path(outputDir, paste0(problem, "-scaling.pdf")), scalingPlot(problem), width = 7.5, height = 6)
-  ggsave(file.path(outputDir, paste0(problem, "-normPerformance.pdf")), normalizedPerformancePlot(problem), width = 7.5, height = 8)
-}
+# for (problem in levels(processedData$benchmarkProblemName)) {
+#   ggsave(file.path(outputDir, paste0(problem, "-scaling.pdf")), scalingPlot(problem), width = 7.5, height = 6)
+#   ggsave(file.path(outputDir, paste0(problem, "-normPerformance.pdf")), normalizedPerformancePlot(problem), width = 7.5, height = 8)
+# }
 
 capture.output(sampleCountTable("rst"), file = file.path(outputDir, "usedSampleCounts.rst"), type = "output")
 
@@ -263,33 +303,45 @@ sampleCountTable("rst")
 
 # Combined faceted plot for all benchmarks.
 
-overallScalingPlot <- processedData %>% filter(scalaCompute == T | benchmarkProblemName == "SSSP", granularity != "Tiny") %>%
+overallScalingPlot <- processedData %>%
   ggplot(aes(
     x = factor(nCPUs),
     y = elapsedTime_mean_problembaseline / elapsedTime_mean,
     #ymin = elapsedTime_mean_problembaseline / elapsedTime_mean_lowerBound,
     #ymax = elapsedTime_mean_problembaseline / elapsedTime_mean_upperBound,
-    color = language,
+    color = parallelism,
     group = benchmarkName,
-    shape = factor(if_else(manualPartitioning, "Manually Partitioned", as.character(granularity)))
+    linetype = factor(if_else((language == "Orc") & scalaCompute, "Orc+Scala", as.character(language)), levels = c("Orc+Scala", "Orc", "Scala"))
     )) +
-  labs(y = "Speed up", x = "Number of CPUs", shape = "Granularity", color = "Language") +
+  labs(y = "Speed Up", x = "Number of Cores", shape = "Granularity", linetype = "Language", color = "Parallelism") +
   theme_minimal() +
-  scale_fill_brewer(palette="Dark2") +
-  scale_color_brewer(palette="Dark2") +
-  geom_point(size = 3, alpha = 0.7) +
+  #scale_fill_brewer(palette="Set3") +
+  #scale_color_brewer(palette="PuBuGn", direction = -1) +
+  scale_color_manual(values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
+  # geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
+  geom_point(aes(shape = granularity), processedData, alpha = 0.7) +
   geom_line() +
   geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
   expand_limits(y = 0) +
   scale_y_continuous(expand = c(0, 0.5)) +
-  scale_shape_manual(values = c("Large" = 0, "Manually Partitioned" = 7, "Small" = 3)) +
-  facet_wrap(~benchmarkProblemName, scales = "free_y") +
+  scale_shape_discrete(solid = F) +
+  facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 1) +
   theme(
-    legend.position = c(.99, .00),
-    legend.justification = c("right", "bottom"),
-    legend.box.just = "left",
-    legend.margin = margin(3, 10, -12, 3)
+    #legend.justification = c("right", "top"),
+    #legend.box.just = "top",
+    legend.margin = margin(-8, 0, 0, -30),
+    legend.direction = "horizontal",
+    #legend.box = "vertical",
+    legend.box = "horizontal",
+    legend.spacing = grid::unit(45, "points"),
+    text = element_text(size=9),
+    legend.text = element_text(size=8),
+    strip.text = element_text(size=9)
   )
 
-print(overallScalingPlot)
-ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot, width = 7.5 / 0.75, height = 4, units = "in")
+print(overallScalingPlot + theme(legend.position = "bottom"))
+ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 7.5, height = 2, units = "in")
+
+# svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
+# print(overallScalingPlot + theme(legend.position = "bottom"))
+# dev.off()

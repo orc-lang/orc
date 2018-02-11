@@ -5,6 +5,8 @@
 
 include "benchmark.inc"
 
+import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+
 import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 type Double = Top
 
