@@ -111,14 +111,21 @@ public class Channel extends EvalSite implements TypedSite {
                             writer.halt();
                             return;
                         }
-                        if (readers.isEmpty()) {
-                            // If there are no waiting callers, queue this item.
-                            contents.addLast(item);
-                        } else {
-                            // If there are callers waiting, give this item to
-                            // the top caller.
-                            final CallContext receiver = readers.removeFirst();
-                            receiver.publish(object2value(item));
+                        while(true) { // Contains break. Loops until a live reader is removed or readers is empty.
+                          if (readers.isEmpty()) {
+                              // If there are no waiting callers, queue this item.
+                              contents.addLast(item);
+                              break;
+                          } else {
+                              // If there are callers waiting, give this item to
+                              // the top caller.
+                              CallContext receiver = readers.removeFirst();
+                              if (receiver.isLive()) { // If the reader is live then publish into it.
+                                receiver.publish(object2value(item));
+                                break;
+                              } else { // If the reader is dead then go through the loop again to get another reader.
+                              }
+                          }
                         }
                         // Since this is an asynchronous channel, a put call
                         // always returns.
