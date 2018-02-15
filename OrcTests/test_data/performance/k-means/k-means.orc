@@ -39,7 +39,7 @@ class PointAdder {
 def PointAdder() = new PointAdder
 
 def run(xs) =
-  def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> stop
+  def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> centroids
   def run'(i, centroids) = run'(i - 1, updateCentroids(xs, centroids))
   run'(iters, KMeans.takePointArray(n, xs))
 
@@ -69,7 +69,7 @@ def dist(x :: Point, y :: Point) = x.sub(y).modulus()
 
 val points = KMeansData.data()
 
-benchmarkSized("KMeans", points.length?, { points }, run)
+benchmarkSized("KMeans", points.length?, { points }, run, KMeansData.check)
 
 {-
 BENCHMARK

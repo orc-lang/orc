@@ -4,11 +4,11 @@ package orc.test.item.scalabenchmarks
 import scala.collection.mutable.Buffer
 import scala.concurrent.Channel
 
-object Hamming extends BenchmarkApplication[Unit] {
+object Hamming extends BenchmarkApplication[Unit, List[Int]] with ExpectedBenchmarkResult[List[Int]] {
   import Util._
 
-  type I = BigInt
-  val I = BigInt
+  type I = Int
+  val I = Int
 
   type Putter[A] = (A) => Unit
   type Getter[A] = () => A
@@ -92,7 +92,7 @@ object Hamming extends BenchmarkApplication[Unit] {
 
   val N = BenchmarkConfig.problemSizeScaledInt(400)
 
-  def benchmark(ctx: Unit): Unit = {
+  def benchmark(ctx: Unit): List[I] = {
     val chans @ List(out, out1, x2, x3, x5, x21, x31, x51) = makeChannels[I](8)
 
     threads += Fanout(out.get, List(x2.put, x3.put, x5.put, out1.put))
@@ -103,9 +103,11 @@ object Hamming extends BenchmarkApplication[Unit] {
 
     out.put(1)
 
-    println(getN(N, out1))
+    val r = getN(N, out1)
 
     threads.foreach(_.terminate())
+    
+    r
   }
 
   val name: String = "Hamming"
@@ -113,4 +115,10 @@ object Hamming extends BenchmarkApplication[Unit] {
   def setup(): Unit = ()
 
   val size: Int = N
+
+  val expectedMap: Map[Int, Int] = Map(
+      1 -> 0x978c0600,
+      10 -> 0xe2d103,
+      100 -> 0x34c9642,
+      )
 }

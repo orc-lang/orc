@@ -4,6 +4,8 @@
 
 -- TODO: This version currently blows the stack due to failure to TCO.
 
+import class BigSortData = "orc.test.item.scalabenchmarks.BigSortData"
+
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
 include "benchmark.inc"
@@ -101,16 +103,11 @@ def splitSortMerge(input, sort) =
   })
   mergeSorted(listToArray(sortedPartitions))
 
-def makeRandomArray(n) =
-  val a = Array(n) #
-  (upto(n) >x> a(x) := Random(n) >> stop) ;
-  a
-
 val arraySize = problemSizeScaledInt(1000)
 
-def setup() = makeRandomArray(arraySize)
+def setup() = BigSortData.makeRandomArray(arraySize)
   
-benchmarkSized("BigSort-partially-seq", arraySize * Log(arraySize), setup, { splitSortMerge(_, quicksort) }) 
+benchmarkSized("BigSort-partially-seq", arraySize * Log(arraySize), setup, { splitSortMerge(_, quicksort) }, BigSortData.check)
 
 
 {-

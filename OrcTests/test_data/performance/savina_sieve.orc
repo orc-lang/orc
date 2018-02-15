@@ -11,6 +11,8 @@ the runtime to adjust to changing behavior.
 
 include "benchmark.inc"
 
+import class Sieve = "orc.test.item.scalabenchmarks.Sieve"
+
 import class Set = "java.util.Set"
 import class HashSet = "java.util.HashSet"
 import class ArrayList = "java.util.ArrayList"
@@ -61,7 +63,7 @@ def primes(n) =
 
 val N = problemSizeScaledInt(20000)
 
-benchmarkSized("Sieve-savina", N, { signal }, { _ >> primes(N) })
+benchmarkSized("Sieve-savina", N, { signal }, { _ >> primes(N) }, Sieve.check)
 
 {-
 BENCHMARK

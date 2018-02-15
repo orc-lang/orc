@@ -7,15 +7,17 @@ import orc.test.item.scalabenchmarks.Util
 import scala.math.BigDecimal.double2bigDecimal
 import scala.math.BigDecimal.long2bigDecimal
 import orc.test.item.scalabenchmarks.BenchmarkConfig
+import orc.test.item.scalabenchmarks.HashBenchmarkResult
 
-object KMeansParManual extends BenchmarkApplication[Array[Point]] {
+object KMeansParManual extends BenchmarkApplication[Array[Point], Array[Point]] with HashBenchmarkResult[Array[Point]] {
+  val expected = KMeansData
   val n = 10
   val iters = 1
   val nPartitions = BenchmarkConfig.nPartitions
 
   import KMeans._
     
-  def benchmark(data: Array[Point]): Unit = {
+  def benchmark(data: Array[Point]) = {
     run(data)
   }
 
@@ -42,7 +44,7 @@ object KMeansParManual extends BenchmarkApplication[Array[Point]] {
     val counts = Array.fill(centroids.size)(new LongAdder())
     val partitionSize = (data.size.toDouble / nPartitions).ceil.toInt
     for (index <- (0 until data.size by partitionSize).par) {
-      println(s"Partition: $index to ${index + partitionSize} (${data.size})")
+      //println(s"Partition: $index to ${index + partitionSize} (${data.size})")
       val (lxs, lys, lcounts) = sumAndCountClusters(data, centroids, index, index + partitionSize min data.size)
 
       (xs zip lxs).foreach(p => p._1.add(p._2.toDouble))

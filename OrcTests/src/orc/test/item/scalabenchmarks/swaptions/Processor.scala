@@ -1,19 +1,20 @@
 package orc.test.item.scalabenchmarks.swaptions
 
 import java.util.concurrent.ThreadLocalRandom
+import java.util.Random
 
 class Processor(nTrials: Int) {  
   import SwaptionData._
   
   def apply(swaption: Swaption): Unit = {
-    val results = Array.fill(nTrials)(simulate(swaption))
+    val results = Array.tabulate(nTrials)(simulate(swaption, _))
     val sum = results.sum
     val sumsq = results.map(v => v*v).sum
     swaption.simSwaptionPriceMean = sum / nTrials
     swaption.simSwaptionPriceStdError = math.sqrt((sumsq - sum*sum/nTrials) / (nTrials - 1.0)) / math.sqrt(nTrials)
   }
 
-  def simulate(swaption: Swaption): Double = {
+  def simulate(swaption: Swaption, seed: Int): Double = {
     // Setup:
     
     val timeDelta = swaption.years / nSteps
@@ -38,7 +39,7 @@ class Processor(nTrials: Int) {
     
     val totalDrift = computeDrifts(swaption)
 
-    val path = simPathForward(swaption, forwards, totalDrift)
+    val path = simPathForward(swaption, forwards, totalDrift, seed)
 
     val discountingRatePath = Array.tabulate(nSteps)(i => path(i)(0))
     val payoffDiscountFactors = discountFactors(nSteps, swaption.years, discountingRatePath)
@@ -87,13 +88,15 @@ class Processor(nTrials: Int) {
     }).toArray
   }
 
-  def simPathForward(swaption: Swaption, forwards: Array[Double], totalDrift: Array[Double]): Array[Array[Double]] = {
+  def simPathForward(swaption: Swaption, forwards: Array[Double], totalDrift: Array[Double], seed: Int): Array[Array[Double]] = {
+    val rng = new Random(seed + swaption.id)
+    
     val timeDelta = swaption.years / nSteps
     val path = Array.ofDim[Double](nSteps, nSteps)
     path(0) = forwards
 
     for (j <- 1 until nSteps) {
-      val shocks = Array.fill(swaption.factors.size)(CumNormalInv(ThreadLocalRandom.current().nextDouble()))
+      val shocks = Array.fill(swaption.factors.size)(CumNormalInv(rng.nextDouble()))
       for (l <- 0 until nSteps - (j + 1)) {
         val totalShock = (0 until swaption.factors.size).map(i => swaption.factors(i)(l) * shocks(i)).sum
         path(j)(l) = path(j-1)(l+1) + totalDrift(l) + math.sqrt(timeDelta) * totalShock

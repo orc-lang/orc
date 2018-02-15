@@ -18,10 +18,11 @@ def eachArray(a) =
 
 def simAll(data) = 
 	val processor =  Processor(SwaptionData.nTrials())
-	eachArray(data) >swaption> processor(swaption) >> stop ; "Done"
+	eachArray(data) >swaption> processor(swaption) >> stop ; 
+	data
 
 benchmarkSized("Swaptions-naive-scala-swaption", SwaptionData.nSwaptions() * SwaptionData.nTrials(),
-	{ loadData() }, simAll)
+	{ loadData() }, simAll, SwaptionData.check)
 
 {-
 BENCHMARK

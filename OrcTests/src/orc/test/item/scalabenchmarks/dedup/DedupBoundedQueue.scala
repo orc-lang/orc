@@ -10,7 +10,7 @@ import scala.annotation.tailrec
 import java.io.File
 import orc.test.item.scalabenchmarks.BenchmarkConfig
 
-object DedupBoundedQueue extends BenchmarkApplication[Unit] {
+object DedupBoundedQueue extends BenchmarkApplication[Unit, Unit] {
   import Dedup._
   
   def dedup(inFn: String, outFn: String): Unit = {
@@ -56,7 +56,8 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit] {
           doOutput(roughID + 1, 0, id)
         }
         case Some(cchunk) => {
-          cchunk.outputChunkID = id
+          if (cchunk.outputChunkID < 0)
+            cchunk.outputChunkID = id
     			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1))
     			alreadyOutput.put(cchunk.uncompressedSHA1, true)
     			//print(s"$id: ($roughID, $fineID) $roughChunk (${roughChunk.size}), $fineChunk (${fineChunk.size})\r")
@@ -83,6 +84,8 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit] {
   }
 
   def setup(): Unit = ()
+  
+  def check(u: Unit) = DedupData.check()
 
   val name: String = "Dedup-boundedqueue"
 

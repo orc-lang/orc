@@ -60,7 +60,7 @@ def run(i) =
 
 val iterations = problemSizeScaledInt(200)
    
-benchmark("Balance", iterations, { signal }, { _ >> uptoSeq(iterations, run) })
+benchmark("Balance", iterations, { signal }, { _ >> uptoSeq(iterations, run) }, { _ >> false })
 
 {-
 BENCHMARK

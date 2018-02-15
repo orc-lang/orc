@@ -56,7 +56,7 @@ val netlist = NetList(filename)
 val _ = Println(netlist.elements().size()) 
 
 
-benchmarkSized("Canneal-naive-partially-seq", nTempSteps * swapsPerTemp, { netlist.resetLocations() >> netlist }, run)
+benchmarkSized("Canneal-naive-partially-seq", nTempSteps * swapsPerTemp, { netlist.resetLocations() >> netlist }, run, { _ >> false {- TODO: Implement checking -} })
 
 {-
 BENCHMARK

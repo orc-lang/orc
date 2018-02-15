@@ -55,7 +55,7 @@ val edges = SSSP.edges()
 val source = SSSP.source()
 
 
-benchmarkSized("SSSP-naive-seq", nodes.length? * nodes.length?, { signal }, { _ >> sssp(nodes, edges, source) })
+benchmarkSized("SSSP-naive-seq", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) }, SSSP.check)
 
 {-
 BENCHMARK

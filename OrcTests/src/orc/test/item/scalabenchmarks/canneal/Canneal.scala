@@ -6,7 +6,7 @@ import java.net.URL
 import java.io.File
 import java.nio.file.Files
 
-object Canneal extends BenchmarkApplication[NetList] {
+object Canneal extends BenchmarkApplication[NetList, Unit] {
   val dataURL = new URL("https://www.cs.utexas.edu/~amp/data/2500000.nets.gz")
   private val localTargetFile = "canneal-input.netlist.gz"
   lazy val localInputFile = {
@@ -36,6 +36,8 @@ object Canneal extends BenchmarkApplication[NetList] {
   def benchmark(netlist: NetList): Unit = {
     new Annealer(netlist, nPartitions, swapsPerTemp, initialTemperature, nTempSteps)() 
   }
+  
+  def check(u: Unit) = false
 
   val size: Int = nTempSteps * swapsPerTemp
 

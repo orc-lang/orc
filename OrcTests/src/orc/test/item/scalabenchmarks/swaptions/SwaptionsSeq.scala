@@ -1,12 +1,14 @@
 package orc.test.item.scalabenchmarks.swaptions
 
-import orc.test.item.scalabenchmarks.Util
 import orc.test.item.scalabenchmarks.BenchmarkApplication
+import orc.test.item.scalabenchmarks.HashBenchmarkResult
 
-object SwaptionsSeq extends BenchmarkApplication[Array[Swaption]] {
-  def benchmark(data: Array[Swaption]): Unit = {
+object SwaptionsSeq extends  BenchmarkApplication[Array[Swaption], Array[Swaption]] with HashBenchmarkResult[Array[Swaption]] {
+  val expected = SwaptionData
+  def benchmark(data: Array[Swaption]) = {
     val processor = new Processor(SwaptionData.nTrials)
-    data.map(processor(_))
+    data.foreach(processor(_))
+    data
   }
 
   def setup(): Array[Swaption] = {

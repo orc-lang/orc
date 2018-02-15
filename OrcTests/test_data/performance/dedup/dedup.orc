@@ -105,26 +105,32 @@ def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> (
 {-- Read sequential elements from the pool and write to the provided OutputStream.
 -}
 def write(out, outputPool) =
+	val _ = printLogLine("Start: write")
 	val alreadyOutput = Map()
 	def process((roughID, fineID), id) = Sequentialize() >> (
 		val cchunk = outputPool.get((roughID, fineID))
 		if cchunk = null then
-			--printLogLine("Pool: " + (roughID, fineID) + " " + outputPool) >>
+			--printLogLine("Poll: " + (roughID, fineID) + " " + outputPool) >>
 			Rwait(100) >> process((roughID, fineID), id)
-		else if cchunk.uncompressedSize = 0 then
+		else if cchunk.uncompressedSize = 0 then (
+			val _ = outputPool.remove((roughID, fineID))
 			if fineID = 0 then
 				printLogLine("Done") >>
 				signal
 			else
 				process((roughID + 1, 0), id)
-		else
-			cchunk.outputChunkID := id >> stop |
-			outputPool.remove((roughID, fineID)) >> stop |
+		)
+		else (
+			val _ = outputPool.remove((roughID, fineID))
+			cchunk.outputChunkID := id >> stop ;
+			--printLogLine("Write: " + (roughID, fineID) + " " + cchunk) >>
 			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1)) >>
 			alreadyOutput.put(cchunk.uncompressedSHA1, true) >>
 			process((roughID, fineID + 1), id + 1)
-			)
-	process((0, 0), 0)
+		)
+		)
+	process((0, 0), 0) >> stop ;
+	printLogLine("Done: write")
 
 {-- Connect the various stages using branch combinators
 -}
@@ -145,7 +151,8 @@ benchmarkSized("Dedup-naive", File(DedupData.localInputFile()).length(), { signa
   val (in, out) = (FileInputStream(DedupData.localInputFile()), DataOutputStream(FileOutputStream(DedupData.localOutputFile())))
   dedup(in, out) >>
   in.close() >>
-  out.close()
+  out.close(),
+  { _ >> DedupData.check() }
 )
 
 {-

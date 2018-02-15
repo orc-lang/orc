@@ -1,6 +1,6 @@
 package orc.test.item.scalabenchmarks
 
-object Mandelbrot extends BenchmarkApplication[Unit] {
+object Mandelbrot extends BenchmarkApplication[Unit, IndexedSeq[IndexedSeq[Boolean]]] with ExpectedBenchmarkResult[IndexedSeq[IndexedSeq[Boolean]]] {
   type D = Double
   object D {
     def apply(x: Integer): Double = x.toDouble
@@ -34,19 +34,19 @@ object Mandelbrot extends BenchmarkApplication[Unit] {
   }
 
   def cell(i: Integer, j: Integer) = point(Complex((D(i) - offset) * resolution, (D(j) - offset) * resolution))
-  def row(i: Integer): Array[Boolean] = {
-    (0 until gridsize).map(cell(i, _)).toArray
+  def row(i: Integer): IndexedSeq[Boolean] = {
+    (0 until gridsize).map(cell(i, _))
   }
 
   def showRow(l: Seq[Boolean]) = {
     l.map(x => if (x) "@" else ".").reduce(_ + _)
   }
 
-  def benchmark(ctx: Unit): Unit = {
+  def benchmark(ctx: Unit) = {
     //println("size = " + gridsize + ", resolution = " + resolution + ", offset = " + offset)
 
     val ll = (0 until gridsize).map(row(_))
-    ll.toList
+    ll
     //val ls = ll.map(showRow(_))
     //println(ls.reduce(_ + "\n" + _))
   }
@@ -57,4 +57,9 @@ object Mandelbrot extends BenchmarkApplication[Unit] {
 
   val size: Int = gridsize * gridsize
 
+  val expectedMap: Map[Int, Int] = Map(
+      1 -> 0xe0edb51,
+      10 -> 0x1b3e0bad,
+      100 -> 0x3f4d8b6b,
+      )
 }

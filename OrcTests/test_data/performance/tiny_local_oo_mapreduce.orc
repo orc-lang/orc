@@ -99,7 +99,8 @@ val task = new MapReduce {
   val openOutput = openPrintlnOutput
 } 
 
-executeSimple(task, problemSizeScaledInt(2000)) >> stop
+executeSimple(task, problemSizeScaledInt(2000)) >> stop,
+{ _ >> false }
 )
 
 {-

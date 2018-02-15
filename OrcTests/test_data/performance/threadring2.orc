@@ -14,6 +14,8 @@ http://shootout.alioth.debian.org/u32q/benchmark.php?test=threadring&lang=all
 
 include "benchmark.inc"
 
+import class ThreadRing = "orc.test.item.scalabenchmarks.ThreadRing"
+
 def threadRing(Integer, Integer, Channel[Integer], Channel[Integer]) :: Integer
 def threadRing(id, m, in, next) =
     repeat(in.get) >x>
@@ -22,7 +24,7 @@ def threadRing(id, m, in, next) =
      else
        next.put(x+1) >> stop)
 
-val N = 503
+val N = problemSizeScaledInt(503)
 
 def threadRingRunner(Integer) :: Signal
 def threadRingRunner(p) =
@@ -30,13 +32,13 @@ def threadRingRunner(p) =
   val _ = ring(0).put(0)
   val lastid = upto(N) >i> threadRing(i+1, p, ring(i), ring((i+1) % N))
   Println(lastid) >> 
-  upto(N) >i> ring(i).getAll() >> ring(i).closeD() >> stop ; 
-  signal
+  (upto(N) >i> ring(i).getAll() >> ring(i).closeD() >> stop ; 
+  lastid)
 
 benchmarkSized("ThreadRing-2", problemSizeScaledInt(2000) + problemSizeScaledInt(20000), {signal}, { _ >>
-threadRingRunner(problemSizeScaledInt(2000)) >>
-threadRingRunner(problemSizeScaledInt(20000)) >> stop
-})
+threadRingRunner(problemSizeScaledInt(2000)) >x>
+x + threadRingRunner(problemSizeScaledInt(20000))
+}, ThreadRing.check)
 
 {-
 OUTPUT:

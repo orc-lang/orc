@@ -26,6 +26,8 @@ Floor(sqrt(n))
 
 include "benchmark.inc"
 
+import class Sieve = "orc.test.item.scalabenchmarks.Sieve"
+
 import class Set = "java.util.Set"
 import class HashSet = "java.util.HashSet"
 import class Collections = "java.util.Collections"
@@ -46,7 +48,7 @@ def primes(n) =
   
 val N = problemSizeScaledInt(20000)
 
-benchmarkSized("Sieve", N, { signal }, { _ >> primes(N) })
+benchmarkSized("Sieve", N, { signal }, { _ >> primes(N) }, Sieve.check)
 
 {-
 OUTPUT:

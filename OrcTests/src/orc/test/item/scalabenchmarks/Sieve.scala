@@ -30,25 +30,25 @@ import java.util.{ Collections, HashSet, Set }
 
 import scala.collection.JavaConverters.asScalaSetConverter
 
-object Sieve extends BenchmarkApplication[Unit] {
+object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBenchmarkResult[Iterable[Long]] {
   val N = BenchmarkConfig.problemSizeScaledInt(20000)
 
-  def primes(n: BigInt): List[BigInt] = {
-    def candidates(n: BigInt) = BigInt(3) until (n + 1) by 2
-    def sieve(n: BigInt, set: Set[BigInt]): List[BigInt] = n match {
+  def primes(n: Long): List[Long] = {
+    def candidates(n: Long) = 3L until (n + 1) by 2
+    def sieve(n: Long, set: Set[Long]): List[Long] = n match {
       case n if n == 1 => List()
       case n =>
-        def remove(p: BigInt) = ((p * p) until (n + 1) by p).foreach(set.remove)
-        val ps = sieve(BigInt(math.floor(math.pow(n.toDouble, 0.5)).toLong), set)
+        def remove(p: Long) = ((p * p) until (n + 1) by p).foreach(set.remove)
+        val ps = sieve(math.floor(math.pow(n.toDouble, 0.5)).toLong, set)
         ps.foreach(remove)
-        BigInt(2) :: set.asScala.toList
+        2L :: set.asScala.toList
     }
-    val set = Collections.synchronizedSet[BigInt](new HashSet[BigInt]())
+    val set = Collections.synchronizedSet[Long](new HashSet[Long]())
     candidates(n).foreach(set.add)
     sieve(n, set)
   }
 
-  def benchmark(ctx: Unit): Unit = {
+  def benchmark(ctx: Unit) = {
     primes(N)
   }
 
@@ -57,4 +57,12 @@ object Sieve extends BenchmarkApplication[Unit] {
   val size: Int = N
 
   def setup(): Unit = ()
+
+  override def hash(results: Iterable[Long]): Int = results.toSet.##()
+
+  val expectedMap: Map[Int, Int] = Map(
+      1 -> 0xae7d25a5,
+      10 -> 0x2a82d246,
+      100 -> 0xbb1da227,
+      )
 }

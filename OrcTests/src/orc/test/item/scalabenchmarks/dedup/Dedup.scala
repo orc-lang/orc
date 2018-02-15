@@ -10,7 +10,7 @@ import scala.concurrent.duration.Duration
 import orc.test.item.scalabenchmarks.{ BenchmarkApplication, Util }
 import java.io.File
 
-object Dedup extends BenchmarkApplication[Unit] {
+object Dedup extends BenchmarkApplication[Unit, Unit] {
   val threadPool = new ForkJoinPool()
   
   case class CompressedChunk(uncompressedSHA1: ArrayKey, uncompressedSize: Int) {
@@ -114,6 +114,8 @@ object Dedup extends BenchmarkApplication[Unit] {
   }
 
   def setup(): Unit = ()
+  
+  def check(u: Unit) = DedupData.check()
 
   val name: String = "Dedup"
 

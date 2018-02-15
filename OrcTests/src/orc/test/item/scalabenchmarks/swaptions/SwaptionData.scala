@@ -3,6 +3,9 @@ package orc.test.item.scalabenchmarks.swaptions
 import java.util.concurrent.ThreadLocalRandom
 import scala.beans.BeanProperty
 import orc.test.item.scalabenchmarks.BenchmarkConfig
+import orc.test.item.scalabenchmarks.ExpectedBenchmarkResult
+import java.util.Arrays
+import java.util.Random
 
 case class Swaption(
     id: Int, factors: Array[Array[Double]], yields: Array[Double],  years: Double, strike: Double, 
@@ -19,7 +22,7 @@ case class Swaption(
   }
 }
 
-object SwaptionData {
+object SwaptionData extends ExpectedBenchmarkResult[Array[Swaption]] {
   def factors() = Array(
       Array(.01, .01, .01, .01, .01, .01, .01, .01, .01, .01),
       Array(.009048, .008187, .007408, .006703, .006065, .005488, .004966, .004493, .004066, .003679),
@@ -27,21 +30,28 @@ object SwaptionData {
       )
   def yields() = Array.tabulate(nSteps-1)(_ * 0.005 + .1)
   
-  var nextSwaptionID = 0
-  
   val nSteps = 11
   val nTrials = BenchmarkConfig.problemSizeSqrtScaledInt(1000)
   val nSwaptions = BenchmarkConfig.problemSizeSqrtScaledInt(12)
 
-  def makeSwaption() = synchronized {
-    val rnd = ThreadLocalRandom.current()
+  def makeSwaption(n: Int) = {
+    val rnd = new Random(n)
     def random(offset: Double, steps: Int, scale: Double): Double = offset + (rnd.nextDouble() * steps).toInt * scale
-    val id = nextSwaptionID
-    nextSwaptionID += 1
-    Swaption(id, factors(), yields(), random(5, 60, 0.25), random(0.1, 49, 0.1))
+    Swaption(n, factors(), yields(), random(5, 60, 0.25), random(0.1, 49, 0.1))
   }
   
-  private def sizedData(nSwaptions: Int) = Array.fill(nSwaptions)(makeSwaption())
+  private def sizedData(nSwaptions: Int) = Array.tabulate(nSwaptions)(makeSwaption)
   
   def data = sizedData(nSwaptions)
+
+  override def hash(results: Array[Swaption]): Int = {
+    val prec = 1e6
+    Arrays.hashCode(results.map(s => (s.simSwaptionPriceMean * prec).toLong * 37 + (s.simSwaptionPriceStdError * prec).toLong))
+  }
+
+  val expectedMap: Map[Int, Int] = Map(
+      1 -> 0x19930ef3,
+      10 -> 0x5c3086b8,
+      100 -> 0xe7463317,
+      )
 }

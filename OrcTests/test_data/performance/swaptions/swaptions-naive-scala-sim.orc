@@ -21,8 +21,8 @@ def signals(n) = Ift(n :> 0) >> (signal | signals(n-1))
 def sim(processor, swaption) =
 	val sum = DoubleAdder()
 	val sumsq = DoubleAdder()
-    signals(nTrials) >> 
-    	processor.simulate(swaption) >p>
+    upto(nTrials) >i> 
+    	processor.simulate(swaption, i) >p>
     	sum.add(p) >>
     	sumsq.add(p*p) >> stop ;
     swaption.setSimSwaptionPriceMean(sum.sum() / nTrials) >>
@@ -30,10 +30,11 @@ def sim(processor, swaption) =
 
 def simAll(data) =
 	val processor = Processor(SwaptionData.nTrials())
-	eachArray(data) >swaption> sim(processor, swaption) >> stop ; "Done"
+	eachArray(data) >swaption> sim(processor, swaption) >> stop ; 
+	data
 
 benchmarkSized("Swaptions-naive-scala-sim", SwaptionData.nSwaptions() * SwaptionData.nTrials(),
-	{ loadData() }, simAll)
+	{ loadData() }, simAll, SwaptionData.check)
 
 {-
 BENCHMARK

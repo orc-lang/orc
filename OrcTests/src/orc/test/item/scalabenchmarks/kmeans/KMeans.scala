@@ -3,13 +3,14 @@ package orc.test.item.scalabenchmarks.kmeans
 import scala.io.Source
 import scala.math.sqrt
 import orc.test.item.scalabenchmarks.BenchmarkApplication
-import orc.test.item.scalabenchmarks.Util
 import KMeans.D
 import orc.test.item.scalabenchmarks.BenchmarkConfig
+import orc.test.item.scalabenchmarks.ExpectedBenchmarkResult
+import orc.test.item.scalabenchmarks.HashBenchmarkResult
 
 
 
-object KMeansData  {
+object KMeansData extends ExpectedBenchmarkResult[Array[Point]] {
   def readPoints(path: String): Array[Point] = {
     val json = Source.fromFile(path).mkString
     val data = orc.lib.web.ReadJSON(json).asInstanceOf[List[List[Number]]].map({ case List(a, b) => new Point(a.doubleValue, b.doubleValue) })
@@ -21,6 +22,12 @@ object KMeansData  {
   def data = dataSized((BenchmarkConfig.problemSize / 3.0).ceil.toInt)
   
   private def dataSized(n: Int) = (0 until n).foldLeft(Array[Point]())((acc, _) => acc ++ dataBase)
+
+  val expectedMap: Map[Int, Int] = Map(
+      1 -> 0x83731af5,
+      10 -> 0x83731af5,
+      100 -> 0x83731af5,
+      )
   
   // println(s"Loaded ${dataBase.size} points from JSON")
 }
@@ -38,9 +45,16 @@ case class Point(val x: D, val y: D) {
   def modulus: D = sqrt((sq(x) + sq(y)).toDouble)
   
   def sq(x: D) = x * x
+  
+  override def hashCode(): Int = {
+    val prec = 1e6
+    (x * prec).toLong.## * 37 ^ (y * prec).toLong.## 
+  }
 }
 
-object KMeans extends BenchmarkApplication[Array[Point]] {
+object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with HashBenchmarkResult[Array[Point]] {
+  val expected = KMeansData
+  
   type D = Double
   object D {
     def apply(x: Integer): Double = x.toDouble
@@ -51,7 +65,7 @@ object KMeans extends BenchmarkApplication[Array[Point]] {
   val n = 10
   val iters = 1
 
-  def benchmark(data: Array[Point]): Unit = {
+  def benchmark(data: Array[Point]) = {
     run(data)
   }
 

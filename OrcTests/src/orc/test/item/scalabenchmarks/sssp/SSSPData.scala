@@ -2,7 +2,6 @@ package orc.test.item.scalabenchmarks.sssp
 
 import scala.util.Random
 
-
 case class SSSPNode(initialEdge: Int, nEdges: Int) {
   def edges(edges: Array[SSSPEdge]) = edges.view(initialEdge, initialEdge + nEdges)
 }

@@ -2,6 +2,8 @@
 
 include "benchmark.inc"
 
+import class Hamming = "orc.test.item.scalabenchmarks.Hamming"
+
 def listUpto(Integer) :: List[Integer]
 def listUpto(0) = []
 def listUpto(n) if (n <: 0) = stop
@@ -82,7 +84,8 @@ Println(takeN(N, out')) >>
 each(chans) >c> c.closeD() >> stop
 
 |
-out.put(1) >> stop
+out.put(1) >> stop, 
+Hamming.check
 )
 
 {-

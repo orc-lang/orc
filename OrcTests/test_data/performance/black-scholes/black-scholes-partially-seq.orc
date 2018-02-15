@@ -41,6 +41,8 @@ def compute(s, x, t, r, v) = Sequentialize() >> (
     val call = s * cnd(d1) - x * Exp(-r * t) * cnd(d2)
     val put = x * Exp(-r * t) * cnd(-d2) - s * cnd(-d1)
     
+    val _ = Ift(call <: 0 || put <: 0) >> Println((s, x, t, r, v, d1, d2, call, put))
+    
     BlackScholesResult(call, put)
     )
   
@@ -50,13 +52,12 @@ def run(data) =
 	for(0, data.length?) >i> Sequentialize() >>
 	  res(i) := compute(data(i)?.price(), data(i)?.strike(), data(i)?.maturity(), BlackScholesData.riskless(), BlackScholesData.volatility()) 
 	  >> stop ;
-	Println(res.length?) >>
-	Println((res(0)?, res(1)?, res(2)?, res(3)?, res(5)?))
+	res
 
 
 val data = BlackScholesData.data()
 
-benchmarkSized("Black-Scholes-partially-seq", data.length?, { data }, run)
+benchmarkSized("Black-Scholes-partially-seq", data.length?, { data }, run, BlackScholesData.check)
 
 {-
 BENCHMARK

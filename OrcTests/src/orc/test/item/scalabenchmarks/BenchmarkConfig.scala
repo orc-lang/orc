@@ -24,6 +24,15 @@ object BenchmarkConfig {
     */
   val nRuns = System.getProperty("orc.test.benchmark.nRuns", "0").toInt
 
+  /** If the results of the benchmark should be checked.
+    *
+    * The results are checked by hash, so false positives are possible due to hash 
+    * collisions.
+    * 
+    * The default value is true.
+    */
+  val checkResults = System.getProperty("orc.test.benchmark.checkResults", "true").toBoolean
+
   /** The soft limit of the amount of time this benchmark will run.
     *
     * The harness will not call the benchmark again if more than

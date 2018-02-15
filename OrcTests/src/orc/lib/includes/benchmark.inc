@@ -56,6 +56,15 @@ def timeItNoPub[A](f :: lambda() :: A, i, size) =
     r
   )
   
+def timeItSinglePub[A](f :: lambda() :: A, i, size) =
+  (
+  	val pub = Cell()
+    StartBenchmark() >s>
+    (f() >v> pub.write(v) >> stop ; EndBenchmark(s, i, size)) >r> 
+    Println("Time used: " + r + " s; iteration " + (i+1) + " of " + nRuns) >>
+    (r, pub.readD() ; signal) 
+  )
+  
 def timeIt[A](f :: lambda() :: A) =
   val c = Channel[A]()
   repeat(c.get) |
@@ -71,13 +80,14 @@ val repStartTime = Ref(Rtime())
 def setRepStartTime() = repStartTime := Rtime()
 def getRepTime() = Rtime() - repStartTime?
 
-def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A, benchmark :: lambda(A) :: B) =
+def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A, benchmark :: lambda(A) :: B, check :: lambda(B) :: Signal) =
 	val clock = Rclock()
 	def h(Integer, List[Top]) :: Signal
 	def h(i, results) if (i >= nRuns) = results
 	def h(i, results) if (softTimeLimit :> 0 && clock.time() :> (softTimeLimit * 1000)) = results
 	def h(i, results) = 
-		setup() >d> setRepStartTime() >> timeItNoPub({ benchmark(d) }, i, size) >r> (
+		setup() >d> setRepStartTime() >> timeItSinglePub({ benchmark(d) }, i, size) >(r, pub)> 
+		(if check(pub) then Println(name + " results are correct up to hash collision.") else Error(name + " results are WRONG.")) >> (
 			val results' = r : results
 			writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
 			  ["Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", 

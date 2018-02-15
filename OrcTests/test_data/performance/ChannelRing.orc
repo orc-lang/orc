@@ -29,6 +29,7 @@ benchmarkSized("ChannelRing", laps, { makeChannels[Integer](n) }, lambda(chans) 
   head(chans).put(1) >> stop
   --|
   --head(chans).put(-100000)
+  , { _ >> false }
 )
 
 {-

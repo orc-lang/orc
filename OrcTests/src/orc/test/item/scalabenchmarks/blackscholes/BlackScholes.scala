@@ -7,11 +7,20 @@ import orc.test.item.scalabenchmarks.BenchmarkApplication
 //import scala.math.BigDecimal.int2bigDecimal
 import scala.runtime.ZippedTraversable3.zippedTraversable3ToTraversable
 import orc.test.item.scalabenchmarks.BenchmarkConfig
+import scala.util.hashing.Hashing
+import scala.util.hashing.MurmurHash3
+import orc.test.item.scalabenchmarks.ExpectedBenchmarkResult
+import orc.test.item.scalabenchmarks.HashBenchmarkResult
 
 case class BlackScholesStock(price: D, strike: D, maturity: D)
-case class BlackScholesResult(call: D, put: D)
+case class BlackScholesResult(call: D, put: D) {
+  override def hashCode(): Int = {
+    val prec = 1e6
+    (call * prec).toLong.## * 37 ^ (put * prec).toLong.## 
+  }
+}
 
-object BlackScholesData {
+object BlackScholesData extends ExpectedBenchmarkResult[Array[BlackScholesResult]] {
   def seededStream(seed: Long, l: Double, h: Double): Stream[D] = {
     val rand = new Random(seed)
     Stream.continually(rand.nextDouble() * (h - l) + l)
@@ -28,9 +37,17 @@ object BlackScholesData {
 
   val riskless: D = 0.7837868650424492
   val volatility: D = 0.14810754832231288
+
+  val expectedMap: Map[Int, Int] = Map(
+      1   -> 0xf52fcf7,
+      100 -> 0xb8277521,
+      )
+  
 }
 
-object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock]] {
+object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array[BlackScholesResult]] with HashBenchmarkResult[Array[BlackScholesResult]] {
+  val expected: ExpectedBenchmarkResult[Array[BlackScholesResult]] = BlackScholesData
+  
   type D = Double
 
   def log(x: D): D = Math.log(x.toDouble)
@@ -62,7 +79,7 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock]] {
   def cnd(x: D): D = {
     val l = math.abs(x)
     val k = round(1.0 / (1.0 + 0.2316419 * l))
-    val w = round(1.0 - rsqrt2pi * exp(-l * l / 2) * (a1 * k + a2 * k * k + a3 * k * k * k + a4 * k * k * k * k + a5 * k * k * k * k * k))
+    val w = round(1.0 - rsqrt2pi * StrictMath.exp(-l * l / 2) * (a1 * k + a2 * k * k + a3 * k * k * k + a4 * k * k * k * k + a5 * k * k * k * k * k))
 
     if (x < 0.0) {
       1.0 - w
@@ -71,7 +88,7 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock]] {
     }
   }
 
-  def benchmark(data: Array[BlackScholesStock]): Unit = {
+  def benchmark(data: Array[BlackScholesStock]) = {
     for (BlackScholesStock(s, x, t) <- data) yield {
       compute(s, x, t, BlackScholesData.riskless, BlackScholesData.volatility)
     }

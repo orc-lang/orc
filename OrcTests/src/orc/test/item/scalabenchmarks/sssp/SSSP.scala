@@ -17,23 +17,31 @@ import orc.test.item.scalabenchmarks._
   * This is a naive implementation which uses mutable arrays but is
   * otherwise not optimized.
   */
-object SSSP {
+object SSSP extends ExpectedBenchmarkResult[Array[Int]] {
   val (nodes, edges, source) = SSSPData.generate(BenchmarkConfig.problemSizeSqrtScaledInt(40000))
+
+  val expectedMap: Map[Int, Int] = Map(
+      1 -> 0xac4404ef,
+      10 -> 0xddd2d72e,
+      100 -> 0x3544edc6,
+      )
 }
 
-abstract class SSSPBase extends BenchmarkApplication[(Array[SSSPNode], Array[SSSPEdge], Int)] {
+abstract class SSSPBase extends BenchmarkApplication[(Array[SSSPNode], Array[SSSPEdge], Int), Array[Int]] with HashBenchmarkResult[Array[Int]] {
   def setup(): (Array[SSSPNode], Array[SSSPEdge], Int) = {
     import SSSP._
     (nodes, edges, source)
   }
 
   val size: Int = (SSSP.nodes.length / 100000) * SSSP.nodes.length
+
+  val expected = SSSP
 }
 
 object SSSPSeq extends SSSPBase {
   val name: String = "SSSP-seq"
 
-  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)): Unit = {
+  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)) = {
     val (nodes, edges, source) = ctx
     ssspSeq(nodes, edges, source)
   }
@@ -69,7 +77,7 @@ object SSSPSeq extends SSSPBase {
 object SSSPBatched extends SSSPBase {
   val name: String = "SSSP-batched"
 
-  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)): Unit = {
+  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)) = {
     val (nodes, edges, source) = ctx
     ssspBatched(nodes, edges, source)
   }
@@ -116,7 +124,7 @@ object SSSPBatched extends SSSPBase {
 object SSSPBatchedPar extends SSSPBase {
   val name: String = "SSSP-batched-par"
 
-  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)): Unit = {
+  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)) = {
     val (nodes, edges, source) = ctx
     ssspBatchedPar(nodes, edges, source)
   }

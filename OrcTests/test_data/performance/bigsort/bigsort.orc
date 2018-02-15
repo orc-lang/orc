@@ -4,6 +4,8 @@
 
 include "benchmark.inc"
 
+import class BigSortData = "orc.test.item.scalabenchmarks.BigSortData"
+
 def debugPrintln(v) = signal
 
 class ArraySlice {
@@ -93,16 +95,11 @@ def splitSortMerge(input, sort) =
   })
   mergeSorted(listToArray(sortedPartitions))
 
-def makeRandomArray(n) =
-  val a = Array(n) #
-  (upto(n) >x> a(x) := Random(n) >> stop) ;
-  a
-
 val arraySize = problemSizeScaledInt(1000)
 
-def setup() = makeRandomArray(arraySize)
+def setup() = BigSortData.makeRandomArray(arraySize)
   
-benchmarkSized("BigSort-naive", arraySize * Log(arraySize), setup, { splitSortMerge(_, quicksort) }) 
+benchmarkSized("BigSort-naive", arraySize * Log(arraySize), setup, { splitSortMerge(_, quicksort) }, BigSortData.check) 
 
 
 {-

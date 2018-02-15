@@ -14,7 +14,7 @@ Description from
 http://shootout.alioth.debian.org/u32q/benchmark.php?test=threadring&lang=all
 */
 
-object ThreadRing extends BenchmarkApplication[Unit] {
+object ThreadRing extends BenchmarkApplication[Unit, Int] with ExpectedBenchmarkResult[Int] {
   import Util._
 
   def threadRing(id: Int, m: Int, in: Channel[Int], next: Channel[Int]): Int = {
@@ -29,7 +29,7 @@ object ThreadRing extends BenchmarkApplication[Unit] {
 
   val N = BenchmarkConfig.problemSizeScaledInt(503)
 
-  def threadRingRunner(p: Int): Unit = {
+  def threadRingRunner(p: Int) = {
     val ring = (0 until N).map(_ => new Channel[Int]()).toArray
     ring(0).write(0)
 
@@ -52,10 +52,12 @@ object ThreadRing extends BenchmarkApplication[Unit] {
     }
 
     println(result)
+    
+    result
   }
 
-  def benchmark(ctx: Unit): Unit = {
-    threadRingRunner(BenchmarkConfig.problemSizeScaledInt(2000))
+  def benchmark(ctx: Unit) = {
+    threadRingRunner(BenchmarkConfig.problemSizeScaledInt(2000)) +
     threadRingRunner(BenchmarkConfig.problemSizeScaledInt(20000))
   }
 
@@ -64,5 +66,10 @@ object ThreadRing extends BenchmarkApplication[Unit] {
   def setup(): Unit = ()
 
   val size: Int = BenchmarkConfig.problemSizeScaledInt(2000) + BenchmarkConfig.problemSizeScaledInt(20000)
+
+  val expectedMap: Map[Int, Int] = Map(
+      1 -> 0x36c,
+      10 -> 0x2226,
+      )
 }
 

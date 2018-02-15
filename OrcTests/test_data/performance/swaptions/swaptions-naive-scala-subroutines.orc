@@ -29,7 +29,7 @@ def sumPubs(f) =
 	f() >v> sum.add(v) >> stop ;
 	sum.sum()
 
-def simulate(processor, swaption) :: Number =
+def simulate(processor, swaption, seed) :: Number =
     val timeDelta = swaption.years() / nSteps
     val freqRatio = Ceil(swaption.paymentInterval() / timeDelta)
     val swapPathStart = Ceil(swaption.maturity() / timeDelta)
@@ -49,7 +49,7 @@ def simulate(processor, swaption) :: Number =
     
     val totalDrift = processor.computeDrifts(swaption)
 
-    val path = processor.simPathForward(swaption, forwards, totalDrift)
+    val path = processor.simPathForward(swaption, forwards, totalDrift, seed)
 
     val discountingRatePath = tabulateArray(nSteps, { path(_)?(0)? })
     val payoffDiscountFactors = processor.discountFactors(nSteps, swaption.years(), discountingRatePath)
@@ -69,8 +69,8 @@ def simulate(processor, swaption) :: Number =
 def sim(processor, swaption) =
 	val sum = DoubleAdder()
 	val sumsq = DoubleAdder()
-    signals(nTrials) >> 
-    	simulate(processor, swaption) >p>
+    upto(nTrials) >i> 
+    	simulate(processor, swaption, i) >p>
     	sum.add(p) >>
     	sumsq.add(p*p) >> stop ;
     swaption.setSimSwaptionPriceMean(sum.sum() / nTrials) >>
@@ -78,10 +78,11 @@ def sim(processor, swaption) =
 
 def simAll(data) =
 	val processor = Processor(SwaptionData.nTrials())
-	eachArray(data) >swaption> sim(processor, swaption) >> stop ; "Done"
+	eachArray(data) >swaption> sim(processor, swaption) >> stop ;
+	data
 
 benchmarkSized("Swaptions-naive-scala-subroutines-seq", SwaptionData.nSwaptions() * SwaptionData.nTrials(),
-	{ loadData() }, simAll)
+	{ loadData() }, simAll, SwaptionData.check)
 
 {-
 BENCHMARK

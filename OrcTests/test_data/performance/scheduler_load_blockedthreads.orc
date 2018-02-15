@@ -17,4 +17,4 @@ def f(x) if (x :> 0) = (f(x-1) >> snoozie(500)) | snoozie(500)
 
 val N = problemSizeScaledInt(1000)
 
-benchmarkSized("BlockedThreads", N, { signal }, { _ >> f(N) })
+benchmarkSized("BlockedThreads", N, { signal }, { _ >> f(N) }, { _ >> false })

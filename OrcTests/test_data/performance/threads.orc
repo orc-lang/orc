@@ -8,7 +8,7 @@ include "benchmark.inc"
 val N = problemSizeLogScaledInt(18)
 def threads(n) = if n/=0 then n-1 >n'> (threads(n') | threads(n')) else stop
 
-benchmarkSized("Threads", N, { signal }, { threads(N) ; signal })
+benchmarkSized("Threads", N, { signal }, { _ >> threads(N) ; signal }, { _ >> false })
 
 {-
 BENCHMARK

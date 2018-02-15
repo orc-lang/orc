@@ -63,7 +63,7 @@ val netlist = NetList(filename)
 val _ = Println(netlist.elements().size()) 
 val _ = Println((nThreads, nSwapsPerThread))
 
-benchmarkSized("Canneal-naive-partitioned", nTempSteps * swapsPerTemp, { netlist.resetLocations() >> netlist }, run)
+benchmarkSized("Canneal-naive-partitioned", nTempSteps * swapsPerTemp, { netlist.resetLocations() >> netlist }, run, { _ >> false {- TODO: Implement checking -} })
 
 
 {-

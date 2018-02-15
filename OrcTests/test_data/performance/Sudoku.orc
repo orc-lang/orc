@@ -81,7 +81,7 @@ val ex1 = "  7  5  2\n    31 8 \n 3    7  \n  8 2   3\n 73   82 \n5   6 9  \n  5
 
 val b = load(ex0)
 
-benchmarkSized("Sudoku", 1, { Println(printBoard(b)) >> Println("==================") }, { _ >> solveAlgo0(b) })
+benchmarkSized("Sudoku", 1, { Println(printBoard(b)) >> Println("==================") }, { _ >> solveAlgo0(b) }, { _ >> false })
 
 {-
 BENCHMARK

@@ -5,6 +5,8 @@
 
 include "benchmark.inc"
 
+import class NQueens = "orc.test.item.scalabenchmarks.NQueens"
+
 {- The position of a queen on the chessboard is a coordinate pair -}
 type Queen = (Integer,Integer)
 
@@ -32,7 +34,7 @@ def factorial(0) = 1
 def factorial(1) = 1
 def factorial(n) = n * factorial(n - 1)
 
-benchmarkSized("N-Queens", factorial(N), { signal }, { _ >> collect(defer(queens, N)) })
+benchmarkSized("N-Queens", factorial(N), { signal }, { _ >> collect({ queens(N) }) }, NQueens.check)
 
 {-
 BENCHMARK

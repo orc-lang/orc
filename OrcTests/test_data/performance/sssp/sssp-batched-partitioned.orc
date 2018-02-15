@@ -83,7 +83,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	)
 	
 	def processBatch(inQ, indexStart, indexEnd, outQ, gray) = Sequentialize() >> (
-		val _ = Println("processBatch " + indexStart + " " + indexEnd + " " + gray + " " + inQ.size())
+		--val _ = Println("processBatch " + indexStart + " " + indexEnd + " " + gray + " " + inQ.size())
 		val localQ = ArrayList()
 		val localLock = Semaphore(1)
 		sfor(indexStart, indexEnd, lambda(index) = processNode(inQ.get(index), localQ, localLock, gray)) >>
@@ -96,7 +96,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 		  processBatch(inQ, partitionIndex, min(partitionIndex + partitionSize, inQ.size()), outQ, gray) >>
 		  stop ;
 		  
-		inQ.clear() >> Println("Batch " + gray + " done " + outQ.size()) >> (
+		inQ.clear() >> ( --Println("Batch " + gray + " done " + outQ.size()) >> (
 		if outQ.size() :> 0 then
 			h(outQ, inQ, gray + 1)
 		else
@@ -112,7 +112,8 @@ val nodes = SSSP.nodes()
 val edges = SSSP.edges()
 val source = SSSP.source()
 
-benchmarkSized("SSSP-batched-partitioned", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) })
+benchmarkSized("SSSP-batched-partitioned", nodes.length? * nodes.length?, { nodes >> edges >> source }, 
+  { _ >> sssp(nodes, edges, source) }, SSSP.check )
 
 {-
 BENCHMARK

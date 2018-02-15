@@ -58,7 +58,7 @@ def flatten([]) = []
 def flatten(l:ls) = append(l, flatten(ls))
 
 def run(xs) =
-  def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> stop
+  def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> centroids
   def run'(i, centroids) = run'(i - 1, updateCentroids(xs, centroids))
   run'(iters, KMeans.takePointArray(n, xs))
 
@@ -80,7 +80,7 @@ def updateCentroids(xs, centroids) =
 
 val points = KMeansData.data()
 
-benchmarkSized("KMeans-seq-scala-inner", points.length?, { points }, run)
+benchmarkSized("KMeans-seq-scala-inner", points.length?, { points }, run, KMeansData.check)
 
 )
 

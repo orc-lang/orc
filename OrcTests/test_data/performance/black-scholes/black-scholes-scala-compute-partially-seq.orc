@@ -18,12 +18,11 @@ def run(data) =
 	for(0, data.length?) >i> Sequentialize() >>
 	  res(i) := compute(data(i)?.price(), data(i)?.strike(), data(i)?.maturity(), BlackScholesData.riskless(), BlackScholesData.volatility()) 
 	  >> stop ;
-	Println(res.length?) >>
-	Println((res(0)?, res(1)?, res(2)?, res(3)?, res(5)?))
+	res
 
 val data = BlackScholesData.data()
 
-benchmarkSized("Black-Scholes-scala-compute-partially-seq", data.length?, { data }, run)
+benchmarkSized("Black-Scholes-scala-compute-partially-seq", data.length?, { data }, run, BlackScholesData.check)
 
 {-
 BENCHMARK
