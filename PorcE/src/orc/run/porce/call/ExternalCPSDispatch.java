@@ -124,6 +124,13 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
 			execution.notifyOrcWithBoundary(new CaughtEvent(e));
 			counter.haltToken();
+		} catch (final Throwable e) {
+			CompilerDirectives.transferToInterpreter();
+			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
+			execution.notifyOrcWithBoundary(new CaughtEvent(e));
+			counter.haltToken();
+			// Rethrow into interpreter since this is an error and everything is exploding.
+			//throw e;
 		}
 		// Token: All exception handlers halt the token that was passed to this
 		// call. Calls are not allowed to keep the token if they throw an
@@ -154,6 +161,13 @@ abstract class ExternalCPSDispatchInternal extends DispatchBase {
 			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
 			execution.notifyOrcWithBoundary(new CaughtEvent(e));
 			counter.haltToken();
+		} catch (final Throwable e) {
+			CompilerDirectives.transferToInterpreter();
+			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
+			execution.notifyOrcWithBoundary(new CaughtEvent(e));
+			counter.haltToken();
+			// Rethrow into interpreter since this is an error and everything is exploding.
+			//throw e;
 		} finally {
 			RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 		}
