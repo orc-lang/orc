@@ -19,4 +19,5 @@ object Log extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
   def getInvokerSpecialized(arg1: Number): Invoker = {
     invoker(arg1)(a => Math.log(a.doubleValue()))
   }
+  override def toString = "Log"
 }
