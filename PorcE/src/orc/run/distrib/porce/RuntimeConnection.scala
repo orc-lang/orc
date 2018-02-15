@@ -112,7 +112,7 @@ class RuntimeConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) extends
   */
 object RuntimeConnectionInitiator {
 
-  def apply[R, S](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null, retryTimes: Int = 8, retryPeriodInitial: Int = 400): RuntimeConnection[R, S] = {
+  def apply[R, S](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null, retryTimes: Int = 25, retryPeriodInitial: Int = 400): RuntimeConnection[R, S] = {
     var retryDelay = retryPeriodInitial
     for (retryNum <- 0 to retryTimes) {
       val rc = try {
