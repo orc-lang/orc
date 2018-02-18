@@ -1,7 +1,7 @@
 .apt_generated=main
 P=
 Xcheck-null=false
-Xcheckinit=true
+Xcheckinit=false
 Xdisable-assertions=false
 Xelide-below=-2147483648
 Xexperimental=false
