@@ -21,5 +21,9 @@ object StringExtension {
         s
       }
     }
+    
+    def stripNewLines = {
+      s.replace("\n\r", " ").replace("\r", " ").replace("\n", " ")
+    }
   }
 }
