@@ -40,6 +40,7 @@ object BlackScholesData extends ExpectedBenchmarkResult[Array[BlackScholesResult
 
   val expectedMap: Map[Int, Int] = Map(
       1   -> 0xf52fcf7,
+      10  -> 0x62c42cc1,
       100 -> 0xb8277521,
       )
   
