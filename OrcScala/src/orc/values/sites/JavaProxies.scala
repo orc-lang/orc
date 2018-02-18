@@ -156,18 +156,19 @@ object JavaCall {
             }
             @throws[HaltException]
             def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+              if (orc.run.RuntimeProfiler.profileRuntime)
+                orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
               try {
                 new JavaArrayElementProxy(target, arguments(0).asInstanceOf[java.lang.Long].intValue())
               } finally {
-                if (orc.run.RuntimeProfiler.profileRuntime) {
+                if (orc.run.RuntimeProfiler.profileRuntime)
                   orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
-                }
               }
             }
+            override def toString(): String = s"<Array Index Invoker Long>@${super.toString}"            
           })
         }
-        case (_, Array1(_: BigInt | _: java.lang.Long | _: java.lang.Integer)) if targetCls.isArray() => {
+        case (_, Array1(_: BigInt | _: java.lang.Integer)) if targetCls.isArray() => {
           Some(new OnlyDirectInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
               target.getClass().isArray() && arguments.length == 1 && 
@@ -175,15 +176,16 @@ object JavaCall {
             }
             @throws[HaltException]
             def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+              if (orc.run.RuntimeProfiler.profileRuntime)
+                orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
               try {
                 new JavaArrayElementProxy(target, arguments(0).asInstanceOf[Number].intValue())
               } finally {
-                if (orc.run.RuntimeProfiler.profileRuntime) {
+                if (orc.run.RuntimeProfiler.profileRuntime)
                   orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
-                }
               }
             }
+            override def toString(): String = s"<Array Index Invoker non-Long>@${super.toString}"            
           })
         }
         // We should have boxed any java.lang.Integer, java.lang.Short, or java.lang.Byte value into BigInt
@@ -255,7 +257,8 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
   }
 
   def invokeDirect(theObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.JavaDispatch)
+    if (orc.run.RuntimeProfiler.profileRuntime)
+      orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.JavaDispatch)
     try {
       if (theObject == null && !invocable.isStatic) {
         throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
@@ -287,13 +290,13 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
         arguments
       }
       //Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
-      orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
+      if (orc.run.RuntimeProfiler.profileRuntime)
+        orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
       val r = try {
         mh.invoke(theObject, finalArgs)
       } finally {
-        if (orc.run.RuntimeProfiler.profileRuntime) {
+        if (orc.run.RuntimeProfiler.profileRuntime)
           orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
-        }
       }
       java2orc(r)
     } catch {
@@ -302,9 +305,8 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
       case e: InterruptedException => throw e
       case e: Exception => throw new JavaException(e)
     } finally {
-      if (orc.run.RuntimeProfiler.profileRuntime) {
+      if (orc.run.RuntimeProfiler.profileRuntime)
         orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.JavaDispatch)
-      }
     }
   }
 }
