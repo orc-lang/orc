@@ -192,11 +192,18 @@ public class OilSecurityValidator {
             final NamelessAST child = (NamelessAST) node;
             if (child instanceof Constant) {
                 final Object value = ((Constant) child).value();
-                if (value instanceof orc.values.sites.JavaProxy) {
-                    final String location = ((orc.values.sites.JavaProxy) value).javaClassName();
-                    if (!allowedClasses.contains(location)) {
+                if (!(value instanceof java.lang.Number ||
+                        value instanceof java.lang.Boolean ||
+                        value instanceof java.lang.Character ||
+                        value instanceof java.lang.Enum<?> ||
+                        value instanceof java.lang.Math ||
+                        value instanceof java.lang.CharSequence ||
+                        value instanceof java.lang.Void ||
+                        value instanceof orc.values.sites.Site)) {
+                    final String className = value.getClass().getName();
+                    if (!allowedClasses.contains(className) && !allowedClasses.contains(className + "$")) {
                         hasProblems = true;
-                        problems.add(new SecurityProblem("Security: Access denied to Java class '" + location + "'.", node.sourceTextRange().isDefined() ? node.sourceTextRange().get() : null));
+                        problems.add(new SecurityProblem("Security: Access denied to Java class '" + className + "'.", node.sourceTextRange().isDefined() ? node.sourceTextRange().get() : null));
                     }
                 }
             }
