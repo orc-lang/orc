@@ -2,12 +2,8 @@
 package orc.run.porce.call;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import orc.run.porce.Expression;
 import orc.run.porce.PorcEUnit;
@@ -29,6 +25,16 @@ public class CallContinuation<ExternalDispatch extends Dispatch> extends Express
 		this.target = target;
 		this.arguments = arguments;
 		this.execution = execution;
+		// TODO: Remove once I've debugged performance issues.
+		getInternalCall();
+	}
+
+	
+	@Override
+	public void setTail(boolean v) {
+		super.setTail(v);
+		if (internalCall != null)
+			internalCall.setTail(v);
 	}
 
 	protected InternalCPSDispatch makeInternalCall() {

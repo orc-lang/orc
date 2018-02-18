@@ -1,6 +1,8 @@
 package orc.run.porce.instruments
 
 import orc.ast.porc.PorcAST
+import orc.run.porce.PorcENode
+import orc.run.porce.NodeBase
 
 class TailTag private () {
 }
@@ -32,6 +34,25 @@ object ProfiledPorcNodeTag {
       case _: New => true
       
       case _ => false
+    }
+  }
+}
+
+class ProfiledPorcENodeTag private () {
+}
+
+object ProfiledPorcENodeTag {
+  def isProfiledPorcENode(n: NodeBase): Boolean = {
+    import orc.run.porce._
+    // This is defined by excluding some nodes and having a default of true
+    n match {
+      case _: Read.Argument | _: Read.Closure | _: Read.Constant | _: Read.Local => false
+      case _: Write.Local => false
+      case _: Sequence => false
+      case _: IfLenientMethod => false
+      case _: TryFinally | _: TryOnException => false
+      case _: call.InternalCPSDispatch | _: call.ExternalCPSDispatch => false
+      case _ => true
     }
   }
 }

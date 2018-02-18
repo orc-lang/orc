@@ -5,6 +5,7 @@ import java.util.HashMap;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
+import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.EventContext;
 import com.oracle.truffle.api.instrumentation.ExecutionEventNode;
@@ -58,8 +59,8 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 			this.env = env;
 		}
 
-	@Override
-    public ExecutionEventNode create(final EventContext ec) {
+		@Override
+		public ExecutionEventNode create(final EventContext ec) {
 			com.oracle.truffle.api.nodes.Node n = ec.getInstrumentedNode();
 			RootNode rootNode = n.getRootNode();
 			final PorcNodeExecutionProfiler profiler = PorcNodeExecutionProfilerInstrument.this.profiler;
@@ -74,21 +75,17 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 					return new ExecutionEventNode() {
 						@Override
 						protected void onEnter(VirtualFrame frame) {
-							try {
-								ProfilerState state = (ProfilerState) frame.getObject(profilerStateSlot);
-								if (setStateProfile.profile(state == null)) {
-									state = profiler.getProfilerState();
-									frame.setObject(profilerStateSlot, state);
-								}
+							ProfilerState state = (ProfilerState) FrameUtil.getObjectSafe(frame, profilerStateSlot);
+							if (setStateProfile.profile(state == null)) {
+								state = profiler.getProfilerState();
+								frame.setObject(profilerStateSlot, state);
+							}
 
-								if (state.pushCurrentCounter(counter)) {
-									counter.addHit();
-									state.pushStartTime(System.nanoTime());
-								} else {
-									state.pushStartTime(-1);
-								}
-							} catch (FrameSlotTypeException e) {
-								throw new Error(e);
+							if (state.pushCurrentCounter(counter)) {
+								counter.addHit();
+								state.pushStartTime(System.nanoTime());
+							} else {
+								state.pushStartTime(-1);
 							}
 						}
 
@@ -106,7 +103,7 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 								if (startTime >= 0) {
 									long time = System.nanoTime() - startTime;
 									Counter parentCounter = state.popCurrentCounter();
-									if(parentCounter != counter) {
+									if (parentCounter != counter) {
 										counter.addTime(time);
 										if (parentCounter != null)
 											parentCounter.addChildTime(time);
@@ -121,7 +118,7 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 					};
 				} else {
 					return new ExecutionEventNode() {
-					  /* Empty body to make concrete */
+						/* Empty body to make concrete */
 					};
 				}
 			});

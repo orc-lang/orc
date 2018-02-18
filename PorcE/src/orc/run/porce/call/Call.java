@@ -2,9 +2,6 @@
 package orc.run.porce.call;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.profiles.ConditionProfile;
@@ -37,6 +34,17 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 		this.target = target;
 		this.arguments = arguments;
 		this.execution = execution;
+	}
+	
+	@Override
+	public void setTail(boolean v) {
+		super.setTail(v);
+		if (interceptedCall != null)
+			interceptedCall.setTail(v);
+		if (externalCall != null)
+			externalCall.setTail(v);
+		if (internalCall != null)
+			internalCall.setTail(v);
 	}
 
 	protected InternalCPSDispatch makeInternalCall() {
@@ -117,13 +125,18 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 		return PorcEUnit.SINGLETON;
 	}
 
-    public static class Direct {
-        public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
-            return new Call<DirectDispatch>(target, arguments, execution) {
-                @Override
-                protected DirectDispatch makeExternalCall() {
-                       return ExternalDirectDispatch.createBare(execution);
-                }
+	public static class Direct {
+		public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
+			return new Call<DirectDispatch>(target, arguments, execution) {
+				{
+					// TODO: Remove once I've debugged performance issues.
+					getExternalCall();
+				}
+				
+				@Override
+				protected DirectDispatch makeExternalCall() {
+					return ExternalDirectDispatch.createBare(execution);
+				}
 
 				@Override
 				protected Object callExternal(VirtualFrame frame, Object target, Object[] arguments) {
@@ -133,35 +146,46 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 						RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 					}
 				}
-            };
-       }
-   }
+			};
+		}
+	}
 
-   public static class CPS {
-       public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution, boolean isTail) {
-    	   if (isTail) {
-    		   return createTail(target, arguments, execution);
-    	   } else {
-    		   return createNontail(target, arguments, execution);
-    	   }
-       }
-       public static Expression createNontail(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
-           return CatchTailCall.create(createTail(target, arguments, execution), execution);
-       }
-       public static Expression createTail(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
-           return new Call<Dispatch>(target, arguments, execution) {
-               @Override
-               protected Dispatch makeExternalCall() {
-                      return ExternalCPSDispatch.createBare(execution);
-               }
+	public static class CPS {
+		public static Expression create(final Expression target, final Expression[] arguments,
+				final PorcEExecution execution, boolean isTail) {
+			if (isTail) {
+				return createTail(target, arguments, execution);
+			} else {
+				return createNontail(target, arguments, execution);
+			}
+		}
+
+		public static Expression createNontail(final Expression target, final Expression[] arguments,
+				final PorcEExecution execution) {
+			return CatchTailCall.create(createTail(target, arguments, execution), execution);
+		}
+
+		public static Expression createTail(final Expression target, final Expression[] arguments,
+				final PorcEExecution execution) {
+			return new Call<Dispatch>(target, arguments, execution) {
+				{
+					// TODO: Remove once I've debugged performance issues.
+					getExternalCall();
+					getInternalCall();
+				}
+				
+				@Override
+				protected Dispatch makeExternalCall() {
+					return ExternalCPSDispatch.createBare(execution);
+				}
 
 				@Override
 				protected Object callExternal(VirtualFrame frame, Object target, Object[] arguments) {
 					getExternalCall().executeDispatch(frame, target, arguments);
 					return PorcEUnit.SINGLETON;
 				}
-           };
-       }
+			};
+		}
 	}
 
 	@ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)

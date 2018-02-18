@@ -46,7 +46,28 @@ object PorcEPolyglotLauncher {
       }
     }
     
-    val profilePorcEClasses = true && System.getProperty("orc.executionlog.dir") != null
+    val profilePorcENodes = true && System.getProperty("orc.executionlog.dir") != null
+    
+    if (profilePorcENodes) {
+      import orc.run.porce.instruments.PorcENodeExecutionProfiler
+      import orc.run.porce.instruments.PorcENodeExecutionProfilerInstrument
+
+      val insts = runtime.getInstruments()
+
+      insts.get(PorcENodeExecutionProfilerInstrument.ID).setEnabled(true)
+      val profiler = PorcENodeExecutionProfiler.get(engine)      
+      
+      DumperRegistry.register { name =>
+        val out = ExecutionLogOutputStream(s"porce-profile-$name", "csv", "Porc profile dump")
+        if (out.isDefined) {
+          val pout = new PrintWriter(new OutputStreamWriter(out.get))
+          profiler.dump(pout)
+        }
+        profiler.reset()
+      }
+    }
+    
+    val profilePorcEClasses = false && System.getProperty("orc.executionlog.dir") != null
     
     if (profilePorcEClasses) {
       import orc.run.porce.instruments.PorcENodeClassExecutionProfiler
@@ -71,5 +92,6 @@ object PorcEPolyglotLauncher {
     
     engine.dispose()
     runtime.dispose()
+    System.exit(0);
   }
 }

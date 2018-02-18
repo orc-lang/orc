@@ -13,6 +13,7 @@ import orc.run.porce.runtime.SourceSectionFromPorc;
 import orc.ast.ASTWithIndex;
 import orc.run.porce.HasPorcNode;
 import orc.run.porce.instruments.ProfiledPorcNodeTag;
+import orc.run.porce.instruments.ProfiledPorcENodeTag;
 import orc.run.porce.instruments.TailTag;
 import scala.Option;
 
@@ -73,6 +74,8 @@ public abstract class NodeBase extends Node implements HasPorcNode {
 			return isTail;
 		} else if (tag == ProfiledPorcNodeTag.class) {
 			return porcNode().isDefined() && ProfiledPorcNodeTag.isProfiledPorcNode(porcNode().get());
+		} else if (tag == ProfiledPorcENodeTag.class) {
+			return ProfiledPorcENodeTag.isProfiledPorcENode(this);
 		} else {
 			return super.isTaggedWith(tag);
 		}

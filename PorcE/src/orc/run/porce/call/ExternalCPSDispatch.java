@@ -29,19 +29,19 @@ import orc.run.porce.RuntimeProfilerWrapper;
 import orc.run.porce.SpecializationConfiguration;
 import static orc.run.porce.SpecializationConfiguration.*;
 
-@Instrumentable(factory = ExternalCPSDispatchWrapper.class)
+//@Instrumentable(factory = ExternalCPSDispatchWrapper.class)
 public class ExternalCPSDispatch extends Dispatch {
 	@Child
-	protected ExternalCPSDispatchInternal internal;
+	protected ExternalCPSDispatch.ExternalCPSDispatchInternal internal;
 
 	protected ExternalCPSDispatch(final PorcEExecution execution) {
 		super(execution);
-		internal = ExternalCPSDispatchInternal.createBare(execution);
+		internal = ExternalCPSDispatch.ExternalCPSDispatchInternal.createBare(execution);
 	}
 
 	protected ExternalCPSDispatch(final ExternalCPSDispatch orig) {
 		super(orig.internal.execution);
-		internal = ExternalCPSDispatchInternal.createBare(orig.internal.execution);
+		internal = ExternalCPSDispatch.ExternalCPSDispatchInternal.createBare(orig.internal.execution);
 	}
 	 
 	@Override
@@ -67,167 +67,173 @@ public class ExternalCPSDispatch extends Dispatch {
 	static ExternalCPSDispatch createBare(PorcEExecution execution) {
 		return new ExternalCPSDispatch(execution);
 	}
-}
 
-@ImportStatic({ SpecializationConfiguration.class })
-@Introspectable
-abstract class ExternalCPSDispatchInternal extends DispatchBase {
-	protected ExternalCPSDispatchInternal(final PorcEExecution execution) {
-		super(execution);
-	}
-
-	@CompilerDirectives.CompilationFinal(dimensions = 1)
-	protected final BranchProfile[] exceptionProfiles = new BranchProfile[] { BranchProfile.create(),
-			BranchProfile.create(), BranchProfile.create() };
-	
-	@CompilerDirectives.CompilationFinal
-	protected InternalCPSDispatchInternal dispatchP = null;
-	
-	protected InternalCPSDispatchInternal getDispatchP() {
-		if (dispatchP == null) {
-			CompilerDirectives.transferToInterpreterAndInvalidate();
-			computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
-				InternalCPSDispatchInternal n = insert(InternalCPSDispatchInternal.createBare(true, execution));
-				n.setTail(isTail);
-				return n;
-			});
+	@ImportStatic({ SpecializationConfiguration.class })
+	@Introspectable
+	@Instrumentable(factory = ExternalCPSDispatchInternalWrapper.class)
+	public static abstract class ExternalCPSDispatchInternal extends DispatchBase {
+		protected ExternalCPSDispatchInternal(final PorcEExecution execution) {
+			super(execution);
 		}
-		return dispatchP;
-	}
-
-	public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter, Terminator term, Object[] arguments);
-
-	@Specialization(guards = { "ExternalCPSDirectSpecialization", "invoker != null", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalDirectCallMaxCacheSize")
-	public void specificDirect(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
-			@Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker) {
-		// DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
-		try {
-			final Object v;
+		
+		protected ExternalCPSDispatchInternal(final ExternalCPSDispatchInternal orig) {
+			super(orig.execution);
+		}
+	
+		@CompilerDirectives.CompilationFinal(dimensions = 1)
+		protected final BranchProfile[] exceptionProfiles = new BranchProfile[] { BranchProfile.create(),
+				BranchProfile.create(), BranchProfile.create() };
+		
+		@CompilerDirectives.CompilationFinal
+		protected InternalCPSDispatch.InternalCPSDispatchInternal dispatchP = null;
+		
+		protected InternalCPSDispatch.InternalCPSDispatchInternal getDispatchP() {
+			if (dispatchP == null) {
+				CompilerDirectives.transferToInterpreterAndInvalidate();
+				computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
+					InternalCPSDispatch.InternalCPSDispatchInternal n = insert(InternalCPSDispatch.InternalCPSDispatchInternal.createBare(true, execution));
+					n.setTail(isTail);
+					return n;
+				});
+			}
+			return dispatchP;
+		}
+	
+		public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter, Terminator term, Object[] arguments);
+	
+		@Specialization(guards = { "ExternalCPSDirectSpecialization", "invoker != null", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalDirectCallMaxCacheSize")
+		public void specificDirect(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
+				@Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker) {
+			// DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
 			try {
-				v = invokeDirectWithBoundary(invoker, target, arguments);
+				final Object v;
+				try {
+					v = invokeDirectWithBoundary(invoker, target, arguments);
+				} finally {
+					RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
+				}
+				getDispatchP().execute(frame, pub, new Object[] { pub.environment, v });
+			} catch (final TailCallException e) {
+				throw e;
+			} catch (final ExceptionHaltException e) {
+				exceptionProfiles[0].enter();
+				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
+				execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+				counter.haltToken();
+			} catch (final HaltException e) {
+				exceptionProfiles[1].enter();
+				counter.haltToken();
+			} catch (final Exception e) {
+				exceptionProfiles[2].enter();
+				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
+				execution.notifyOrcWithBoundary(new CaughtEvent(e));
+				counter.haltToken();
+			} catch (final Throwable e) {
+				CompilerDirectives.transferToInterpreter();
+				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
+				execution.notifyOrcWithBoundary(new CaughtEvent(e));
+				counter.haltToken();
+				// Rethrow into interpreter since this is an error and everything is exploding.
+				//throw e;
+			}
+			// Token: All exception handlers halt the token that was passed to this
+			// call. Calls are not allowed to keep the token if they throw an
+			// exception.
+		}
+		
+		@Specialization(guards = { "isNotDirectInvoker(invoker) || !ExternalCPSDirectSpecialization", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalCPSCallMaxCacheSize")
+		public void specific(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
+				@Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker) {
+			// Token: Passed to callContext from arguments.
+			final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
+	
+			try {
+				callContext.begin();
+				invokeWithBoundary(invoker, callContext, target, arguments);
+			} catch (final TailCallException e) {
+				throw e;
+			} catch (final ExceptionHaltException e) {
+				exceptionProfiles[0].enter();
+				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
+				execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
+				counter.haltToken();
+			} catch (final HaltException e) {
+				exceptionProfiles[1].enter();
+				counter.haltToken();
+			} catch (final Exception e) {
+				exceptionProfiles[2].enter();
+				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
+				execution.notifyOrcWithBoundary(new CaughtEvent(e));
+				counter.haltToken();
+			} catch (final Throwable e) {
+				CompilerDirectives.transferToInterpreter();
+				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
+				execution.notifyOrcWithBoundary(new CaughtEvent(e));
+				counter.haltToken();
+				// Rethrow into interpreter since this is an error and everything is exploding.
+				//throw e;
 			} finally {
 				RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 			}
-			getDispatchP().execute(frame, pub, new Object[] { pub.environment, v });
-		} catch (final TailCallException e) {
-			throw e;
-		} catch (final ExceptionHaltException e) {
-			exceptionProfiles[0].enter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
-			counter.haltToken();
-		} catch (final HaltException e) {
-			exceptionProfiles[1].enter();
-			counter.haltToken();
-		} catch (final Exception e) {
-			exceptionProfiles[2].enter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.notifyOrcWithBoundary(new CaughtEvent(e));
-			counter.haltToken();
-		} catch (final Throwable e) {
-			CompilerDirectives.transferToInterpreter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.notifyOrcWithBoundary(new CaughtEvent(e));
-			counter.haltToken();
-			// Rethrow into interpreter since this is an error and everything is exploding.
-			//throw e;
 		}
-		// Token: All exception handlers halt the token that was passed to this
-		// call. Calls are not allowed to keep the token if they throw an
-		// exception.
-	}
 	
-	@Specialization(guards = { "isNotDirectInvoker(invoker) || !ExternalCPSDirectSpecialization", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalCPSCallMaxCacheSize")
-	public void specific(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
-			@Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker) {
-		// Token: Passed to callContext from arguments.
-		final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
-
-		try {
-			callContext.begin();
-			invokeWithBoundary(invoker, callContext, target, arguments);
-		} catch (final TailCallException e) {
-			throw e;
-		} catch (final ExceptionHaltException e) {
-			exceptionProfiles[0].enter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
-			counter.haltToken();
-		} catch (final HaltException e) {
-			exceptionProfiles[1].enter();
-			counter.haltToken();
-		} catch (final Exception e) {
-			exceptionProfiles[2].enter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.notifyOrcWithBoundary(new CaughtEvent(e));
-			counter.haltToken();
-		} catch (final Throwable e) {
-			CompilerDirectives.transferToInterpreter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.notifyOrcWithBoundary(new CaughtEvent(e));
-			counter.haltToken();
-			// Rethrow into interpreter since this is an error and everything is exploding.
-			//throw e;
-		} finally {
-			RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
+		@Specialization(replaces = { "specific", "specificDirect" })
+		public void universal(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
+				@Cached("createBinaryProfile()") ConditionProfile isDirectProfile) {
+			final Invoker invoker = getInvokerWithBoundary(target, arguments);
+			if (ExternalCPSDirectSpecialization && isDirectProfile.profile(invoker instanceof DirectInvoker)) {
+				specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker);
+			} else {
+				specific(frame, target, pub, counter, term, arguments, invoker);
+			}
 		}
-	}
-
-	@Specialization(replaces = { "specific", "specificDirect" })
-	public void universal(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
-			@Cached("createBinaryProfile()") ConditionProfile isDirectProfile) {
-		final Invoker invoker = getInvokerWithBoundary(target, arguments);
-		if (ExternalCPSDirectSpecialization && isDirectProfile.profile(invoker instanceof DirectInvoker)) {
-			specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker);
-		} else {
-			specific(frame, target, pub, counter, term, arguments, invoker);
-		}
-	}
-
-	static ExternalCPSDispatchInternal createBare(PorcEExecution execution) {
-		return ExternalCPSDispatchInternalNodeGen.create(execution);
-	}
-
-	/* Utilties */
 	
-	protected static boolean isNotDirectInvoker(final Invoker invoker) {
-		return !(invoker instanceof DirectInvoker);
-	}
-
-	protected Invoker getInvokerWithBoundary(final Object target, final Object[] arguments) {
-		return getInvokerWithBoundary(execution.runtime(), target, arguments);
-	}
-
-	protected DirectInvoker getDirectInvokerWithBoundary(final Object target, final Object[] arguments) {
-		Invoker invoker = getInvokerWithBoundary(execution.runtime(), target, arguments);
-		if (invoker instanceof DirectInvoker) {
-			return (DirectInvoker) invoker;
-		} else {
-			return null;
+		static ExternalCPSDispatchInternal createBare(PorcEExecution execution) {
+			return ExternalCPSDispatchFactory.ExternalCPSDispatchInternalNodeGen.create(execution);
+		}
+	
+		/* Utilties */
+		
+		protected static boolean isNotDirectInvoker(final Invoker invoker) {
+			return !(invoker instanceof DirectInvoker);
+		}
+	
+		protected Invoker getInvokerWithBoundary(final Object target, final Object[] arguments) {
+			return getInvokerWithBoundary(execution.runtime(), target, arguments);
+		}
+	
+		protected DirectInvoker getDirectInvokerWithBoundary(final Object target, final Object[] arguments) {
+			Invoker invoker = getInvokerWithBoundary(execution.runtime(), target, arguments);
+			if (invoker instanceof DirectInvoker) {
+				return (DirectInvoker) invoker;
+			} else {
+				return null;
+			}
+		}
+		
+		@TruffleBoundary(allowInlining = true)
+		protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object target,
+				final Object[] arguments) {
+			return runtime.getInvoker(target, arguments);
+		}
+	
+		@TruffleBoundary(allowInlining = true)
+		protected static boolean canInvokeWithBoundary(final Invoker invoker, final Object target,
+				final Object[] arguments) {
+			return invoker.canInvoke(target, arguments);
+		}
+	
+		@TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
+		protected static void invokeWithBoundary(final Invoker invoker, final CPSCallContext callContext,
+				final Object target, final Object[] arguments) {
+			invoker.invoke(callContext, target, arguments);
+		}
+	
+		@TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
+		protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object target,
+				final Object[] arguments) {
+			return invoker.invokeDirect(target, arguments);
 		}
 	}
-	
-	@TruffleBoundary(allowInlining = true)
-	protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object target,
-			final Object[] arguments) {
-		return runtime.getInvoker(target, arguments);
-	}
 
-	@TruffleBoundary(allowInlining = true)
-	protected static boolean canInvokeWithBoundary(final Invoker invoker, final Object target,
-			final Object[] arguments) {
-		return invoker.canInvoke(target, arguments);
-	}
-
-	@TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-	protected static void invokeWithBoundary(final Invoker invoker, final CPSCallContext callContext,
-			final Object target, final Object[] arguments) {
-		invoker.invoke(callContext, target, arguments);
-	}
-
-	@TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-	protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object target,
-			final Object[] arguments) {
-		return invoker.invokeDirect(target, arguments);
-	}
 }

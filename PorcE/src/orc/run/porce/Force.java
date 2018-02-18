@@ -9,7 +9,6 @@ import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ControlFlowException;
-import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 import orc.FutureState;
@@ -22,7 +21,6 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.Terminator;
 import static orc.run.porce.SpecializationConfiguration.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class Force {
