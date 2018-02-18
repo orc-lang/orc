@@ -54,12 +54,9 @@ trait OrcParserResultTypes[T] {
   */
 object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
   def apply(s: String): ParseResult = {
-    //FIXME: Remove this SynchronousThreadExec whe Scala Issue SI-4929 is fixed
-    SynchronousThreadExec("Orc Parser Thread", {
-      val parsers = new OrcParsers(null, null, null)
-      val tokens = new parsers.lexical.Scanner(new OrcStringInputContext(s).reader)
-      parsers.phrase(parsers.parserForReadSite)(tokens)
-    })
+    val parsers = new OrcParsers(null, null, null)
+    val tokens = new parsers.lexical.Scanner(new OrcStringInputContext(s).reader)
+    parsers.phrase(parsers.parserForReadSite)(tokens)
   }
 }
 
@@ -71,12 +68,9 @@ object OrcLiteralParser extends (String => OrcParsers#ParseResult[Expression]) w
   */
 object OrcProgramParser extends ((OrcInputContext, CompilerOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Expression]) with OrcParserResultTypes[Expression] {
   def apply(ic: OrcInputContext, co: CompilerOptions, envServices: OrcCompilerRequires): ParseResult = {
-    //FIXME: Remove this SynchronousThreadExec whe Scala Issue SI-4929 is fixed
-    SynchronousThreadExec("Orc Parser Thread: " + ic.descr, {
-      val parsers = new OrcParsers(ic, co, envServices)
-      val tokens = new parsers.lexical.Scanner(ic.reader)
-      parsers.phrase(parsers.parseProgram)(tokens)
-    })
+    val parsers = new OrcParsers(ic, co, envServices)
+    val tokens = new parsers.lexical.Scanner(ic.reader)
+    parsers.phrase(parsers.parseProgram)(tokens)
   }
 }
 
@@ -88,13 +82,10 @@ object OrcProgramParser extends ((OrcInputContext, CompilerOptions, OrcCompilerR
   */
 object OrcIncludeParser extends ((OrcInputContext, CompilerOptions, OrcCompilerRequires) => OrcParsers#ParseResult[Include]) with OrcParserResultTypes[Include] {
   def apply(ic: OrcInputContext, co: CompilerOptions, envServices: OrcCompilerRequires): ParseResult = {
-    //FIXME: Remove this SynchronousThreadExec when Scala Issue SI-4929 is fixed
-    SynchronousThreadExec("Orc Parser Thread: " + ic.descr, {
-      val newParsers = new OrcParsers(ic, co, envServices)
-      val parseInclude = newParsers.markLocation(newParsers.parseDeclarations ^^ { Include(ic.descr, _) })
-      val tokens = new newParsers.lexical.Scanner(ic.reader)
-      newParsers.phrase(parseInclude)(tokens)
-    })
+    val newParsers = new OrcParsers(ic, co, envServices)
+    val parseInclude = newParsers.markLocation(newParsers.parseDeclarations ^^ { Include(ic.descr, _) })
+    val tokens = new newParsers.lexical.Scanner(ic.reader)
+    newParsers.phrase(parseInclude)(tokens)
   }
 }
 

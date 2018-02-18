@@ -20,7 +20,6 @@ import scala.util.parsing.input.CharSequenceReader
 import orc.values.sites.{ TotalSite, UntypedSite }
 import orc.values.OrcRecord
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, SiteException }
-import orc.util.SynchronousThreadExec
 import orc.util.ArrayExtensions.Array1
 import orc.values.NumericsConfig
 
@@ -32,8 +31,7 @@ class ReadJSON extends TotalSite with UntypedSite {
 
   def evaluate(args: Array[AnyRef]): AnyRef = {
     args match {
-      //FIXME: Remove this SynchronousThreadExec whe Scala Issue SI-4929 is fixed
-      case Array1(s: String) => SynchronousThreadExec("Orc JSON Parser Thread", OrcJSONParser.parse(s))
+      case Array1(s: String) => OrcJSONParser.parse(s)
       case Array1(z) => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
       case _ => throw new ArityMismatchException(1, args.size)
     }
@@ -45,7 +43,7 @@ class ReadJSON extends TotalSite with UntypedSite {
   */
 object ReadJSON {
   def apply(s: String): AnyRef = {
-    SynchronousThreadExec("Orc JSON Parser Thread", OrcJSONParser.parse(s))
+    OrcJSONParser.parse(s)
   }
 }
 
