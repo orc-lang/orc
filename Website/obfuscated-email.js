@@ -4,7 +4,7 @@
  */
 (function () {
 function fixE(address) {
-	return address.replace(' at ', '@');
+	return address.replace('X at-sign-without-X-s this-web-site-host-name', '@orc.csres.utexas.edu');
 }
 function fixL(link) {
 	var address;
