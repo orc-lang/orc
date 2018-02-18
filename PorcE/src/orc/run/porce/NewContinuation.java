@@ -1,20 +1,19 @@
 
 package orc.run.porce;
 
+import orc.ast.porc.PorcAST;
+import orc.run.porce.runtime.PorcEClosure;
+
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
+import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.SlowPathException;
-
-import orc.ast.porc.PorcAST;
-import orc.run.porce.runtime.PorcEClosure;
 
 @ImportStatic({ SpecializationConfiguration.class })
 @Introspectable

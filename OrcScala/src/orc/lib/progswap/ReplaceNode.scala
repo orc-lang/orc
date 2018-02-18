@@ -13,15 +13,9 @@
 package orc.lib.progswap
 
 import orc.ast.AST
-import orc.ast.oil.nameless.{ Def, Expression, NamelessAST }
+import orc.ast.oil.nameless.{ Def, Expression }
+import orc.run.core.{ Binding, BoundValue, Closure, FunctionFrame, SequenceFrame, Token }
 import orc.run.extensions.SwappableASTs
-import orc.run.Orc
-import orc.run.core.BoundValue
-import orc.run.core.Token
-import orc.run.core.Closure
-import orc.run.core.Binding
-import orc.run.core.FunctionFrame
-import orc.run.core.SequenceFrame
 
 /** Edit operation that is a to-one mapping of an AST node.
   *

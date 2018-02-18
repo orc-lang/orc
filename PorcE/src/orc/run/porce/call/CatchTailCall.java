@@ -1,11 +1,11 @@
 
 package orc.run.porce.call;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-
 import orc.run.porce.Expression;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.TailCallException;
+
+import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class CatchTailCall extends Expression {
 	@Child

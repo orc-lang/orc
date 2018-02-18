@@ -12,7 +12,6 @@
 //
 package orc.lib.progswap
 
-import orc.run.Orc
 import orc.run.core.Token
 
 /** An instance of AstEditOperation represents one tree-edit operation in a tree-edit script. A script is simply

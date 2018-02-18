@@ -1,8 +1,8 @@
 package orc.test.item.scalabenchmarks
 
-import scala.annotation.tailrec
-import java.util.concurrent.ThreadLocalRandom
 import java.util.Random
+
+import scala.annotation.tailrec
 
 object BigSortData extends ExpectedBenchmarkResult[IndexedSeq[Number]] {
   def makeRandomArray(n: Int): Array[Number] = {

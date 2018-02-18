@@ -1,13 +1,12 @@
 package orc.test.item.scalabenchmarks.dedup
 
-import java.io.{ DataOutputStream, FileInputStream, FileOutputStream }
-import java.util.concurrent.ConcurrentHashMap
+import java.io.{ DataOutputStream, File, FileInputStream, FileOutputStream }
+import java.util.concurrent.{ ArrayBlockingQueue, ConcurrentHashMap }
 
-import orc.test.item.scalabenchmarks.{ BenchmarkApplication, Util }
-import java.util.concurrent.ArrayBlockingQueue
-import Util.thread
 import scala.annotation.tailrec
-import java.io.File
+
+import orc.test.item.scalabenchmarks.BenchmarkApplication
+import orc.test.item.scalabenchmarks.Util.thread
 
 object DedupNestedPar extends BenchmarkApplication[Unit, Unit] {
   import Dedup._

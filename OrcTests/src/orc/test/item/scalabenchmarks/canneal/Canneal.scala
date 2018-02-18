@@ -1,10 +1,10 @@
 package orc.test.item.scalabenchmarks.canneal
 
-import orc.test.item.scalabenchmarks.BenchmarkApplication
-import orc.test.item.scalabenchmarks.BenchmarkConfig
-import java.net.URL
 import java.io.File
+import java.net.URL
 import java.nio.file.Files
+
+import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig }
 
 object Canneal extends BenchmarkApplication[NetList, Unit] {
   val dataURL = new URL("https://www.cs.utexas.edu/~amp/data/2500000.nets.gz")

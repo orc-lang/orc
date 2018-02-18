@@ -12,9 +12,6 @@
 //
 package orc.run.core
 
-import orc.FutureReader
-import java.lang.AssertionError
-
 /** @author amp
   */
 trait Resolver extends Blockable {

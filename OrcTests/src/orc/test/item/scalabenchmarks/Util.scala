@@ -1,7 +1,6 @@
 package orc.test.item.scalabenchmarks
 
-import orc.lib.Benchmark
-import orc.lib.BenchmarkTimes
+import orc.lib.{ Benchmark, BenchmarkTimes }
 
 object Util {
   def time[T](iteration: Int, size: Double)(op: => T): (BenchmarkTimes, T) = {

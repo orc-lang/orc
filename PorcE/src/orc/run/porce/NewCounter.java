@@ -1,14 +1,15 @@
 
 package orc.run.porce;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.CounterNested;
 import orc.run.porce.runtime.CounterService;
 import orc.run.porce.runtime.CounterTerminator;
-import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.runtime.Terminator;
+
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 public abstract class NewCounter extends Expression {
     @Child

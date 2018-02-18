@@ -12,9 +12,8 @@
 //
 package orc.run.porce.runtime
 
-import orc.InvocationBehavior
+import orc.{ InvocationBehavior, OrcRuntime }
 import orc.run.extensions.{ ErrorOnUndefinedInvocation, SupportForJavaObjectInvocation, SupportForSiteInvocation }
-import orc.OrcRuntime
 
 /** @author dkitchin
   */

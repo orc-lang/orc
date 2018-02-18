@@ -15,15 +15,12 @@ package orc.run.porce.runtime
 
 import java.util.logging.Level
 
-import com.oracle.truffle.api.CompilerDirectives
-
-import orc.OrcExecutionOptions
-import orc.Schedulable
-import orc.run.Orc
+import orc.{ OrcExecutionOptions, Schedulable }
+import orc.run.{ Orc, StopWatches }
 import orc.run.extensions.SimpleWorkStealingScheduler
 import orc.run.porce.Logger
-import orc.run.StopWatches
 
+import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** An Orc runtime engine extension which schedules Orc Tokens to

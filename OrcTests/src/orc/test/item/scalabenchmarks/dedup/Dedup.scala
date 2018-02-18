@@ -1,14 +1,13 @@
 package orc.test.item.scalabenchmarks.dedup
 
-import java.io.{ DataOutputStream, FileInputStream, FileOutputStream, IOException }
+import java.io.{ DataOutputStream, File, FileInputStream, FileOutputStream, IOException }
 import java.security.MessageDigest
 import java.util.concurrent.{ ConcurrentHashMap, ForkJoinPool }
 
 import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration.Duration
 
-import orc.test.item.scalabenchmarks.{ BenchmarkApplication, Util }
-import java.io.File
+import orc.test.item.scalabenchmarks.BenchmarkApplication
 
 object Dedup extends BenchmarkApplication[Unit, Unit] {
   val threadPool = new ForkJoinPool()

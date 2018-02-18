@@ -1,24 +1,19 @@
 package orc.run.porce.runtime
 
+import java.io.{ OutputStreamWriter, PrintWriter }
 import java.util.{ Timer, TimerTask }
+
+import orc.{ ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
+import orc.run.core.EventHandler
+import orc.run.distrib.porce.CallTargetManager
+import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
+import orc.run.porce.instruments.DumpSpecializations
+import orc.util.{ CsvWriter, ExecutionLogOutputStream }
 
 import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.RootNode
-
-import orc.{ ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
-import orc.run.core.EventHandler
-import orc.run.porce.{ HasId, InvokeCallRecordRootNode, Logger, PorcEUnit }
-import orc.run.distrib.porce.CallTargetManager
-import orc.run.porce.instruments.DumpSpecializations
-import java.io.PrintWriter
-import java.io.OutputStreamWriter
-import orc.util.ExecutionLogOutputStream
-import orc.util.CsvWriter
-import orc.run.porce.PorcERootNode
-import orc.run.porce.InvokeWithTrampolineRootNode
-import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {

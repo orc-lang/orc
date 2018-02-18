@@ -13,24 +13,20 @@
 
 package orc.compile.orctimizer
 
-import orc.ast.orctimizer.named._
-import orc.compile.AnalysisRunner
-import orc.compile.AnalysisCache
-import orc.compile.flowanalysis.GraphDataProvider
-import orc.compile.flowanalysis.{Analyzer, AnalyzerEdgeCache}
-import orc.compile.flowanalysis.DebuggableGraphDataProvider
-import FlowGraph.{Node, Edge}
+import orc.ast.orctimizer.named.{ BoundVar, Branch, Call, Constant, DeclareMethods, DeclareType, Expression, Force, Future, GetField, GetMethod, HasType, IfLenientMethod, Method, New, Otherwise, Parallel, Resolve, Service, Stop, Trim }
+import orc.compile.{ AnalysisCache, AnalysisRunner, Logger }
+import orc.compile.flowanalysis.{ Analyzer, AnalyzerEdgeCache, DebuggableGraphDataProvider, GraphDataProvider }
 import orc.util.DotUtils.DotAttributes
-import orc.compile.Logger
-import orc.values.sites.Effects
+
+import FlowGraph.{ Edge, Node }
 
 
 class EffectAnalysis(
   val results: Map[Expression.Z, EffectAnalysis.EffectInfo],
   graph: GraphDataProvider[Node, Edge])
   extends DebuggableGraphDataProvider[Node, Edge] {
-  import FlowGraph._
   import EffectAnalysis._
+  import FlowGraph._
 
   def edges = graph.edges
   def nodes = graph.nodes

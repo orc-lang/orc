@@ -15,8 +15,9 @@ package orc.run.porce.runtime
 
 import java.util.concurrent.atomic.AtomicReference
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.util.Tracer
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 trait Terminatable {
   /** Kill this terminatable.

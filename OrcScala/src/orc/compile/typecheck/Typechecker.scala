@@ -315,8 +315,6 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
   }
 
   def typeFoldedCall(target: Expression, args: List[Expression], syntacticTypeArgs: Option[List[syntactic.Type]], checkReturnType: Option[Type], callPoint: Expression)(implicit ctx: Context): (Expression, Type) = {
-    import ctx._
-
     val (newTarget, targetType) = typeSynthExpr(target)
     val (newArgs, argTypes) = {
       targetType match {
@@ -350,8 +348,6 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
   }
 
   def typeCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type], callPoint: Expression)(implicit ctx: Context): (Option[List[syntactic.Type]], Type) = {
-    import ctx._
-
     // Special call cases
     targetType match {
       case Bot => {
@@ -410,8 +406,6 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
   }
 
   def typeCoreCall(syntacticTypeArgs: Option[List[syntactic.Type]], targetType: Type, argTypes: List[Type], checkReturnType: Option[Type], callPoint: Expression)(implicit ctx: Context): (Option[List[syntactic.Type]], Type) = {
-    import ctx._
-
     val (finalSyntacticTypeArgs, finalReturnType) =
       syntacticTypeArgs match {
         case Some(args) => {

@@ -12,17 +12,12 @@
 //
 package orc.lib.util
 
-import orc.values.sites.Site
-import orc.values.sites.TypedSite
-import orc.values.sites.TotalSite1
-import orc.values.sites.PartialSite0
 import java.lang.Iterable
+
 import orc.compile.typecheck.Typeloader
-import orc.lib.builtin.structured.ListType
-import orc.types.TypeVariable
-import orc.types.FunctionType
-import orc.types.SimpleFunctionType
 import orc.error.runtime.ArgumentTypeMismatchException
+import orc.types.{ FunctionType, SimpleFunctionType, TypeVariable }
+import orc.values.sites.{ PartialSite0, TotalSite1, TypedSite }
 
 /** @author dkitchin
   */

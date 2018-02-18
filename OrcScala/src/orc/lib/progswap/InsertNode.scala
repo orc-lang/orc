@@ -11,7 +11,6 @@
 package orc.lib.progswap
 
 import orc.ast.AST
-import orc.run.Orc
 import orc.run.core.Token
 
 /** Edit operation that is an addition of a new node to a tree.

@@ -13,18 +13,13 @@
 
 package orc.compile.orctimizer
 
-import orc.compile.AnalysisRunner
-import orc.compile.AnalysisCache
-import orc.values.sites.Range
-import orc.compile.flowanalysis._
-import orc.ast.orctimizer.named._
-import FlowGraph._
+import orc.ast.orctimizer.named.{ BoundVar, Branch, Call, Constant, DeclareMethods, DeclareType, Expression, Force, Future, GetField, GetMethod, HasType, IfLenientMethod, Method, New, Otherwise, Parallel, Resolve, Service, Stop, Trim }
+import orc.compile.{ AnalysisCache, AnalysisRunner }
+import orc.compile.flowanalysis.{ Analyzer, DebuggableGraphDataProvider, GraphDataProvider }
 import orc.util.DotUtils.DotAttributes
-import orc.compile.Logger
-import scala.reflect.ClassTag
-import orc.values.Field
-import swivel.Zipper
-import orc.values.sites.SiteMetadata
+import orc.values.sites.Range
+
+import FlowGraph.{ CombinatorInternalOrderEdge, ConstantNode, Edge, EntryExitEdge, EntryNode, ExitNode, FutureValueSourceEdge, MethodNode, Node, TransitionEdge, ValueNode, VariableNode }
 
 class PublicationCountAnalysis(
   results: Map[Node, Range],
@@ -90,8 +85,8 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
     }
 
   class PublicationCountAnalyzer(graph: CallGraph) extends Analyzer {
-    import graph._
     import FlowGraph._
+    import graph._
     import graph.NodeInformation._
 
     type NodeT = Node

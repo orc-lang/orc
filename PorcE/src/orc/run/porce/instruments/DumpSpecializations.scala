@@ -1,14 +1,13 @@
 package orc.run.porce.instruments
 
-import com.oracle.truffle.api.nodes.Node
-import java.io.PrintStream
-import com.oracle.truffle.api.nodes.NodeVisitor
-import orc.run.porce.NodeBase
-import com.oracle.truffle.api.dsl.Introspection
-import scala.collection.JavaConverters._
+import java.io.{ PrintWriter, StringWriter }
+
+import scala.collection.JavaConverters.asScalaBufferConverter
+
 import orc.run.porce.HasPorcNode
-import java.io.PrintWriter
-import java.io.StringWriter
+
+import com.oracle.truffle.api.dsl.Introspection
+import com.oracle.truffle.api.nodes.{ Node, NodeVisitor }
 
 object DumpSpecializations {
   def apply(node: Node, out: PrintWriter): Unit = {

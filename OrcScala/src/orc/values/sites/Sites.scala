@@ -17,7 +17,6 @@ import orc.CallContext
 import orc.error.{ NotYetImplementedException, OrcException }
 import orc.error.compiletime.typing.TypeException
 import orc.error.runtime.{ ArityMismatchException, ExceptionHaltException, HaltException, RightException }
-import orc.run.Logger
 import orc.types.{ Bot, RecordType, Type }
 import orc.util.ArrayExtensions.{ Array0, Array1, Array2, Array3 }
 import orc.values.{ OrcRecord, OrcValue }

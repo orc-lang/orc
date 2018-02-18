@@ -1,9 +1,9 @@
 
 package orc.run.porce;
 
-import com.oracle.truffle.api.instrumentation.Instrumentable;
-
 import orc.util.ExpressionTag;
+
+import com.oracle.truffle.api.instrumentation.Instrumentable;
 
 @Instrumentable(factory = ExpressionWrapper.class)
 public abstract class Expression extends PorcENode {

@@ -12,8 +12,6 @@
 //
 package orc.ast.porc
 
-import orc.values.Field
-
 /**
   * @author amp
   */

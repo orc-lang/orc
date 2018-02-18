@@ -13,11 +13,8 @@
 
 package orc.types
 
-import orc.error.compiletime.typing._
-import orc.error.NotYetImplementedException
-import orc.types.Variance._
-import orc.values.sites.OrcJavaCompatibility._
-import orc.util.TypeListEnrichment._
+import orc.error.compiletime.typing.{ OverconstrainedTypeVariableException, SubtypeFailureException }
+import orc.types.Variance.enrichVarianceList
 
 /* Used for reference only. */
 trait TypeInterface {

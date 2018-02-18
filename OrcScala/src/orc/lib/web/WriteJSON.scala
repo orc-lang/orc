@@ -12,10 +12,9 @@
 //
 package orc.lib.web
 
-import orc.values.sites.{ TotalSite1, UntypedSite }
-import orc.values.OrcRecord
-import orc.error.NotYetImplementedException
 import orc.error.runtime.SiteException
+import orc.values.OrcRecord
+import orc.values.sites.{ TotalSite1, UntypedSite }
 
 /**
   * @author dkitchin

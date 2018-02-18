@@ -12,23 +12,13 @@
 //
 package orc.lib.xml
 
-import orc.values.OrcTuple
-import orc.values.OrcRecord
-import orc.values.sites.TotalSite1
-import orc.values.sites.TotalSite3
-import orc.values.sites.PartialSite1
-import orc.values.sites.TypedSite
-import orc.values.sites.StructurePairSite
-import orc.types.SimpleFunctionType
-import orc.types.TupleType
-import orc.types.StringType
-import orc.types.Top
-import orc.types.EmptyRecordType
-import orc.types.JavaObjectType
-import orc.lib.builtin.structured.ListType
-import scala.xml._
+import scala.xml.{ Elem, MetaData, Node, Null, PCData, Text, TopScope, UnprefixedAttribute }
+
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ArityMismatchException
+import orc.lib.builtin.structured.ListType
+import orc.types.{ EmptyRecordType, JavaObjectType, SimpleFunctionType, StringType, Top, TupleType }
+import orc.values.{ OrcRecord, OrcTuple }
+import orc.values.sites.{ PartialSite1, StructurePairSite, TotalSite1, TotalSite3, TypedSite }
 
 /** XML elements. These sites are not namespace aware. Construction defaults
   * to the empty namespace, and matching discards namespace information.

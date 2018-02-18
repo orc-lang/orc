@@ -13,7 +13,6 @@
 package orc.ast.oil.named
 
 import scala.language.reflectiveCalls
-import orc.compile.Logger
 
 /** @author dkitchin
   */

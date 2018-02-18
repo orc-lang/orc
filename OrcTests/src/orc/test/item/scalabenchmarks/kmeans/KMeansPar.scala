@@ -1,10 +1,8 @@
 package orc.test.item.scalabenchmarks.kmeans
 
-import java.util.concurrent.atomic.DoubleAdder
-import java.util.concurrent.atomic.LongAdder
-import orc.test.item.scalabenchmarks.BenchmarkApplication
-import orc.test.item.scalabenchmarks.Util
-import orc.test.item.scalabenchmarks.HashBenchmarkResult
+import java.util.concurrent.atomic.{ DoubleAdder, LongAdder }
+
+import orc.test.item.scalabenchmarks.{ BenchmarkApplication, HashBenchmarkResult }
 
 object KMeansPar extends BenchmarkApplication[Array[Point], Array[Point]] with HashBenchmarkResult[Array[Point]] {
   val expected = KMeansData

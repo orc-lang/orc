@@ -3,10 +3,18 @@ package orc.run.porce;
 
 import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreter;
 
-import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 
 import scala.Option;
+
+import orc.ast.ASTWithIndex;
+import orc.ast.porc.PorcAST;
+import orc.error.runtime.ArityMismatchException;
+import orc.error.runtime.HaltException;
+import orc.run.porce.call.CatchSelfTailCall;
+import orc.run.porce.runtime.KilledException;
+import orc.run.porce.runtime.SourceSectionFromPorc;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -16,14 +24,6 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
-
-import orc.ast.ASTWithIndex;
-import orc.ast.porc.PorcAST;
-import orc.error.runtime.ArityMismatchException;
-import orc.error.runtime.HaltException;
-import orc.run.porce.call.CatchSelfTailCall;
-import orc.run.porce.runtime.KilledException;
-import orc.run.porce.runtime.SourceSectionFromPorc;
 
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final static boolean assertionsEnabled = false;

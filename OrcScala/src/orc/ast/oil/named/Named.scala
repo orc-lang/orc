@@ -13,12 +13,9 @@
 
 package orc.ast.oil.named
 
-import scala.language.reflectiveCalls
-
+import orc.ast.{ AST, hasAutomaticVariableName, hasOptionalVariableName }
 import orc.ast.oil.nameless
-import orc.ast.{ AST, hasOptionalVariableName }
 import orc.values
-import orc.ast.hasAutomaticVariableName
 
 sealed abstract class NamedAST extends AST with NamedToNameless {
   def prettyprint() = (new PrettyPrint()).reduce(this).toString()

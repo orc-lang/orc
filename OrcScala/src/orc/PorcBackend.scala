@@ -12,7 +12,7 @@
 //
 package orc
 
-import java.io.{ IOException, ObjectInputStream, ObjectOutputStream }
+import java.io.{ ObjectInputStream, ObjectOutputStream }
 
 import orc.ast.porc.MethodCPS
 import orc.compile.orctimizer.PorcOrcCompiler

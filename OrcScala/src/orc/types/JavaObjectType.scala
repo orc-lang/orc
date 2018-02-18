@@ -12,12 +12,9 @@
 //
 package orc.types
 
-import scala.language.existentials
 import java.lang.{ reflect => jvm }
-import orc.compile.typecheck.Typeloader._
-import orc.error.compiletime.typing.TypeArgumentArityException
+
 import orc.error.compiletime.typing.UncallableTypeException
-import orc.error.compiletime.typing.NoSuchMemberException
 
 /** The type of a Java object.
   *

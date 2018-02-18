@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import orc.{ CallContext, CaughtEvent, OrcEvent }
 import orc.compile.parse.OrcSourceRange
 import orc.error.OrcException
-import orc.run.porce.PorcERootNode
 import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator, val callSiteId: Int) extends AtomicBoolean with CallContext with Terminatable {

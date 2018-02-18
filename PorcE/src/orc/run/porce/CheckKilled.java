@@ -1,12 +1,12 @@
 
 package orc.run.porce;
 
+import orc.run.porce.runtime.KilledException;
+import orc.run.porce.runtime.Terminator;
+
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
-
-import orc.run.porce.runtime.KilledException;
-import orc.run.porce.runtime.Terminator;
 
 @NodeChild("terminator")
 public class CheckKilled extends Expression {

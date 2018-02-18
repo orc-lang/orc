@@ -13,20 +13,11 @@
 package orc.compile.orctimizer
 
 import orc.compile.Logger
-import orc.values.OrcRecord
 import orc.ast.orctimizer.named._
-import orc.values.Field
 import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
 import orc.compile.CompilerOptions
-import orc.types
-import orc.values.sites.Site
-import orc.lib.state.NewFlag
-import orc.lib.state.SetFlag
-import orc.lib.state.PublishIfNotSet
-import orc.values.Signal
 import orc.ast.hasAutomaticVariableName
-import orc.error.compiletime.UnboundVariableException
 import scala.collection.mutable
 import orc.compile.OptimizerStatistics
 import orc.compile.NamedOptimization
@@ -270,7 +261,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   val ForceElim = OptFull("force-elim") { (e, a) =>
-    import orc.compile.orctimizer.CallGraphValues._
     
     e match {
       case Force.Z(xs, vs, body) => {

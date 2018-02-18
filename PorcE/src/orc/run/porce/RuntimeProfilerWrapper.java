@@ -1,7 +1,8 @@
 package orc.run.porce;
 
-import com.oracle.truffle.api.CompilerDirectives.*;
 import orc.run.RuntimeProfiler;
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
 public final class RuntimeProfilerWrapper {
 	public static final boolean profileRuntime = RuntimeProfiler.profileRuntime();

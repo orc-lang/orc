@@ -14,9 +14,9 @@
 package orc.lib.builtin.structured
 
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.values.{ OrcRecord, OrcTuple, Signal }
-import orc.values.sites._
-import orc.types._
+import orc.types.{ Bot, Covariant, FunctionType, SignalType, SimpleFunctionType, SimpleTypeConstructor, Top, TupleType, TypeVariable }
+import orc.values.{ OrcTuple, Signal }
+import orc.values.sites.{ FunctionalSite, PartialSite1, SiteMetadata, StructurePairSite, TotalSite0, TotalSite2, TypedSite }
 
 object ListType extends SimpleTypeConstructor("List", Covariant)
 

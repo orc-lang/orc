@@ -1,7 +1,6 @@
 package orc.test.item.scalabenchmarks.swaptions
 
-import orc.test.item.scalabenchmarks.BenchmarkApplication
-import orc.test.item.scalabenchmarks.HashBenchmarkResult
+import orc.test.item.scalabenchmarks.{ BenchmarkApplication, HashBenchmarkResult }
 
 object SwaptionsParSwaption extends BenchmarkApplication[Array[Swaption], Array[Swaption]] with HashBenchmarkResult[Array[Swaption]] {
   val expected = SwaptionData

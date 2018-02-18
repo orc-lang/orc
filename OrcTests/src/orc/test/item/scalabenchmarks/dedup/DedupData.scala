@@ -1,9 +1,8 @@
 package orc.test.item.scalabenchmarks.dedup
 
+import java.io.{ File, FileInputStream }
 import java.net.URL
-import java.io.File
 import java.nio.file.Files
-import java.io.FileInputStream
 import java.security.MessageDigest
 import java.util.Arrays
 

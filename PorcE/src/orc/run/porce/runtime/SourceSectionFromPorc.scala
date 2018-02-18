@@ -1,10 +1,10 @@
 package orc.run.porce.runtime
 
 import orc.ast.porc.PorcAST
-import com.oracle.truffle.api.source.SourceSection
-import com.oracle.truffle.api.source.Source
 import orc.compile.parse.OrcInputContext
 import orc.run.porce.Logger
+
+import com.oracle.truffle.api.source.{ Source, SourceSection }
 
 object SourceSectionFromPorc {
   val sourceCache = new java.util.WeakHashMap[OrcInputContext, Source]()

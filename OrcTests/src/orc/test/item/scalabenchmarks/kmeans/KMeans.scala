@@ -2,11 +2,10 @@ package orc.test.item.scalabenchmarks.kmeans
 
 import scala.io.Source
 import scala.math.sqrt
-import orc.test.item.scalabenchmarks.BenchmarkApplication
+
+import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig, ExpectedBenchmarkResult, HashBenchmarkResult }
+
 import KMeans.D
-import orc.test.item.scalabenchmarks.BenchmarkConfig
-import orc.test.item.scalabenchmarks.ExpectedBenchmarkResult
-import orc.test.item.scalabenchmarks.HashBenchmarkResult
 
 
 

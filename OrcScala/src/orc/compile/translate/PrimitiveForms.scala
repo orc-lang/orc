@@ -21,7 +21,6 @@ import orc.ast.oil.named.Conversions._
 import orc.lib.builtin._
 import orc.lib.builtin.structured._
 import orc.values.{ Field, Signal }
-import orc.values.sites.Site
 
 object PrimitiveForms {
 

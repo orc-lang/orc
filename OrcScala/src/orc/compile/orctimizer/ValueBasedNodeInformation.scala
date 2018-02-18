@@ -1,10 +1,11 @@
 package orc.compile.orctimizer
 
-import FlowGraph._
-import CallGraphValues._
-import orc.ast.orctimizer.named._
-import orc.util.{ Ternary, TTrue, TFalse, TUnknown }
+import orc.ast.orctimizer.named.{ Argument, Call, Constant, Method, Routine }
+import orc.util.{ TFalse, TTrue, TUnknown }
 import orc.values.sites.Effects
+
+import CallGraphValues.{ NodeValue, ObjectValueSet }
+import FlowGraph.{ ConstantNode, MethodNode, TokenFlowNode, ValueNode }
 
 class ValueBasedNodeInformation(graph: CallGraph) {
   implicit final class CallGraph_TokenFlowNodeAdds(val node: TokenFlowNode) {

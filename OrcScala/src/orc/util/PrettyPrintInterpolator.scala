@@ -15,8 +15,6 @@ package orc.util
 
 import java.util.regex.Pattern
 
-import scala.language.implicitConversions
-
 class StringBuilderWrapper(sb: StringBuilder)(implicit interp: PrettyPrintInterpolator) {
   import interp._
 

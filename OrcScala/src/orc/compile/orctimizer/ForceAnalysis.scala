@@ -23,7 +23,6 @@ import FlowGraph.{ Node, Edge }
 import orc.util.DotUtils.DotAttributes
 import orc.compile.orctimizer.FlowGraph.TokenFlowNode
 import orc.compile.orctimizer.FlowGraph.EntryExitEdge
-import orc.compile.Logger
 
 class ForceAnalysis(
   val results: Map[Expression.Z, Set[BoundVar]],

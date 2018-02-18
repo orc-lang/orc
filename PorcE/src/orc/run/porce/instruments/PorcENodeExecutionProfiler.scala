@@ -1,19 +1,18 @@
 package orc.run.porce.instruments
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import java.io.{ OutputStreamWriter, PrintWriter }
 import java.util.HashMap
-import orc.ast.porc.PorcAST
-import scala.collection.JavaConverters._
-import com.oracle.truffle.api.instrumentation.TruffleInstrument.Env
-import com.oracle.truffle.api.vm.PolyglotEngine
-import java.io.PrintWriter
-import orc.util.CsvWriter
-import orc.util.ExecutionLogOutputStream
-import java.io.OutputStreamWriter
-import orc.run.porce.instruments.ProfilerUtils.ProfilerBase
-import com.oracle.truffle.api.nodes.Node
-import orc.run.porce.PorcENode
+
+import scala.collection.JavaConverters.{ asScalaSetConverter, collectionAsScalaIterableConverter }
+
 import orc.run.porce.HasPorcNode
+import orc.run.porce.instruments.ProfilerUtils.ProfilerBase
+import orc.util.{ CsvWriter, ExecutionLogOutputStream }
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import com.oracle.truffle.api.instrumentation.TruffleInstrument.Env
+import com.oracle.truffle.api.nodes.Node
+import com.oracle.truffle.api.vm.PolyglotEngine
 
 class PorcENodeExecutionProfiler(env: Env) extends ProfilerBase {
   import ProfilerUtils._

@@ -1,8 +1,8 @@
 package orc.run.porce.call;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-
 import orc.run.porce.runtime.PorcEExecution;
+
+import com.oracle.truffle.api.frame.VirtualFrame;
 
 public abstract class DirectDispatch extends Dispatch {
 	protected DirectDispatch(PorcEExecution execution) {

@@ -13,8 +13,8 @@
 package orc.types
 
 import scala.collection.immutable.HashMap
+
 import orc.error.compiletime.typing.NoSuchMemberException
-import orc.error.compiletime.typing.UncallableTypeException
 
 object EmptyRecordType extends RecordType(Map[String, Type]())
 

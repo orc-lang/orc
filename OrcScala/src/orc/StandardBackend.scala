@@ -12,7 +12,7 @@
 //
 package orc
 
-import java.io.{ IOException, OutputStreamWriter }
+import java.io.OutputStreamWriter
 
 import orc.ast.oil.nameless.Expression
 import orc.ast.oil.xml.OrcXML

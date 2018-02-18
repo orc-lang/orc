@@ -11,17 +11,13 @@
 
 package orc.compile.orctimizer
 
-import orc.values.Field
-import orc.compile.orctimizer.FlowGraph.{ ExitNode, Node }
 import scala.collection.mutable
-import orc.ast.orctimizer.named.New
-import orc.ast.orctimizer.named.FieldFuture
-import orc.ast.orctimizer.named.FieldArgument
-import orc.ast.orctimizer.named.FieldValue
-import orc.compile.orctimizer.FlowGraph.ValueNode
-import orc.compile.Logger
-import orc.compile.flowanalysis.LatticeValue
 import scala.reflect.ClassTag
+
+import orc.ast.orctimizer.named.{ FieldArgument, FieldFuture, FieldValue, New }
+import orc.compile.flowanalysis.LatticeValue
+import orc.compile.orctimizer.FlowGraph.{ ExitNode, Node, ValueNode }
+import orc.values.Field
 
 /**
  * A parametric module which implements object handling for analyses.

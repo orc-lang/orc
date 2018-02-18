@@ -13,8 +13,6 @@
 package orc.lib.progswap
 
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.MutableList
-import orc.ast.oil.nameless.NamelessAST
 
 /** A sequence of edit operations on an AST.
   *

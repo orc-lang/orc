@@ -3,12 +3,11 @@ package orc.run.porce.runtime
 import java.util.ArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
-
 import orc.FutureReader
-import sun.misc.Unsafe
-import orc.run.porce.PorcERootNode
 import orc.run.porce.SimpleWorkStealingSchedulerWrapper
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import sun.misc.Unsafe
 
 // TODO: Try to remove redundency between this and Join.
 

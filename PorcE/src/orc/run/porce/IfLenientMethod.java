@@ -1,10 +1,10 @@
 
 package orc.run.porce;
 
+import orc.run.porce.runtime.Utilities;
+
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-
-import orc.run.porce.runtime.Utilities;
 
 public class IfLenientMethod extends Expression {
     @Child

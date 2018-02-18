@@ -1,11 +1,10 @@
 package orc.test.item.scalabenchmarks.swaptions
 
-import java.util.concurrent.ThreadLocalRandom
+import java.util.{ Arrays, Random }
+
 import scala.beans.BeanProperty
-import orc.test.item.scalabenchmarks.BenchmarkConfig
-import orc.test.item.scalabenchmarks.ExpectedBenchmarkResult
-import java.util.Arrays
-import java.util.Random
+
+import orc.test.item.scalabenchmarks.{ BenchmarkConfig, ExpectedBenchmarkResult }
 
 case class Swaption(
     id: Int, factors: Array[Array[Double]], yields: Array[Double],  years: Double, strike: Double, 

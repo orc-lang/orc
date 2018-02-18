@@ -1,21 +1,22 @@
 package orc.run.porce;
 
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import scala.Option;
+
+import orc.ast.ASTWithIndex;
+import orc.ast.porc.PorcAST;
+import orc.run.porce.instruments.ProfiledPorcENodeTag;
+import orc.run.porce.instruments.ProfiledPorcNodeTag;
+import orc.run.porce.instruments.TailTag;
+import orc.run.porce.runtime.SourceSectionFromPorc;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
-
-import orc.ast.porc.PorcAST;
-import orc.run.porce.runtime.SourceSectionFromPorc;
-import orc.ast.ASTWithIndex;
-import orc.run.porce.HasPorcNode;
-import orc.run.porce.instruments.ProfiledPorcNodeTag;
-import orc.run.porce.instruments.ProfiledPorcENodeTag;
-import orc.run.porce.instruments.TailTag;
-import scala.Option;
 
 public abstract class NodeBase extends Node implements HasPorcNode {
 	@CompilationFinal

@@ -1,12 +1,12 @@
 
 package orc.run.porce;
 
+import orc.run.porce.runtime.Counter;
+
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
-
-import orc.run.porce.runtime.Counter;
 
 @NodeChild("counter")
 @ImportStatic(SpecializationConfiguration.class)
