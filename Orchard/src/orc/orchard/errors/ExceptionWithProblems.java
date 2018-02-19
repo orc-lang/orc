@@ -19,7 +19,7 @@ import java.util.List;
  * @author jthywiss
  */
 public abstract class ExceptionWithProblems extends Exception {
-
+    private static final long serialVersionUID = -902236759081013530L;
     protected List<? extends OrcProgramProblem> problems = null;
 
     public ExceptionWithProblems() {

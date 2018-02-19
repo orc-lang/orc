@@ -58,8 +58,8 @@ public class ExecutorService extends AbstractExecutorService {
         do {
             events = executor.jobEvents("", job);
             executor.purgeJobEvents("", job);
-            for (final JobEvent event : events) {
-                event.accept(new Visitor<Void>() {
+            for (final JobEvent currEvent : events) {
+                currEvent.accept(new Visitor<Void>() {
                     @Override
                     public Void visit(final PrintlnEvent event) {
                         System.out.println(event.line);

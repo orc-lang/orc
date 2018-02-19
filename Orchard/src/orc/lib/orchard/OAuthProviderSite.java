@@ -59,7 +59,7 @@ public class OAuthProviderSite extends SiteAdaptor {
                             request.add(new Parameter(args.stringArg(p), args.stringArg(p + 1)));
                         }
                         final OAuthAccessor accessor = oauth.newAccessor(consumer);
-                        final LinkedBlockingQueue ready = new LinkedBlockingQueue();
+                        final LinkedBlockingQueue<Object> ready = new LinkedBlockingQueue<Object>();
                         final String callbackURL = OrchardOAuthServlet.addToGlobalsAndGetCallbackURL(accessor, ready, job);
                         // get a request token
                         oauth.obtainRequestToken(accessor, request, callbackURL);

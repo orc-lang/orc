@@ -12,6 +12,8 @@
 package orc.orchard.errors;
 
 public class QuotaException extends Exception {
+    private static final long serialVersionUID = 705960202403819731L;
+
     public QuotaException() {
     }
 

@@ -41,8 +41,8 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
         super();
     }
 
-    private static List orchardIncludePath = new java.util.ArrayList<String>(0);
-    private static List orchardAdditionalIncludes = Arrays.asList("orchard.inc");
+    private static List<String> orchardIncludePath = new java.util.ArrayList<String>(0);
+    private static List<String> orchardAdditionalIncludes = Arrays.asList("orchard.inc");
 
     @Override
     public String compile(final String devKey, final String program) throws InvalidProgramException {
@@ -51,7 +51,7 @@ public abstract class AbstractCompilerService implements orc.orchard.api.Compile
             throw new InvalidProgramException("Null program!");
         }
         try {
-            final OrcBindings options = new OrcBindings(new java.util.HashMap<String, Object>(OrchardProperties.getMap()));
+            final OrcBindings options = new OrcBindings(OrchardProperties.newHashMapCopy());
             // Disable file resources for includes
             options.includePath_$eq(orchardIncludePath);
             // Include sites specifically for orchard services

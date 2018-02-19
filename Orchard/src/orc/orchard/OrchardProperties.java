@@ -14,7 +14,6 @@ package orc.orchard;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -44,9 +43,11 @@ public final class OrchardProperties {
     private OrchardProperties() {
     }
 
-    protected static Map getMap() {
+    protected static java.util.Map<String,Object> newHashMapCopy() {
         initIfNeeded();
-        return props;
+        java.util.Map<String,Object> map = new java.util.HashMap<String,Object>(); 
+        props.forEach((k,v) -> map.put((String)k, v));
+        return map;
     }
 
     public static void setProperty(final String name, final String value) {
@@ -65,7 +66,7 @@ public final class OrchardProperties {
         if (out == null || out.equals("null")) {
             return null;
         }
-        return Integer.parseInt(out);
+        return Integer.valueOf(out);
     }
 
     public static int getInteger(final String name, final int defaultValue) {

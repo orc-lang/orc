@@ -105,7 +105,7 @@ public abstract class Accounts implements AccountsMBean {
         public boolean getIsGuest() {
             return false;
         }
-    };
+    }
 
     protected synchronized Account getAccount(final ResultSet rs) throws SQLException {
         final int account_id = rs.getInt("account_id");

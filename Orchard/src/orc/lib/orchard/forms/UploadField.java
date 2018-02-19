@@ -33,7 +33,7 @@ public class UploadField extends Field<FileItem> {
     }
 
     @Override
-    public void readRequest(final FormData request, final List errors) {
+    public void readRequest(final FormData request, final List<String> errors) {
         value = request.getItem(key);
     }
 }

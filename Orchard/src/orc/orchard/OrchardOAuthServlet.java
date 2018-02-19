@@ -42,7 +42,7 @@ public class OrchardOAuthServlet extends HttpServlet {
      * @return Callback URL string
      * @throws IOException
      */
-    public static String addToGlobalsAndGetCallbackURL(final OAuthAccessor accessor, final LinkedBlockingQueue mbox, final Job job) throws IOException {
+    public static String addToGlobalsAndGetCallbackURL(final OAuthAccessor accessor, final LinkedBlockingQueue<Object> mbox, final Job job) throws IOException {
         accessor.setProperty(MAILBOX, mbox);
         final String key = AbstractExecutorService.globals.add(job, accessor);
         /*
@@ -81,7 +81,7 @@ public class OrchardOAuthServlet extends HttpServlet {
             accessor.setProperty("oauth_verifier", verifier);
         }
 
-        final LinkedBlockingQueue mbox = (LinkedBlockingQueue) accessor.getProperty(MAILBOX);
+        final LinkedBlockingQueue<Object> mbox = (LinkedBlockingQueue<Object>) accessor.getProperty(MAILBOX);
         if (mbox == null) {
             return;
         }

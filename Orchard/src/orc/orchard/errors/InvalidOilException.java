@@ -14,6 +14,7 @@ package orc.orchard.errors;
 import java.util.List;
 
 public class InvalidOilException extends ExceptionWithProblems {
+    private static final long serialVersionUID = 7873008856220555150L;
 
     public InvalidOilException(final String message) {
         super(message);

@@ -20,6 +20,7 @@ package orc.orchard.events;
  * @author quark
  */
 public class PrintlnEvent extends JobEvent {
+    private static final long serialVersionUID = -6139293717658978262L;
     /**
      * The newline terminator is implicit, so that the client can use whatever
      * newlines are appropriate for their environment.

@@ -12,6 +12,8 @@
 package orc.orchard.errors;
 
 public class InvalidJobStateException extends Exception {
+    private static final long serialVersionUID = -8352469384340322390L;
+
     public InvalidJobStateException(final String arg0) {
         super(arg0);
     }

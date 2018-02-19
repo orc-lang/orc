@@ -57,15 +57,15 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
      * This method is called after the no argument constructor and before other
      * methods are called.
      *
-     * @param workbench the current workbench
-     * @param selection the current object selection
+     * @param currrentWorkbench the current workbench
+     * @param currentSelection the current object selection
      * @see org.eclipse.ui.IWorkbenchWizard#init(org.eclipse.ui.IWorkbench,
      *      org.eclipse.jface.viewers.IStructuredSelection)
      */
     @Override
-    public void init(final IWorkbench workbench, final IStructuredSelection selection) {
-        this.workbench = workbench;
-        this.selection = selection;
+    public void init(final IWorkbench currrentWorkbench, final IStructuredSelection currentSelection) {
+        this.workbench = currrentWorkbench;
+        this.selection = currentSelection;
     }
 
     /**
@@ -104,9 +104,9 @@ public class NewOrcFileWizard extends Wizard implements INewWizard {
         final IWorkbenchWindow dw = workbench.getActiveWorkbenchWindow();
         try {
             if (dw != null) {
-                final IWorkbenchPage page = dw.getActivePage();
-                if (page != null) {
-                    IDE.openEditor(page, file, true);
+                final IWorkbenchPage activePage = dw.getActivePage();
+                if (activePage != null) {
+                    IDE.openEditor(activePage, file, true);
                 }
             }
         } catch (final PartInitException e) {
