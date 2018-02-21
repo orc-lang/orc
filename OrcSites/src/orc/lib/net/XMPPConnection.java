@@ -11,9 +11,11 @@
 
 package orc.lib.net;
 
+import java.io.IOException;
 import java.util.LinkedList;
 
 import orc.CallContext;
+import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
@@ -21,18 +23,21 @@ import orc.values.sites.compatibility.DotSite;
 import orc.values.sites.compatibility.EvalSite;
 import orc.values.sites.compatibility.SiteAdaptor;
 
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.MessageListener;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.SmackException.NotConnectedException;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.chat.Chat;
+import org.jivesoftware.smack.chat.ChatManager;
+import org.jivesoftware.smack.chat.ChatMessageListener;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 
 /**
  * Orc support for the XMPP (Jabber, Google Talk) messaging protocol.
  * <p>
- * For the most part, the API follows that of <a
- * href="http://www.igniterealtime.org/projects/smack/">Smack</a>. This example
- * program should get you started:
+ * For the most part, the API follows that of
+ * <a href="http://www.igniterealtime.org/projects/smack/">Smack</a>. This
+ * example program should get you started:
  *
  * <pre>
  * var (user, pass) = ("USER", "PASS")
@@ -66,10 +71,10 @@ public class XMPPConnection extends EvalSite {
      * For details on the methods, refer to the Smack javadoc.
      */
     private static class XMPPConnectionSite extends DotSite {
-        protected final org.jivesoftware.smack.XMPPConnection connection;
+        protected final org.jivesoftware.smack.tcp.XMPPTCPConnection connection;
 
-        public XMPPConnectionSite(final ConnectionConfiguration config) {
-            connection = new org.jivesoftware.smack.XMPPConnection(config);
+        public XMPPConnectionSite(final XMPPTCPConnectionConfiguration config) {
+            connection = new org.jivesoftware.smack.tcp.XMPPTCPConnection(config);
         }
 
         @Override
@@ -80,6 +85,10 @@ public class XMPPConnection extends EvalSite {
                     try {
                         connection.connect();
                     } catch (final XMPPException e) {
+                        throw new JavaException(e);
+                    } catch (final SmackException e) {
+                        throw new JavaException(e);
+                    } catch (final IOException e) {
                         throw new JavaException(e);
                     }
                     return signal();
@@ -97,17 +106,22 @@ public class XMPPConnection extends EvalSite {
                 public Object evaluate(final Args args) throws TokenException {
                     try {
                         switch (args.size()) {
-                        case 4:
-                            connection.login(args.stringArg(0), args.stringArg(1), args.stringArg(2), args.boolArg(3));
-                            break;
                         case 3:
+                            // login(String username, String password, String resource)
                             connection.login(args.stringArg(0), args.stringArg(1), args.stringArg(2));
                             break;
-                        default:
-                            connection.login(args.stringArg(0), args.stringArg(1));
+                        case 2:
+                            // login(String username, String password)
+                            connection.login(args.stringArg(0), args.stringArg(1), "Orc");
                             break;
+                        default:
+                            throw new ArityMismatchException(3, args.size());
                         }
                     } catch (final XMPPException e) {
+                        throw new JavaException(e);
+                    } catch (final SmackException e) {
+                        throw new JavaException(e);
+                    } catch (final IOException e) {
                         throw new JavaException(e);
                     }
                     return signal();
@@ -133,17 +147,17 @@ public class XMPPConnection extends EvalSite {
      *
      * @author quark
      */
-    private static class ChatSite extends DotSite implements MessageListener {
-        private final Chat chat;
+    private static class ChatSite extends DotSite implements ChatMessageListener {
+        final Chat ongoingChat;
         /** Buffer for received messages. */
-        private final LinkedList<Object> received = new LinkedList<Object>();
+        final LinkedList<Object> received = new LinkedList<>();
         /** Queue of tokens waiting to receive messages. */
-        private final LinkedList<CallContext> receivers = new LinkedList<CallContext>();
+        final LinkedList<CallContext> receivers = new LinkedList<CallContext>();
         private final XMPPConnectionSite xmppConnectionSite;
 
-        public ChatSite(final XMPPConnectionSite xmppConnectionSite, final String account) {
+        public ChatSite(final XMPPConnectionSite xmppConnectionSite, final String userJid) {
             this.xmppConnectionSite = xmppConnectionSite;
-            this.chat = this.xmppConnectionSite.connection.getChatManager().createChat(account, this);
+            this.ongoingChat = ChatManager.getInstanceFor(this.xmppConnectionSite.connection).createChat(userJid, this);
         }
 
         /**
@@ -153,7 +167,6 @@ public class XMPPConnection extends EvalSite {
          */
         @Override
         public void processMessage(final Chat chat, final Message message) {
-            // System.out.println(getClass().getSimpleName()+" processMessage ihc="+System.identityHashCode(this));
             synchronized (received) {
                 final Object v = message.getBody();
                 if (receivers.isEmpty()) {
@@ -173,10 +186,9 @@ public class XMPPConnection extends EvalSite {
             addMember("send", new EvalSite() {
                 @Override
                 public Object evaluate(final Args args) throws TokenException {
-                    // System.out.println(getClass().getSimpleName()+" send ihc="+System.identityHashCode(this));
                     try {
-                        chat.sendMessage(args.stringArg(0));
-                    } catch (final XMPPException e) {
+                        ongoingChat.sendMessage(args.stringArg(0));
+                    } catch (final NotConnectedException e) {
                         throw new JavaException(e);
                     }
                     return signal();
@@ -188,7 +200,6 @@ public class XMPPConnection extends EvalSite {
             addMember("receive", new SiteAdaptor() {
                 @Override
                 public void callSite(final Args args, final CallContext receiver) {
-                    // System.out.println(getClass().getSimpleName()+" receive ihc="+System.identityHashCode(this));
                     synchronized (received) {
                         if (received.isEmpty()) {
                             // System.out.println("(enqueued)");
@@ -205,15 +216,17 @@ public class XMPPConnection extends EvalSite {
 
     @Override
     public Object evaluate(final Args args) throws TokenException {
-        // System.out.println(getClass().getSimpleName()+" () ihc="+System.identityHashCode(this));
-        ConnectionConfiguration config;
+        final XMPPTCPConnectionConfiguration.Builder ccb = XMPPTCPConnectionConfiguration.builder();
         if (args.size() > 2) {
-            config = new ConnectionConfiguration(args.stringArg(0), args.intArg(1), args.stringArg(2));
+            ccb.setHost(args.stringArg(0));
+            ccb.setPort(args.intArg(1));
+            ccb.setServiceName(args.stringArg(2));
         } else if (args.size() > 1) {
-            config = new ConnectionConfiguration(args.stringArg(0), args.intArg(1));
+            ccb.setHost(args.stringArg(0));
+            ccb.setPort(args.intArg(1));
         } else {
-            config = new ConnectionConfiguration(args.stringArg(0));
+            ccb.setServiceName(args.stringArg(0));
         }
-        return new XMPPConnectionSite(config);
+        return new XMPPConnectionSite(ccb.build());
     }
 }

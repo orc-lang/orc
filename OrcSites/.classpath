@@ -9,8 +9,17 @@
 	<classpathentry kind="lib" path="lib/htmlparser.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/javax.mail-1.5.5.jar"/>
 	<classpathentry kind="lib" path="lib/mimepull-1.9.6.jar"/>
-	<classpathentry kind="lib" path="lib/smack.jar"/>
-	<classpathentry kind="lib" path="lib/smackx.jar"/>
+	<classpathentry kind="lib" path="lib/smack-core-4.1.9.jar"/>
+	<classpathentry kind="lib" path="lib/smack-im-4.1.9.jar"/>
+	<classpathentry kind="lib" path="lib/smack-tcp-4.1.9.jar"/>
+	<classpathentry kind="lib" path="lib/smack-java7-4.1.9.jar"/>
+	<classpathentry kind="lib" path="lib/smack-resolver-javax-4.1.9.jar"/>
+	<classpathentry kind="lib" path="lib/smack-sasl-javax-4.1.9.jar"/>
+	<classpathentry kind="lib" path="lib/smack-extensions-4.1.9.jar"/>
+	<classpathentry kind="lib" path="lib/xpp3-1.1.4c.jar"/>
+	<classpathentry kind="lib" path="lib/jxmpp-core-0.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/jxmpp-util-cache-0.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/jxmpp-jid-0.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/wsdl4j-1.6.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jettison-1.3.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/oauth-20100527.jar"/>
