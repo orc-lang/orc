@@ -20,11 +20,11 @@ source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 
 
-dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
-#dataDir <- file.path(localExperimentDataDir, "20180130-a002")
+#dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
+dataDir <- file.path(localExperimentDataDir, "20180220-a002")
 #dataDir <- file.path(localExperimentDataDir, "20180203-a009")
 
-if(!exists("processedData")) {
+loadData <- function(dataDir) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
     mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1]))) %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
@@ -45,6 +45,15 @@ if(!exists("processedData")) {
     #group_by(benchmarkName) %>% addBaseline(elapsedTime_mean, c(nCPUs=1), baseline = elapsedTime_mean_selfbaseline) %>%
     #group_by(benchmarkProblemName) %>% addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1), baseline = elapsedTime_mean_problembaseline) %>%
     ungroup()
+  processedData
+}
+
+if(!exists("processedData")) {
+  # processedData <- loadData(file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")) %>% mutate(experiment = "old")
+  # processedData <- processedData %>%
+  #   rbind(loadData(file.path(localExperimentDataDir, "20180220-a002")) %>% mutate(experiment = "new"))
+  # processedData <- processedData %>% mutate(experiment = factor(experiment, ordered = T, levels = c("old", "new")))
+  processedData <- loadData(dataDir) %>% mutate(experiment = factor("only"))
 }
 
 clear__ <- function() {
@@ -94,7 +103,7 @@ processedData <- processedData %>%
   select(everything(), -contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
   left_join(benchmarkProperties, by = "benchmarkName") %>%
   group_by(benchmarkProblemName) %>%
-  addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T), baseline = elapsedTime_mean_problembaseline) %>%
+  addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T, experiment = levels(processedData$experiment)[1]), baseline = elapsedTime_mean_problembaseline) %>%
   ungroup()
 
 includedBenchmarks <- {
@@ -263,7 +272,7 @@ normalizedPerformancePlots <- lapply(levels(processedData$benchmarkProblemName),
 
 # print(normalizedPerformancePlots)
 
-sampleCountData <- processedData %>% select(benchmarkName, nCPUs, nSamples) %>% spread(nCPUs, nSamples)
+sampleCountData <- processedData %>% select(experiment, benchmarkName, nCPUs, nSamples) %>% spread(nCPUs, nSamples)
 
 sampleCountsPlot <- sampleCountData %>% ggplot(aes(
   x = factor(nCPUs),
@@ -310,7 +319,7 @@ overallScalingPlot <- processedData %>%
     #ymin = elapsedTime_mean_problembaseline / elapsedTime_mean_lowerBound,
     #ymax = elapsedTime_mean_problembaseline / elapsedTime_mean_upperBound,
     color = parallelism,
-    group = benchmarkName,
+    group = if(levels(experiment) == c("only")) benchmarkName else factor(paste(experiment, benchmarkName)),
     linetype = factor(if_else((language == "Orc") & scalaCompute, "Orc+Scala", as.character(language)), levels = c("Orc+Scala", "Orc", "Scala"))
     )) +
   labs(y = "Speed Up", x = "Number of Cores", shape = "Granularity", linetype = "Language", color = "Parallelism") +
@@ -319,7 +328,8 @@ overallScalingPlot <- processedData %>%
   #scale_color_brewer(palette="PuBuGn", direction = -1) +
   scale_color_manual(values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
   # geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
-  geom_point(aes(shape = granularity), processedData, alpha = 0.7) +
+  geom_point(aes(shape = if(levels(experiment) == c("only")) granularity else factor(paste(experiment, granularity))),
+             processedData, alpha = 0.7) +
   geom_line() +
   geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
   expand_limits(y = 0) +

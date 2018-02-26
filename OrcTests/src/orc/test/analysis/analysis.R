@@ -271,3 +271,7 @@ addBaseline <- function(.data, sourceCol, requirements, baseline = NA) {
 geomean <- function(x, na.rm = TRUE) {
   exp(sum(log(x[x > 0]), na.rm = na.rm) / length(x))
 }
+
+factor.to.numeric <- function(f) {
+  as.numeric(1:length(levels(f)))[f]
+}
