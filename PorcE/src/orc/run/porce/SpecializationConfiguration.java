@@ -39,8 +39,25 @@ public abstract class SpecializationConfiguration {
 	@CompilationFinal
 	public static final int InlineAverageTimeLimit = 
 		(int) (Double.parseDouble(System.getProperty("orc.porce.inlineAverageTimeLimit", "0.1")) * 1000000);
+    /**
+     * The number of calls before computing the time per call. 
+     * 
+     * This is computed from graal.TruffleCompilationThreshold if that is set to a
+     * small value (less than 105). Otherwise it defaults to 100.
+     */
 	@CompilationFinal
-	public static final int MinCallsForTimePerCall = 100;
+	public static final int MinCallsForTimePerCall;
+	
+	static {
+	    int v = -1;
+	    v = Integer.parseInt(System.getProperty("orc.porce.cache.minCallsForTimePerCall", "-1"));
+	    if (v < 0)
+	        v = Math.min(Integer.parseInt(System.getProperty("graal.TruffleCompilationThreshold", "-1")) - 5, 100);
+        if (v < 0)
+            v = 100;
+        MinCallsForTimePerCall = v;
+        System.setProperty("orc.porce.cache.minCallsForTimePerCall", Integer.toString(MinCallsForTimePerCall));
+	}
 
 	@CompilationFinal
 	public static final boolean UniversalTCO = Boolean
