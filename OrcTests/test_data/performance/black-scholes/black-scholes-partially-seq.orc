@@ -41,7 +41,7 @@ def compute(s, x, t, r, v) = Sequentialize() >> (
     val call = s * cnd(d1) - x * Exp(-r * t) * cnd(d2)
     val put = x * Exp(-r * t) * cnd(-d2) - s * cnd(-d1)
     
-    val _ = Ift(call <: 0 || put <: 0) >> Println((s, x, t, r, v, d1, d2, call, put))
+    --val _ = Ift(call <: 0 || put <: 0) >> Println((s, x, t, r, v, d1, d2, call, put))
     
     BlackScholesResult(call, put)
     )
