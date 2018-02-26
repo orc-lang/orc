@@ -25,8 +25,6 @@ public class CallContinuation<ExternalDispatch extends Dispatch> extends Express
 		this.target = target;
 		this.arguments = arguments;
 		this.execution = execution;
-		// TODO: Remove once I've debugged performance issues.
-		getInternalCall();
 	}
 
 	

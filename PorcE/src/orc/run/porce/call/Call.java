@@ -128,11 +128,6 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	public static class Direct {
 		public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
 			return new Call<DirectDispatch>(target, arguments, execution) {
-				{
-					// TODO: Remove once I've debugged performance issues.
-					getExternalCall();
-				}
-				
 				@Override
 				protected DirectDispatch makeExternalCall() {
 					return ExternalDirectDispatch.createBare(execution);
@@ -168,12 +163,6 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 		public static Expression createTail(final Expression target, final Expression[] arguments,
 				final PorcEExecution execution) {
 			return new Call<Dispatch>(target, arguments, execution) {
-				{
-					// TODO: Remove once I've debugged performance issues.
-					getExternalCall();
-					getInternalCall();
-				}
-				
 				@Override
 				protected Dispatch makeExternalCall() {
 					return ExternalCPSDispatch.createBare(execution);

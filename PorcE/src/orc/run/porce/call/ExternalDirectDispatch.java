@@ -68,6 +68,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 
 	@Specialization(replaces = { "specific" })
 	public Object universal(final VirtualFrame frame, final Object target, final Object[] arguments) {
+	    // FIXME: This is much better for code de-duplication however if getInvokerWithBoundary throws an exception then this will break.
 		final DirectInvoker invoker = getInvokerWithBoundary(target, arguments);
 		return specific(frame, target, arguments, invoker);
 	}
