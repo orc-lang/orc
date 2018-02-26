@@ -13,12 +13,9 @@
 
 package orc.values
 
+import orc.{ Accessor, OrcRuntime }
 import orc.error.runtime.NoSuchMemberException
-import orc.run.core.Binding
 import orc.values.sites.AccessorValue
-import orc.Accessor
-import orc.error.runtime.DoesNotHaveMembersException
-import orc.OrcRuntime
 
 // TODO: This should replace OrcObjectInterface and HasFields
 

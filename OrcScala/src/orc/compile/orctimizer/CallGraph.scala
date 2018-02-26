@@ -14,27 +14,14 @@
 package orc.compile.orctimizer
 
 import scala.collection.mutable
-import scala.annotation.tailrec
 
-import orc.ast.orctimizer.named._
-import orc.compile.orctimizer.FlowGraph._
-import scala.collection.mutable.Queue
-import orc.compile.flowanalysis.Analyzer
-import orc.compile.flowanalysis.BoundedSetModule
-import orc.values.Field
-import orc.values.sites.{ Site => ExtSite }
-import orc.values.sites.{ InvokerMethod => ExtInvokerMethod }
-import orc.compile.Logger
-import orc.ast.PrecomputeHashcode
-import scala.reflect.ClassTag
-import orc.compile.flowanalysis._
-import orc.util.DotUtils.shortString
-import orc.util.DotUtils.DotAttributes
-import orc.compile.AnalysisCache
-import orc.compile.AnalysisRunner
+import orc.ast.orctimizer.named.{ Argument, BoundVar, Call, Constant, Expression, FieldArgument, FieldFuture, Force, Future, GetField, GetMethod, IfLenientMethod, Method, NamedAST, New, Resolve, Routine, Stop }
+import orc.compile.{ AnalysisCache, AnalysisRunner, Logger }
+import orc.compile.flowanalysis.{ Analyzer, DebuggableGraphDataProvider, GraphDataProvider, MutableGraphDataProvider }
 import orc.compile.orctimizer.CallGraphValues.FutureValueSet
-import orc.util.{ TTrue, TFalse, TUnknown }
-import orc.compile.orctimizer.FlowGraph.ValueNode
+import orc.compile.orctimizer.FlowGraph.{ AfterEdge, ConstantNode, Edge, EntryNode, EverywhereNode, ExitNode, MethodNode, Node, ValueEdge, ValueNode, VariableNode, WithSpecificAST }
+import orc.util.DotUtils.DotAttributes
+import orc.values.Field
 
 /** Compute and store a call graph for the program stored in flowgraph.
   *

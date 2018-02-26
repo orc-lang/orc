@@ -33,5 +33,14 @@ Mail
 	mimepull-1.9.6.jar
 
 XMPP
-	smack.jar
-	smackx.jar
+	smack-core-4.1.9.jar
+	smack-im-4.1.9.jar
+	smack-tcp-4.1.9.jar
+	smack-java7-4.1.9.jar
+	smack-resolver-javax-4.1.9.jar
+	smack-sasl-javax-4.1.9.jar
+	smack-extensions-4.1.9.jar
+	xpp3-1.1.4c.jar
+	jxmpp-core-0.6.0.jar
+	jxmpp-util-cache-0.6.0.jar
+	jxmpp-jid-0.6.0.jar

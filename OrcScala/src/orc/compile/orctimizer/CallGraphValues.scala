@@ -13,14 +13,11 @@
 
 package orc.compile.orctimizer
 
-import orc.ast.orctimizer.named._
-import orc.compile.orctimizer.FlowGraph._
+import orc.ast.orctimizer.named.{ Constant, FieldArgument, FieldFuture, FieldValue, New }
+import orc.compile.orctimizer.FlowGraph.{ ConstantNode, ExitNode, MethodNode, Node, ValueNode }
+import orc.util.{ TFalse, TTrue, TUnknown, Ternary }
 import orc.values.Field
-import orc.values.sites.{ Site => ExtSite }
-import orc.values.sites.{ InvokerMethod => ExtInvokerMethod }
-import scala.collection.mutable
-import orc.util.{ Ternary, TUnknown, TTrue, TFalse }
-import scala.collection.TraversableOnce
+import orc.values.sites.{ InvokerMethod => ExtInvokerMethod, Site => ExtSite }
 
 object CallGraphValues {
 

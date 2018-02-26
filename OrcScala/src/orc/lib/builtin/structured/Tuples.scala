@@ -13,15 +13,12 @@
 
 package orc.lib.builtin.structured
 
+import orc.{ Invoker, OnlyDirectInvoker, OrcRuntime }
 import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType, TupleSizeException }
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.types._
-import orc.values._
-import orc.values.sites._
-import orc.OrcRuntime
-import orc.Invoker
-import orc.OnlyDirectInvoker
 import orc.error.runtime.HaltException
+import orc.types.{ BinaryCallableType, IntegerConstantType, IntegerType, SimpleCallableType, StrictCallableType, TupleType, Type }
+import orc.values.OrcTuple
+import orc.values.sites.{ FunctionalSite, InvokerMethod, OverloadedDirectInvokerMethod2, SiteMetadata, TalkativeSite }
 
 // TODO: Replace current tuple values with object and _n fields.
 

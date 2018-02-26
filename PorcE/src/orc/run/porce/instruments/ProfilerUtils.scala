@@ -1,8 +1,9 @@
 package orc.run.porce.instruments
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import java.util.ArrayDeque
 import java.util.concurrent.atomic.LongAdder
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 object ProfilerUtils {
   abstract class ProfilerBase {

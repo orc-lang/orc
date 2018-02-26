@@ -2,6 +2,12 @@ package orc.run.porce.call;
 
 import java.util.concurrent.locks.Lock;
 
+import orc.run.porce.NodeBase;
+import orc.run.porce.PorcERootNode;
+import orc.run.porce.runtime.PorcEClosure;
+import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.runtime.TailCallException;
+
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
@@ -18,13 +24,6 @@ import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-
-import orc.run.porce.Logger;
-import orc.run.porce.NodeBase;
-import orc.run.porce.PorcERootNode;
-import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecution;
-import orc.run.porce.runtime.TailCallException;
 
 public class TailCallLoop extends NodeBase {
 	@Child

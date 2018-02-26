@@ -13,7 +13,6 @@
 package orc.lib.state.types
 
 import orc.types._
-import orc.error.compiletime.typing._
 
 /** @author dkitchin
   */

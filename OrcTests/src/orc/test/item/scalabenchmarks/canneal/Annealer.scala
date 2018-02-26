@@ -1,8 +1,8 @@
 package orc.test.item.scalabenchmarks.canneal
 
-import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.{ CyclicBarrier, ThreadLocalRandom }
+
 import scala.annotation.tailrec
-import java.util.concurrent.CyclicBarrier
 
 class Annealer(
     val netlist: NetList,

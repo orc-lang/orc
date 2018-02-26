@@ -13,22 +13,12 @@
 
 package orc.run.porce.runtime
 
-import java.util.logging.Level
-
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
-
-import orc.ExecutionRoot
+import orc.{ ExecutionRoot, Schedulable }
 import orc.run.Orc
-import orc.run.extensions.{ SupportForRwait, SupportForSynchronousExecution, SimpleWorkStealingScheduler }
-import orc.run.porce.Logger
-import orc.run.porce.PorcELanguage
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
-import orc.Schedulable
-import orc.run.porce.SpecializationConfiguration
-import com.oracle.truffle.api.CompilerDirectives
-import orc.run.porce.PorcERootNode
-import java.util.concurrent.atomic.LongAdder
-import orc.run.porce.SimpleWorkStealingSchedulerWrapper
+import orc.run.extensions.{ SimpleWorkStealingScheduler, SupportForRwait, SupportForSynchronousExecution }
+import orc.run.porce.{ PorcELanguage, SimpleWorkStealingSchedulerWrapper, SpecializationConfiguration }
+
+import com.oracle.truffle.api.CompilerDirectives.{ CompilationFinal, TruffleBoundary }
 
 /** The base runtime for PorcE runtimes.
  *  
@@ -53,9 +43,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   def beforeExecute(): Unit = {
     //PorcERuntime.resetStackDepth()
   }
-  
-  import PorcERuntime._
-  
+
   def potentiallySchedule(s: Schedulable) = {
     if (allowSpawnInlining || actuallySchedule) {
       def isFast = {

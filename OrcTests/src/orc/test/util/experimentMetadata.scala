@@ -13,11 +13,11 @@
 
 package orc.test.util
 
-import java.io.{ File, OutputStreamWriter }
+import java.io.{ File, IOException, OutputStreamWriter }
+
+import scala.collection.JavaConverters.propertiesAsScalaMapConverter
 
 import orc.util.{ CsvWriter, ExecutionLogOutputStream, WikiCreoleTableWriter }
-import java.io.IOException
-import scala.collection.JavaConverters._
 
 /** Description of a factor of an experiment.
   * A factor is an independent variable, i.e. a parameter to the experiment

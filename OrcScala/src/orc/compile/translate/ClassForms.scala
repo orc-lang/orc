@@ -12,22 +12,17 @@
 //
 package orc.compile.translate
 
-import scala.collection.mutable
 import scala.collection.immutable.ListMap
+import scala.collection.mutable
 import scala.language.reflectiveCalls
 
-import orc.ast.ext
-import orc.ast.ext.ExtendedASTTransform
-import orc.ast.oil.named._
-import orc.error.OrcExceptionExtension._
-import orc.error.compiletime._
-import orc.values.Field
-import orc.ast.hasAutomaticVariableName
-import orc.ast.AST
-import orc.ast.Positioned
+import orc.ast.{ AST, Positioned, ext, hasAutomaticVariableName }
+import orc.ast.oil.named.{ Argument, BoundTypevar, BoundVar, Call, Callable, Constant, DeclareCallables, DeclareType, Def, Expression, FieldAccess, Graft, HasType, IntersectionType, NamedASTTransform, New, NominalType, StructuralType, Top, Type, UnboundVar }
 import orc.compile.Logger
 import orc.compile.optimize.FractionDefs
-import orc.compile.Logger
+import orc.error.OrcExceptionExtension.extendOrcException
+import orc.error.compiletime.{ CompilationException, ConflictingOrderException, ContinuableSeverity, CyclicInheritanceException, InstantiatingAbstractClassException, MalformedExpression, UnboundClassVariableException }
+import orc.values.Field
 
 /** This class contains all the information needed to generate an instance of a class.
   *
@@ -706,7 +701,7 @@ case class ClassForms(val translator: Translator) {
   /** Sort a sequence of ClassInfo objects.
     */
   private def orderBySubclassing(clss: Seq[ClassInfo]): Seq[ClassInfo] = {
-    import orc.util.{ Graph, Node, Direction }
+    import orc.util.{ Direction, Graph, Node }
 
     if (clss.size == 1)
       return clss

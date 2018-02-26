@@ -14,7 +14,6 @@
 package orc.ast.orctimizer.named
 
 import orc.compile.CompilerOptions
-import scala.collection.mutable
 import orc.error.compiletime.InternalCompilerError
 import orc.error.compiletime.InternalCompilerWarning
 

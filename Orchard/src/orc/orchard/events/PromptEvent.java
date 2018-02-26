@@ -12,6 +12,7 @@
 package orc.orchard.events;
 
 public class PromptEvent extends JobEvent {
+    private static final long serialVersionUID = 4344230282275499618L;
     public String message;
     public int promptID;
 

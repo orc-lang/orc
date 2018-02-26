@@ -1,19 +1,18 @@
 
 package orc.run.porce;
 
+import orc.run.porce.NewContinuation.StopCachingException;
+import orc.run.porce.runtime.PorcEClosure;
+
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-
-import orc.run.porce.NewContinuation.StopCachingException;
-import orc.run.porce.runtime.PorcEClosure;
 
 public class MethodDeclaration {
 

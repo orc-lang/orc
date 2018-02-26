@@ -14,6 +14,7 @@ package orc.orchard.events;
 import java.net.URL;
 
 public class BrowseEvent extends JobEvent {
+    private static final long serialVersionUID = 3611166309194063396L;
     public URL url;
 
     public BrowseEvent() {

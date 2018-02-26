@@ -12,6 +12,8 @@
 package orc.orchard.errors;
 
 public class InvalidPromptException extends Exception {
+    private static final long serialVersionUID = 4991813628314554607L;
+
     public InvalidPromptException() {
     }
 }

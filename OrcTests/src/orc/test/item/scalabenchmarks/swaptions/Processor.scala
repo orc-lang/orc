@@ -1,6 +1,5 @@
 package orc.test.item.scalabenchmarks.swaptions
 
-import java.util.concurrent.ThreadLocalRandom
 import java.util.Random
 
 class Processor(nTrials: Int) {  

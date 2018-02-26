@@ -1,7 +1,8 @@
 package orc.test.proc
 
-import orc.test.util.FactorDescription
 import java.io.File
+
+import orc.test.util.FactorDescription
 
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   def softTimeLimit: Double = 60 * 9

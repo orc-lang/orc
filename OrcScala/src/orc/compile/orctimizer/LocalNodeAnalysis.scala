@@ -13,12 +13,11 @@
 
 package orc.compile.orctimizer
 
-import orc.compile.AnalysisRunner
-import orc.compile.AnalysisCache
-import orc.ast.orctimizer.named._
-import FlowGraph._
+import orc.ast.orctimizer.named.{ Call, Expression, Method }
+import orc.compile.{ AnalysisCache, AnalysisRunner }
 import orc.values.sites.Effects
-import orc.values.sites.SiteMetadata
+
+import FlowGraph.{ EverywhereNode, Node, TokenFlowNode, ValueNode }
 
 class LocalNodeAnalysis(graph: CallGraph) {
   import graph.NodeInformation._

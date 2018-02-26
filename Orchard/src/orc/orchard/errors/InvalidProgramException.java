@@ -18,6 +18,7 @@ import orc.error.compiletime.CompilationException;
 import orc.orchard.OrchardCompileLogger.CompileMessage;
 
 public class InvalidProgramException extends InvalidOilException {
+    private static final long serialVersionUID = 5503125080166626613L;
 
     public InvalidProgramException(final String message) {
         super(message);

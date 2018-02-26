@@ -16,6 +16,7 @@ import orc.error.OrcException;
 import orc.error.runtime.JavaException;
 
 public class TokenErrorEvent extends JobEvent {
+    private static final long serialVersionUID = -5055502756451078383L;
     public String message;
     public String positionString;
     public String posFilename;

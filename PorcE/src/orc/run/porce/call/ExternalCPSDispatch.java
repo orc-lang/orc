@@ -1,6 +1,23 @@
 
 package orc.run.porce.call;
 
+import static orc.run.porce.SpecializationConfiguration.ExternalCPSDirectSpecialization;
+
+import orc.CaughtEvent;
+import orc.DirectInvoker;
+import orc.Invoker;
+import orc.error.runtime.ExceptionHaltException;
+import orc.error.runtime.HaltException;
+import orc.run.porce.RuntimeProfilerWrapper;
+import orc.run.porce.SpecializationConfiguration;
+import orc.run.porce.runtime.CPSCallContext;
+import orc.run.porce.runtime.Counter;
+import orc.run.porce.runtime.PorcEClosure;
+import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.runtime.PorcERuntime;
+import orc.run.porce.runtime.TailCallException;
+import orc.run.porce.runtime.Terminator;
+
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -12,22 +29,6 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-
-import orc.CaughtEvent;
-import orc.DirectInvoker;
-import orc.Invoker;
-import orc.error.runtime.ExceptionHaltException;
-import orc.error.runtime.HaltException;
-import orc.run.porce.runtime.CPSCallContext;
-import orc.run.porce.runtime.Counter;
-import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecution;
-import orc.run.porce.runtime.PorcERuntime;
-import orc.run.porce.runtime.TailCallException;
-import orc.run.porce.runtime.Terminator;
-import orc.run.porce.RuntimeProfilerWrapper;
-import orc.run.porce.SpecializationConfiguration;
-import static orc.run.porce.SpecializationConfiguration.*;
 
 //@Instrumentable(factory = ExternalCPSDispatchWrapper.class)
 public class ExternalCPSDispatch extends Dispatch {

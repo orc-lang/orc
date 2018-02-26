@@ -1,24 +1,22 @@
 
 package orc.run.porce;
 
-import com.oracle.truffle.api.CompilerDirectives;
+import orc.run.porce.call.Dispatch;
+import orc.run.porce.call.InternalCPSDispatch;
+import orc.run.porce.runtime.CallClosureSchedulable;
+import orc.run.porce.runtime.Counter;
+import orc.run.porce.runtime.PorcEClosure;
+import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.runtime.PorcERuntime;
+import orc.run.porce.runtime.PorcERuntime$;
+import orc.run.porce.runtime.Terminator;
+
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
-import com.oracle.truffle.api.profiles.ConditionProfile;
-
-import orc.run.porce.call.Dispatch;
-import orc.run.porce.call.InternalCPSDispatch;
-import orc.run.porce.runtime.CallClosureSchedulable;
-import orc.run.porce.runtime.Counter;
-import orc.run.porce.runtime.Terminator;
-import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecution;
-import orc.run.porce.runtime.PorcERuntime;
-import orc.run.porce.runtime.PorcERuntime$;
 
 @NodeChild(value = "c", type = Expression.class)
 @NodeChild(value = "t", type = Expression.class)

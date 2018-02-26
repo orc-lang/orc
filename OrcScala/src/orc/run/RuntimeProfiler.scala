@@ -1,11 +1,9 @@
 package orc.run
 
-import orc.util.ExecutionLogOutputStream
 import java.io.OutputStreamWriter
-import orc.util.CsvWriter
 import java.util.zip.GZIPOutputStream
-import java.io.FileOutputStream
-import orc.util.DumperRegistry
+
+import orc.util.{ CsvWriter, DumperRegistry, ExecutionLogOutputStream }
 
 /** A tracer object for profiling the runtime.
   *

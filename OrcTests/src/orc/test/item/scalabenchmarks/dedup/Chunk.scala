@@ -1,7 +1,6 @@
 package orc.test.item.scalabenchmarks.dedup
 
-import java.io.InputStream
-import java.io.IOException
+import java.io.{ IOException, InputStream }
 import java.util.zip.Deflater
 
 /** A simple view on a chunk of a byte array.

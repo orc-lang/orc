@@ -1,10 +1,11 @@
 package orc.test.item.scalabenchmarks.sssp
 
 import java.util.ArrayList
-
-import scala.collection.JavaConverters._
 import java.util.concurrent.atomic.AtomicIntegerArray
-import orc.test.item.scalabenchmarks._
+
+import scala.collection.JavaConverters.asScalaBufferConverter
+
+import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig, ExpectedBenchmarkResult, HashBenchmarkResult }
 
 /** Single-Source Shortest Path
   *

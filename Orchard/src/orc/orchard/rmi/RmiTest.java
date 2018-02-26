@@ -41,7 +41,6 @@ public class RmiTest {
         } catch (final InvalidOilException e) {
             System.out.println(e.toString());
         }
-        ;
 
         // Compile a program
         oil = compiler.compile("", "def M(x) = x | Rwait(1000) >> M(x+1) M(1)");

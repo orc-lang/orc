@@ -154,6 +154,7 @@ public class OrcEditor extends TextEditor {
      * @return a object castable to the given class, or <code>null</code> if
      *         this object does not have an adapter for the given class
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Object getAdapter(@SuppressWarnings("rawtypes") final Class adapter) {
         if (IContentOutlinePage.class.equals(adapter)) {

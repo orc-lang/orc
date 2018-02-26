@@ -47,7 +47,7 @@ public class OrchardDemo {
                 return;
             } else {
                 try {
-                    port = Integer.valueOf(args[0]);
+                    port = Integer.parseInt(args[0]);
                 } catch (final NumberFormatException nfe) {
                     printUsage();
                     return;

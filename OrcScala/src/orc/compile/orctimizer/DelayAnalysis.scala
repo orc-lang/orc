@@ -13,17 +13,12 @@
 
 package orc.compile.orctimizer
 
-import orc.compile.AnalysisRunner
-import orc.ast.orctimizer.named.Expression
-import orc.ast.orctimizer.named.Method
-import orc.compile.AnalysisCache
-import orc.compile.flowanalysis.{Analyzer, AnalyzerEdgeCache}
-import FlowGraph.{ Node, Edge }
-import orc.compile.flowanalysis.DebuggableGraphDataProvider
+import orc.ast.orctimizer.named.{ BoundVar, Branch, Call, Constant, DeclareMethods, DeclareType, Expression, Force, Future, GetField, GetMethod, HasType, IfLenientMethod, Method, New, Otherwise, Parallel, Resolve, Stop, Trim }
+import orc.compile.{ AnalysisCache, AnalysisRunner, Logger }
+import orc.compile.flowanalysis.{ Analyzer, AnalyzerEdgeCache, DebuggableGraphDataProvider }
 import orc.util.DotUtils.DotAttributes
-import orc.compile.Logger
-import orc.ast.orctimizer.named._
-import orc.values.sites.SiteMetadata
+
+import FlowGraph.{ Edge, Node }
 
 sealed abstract class Delay {
   def <(o: Delay): Boolean
@@ -82,8 +77,8 @@ class DelayAnalysis(
   entryNodes: Map[Node, DelayAnalysis.DelayInfo],
   graph: CallGraph)
   extends DebuggableGraphDataProvider[Node, Edge] {
-  import FlowGraph._
   import DelayAnalysis._
+  import FlowGraph._
 
   def edges = graph.edges
   def nodes = graph.nodes
@@ -241,7 +236,6 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
       val state: StateT = node match {
         case node @ EntryNode(ast) =>
           import orc.ast.orctimizer.named._
-          import CallGraphValues._
           ast match {
             case Resolve.Z(_, _) =>
               val inState = states.inStateProcessed[FutureValueSourceEdge, Delay](
@@ -265,7 +259,6 @@ object DelayAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), De
           }
         case node @ ExitNode(ast) =>
           import orc.ast.orctimizer.named._
-          import CallGraphValues._
           ast match {
             case Future.Z(_) =>
               val inStateValue = states.inStateReduced[ValueEdge](_ combineAllOf _)

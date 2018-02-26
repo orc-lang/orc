@@ -12,8 +12,7 @@
 //
 package orc.lib.state.types
 
-import orc.types._
-import orc.error.compiletime.typing._
+import orc.types.{ FunctionType, IntegerType, Invariant, OverloadedType, RecordType, SimpleFunctionType, SimpleTypeConstructor, StringType, Type, TypeVariable }
 
 /** @author dkitchin
   */

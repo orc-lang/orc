@@ -1,8 +1,8 @@
 package orc.run.porce.runtime
 
 import java.util.concurrent.atomic.AtomicBoolean
+
 import orc.FutureReader
-import orc.run.porce.PorcERootNode
 import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execution: PorcEExecution) extends AtomicBoolean with FutureReader with Terminatable {

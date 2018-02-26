@@ -12,13 +12,12 @@
 //
 package orc.types
 
-import scala.language.existentials
 import java.lang.{ reflect => jvm }
-import orc.compile.typecheck.Typeloader._
-import orc.error.NotYetImplementedException
-import orc.error.compiletime.typing.TypeArgumentArityException
-import orc.error.compiletime.typing.NoMatchingConstructorException
-import orc.error.compiletime.typing.NoSuchMemberException
+
+import scala.language.existentials
+
+import orc.compile.typecheck.Typeloader.{ liftJavaType, liftJavaTypeOperator }
+import orc.error.compiletime.typing.{ NoMatchingConstructorException, TypeArgumentArityException }
 
 /** The type of a Java class, providing constructors and static members.
   *

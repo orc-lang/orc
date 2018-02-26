@@ -18,15 +18,14 @@ import java.util.logging.Level
 
 import scala.annotation.elidable
 
+import orc.ast.porc
+import orc.run.porce.{ HasPorcNode, Logger, SimpleWorkStealingSchedulerWrapper }
+import orc.util.Tracer
+
 import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.FrameInstance
 import com.oracle.truffle.api.nodes.{ Node => TruffleNode }
-import orc.ast.porc
-import orc.run.porce.{ HasPorcNode, Logger }
-import orc.util.Tracer
-import orc.run.porce.PorcERootNode
-import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 object Counter {
   import CounterConstants._

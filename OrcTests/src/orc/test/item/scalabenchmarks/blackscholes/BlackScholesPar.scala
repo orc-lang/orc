@@ -1,9 +1,6 @@
 package orc.test.item.scalabenchmarks.blackscholes
 
-import orc.test.item.scalabenchmarks.BenchmarkApplication
-import orc.test.item.scalabenchmarks.Util
-import scala.collection.parallel.mutable.ParArray
-import orc.test.item.scalabenchmarks.HashBenchmarkResult
+import orc.test.item.scalabenchmarks.{ BenchmarkApplication, HashBenchmarkResult }
 
 object BlackScholesPar extends BenchmarkApplication[Array[BlackScholesStock], Array[BlackScholesResult]] with HashBenchmarkResult[Array[BlackScholesResult]] {
   val expected = BlackScholesData

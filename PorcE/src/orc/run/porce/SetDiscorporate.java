@@ -1,9 +1,10 @@
 
 package orc.run.porce;
 
+import orc.run.porce.runtime.Counter;
+
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
-import orc.run.porce.runtime.Counter;
 
 @NodeChild(value = "c", type = Expression.class)
 public abstract class SetDiscorporate extends Expression {

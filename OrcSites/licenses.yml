@@ -143,11 +143,21 @@ notes: Dependency of axis.jar and oauth-1.2.jar
 
 ---
 
-files: [smack.jar, smackx.jar]
-project: Ignite Realtime Smack API
-version: 3.0?
+files: [smack-core-4.1.9.jar, smack-im-4.1.9.jar, smack-tcp-4.1.9.jar, smack-java7-4.1.9.jar, smack-resolver-javax-4.1.9.jar, smack-sasl-javax-4.1.9.jar, smack-extensions-4.1.9.jar, jxmpp-core-0.6.0.jar, jxmpp-util-cache-0.6.0.jar, jxmpp-jid-0.6.0.jar]
+project: Ignite Realtime Smack
+version: 4.1.9
 url: https://www.igniterealtime.org/projects/smack/
 license: ASF2.0.txt
+phase: link
+notes: Used for XMPP chat demos.
+
+---
+
+files: [xpp3-1.1.4c.jar]
+project: MXP1: Xml Pull Parser 3rd Edition (XPP3)
+version: 1.1.4c
+url: https://www.extreme.indiana.edu/xgws/xsoap/xpp/mxp1/index.html
+license: BSD-MXP1.txt
 phase: link
 notes: Used for XMPP chat demos.
 

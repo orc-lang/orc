@@ -31,7 +31,7 @@ public class IntegerField extends SingleField<Integer> {
             if (posted.equals("")) {
                 return null;
             }
-            return Integer.parseInt(posted);
+            return Integer.valueOf(posted);
         } catch (final NumberFormatException e) {
             throw new ValidationException(label + " must be an integer.");
         }

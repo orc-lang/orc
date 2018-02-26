@@ -14,11 +14,8 @@
 package orc.compile.orctimizer
 
 import orc.ast.orctimizer.named._
-import orc.compile.AnalysisRunner
-import orc.compile.AnalysisCache
-import orc.compile.Logger
-import orc.compile.flowanalysis.GraphDataProvider
-import orc.compile.flowanalysis.{Analyzer, AnalyzerEdgeCache}
+import orc.compile.{ AnalysisRunner, AnalysisCache }
+import orc.compile.flowanalysis.{ Analyzer, AnalyzerEdgeCache, GraphDataProvider }
 import orc.compile.flowanalysis.DebuggableGraphDataProvider
 import FlowGraph.{ Node, Edge }
 import orc.util.DotUtils.DotAttributes

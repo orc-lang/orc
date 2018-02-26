@@ -13,13 +13,9 @@
 
 package orc.test.proc
 
-import java.io.File
-import java.io.FileOutputStream
+import java.io.{ File, FileOutputStream }
 
-import orc.test.util.OsCommand
-import orc.test.util.ExperimentalCondition
-import orc.test.util.FactorValue
-import orc.test.util.RemoteCommand
+import orc.test.util.{ ExperimentalCondition, FactorValue, OsCommand, RemoteCommand }
 
 // FIXME: This object contains a total mess. But I wanted to at least slightly abstract what I'm doing below. Needs to be refactored.
 object ArthursBenchmarkEnv {
@@ -207,8 +203,9 @@ object ArthursBenchmarkEnv {
   
 }
 
-import ArthursBenchmarkEnv._
 import java.time.Duration
+
+import ArthursBenchmarkEnv.{ JVMExperimentalCondition, JVMRunner, targetBinariesDir, targetHost, testRootDir }
 
 trait PorcEBenchmark extends JVMRunner {
   lazy val remoteJavaHome = System.getProperty("orc.test.remoteJavaHome", "LocalInstalls/graalvm-0.30.2/jre")

@@ -1,10 +1,10 @@
 
 package orc.run.porce.runtime;
 
+import orc.run.porce.PorcERootNode;
+
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
-
-import orc.run.porce.PorcERootNode;
 
 final public class PorcEClosure {
     public final Object[] environment;

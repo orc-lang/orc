@@ -31,6 +31,8 @@ import orc.values.OrcValue;
 @XmlSeeAlso({ PublicationEvent.ListMarshalProxy.class, PublicationEvent.OrcValueMarshalProxy.class, PublicationEvent.UnknownValueMarshalProxy.class })
 public class PublicationEvent extends JobEvent {
 
+    private static final long serialVersionUID = -747140639709603734L;
+
     @XmlType(name = "list")
     public static class ListMarshalProxy {
         public Object[] elements;
@@ -39,7 +41,7 @@ public class PublicationEvent extends JobEvent {
         protected ListMarshalProxy() {
         }
 
-        public ListMarshalProxy(final scala.collection.Iterable scalaList) {
+        public ListMarshalProxy(final scala.collection.Iterable<?> scalaList) {
             elements = new Object[scalaList.size()];
             int i = 0;
             for (final Object elem : JavaConversions.asJavaIterable(scalaList)) {
@@ -132,11 +134,11 @@ public class PublicationEvent extends JobEvent {
             final orc.run.core.Closure closure = (orc.run.core.Closure) value;
             return new UnknownValueMarshalProxy(value.getClass().getCanonicalName(), value.hashCode(), "{- " + closure.closureGroup().definitions().size() + " defs closed over " + closure.lexicalContext().size() + " bindings -}");
         } else if (value instanceof scala.Some) {
-            return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "Some(" + Format.formatValueR(((scala.Some) value).value()) + ")");
+            return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "Some(" + Format.formatValueR(((scala.Some<?>) value).value()) + ")");
         } else if (value instanceof scala.None) {
             return new OrcValueMarshalProxy(value.getClass().getCanonicalName(), "None()");
         } else if (value instanceof scala.collection.immutable.List) {
-            return new ListMarshalProxy((scala.collection.immutable.List) value);
+            return new ListMarshalProxy((scala.collection.immutable.List<?>) value);
         } else {
             return new UnknownValueMarshalProxy(value.getClass().getCanonicalName(), value.hashCode(), value.toString());
         }

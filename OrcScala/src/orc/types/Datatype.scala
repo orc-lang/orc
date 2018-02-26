@@ -12,8 +12,6 @@
 //
 package orc.types
 
-import orc.types.Variance._
-
 trait Datatype {
   var constructorTypes: Option[List[RecordType]] = None
   var optionalDatatypeName: Option[String] = None

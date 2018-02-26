@@ -1,7 +1,8 @@
 package orc.test.item.scalabenchmarks
 
-import scala.annotation.tailrec
 import java.util.Random
+
+import scala.annotation.tailrec
 
 object BigSortData extends ExpectedBenchmarkResult[IndexedSeq[Number]] {
   val arraySize = BenchmarkConfig.problemSizeScaledInt(1000)

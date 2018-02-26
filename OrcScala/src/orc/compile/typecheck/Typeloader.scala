@@ -15,10 +15,8 @@ package orc.compile.typecheck
 import orc.ast.oil.{ named => syntactic }
 import orc.types._
 import orc.values.sites.SiteClassLoading
-import orc.compile.typecheck.Typechecker._
 import orc.types.Variance._
 import orc.error.compiletime.typing._
-import orc.error.compiletime.UnboundTypeVariableException
 import orc.util.OptionMapExtension._
 import java.lang.{ reflect => jvm }
 import orc.util.TypeListEnrichment._
@@ -215,7 +213,6 @@ object Typeloader extends SiteClassLoading {
     * the kind is not known in advance.
     */
   def liftEither(t: syntactic.Type)(implicit ctx: Context): Either[Type, TypeOperator] = {
-    import ctx._
 
     try {
       Left(lift(t))

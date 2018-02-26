@@ -12,14 +12,13 @@
 //
 package orc.run.porce.runtime
 
-//import java.util.concurrent.locks.ReentrantReadWriteLock
-import java.util.concurrent.locks.ReentrantLock
 import java.util.concurrent.ConcurrentLinkedQueue
-
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import java.util.concurrent.locks.ReentrantLock
 
 import orc.{ FutureReader, FutureState }
 import orc.values.{ Format, OrcValue }
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** A future value that can be bound or unbound or halted.
   *

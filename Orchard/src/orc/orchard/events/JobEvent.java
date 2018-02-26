@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 
 @XmlSeeAlso({ PublicationEvent.class, TokenErrorEvent.class, PrintlnEvent.class, PromptEvent.class, BrowseEvent.class })
 public abstract class JobEvent implements Serializable {
+    private static final long serialVersionUID = 6008243672055849447L;
     public int sequence;
     public Date timestamp;
 

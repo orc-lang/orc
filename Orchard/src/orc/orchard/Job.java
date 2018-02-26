@@ -207,6 +207,7 @@ public final class Job implements JobMBean {
             }
         }
 
+        @Override
         public void stop() {
             // flush the buffer if anything is left
             final String printed = printBuffer.toString();

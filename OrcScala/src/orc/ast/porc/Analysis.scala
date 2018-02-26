@@ -13,10 +13,8 @@
 package orc.ast.porc
 
 import scala.collection.mutable
-import orc.values.Field
-import orc.values.sites.{ Site => OrcSite }
+
 import orc.values.sites.SiteMetadata
-import orc.values.sites.Delay
 
 case class AnalysisResults(
   isNotFuture: Boolean,

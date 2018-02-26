@@ -26,7 +26,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Spinner;
 
@@ -230,13 +229,13 @@ public class OrcGeneralLaunchConfigurationTab extends AbstractLaunchConfiguratio
         }
     }
 
-    private void setOrUnsetTextAttr(final ILaunchConfigurationWorkingCopy configuration, final String attrName, final String enteredText) {
-        if (enteredText != null && enteredText.length() > 0) {
-            configuration.setAttribute(attrName, enteredText);
-        } else {
-            configuration.removeAttribute(attrName);
-        }
-    }
+//    private void setOrUnsetTextAttr(final ILaunchConfigurationWorkingCopy configuration, final String attrName, final String enteredText) {
+//        if (enteredText != null && enteredText.length() > 0) {
+//            configuration.setAttribute(attrName, enteredText);
+//        } else {
+//            configuration.removeAttribute(attrName);
+//        }
+//    }
 
     @Override
     public boolean isValid(final ILaunchConfiguration launchConfig) {

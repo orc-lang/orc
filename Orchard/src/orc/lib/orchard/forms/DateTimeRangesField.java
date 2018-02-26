@@ -56,14 +56,14 @@ public class DateTimeRangesField extends Field<Intervals<DateTime>> {
     private static Interval<DateTime> fromTimeID(final String timeID) {
         final String[] parts = timeID.split("_");
         if (parts.length != 4) {
-            return new Interval(new DateTime());
+            return new Interval<DateTime>(new DateTime());
         }
         try {
             final DateTime start = new DateTime(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), 0, 0, 0);
             final DateTime end = start.plusHours(1);
             return new Interval<DateTime>(start, end);
         } catch (final NumberFormatException nfe) {
-            return new Interval(new DateTime());
+            return new Interval<DateTime>(new DateTime());
         }
     }
 
@@ -114,7 +114,7 @@ public class DateTimeRangesField extends Field<Intervals<DateTime>> {
     }
 
     private void readTimeIDs(final String[] timeIDs) {
-        value = new Intervals();
+        value = new Intervals<DateTime>();
         if (timeIDs == null) {
             return;
         }

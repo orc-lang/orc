@@ -12,6 +12,8 @@
 package orc.orchard.errors;
 
 public class InvalidJobException extends Exception {
+    private static final long serialVersionUID = 5201110863108200988L;
+
     public InvalidJobException() {
     }
 }

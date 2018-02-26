@@ -1,12 +1,12 @@
 package orc.test.item.scalabenchmarks.canneal
 
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.HashMap
-import java.util.concurrent.ThreadLocalRandom
-import scala.annotation.tailrec
-import java.util.concurrent.atomic.AtomicReference
 import java.io.FileInputStream
+import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.atomic.AtomicReference
 import java.util.zip.GZIPInputStream
+
+import scala.annotation.tailrec
+import scala.collection.mutable.{ ArrayBuffer, HashMap }
 
 final case class Location(x: Int, y: Int) {
   /** Compute the manhattan distance between this and o.
@@ -136,8 +136,8 @@ final class NetList(nElements: Int, val maxX: Int, val maxY: Int) {
 
 object NetList {
   def apply(fn: String): NetList = {
-    import java.util.Scanner
     import java.io.File
+    import java.util.Scanner
     
     val inStream = new GZIPInputStream(new FileInputStream(new File(fn)))
     

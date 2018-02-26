@@ -13,10 +13,9 @@
 package orc.types
 
 import scala.language.existentials
-import orc.types.Variance._
-import orc.error.compiletime.typing.UncallableTypeException
-import orc.error.compiletime.typing.SecondOrderTypeExpectedException
+
 import orc.compile.typecheck.Typeloader
+import orc.error.compiletime.typing.{ SecondOrderTypeExpectedException, UncallableTypeException }
 
 /** @author dkitchin
   */

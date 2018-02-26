@@ -1,16 +1,12 @@
 package orc.test.item.scalabenchmarks.blackscholes
 
-import BlackScholes.D
-import scala.util.Random
-import orc.test.item.scalabenchmarks.BenchmarkApplication
-//import scala.math.BigDecimal.double2bigDecimal
 //import scala.math.BigDecimal.int2bigDecimal
 import scala.runtime.ZippedTraversable3.zippedTraversable3ToTraversable
-import orc.test.item.scalabenchmarks.BenchmarkConfig
-import scala.util.hashing.Hashing
-import scala.util.hashing.MurmurHash3
-import orc.test.item.scalabenchmarks.ExpectedBenchmarkResult
-import orc.test.item.scalabenchmarks.HashBenchmarkResult
+import scala.util.Random
+
+import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig, ExpectedBenchmarkResult, HashBenchmarkResult }
+
+import BlackScholes.D
 
 case class BlackScholesStock(price: D, strike: D, maturity: D)
 case class BlackScholesResult(call: D, put: D) {

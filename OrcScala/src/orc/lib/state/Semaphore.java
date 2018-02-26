@@ -12,7 +12,6 @@
 package orc.lib.state;
 
 import java.util.LinkedList;
-import java.util.Queue;
 
 import orc.CallContext;
 import orc.error.runtime.ArityMismatchException;

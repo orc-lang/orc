@@ -19,10 +19,9 @@ import scala.xml.{ Text, XML }
 import scala.xml.NodeSeq.seqToNodeSeq
 
 import orc.script.OrcBindings
-import orc.test.util.TestUtils
+import orc.test.util.{ ExpectedOutput, TestUtils }
 
 import junit.framework.Test
-import orc.test.util.ExpectedOutput
 
 /** Test suite for examples extracted from documentation.
   *

@@ -12,21 +12,14 @@
 //
 package orc.values.sites
 
+import java.lang.invoke.{ MethodHandles, MethodType }
 import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTargetException }
 
-import orc.{ Accessor, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, ErrorAccessor, OnlyDirectInvoker, TargetThrowsInvoker, TargetArgsThrowsInvoker }
-import orc.error.runtime.{ HaltException, JavaException, MethodTypeMismatchException, NoSuchMemberException, MalformedArrayAccessException, RuntimeTypeException }
-import orc.run.Logger
-import orc.OrcRuntime
+import orc.{ Accessor, ErrorAccessor, IllegalArgumentInvoker, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, OrcRuntime, TargetArgsThrowsInvoker, TargetThrowsInvoker }
+import orc.error.runtime.{ HaltException, JavaException, MalformedArrayAccessException, MethodTypeMismatchException, NoSuchMemberException, RuntimeTypeException }
 import orc.util.ArrayExtensions.Array1
 import orc.values.{ Field => OrcField, Signal }
 import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocation, java2orc, orc2java }
-import java.lang.invoke.MethodHandles
-import orc.Invoker
-import orc.IllegalArgumentInvoker
-import orc.OnlyDirectInvoker
-import java.lang.invoke.MethodHandles
-import java.lang.invoke.MethodType
 
 /** Due to the way dispatch is handled we cannot pass true wrappers back into Orc. They
   * would interfere with any call to which they were passed as an argument.
@@ -248,7 +241,6 @@ object JavaCall {
   * @author jthywiss, amp
   */
 abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val targetCls: Class[_], @inline val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
-  import JavaCall._
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
   
   val mh = {

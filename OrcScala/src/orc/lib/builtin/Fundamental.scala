@@ -12,14 +12,13 @@
 //
 package orc.lib.builtin
 
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
-import orc.types._
-import orc.util.TypeListEnrichment._
-import orc.util.ArrayExtensions.{ Array1, Array2, Array0 }
-import orc.values._
-import orc.values.sites.{ FunctionalSite, TalkativeSite, PartialSite, TotalSite, TypedSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2 }
 import orc.Invoker
 import orc.error.runtime.HaltException
+import orc.types.{ BooleanType, FunctionType, SignalType, SimpleCallableType, SimpleFunctionType, StrictCallableType, Top, TupleType, Type }
+import orc.util.ArrayExtensions.{ Array0, Array1 }
+import orc.util.TypeListEnrichment.enrichTypeList
+import orc.values.{ OrcTuple, Signal }
+import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2, TalkativeSite, TotalSite, TypedSite }
 
 case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Ift"

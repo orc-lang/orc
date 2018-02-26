@@ -1,6 +1,6 @@
 package orc.test.item.scalabenchmarks
 
-import NQueensTypes._
+import NQueensTypes.{ Queen, Solutions }
 
 object NQueensTypes {
   type Queen = (Int, Int)

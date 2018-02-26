@@ -1,7 +1,6 @@
 package orc.run.porce.instruments
 
 import orc.ast.porc.PorcAST
-import orc.run.porce.PorcENode
 import orc.run.porce.NodeBase
 
 class TailTag private () {

@@ -1,10 +1,11 @@
 
 package orc.run.porce;
 
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
 import orc.run.porce.runtime.PorcEObject;
 import orc.values.Field;
+
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 public class NewObject extends Expression {
     @Children

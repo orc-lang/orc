@@ -11,8 +11,6 @@
 package orc.lib.progswap
 
 import orc.ast.AST
-import orc.run.extensions.SwappableASTs
-import orc.run.Orc
 import orc.run.core.Token
 
 /** Edit operation that is a relocation of a node within a tree.

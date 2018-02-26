@@ -1,6 +1,13 @@
 
 package orc.run.porce;
 
+import orc.run.porce.call.Dispatch;
+import orc.run.porce.call.InternalCPSDispatch;
+import orc.run.porce.runtime.Counter;
+import orc.run.porce.runtime.CounterNested;
+import orc.run.porce.runtime.PorcEClosure;
+import orc.run.porce.runtime.PorcEExecution;
+
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
@@ -8,13 +15,6 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
-
-import orc.run.porce.call.Dispatch;
-import orc.run.porce.call.InternalCPSDispatch;
-import orc.run.porce.runtime.Counter;
-import orc.run.porce.runtime.CounterNested;
-import orc.run.porce.runtime.PorcEClosure;
-import orc.run.porce.runtime.PorcEExecution;
 
 @NodeChild("counter")
 @Introspectable

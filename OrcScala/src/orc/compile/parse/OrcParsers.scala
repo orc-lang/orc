@@ -20,11 +20,10 @@ import scala.language.{ implicitConversions, postfixOps }
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 
 import orc.OrcCompilerRequires
-import orc.ast.ext._
+import orc.ast.ext.{ Args, ArgumentGroup, AsPattern, Call, CallPattern, CallableDeclaration, ClassConstructor, ClassDeclaration, ClassExpression, ClassImport, ClassLiteral, ClassMixin, ClassSubclassLiteral, ClassVariable, Conditional, ConsPattern, Constant, ConstantPattern, Constructor, Datatype, Declaration, Declare, Def, DefSig, Dereference, Expression, FieldAccess, Include, Lambda, LambdaType, ListExpr, ListPattern, New, Otherwise, Parallel, Pattern, Placeholder, PrefixOperator, RecordExpr, RecordPattern, RecordType, Section, Sequential, Site, SiteImport, SiteSig, Stop, Trim, TupleExpr, TuplePattern, TupleType, Type, TypeAlias, TypeApplication, TypeAscription, TypeAssertion, TypeImport, TypeVariable, TypedPattern, Val, ValSig, Variable, VariablePattern, Wildcard }
 import orc.compile.CompilerOptions
 import orc.error.OrcException
 import orc.error.compiletime.IncludeFileException
-import orc.util.SynchronousThreadExec
 import orc.values.NumericsConfig
 
 /** Mix-in for result types from Orc parsers

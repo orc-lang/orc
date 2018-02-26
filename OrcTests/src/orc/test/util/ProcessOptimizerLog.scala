@@ -1,10 +1,8 @@
 package orc.test.util
 
-import java.io.File
+import java.io.{ BufferedWriter, File, FileOutputStream, OutputStreamWriter }
+
 import scala.io.Source
-import java.io.FileOutputStream
-import java.io.BufferedWriter
-import java.io.OutputStreamWriter
 
 object ProcessOptimizerLog {
 

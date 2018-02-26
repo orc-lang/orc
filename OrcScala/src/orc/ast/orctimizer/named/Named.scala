@@ -20,7 +20,6 @@ import orc.values
 import orc.ast.PrecomputeHashcode
 import swivel.{ root, branch, leaf }
 import swivel.subtree
-import swivel.replacement
 import scala.PartialFunction
 
 // TODO: Remove "Named" from classes and package tree. There is no nameless Orctimizer.
