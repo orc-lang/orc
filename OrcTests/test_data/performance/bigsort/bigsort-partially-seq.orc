@@ -103,11 +103,9 @@ def splitSortMerge(input, sort) =
   })
   mergeSorted(listToArray(sortedPartitions))
 
-val arraySize = problemSizeScaledInt(1000)
-
-def setup() = BigSortData.makeRandomArray(arraySize)
+def setup() = BigSortData.makeRandomArray(BigSortData.arraySize())
   
-benchmarkSized("BigSort-partially-seq", arraySize * Log(arraySize), setup, { splitSortMerge(_, quicksort) }, BigSortData.check)
+benchmarkSized("BigSort-partially-seq", BigSortData.arraySize() * Log(BigSortData.arraySize()), setup, { splitSortMerge(_, quicksort) }, BigSortData.check)
 
 
 {-

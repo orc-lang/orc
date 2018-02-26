@@ -1,28 +1,23 @@
 package orc.test.item.scalabenchmarks
 
 import scala.annotation.tailrec
-import java.util.concurrent.ThreadLocalRandom
 import java.util.Random
 
 object BigSortData extends ExpectedBenchmarkResult[IndexedSeq[Number]] {
+  val arraySize = BenchmarkConfig.problemSizeScaledInt(1000)
+  
   def makeRandomArray(n: Int): Array[Number] = {
     val rng = new Random(n)
     Array.fill(n)(rng.nextInt(n).asInstanceOf[Number])
   }
 
-  val expectedMap: Map[Int, Int] = Map(
-      1 -> 0x1c2ca2af,
-      10 -> 0xc63f1164,
-      100 -> 0x98189f1b,
-      )
-}
-
-abstract class BigSortBase extends BenchmarkApplication[Array[Number], IndexedSeq[Number]] with HashBenchmarkResult[IndexedSeq[Number]] {
-  val expected = BigSortData
-  
   implicit val numberOrdering: Ordering[Number] = Ordering.by(_.longValue())
   
-  def mergeSorted(inputs: IndexedSeq[IndexedSeq[Number]]): IndexedSeq[Number] = {
+  def sort(a: Array[Number], start: Int, length: Int): IndexedSeq[Number] = {
+    a.slice(start, start + length).sorted
+  }
+  
+  def mergeSorted(inputs: Seq[IndexedSeq[Number]]): IndexedSeq[Number] = {
     val indices = Array.fill(inputs.size)(0) 
     val outputLen = inputs.map(_.size).sum
     val output = Array.ofDim[Number](outputLen)
@@ -62,7 +57,18 @@ abstract class BigSortBase extends BenchmarkApplication[Array[Number], IndexedSe
     
     output
   }
+
+  val expectedMap: Map[Int, Int] = Map(
+      1 -> 0x1c2ca2af,
+      10 -> 0xc63f1164,
+      100 -> 0x98189f1b,
+      )
+}
+
+abstract class BigSortBase extends BenchmarkApplication[Array[Number], IndexedSeq[Number]] with HashBenchmarkResult[IndexedSeq[Number]] {
+  import BigSortData._
   
+  val expected = BigSortData  
   val nPartitions = BenchmarkConfig.nPartitions
   
   def splitSortMerge(input: Array[Number], sort: IndexedSeq[Number] => IndexedSeq[Number]): IndexedSeq[Number] = {
@@ -80,11 +86,6 @@ abstract class BigSortBase extends BenchmarkApplication[Array[Number], IndexedSe
     }
     mergeSorted(sortedPartitions.toIndexedSeq)
   }
-  
-  val arraySize = BenchmarkConfig.problemSizeScaledInt(1000)
-
-  
-  val name: String = "BigSort"
 
   val size: Int = (arraySize.toDouble * math.log(arraySize)).toInt
 
@@ -94,12 +95,20 @@ abstract class BigSortBase extends BenchmarkApplication[Array[Number], IndexedSe
 }
 
 object BigSortSeq extends BigSortBase {
+  import BigSortData._
+  
+  val name: String = "BigSort-seq"
+
   def benchmark(a: Array[Number]): IndexedSeq[Number] = {
     splitSortMerge(a, _.sorted)
   }
 }
 
 object BigSortPar extends BigSortBase {
+  import BigSortData._
+  
+  val name: String = "BigSort-par"
+
   def benchmark(a: Array[Number]): IndexedSeq[Number] = {
     splitSortMergePar(a, _.sorted)
   }
