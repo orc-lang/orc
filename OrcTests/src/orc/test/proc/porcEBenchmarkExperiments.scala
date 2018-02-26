@@ -9,7 +9,9 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
   
   trait HasRunNumber {
     def run: Int
-  }  
+  }   
+  
+  val jvmOpts = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g")
     
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -22,7 +24,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
     )
     override def systemProperties = super.systemProperties ++ Map(
-        "graal.TruffleBackgroundCompilation" -> "false",
+        "graal.TruffleBackgroundCompilation" -> "true",
         "orc.numerics.preferLP" -> "true",
         //"orc.porce.universalTCO" -> "false",
         "graal.TruffleCompilationThreshold" -> 800,
@@ -30,7 +32,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3")
     
-    override def toJvmArgs = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g") ++ super.toJvmArgs
+    override def toJvmArgs = jvmOpts ++ super.toJvmArgs
   }
   case class MyScalaExperimentalCondition(
       run: Int,
@@ -45,13 +47,12 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use")
     )
     
-    override def toJvmArgs = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g") ++ super.toJvmArgs
+    override def toJvmArgs = jvmOpts ++ super.toJvmArgs
   }
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      //val nCPUsValues = (Seq(4, 8, 16, 20, 24)).reverse
-      val nCPUsValues = (Seq(1, 8, 16, 24)).reverse
+      val nCPUsValues = Set(8, 16, 24)
       val porce = for {
         run <- 0 until 2
         nCPUs <- nCPUsValues
@@ -64,6 +65,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
             "test_data/performance/black-scholes/black-scholes-scala-compute-partially-seq.orc",
             //"test_data/performance/black-scholes/black-scholes-scala-compute.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq-optimized.orc",
             "test_data/performance/black-scholes/black-scholes-partially-seq.orc",
             //"test_data/performance/black-scholes/black-scholes.orc",
             "test_data/performance/k-means/k-means-scala-inner.orc",
@@ -87,7 +89,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       }
       val scala = for {
         run <- 0 until 1
-        nCPUs <- 1 +: nCPUsValues
+        nCPUs <- nCPUsValues + 1
         benchmark <- Seq(
             //orc.test.item.scalabenchmarks.Mandelbrot,
             //orc.test.item.scalabenchmarks.NQueens,
