@@ -2,6 +2,7 @@ include "write-csv-file.inc"
 include "test-output-util.inc"
 
 import class System = "java.lang.System"
+import class JString = "java.lang.String"
 
 import class BenchmarkConfig = "orc.test.item.scalabenchmarks.BenchmarkConfig"
 import site EndBenchmark = "orc.lib.EndBenchmark"
@@ -83,8 +84,15 @@ def getRepTime() = Rtime() - repStartTime?
 def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A, benchmark :: lambda(A) :: B, check :: lambda(B) :: Signal) =
 	val clock = Rclock()
 	def h(Integer, List[Top]) :: Signal
-	def h(i, results) if (i >= nRuns) = results
-	def h(i, results) if (softTimeLimit :> 0 && clock.time() :> (softTimeLimit * 1000)) = results
+	def h(i, results) if (i >= nRuns) = 
+	    val t = take(10, results)
+	    val tavg = sum(map({ _.runTime() }, t)) / length(t)
+        Println("Minimum run time: " + minimum(map({ _.runTime() }, results))) >>
+        Println("Minimum run time of last " + length(t) + ": " + minimum(map({ _.runTime() }, t))) >>
+        Println("Average run time of last " + length(t) + ": " + tavg) >>
+        Println("\nRun times: " + afold({ _ + ", " + _ }, map({ JString.format("%.3f", _.runTime()) }, results)) + "\n") >>
+	    results
+	def h(i, results) if (softTimeLimit :> 0 && clock.time() :> (softTimeLimit * 1000)) = h(nRuns, results)
 	def h(i, results) = 
 		setup() >d> setRepStartTime() >> timeItSinglePub({ benchmark(d) }, i, size) >(r, pub)> 
 		(if check(pub) then Println(name + " results are correct up to hash collision.") else Error(name + " results are WRONG.")) >> (
