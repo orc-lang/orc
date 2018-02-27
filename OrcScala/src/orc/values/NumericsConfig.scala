@@ -3,7 +3,8 @@ package orc.values
 import scala.math.BigDecimal
 
 object NumericsConfig {
-  def toOrcIntegral(v: Number) = {
+  @inline
+  final def toOrcIntegral(v: Number) = {
     if (NumericsConfig.preferLong) 
       v.longValue()
     else {
@@ -26,7 +27,8 @@ object NumericsConfig {
       }
     }
   }
-  def toOrcFloatingPoint(v: Number) = {
+  @inline
+  final def toOrcFloatingPoint(v: Number) = {
     if (NumericsConfig.preferDouble) 
       v.doubleValue()
     else {
@@ -51,9 +53,9 @@ object NumericsConfig {
   }
   
   @inline
-  val preferLP = System.getProperty("orc.numerics.preferLP", "false").toBoolean  
+  final val preferLP = System.getProperty("orc.numerics.preferLP", "false").toBoolean  
   @inline
-  val preferDouble = Option(System.getProperty("orc.numerics.preferDouble")).map(_.toBoolean).getOrElse(preferLP)  
+  final val preferDouble = Option(System.getProperty("orc.numerics.preferDouble")).map(_.toBoolean).getOrElse(preferLP)  
   @inline
-  val preferLong = Option(System.getProperty("orc.numerics.preferLong")).map(_.toBoolean).getOrElse(preferLP)
+  final val preferLong = Option(System.getProperty("orc.numerics.preferLong")).map(_.toBoolean).getOrElse(preferLP)
 }
