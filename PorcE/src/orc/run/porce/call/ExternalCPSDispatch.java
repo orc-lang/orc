@@ -27,10 +27,11 @@ import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.ValueProfile;
 
-//@Instrumentable(factory = ExternalCPSDispatchWrapper.class)
 public class ExternalCPSDispatch extends Dispatch {
 	@Child
 	protected ExternalCPSDispatch.ExternalCPSDispatchInternal internal;
@@ -59,6 +60,7 @@ public class ExternalCPSDispatch extends Dispatch {
 		internal.execute(frame, target, pub, counter, term, buildArguments(arguments));
 	}
 	
+	@SuppressWarnings({"boxing"})
 	protected static Object[] buildArguments(Object[] arguments) {
 		CompilerAsserts.compilationConstant(arguments.length);
 		Object[] newArguments = new Object[arguments.length - 3];
@@ -86,6 +88,9 @@ public class ExternalCPSDispatch extends Dispatch {
 		protected final BranchProfile[] exceptionProfiles = new BranchProfile[] { BranchProfile.create(),
 				BranchProfile.create(), BranchProfile.create() };
 		
+		@CompilerDirectives.CompilationFinal(dimensions = 1)
+		protected ValueProfile[] argumentTypeProfiles = null;
+		
 		@CompilerDirectives.CompilationFinal
 		protected InternalCPSDispatch.InternalCPSDispatchInternal dispatchP = null;
 		
@@ -100,17 +105,41 @@ public class ExternalCPSDispatch extends Dispatch {
 			}
 			return dispatchP;
 		}
+
+		@SuppressWarnings("boxing")
+		@ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
+		protected Object[] profileArgumentTypes(Object[] arguments) {
+			CompilerAsserts.compilationConstant(arguments.length);
+			
+			if (argumentTypeProfiles == null) {
+			    CompilerDirectives.transferToInterpreterAndInvalidate();
+				computeAtomicallyIfNull(() -> argumentTypeProfiles, (v) -> argumentTypeProfiles = v, () -> {
+					ValueProfile[] n = new ValueProfile[arguments.length];
+					for(int i = 0; i < n.length; i++) {
+						n[i] = ValueProfile.createClassProfile();
+					}
+					return n;
+				});
+			}
+			
+			for(int i = 0; i < arguments.length; i++) {
+				arguments[i] = argumentTypeProfiles[i].profile(arguments[i]);
+			}
+			
+			return arguments;
+		}
+		
 	
 		public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter, Terminator term, Object[] arguments);
 	
-		@Specialization(guards = { "ExternalCPSDirectSpecialization", "invoker != null", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalDirectCallMaxCacheSize")
+		@Specialization(guards = { "ExternalCPSDirectSpecialization", "invoker != null", "canInvokeWithBoundary(invoker, target, profileArgumentTypes(arguments))" }, limit = "ExternalDirectCallMaxCacheSize")
 		public void specificDirect(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
 				@Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker) {
 			// DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
 			try {
 				final Object v;
 				try {
-					v = invokeDirectWithBoundary(invoker, target, arguments);
+					v = invokeDirectWithBoundary(invoker, target, profileArgumentTypes(arguments));
 				} finally {
 					RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 				}
@@ -143,7 +172,7 @@ public class ExternalCPSDispatch extends Dispatch {
 			// exception.
 		}
 		
-		@Specialization(guards = { "isNotDirectInvoker(invoker) || !ExternalCPSDirectSpecialization", "canInvokeWithBoundary(invoker, target, arguments)" }, limit = "ExternalCPSCallMaxCacheSize")
+		@Specialization(guards = { "isNotDirectInvoker(invoker) || !ExternalCPSDirectSpecialization", "canInvokeWithBoundary(invoker, target, profileArgumentTypes(arguments))" }, limit = "ExternalCPSCallMaxCacheSize")
 		public void specific(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
 				@Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker) {
 			// Token: Passed to callContext from arguments.
@@ -151,7 +180,7 @@ public class ExternalCPSDispatch extends Dispatch {
 	
 			try {
 				callContext.begin();
-				invokeWithBoundary(invoker, callContext, target, arguments);
+				invokeWithBoundary(invoker, callContext, target, profileArgumentTypes(arguments));
 			} catch (final TailCallException e) {
 				throw e;
 			} catch (final ExceptionHaltException e) {

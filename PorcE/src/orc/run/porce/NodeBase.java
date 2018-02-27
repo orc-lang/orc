@@ -136,7 +136,7 @@ public abstract class NodeBase extends Node implements HasPorcNode {
 	 * @param write		a function to store a computed value.
 	 * @param compute	a function to compute the value when needed.
 	 */
-	protected <T extends Node> void computeAtomicallyIfNull(Supplier<T> read, Consumer<T> write, Supplier<T> compute) {
+	protected <T> void computeAtomicallyIfNull(Supplier<T> read, Consumer<T> write, Supplier<T> compute) {
 		CompilerDirectives.bailout("computeAtomicallyIfNull is called from compiled code. This will not work correctly.");
 		atomic(() -> {
 			if (read.get() == null) {
