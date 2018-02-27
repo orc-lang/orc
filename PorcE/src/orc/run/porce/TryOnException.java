@@ -13,7 +13,8 @@ public class TryOnException extends Expression {
     @Child
     protected Expression handler;
     
-	private final BranchProfile catchProfile = BranchProfile.create();
+    private final BranchProfile haltCatchProfile = BranchProfile.create();
+    private final BranchProfile killCatchProfile = BranchProfile.create();
 
     public TryOnException(final Expression body, final Expression handler) {
         this.body = body;
@@ -24,8 +25,11 @@ public class TryOnException extends Expression {
     public void executePorcEUnit(final VirtualFrame frame) {
         try {
             body.executePorcEUnit(frame);
-        } catch (HaltException | KilledException e) {
-    		catchProfile.enter();
+        } catch (HaltException e) {
+            haltCatchProfile.enter();
+            handler.executePorcEUnit(frame);
+        } catch (KilledException e) {
+            killCatchProfile.enter();
             handler.executePorcEUnit(frame);
         }
     }
