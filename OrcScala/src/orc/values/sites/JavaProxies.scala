@@ -240,13 +240,19 @@ object JavaCall {
 /** 
   * @author jthywiss, amp
   */
-abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val targetCls: Class[_], @inline val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
+abstract class InvocableInvoker(
+    @inline final val invocable: Invocable,
+    @inline final val targetCls: Class[_],
+    @inline final val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
   
   val mh = {
     val m = invocable.toMethodHandle
-    m.asSpreader(classOf[Array[Object]], m.`type`().parameterCount() - 1)
+    m.asSpreader(classOf[Array[Object]], m.`type`().parameterCount() - 1).
+      asType(MethodType.methodType(classOf[Object], classOf[Object], classOf[Array[Object]]))
   }
+  
+  val boxedReturnType = OrcJavaCompatibility.box(invocable.returnType)
 
   def invokeDirect(theObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     if (orc.run.RuntimeProfiler.profileRuntime)
@@ -259,11 +265,11 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
         // TODO: PERFORMANCE: It may be worth it to replace all these scala collections calls with some optimized loops. Hot path, mumble, mumble.
         
         // Group var args into nested array argument.
-        val nNormalArgs = invocable.getParameterTypes.size - 1
+        val nNormalArgs = invocable.parameterTypes.length - 1
         val (normalArgs, varArgs) = (arguments.take(nNormalArgs), arguments.drop(nNormalArgs))
-        val convertedNormalArgs = (normalArgs, invocable.getParameterTypes).zipped.map(orc2java(_, _))
+        val convertedNormalArgs = (normalArgs, invocable.parameterTypes).zipped.map(orc2java(_, _))
 
-        val varargType = invocable.getParameterTypes.last.getComponentType()
+        val varargType = invocable.parameterTypes(nNormalArgs).getComponentType()
         val convertedVarArgs = varArgs.map(orc2java(_, varargType))
         // The vararg array needs to have the correct dynamic type so we create it using reflection.
         val varArgArray = JavaArray.newInstance(varargType, varArgs.size).asInstanceOf[Array[Object]]
@@ -272,20 +278,20 @@ abstract class InvocableInvoker(@inline val invocable: Invocable, @inline val ta
         (convertedNormalArgs :+ varArgArray).toArray
       } else {
         // IT might be good to optimize the vararg case above as well, but it's much less of a hot path and it would be harder to optimizer.
-        val paramTypes = invocable.getParameterTypes
-        val end = arguments.length min paramTypes.size
+        val end = arguments.length
         var i = 0
         while(i < end) {
-          arguments(i) = orc2java(arguments(i), paramTypes(i))
+          arguments(i) = orc2java(arguments(i), invocable.parameterTypes(i))
           i += 1
         }
         arguments
       }
-      //Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.getParameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
+      //Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.parameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
       if (orc.run.RuntimeProfiler.profileRuntime)
         orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
       val r = try {
-        mh.invoke(theObject, finalArgs)
+        // The returnType cast does not add any static information, but it enables runtime optimizations in Graal.
+        boxedReturnType.cast(mh.invokeExact(theObject, finalArgs)).asInstanceOf[AnyRef]
       } finally {
         if (orc.run.RuntimeProfiler.profileRuntime)
           orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)

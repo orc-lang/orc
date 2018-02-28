@@ -30,87 +30,83 @@ import java.lang.invoke.MethodHandles
 object OrcJavaCompatibility {
 
   /** Java to Orc value conversion */
-  def java2orc(javaValue: Object): AnyRef = (javaValue match {
-    case _: java.lang.Void => orc.values.Signal
-    
-    // Prefer limited precision cases
-    case i: java.lang.Byte if NumericsConfig.preferLong => i.longValue()
-    case i: java.lang.Short if NumericsConfig.preferLong => i.longValue()
-    case i: java.lang.Integer if NumericsConfig.preferLong => i.longValue()
-    case i: java.lang.Long if NumericsConfig.preferLong => i.longValue()
-    case f: java.lang.Float if NumericsConfig.preferDouble => f.doubleValue()
-    case f: java.lang.Double if NumericsConfig.preferDouble => f.doubleValue()
-    
-    // Normal (prefer arbitrary precision) cases
-    case i: java.lang.Byte => BigInt(i.byteValue)
-    case i: java.lang.Short => BigInt(i.shortValue)
-    case i: java.lang.Integer => BigInt(i.intValue)
-    case i: java.lang.Long => BigInt(i.longValue)
-    case f: java.lang.Float => BigDecimal(f.floatValue.toDouble)
-    case f: java.lang.Double => BigDecimal(f.doubleValue)
-    
-    case s: java.lang.String => s
-    case b: java.lang.Boolean => b
-    case null => null
-    case v => v
-  }).asInstanceOf[AnyRef]
+  def java2orc(javaValue: Object): AnyRef = {
+    def fromInteger(i: Number): AnyRef = {
+      if (NumericsConfig.preferLong)
+        // Prefer limited precision
+        i.longValue.asInstanceOf[AnyRef]
+      else
+        // Normal (prefer arbitrary precision)
+        BigInt(i.longValue)
+    }
+
+    def fromFloat(f: Number): AnyRef = {
+      if (NumericsConfig.preferDouble)
+        // Prefer limited precision
+        f.doubleValue.asInstanceOf[AnyRef]
+      else
+        // Normal (prefer arbitrary precision)
+        BigDecimal(f.doubleValue)
+    }
+
+    def fromNonNumeric(): AnyRef = javaValue match {
+      // FIXME: This is wrong: case _: java.lang.Void => orc.values.Signal
+      // The goal was to convert void to signal. The problem is that Void is never actually used as a value. This needs to be based on the TYPE of the method return.
+      case v => v
+    }
+
+    javaValue match {
+      case i: java.lang.Byte => fromInteger(i)
+      case i: java.lang.Short => fromInteger(i)
+      case i: java.lang.Integer => fromInteger(i)
+      case i: java.lang.Long => fromInteger(i)
+      case f: java.lang.Float => fromFloat(f)
+      case f: java.lang.Double => fromFloat(f)
+      case _ => fromNonNumeric()
+    }
+  }
 
   /** Convenience method for <code>orc2java(orcValue, classOf[Object])</code> */
   def orc2java(orcValue: AnyRef): Object = orc2java(orcValue, classOf[Object])
 
   /** Orc to Java value conversion, given an expected Java type */
-  def orc2java(orcValue: AnyRef, expectedType: Class[_]): Object =
+  def orc2java(orcValue: AnyRef, expectedType: Class[_]): Object = {
+    def asNumber(i: Number): Object = {
+      expectedType match {
+        case `byteRefClass` | java.lang.Byte.TYPE => i.byteValue
+        case `shortRefClass` | java.lang.Short.TYPE => i.shortValue
+        case `intRefClass` | java.lang.Integer.TYPE => i.intValue
+        case `longRefClass` | java.lang.Long.TYPE => i.longValue
+        case `floatRefClass` | java.lang.Float.TYPE => i.floatValue
+        case `doubleRefClass` | java.lang.Double.TYPE => i.doubleValue
+        case _ => i
+      }
+    }.asInstanceOf[Object]
+    def asFloat(f: Number): Object = {
+      expectedType match {
+        case `floatRefClass` | java.lang.Float.TYPE => f.floatValue
+        case `doubleRefClass` | java.lang.Double.TYPE => f.doubleValue
+        case _ => f
+      }
+    }.asInstanceOf[Object]
+
     orcValue match {
-      case i: BigInt => {
-        expectedType match {
-          case `byteRefClass` | java.lang.Byte.TYPE => i.toByte.asInstanceOf[java.lang.Byte]
-          case `shortRefClass` | java.lang.Short.TYPE => i.toShort.asInstanceOf[java.lang.Short]
-          case `intRefClass` | java.lang.Integer.TYPE => i.toInt.asInstanceOf[java.lang.Integer]
-          case `longRefClass` | java.lang.Long.TYPE => i.toLong.asInstanceOf[java.lang.Long]
-          case `floatRefClass` | java.lang.Float.TYPE => i.toFloat.asInstanceOf[java.lang.Float]
-          case `doubleRefClass` | java.lang.Double.TYPE => i.toDouble.asInstanceOf[java.lang.Double]
-          case _ => i
-        }
-      }
-      case f: BigDecimal => {
-        expectedType match {
-          case `floatRefClass` | java.lang.Float.TYPE => f.toFloat.asInstanceOf[java.lang.Float]
-          case `doubleRefClass` | java.lang.Double.TYPE => f.toDouble.asInstanceOf[java.lang.Double]
-          case _ => f
-        }
-      }
-      case f: java.lang.Double => {
-        expectedType match {
-          case `floatRefClass` | java.lang.Float.TYPE => f.toFloat.asInstanceOf[java.lang.Float]
-          case `doubleRefClass` | java.lang.Double.TYPE => f.toDouble.asInstanceOf[java.lang.Double]
-          case _ => f
-        }
-      }
-      case f: java.lang.Float => {
-        expectedType match {
-          case `floatRefClass` | java.lang.Float.TYPE => f.toFloat.asInstanceOf[java.lang.Float]
-          case `doubleRefClass` | java.lang.Double.TYPE => f.toDouble.asInstanceOf[java.lang.Double]
-          case _ => f
-        }
-      }
-      case i: java.lang.Number => {
-        expectedType match {
-          case `byteRefClass` | java.lang.Byte.TYPE => i.byteValue().asInstanceOf[java.lang.Byte]
-          case `shortRefClass` | java.lang.Short.TYPE => i.shortValue().asInstanceOf[java.lang.Short]
-          case `intRefClass` | java.lang.Integer.TYPE => i.intValue().asInstanceOf[java.lang.Integer]
-          case `longRefClass` | java.lang.Long.TYPE => i.longValue().asInstanceOf[java.lang.Long]
-          case `floatRefClass` | java.lang.Float.TYPE => i.floatValue().asInstanceOf[java.lang.Float]
-          case `doubleRefClass` | java.lang.Double.TYPE => i.doubleValue().asInstanceOf[java.lang.Double]
-          case _ => i
-        }
-      }
-      case _ => orcValue.asInstanceOf[Object]
+      case f: BigDecimal => asFloat(f)
+      case f: java.lang.Double => asFloat(f)
+      case f: java.lang.Float => asFloat(f)
+
+      case i: BigInt => asNumber(i)
+      case i: java.lang.Number => asNumber(i)
+
+      case _ => orcValue
     }
+  }
 
   // Java Method and Constructor do NOT have a decent supertype, so we wrap them here
   // to at least share an common invocation method.  Ugh.
   abstract class Invocable {
-    val getParameterTypes: Array[java.lang.Class[_]]
+    val parameterTypes: Array[java.lang.Class[_]]
+    val returnType: java.lang.Class[_]
     val isStatic: Boolean
     val isVarArgs: Boolean
     val getName: String
@@ -131,8 +127,9 @@ object OrcJavaCompatibility {
   
   val methodLookup = MethodHandles.publicLookup()
 
-  case class InvocableMethod(method: JavaMethod) extends Invocable {
-    val getParameterTypes: Array[java.lang.Class[_]] = method.getParameterTypes
+  case class InvocableMethod(method: JavaMethod) extends Invocable {    
+    val parameterTypes: Array[java.lang.Class[_]] = method.getParameterTypes
+    val returnType: java.lang.Class[_] = method.getReturnType
     val isStatic = Modifier.isStatic(method.getModifiers())
     val isVarArgs = method.isVarArgs()
     val getName: String = method.getName()
@@ -143,11 +140,11 @@ object OrcJavaCompatibility {
     } else {
       methodLookup.unreflect(method)
     }
-      
   }
 
   case class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
-    val getParameterTypes: Array[java.lang.Class[_]] = ctor.getParameterTypes
+    val parameterTypes: Array[java.lang.Class[_]] = ctor.getParameterTypes
+    val returnType: java.lang.Class[_] = ctor.getDeclaringClass
     val isStatic = true
     val isVarArgs = ctor.isVarArgs()
     val getName: String = ctor.getName()
