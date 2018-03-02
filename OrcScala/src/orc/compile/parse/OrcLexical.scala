@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jun 1, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -41,7 +41,7 @@ class OrcLexical() extends StdLexical() with RegexParsers {
   override protected def processIdent(name: String) = super.processIdent(Normalizer.normalize(name, Normalizer.Form.NFC))
 
   // StdLexical wants a func for legal identifier chars other than digits
-  override def identChar = elem("identifier character", { ch => ch.isUnicodeIdentifierPart || ch == '\'' })
+  override def identChar = elem("identifier character", { ch => (ch.isUnicodeIdentifierPart && !ch.isIdentifierIgnorable) || ch == '\'' })
 
   // Per Unicode standard section 5.8, Newline Guidelines, recommendation R4
   // "A readline function should stop at [CR, LF, CRLF, NEL[0085]], LS[2028], FF, or PS[2029]"
