@@ -32,9 +32,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 		super(orig.execution);
 	}
 
-	@CompilerDirectives.CompilationFinal(dimensions = 1)
-	protected final BranchProfile[] exceptionProfiles = new BranchProfile[] 
-			{ BranchProfile.create(), BranchProfile.create(), BranchProfile.create() };
+	protected final BranchProfile exceptionProfile = BranchProfile.create();
 
 	@Specialization(guards = { "canInvokeWithBoundary(invoker, target, arguments)" }, 
 			limit = "ExternalDirectCallMaxCacheSize")
@@ -43,26 +41,10 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 		// DUPLICATION: This code is duplicated (mostly) in ExternalCPSDispatch.specificDirect.
 		try {
 			return invokeDirectWithBoundary(invoker, target, arguments);
-		} catch (final ExceptionHaltException e) {
-			exceptionProfiles[0].enter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
-			throw HaltException.SINGLETON();
-		} catch (final HaltException e) {
-			exceptionProfiles[1].enter();
-			throw e;
-		} catch (final Exception e) {
-			exceptionProfiles[2].enter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.notifyOrcWithBoundary(new CaughtEvent(e));
-			throw HaltException.SINGLETON();
-		} catch (final Throwable e) {
-			CompilerDirectives.transferToInterpreter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-			execution.notifyOrcWithBoundary(new CaughtEvent(e));
-			// Rethrow into interpreter since this is an error and everything is exploding.
-			//throw e;
-			throw HaltException.SINGLETON();
+		}  catch (final Throwable e) {
+            exceptionProfile.enter();
+            execution.notifyOfException(e, this);
+            throw HaltException.SINGLETON();
 		}
 	}
 

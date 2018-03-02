@@ -29,4 +29,9 @@ public class InvokeCallRecordRootNode extends PorcERootNode {
     public InvokeCallRecordRootNode(final PorcELanguage language, final int nArguments, final PorcEExecution execution) {
         super(language, new FrameDescriptor(), buildBody(nArguments, execution), nArguments, 0);
     }
+    
+    @Override
+    public boolean isInternal() {
+      return true;
+    }
 }

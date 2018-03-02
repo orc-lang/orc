@@ -3,11 +3,8 @@ package orc.run.porce.call;
 
 import static orc.run.porce.SpecializationConfiguration.ExternalCPSDirectSpecialization;
 
-import orc.CaughtEvent;
 import orc.DirectInvoker;
 import orc.Invoker;
-import orc.error.runtime.ExceptionHaltException;
-import orc.error.runtime.HaltException;
 import orc.run.porce.RuntimeProfilerWrapper;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.CPSCallContext;
@@ -84,9 +81,7 @@ public class ExternalCPSDispatch extends Dispatch {
 			super(orig.execution);
 		}
 	
-		@CompilerDirectives.CompilationFinal(dimensions = 1)
-		protected final BranchProfile[] exceptionProfiles = new BranchProfile[] { BranchProfile.create(),
-				BranchProfile.create(), BranchProfile.create() };
+		protected final BranchProfile exceptionProfile = BranchProfile.create();
 		
 		@CompilerDirectives.CompilationFinal(dimensions = 1)
 		protected ValueProfile[] argumentTypeProfiles = null;
@@ -146,26 +141,10 @@ public class ExternalCPSDispatch extends Dispatch {
 				getDispatchP().execute(frame, pub, new Object[] { pub.environment, v });
 			} catch (final TailCallException e) {
 				throw e;
-			} catch (final ExceptionHaltException e) {
-				exceptionProfiles[0].enter();
-				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-				execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
-				counter.haltToken();
-			} catch (final HaltException e) {
-				exceptionProfiles[1].enter();
-				counter.haltToken();
-			} catch (final Exception e) {
-				exceptionProfiles[2].enter();
-				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-				execution.notifyOrcWithBoundary(new CaughtEvent(e));
-				counter.haltToken();
 			} catch (final Throwable e) {
-				CompilerDirectives.transferToInterpreter();
-				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-				execution.notifyOrcWithBoundary(new CaughtEvent(e));
+				exceptionProfile.enter();
+				execution.notifyOfException(e, this);
 				counter.haltToken();
-				// Rethrow into interpreter since this is an error and everything is exploding.
-				//throw e;
 			}
 			// Token: All exception handlers halt the token that was passed to this
 			// call. Calls are not allowed to keep the token if they throw an
@@ -183,27 +162,11 @@ public class ExternalCPSDispatch extends Dispatch {
 				invokeWithBoundary(invoker, callContext, target, profileArgumentTypes(arguments));
 			} catch (final TailCallException e) {
 				throw e;
-			} catch (final ExceptionHaltException e) {
-				exceptionProfiles[0].enter();
-				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-				execution.notifyOrcWithBoundary(new CaughtEvent(e.getCause()));
-				counter.haltToken();
-			} catch (final HaltException e) {
-				exceptionProfiles[1].enter();
-				counter.haltToken();
-			} catch (final Exception e) {
-				exceptionProfiles[2].enter();
-				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-				execution.notifyOrcWithBoundary(new CaughtEvent(e));
-				counter.haltToken();
 			} catch (final Throwable e) {
-				CompilerDirectives.transferToInterpreter();
-				// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-				execution.notifyOrcWithBoundary(new CaughtEvent(e));
-				counter.haltToken();
-				// Rethrow into interpreter since this is an error and everything is exploding.
-				//throw e;
-			} finally {
+                exceptionProfile.enter();
+                execution.notifyOfException(e, this);
+                counter.haltToken();
+            } finally {
 				RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 			}
 		}

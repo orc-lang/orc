@@ -3,7 +3,8 @@ package orc.run.porce.runtime
 import java.io.{ OutputStreamWriter, PrintWriter }
 import java.util.{ Timer, TimerTask }
 
-import orc.{ ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
+import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
+import orc.error.runtime.{ ExceptionHaltException, HaltException }
 import orc.run.core.EventHandler
 import orc.run.distrib.porce.CallTargetManager
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
@@ -14,6 +15,7 @@ import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.RootNode
+import com.oracle.truffle.api.nodes.Node
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -24,6 +26,20 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   @TruffleBoundary @noinline
   def notifyOrcWithBoundary(e: OrcEvent) = {
     notifyOrc(e)
+  }
+
+  @TruffleBoundary(allowInlining = true) @noinline
+  def notifyOfException(e: Throwable, node: Node) = {
+    def handle(e: Throwable) = {
+      val oe = OrcBacktrace.orcifyException(e, node)
+      notifyOrc(new CaughtEvent(oe))
+    }
+    
+    e match {
+      case e: ExceptionHaltException => handle(e.getCause())
+      case e: HaltException => ()
+      case e: Throwable => handle(e)
+    }
   }
 
   /// CallTargetManager Implementation

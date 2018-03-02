@@ -34,6 +34,11 @@ public class InvokeWithTrampolineRootNode extends RootNode {
 		this.loop = TailCallLoop.create(execution);
     }
     
+    @Override
+    public boolean isInternal() {
+      return true;
+    }
+    
     public long getCallCount() {
     	return callCount.sum();
     }

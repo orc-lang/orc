@@ -26,13 +26,14 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
-    private final static boolean assertionsEnabled = false;
-    
     
     // TODO: PERFORMANCE: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters).
     // The challange of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
     private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
+    
+    @CompilationFinal
+    private boolean internal = false;
     
     @CompilationFinal
     private long timePerCall = -1;
@@ -113,7 +114,13 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 		CompilerAsserts.neverPartOfCompilation();
 		porcNode = Option.apply(ast);
 		section = SourceSectionFromPorc.apply(ast);
+		internal = !(ast instanceof orc.ast.porc.Method);
 	}
+    
+    @Override
+    public boolean isInternal() {
+      return internal;
+    }
 
     @Override
     public Option<PorcAST> porcNode() {
@@ -173,15 +180,13 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     @Override
     public Object execute(final VirtualFrame frame) {
-        if (assertionsEnabled) {
-            final Object[] arguments = frame.getArguments();
-            if (arguments.length != nArguments + 1) {
-                throwArityException(arguments.length - 1, nArguments);
-            }
-            final Object[] captureds = (Object[]) arguments[0];
-            if (captureds.length != nCaptured) {
-                InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
-            }
+        final Object[] arguments = frame.getArguments();
+        if (arguments.length != nArguments + 1) {
+            throwArityException(arguments.length - 1, nArguments);
+        }
+        final Object[] captureds = (Object[]) arguments[0];
+        if (captureds.length != nCaptured) {
+            InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
         }
 
         try {
