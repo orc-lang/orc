@@ -18,6 +18,20 @@ import orc.Invoker
 import orc.IllegalArgumentInvoker
 
 object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with FunctionalSite {
+  def lpow(a: Long, b: Long) = {
+    var expon = b
+    var mult = a
+    var accum = 1L
+    while (expon > 0) {
+      if ((expon & 0x1L) == 0x1) {
+        accum *= mult
+      }
+      expon >>= 1
+      mult *= mult
+    }
+    accum
+  }
+  
   def getInvokerSpecialized(arg1: Number, arg2: Number): Invoker = {
     // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
     (arg1, arg2) match {
@@ -36,9 +50,9 @@ object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with Func
       case (a: java.lang.Double, b: java.lang.Long) => 
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
       case (a: java.lang.Long, b: java.lang.Long) => 
-        invoker(a, b)((a, b) => math.pow(a.longValue(), b.longValue()))
+        invoker(a, b)((a, b) => lpow(a.longValue(), b.longValue()))
       case (a: java.lang.Integer, b: java.lang.Integer) => 
-        invoker(a, b)((a, b) => math.pow(a.intValue(), b.intValue()))
+        invoker(a, b)((a, b) => lpow(a.intValue(), b.intValue()))
       case (a: BigInt, b: BigInt) => 
         invoker(a, b)((a, b) => {
           if (b.isValidInt) {
