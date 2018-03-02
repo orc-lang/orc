@@ -30,7 +30,9 @@ object InvocationBehaviorUtilities {
       var res = true
       while (i < arguments.length && res) {
         // Predicate here:
-        res &&= (argumentClss(i) == null && arguments(i) == null) || argumentClss(i).isInstance(arguments(i))
+        res &&=
+            (arguments(i) == null && (argumentClss(i) == null || !argumentClss(i).isPrimitive())) || 
+            (argumentClss(i) != null && argumentClss(i).isInstance(arguments(i)))
         i += 1
       }
       res

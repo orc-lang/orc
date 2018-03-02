@@ -23,6 +23,6 @@ trait ErrorOnUndefinedInvocation extends InvocationBehavior {
   }
   
   def getAccessor(target: AnyRef, field: Field): Accessor = {
-    ClassDoesNotHaveMembersAccessor(target.getClass())
+    ClassDoesNotHaveMembersAccessor(if (target == null) classOf[Null] else target.getClass())
   }
 }
