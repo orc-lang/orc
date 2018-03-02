@@ -147,6 +147,9 @@ trait ExpectedBenchmarkResult[R] {
   def hashInternal(results: Any): Int = {
     val (b, r) = time(1, 1) {
       results match {
+        case s: java.lang.Iterable[_] =>
+          import collection.JavaConverters._
+          s.asScala.par.map(hashInternal).##
         case s: Iterable[_] =>
           s.par.map(hashInternal).##
         case a if a.getClass.isArray =>
@@ -171,12 +174,13 @@ trait ExpectedBenchmarkResult[R] {
   private def summarizeResults(results: R): String = {
     val r = results match {
       case s: Iterable[_] =>
-        s.take(summaryPrefix).mkString("[", ",\n", s", ...] (${s.size} items)")
+        s.take(summaryPrefix).mkString("[", ",\n", s"${if (summaryPrefix < s.size) ", ..." else ""}]] (${s.size} items)")
       case a if a.getClass.isArray =>
         val s = unknownArray2IndexedSeq(a, takeOnly = summaryPrefix)
-        s.mkString("[", ",\n", s", ...] (${JArray.getLength(a)} items)")
+        s.mkString("[", ",\n", s"${if (s.size < JArray.getLength(a)) ", ..." else ""}] (${JArray.getLength(a)} items)")
       case o =>
-        o.toString.take(summaryPrefix * 10) + "[...]"
+        val str = o.toString
+        str.take(summaryPrefix * 10) + (if (summaryPrefix * 10 < str.size) "[...]" else "")
     }
     r
   }
