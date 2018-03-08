@@ -198,6 +198,8 @@ class SimpleWorkStealingScheduler(
   @sun.misc.Contended
   final class Worker(var workerID: Int) extends Thread(s"Worker $workerID") {
     private[SimpleWorkStealingScheduler] val workQueue: SchedulingQueue[Schedulable] = new ABPWSDeque(workerQueueLength)
+    
+    def queueSize = workQueue.size
 
     //@volatile
     var isPotentiallyBlocked = false
@@ -207,6 +209,8 @@ class SimpleWorkStealingScheduler(
     private[SimpleWorkStealingScheduler] var isShuttingDown = false
 
     var newWorks = 0
+    var schedules = 0
+    var tasksRun = 0
     var steals = 0
     var stealFailures = 0
     var overflows = 0
@@ -250,6 +254,7 @@ class SimpleWorkStealingScheduler(
           isInternallyBlocked = true
         }
         StopWatches.workerTime.stop(workerStart)
+        tasksRun += 1
       }
     }
 
@@ -290,6 +295,8 @@ class SimpleWorkStealingScheduler(
         }
 
         scheduleLocal(t)
+      } else {
+        schedules += 1
       }
     }
 
@@ -387,13 +394,14 @@ class SimpleWorkStealingScheduler(
 
     @inline
     private[this] def stealFromAnotherQueue(i: Int): Schedulable = {
-      var t = inputQueue.poll()
+      var t: Schedulable = null
+      val index = (getLocalRandomNumber() % nWorkers).abs
+      val w = workers(index)
+      if (w != null) {
+        t = w.workQueue.steal()
+      }
       if (t == null) {
-        val index = (getLocalRandomNumber() % nWorkers).abs
-        val w = workers(index)
-        if (w != null) {
-          t = w.workQueue.steal()
-        }
+        t = inputQueue.poll()
       }
       t
     }
@@ -443,18 +451,29 @@ class SimpleWorkStealingScheduler(
     statLine(s"stealFailures = ${stealFailures}")
     val overflows = ws.map(_.overflows).sum
     statLine(s"overflows = ${overflows}")
+    val schedules = ws.map(_.schedules).sum
+    statLine(s"schedules = ${schedules}")
+    val tasksRun = ws.map(_.tasksRun).sum
+    statLine(s"tasksRun = ${tasksRun}")
     val (avgQueueSize, maxQueueSize, minQueueSize) = {
       val queueSizes = ws.map(_.workQueue.size)
       (queueSizes.sum / queueSizes.size, queueSizes.max, queueSizes.min)
     }
     statLine(s"(avgQueueSize, maxQueueSize, minQueueSize) = ${(avgQueueSize, maxQueueSize, minQueueSize)}")
-    val inputQueueSize = inputQueue.size()
-    statLine(s"inputQueueSize = ${inputQueueSize}")
-
-    statLine(s"inputTasks = ${inputTasks}")
+    
+    for (w <- ws) {
+      w.newWorks = 0
+      w.steals = 0
+      w.stealFailures = 0
+      w.overflows = 0
+      w.schedules = 0
+      w.tasksRun = 0
+    }
 
     Logger.info(buf.toString())
   }
+  
+  DumperRegistry.register((_) => dumpStats)
 
   final def startScheduler(): Unit = synchronized {
     for (_ <- 0 until minWorkers) {
