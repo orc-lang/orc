@@ -36,8 +36,12 @@ object OrcBacktrace {
           None
     }
     
-    val locations = findRange(node) +: truffleFrames.map(frame => findRange(frame.getLocation))
-    locations.flatten.toArray
+    if (truffleFrames == null) {
+      Array()
+    } else {
+      val locations = findRange(node) +: truffleFrames.map(frame => findRange(frame.getLocation))
+      locations.flatten.toArray
+    }
   }
   
   def orcifyException(e: Throwable, node: Node): TokenException = {

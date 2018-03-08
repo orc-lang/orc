@@ -106,7 +106,10 @@ public abstract class OrcException extends RuntimeException {
         final StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         final StringBuffer traceBuf = sw.getBuffer();
-        traceBuf.delete(0, traceBuf.indexOf("\n\tat "));
+        int ind = traceBuf.indexOf("\n\tat ");
+        if (ind < 0)
+          ind = 0;
+        traceBuf.delete(0, ind);
         return traceBuf.toString();
     }
 
