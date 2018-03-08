@@ -11,6 +11,8 @@ import orc.util.CsvWriter
 import java.lang.reflect.{Array => JArray}
 import java.util.concurrent.atomic.AtomicIntegerArray
 import java.util.concurrent.atomic.AtomicLongArray
+import scala.util.hashing.MurmurHash3
+import scala.collection.parallel.ParIterable
 
 trait BenchmarkApplication[T, R] {
   def setup(): T
@@ -135,6 +137,9 @@ trait ExpectedBenchmarkResult[R] {
     *
     */
   val expectedMap: Map[Int, Int]
+  
+  def hashCollection(i: TraversableOnce[Int]): Int = i.## // MurmurHash3.orderedHash(i)
+  def hashCollection(i: ParIterable[Int]): Int = hashCollection(i.seq)
 
   def expected: Int = expectedMap.get(BenchmarkConfig.problemSize) match {
     case Some(h) => h
@@ -145,22 +150,23 @@ trait ExpectedBenchmarkResult[R] {
   def hash(results: R): Int = hashInternal(results)
 
   def hashInternal(results: Any): Int = {
-    val (b, r) = time(1, 1) {
+    val r = {
       results match {
+        case null => 0
         case s: java.lang.Iterable[_] =>
           import collection.JavaConverters._
-          s.asScala.par.map(hashInternal).##
+          hashCollection(s.asScala.par.map(hashInternal))
         case s: Iterable[_] =>
-          s.par.map(hashInternal).##
+          hashCollection(s.par.map(hashInternal))
         case a if a.getClass.isArray =>
           val s = unknownArray2IndexedSeq(a)
-          s.toStream.par.map(hashInternal).##
+          hashCollection(s.toStream.par.map(hashInternal))
         case a: AtomicIntegerArray =>
           val s = (0 until a.length).iterator.map(a.get(_))
-          s.toStream.par.map(hashInternal).##
+          hashCollection(s.toStream.par.map(hashInternal))
         case a: AtomicLongArray =>
           val s = (0 until a.length).iterator.map(a.get(_))
-          s.toStream.par.map(hashInternal).##
+          hashCollection(s.toStream.par.map(hashInternal))
         case o =>
           o.##
       }
@@ -235,4 +241,8 @@ trait ExpectedBenchmarkResult[R] {
       r
     } else true
   }
+} 
+
+trait UnorderedHash[A] extends ExpectedBenchmarkResult[A] {
+  override def hashCollection(i: TraversableOnce[Int]): Int = MurmurHash3.unorderedHash(i)
 }
