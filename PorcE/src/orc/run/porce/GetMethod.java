@@ -41,7 +41,7 @@ public class GetMethod extends Expression {
             }
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
-            execution.notifyOrcWithBoundary(new CaughtEvent(e));
+            execution.notifyOfException(e, this);
             throw HaltException.SINGLETON();
         }
     }
@@ -58,7 +58,7 @@ public class GetMethod extends Expression {
             }
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
-            execution.notifyOrcWithBoundary(new CaughtEvent(e));
+            execution.notifyOfException(e, this);
             throw HaltException.SINGLETON();
         }
     }

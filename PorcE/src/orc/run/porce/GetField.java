@@ -32,7 +32,7 @@ public abstract class GetField extends Expression {
             return accessWithBoundary(accessor, obj);
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
-            execution.notifyOrcWithBoundary(new CaughtEvent(e));
+            execution.notifyOfException(e, this);
             throw HaltException.SINGLETON();
         }
     }
@@ -44,8 +44,7 @@ public abstract class GetField extends Expression {
             return accessWithBoundary(accessor, obj);
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
-			// TODO: Wrap exception to include Orc stack information. This will mean wrapping this in JavaException if needed and calling setBacktrace
-            execution.notifyOrcWithBoundary(new CaughtEvent(e));
+            execution.notifyOfException(e, this);
             throw HaltException.SINGLETON();
         }
     }

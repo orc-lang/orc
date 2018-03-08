@@ -187,7 +187,9 @@ class OrctimizerToPorc(co: CompilerOptions) {
         if (!useDirectCalls || !isDirect) {
           if (isNotRecursive) {
             killCheck :::
-            porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).view.force)
+            catchExceptions(
+              porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).view.force)
+            )
           } else {
             // For possibly recursive functions spawn before calling and spawn before passing on the publication.
             // This provides trampolining.
@@ -211,9 +213,11 @@ class OrctimizerToPorc(co: CompilerOptions) {
         } else {
           val v = newVarName("temp")
           killCheck :::
-          let((v, porc.MethodDirectCall(isExternal, argument(target), args.map(argument(_)).view.force))) {
-            ctx.p(v)
-          }
+          catchExceptions(
+            let((v, porc.MethodDirectCall(isExternal, argument(target), args.map(argument(_)).view.force))) {
+              ctx.p(v)
+            }
+          )
         }
       }
       case Parallel.Z(left, right) => {

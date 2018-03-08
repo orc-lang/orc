@@ -1,5 +1,6 @@
 package orc.run.porce.call;
 
+import orc.error.runtime.HaltException;
 import orc.run.porce.Expression;
 import orc.run.porce.PorcERootNode;
 import orc.run.porce.SpecializationConfiguration;
@@ -21,6 +22,7 @@ import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 
@@ -100,6 +102,8 @@ public class InternalCPSDispatch extends Dispatch {
 		@CompilationFinal
 		private RootNode rootNode;
 
+		protected final BranchProfile exceptionProfile = BranchProfile.create();
+
 		public RootNode getRootNodeCached() {
 			if (CompilerDirectives.inInterpreter()) {
 				rootNode = getRootNode();
@@ -161,13 +165,29 @@ public class InternalCPSDispatch extends Dispatch {
 					call.forceInlining();
 			});
 
-			call.call(arguments);
+            try {
+                call.call(arguments);
+            } catch (final TailCallException e) {
+                throw e;
+            } catch (final Throwable e) {
+                exceptionProfile.enter();
+                execution.notifyOfException(e, this);
+                throw HaltException.SINGLETON();
+            }
 		}
 
 		@Specialization(replaces = { "specific" })
 		public void universal(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
 				@Cached("create()") IndirectCallNode call) {
-			call.call(target.body, arguments);
+		    try {
+              call.call(target.body, arguments);
+            } catch (final TailCallException e) {
+                throw e;
+            } catch (final Throwable e) {
+                exceptionProfile.enter();
+                execution.notifyOfException(e, this);
+                throw HaltException.SINGLETON();
+            }
 		}
 
 		static InternalCPSDispatchInternal createBare(final boolean forceInline, final PorcEExecution execution) {
