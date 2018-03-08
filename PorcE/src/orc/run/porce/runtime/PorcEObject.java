@@ -25,22 +25,38 @@ public final class PorcEObject implements AccessorValue, DOrcMarshalingReplaceme
         this.fieldValues = fieldValues;
     }
     
+    private final ThreadLocal<Boolean> toStringRecursionCheck = new ThreadLocal<Boolean>() {
+        @Override
+        @SuppressWarnings("boxing")
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
+    
     @Override
+    @SuppressWarnings("boxing")
     public String toString() {
-    	StringBuilder sb = new StringBuilder();
-    	sb.append("{ ");
-    	for (int i = 0; i < fieldNames.length; i++) {
-			Field field = fieldNames[i];
-			Object value = fieldValues[i];
-			if (i > 0) {
-				sb.append(" # ");
-			}
-			sb.append(field);
-			sb.append(" = ");
-			sb.append(Format.formatValue(value));
-		}
-    	sb.append(" }");
-    	return sb.toString();
+        // FIXME: The recursion check will be SLOW. But it may not matter. However it may not even be good to have this as a default.
+        if (toStringRecursionCheck.get()) {
+            return "[... recursive ...]";
+        } else {
+            toStringRecursionCheck.set(true);
+        	StringBuilder sb = new StringBuilder();
+        	sb.append("{ ");
+        	for (int i = 0; i < fieldNames.length; i++) {
+    			Field field = fieldNames[i];
+    			Object value = fieldValues[i];
+    			if (i > 0) {
+    				sb.append(" # ");
+    			}
+    			sb.append(field);
+    			sb.append(" = ");
+    			sb.append(Format.formatValue(value));
+    		}
+        	sb.append(" }");
+            toStringRecursionCheck.set(false);
+        	return sb.toString();
+        }
     }
 
     @Override
