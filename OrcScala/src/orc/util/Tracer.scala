@@ -208,8 +208,8 @@ object Tracer {
       }
     }
 
-    val csvOut = ExecutionLogOutputStream(s"trace_$suffix", "csv", "Trace output file")
-    if (csvOut.isDefined) {
+    val csvOut = ExecutionLogOutputStream(s"trace-$suffix", "csv", "Trace output file")
+    if (csvOut.isDefined && oldBuffers.nonEmpty && oldBuffers.exists(_.eventsInBuffer > 0)) {
       val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
       val csvWriter = new CsvWriter(traceCsv.append(_))
       val tableColumnTitles = Seq("Absolute Time (ms) [absTime]", "Precise Time (ns) [time]", "Thread ID [threadId]", "Token/Group ID [sourceId]", "Event Type [type]", "From [from]", "To [to]")
@@ -225,6 +225,8 @@ object Tracer {
       traceCsv.close()
     }
   }
+
+  DumperRegistry.register(dumpBuffers)
 
   private def register(tb: TraceBuffer) = synchronized {
     buffers += tb
