@@ -1,5 +1,17 @@
-/* sieve.orc -- Orc program implementing Eratosthenes's sieve
+//
+// Sieve.scala -- Scala benchmark Sieve implementing Eratosthenes's sieve
+// Project OrcTests
+//
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 
+package orc.test.item.scalabenchmarks
+
+/*
 Eratosthenes's Sieve is an algorithm for finding prime numbers.
 In an imperative setting, it works as follows:
 
@@ -23,8 +35,6 @@ Note: you can compute the "floored" square root of a number like this:
 
 Floor(sqrt(n))
 */
-
-package orc.test.item.scalabenchmarks
 
 import java.util.{ Collections, HashSet, Set }
 
