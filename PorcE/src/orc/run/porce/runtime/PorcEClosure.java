@@ -1,3 +1,13 @@
+//
+// PorcEClosure.java -- Java class PorcEClosure
+// Project PorcE
+//
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 
 package orc.run.porce.runtime;
 
@@ -6,6 +16,11 @@ import orc.run.porce.PorcERootNode;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 
+/**
+ * A class representing PorcE closures including both Orc methods (def, site) and internal Porc continuations.
+ *
+ * @author amp
+ */
 final public class PorcEClosure {
     public final Object[] environment;
     public final RootCallTarget body;

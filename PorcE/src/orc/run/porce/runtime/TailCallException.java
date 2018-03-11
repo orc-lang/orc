@@ -1,7 +1,28 @@
+//
+// TailCallException.java -- Java class TailCallException
+// Project PorcE
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.run.porce.runtime;
 
 import com.oracle.truffle.api.nodes.ControlFlowException;
 
+/**
+ * An internal PorcE exception which is used to implement universal TCO.
+ * 
+ * This exception is throw by calls to a different function in tail positions and
+ * then caught in a trampoline wrapped around the current call and dispatched to
+ * the specified closures. This unwinds the stack to avoid growing the stack in
+ * co-recursive situations.
+ * 
+ * @author amp
+ */
 @SuppressWarnings("serial")
 public final class TailCallException extends ControlFlowException {
 	public PorcEClosure target;

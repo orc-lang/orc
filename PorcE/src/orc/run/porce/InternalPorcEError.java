@@ -1,3 +1,13 @@
+//
+// InternalPorcEError.java -- Java class InternalPorcEError
+// Project PorcE
+//
+// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 
 package orc.run.porce;
 
@@ -5,6 +15,13 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
+/** 
+ * An exception representing an internal non-recoverable error in PorcE.
+ * 
+ * This class also has utility functions to throw the internal exceptions.
+ * 
+ * @author amp
+ */
 public class InternalPorcEError extends Error {
     private static final long serialVersionUID = 269299963113819157L;
 

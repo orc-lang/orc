@@ -1,3 +1,13 @@
+//
+// PorcEObject.java -- Java class PorcEObject
+// Project PorcE
+//
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 
 package orc.run.porce.runtime;
 
@@ -11,6 +21,11 @@ import orc.values.Field;
 import orc.values.Format;
 import orc.values.sites.AccessorValue;
 
+/**
+ * This represents Orc objects inside the PorcE runtime.
+ *
+ * @author amp
+ */
 public final class PorcEObject implements AccessorValue, DOrcMarshalingReplacement {
     public final Field[] fieldNames;
     public final Object[] fieldValues;

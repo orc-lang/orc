@@ -1,3 +1,14 @@
+//
+// SourceSectionFromPorc.scala -- Scala class SourceSectionFromPorc
+// Project PorcE
+//
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
+
 package orc.run.porce.runtime
 
 import orc.ast.porc.PorcAST
@@ -6,6 +17,9 @@ import orc.run.porce.Logger
 
 import com.oracle.truffle.api.source.{ Source, SourceSection }
 
+/** Function to build a Truffle SourceSection from a Porc node.
+ * 
+ */
 object SourceSectionFromPorc {
   val sourceCache = new java.util.WeakHashMap[OrcInputContext, Source]()
 

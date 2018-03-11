@@ -1,3 +1,13 @@
+//
+// InvokeWithTrampolineRootNode.java -- Truffle root node InvokeWithTrampolineRootNode
+// Project PorcE
+//
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+//
+// Use and redistribution of this file is governed by the license terms in
+// the LICENSE file found in the project's top-level directory and also found at
+// URL: http://orc.csres.utexas.edu/license.shtml .
+//
 
 package orc.run.porce;
 
@@ -14,6 +24,14 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.RootNode;
 
+/**
+ * A Truffle root node which handles tail calls and other PorcE machinery.
+ * 
+ * The caller can treat this as a normal call with semantics similar to Java or Scala
+ * (other than all the spawning).
+ *
+ * @author amp
+ */
 public class InvokeWithTrampolineRootNode extends RootNode {
 	@Child
     protected TailCallLoop loop;
