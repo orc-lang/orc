@@ -46,7 +46,7 @@ object PorcEPolyglotLauncher {
       }
     }
     
-    val profilePorcENodes = true && System.getProperty("orc.executionlog.dir") != null
+    val profilePorcENodes = false && System.getProperty("orc.executionlog.dir") != null
     
     if (profilePorcENodes) {
       import orc.run.porce.instruments.PorcENodeExecutionProfiler

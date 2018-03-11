@@ -21,6 +21,7 @@ import orc.script.OrcBindings
 import java.io.PrintStream
 import orc.PorcEPolyglotLauncher
 import orc.OrcOptions
+import orc.run.porce.runtime.PorcERuntime
 
 class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
     this: PorcELanguage =>
@@ -28,7 +29,7 @@ class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
   val options: OrcOptions = PorcEPolyglotLauncher.orcOptions.getOrElse(new OrcBindings())
   val backend = PorcEBackend(this)
   val compiler = backend.compiler
-  val runtime = backend.createRuntime(options)
+  val runtime: PorcERuntime with orc.Runtime[orc.ast.porc.MethodCPS] = backend.createRuntime(options).asInstanceOf[PorcERuntime with orc.Runtime[orc.ast.porc.MethodCPS]]
 
   def printException(e: Throwable, err: PrintStream, showJavaStackTrace: Boolean) {
     e match {
@@ -51,7 +52,20 @@ class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
   }
 
   override def createContext(env: com.oracle.truffle.api.TruffleLanguage.Env): PorcEContext = {
-    new PorcEContext(null)
+    new PorcEContext(runtime)
+  }
+  
+  override def initializeThread(ctx: PorcEContext, thread: Thread) = {
+    assert(ctx.thread == null)
+    println(s"initializeThread: $thread $ctx")
+    ctx.thread = thread
+    ctx.depth = 0
+  }
+  override def disposeThread(ctx: PorcEContext, thread: Thread) = {
+    assert(ctx.thread == thread)
+    println(s"disposeThread: $thread $ctx")
+    ctx.thread = null
+    ctx.depth = 0
   }
 
   private class SourceInputContext(val source: Source, override val descr: String) extends OrcInputContext {

@@ -14,4 +14,8 @@ public class PorcELanguage extends PorcELanguageBase {
 
 	// The actual implementation is provided by PorcELanguageBase.
 	// This class is only needed to trigger the Java annotation processor.
+	
+	public static PorcELanguage get() {
+	  return TruffleLanguage.getCurrentLanguage(PorcELanguage.class);
+	}
 }
