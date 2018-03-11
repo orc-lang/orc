@@ -52,7 +52,6 @@ object TaskSchedulerBenchmarks {
   }
 
   trait TaskSchedulerBenchmark {
-    def dumpStats(): Unit
 
     def startScheduler(): Unit
     def stopScheduler(): Unit

@@ -28,6 +28,9 @@ import orc.util.DumperRegistry
 import orc.util.SchedulingQueue
 import orc.run.StopWatches
 import orc.Schedulable
+import orc.util.ExecutionLogOutputStream
+import java.io.OutputStreamWriter
+import orc.util.CsvWriter
 
 /** @param monitorInterval The interval at which the monitor thread runs and checks that the thread pool is the correct size.
   * @param goalExtraThreads The ideal number of extra idle threads that the pool should contain.
@@ -41,7 +44,7 @@ class SimpleWorkStealingScheduler(
     val goalExtraThreads: Int = 0,
     val workerQueueLength: Int = 1024 * 2) {
   schedulerThis =>
-
+    
   val nCores = Runtime.getRuntime().availableProcessors()
 
   val overrideWorkers = Option(System.getProperty("orc.SimpleWorkStealingScheduler.overrideWorkers")).map(_.toInt)
@@ -181,7 +184,7 @@ class SimpleWorkStealingScheduler(
         }
 
         if (dumpInterval > 0 && lastDumpTime + dumpInterval <= System.currentTimeMillis()) {
-          dumpStats()
+          dumpStats("monitor")
           lastDumpTime = currentTime
         }
 
@@ -429,37 +432,23 @@ class SimpleWorkStealingScheduler(
     w.shutdown()
   }
 
-  def dumpStats(): Unit = {
-    val buf = new StringBuilder()
-    def statLine(s: String) = {
-      buf ++= s
-      buf += '\n'
-    }
+  def dumpStats(name: String) = {
     val ws = currentWorkers
+    
     // Count a thread as working if it is executing a potentially blocking task and is RUNNABLE
     val nBlocked = ws.count(t => {
       t.isPotentiallyBlocked && t.getState != Thread.State.RUNNABLE
     })
-    //statLine(s"workers.size = ${workers.size}")
-    statLine(s"nWorkers = ${ws.size}")
-    statLine(s"nBlocked = ${nBlocked}")
     val steals = ws.map(_.steals).sum
-    statLine(s"steals = ${steals}")
     val newWorks = ws.map(_.newWorks).sum
-    statLine(s"newWorks = ${newWorks}")
     val stealFailures = ws.map(_.stealFailures).sum
-    statLine(s"stealFailures = ${stealFailures}")
     val overflows = ws.map(_.overflows).sum
-    statLine(s"overflows = ${overflows}")
     val schedules = ws.map(_.schedules).sum
-    statLine(s"schedules = ${schedules}")
     val tasksRun = ws.map(_.tasksRun).sum
-    statLine(s"tasksRun = ${tasksRun}")
     val (avgQueueSize, maxQueueSize, minQueueSize) = {
       val queueSizes = ws.map(_.workQueue.size)
       (queueSizes.sum / queueSizes.size, queueSizes.max, queueSizes.min)
     }
-    statLine(s"(avgQueueSize, maxQueueSize, minQueueSize) = ${(avgQueueSize, maxQueueSize, minQueueSize)}")
     
     for (w <- ws) {
       w.newWorks = 0
@@ -469,11 +458,40 @@ class SimpleWorkStealingScheduler(
       w.schedules = 0
       w.tasksRun = 0
     }
-
-    Logger.info(buf.toString())
+    
+    (name, ws.size, nBlocked, steals, stealFailures, newWorks, overflows, schedules, tasksRun, avgQueueSize, maxQueueSize, minQueueSize)
   }
   
-  DumperRegistry.register((_) => dumpStats)
+  {
+    ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
+    val csvOut = ExecutionLogOutputStream(s"work-stealing-scheduler-statistics", "csv", "WorkStealingScheduler statistics")
+    if (csvOut.isDefined) {
+      val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
+      val csvWriter = new CsvWriter(traceCsv.append(_))
+  
+      val tableColumnTitles = Seq(
+          "Dump ID [id]",
+          "Number of Workers [nWorkers]",
+          "Number of Blocked Workers [nBlocked]",
+          "Stolen Tasks [steals]",
+          "Failed Steal Attempts [stealFailures]",
+          "Get New Work from Global Queue [newWorks]",
+          "Local Queue Overflows (Overflow triggers some events to be moved to the global queue) [overflows]",
+          "Tasks Scheduled [schedules]",
+          "Tasks Run [tasksRun]",
+          "Average Local Queue Size [avgQueueSize]",
+          "Maximum Local Queue Size [maxQueueSize]",
+          "Minimum Local Queue Size [minQueueSize]",
+          )
+      csvWriter.writeHeader(tableColumnTitles)
+  
+      DumperRegistry.register { name => 
+        csvWriter.writeRow(dumpStats(name))
+        traceCsv.flush()
+      }
+    }
+  }
+  
 
   final def startScheduler(): Unit = synchronized {
     for (_ <- 0 until minWorkers) {
