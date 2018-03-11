@@ -21,7 +21,7 @@ abstract class Analyzer {
   type NodeT
   type EdgeT
   type StateT
-  type StateMap = Map[NodeT, StateT]
+  type StateMap = collection.Map[NodeT, StateT]
 
   case class ConnectedNode(edge: EdgeT, node: NodeT)
   
@@ -77,7 +77,7 @@ abstract class Analyzer {
       */
     def inStateProcessed[T <: EdgeT: ClassTag, R](initial: R, extract: StateT => R, f: (R, R) => R): R = {
       val TType = implicitly[ClassTag[T]]
-      val insT = ins.collect { case cn @ ConnectedNode(TType(_), _) => cn }
+      val insT = ins.view.collect { case cn @ ConnectedNode(TType(_), _) => cn }
       val inVals = insT.map(cn => states.get(cn.node).map(extract).getOrElse(initial))
       val in = inVals.reduceOption(f).getOrElse(initial)
       //println((TType, ins, insT, inVals, in))
@@ -90,7 +90,7 @@ abstract class Analyzer {
   }
 
   def apply(): StateMap = {
-    var states: StateMap = Map()
+    var resultStates: StateMap = Map()
     var id = 0
     val traversal = mutable.Buffer[AnalyzerLogEntry]()
     var avoidedEnqueues = 0
@@ -101,6 +101,7 @@ abstract class Analyzer {
     try {
       val queue = mutable.Queue[NodeT]()
       val queueContent = mutable.Set[NodeT]()
+      val states: mutable.Map[NodeT, StateT] = mutable.HashMap()
       def smartEnqueue(n: NodeT): Unit = {
         if (! queueContent.contains(n)) {
           queueContent += n
@@ -119,9 +120,10 @@ abstract class Analyzer {
             None
         }
       }
+      
 
       @tailrec
-      def process(states: StateMap): StateMap = {
+      def process(): StateMap = {
         smartDequeue() match {
           case Some(node) => {
             if(Logger.julLogger.isLoggable(level)) {
@@ -131,13 +133,12 @@ abstract class Analyzer {
             val oldState = states.getOrElse(node, initialState)
             val (newState, newNodes) = transfer(node, oldState, new States(node, states))
             val retroactiveWork = newNodes.filter(n => inputs(n).map(_.node).exists(states.contains(_)))
-            val newStates = if (oldState == newState && states.contains(node)) {
+            if (oldState == newState && states.contains(node)) {
               retroactiveWork.foreach(smartEnqueue)
-              states
             } else {
               outputs(node).map(_.node).foreach(smartEnqueue)
               retroactiveWork.foreach(smartEnqueue)
-              states + (node -> newState)
+              states += (node -> newState)
             }
 
             if(Logger.julLogger.isLoggable(level)) {
@@ -152,19 +153,19 @@ abstract class Analyzer {
                   s"The states below are mutually more complete, but not equal\n$newState\n====\n$oldState")
             }
 
-            process(newStates)
+            process()
           }
           case None => states
         }
       }
 
       initialNodes.foreach(smartEnqueue)
-      states = process(HashMap())
-      states
+      resultStates = process()
+      resultStates
     } finally {
       val endTime = System.nanoTime()
       if(Logger.julLogger.isLoggable(level)) {
-        writeSelectedLog(traversal, states)
+        writeSelectedLog(traversal, resultStates)
       }
       if(Logger.julLogger.isLoggable(finerLevel)) {
         writeFullLog(traversal, startTime, endTime, avoidedEnqueues)
@@ -193,7 +194,7 @@ abstract class Analyzer {
         (ind, traversal(ind))
     }
     
-    val statesDefault = states.withDefaultValue(initialState)
+    val statesDefault = states.toMap.withDefaultValue(initialState)
     
     val selected = traversal.zipWithIndex.par.flatMap({ p =>
       val (e, i) = p

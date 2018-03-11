@@ -25,7 +25,7 @@ import orc.compile.orctimizer.FlowGraph.TokenFlowNode
 import orc.compile.orctimizer.FlowGraph.EntryExitEdge
 
 class ForceAnalysis(
-  val results: Map[Expression.Z, Set[BoundVar]],
+  val results: collection.Map[Expression.Z, Set[BoundVar]],
   graph: GraphDataProvider[Node, Edge])
   extends DebuggableGraphDataProvider[Node, Edge] {
   import FlowGraph._

@@ -73,8 +73,8 @@ case class IndefiniteDelay() extends Delay {
 }
 
 class DelayAnalysis(
-  val results: Map[Expression.Z, DelayAnalysis.DelayInfo],
-  entryNodes: Map[Node, DelayAnalysis.DelayInfo],
+  val results: collection.Map[Expression.Z, DelayAnalysis.DelayInfo],
+  entryNodes: collection.Map[Node, DelayAnalysis.DelayInfo],
   graph: CallGraph)
   extends DebuggableGraphDataProvider[Node, Edge] {
   import DelayAnalysis._

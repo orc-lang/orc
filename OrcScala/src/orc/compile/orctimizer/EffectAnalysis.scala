@@ -22,7 +22,7 @@ import FlowGraph.{ Edge, Node }
 
 
 class EffectAnalysis(
-  val results: Map[Expression.Z, EffectAnalysis.EffectInfo],
+  val results: collection.Map[Expression.Z, EffectAnalysis.EffectInfo],
   graph: GraphDataProvider[Node, Edge])
   extends DebuggableGraphDataProvider[Node, Edge] {
   import EffectAnalysis._

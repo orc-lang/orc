@@ -22,7 +22,7 @@ import orc.util.DotUtils.DotAttributes
 import orc.compile.orctimizer.FlowGraph.EntryExitEdge
 
 class AlreadyForcedAnalysis(
-  val results: Map[Node, Set[Node]],
+  val results: collection.Map[Node, Set[Node]],
   graph: GraphDataProvider[Node, Edge])
   extends DebuggableGraphDataProvider[Node, Edge] {
   import FlowGraph._
@@ -66,7 +66,6 @@ object AlreadyForcedAnalysis extends AnalysisRunner[(Expression.Z, Option[Method
 
     r
   }
-
 
   class AlreadyForcedAnalyzer(graph: CallGraph, local: LocalNodeAnalysis) extends Analyzer with AnalyzerEdgeCache {
     import CallGraphValues._     
@@ -154,10 +153,10 @@ object AlreadyForcedAnalysis extends AnalysisRunner[(Expression.Z, Option[Method
       }
 
       /*Logger.fine(s"""$node: killAll = $killAll gen = $gen
-    ins = ${inputs(node).size} ${inputs(node).map(_.node)}
-    inState = ${inState.size} ${inState.take(42)}
-    state = ${state.size} ${state.take(42)}""")
-     */
+      ins = ${inputs(node).size} ${inputs(node).map(_.node)}
+      inState = ${inState.size} ${inState.take(42)}
+      state = ${state.size} ${state.take(42)}""")
+       */
 
       (state, Nil)
     }

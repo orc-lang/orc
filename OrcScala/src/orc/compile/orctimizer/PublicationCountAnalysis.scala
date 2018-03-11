@@ -22,7 +22,7 @@ import orc.values.sites.Range
 import FlowGraph.{ CombinatorInternalOrderEdge, ConstantNode, Edge, EntryExitEdge, EntryNode, ExitNode, FutureValueSourceEdge, MethodNode, Node, TransitionEdge, ValueNode, VariableNode }
 
 class PublicationCountAnalysis(
-  results: Map[Node, Range],
+  results: collection.Map[Node, Range],
   graph: GraphDataProvider[Node, Edge])
   extends DebuggableGraphDataProvider[Node, Edge] {
   def edges = graph.edges
