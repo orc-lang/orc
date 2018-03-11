@@ -141,6 +141,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
 
   @inline
   @CompilationFinal
+  val minQueueSize = Option(System.getProperty("orc.porce.minQueueSize")).map(_.toInt).getOrElse(Runtime.getRuntime().availableProcessors() * 2)
+
+  @inline
+  @CompilationFinal
   val maxStackDepth = System.getProperty("orc.porce.maxStackDepth", "16").toInt
   // TODO: Make maxStackDepth user configurable
   
