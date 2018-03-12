@@ -11,7 +11,7 @@
 
 package orc.run.porce;
 
-import orc.run.porce.runtime.Utilities;
+import orc.run.porce.runtime.PorcEClosure;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.ConditionProfile;
@@ -35,8 +35,8 @@ public class IfLenientMethod extends Expression {
     @Override
     public Object execute(final VirtualFrame frame) {
         final Object d = argument.execute(frame);
-        //Logger.info(() -> "IfLenientMethod on " + d.toString() + "  " + Utilities.isDef(d) + "\n" + porcNode().toString().substring(0, 120));
-        if (profile.profile(Utilities.isDef(d))) {
+        // TODO: Add support for external defs if we every have them supported in the API.
+        if (profile.profile(d instanceof PorcEClosure)) {
             return left.execute(frame);
         } else {
             return right.execute(frame);
