@@ -63,7 +63,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = Set(8, 16, 24)
+      val nCPUsValues = Set(1, 12, 24)
       val porce = for {
         run <- 0 until 2
         nCPUs <- nCPUsValues
@@ -74,7 +74,8 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
             //"test_data/performance/threadring2.orc",
             "test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute-partially-seq.orc",
-            //"test_data/performance/black-scholes/black-scholes-scala-compute.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-compute-for-tree.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq-optimized.orc",
             "test_data/performance/black-scholes/black-scholes-partially-seq.orc",

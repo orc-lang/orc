@@ -63,7 +63,7 @@ def run(xs) =
   run'(iters, KMeans.takePointArray(n, xs))
 
 def updateCentroids(xs, centroids) = 
-  val pointAdders = listToArray(map({ PointAdder() }, arrayToList(centroids)))
+  val pointAdders = listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
   val partitionSize = Ceil((0.0 + xs.length?) / nPartitions)
   sforBy(0, xs.length?, partitionSize, lambda(index) = (
     --val _ = Println("Partition: " + index + " to " + (index + partitionSize) + " (" + xs.length? + ")")

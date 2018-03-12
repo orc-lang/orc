@@ -66,7 +66,7 @@ def run(xs) =
   run'(iters, KMeans.takePointArray(n, xs))
 
 def updateCentroids(xs, centroids) = 
-  val pointAdders = listToArray(map({ PointAdder() }, arrayToList(centroids)))
+  val pointAdders = listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
   sfor(0, xs.length?, lambda(i) = (
     val p = xs(i)?
     pointAdders(closestIndex(p, centroids))?.add(p)
