@@ -61,7 +61,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     require(!callTargetMap.contains(-1))
     this.callTargetMap ++= callTargetMap
   }
-
+  
   def callTargetToId(callTarget: RootCallTarget): Int = {
     callTarget.getRootNode() match {
       case r: HasId => r.getId()
@@ -73,6 +73,8 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   def idToCallTarget(id: Int): RootCallTarget = {
     callTargetMap(id)
   }
+
+  // TODO: callSiteMap and trampolineMap are really similar. One is indexed by call target and one by call site. These will be strongly correlated. Should they be combined or otherwise used together?
 
   val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
 
@@ -86,7 +88,6 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
         v
     }
     val args = Array(Array.emptyObjectArray, target, p, c, t) ++: arguments
-    //Logger.info(s"$callSiteId: $p $c $t $target $arguments => $callTarget(${args.mkString(", ")}")
     callTarget.call(args: _*)
   }
 

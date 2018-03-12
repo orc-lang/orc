@@ -25,7 +25,7 @@ import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.RootNode;
 
 /**
- * A Truffle root node which handles tail calls and other PorcE machinery.
+ * A wrapper Truffle root node which handles tail calls and other PorcE machinery.
  * 
  * The caller can treat this as a normal call with semantics similar to Java or Scala
  * (other than all the spawning).
@@ -84,7 +84,6 @@ public class InvokeWithTrampolineRootNode extends RootNode {
     	try {
     		body.call(frame.getArguments());
     	} catch (TailCallException e) {
-    		loop.addSurroundingFunction(frame, ((RootCallTarget)body.getCallTarget()).getRootNode());
 			loop.executeTailCalls(frame, e);
     	} finally {
         	if (shouldTimeRoot() && startTime > 0) {

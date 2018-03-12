@@ -16,14 +16,19 @@ import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 
+/**
+ * A Truffle root node calls an arbitrary PorcE value given as the first argument with 
+ * the rest of the arguments.
+ * 
+ * This root node handles any tail calls internally. The caller can treat this as a normal 
+ * call with semantics similar to Java or Scala (other than all the spawning).
+ *
+ * @author amp
+ */
 public class InvokeCallRecordRootNode extends PorcERootNode {
     @Override
-    public String getName() {
-        return "InvokeCallRecordRootNode@" + hashCode();
-    }
-
-    @Override
     public int getId() {
+        // FIXME: Clearly the inheritance hierarchy is messed up. This should be fixed if and when refactoring happens for anything related.
         throw new UnsupportedOperationException();
     }
 
@@ -42,6 +47,16 @@ public class InvokeCallRecordRootNode extends PorcERootNode {
     
     @Override
     public boolean isInternal() {
-      return true;
+        return true;
+    }
+    
+    @Override
+    public String getName() {
+        return hashCode() + "<invokeCallRecord>";
+    }
+    
+    @Override
+    public String toString() {
+        return hashCode() + "<invokeCallRecord>";
     }
 }

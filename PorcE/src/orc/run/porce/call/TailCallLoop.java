@@ -63,9 +63,6 @@ public class TailCallLoop extends NodeBase {
 		loop.executeLoop(frame);
 	}
 
-	public final void addSurroundingFunction(VirtualFrame frame, Object target) {
-	}
-
 	public static TailCallLoop create(final PorcEExecution execution) {
 		return new TailCallLoop(execution);
 	}
