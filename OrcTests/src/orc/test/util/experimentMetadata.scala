@@ -13,9 +13,10 @@
 
 package orc.test.util
 
-import java.io.{ File, IOException, OutputStreamWriter }
+import java.io.{ BufferedReader, File, FileReader, IOException, OutputStreamWriter }
 
-import scala.collection.JavaConverters.propertiesAsScalaMapConverter
+import scala.collection.JavaConverters.{ asScalaIteratorConverter, propertiesAsScalaMapConverter }
+import scala.collection.mutable.{ Buffer, StringBuilder }
 
 import orc.util.{ CsvWriter, ExecutionLogOutputStream, WikiCreoleTableWriter }
 
@@ -200,6 +201,106 @@ object ExperimentalCondition {
     creoleWriter.writeRows(experimentalConditions)
     creoleOsw.close()
     creoleOut.close()
+  }
+
+  /** Read experimental conditions for an experiment run from a file.
+    *
+    * The file must be in CSV format, with a header row of factor descriptions,
+    * each formatted as "Factor name (unit) [id]".
+    */
+  def readFrom[EC <: ExperimentalCondition](experimentalConditionsFile: File, factors: Seq[FactorDescription], parseEcLine: Seq[String] => EC): Traversable[EC] = {
+    import State._
+
+    /* Split a CSV file record into fields. Slightly more liberal than RFC 4180, accepting more then just pure-ASCII printable chars. */
+    def splitCsvRecord(record: String): Seq[String] = {
+      def barf(ch: Char) = throw new DataFormatException(s"Unexpected character -- $ch (U+${ch.toHexString})")
+      val fields = Buffer[String]()
+      var currState: State = StartOfField
+      val currField = new StringBuilder()
+      for (ch <- record) {
+        currState match {
+          case StartOfField =>
+            currField.clear()
+            if (ch == '"') {
+              currState = InEscapedField
+            } else if (ch == ',') {
+              fields += currField.toString()
+              currField.clear()
+              currState = StartOfField
+            } else {
+              currField += ch
+              currState = InNonEscapedField
+            }
+          case InNonEscapedField =>
+            if (ch == ',') {
+              fields += currField.toString()
+              currField.clear()
+              currState = StartOfField
+            } else if (ch == '\"')  {
+              barf(ch)
+            } else {
+              currField += ch
+            }
+          case InEscapedField =>
+            if (ch == '\"')  {
+              currState = InEscapedFieldQuote
+            } else {
+              currField += ch
+            }
+          case InEscapedFieldQuote =>
+            if (ch == '\"')  {
+              /* Doubled quote */
+              currField += ch
+              currState = InEscapedField
+            } else if (ch == ',') {
+              /* End of field */
+              fields += currField.toString()
+              currField.clear()
+              currState = StartOfField
+            } else {
+              barf(ch)
+            }
+        }
+      }
+      /* At end of record */
+      //FIXME: This actually is legal, so that end-of-lines can be in fields.
+      if (currState == InEscapedField) throw new DataFormatException(s"Unexpected end of record in quoted field")
+      fields += currField.toString()
+      fields
+    }
+    val ecReader = new FileReader(experimentalConditionsFile)
+    try {
+      val ecBufReader = new BufferedReader(ecReader)
+      try {
+        val lines = ecBufReader.lines().iterator
+        if (!lines.hasNext()) {
+          throw new DataFormatException(experimentalConditionsFile, "Empty file")
+        }
+        val headerRow = splitCsvRecord(lines.next()).mkString(",")
+        val expectedHeaderRow = factors.map(_.toString).mkString(",")
+        if (headerRow != expectedHeaderRow) {
+          throw new DataFormatException(experimentalConditionsFile, s"Unexpected header -- Expected $expectedHeaderRow, got $headerRow")
+        }
+        val experimentalConditions = lines.asScala.map(line => parseEcLine(splitCsvRecord(line)))
+        experimentalConditions.toList
+      } finally {
+        ecBufReader.close()
+      }
+    } finally {
+      ecReader.close()
+    }
+  }
+
+  private sealed abstract class State
+  private object State {
+    final case object StartOfField extends State
+    final case object InNonEscapedField extends State
+    final case object InEscapedField extends State
+    final case object InEscapedFieldQuote extends State
+  }
+
+  class DataFormatException(message: String) extends Exception(message) {
+    def this(file: File, message: String) = this(file.getPath + ": " + message)
   }
 
 }
