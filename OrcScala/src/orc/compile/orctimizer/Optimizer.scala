@@ -252,9 +252,6 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           //Logger.info(s"Failed to apply future-force-elim $fforces $publications\nfuture { ${e.value.toString.take(100)} }\n>$x>\n${f.value.toString.take(100)}")
           None
         }
-      case Branch.Z(e, x, f) => 
-        //Logger.info(s"Failed to apply future-force-elim\n${e.value}\n>$x>\n${f.value}")
-        None
       case _ => 
         None
     }
