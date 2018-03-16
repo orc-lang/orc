@@ -151,6 +151,8 @@ object PublicationCountAnalysis extends AnalysisRunner[(Expression.Z, Option[Met
           ast match {
             case Future.Z(_) =>
               onePublication
+            case Call.Z(_, _, _) if AnnotationHack.inAnnotation[SinglePublication](ast) =>
+              Range(0, 1)
             case Call.Z(target, args, _) => {
               val (extPubs, intPubs, otherPubs) = target.byCallTargetCases(
                 externals = { vs =>

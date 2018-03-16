@@ -35,6 +35,7 @@ class OrcAnnotation extends InvokerMethod with SiteMetadata {
 }
 
 class Sequentialize extends OrcAnnotation
+class SinglePublication extends OrcAnnotation
 
 object AnnotationHack {
   def inAnnotation[A <: OrcAnnotation : ClassTag](e: Expression.Z): Boolean = {
