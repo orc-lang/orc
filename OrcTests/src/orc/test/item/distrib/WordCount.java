@@ -201,7 +201,7 @@ public class WordCount {
 
         final int numRepetitions = Integer.parseInt(System.getProperty("orc.test.numRepetitions", "20"));
 
-        String dataDir = "../OrcTests/test_data/performance/distrib/holmes_test_data/";
+        String dataDir = "../OrcTests/test_data/performance/distrib/wordcount/wordcount-input-data/";
         int numInputFiles = Integer.parseInt(System.getProperty("orc.test.numInputFiles", "12"));
         ArrayList<File> files = new ArrayList<>();
         listFilesRecursively(new File(dataDir), files);

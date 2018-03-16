@@ -13,6 +13,7 @@
 <stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/graalvm-0.30.2"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="orc.test.proc.PorcExamplesTest"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="OrcTests"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dorc.config.dirs=config&#10;-Dorc.executionlog.dir=${workspace_loc:OrcTests/runs}/$&quot;{testRunNumber}&quot;/raw-output"/>

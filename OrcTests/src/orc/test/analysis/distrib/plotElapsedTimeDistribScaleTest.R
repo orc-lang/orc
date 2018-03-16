@@ -99,7 +99,7 @@ for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNum
 # Small version of baseline elapsed times for cluster size 1 case only, for printing at a small size
 
 baselineTimeSummaryRc <- baselineTimeSummary
-baselineTimeSummaryRc$program <- recode(baselineTimeSummaryRc$program, "WordCount.java"="Java 1 thr", "wordcount-pure-orc.orc"="pure dOrc", "wordcount-mixed-orc-java.orc"="Java+dOrc", "HolmesWordCountHadoop.java"="Hadoop")
+baselineTimeSummaryRc$program <- recode(baselineTimeSummaryRc$program, "WordCount.java"="Java 1 thr", "wordcount-pure-orc.orc"="pure dOrc", "wordcount-mixed-orc-java.orc"="Java+dOrc", "WordCountHadoop.java"="Hadoop")
 
 {
   ggplot(baselineTimeSummaryRc[(is.na(baselineTimeSummaryRc$dOrcNumRuntimes) | baselineTimeSummaryRc$dOrcNumRuntimes == 1) & baselineTimeSummaryRc$numInputFiles == maxNumFiles,], aes(x = program, y = meanElapsedTime, group = 1, colour = program, fill = program)) +
