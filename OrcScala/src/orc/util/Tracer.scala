@@ -53,7 +53,13 @@ object Tracer {
   private val eventPrettyprintToArg = new scala.collection.mutable.LongMap[Long => String](defaultPrettyprint, eventIdMapInitSize)
 
   private final val traceBufferTL = if (traceOn) new ThreadLocal[TraceBuffer]() {
-    override protected def initialValue = new TraceBuffer(Thread.currentThread().getId)
+    override protected def initialValue = {
+      val (mTime, nTime) = (System.currentTimeMillis, System.nanoTime)
+      val newBuf = new TraceBuffer(Thread.currentThread().getId)
+      newBuf.add(AllocateNewBufferStart, 0, mTime, nTime, 0, 0)
+      newBuf.add(AllocateNewBufferEnd, 0, System.currentTimeMillis, System.nanoTime, 0, 0)
+      newBuf
+    }
   } else null
 
   def registerEventTypeId(eventTypeId: Long, eventTypeName: String): Unit = synchronized {
@@ -71,6 +77,11 @@ object Tracer {
     registerEventTypeId(eventTypeId, eventTypeName, prettyprintFromArg)
     eventPrettyprintToArg.put(eventTypeId, prettyprintToArg)
   }
+  
+  val AllocateNewBufferStart = Int.MaxValue + 1L
+  Tracer.registerEventTypeId(AllocateNewBufferStart, "NewBufSt", _ => "", _ => "")
+  val AllocateNewBufferEnd = Int.MaxValue + 2L
+  Tracer.registerEventTypeId(AllocateNewBufferEnd, "NewBufEn", _ => "", _ => "")
 
   @inline
   def trace(eventTypeId: Long, eventLocationId: Long, eventFromArg: Long, eventToArg: Long) {
@@ -79,9 +90,12 @@ object Tracer {
         traceBufferTL.get().add(eventTypeId, eventLocationId, System.currentTimeMillis, System.nanoTime, eventFromArg, eventToArg)
       } catch {
         case _: IndexOutOfBoundsException =>
-          val n = new TraceBuffer(Thread.currentThread().getId)
-          n.add(eventTypeId, eventLocationId, System.currentTimeMillis, System.nanoTime, eventFromArg, eventToArg)
-          traceBufferTL.set(n)
+          val (mTime, nTime) = (System.currentTimeMillis, System.nanoTime)
+          val newBuf = new TraceBuffer(Thread.currentThread().getId)
+          newBuf.add(AllocateNewBufferStart, 0, mTime, nTime, 0, 0)
+          newBuf.add(AllocateNewBufferEnd, 0, System.currentTimeMillis, System.nanoTime, 0, 0)
+          newBuf.add(eventTypeId, eventLocationId, System.currentTimeMillis, System.nanoTime, eventFromArg, eventToArg)
+          traceBufferTL.set(newBuf)
       }
     }
   }
