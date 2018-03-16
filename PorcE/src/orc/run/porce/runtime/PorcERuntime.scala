@@ -48,7 +48,15 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     //PorcERuntime.resetStackDepth()
   }
 
+  val nonInlinableScheduleCount = new LongAdder()
+  DumperRegistry.register(name => {
+    val n = nonInlinableScheduleCount.sumThenReset()
+    if (n > 0)
+      Logger.fine(s"PERFORMANCE: $name nonInlinableScheduleCount=$n")
+  })
+  
   def potentiallySchedule(s: Schedulable) = {
+    nonInlinableScheduleCount.increment()
     if (allowSpawnInlining || actuallySchedule) {
       def isFast = {
         s match {
@@ -95,7 +103,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     }
   }
 
-    private class IntHolder(var value: Int)
+  private class IntHolder(var value: Int)
   private val stackDepthThreadLocal = new ThreadLocal[IntHolder]() {
     override def initialValue() = {
       new IntHolder(0)
