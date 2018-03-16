@@ -11,6 +11,7 @@
 
 package orc.run.porce;
 
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -60,6 +61,18 @@ public abstract class NodeBase extends Node implements HasPorcNode {
         return section;
     }
 
+    @Override
+    public Map<String, Object> getDebugProperties() {
+        Map<String, Object> properties = super.getDebugProperties();
+        if (section != null) {
+          properties.put("sourceSection", section);
+        }
+        if (porcNode.isDefined()) {
+          String s = porcNode.get().toString().replaceAll("(\n| |\t)+", " ");
+          properties.put("porcNode", s.substring(0, Math.min(100, s.length())));
+        }
+        return properties;
+    }
 
     @Override
     protected void onReplace(final Node newNode, final CharSequence reason) {
