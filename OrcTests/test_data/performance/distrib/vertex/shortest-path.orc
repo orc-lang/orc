@@ -24,25 +24,48 @@ def swapIf[A](ref :: Ref[A], sem :: Semaphore, newVal :: A, test :: lambda(A, A)
 def gt(i :: EdgeWeight, j :: EdgeWeight) :: Boolean = i :> j
 
 def updatePathLenFor(v :: Vertex, newPathLen :: EdgeWeight) :: Bot =
-  if swapIf(v.pathLen, v.pathLenSemaphore, newPathLen, gt) then
-    each(v.outEdges) >e> updatePathLenFor(vertices(e.tail)?, newPathLen + e.weight)
+  if swapIf(v.pathLen(), v.pathLenSemaphore(), newPathLen, gt) then
+    each(v.outEdges()) >e> updatePathLenFor(vertices(e.tail())?, newPathLen + e.weight())
   else
     stop
 
 
 {--------
- - Test
+ - Test Procedure
  --------}
 
-def testPayload() :: Signal =
+def setUpTest() =
+  randomGraph(numVertices, probEdge, 40)
+
+def setUpTestRep() =
+  resetGraph()
+
+def runTestRep() :: Signal =
   randomGraph(numVertices, probEdge, 40)  >>
   -- start at startVertex with path len 0
   updatePathLenFor(vertices(0)?, 0) >> stop;
+  signal
+
+def tearDownTestRep() =
   dumpGraph()
 
+def tearDownTest() =
+  signal#
 
-testPayload()
+executeTest()
+
 
 {-
 OUTPUT:
+Test start. Setting up test.
+Repetition ...: setting up.
+Repetition ...: start run.
+Repetition ...: published ...
+Repetition ...: finish run.  Elapsed time ... µs, CPU time ... ms
+Repetition ...: tearing down.
+......
+Repetitions' elapsed times output file written to ...
+[[..., ...], ......]
+Tearing down test.
+Test finish.
 -}

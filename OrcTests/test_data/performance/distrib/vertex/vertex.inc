@@ -12,34 +12,27 @@ import class JavaSys = "java.lang.System"
 val numVertices = Read(JavaSys.getProperty("orc.test.numVertices", "12"))
 
 {- Probability of edge between a given vertex pair. -}
-val probEdge = Read(JavaSys.getProperty("orc.test.probEdge", "0.5"))
+val probEdge = Read(JavaSys.getProperty("orc.test.probEdge", "0.33"))
 
 
 {--------
  - Graph definition
  --------}
 
+import class Vertex = "orc.test.item.distrib.VertexWithPathLen"
+import class Edge = "orc.test.item.distrib.EdgeWithIntWeight"
 type EdgeWeight = Integer
 type VertexName = Integer
 
-type Vertex = {. name :: VertexName, outEdges :: List[Top], pathLen :: Ref[EdgeWeight], pathLenSemaphore :: Semaphore .}
-
-type Edge = {. head :: VertexName, tail :: VertexName, weight :: EdgeWeight .}
-
 val vertices = Array[Vertex](numVertices)
 
-def mkEdge(head :: VertexName, tail :: VertexName, weight :: EdgeWeight) :: Edge = {.
-    head = head,
-    tail = tail,
-    weight = weight
-  .}
+def mkEdge(head :: VertexName, tail :: VertexName, weight :: EdgeWeight) :: Edge = Edge(head, tail, weight)
 
-def mkVertex(name :: VertexName, outEdges :: List[Edge]) :: Vertex = {.
-    name = name,
-    outEdges = outEdges,
-    pathLen = Ref[EdgeWeight](),
-    pathLenSemaphore = Semaphore(1)
-  .}
+def mkVertex(name :: VertexName, outEdges :: List[Edge]) :: Vertex = Vertex(name, outEdges, Ref[EdgeWeight](), Semaphore(1))
+
+def resetVertex(vertexRef :: Ref[Vertex]) :: Signal =
+  vertexRef?  >oldVertex>
+  vertexRef := Vertex(oldVertex.name(), oldVertex.outEdges(), Ref[EdgeWeight](), Semaphore(1))
 
 
 {--------
@@ -58,6 +51,10 @@ def randomGraph(numVertices :: Integer, probEdge :: Number, maxWeight :: EdgeWei
     vertices(vn) := mkVertex(vn, randomEdges(vn, numVertices,  probEdge, { Random(maxWeight) + 1 }))
   )) >> stop ; signal
 
+def resetGraph() :: Signal =
+  (upto(numVertices) >vn> (
+    resetVertex(vertices(vn))
+  )) >> stop ; signal
 
 {--------
  - Output
@@ -66,7 +63,7 @@ def randomGraph(numVertices :: Integer, probEdge :: Number, maxWeight :: EdgeWei
 def dumpGraph() :: Signal =
   def dumpVertices(vn) =
     vertices(vn)? >v>
-    Println(v.name + ": pathLen=" + v.pathLen? + afold((+), map(lambda(e) = ",  |-"+e.weight+"-> "+e.tail, v.outEdges))) >>
+    Println(v.name() + ": pathLen=" + v.pathLen()? + afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges()))) >>
     (if vn + 1 <: numVertices then dumpVertices(vn + 1) else signal)
   dumpVertices(0)
 
@@ -81,24 +78,28 @@ def getProcessCumulativeCpuTime() =
   import class ManagementFactory = "java.lang.management.ManagementFactory"
   ManagementFactory.getOperatingSystemMXBean().getProcessCpuTime()
 
-def timeRepetitions(testPayload, numRepetitions) =
+def timeRepetitions(setUpTestRep, runTestRep, tearDownTestRep, numRepetitions) =
   def timeRepetitions'(thisRepetitionNum, remainingRepetitions, testElapsedTimes) =
-    Println("Repetition " + thisRepetitionNum + ": start.") >>
+    Println("Repetition " + thisRepetitionNum + ": setting up.") >>
+    (setUpTestRep() >> stop; signal)  >>
+    Println("Repetition " + thisRepetitionNum + ": start run.") >>
     JavaSys.nanoTime() >startElapsed_ns>
     getProcessCumulativeCpuTime()  >startCpuTime_ns>
-    (testPayload() >p> Println("Repetition " + thisRepetitionNum + ": published " + p) >> stop; signal) >>
+    (runTestRep() >p> Println("Repetition " + thisRepetitionNum + ": published " + p) >> stop; signal) >>
     getProcessCumulativeCpuTime()  >finishCpuTime_ns>
     JavaSys.nanoTime() >finishElapsed_ns>
     (finishElapsed_ns - startElapsed_ns) / 1000  >elapsed_us>
     (finishCpuTime_ns - startCpuTime_ns) / 1000000  >cpuTime_ms>
-    Println("Repetition " + thisRepetitionNum + ": finish.  Elapsed time " + elapsed_us + " µs, CPU time " + cpuTime_ms + " ms") >>
+    Println("Repetition " + thisRepetitionNum + ": finish run.  Elapsed time " + elapsed_us + " µs, CPU time " + cpuTime_ms + " ms") >>
     append(testElapsedTimes, [[thisRepetitionNum, elapsed_us, cpuTime_ms]])  >testElapsedTimes'>
+    Println("Repetition " + thisRepetitionNum + ": tearing down.") >>
+    (tearDownTestRep() >> stop; signal)  >>
     (if remainingRepetitions :> 0 then timeRepetitions'(thisRepetitionNum + 1, remainingRepetitions - 1, testElapsedTimes') else testElapsedTimes')
   timeRepetitions'(1, numRepetitions - 1, [])
 
 import site NumberOfRuntimeEngines = "orc.lib.NumberOfRuntimeEngines"
 
-def runTest() =
+def executeTest() =
   setupOutput()  >>
   writeFactorValuesTable([
     --Factor name, Value, Units, ID, Comments
@@ -107,7 +108,12 @@ def runTest() =
     ("Probability of edge", probEdge, "", "probEdge", "Probability of edge between a given vertex pair"),
     ("Cluster size", NumberOfRuntimeEngines(), "", "dOrcNumRuntimes", "Number of d-Orc runtime engines running")
   ])  >>
-  timeRepetitions(testPayload, numRepetitions)  >repetitionTimes>
+  Println("Test start. Setting up test.") >>
+  (setUpTest() >> stop; signal)  >>
+  timeRepetitions(setUpTestRep, runTestRep, tearDownTestRep, numRepetitions)  >repetitionTimes>
   writeCsvFile(buildOutputPathname("repetition-times", "csv"), "Repetitions' elapsed times output file",
     ["Repetition number", "Elapsed time (µs)", "CPU time (ms)"], repetitionTimes)  >>
+  Println("Tearing down test.") >>
+  (tearDownTest() >> stop; signal)  >>
+  Println("Test finish.") >>
   repetitionTimes
