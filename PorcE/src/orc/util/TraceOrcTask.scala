@@ -17,6 +17,7 @@ import orc.Invoker
 import orc.OrcRuntime
 import orc.run.porce.runtime.CPSCallContext
 import orc.values.Signal
+import orc.DirectInvoker
 
 object TraceOrcTask {
   final val Execute = 50L
@@ -26,11 +27,17 @@ object TraceOrcTask {
   def traceExecute(ctx: CPSCallContext, x: Long, y: Long): Unit = {
     orc.util.Tracer.trace(Execute, System.identityHashCode(ctx.p.environment), x, y)
   }
+
+  @TruffleBoundary
+  def traceExecute(x: Long, y: Long): Unit = {
+    orc.util.Tracer.trace(Execute, 0, x, y)
+  }
 }
 
 object TraceTask extends InvokerMethod {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
-    new Invoker {
+    // FIXME: Support 2 args and produce useful errors if called wrong.
+    new DirectInvoker {
       def canInvoke(target: AnyRef,arguments: Array[AnyRef]): Boolean = {
         target == TraceTask && arguments(0).isInstanceOf[Number]
       }
@@ -39,6 +46,11 @@ object TraceTask extends InvokerMethod {
         val ctx = callContext.asInstanceOf[CPSCallContext]
         TraceOrcTask.traceExecute(ctx, arguments(0).asInstanceOf[Number].longValue(), 0)
         callContext.publish(Signal)
+      }
+      
+      def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+        TraceOrcTask.traceExecute(arguments(0).asInstanceOf[Number].longValue(), 0)
+        Signal
       }
     }
   }
