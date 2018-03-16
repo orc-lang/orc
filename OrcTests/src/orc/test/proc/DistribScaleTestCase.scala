@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Oct 6, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,11 +20,6 @@ import orc.test.item.distrib.WordCount
 import orc.test.util.{ ExpectedOutput, ExperimentalCondition, FactorDescription }
 
 import junit.framework.{ Test, TestSuite }
-import java.io.BufferedReader
-import java.io.FileReader
-import scala.collection.JavaConverters._
-import scala.collection.mutable.StringBuilder
-import scala.collection.mutable.Buffer
 
 /** JUnit test case for a distributed-Orc scaling test.
   *
@@ -61,7 +56,7 @@ class DistribScaleTestCase(
 object DistribScaleTestCase {
 
   def buildTestSuite(): Test = {
-    val experimentalConditions = readExperimentalConditions()
+    val experimentalConditions = ExperimentalCondition.readFrom(new File("test_data/performance/distrib/experimental-conditions.csv"), factors, DistribScaleExperimentalCondition.parse(_))
     ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
     DistribTestCase.setUpTestSuite()
     val programPaths = Array(new File("test_data/performance/distrib"))
@@ -96,105 +91,9 @@ object DistribScaleTestCase {
   }
 
   object DistribScaleExperimentalCondition {
-    def parse(strings: Seq[String]) = {
-      assert(strings.size == 2, "Expecting two argument strings to DistribScaleExperimentalCondition.parse")
-      DistribScaleExperimentalCondition(strings(0).toInt, strings(1).toInt)
-    }
-  }
-
-  class DataFormatException(message: String) extends Exception(message) {
-    def this(file: File, message: String) = this(file.getPath + ": " + message)
-  }
-
-  private sealed abstract class State
-  private object State {
-    final case object StartOfField extends State
-    final case object InNonEscapedField extends State
-    final case object InEscapedField extends State
-    final case object InEscapedFieldQuote extends State
-  }
-
-  def readExperimentalConditions(): Traversable[DistribScaleExperimentalCondition] = {
-    import State._
-
-    /** Split a CSV file record into fields. Slightly more liberal than RFC 4180, accepting more then just pure-ASCII printable chars. */
-    def splitCsvRecord(record: String): Seq[String] = {
-      def barf(ch: Char) = throw new DataFormatException(s"Unexpected character -- $ch (U+${ch.toHexString})")
-      val fields = Buffer[String]()
-      var currState: State = StartOfField
-      val currField = new StringBuilder()
-      for (ch <- record) {
-        currState match {
-          case StartOfField =>
-            currField.clear()
-            if (ch == '"') {
-              currState = InEscapedField
-            } else if (ch == ',') {
-              fields += currField.toString()
-              currField.clear()
-              currState = StartOfField
-            } else {
-              currField += ch
-              currState = InNonEscapedField
-            }
-          case InNonEscapedField =>
-            if (ch == ',') {
-              fields += currField.toString()
-              currField.clear()
-              currState = StartOfField
-            } else if (ch == '\"')  {
-              barf(ch)
-            } else {
-              currField += ch
-            }
-          case InEscapedField =>
-            if (ch == '\"')  {
-              currState = InEscapedFieldQuote
-            } else {
-              currField += ch
-            }
-          case InEscapedFieldQuote =>
-            if (ch == '\"')  {
-              /* Doubled quote */
-              currField += ch
-              currState = InEscapedField
-            } else if (ch == ',') {
-              /* End of field */
-              fields += currField.toString()
-              currField.clear()
-              currState = StartOfField
-            } else {
-              barf(ch)
-            }
-        }
-      }
-      /* At end of record */
-      //FIXME: This actually is legal, so that end-of-lines can be in fields.
-      if (currState == InEscapedField) throw new DataFormatException(s"Unexpected end of record in quoted field")
-      fields += currField.toString()
-      fields
-    }
-    val ecFile = new File("test_data/performance/distrib/experimental-conditions.csv")
-    val ecReader = new FileReader(ecFile)
-    try {
-      val ecBufReader = new BufferedReader(ecReader)
-      try {
-        val lines = ecBufReader.lines().iterator
-        if (!lines.hasNext()) {
-          throw new DataFormatException(ecFile, "Empty file")
-        }
-        val headerRow = splitCsvRecord(lines.next()).mkString(",")
-        val expectedHeaderRow = factors.map(_.toString).mkString(",")
-        if (headerRow != expectedHeaderRow) {
-          throw new DataFormatException(ecFile, s"Unexpected header -- Expected $expectedHeaderRow, got $headerRow")
-        }
-        val experimentalConditions = lines.asScala.map(line => DistribScaleExperimentalCondition.parse(splitCsvRecord(line)))
-        experimentalConditions.toList
-      } finally {
-        ecBufReader.close()
-      }
-    } finally {
-      ecReader.close()
+    def parse(fields: Seq[String]) = {
+      assert(fields.size == 2, "Expecting two argument fields to DistribScaleExperimentalCondition.parse")
+      DistribScaleExperimentalCondition(fields(0).toInt, fields(1).toInt)
     }
   }
 

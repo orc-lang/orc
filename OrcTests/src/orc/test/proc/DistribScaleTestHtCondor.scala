@@ -60,7 +60,7 @@ object DistribScaleTestHtCondor {
     DistribTestConfig.expanded.addVariable("testRootDir", condorTestRootDir)
   }
 
-  protected def readExperimentalConditions() = DistribScaleTestCase.readExperimentalConditions()
+  protected def readExperimentalConditions() = ExperimentalCondition.readFrom(new File("test_data/performance/distrib/experimental-conditions.csv"), DistribScaleTestCase.factors, DistribScaleExperimentalCondition.parse(_))
 
   protected def getTestPrograms(): Traversable[File] = {
     val testProgramRoots = Seq(new File("test_data/performance/distrib"))
