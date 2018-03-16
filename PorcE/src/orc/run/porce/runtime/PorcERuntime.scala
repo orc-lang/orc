@@ -19,6 +19,10 @@ import orc.run.extensions.{ SimpleWorkStealingScheduler, SupportForRwait, Suppor
 import orc.run.porce.{ PorcELanguage, SimpleWorkStealingSchedulerWrapper, SpecializationConfiguration }
 
 import com.oracle.truffle.api.CompilerDirectives.{ CompilationFinal, TruffleBoundary }
+import orc.run.porce.Logger
+import java.util.logging.Level
+import java.util.concurrent.atomic.LongAdder
+import orc.util.DumperRegistry
 
 /** The base runtime for PorcE runtimes.
  *  
@@ -57,7 +61,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
           incrementAndCheckStackDepth()) {
         try {
           val old = SimpleWorkStealingSchedulerWrapper.currentSchedulable
-          SimpleWorkStealingSchedulerWrapper.enterSchedulable(s, SimpleWorkStealingScheduler.StackExecution)
+          SimpleWorkStealingSchedulerWrapper.enterSchedulable(s, SimpleWorkStealingSchedulerWrapper.StackExecution)
           s.run()
           SimpleWorkStealingSchedulerWrapper.exitSchedulable(s, old)
         } catch {
@@ -85,7 +89,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       }
     } else {
       val old = SimpleWorkStealingSchedulerWrapper.currentSchedulable
-      SimpleWorkStealingSchedulerWrapper.enterSchedulable(s, SimpleWorkStealingScheduler.StackExecution)
+      SimpleWorkStealingSchedulerWrapper.enterSchedulable(s, SimpleWorkStealingSchedulerWrapper.StackExecution)
       s.run()
       SimpleWorkStealingSchedulerWrapper.exitSchedulable(s, old)
     }
@@ -141,28 +145,28 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
 
   @inline
   @CompilationFinal
-  val minQueueSize = Option(System.getProperty("orc.porce.minQueueSize")).map(_.toInt).getOrElse(Runtime.getRuntime().availableProcessors() * 2)
+  final val minQueueSize = Option(System.getProperty("orc.porce.minQueueSize")).map(_.toInt).getOrElse(Runtime.getRuntime().availableProcessors() * 2)
 
   @inline
   @CompilationFinal
-  val maxStackDepth = System.getProperty("orc.porce.maxStackDepth", "16").toInt
+  final val maxStackDepth = System.getProperty("orc.porce.maxStackDepth", "16").toInt
   // TODO: Make maxStackDepth user configurable
   
   @inline
   @CompilationFinal
-  val actuallySchedule = PorcERuntime.actuallySchedule
+  final val actuallySchedule = PorcERuntime.actuallySchedule
   
   @inline
   @CompilationFinal
-  val occationallySchedule = PorcERuntime.occationallySchedule
+  final val occationallySchedule = PorcERuntime.occationallySchedule
   
   @inline
   @CompilationFinal
-  val allowAllSpawnInlining = PorcERuntime.allowAllSpawnInlining
+  final val allowAllSpawnInlining = PorcERuntime.allowAllSpawnInlining
   
   @inline
   @CompilationFinal
-  val allowSpawnInlining = PorcERuntime.allowSpawnInlining
+  final val allowSpawnInlining = PorcERuntime.allowSpawnInlining
 }
 
 object PorcERuntime {

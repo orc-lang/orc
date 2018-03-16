@@ -58,17 +58,29 @@ public abstract class Spawn extends Expression {
 			((PorcERootNode)computation.body.getRootNode()).incrementSpawn();
 		}
 		*/
+        // The incrementAndCheckStackDepth call should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.
         if(!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize())) && spawnProfile.profile(r.incrementAndCheckStackDepth())) {
-            // This check should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.
-            try {
-                call.executeDispatch(frame, computation, new Object[] {});
-            } finally {
-                r.decrementStackDepth();
-            }
+            invokeInline(frame, computation, true, r);
         } else {
             execution.runtime().schedule(CallClosureSchedulable.apply(computation, execution));
         } 
         return PorcEUnit.SINGLETON;
+    }
+
+    /**
+     * @param frame
+     * @param computation
+     */
+    private void invokeInline(final VirtualFrame frame, final PorcEClosure computation, final boolean useStackDepth, final PorcERuntime r) {
+      Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
+      long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
+      try {
+          call.executeDispatch(frame, computation, new Object[] {});
+      } finally {
+          if (useStackDepth)
+              r.decrementStackDepth();
+          SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
+      }
     }
 
     @Specialization(guards = { "shouldInlineSpawn(computation)" }, replaces = { "spawn" })
@@ -79,17 +91,12 @@ public abstract class Spawn extends Expression {
 		
     	if (r.actuallySchedule()) {
       		if(spawnProfile.profile(r.incrementAndCheckStackDepth())) {
-	    		// This check should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.
-				try {
-					call.executeDispatch(frame, computation, new Object[] {});
-				} finally {
-					r.decrementStackDepth();
-				}
+      		    invokeInline(frame, computation, true, r);
 	    	} else {
 	    		return spawn(frame, c, t, computation);
 	    	}
     	} else {
-			call.executeDispatch(frame, computation, new Object[] {});
+    	    invokeInline(frame, computation, false, r);
     	}
         return PorcEUnit.SINGLETON;
     }
@@ -113,8 +120,15 @@ public abstract class Spawn extends Expression {
 		n.setTail(isTail);
 		return n;
     }
+    
+    @Override
+    public void setTail(boolean b) {
+      super.setTail(b);
+      call.setTail(b);
+    }
 
     public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn, final Expression computation, final PorcEExecution execution) {
         return SpawnNodeGen.create(mustSpawn, execution, c, t, computation);
     }
 }
+

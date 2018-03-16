@@ -14,6 +14,7 @@
 package orc.run.porce.runtime
 
 import orc.Schedulable
+import orc.values.Format
 
 object CallClosureSchedulable {
   /** Create a schedulable which will call `closure` with no arguments.
@@ -49,7 +50,7 @@ object CallClosureSchedulable {
   } 
 }
 
-final class CallClosureSchedulable private (private var _closure: PorcEClosure, private var arguments: Array[AnyRef], execution: PorcEExecution) extends Schedulable {
+final class CallClosureSchedulable private (private var _closure: PorcEClosure, private var _arguments: Array[AnyRef], execution: PorcEExecution) extends Schedulable {
   override val nonblocking: Boolean = true
   
   override val priority: Int = {
@@ -63,10 +64,12 @@ final class CallClosureSchedulable private (private var _closure: PorcEClosure, 
  
   def closure = _closure
   
+  def arguments = _arguments
+  
   def run(): Unit = {
-    val (t, a) = (_closure, arguments)
+    val (t, a) = (_closure, _arguments)
     _closure = null
-    arguments = null
+    _arguments = null
     if (a == null)
       execution.invokeClosure(t, Array(null))
     else
@@ -74,6 +77,10 @@ final class CallClosureSchedulable private (private var _closure: PorcEClosure, 
   }
   
   override def toString(): String = {
-    s"$closure%$priority"
+    val a = if (arguments == null) "null" else {
+      arguments.map(Format.formatValue).mkString(", ")
+    }
+      
+    s"$closure($a)" // %$priority
   }
 }

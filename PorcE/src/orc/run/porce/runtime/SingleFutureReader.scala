@@ -19,7 +19,8 @@ import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 /** An optimized future reader that only handles a single future instead of a join of multiple.
  * 
  */
-final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execution: PorcEExecution) extends AtomicBoolean with FutureReader with Terminatable {
+final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execution: PorcEExecution) 
+    extends AtomicBoolean with FutureReader with Terminatable with PorcEFutureReader {
   // The value stored in the AtomicBoolean is a flag saying if we have already halted.
 
   t.addChild(this)
@@ -56,5 +57,25 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execu
 
   override def toString() = {
     s"SingleFutureReader@${hashCode().formatted("%x")}(${get()})"
+  }
+
+  def fastHalt(): PorcEClosure = {
+    halt()
+    null
+  }
+
+  def fastPublish(v: AnyRef): CallClosureSchedulable = {
+    if (compareAndSet(false, true)) {
+      t.removeChild(this)
+      /* ROOTNODE-STATISTICS
+			p.body.getRootNode() match {
+			  case n: PorcERootNode => n.incrementBindSingle()
+  		  case _ => ()
+			}
+			*/
+      CallClosureSchedulable(p, v, execution)
+    } else {
+      null
+    }
   }
 }

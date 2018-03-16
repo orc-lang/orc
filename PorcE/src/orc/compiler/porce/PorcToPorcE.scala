@@ -225,7 +225,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
         case porc.CheckKilled.Z(t) =>
           porce.CheckKilled.create(transform(t))
         case porc.Bind.Z(fut, v) =>
-          porce.Bind.create(transform(fut), transform(v))
+          porce.Bind.create(transform(fut), transform(v), ctx.execution)
         case porc.BindStop.Z(fut) =>
           porce.BindStop.create(transform(fut))
         case porc.Spawn.Z(c, t, must, comp) =>

@@ -570,10 +570,10 @@ object SimpleWorkStealingScheduler {
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
   @inline
-  final val traceTasks = false
+  final val traceTasks = true
   
   if (traceTasks) {
-    DumperRegistry.register(WorkStealingSchedulerTaskTracer.dumpSchedule)
+    //DumperRegistry.register(WorkStealingSchedulerTaskTracer.dumpSchedule)
   }
   
   val nextSchedulableID = new AtomicLong(1)
@@ -581,7 +581,7 @@ object SimpleWorkStealingScheduler {
   val idMap = Collections.synchronizedMap(new WeakHashMap[AnyRef, Long]())
   
   @inline
-  private def newSchedulableID() = {
+  def newSchedulableID() = {
     if (traceTasks) {
       nextSchedulableID.getAndIncrement()
     } else {
@@ -600,7 +600,11 @@ object SimpleWorkStealingScheduler {
       if (s == null) {
         0
       } else {
-        idMap.computeIfAbsent(s, _ => newSchedulableID())
+        s match {
+          case l: java.lang.Long => l
+          case s =>
+            idMap.computeIfAbsent(s, _ => newSchedulableID())          
+        }
       }
     } else {
       0
@@ -624,7 +628,7 @@ object SimpleWorkStealingScheduler {
     }
   }
   
-  val currentSchedulableTL = new ThreadLocal[Schedulable]()
+  val currentSchedulableTL = new ThreadLocal[AnyRef]()
   
   sealed abstract class SchedulableExecutionType(val id: Long)
   case object SchedulerExecution extends SchedulableExecutionType(0)
@@ -641,18 +645,32 @@ object SimpleWorkStealingScheduler {
     }
   }
   
-  val threadMXBean = ManagementFactory.getThreadMXBean
+  val threadMXBean: management.ThreadMXBean = null // ManagementFactory.getThreadMXBean
+  
+  def getCPUTime() = {
+    if (threadMXBean != null) {
+      threadMXBean.getCurrentThreadCpuTime
+    } else 0
+  }
   
   @inline
-  def enterSchedulable(s: Schedulable, t: SchedulableExecutionType): Unit = {
+  def enterSchedulable(s: AnyRef, t: SchedulableExecutionType): Unit = {
     if (traceTasks) {
-      orc.util.Tracer.trace(TaskStart, t.id, getSchedulableID(s), threadMXBean.getCurrentThreadCpuTime)
+      orc.util.Tracer.trace(TaskStart, t.id, getSchedulableID(s), getCPUTime())
       currentSchedulableTL.set(s)
     }
   }
   
   @inline
-  def currentSchedulable: Schedulable = {
+  def enterSchedulable(s: Long, t: SchedulableExecutionType): Unit = {
+    if (traceTasks) {
+      orc.util.Tracer.trace(TaskStart, t.id, s, getCPUTime())
+      currentSchedulableTL.set(s.asInstanceOf[AnyRef])
+    }
+  }
+  
+  @inline
+  def currentSchedulable: AnyRef = {
     if (traceTasks) {
       currentSchedulableTL.get()
     } else {
@@ -661,18 +679,27 @@ object SimpleWorkStealingScheduler {
   }
   
   @inline
-  def exitSchedulable(s: Schedulable): Unit = {
+  def exitSchedulable(s: AnyRef): Unit = {
     if (traceTasks) {
       require(s == currentSchedulableTL.get())
-      orc.util.Tracer.trace(TaskEnd, 0L, getSchedulableID(s), threadMXBean.getCurrentThreadCpuTime)
+      orc.util.Tracer.trace(TaskEnd, 0L, getSchedulableID(s), getCPUTime())
     }
   }
   
   @inline
-  def exitSchedulable(s: Schedulable, old: Schedulable): Unit = {
+  def exitSchedulable(s: AnyRef, old: AnyRef): Unit = {
     if (traceTasks) {
       require(s == currentSchedulableTL.get())
       orc.util.Tracer.trace(TaskEnd, 0L, getSchedulableID(s), 0L)
+      currentSchedulableTL.set(old)
+    }
+  }
+  
+  @inline
+  def exitSchedulable(s: Long, old: AnyRef): Unit = {
+    if (traceTasks) {
+      require(s == currentSchedulableTL.get())
+      orc.util.Tracer.trace(TaskEnd, 0L, s, 0L)
       currentSchedulableTL.set(old)
     }
   }

@@ -336,6 +336,7 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
       }
       assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
     }
+    handleHaltToken()
     if (n == 0) {
       // Call the haltContinuation if we didn't discorporate.
       if (!isDiscorporated) {

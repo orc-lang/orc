@@ -11,6 +11,7 @@
 
 package orc.run.porce.call;
 
+import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -39,4 +40,6 @@ public abstract class Dispatch extends DispatchBase {
 	 *            environment for internal calls.
 	 */
 	public abstract void executeDispatch(VirtualFrame frame, Object target, Object[] arguments);
+	
+    public abstract void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments);
 }

@@ -45,7 +45,13 @@ public class HaltToken extends Expression {
         PorcEClosure cont = counter.haltTokenOptimized();
         if (cont != null) {
         	hasContinuationProfile.enter();
-        	call.executeDispatch(frame, cont, EMPTY_ARGS);
+            Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
+            SimpleWorkStealingSchedulerWrapper.enterSchedulable(counter, SimpleWorkStealingSchedulerWrapper.InlineExecution());
+            try {
+                call.executeDispatch(frame, cont, EMPTY_ARGS);
+            } finally {
+                SimpleWorkStealingSchedulerWrapper.exitSchedulable(counter, old);
+            }
         }
         return PorcEUnit.SINGLETON;
     }

@@ -12,104 +12,89 @@
 //
 package orc.run.porce.runtime
 
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.locks.ReentrantLock
-
 import orc.{ FutureReader, FutureState }
 import orc.values.{ Format, OrcValue }
-
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** A future value that can be bound or unbound or halted.
   *
-  * Note: This implementation is from the Porc implementation, so
-  * it is slightly more optimized than most of the token interpreter.
-  * Specifically the states are Ints to avoid the need for objects
-  * in the critical paths. The trade off is that Future contains an
-  * extra couple of pointers.
+  * This is very performance critical code. So it's hard to read. Sorry.
+  * Try to comment optimizations carefully.
   */
 class Future(val raceFreeResolution: Boolean) extends OrcValue with orc.Future {
   import FutureConstants._
 
   private var _state: AnyRef = Unbound
-  private var _blocked: ConcurrentLinkedQueue[FutureReader] = new ConcurrentLinkedQueue()
-  //private var _blocked = ConcurrentHashMap.newKeySet[FutureReader]()
-
-  /*
-  private val lock = new ReentrantReadWriteLock()
-  private val readLock = lock.readLock()
-  private val bindLock = lock.writeLock()
-  */
-
-  private val lock = new ReentrantLock()
-  private val readLock = lock
-  private val bindLock = lock
+  private var _blockedIndex: Int = 0
+  private var _blocked: Array[FutureReader] = Array.ofDim(2)
 
   /** Resolve this to a value and call publish and halt on each blocked FutureReader.
     */
-  @TruffleBoundary(allowInlining = true) @noinline
   def bind(v: AnyRef) = {
     localBind(v)
   }
 
   /** Resolve this to stop and call halt on each blocked FutureReader.
     */
-  @TruffleBoundary(allowInlining = true) @noinline
   def stop(): Unit = {
     localStop()
   }
 
   /** Resolve this to a value and call publish and halt on each blocked FutureReader.
     */
-  @TruffleBoundary(allowInlining = true) @noinline
+  //@TruffleBoundary(allowInlining = true) @noinline
   final def localBind(v: AnyRef): Unit = {
     //assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
     //assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
-    val done = {
-      bindLock.lock()
-      try {
-        if (_state eq Unbound) {
-          _state = v
-          //Logger.finest(s"$this bound to $v")
-          true
-        } else {
-          false
-        }
-      } finally {
-        bindLock.unlock()
+    val finalBlocked = fastLocalBind(v)
+
+    if (finalBlocked != null) {
+      var i = 0
+      while (i < finalBlocked.length && finalBlocked(i) != null) {
+        finalBlocked(i).publish(v)
+        i += 1
       }
     }
-    // We can access and clear _blocked without the lock because we are in a
-    // state that cannot change again.
-    if (done) {
-      _blocked.forEach(_.publish(v))
+  }
+  
+  /** Resolve this to v, but return the future readers instead of calling publish on them.
+	  */
+  final def fastLocalBind(v: AnyRef): Array[FutureReader] = synchronized {
+    if (_state eq Unbound) {
+      _state = v
+      val b = _blocked
       _blocked = null
+      b
+    } else {
+      null
     }
   }
 
   /** Resolve this to stop and call halt on each blocked FutureReader.
     */
-  @TruffleBoundary(allowInlining = true) @noinline
+  //@TruffleBoundary(allowInlining = true) @noinline
   final def localStop(): Unit = {
-    val done = {
-      bindLock.lock()
-      try {
-        if (_state eq Unbound) {
-          _state = Halt
-          //Logger.finest(s"$this halted")
-          true
-        } else {
-          false
-        }
-      } finally {
-        bindLock.unlock()
+    val finalBlocked = fastLocalStop()
+    
+    if (finalBlocked != null) {
+      var i = 0
+      while (i < finalBlocked.length && finalBlocked(i) != null) {
+        finalBlocked(i).halt()
+        i += 1
       }
     }
-    // We can access and clear _blocked without the lock because we are in a
-    // state that cannot change again.
-    if (done) {
-      _blocked.forEach(_.halt())
+  }
+
+  /** Resolve this to stop, but return the future readers instead of calling halt on them.
+	  */
+  final def fastLocalStop(): Array[FutureReader] = synchronized {
+    if (_state eq Unbound) {
+      _state = Halt
+      val b = _blocked
       _blocked = null
+      b
+    } else {
+      null
     }
   }
 
@@ -124,19 +109,22 @@ class Future(val raceFreeResolution: Boolean) extends OrcValue with orc.Future {
   @TruffleBoundary(allowInlining = true) @noinline
   final def read(blocked: FutureReader): Unit = {
     val st = {
-      if (_state eq Unbound) {
-        readLock.lock()
-        try {
-          _state match {
-            case Unbound => {
-              _blocked.add(blocked)
+      if (_state eq Unbound) synchronized {
+        _state match {
+          case Unbound => {
+            // Extend array
+            if (_blockedIndex == _blocked.length) {
+              val oldBlocked = _blocked
+              _blocked = Array.ofDim(_blocked.length * 2)
+              System.arraycopy(oldBlocked, 0, _blocked, 0, oldBlocked.length)
             }
-            case _ => {}
+            // Add blocked to array
+            _blocked(_blockedIndex) = blocked
+            _blockedIndex += 1
           }
-          _state
-        } finally {
-          readLock.unlock()
+          case _ => {}
         }
+        _state
       } else {
         _state
       }

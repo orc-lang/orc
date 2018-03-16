@@ -58,20 +58,28 @@ public class ExternalCPSDispatch extends Dispatch {
 		super.setTail(v);
 		internal.setTail(v);
 	}
-	
-	@Override
-	public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
-		PorcEClosure pub = (PorcEClosure) arguments[0];
-		Counter counter = (Counter) arguments[1];
-		Terminator term = (Terminator) arguments[2];
-		internal.execute(frame, target, pub, counter, term, buildArguments(arguments));
-	}
+    
+    @Override
+    public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
+        PorcEClosure pub = (PorcEClosure) arguments[0];
+        Counter counter = (Counter) arguments[1];
+        Terminator term = (Terminator) arguments[2];
+        internal.execute(frame, target, pub, counter, term, buildArguments(0, arguments));
+    }
+    
+    @Override
+    public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
+        PorcEClosure pub = (PorcEClosure) arguments[1];
+        Counter counter = (Counter) arguments[2];
+        Terminator term = (Terminator) arguments[3];
+        internal.execute(frame, target, pub, counter, term, buildArguments(1, arguments));
+    }
 	
 	@SuppressWarnings({"boxing"})
-	protected static Object[] buildArguments(Object[] arguments) {
+	protected static Object[] buildArguments(int offset, Object[] arguments) {
 		CompilerAsserts.compilationConstant(arguments.length);
-		Object[] newArguments = new Object[arguments.length - 3];
-		System.arraycopy(arguments, 3, newArguments, 0, newArguments.length);
+		Object[] newArguments = new Object[arguments.length - 3 - offset];
+		System.arraycopy(arguments, 3 + offset, newArguments, 0, newArguments.length);
 		return newArguments;
 	}
 	

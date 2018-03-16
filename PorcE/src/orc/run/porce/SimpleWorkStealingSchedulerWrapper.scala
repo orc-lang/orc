@@ -18,6 +18,12 @@ import orc.Schedulable
 object SimpleWorkStealingSchedulerWrapper {
   @CompilationFinal
   final val traceTasks = SimpleWorkStealingScheduler.traceTasks
+  @CompilationFinal
+  final val SchedulerExecution = SimpleWorkStealingScheduler.SchedulerExecution
+  @CompilationFinal
+  final val StackExecution = SimpleWorkStealingScheduler.StackExecution
+  @CompilationFinal
+  final val InlineExecution = SimpleWorkStealingScheduler.InlineExecution
 
   def shareSchedulableID(d: AnyRef, s: AnyRef): Unit = {
     if (traceTasks) {
@@ -52,13 +58,19 @@ object SimpleWorkStealingSchedulerWrapper {
     }
   }
 
-  def enterSchedulable(s: Schedulable, t: SimpleWorkStealingScheduler.SchedulableExecutionType): Unit = {
+  def enterSchedulable(s: AnyRef, t: SimpleWorkStealingScheduler.SchedulableExecutionType): Unit = {
     if (traceTasks) {
       Boundaries.enterSchedulable(s, t)
     }
   }
 
-  def currentSchedulable: Schedulable = {
+  def enterSchedulableInline(): Long = {
+    if (traceTasks) {
+      Boundaries.enterSchedulableInline()
+    } else 0
+  }
+
+  def currentSchedulable: AnyRef = {
     if (traceTasks) {
       Boundaries.currentSchedulable
     } else {
@@ -66,13 +78,19 @@ object SimpleWorkStealingSchedulerWrapper {
     }
   }
 
-  def exitSchedulable(s: Schedulable): Unit = {
+  def exitSchedulable(s: AnyRef): Unit = {
     if (traceTasks) {
       Boundaries.exitSchedulable(s)
     }
   }
 
-  def exitSchedulable(s: Schedulable, old: Schedulable): Unit = {
+  def exitSchedulable(s: AnyRef, old: AnyRef): Unit = {
+    if (traceTasks) {
+      Boundaries.exitSchedulable(s, old)
+    }
+  }
+
+  def exitSchedulable(s: Long, old: AnyRef): Unit = {
     if (traceTasks) {
       Boundaries.exitSchedulable(s, old)
     }
@@ -105,22 +123,35 @@ object SimpleWorkStealingSchedulerWrapper {
     }
 
     @TruffleBoundary(allowInlining = true) @noinline
-    def enterSchedulable(s: Schedulable, t: SimpleWorkStealingScheduler.SchedulableExecutionType): Unit = {
+    def enterSchedulable(s: AnyRef, t: SimpleWorkStealingScheduler.SchedulableExecutionType): Unit = {
       SimpleWorkStealingScheduler.enterSchedulable(s, t)
     }
 
     @TruffleBoundary(allowInlining = true) @noinline
-    def currentSchedulable: Schedulable = {
+    def enterSchedulableInline(): Long = {
+      val s = SimpleWorkStealingScheduler.newSchedulableID()
+      SimpleWorkStealingScheduler.traceTaskParent(SimpleWorkStealingScheduler.currentSchedulable, s)
+      SimpleWorkStealingScheduler.enterSchedulable(s, InlineExecution)
+      s
+    }
+
+    @TruffleBoundary(allowInlining = true) @noinline
+    def currentSchedulable: AnyRef = {
       SimpleWorkStealingScheduler.currentSchedulable
     }
 
     @TruffleBoundary(allowInlining = true) @noinline
-    def exitSchedulable(s: Schedulable): Unit = {
+    def exitSchedulable(s: AnyRef): Unit = {
       SimpleWorkStealingScheduler.exitSchedulable(s)
     }
 
     @TruffleBoundary(allowInlining = true) @noinline
-    def exitSchedulable(s: Schedulable, old: Schedulable): Unit = {
+    def exitSchedulable(s: AnyRef, old: AnyRef): Unit = {
+      SimpleWorkStealingScheduler.exitSchedulable(s, old)
+    }
+    
+    @TruffleBoundary(allowInlining = true) @noinline
+    def exitSchedulable(s: Long, old: AnyRef): Unit = {
       SimpleWorkStealingScheduler.exitSchedulable(s, old)
     }
   }

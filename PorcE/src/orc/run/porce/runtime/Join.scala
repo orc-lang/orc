@@ -88,7 +88,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     *
     * All methods are called in the multi-threaded phase.
     */
-  final private class JoinElement(i: Int, f: orc.Future) extends FutureReader {
+  final private class JoinElement(i: Int, f: orc.Future) extends FutureReader with PorcEFutureReader {
     /** Start blocking on the future.
       *
       */
@@ -126,13 +126,27 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
         join.halt()
       }
     }
+
+    def fastHalt(): PorcEClosure = {
+      halt()
+      null
+    }
+  
+    def fastPublish(v: AnyRef): CallClosureSchedulable = {
+      if (unsafe.compareAndSwapObject(values, elementOffset, this, v)) {
+        // Now decrement the number of unbound values and see if we are done.
+        SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
+        join.fastCheckComplete(decrementUnboundMT())
+      } else {
+        null
+      }
+    }
   }
 
   /** Add a future to force to the Join.
     *
     * This should only be called in single-threaded mode.
     */
-  @TruffleBoundary(allowInlining = true) @noinline
   def force(i: Int, f: orc.run.porce.runtime.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
     if (!isHaltedST()) {
@@ -155,7 +169,6 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     *
     * This should only be called in single-threaded mode.
     */
-  @TruffleBoundary(allowInlining = true) @noinline
   def force(i: Int, f: orc.Future) = {
     //Logger.fine(s"Forcing $i $f ($state)")
     if (!isHaltedST()) {
@@ -213,7 +226,6 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     *
     * This should only be called in single-threaded mode.
     */
-  @TruffleBoundary @noinline
   def finish() = {
     if(isBlocked()) {
       finishBlocked()
@@ -232,7 +244,6 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     *
     * This is slightly faster and has smaller code-size than finish().  
     */
-  @TruffleBoundary @noinline
   def finishBlocked() = {
     // This fence is needed because we are doing non-atomic accesses before this call, but
     // after this we may have updates or reads from other threads.
@@ -264,13 +275,27 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     }
   }
 
+  private final def fastCheckComplete(n: Int): CallClosureSchedulable = {
+    if (n == 0 && setHaltedMT()) {
+      //Logger.finest(s"$join: Join finished with: ${values.mkString(", ")}")
+      fastDone()
+    } else {
+      null
+    }
+  }
+
   /** Handle a successful completion.
     *
     * This should use values to get the bound values.
     *
     * This may be called in multi-threaded mode.
     */
+  @TruffleBoundary(allowInlining = true)
   def done(): Unit = {
+    execution.runtime.potentiallySchedule(fastDone())
+  }
+  
+  def fastDone(): CallClosureSchedulable = {
     //Logger.finer(s"Done for $this with: $state ${values.mkString(", ")}")
     t.removeChild(this)
     /* ROOTNODE-STATISTICS
@@ -282,7 +307,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     // Token: Pass to p.
     val s = CallClosureSchedulable.varArgs(p, values, execution)
     SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
-    execution.runtime.potentiallySchedule(s)
+    s
   }
 
   /** Handle a halting case.

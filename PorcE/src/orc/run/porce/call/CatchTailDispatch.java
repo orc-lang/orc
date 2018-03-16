@@ -34,13 +34,22 @@ public class CatchTailDispatch extends Dispatch {
 		this.loop = TailCallLoop.create(execution);
     }
     
-	@Override
-	public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
-    	try {
-    		body.executeDispatch(frame, target, arguments);
-    	} catch (TailCallException e) {
-			loop.executeTailCalls(frame, e);
-    	}
+    @Override
+    public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
+        try {
+            body.executeDispatch(frame, target, arguments);
+        } catch (TailCallException e) {
+            loop.executeTailCalls(frame, e);
+        }
+    }
+    
+    @Override
+    public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
+        try {
+            body.executeDispatchWithEnvironment(frame, target, arguments);
+        } catch (TailCallException e) {
+            loop.executeTailCalls(frame, e);
+        }
     }
 
     public static CatchTailDispatch create(final Dispatch body, final PorcEExecution execution) {
