@@ -26,7 +26,7 @@ import junit.framework.{ Test, TestSuite }
   * @author jthywiss
   */
 class DistribWordCountScaleTestCase(
-    val factorValues: DistribWordCountScaleTestCase.DistribScaleExperimentalCondition,
+    val factorValues: DistribWordCountScaleTestCase.WordCountExperimentalCondition,
     suiteName: String,
     testName: String,
     orcFile: File,
@@ -56,7 +56,7 @@ class DistribWordCountScaleTestCase(
 object DistribWordCountScaleTestCase {
 
   def buildTestSuite(): Test = {
-    val experimentalConditions = ExperimentalCondition.readFrom(new File("test_data/performance/distrib/wordcount/experimental-conditions.csv"), factors, DistribScaleExperimentalCondition.parse(_))
+    val experimentalConditions = ExperimentalCondition.readFrom(new File("test_data/performance/distrib/wordcount/experimental-conditions.csv"), factors, WordCountExperimentalCondition.parse(_))
     ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
     DistribTestCase.setUpTestSuite()
     val programPaths = Array(new File("test_data/performance/distrib/wordcount/"))
@@ -85,15 +85,15 @@ object DistribWordCountScaleTestCase {
     FactorDescription("dOrcNumRuntimes", "Cluster size", "", ""))
     // Add numRepetitions?
 
-  case class DistribScaleExperimentalCondition(numInputFiles: Int, /*repeatRead: Int,*/ dOrcNumRuntimes: Int) extends ExperimentalCondition {
+  case class WordCountExperimentalCondition(numInputFiles: Int, /*repeatRead: Int,*/ dOrcNumRuntimes: Int) extends ExperimentalCondition {
     override def factorDescriptions = factors
     override def toString = s"(numInputFiles=$numInputFiles, dOrcNumRuntimes=$dOrcNumRuntimes)"
   }
 
-  object DistribScaleExperimentalCondition {
+  object WordCountExperimentalCondition {
     def parse(fields: Seq[String]) = {
-      assert(fields.size == 2, "Expecting two argument fields to DistribScaleExperimentalCondition.parse")
-      DistribScaleExperimentalCondition(fields(0).toInt, fields(1).toInt)
+      assert(fields.size == 2, "Expecting two argument fields to WordCountExperimentalCondition.parse")
+      WordCountExperimentalCondition(fields(0).toInt, fields(1).toInt)
     }
   }
 

@@ -19,7 +19,7 @@ import java.nio.file.Paths
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.mutable.ArrayBuffer
 
-import orc.test.proc.DistribWordCountScaleTestCase.DistribScaleExperimentalCondition
+import orc.test.proc.DistribWordCountScaleTestCase.WordCountExperimentalCondition
 import orc.test.util.{ ExpectedOutput, ExperimentalCondition, OsCommand, RemoteCommand, TestEnvironmentDescription, TestRunNumber, TestUtils }
 
 /** Submits a run of distributed-Orc scaling tests to HTCondor.
@@ -28,7 +28,7 @@ import orc.test.util.{ ExpectedOutput, ExperimentalCondition, OsCommand, RemoteC
   */
 object DistribWordCountScaleTestHtCondor {
 
-  def buildCondorSubmissions(testRunNumber: String, experimentalConditions: Traversable[DistribScaleExperimentalCondition], testPrograms: Traversable[File]): Traversable[CondorJobCluster] = {
+  def buildCondorSubmissions(testRunNumber: String, experimentalConditions: Traversable[WordCountExperimentalCondition], testPrograms: Traversable[File]): Traversable[CondorJobCluster] = {
     val jobClusters = ArrayBuffer[CondorJobCluster]()
     for (experimentalCondition <- experimentalConditions) {
       configForExperimentalCondition(experimentalCondition)
@@ -60,7 +60,7 @@ object DistribWordCountScaleTestHtCondor {
     DistribTestConfig.expanded.addVariable("testRootDir", condorTestRootDir)
   }
 
-  protected def readExperimentalConditions() = ExperimentalCondition.readFrom(new File("test_data/performance/distrib/wordcount/experimental-conditions.csv"), DistribWordCountScaleTestCase.factors, DistribScaleExperimentalCondition.parse(_))
+  protected def readExperimentalConditions() = ExperimentalCondition.readFrom(new File("test_data/performance/distrib/wordcount/experimental-conditions.csv"), DistribWordCountScaleTestCase.factors, WordCountExperimentalCondition.parse(_))
 
   protected def getTestPrograms(): Traversable[File] = {
     val testProgramRoots = Seq(new File("test_data/performance/distrib/wordcount"))
@@ -71,7 +71,7 @@ object DistribWordCountScaleTestHtCondor {
     foundFiles.asScala.filterNot(new ExpectedOutput(_).isEmpty)
   }
 
-  protected def configForExperimentalCondition(experimentalCondition: DistribWordCountScaleTestCase.DistribScaleExperimentalCondition) = {
+  protected def configForExperimentalCondition(experimentalCondition: DistribWordCountScaleTestCase.WordCountExperimentalCondition) = {
     val testContext = experimentalCondition.toMap
     if (testContext != null) {
       /* XXX */
@@ -85,7 +85,7 @@ object DistribWordCountScaleTestHtCondor {
     def submitDesciptionString: String
   }
 
-  protected class OrcCondorJobCluster(testRunNumber: String, testProgram: File, experimentalCondition: DistribWordCountScaleTestCase.DistribScaleExperimentalCondition) extends CondorJobCluster {
+  protected class OrcCondorJobCluster(testRunNumber: String, testProgram: File, experimentalCondition: DistribWordCountScaleTestCase.WordCountExperimentalCondition) extends CondorJobCluster {
 
     val outFilenamePrefix: String = testProgram.getName.stripSuffix(".orc") + "_" + experimentalCondition.productIterator.mkString("_")
 
@@ -239,7 +239,7 @@ object DistribWordCountScaleTestHtCondor {
   }
 
   /** Run a Java class's main method with Orc environment in HTCondor parallel universe, but with one machine */
-  protected class JavaCondorJobCluster(testRunNumber: String, testItem: Class[_], mainArgs: Seq[String], experimentalCondition: DistribWordCountScaleTestCase.DistribScaleExperimentalCondition) extends CondorJobCluster {
+  protected class JavaCondorJobCluster(testRunNumber: String, testItem: Class[_], mainArgs: Seq[String], experimentalCondition: DistribWordCountScaleTestCase.WordCountExperimentalCondition) extends CondorJobCluster {
     def getClassNameWithoutPackage(c: Class[_]) = c.getName.substring(c.getName.lastIndexOf(".") + 1)
 
     val outFilenamePrefix: String = getClassNameWithoutPackage(testItem) + "_" + experimentalCondition.productIterator.mkString("_")
@@ -365,7 +365,7 @@ object DistribWordCountScaleTestHtCondor {
 
   }
 
-  protected def setUpTest(experimentalConditions: Traversable[DistribScaleExperimentalCondition]) = {
+  protected def setUpTest(experimentalConditions: Traversable[WordCountExperimentalCondition]) = {
     val remoteRunOutputDir = DistribTestConfig.expanded("runOutputDir").stripSuffix("/")
 
     /* Copy config dir to runOutputDir/../config */
