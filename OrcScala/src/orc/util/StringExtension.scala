@@ -22,6 +22,18 @@ object StringExtension {
       }
     }
     
+    def removeMiddleTo(i: Int, marker: String = "[...]") = {
+      assume(i > marker.length)
+      if (s.length > i) {
+        val n = i - marker.length
+        val a = n / 2
+        val b = n - a
+        s.substring(0, a) + marker + s.substring(s.length - b)
+      } else {
+        s
+      }
+    }
+    
     def stripNewLines = {
       s.replace("\n\r", " ").replace("\r", " ").replace("\n", " ")
     }

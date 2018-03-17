@@ -27,6 +27,7 @@ import orc.error.compiletime._
 import orc.values.{ Field, Signal }
 import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
 import orc.error.compiletime.{ CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException }
+import orc.ast.hasOptionalVariableName._
 
 case class TranslatorContext(context: Map[String, Argument], typecontext: Map[String, Type],
   boundDefs: Set[BoundVar], classContext: Map[String, ClassInfo]) {
@@ -97,7 +98,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         newl > x > newr
       }
       case ext.Sequential(l, Some(p), r) => {
-        val x = new BoundVar()
+        val x = new BoundVar(Some(id"$p"))
         val (source, dcontext, target) = convertPattern(p, x)
         val newl = convert(l)
         val newr = convert(r)(ctx.copy(context = context ++ dcontext))
@@ -105,7 +106,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
       case ext.Declare(ext.Val(p, f), body) => {
         // Handle graft
-        val x = new BoundVar()
+        val x = new BoundVar(Some(id"$p"))
         val (source, dcontext, target) = convertPattern(p, x)
         val newbody = convert(body)(ctx.copy(context = context ++ dcontext))
         val newf = convert(f)
@@ -120,7 +121,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
       case ext.Section(body) => {
         // TODO: Add support for types?
-        val lambdaName = new BoundVar()
+        val lambdaName = new BoundVar(Some(id"lambda"))
         val removePlaceholders = new ExtendedASTTransform {
           var args = Seq[ext.Pattern]()
           var nextArg = 0
@@ -147,7 +148,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         DeclareCallables(List(newdef), lambdaName)
       }
       case lambda: ext.Lambda => {
-        val lambdaName = new BoundVar()
+        val lambdaName = new BoundVar(Some(id"lambda"))
         // TODO: Reintroduce support for types.
         val newdef = AggregateDef(lambda.formals, lambda.body)(this).convert(lambdaName, ctx)
         DeclareCallables(List(newdef), lambdaName)
@@ -256,9 +257,8 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
          *
          * This matches the type generated in Datatypes.scala.
          */
-        val p = if (names.size == 1) ext.VariablePattern(names.head)
-        else ext.TuplePattern(names map { ext.VariablePattern(_) })
-        val x = new BoundVar()
+        val p = if (names.size == 1) ext.VariablePattern(names.head) else ext.TuplePattern(names map { ext.VariablePattern(_) })
+        val x = new BoundVar(Some(id"$name"))
         val (source, dcontext, target) = convertPattern(p, x)
 
         val newbody = convert(body)(ctx.copy(context ++ dcontext, typecontext + { (name, d) }))
@@ -401,10 +401,13 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           id
         }
         case ext.ConstantPattern(c) => {
-          val b = new BoundVar();
+          val b = new BoundVar(Some(id"isEq_$c"))
+          
           { callEq(focus, Constant(c)) > b > callIft(b) >> _ }
         }
         case ext.VariablePattern(name) => {
+          if (focus.optionalVariableName.isEmpty)
+            focus.optionalVariableName = Some(id"$name")
           bind(name, focus)
           id
         }
@@ -417,13 +420,13 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         case ext.TuplePattern(ps) => {
           /* Test that the pattern's size matches the focus tuple's size */
           val tuplesize = Constant(BigInt(ps.size))
-          val tupletmp = new BoundVar()
+          val tupletmp = new BoundVar(focus.optionalVariableName)
           val sizecheck = { callTupleArityChecker(focus, tuplesize) > tupletmp > _ }
 
           /* Match each element of the tuple against its corresponding pattern */
           var elements = id
           for ((p, i) <- ps.zipWithIndex) {
-            val y = new BoundVar()
+            val y = new BoundVar(Some(id"${focus}_$i"))
             val bindElement: Conversion = { makeNth(tupletmp, i) > y > _ }
             elements = elements compose bindElement compose unravel(p, y)
           }
@@ -443,18 +446,20 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
           unravel(folded, focus)
         }
         case ext.ConsPattern(ph, pt) => {
-          val y = new BoundVar()
-          val p = ext.TuplePattern(List(ph, pt));
+          val y = new BoundVar(Some(id"${focus}_isCons"))
+          val p = ext.TuplePattern(List(ph, pt))
+          
           { callIsCons(focus) > y > _ } compose unravel(p, y)
         }
         case ext.RecordPattern(elements) => {
-          val y = new BoundVar()
+          val y = new BoundVar(Some(id"${focus}_recordMatch"))
           val (labels, patterns) = elements.unzip
-          val p = ext.TuplePattern(patterns);
+          val p = ext.TuplePattern(patterns)
+          
           { callRecordMatcher(focus, labels) > y > _ } compose unravel(p, y)
         }
         case ext.CallPattern(name, args) => {
-          val y = new BoundVar()
+          val y = new BoundVar(Some(id"${focus}_unapplyResult"))
           val p = ext.TuplePattern(args)
           val C = context(name)
 
@@ -476,8 +481,10 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       }
     }
 
-    val sourceVar = new BoundVar()
+    val sourceVar = new BoundVar(bridge.optionalVariableName)
     val filterInto = unravel(pat, sourceVar)(false)
+    
+    sourceVar ->> bridge
 
     bindingMap.values.toList.distinct match {
 
@@ -512,8 +519,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         var targetConversion = id
 
         for ((r, i) <- neededResults.zipWithIndex) {
-          val y = new BoundVar()
+          val y = new BoundVar(None)
           for ((name, `r`) <- bindingMap) {
+            y.optionalVariableName = Some(id"$name")
             dcontext = dcontext + { (name, y) }
           }
           targetConversion = targetConversion compose { makeNth(bridge, i) > y > _ }

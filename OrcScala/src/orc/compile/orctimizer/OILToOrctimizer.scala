@@ -12,6 +12,7 @@
 //
 package orc.compile.orctimizer
 
+import orc.ast.hasOptionalVariableName._
 import orc.ast.oil.named._
 import orc.ast.orctimizer.{ named => orct }
 import orc.compile.CompilerOptions
@@ -31,7 +32,7 @@ class OILToOrctimizer(co: CompilerOptions) {
       copy(variableMapping = variableMapping + ((x, y)))
     }
     def addVariableMapping(x: BoundVar): Context = {
-      val y = x ->> new orct.BoundVar()
+      val y = x ->> new orct.BoundVar(None)
       addVariableMapping(x, y)
     }
   }
@@ -101,16 +102,16 @@ class OILToOrctimizer(co: CompilerOptions) {
         apply(a)
       }
       case a: Argument => {
-        val x = new orct.BoundVar()
+        val x = new orct.BoundVar(Some(id"$a~"))
         maybePublishForce(x, a, x)
       }
       case Call(target, args, typeargs) => {
-        val ft = new orct.BoundVar(Some(s"ft_$target"))
-        val m = new orct.BoundVar(Some(s"m_$target"))
-        val fm = new orct.BoundVar(Some(s"fm_$target"))
+        val ft = new orct.BoundVar(Some(id"ft_$target~"))
+        val m = new orct.BoundVar(Some(id"m_$target~"))
+        val fm = new orct.BoundVar(Some(id"fm_$target~"))
         def siteCall = {
           val uniqueArgs = args.toSet.toList
-          val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(s"f_$a")))).toMap
+          val argVarsMap = uniqueArgs.map(a => (a, new orct.BoundVar(Some(id"f_$a~")))).toMap
           val call = orct.Call(fm, args map argVarsMap, typeargs map { _ map apply })
           if (uniqueArgs.size > 0) {
             maybePublishForce(uniqueArgs map argVarsMap, uniqueArgs, call)
@@ -151,9 +152,9 @@ class OILToOrctimizer(co: CompilerOptions) {
         orct.Otherwise(apply(left), apply(right))
       case DeclareCallables(defs, body) => {
         val bctx = ctx.copy(
-            variableMapping = ctx.variableMapping ++ (defs map { d => (d.name, d.name ->> new orct.BoundVar()) }))
+            variableMapping = ctx.variableMapping ++ (defs map { d => (d.name, d.name ->> new orct.BoundVar(None)) }))
         val dctx = ctx.copy(valueSource = ctx.valueSource ++ (defs map { d => (d.name, e) }), 
-            variableMapping = ctx.variableMapping ++ (defs map { d => (d.name, new orct.BoundVar(d.name.optionalVariableName.map(_ + "_temp"))) }))
+            variableMapping = ctx.variableMapping ++ (defs map { d => (d.name, new orct.BoundVar(d.name.optionalVariableName)) }))
         val newBody: orct.Expression = apply(body)(bctx)
         val defRes = defs map { apply(_)(dctx) }
         val (newDefs, captureds) = defRes.unzip
@@ -178,15 +179,15 @@ class OILToOrctimizer(co: CompilerOptions) {
       case HasType(body, expectedType) => orct.HasType(apply(body), apply(expectedType))
       case FieldAccess(o, f) => {
         if (useDirectGetFields) {
-          val t = new orct.BoundVar(Some(s"f_$o"))
-          val fv1 = new orct.BoundVar(Some(s"f_${o}_${f.name}'"))
-          val fv2 = new orct.BoundVar(Some(s"f_${o}_${f.name}"))
+          val t = new orct.BoundVar(Some(id"f_$o"))
+          val fv1 = new orct.BoundVar(Some(id"f_${o}_${f.name}'"))
+          val fv2 = new orct.BoundVar(Some(id"f_${o}_${f.name}"))
           maybePublishForce(t, o, {
             orct.GetField(t, f) > fv1 >
               orct.Force(fv2, fv1, fv2)
           })
         } else {
-          val t = new orct.BoundVar(Some(s"f_${o}_${f.name}"))
+          val t = new orct.BoundVar(Some(id"f_${o}_${f.name}"))
           maybePublishForce(t, o, {
             sitecallGetField(t, f)
           })

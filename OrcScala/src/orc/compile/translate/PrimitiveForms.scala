@@ -21,8 +21,10 @@ import orc.ast.oil.named.Conversions._
 import orc.lib.builtin._
 import orc.lib.builtin.structured._
 import orc.values.{ Field, Signal }
+import orc.ast.hasOptionalVariableName
 
 object PrimitiveForms {
+  import hasOptionalVariableName._
 
   def nullaryBuiltinCall(s: AnyRef)() = Call(Constant(s), Nil, None)
   def unaryBuiltinCall(s: AnyRef)(a: Argument) = Call(Constant(s), List(a), None)
@@ -49,7 +51,7 @@ object PrimitiveForms {
   }
 
   def makeUnapply(constructor: Argument, a: Argument) = {
-    val extractor = new BoundVar()
+    val extractor = new BoundVar(Some(id"${constructor}_unapply"))
     val getExtractor = FieldAccess(constructor, Field("unapply"))
     // TODO: Should I use a Project site like I did in the original Porc.
     //val getExtractor = Call(Constant(ProjectUnapply), List(constructor), None)
@@ -74,8 +76,10 @@ object PrimitiveForms {
 
   def makeList(elements: List[Argument]) = {
     val nil: Expression = callNil()
+    var i = 0
     def cons(h: Argument, t: Expression): Expression = {
-      val y = new BoundVar()
+      val y = new BoundVar(Some(id"elem$i"))
+      i += 1
       t > y > callCons(h, y)
     }
     elements.foldRight(nil)(cons)
@@ -101,13 +105,13 @@ object PrimitiveForms {
   }
 
   def makeConditional(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
-    val b = new BoundVar()
+    val b = new BoundVar(Some(id"${test}_res"))
     Graft(b, test, (callIft(b) >> trueBranch) || (callIff(b) >> falseBranch))
   }
 
   def makeConditionalFalseOnHalt(test: Expression, trueBranch: Expression, falseBranch: Expression) = {
-    val b = new BoundVar()
-    val nb = new BoundVar()
+    val b = new BoundVar(Some(id"${test}_b"))
+    val nb = new BoundVar(Some(id"${test}_nb"))
     Graft(b, test, (callIft(b) >> trueBranch) || (
         Graft(nb, b ow Constant(java.lang.Boolean.FALSE),  
         callIff(nb)) >> falseBranch))
@@ -126,8 +130,8 @@ object PrimitiveForms {
     fail match {
       case Stop() => source > x > target
       case _ => {
-        val y = new BoundVar()
-        val z = new BoundVar()
+        val y = new BoundVar(Some(id"${source}_value"))
+        val z = new BoundVar(Some(id"${source}_wrapped"))
         (
           (source > z > callSome(z)) ow (callNone())) > y >
           (

@@ -13,13 +13,15 @@
 
 package orc.ast.orctimizer.named
 
+import orc.ast.hasOptionalVariableName
+
 // Infix combinator constructors
 trait NamedInfixCombinators {
   self: Expression =>
 
   def ||(g: Expression) = Parallel(this, g)
 
-  def >>(g: Expression) = Branch(this, new BoundVar(), g)
+  def >>(g: Expression) = Branch(this, new BoundVar(Some(hasOptionalVariableName.unusedVariable)), g)
 
   trait WithGreater {
     def >(g: Expression): Expression

@@ -18,6 +18,7 @@ import scala.language.reflectiveCalls
 
 import orc.ast.ext._
 import orc.ast.oil.named
+import orc.ast.hasOptionalVariableName._
 import orc.compile.translate.PrimitiveForms._
 import orc.error.OrcExceptionExtension._
 import orc.error.compiletime._
@@ -103,11 +104,12 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
        */
       case _ => {
 
-        val x = new named.BoundVar()
+        val x = new named.BoundVar(None)
 
         val (newSource, dcontext, target) =
           strictPairs match {
             case (strictPattern, strictArg) :: Nil => {
+              x.optionalVariableName = Some(id"tmp_$strictPattern")
               val (source, dcontext, target) = convertPattern(strictPattern, x)
               val newSource = source(strictArg)
               (newSource, dcontext, target)
@@ -129,10 +131,10 @@ case class Clause(formals: List[Pattern], maybeGuard: Option[Expression], body: 
         val guardedSource =
           maybeGuard match {
             case Some(guard) => {
-              val g = new named.BoundVar()
-              val b = new named.BoundVar()
+              val g = new named.BoundVar(None)
+              val b = new named.BoundVar(Some(id"tmp$guard"))
               val newGuard = convertInContext(guard).subst(g, x)
-              newSource > g > (named.Graft(b, named.Trim(newGuard), callIft(b)) >> g)
+              newSource > g > (named.Trim(newGuard) > b > callIft(b) >> g)
             }
             case None => newSource
           }
@@ -174,11 +176,16 @@ object Clause {
   def convertClauses(clauses: List[Clause])(implicit ctx: TranslatorContext,
     translator: Translator): (List[named.BoundVar], named.Expression) = {
     val arity = commonArity(clauses)
-    val args = (for (_ <- 0 until arity) yield new named.BoundVar()).toList
+    val args = (for (_ <- 0 until arity) yield new named.BoundVar(None)).toList
 
     val nil: named.Expression = named.Stop()
     def cons(clause: Clause, fail: named.Expression) = clause.convert(args, fail)
     val body = clauses.foldRight(nil)(cons)
+    
+    for ((a, i) <- args.zipWithIndex) {
+      if (a.optionalVariableName.isEmpty)
+        a.optionalVariableName = Some(id"arg$i")
+    }
 
     (args, body)
   }

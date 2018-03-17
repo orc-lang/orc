@@ -13,14 +13,14 @@
 
 package orc.ast.orctimizer.named
 
+import scala.PartialFunction
+
 import orc.ast.ASTForSwivel
 import orc.ast.hasOptionalVariableName
-import orc.ast.hasAutomaticVariableName
 import orc.values
 import orc.ast.PrecomputeHashcode
 import swivel.{ root, branch, leaf }
 import swivel.subtree
-import scala.PartialFunction
 
 // TODO: Remove "Named" from classes and package tree. There is no nameless Orctimizer.
 
@@ -161,7 +161,8 @@ object Force {
   /** Construct an expression which forces the value `v` and publishes the result.
     */
   def asExpr(v: Argument) = {
-    val x = new BoundVar()
+    import hasOptionalVariableName._
+    val x = new BoundVar(Some(id"$v"))
     Force(List(x), List(v), x)
   }
 }
@@ -469,7 +470,7 @@ final case class UnboundVar(name: String) extends Var {
   * BoundVars use identity equality without regard for their name.
   */
 @leaf @transform
-final class BoundVar(val optionalName: Option[String] = None) extends Var with hasAutomaticVariableName with Product {
+final class BoundVar(val optionalName: Option[String]) extends Var with hasOptionalVariableName with Product {
   // Members declared in scala.Equals
   def canEqual(that: Any): Boolean = that.isInstanceOf[BoundVar]
 
@@ -478,7 +479,6 @@ final class BoundVar(val optionalName: Option[String] = None) extends Var with h
   def productElement(n: Int): Any = optionalName
 
   optionalVariableName = optionalName
-  //autoName("ov")
 }
 
 /** Declare a type in a context.
@@ -557,7 +557,7 @@ final case class UnboundTypevar(name: String) extends Typevar {
   optionalVariableName = Some(name)
 }
 @leaf @transform
-final class BoundTypevar(val optionalName: Option[String] = None) extends Typevar with hasAutomaticVariableName with Product {
+final class BoundTypevar(val optionalName: Option[String] = None) extends Typevar with hasOptionalVariableName with Product {
   def canEqual(that: Any): Boolean = that.isInstanceOf[BoundTypevar]
 
   // Members declared in scala.Product
@@ -565,5 +565,4 @@ final class BoundTypevar(val optionalName: Option[String] = None) extends Typeva
   def productElement(n: Int): Any = optionalName
 
   optionalVariableName = optionalName
-  autoName("T")
 }

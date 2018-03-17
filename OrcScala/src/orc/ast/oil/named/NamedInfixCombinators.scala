@@ -13,6 +13,8 @@
 
 package orc.ast.oil.named
 
+import orc.ast.hasOptionalVariableName
+
 /** Infix combinator constructors
   *
   * @author dkitchin
@@ -22,7 +24,7 @@ trait NamedInfixCombinators {
 
   def ||(g: Expression) = Parallel(this, g)
 
-  def >>(g: Expression) = Sequence(this, new BoundVar(), g)
+  def >>(g: Expression) = Sequence(this, new BoundVar(Some(hasOptionalVariableName.unusedVariable)), g)
 
   def >(x: BoundVar) =
     new {

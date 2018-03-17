@@ -12,11 +12,15 @@
 //
 package orc.ast.orctimizer.named
 
+import java.util.logging.Level
+
 import scala.collection.mutable.{Map, HashMap}
+
 import orc.values.Format
 import orc.values.Field
 import orc.util.PrettyPrintInterpolator
 import orc.util.FragmentAppender
+import orc.compile.Logger
 
 /** Nicer printing for named OIL syntax trees.
   *
@@ -37,7 +41,12 @@ class PrettyPrint {
 
   val vars: Map[BoundVar, String] = new HashMap()
   var varCounter: Int = 0
-  def newVarName(): String = { varCounter += 1; "`t" + varCounter }
+  def newVarName(): String = { 
+    varCounter += 1
+    val s = "`t" + varCounter
+    //Logger.log(Level.FINE, s"Unnamed variable printed with name $s", new Exception(s).fillInStackTrace())
+    s
+  }
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName())
 
   val typevars: Map[BoundTypevar, String] = new HashMap()

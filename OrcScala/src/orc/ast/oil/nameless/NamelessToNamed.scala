@@ -13,6 +13,7 @@
 package orc.ast.oil.nameless
 
 import orc.ast.oil.named
+import orc.ast.hasOptionalVariableName
 import orc.ast.oil.named.{ BoundTypevar, BoundVar }
 
 /** @author dkitchin
@@ -21,6 +22,8 @@ import orc.ast.oil.named.{ BoundTypevar, BoundVar }
 trait NamelessToNamed {
 
   def namelessToNamed(e: Expression, context: List[BoundVar], typecontext: List[BoundTypevar]): named.Expression = {
+    import hasOptionalVariableName._
+    
     def recurse(e: Expression): named.Expression = namelessToNamed(e, context, typecontext)
     e -> {
       case Stop() => named.Stop()
@@ -33,18 +36,18 @@ trait NamelessToNamed {
       }
       case Parallel(left, right) => named.Parallel(recurse(left), recurse(right))
       case Sequence(left, right) => {
-        val x = new BoundVar()
+        val x = new BoundVar(Some(unusedVariable))
         named.Sequence(recurse(left), x, namelessToNamed(right, x :: context, typecontext))
       }
       case Graft(value, body) => {
-        val x = new BoundVar()
+        val x = new BoundVar(Some(unusedVariable))
         named.Graft(x, recurse(value), namelessToNamed(body, x :: context, typecontext))
       }
       case Trim(f) => named.Trim(recurse(f))
       case Otherwise(left, right) => named.Otherwise(recurse(left), recurse(right))
       case New(st, bindings, t) => {
         // FIXME: this probably looses the self name information.
-        val self = new BoundVar()
+        val self = new BoundVar(Some(id"self${st match { case Some(v) => v; case _ => "" }}"))
         val defcontext = self :: context
         val newbindings = Map() ++ bindings.mapValues(namelessToNamed(_, defcontext, typecontext))
         named.New(self, st.map(namelessToNamed(_, typecontext)), newbindings, t.map(namelessToNamed(_, typecontext)))
@@ -52,7 +55,7 @@ trait NamelessToNamed {
       case FieldAccess(obj, field) => named.FieldAccess(namelessToNamed(obj, context), field)
       case DeclareCallables(openvars, defs, body) => {
         val opennames = openvars map context
-        val defnames = defs map { _ => new BoundVar() }
+        val defnames = defs map { d => new BoundVar(d.optionalVariableName) }
         val defcontext = defnames.reverse ::: opennames.reverse ::: context
         val bodycontext = defnames.reverse ::: context
         val newdefs = for ((x, d) <- defnames zip defs) yield namelessToNamed(x, d, defcontext, typecontext)
@@ -139,7 +142,7 @@ trait NamelessToNamed {
   def namelessToNamed(x: BoundVar, defn: Callable, context: List[BoundVar], typecontext: List[BoundTypevar]): named.Callable = {
     defn -> {
       case Callable(typearity, arity, body, argtypes, returntype) => {
-        val formals = (for (_ <- 0 until arity) yield new BoundVar()).toList
+        val formals = (for (_ <- 0 until arity) yield new BoundVar(None)).toList
         val typeformals = (for (_ <- 0 until typearity) yield new BoundTypevar()).toList
         val newContext = formals ::: context
         val newTypeContext = typeformals ::: typecontext

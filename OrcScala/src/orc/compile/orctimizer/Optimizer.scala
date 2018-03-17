@@ -12,25 +12,29 @@
 //
 package orc.compile.orctimizer
 
+import scala.collection.mutable
+
 import orc.compile.Logger
 import orc.ast.orctimizer.named._
 import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
 import orc.compile.CompilerOptions
-import orc.ast.hasAutomaticVariableName
-import scala.collection.mutable
+import orc.ast.hasOptionalVariableName
 import orc.compile.OptimizerStatistics
 import orc.compile.NamedOptimization
 import orc.compile.AnalysisCache
 import orc.compile.orctimizer.FlowGraph._
 import orc.compile.orctimizer.CallGraphValues._
 import orc.compile.orctimizer.DelayAnalysis.DelayInfo
-import swivel.Zipper
 import orc.compile.orctimizer.FlowGraph.EverywhereNode
 import orc.ast.orctimizer.named.DeclareMethods
 import orc.lib.builtin.structured.TupleArityChecker
 import orc.lib.builtin.structured.TupleConstructor
 import orc.lib.builtin.structured.TupleArityChecker
+
+import swivel.Zipper
+
+import hasOptionalVariableName._
 
 class HashFirstEquality[T](val value: T) {
   override def toString() = value.toString()
@@ -197,20 +201,20 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       }
       case n @ New.Z(self, _, fields, _) => {
         var changed = false
-        val newFields = fields.mapValues({
-          case f @ FieldFuture.Z(a: Argument.Z) if !a.freeVars.contains(self) => {
+        val newFields = fields.map({
+          case (n, f @ FieldFuture.Z(a: Argument.Z)) if !a.freeVars.contains(self) => n -> {
             changed = true
             (FieldArgument(a.value), None, None)
           }
-          case f @ FieldFuture.Z(body) if !body.freeVars.contains(self) => {
+          case (n, f @ FieldFuture.Z(body)) if !body.freeVars.contains(self) => n -> {
             if (isFutureEliminable(f, body)) {
               changed = true
-              val x = new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("fieldVal")))
+              val x = new BoundVar(Some(id"${n.name}"))
               (FieldArgument(x), Some(body), Some(x))
             } else
               (f.value, None, None)
           }
-          case f => (f.value, None, None)
+          case (n, f) => n -> ((f.value, None, None))
         }).view.force
 
         if (changed) {
@@ -443,18 +447,11 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     //case (Trim.Z(f), a) if a.publicationsOf(f) <= 1 && a.delayOf(f).maxHaltDelay == ComputationDelay() && !a.effects(f) => f.value
   }
   
-  var nextInlineNumberCounter = 0
-  
-  def nextInlineNumber(): Int = {
-    nextInlineNumberCounter += 1
-    nextInlineNumberCounter
-  }
-  
   def newName(x: BoundVar) = {
-    new BoundVar(x.optionalName.map(_ + s"i${nextInlineNumber()}"))
+    new BoundVar(Some(id"$x~"))
   }
   def newName(x: BoundTypevar) = {
-    new BoundTypevar(x.optionalName.map(_ + s"i${nextInlineNumber()}"))
+    new BoundTypevar(Some(id"$x~"))
   }
 
   def renameVariables(newN: BoundVar, e: Method.Z)(implicit mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): Method = {

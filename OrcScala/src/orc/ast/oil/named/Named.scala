@@ -13,7 +13,7 @@
 
 package orc.ast.oil.named
 
-import orc.ast.{ AST, hasAutomaticVariableName, hasOptionalVariableName }
+import orc.ast.{ AST, hasOptionalVariableName }
 import orc.ast.oil.nameless
 import orc.values
 
@@ -178,11 +178,9 @@ sealed case class UnboundVar(name: String) extends Var {
   optionalVariableName = Some(name)
 }
 
-class BoundVar(optionalName: Option[String] = None) extends Var with hasAutomaticVariableName {
+class BoundVar(optionalName: Option[String]) extends Var with hasOptionalVariableName {
 
   optionalVariableName = optionalName
-  autoName("v")
-  assert(optionalVariableName.isDefined)
 
   def productIterator = optionalVariableName.toList.iterator
 }
@@ -296,10 +294,9 @@ sealed trait Typevar extends Type with hasOptionalVariableName
 sealed case class UnboundTypevar(name: String) extends Typevar {
   optionalVariableName = Some(name)
 }
-class BoundTypevar(optionalName: Option[String] = None) extends Typevar with hasAutomaticVariableName {
+class BoundTypevar(optionalName: Option[String] = None) extends Typevar with hasOptionalVariableName {
 
   optionalVariableName = optionalName
-  autoName("t")
 
   def productIterator = optionalVariableName.toList.iterator
 }
@@ -324,7 +321,8 @@ object Conversions {
         }
         case g :: rest => {
           val (args, bindRest) = expand(rest)
-          val x = new BoundVar()
+          import hasOptionalVariableName._
+          val x = new BoundVar(Some(id"$g"))
           (x :: args, e => Graft(x, g, bindRest(e)))
         }
         case Nil => (Nil, e => e)
@@ -430,7 +428,8 @@ object FoldedLambda {
 
   /* FoldedLambda can only be constructed with full type annotations */
   def apply(formals: List[BoundVar], body: Expression, typeFormals: List[BoundTypevar], argTypes: Option[List[Type]], returnType: Option[Type]): Expression = {
-    val dummyName = new BoundVar()
+    import hasOptionalVariableName._
+    val dummyName = new BoundVar(Some(id"lambda"))
     val dummyDef = Def(dummyName, formals, body, typeFormals, argTypes, returnType)
     DeclareCallables(List(dummyDef), dummyName)
   }

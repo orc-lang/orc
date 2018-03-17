@@ -14,7 +14,7 @@ package orc.ast.porc
 
 import java.io.IOException
 
-import orc.ast.{ ASTForSwivel, ASTWithIndex, PrecomputeHashcode, hasAutomaticVariableName, hasOptionalVariableName }
+import orc.ast.{ ASTForSwivel, ASTWithIndex, PrecomputeHashcode, hasOptionalVariableName }
 import orc.util.Ternary
 import orc.values.Field
 
@@ -98,9 +98,8 @@ object Constant {
 @leaf @transform
 final case class PorcUnit() extends Argument
 @leaf @transform
-final class Variable(val optionalName: Option[String] = None) extends Argument with hasAutomaticVariableName with Serializable {
+final class Variable(val optionalName: Option[String]) extends Argument with hasOptionalVariableName with Serializable {
   optionalVariableName = optionalName
-  autoName("pv")
 
   def this(s: String) = this(Some(s))
 

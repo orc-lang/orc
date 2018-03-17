@@ -16,13 +16,15 @@ import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.language.reflectiveCalls
 
-import orc.ast.{ AST, Positioned, ext, hasAutomaticVariableName }
+import orc.ast.{ AST, Positioned, ext, hasOptionalVariableName }
 import orc.ast.oil.named.{ Argument, BoundTypevar, BoundVar, Call, Callable, Constant, DeclareCallables, DeclareType, Def, Expression, FieldAccess, Graft, HasType, IntersectionType, NamedASTTransform, New, NominalType, StructuralType, Top, Type, UnboundVar }
 import orc.compile.Logger
 import orc.compile.optimize.FractionDefs
 import orc.error.OrcExceptionExtension.extendOrcException
 import orc.error.compiletime.{ CompilationException, ConflictingOrderException, ContinuableSeverity, CyclicInheritanceException, InstantiatingAbstractClassException, MalformedExpression, UnboundClassVariableException }
 import orc.values.Field
+
+import hasOptionalVariableName._
 
 /** This class contains all the information needed to generate an instance of a class.
   *
@@ -54,10 +56,10 @@ class ClassInfo private (
   val classLiteral: Option[ext.ClassLiteral],
   val capturedVariables: Option[Seq[BoundVar]] = None)(
     val typeName: BoundTypevar = new BoundTypevar(Some(name)),
-    val partialConstructorName: BoundVar = new BoundVar(Some(s"$$partialConstructor$$$name")),
-    val partialConstructorPlaceholderName: BoundVar = new BoundVar(Some(s"placeholder$$partialConstructor$$$name")),
-    val constructorName: BoundVar = new BoundVar(Some(s"$$constructor$$$name")),
-    val constructorPlaceholderName: BoundVar = new BoundVar(Some(s"placeholder$$constructor$$$name")))
+    val partialConstructorName: BoundVar = new BoundVar(Some(id"$$partialConstructor$$$name")),
+    val partialConstructorPlaceholderName: BoundVar = new BoundVar(Some(id"placeholder$$partialConstructor$$$name")),
+    val constructorName: BoundVar = new BoundVar(Some(id"$$constructor$$$name")),
+    val constructorPlaceholderName: BoundVar = new BoundVar(Some(id"placeholder$$constructor$$$name")))
   extends Positioned {
 
   def unplaceholder(v: BoundVar) = {
@@ -122,11 +124,11 @@ case class ClassForms(val translator: Translator) {
   import translator._
 
   def syntheticName() = {
-    hasAutomaticVariableName.getNextVariableName("syncls")
+    id"syncls"
   }
 
   private def uniqueField(kind: String) = {
-    Field(hasAutomaticVariableName.getNextVariableName(kind))
+    Field(id"$kind")
   }
 
   /** Generate a set of ClassInfos from a set of class declarations.
@@ -291,7 +293,7 @@ case class ClassForms(val translator: Translator) {
         val body = {
           def partialField(n: String) = Field(s"$$partial$$$n")
 
-          val self = new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("self")))
+          val self = new BoundVar(Some(id"self_${cls.name}"))
 
           def generateForwardingObject(s: BoundVar, st: Option[Type], extraFields: Seq[(Field, Expression)], forwardings: Map[Field, Field], t: Option[Type]): Expression = {
             val fields = forwardings.map {
@@ -309,11 +311,11 @@ case class ClassForms(val translator: Translator) {
             import state._
 
             val (prev, _) +: _ = partials
-            val x = new BoundVar(Some(hasAutomaticVariableName.getNextVariableName("super")))
+            val x = new BoundVar(Some(id"super_${cls.name}"))
             // TODO: In cases where the super type of the partial we are calling only needs values from one other type we could
             //       optimize this to just be a field reference instead of a complete new object.
             //       This optimization is tricky to get right. But for the empty super it's trivial.
-            val superRef = generateForwardingObject(new BoundVar(), None, Seq(), concreteFields, Some(IntersectionType(types)))
+            val superRef = generateForwardingObject(new BoundVar(Some(unusedVariable)), None, Seq(), concreteFields, Some(IntersectionType(types)))
             val partialConstructorCall =
               Graft(x, superRef,
                 Call(cls.partialConstructorPlaceholderName, List(self, x), Some(List())))
@@ -346,7 +348,7 @@ case class ClassForms(val translator: Translator) {
   }
 
   private def makeForwardingField(self: Argument, partial: Field, f: Field) = {
-    val x = new BoundVar()
+    val x = new BoundVar(Some(id"${partial.name}"))
     val extraction: Expression = FieldAccess(self, partial) > x > FieldAccess(x, f)
     (f, extraction)
   }
@@ -419,7 +421,7 @@ case class ClassForms(val translator: Translator) {
   }
 
   private def makePartialObject(self: BoundVar): New = {
-    New(new BoundVar, Some(StructuralType(Map())), Map(), Some(StructuralType(Map())))
+    New(new BoundVar(Some(id"partialObject")), Some(StructuralType(Map())), Map(), Some(StructuralType(Map())))
   }
 
   /** Generate the partial constructor for a class using the context.
@@ -472,8 +474,8 @@ case class ClassForms(val translator: Translator) {
 
     val thisName = lit.thisname.getOrElse("this")
     val thisVar = new BoundVar(Some(thisName))
-    val superVar = new BoundVar(Some("super"))
-    val privateVar = new BoundVar(Some("private"))
+    val superVar = new BoundVar(Some(id"super"))
+    val privateVar = new BoundVar(Some(id"private"))
 
     val thisContext = List((thisName, thisVar), ("this", thisVar), ("super", superVar))
 
@@ -489,12 +491,12 @@ case class ClassForms(val translator: Translator) {
         (Field(x), Some(HasType(convert(f)(newCtx), convertType(t)))) +: convertFields(rest)
 
       case ext.Val(p, f) +: rest =>
-        val tmpField = uniqueField("pattmp")
+        val tmpField = uniqueField(s"tmp$p")
         // FIXME: Is it a problem if the same variable is bound in multiple subtrees? We can just call convertPattern with different bridges or modify
         // convertPattern to take an additional argument to the target closure it returns.
 
         // TODO: TYPECHECKER: If we modify convertPattern to save information from TypedPatterns we could type the below expressions.
-        val x = new BoundVar()
+        val x = new BoundVar(Some(tmpField.name))
         val (source, dcontext, target) = convertPattern(p, x)(newCtx)
         val newf = convert(f)(newCtx)
         val generatedFields = for ((name, code) <- dcontext.toSeq) yield (Field(name), Some(FieldAccess(privateVar, tmpField) > x > target(code)))
@@ -506,7 +508,7 @@ case class ClassForms(val translator: Translator) {
       case ext.CallableSingle(defs, rest) =>
         assert(defs.forall(_.name == defs.head.name))
         val field = Field(defs.head.name)
-        val name = new BoundVar(Some("$" + defs.head.name))
+        val name = new BoundVar(Some(id"${defs.head.name}"))
         val agg = defs.foldLeft(AggregateDef.empty(translator))(_ + _)
         if (agg.clauses.isEmpty) {
           // Abstract

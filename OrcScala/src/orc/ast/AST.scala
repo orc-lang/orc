@@ -16,6 +16,7 @@ package orc.ast
 import scala.collection.mutable.{ ArrayBuffer, Buffer }
 
 import orc.compile.parse.OrcSourceRange
+import scala.util.matching.Regex
 
 trait Positioned {
   /** The source position (range) of this AST node, initially set to undefined. */
@@ -153,20 +154,54 @@ trait hasOptionalVariableName extends ASTForSwivel {
   var optionalVariableName: Option[String] = None
 }
 
-trait hasAutomaticVariableName extends hasOptionalVariableName {
-  def autoName(namePrefix: String): Unit = {
-    optionalVariableName = optionalVariableName match {
-      case Some(n) => Some(n)
-      case None =>
-        Some(hasAutomaticVariableName.getNextVariableName(namePrefix))
+object hasOptionalVariableName {
+  implicit class VariableNameInterpolator(sc: StringContext) {
+    import sc._
+    import scala.StringContext._
+    import orc.util.StringExtension._
+    
+    def id(args: Any*): String = {
+      checkLengths(args)
+      val pi = parts.iterator
+      val ai = args.iterator
+      val bldr = new java.lang.StringBuilder(treatEscapes(pi.next()))
+      while (ai.hasNext) {
+        val p = pi.next()
+        val (p1, useVariableName, truncate) = p match {
+          case p if p.startsWith("@") => (p.substring(1), true, true)
+          case p if p.startsWith("~") => (p.substring(1), false, false)
+          case p => (p, false, true)
+        }
+        val v = ai.next match {
+          case v: hasOptionalVariableName if useVariableName && v.optionalVariableName.isDefined => v.optionalVariableName.get
+          case c: OrcSyntaxConvertible => c.toOrcSyntax
+          //case p: Positioned if p.sourceTextRange.isDefined => p.sourceTextRange.get.content
+          case o => o
+        }
+        val s = cleanIdentifierString(v.toString)
+        bldr append (if (truncate) s.removeMiddleTo(40, "…") else s)
+        bldr append treatEscapes(p1)
+      }
+      getNextVariableName(bldr.toString)
     }
+    
   }
-}
-
-object hasAutomaticVariableName {
-  private var nextVar: Int = 0
-  def getNextVariableName(s: String): String = synchronized {
-    nextVar += 1
-    s"`$s$nextVar"
+  
+  def unusedVariable = id"_"
+  
+  private val BAD_CHARACTERS = new Regex("[^`a-zA-Z0-9'…]+(?=[`a-zA-Z0-9'…])")
+  private val BAD_CHARACTERS_ENDS = new Regex("^[^`a-zA-Z0-9'…]+|[^`a-zA-Z0-9'…]+$")
+  
+  private def cleanIdentifierString(s: String) = BAD_CHARACTERS_ENDS.replaceAllIn(BAD_CHARACTERS.replaceAllIn(s, "_"), "")
+  
+  private val nextVarMap: collection.mutable.Map[String, Int] = collection.mutable.Map()
+  private val generateUniqueVariableNames = false
+  
+  private def getNextVariableName(s: String): String = {
+    if (generateUniqueVariableNames) synchronized {
+      val nextVar = nextVarMap.getOrElse(s, 0)
+      nextVarMap += s -> (nextVar + 1)
+      s"${if (s.startsWith("`")) "" else "`"}$s${if (s.endsWith("_")) "" else "_"}$nextVar"
+    } else s
   }
 }

@@ -14,6 +14,7 @@ package orc.compile.orctimizer
 import scala.collection.mutable
 
 import orc.ast.orctimizer.named._
+import orc.ast.hasOptionalVariableName._
 import orc.ast.porc
 import orc.ast.porc.{ MethodCPSCall, MethodDirectCall, SetDiscorporate }
 import orc.compile.{ AnalysisCache, CompilerOptions }
@@ -27,7 +28,8 @@ case class ConversionContext(
     recursives: Set[BoundVar],
     callgraph: CallGraph,
     publications: PublicationCountAnalysis,
-    effects: EffectAnalysis) {
+    effects: EffectAnalysis,
+    containingFunction: String) {
 }
 
 /** @author amp
@@ -39,29 +41,21 @@ class OrctimizerToPorc(co: CompilerOptions) {
     val publications: PublicationCountAnalysis = cache.get(PublicationCountAnalysis)((z, None))
     val effects: EffectAnalysis = cache.get(EffectAnalysis)((z, None))
 
-    val newP = newVarName("P")
-    val newC = newVarName("C")
-    val newT = newVarName("T")
-    implicit val clx = ConversionContext(p = newP, c = newC, t = newT, recursives = Set(), callgraph = callgraph, publications = publications, effects = effects)
+    val newP = Variable(id"P")
+    val newC = Variable(id"C")
+    val newT = Variable(id"T")
+    implicit val clx = ConversionContext(p = newP, c = newC, t = newT, recursives = Set(), callgraph = callgraph, publications = publications, effects = effects, containingFunction = "Prog")
     val body = expression(z)
-    prog ->> porc.MethodCPS(newVarName("Prog"), newP, newC, newT, false, Nil, body)
+    prog ->> porc.MethodCPS(Variable(id"Prog"), newP, newC, newT, false, Nil, body)
   }
 
   val useDirectCalls = co.options.optimizationFlags("porc:directcalls").asBool(true)
   val useDirectGetFields = co.options.optimizationFlags("porc:directgetfields").asBool(true)
 
   val vars: mutable.Map[BoundVar, porc.Variable] = new mutable.HashMap()
-  val usedNames: mutable.Set[String] = new mutable.HashSet()
-  var varCounter: Int = 0
-  def newVarName(prefix: String = "_t"): porc.Variable = {
-    val name = if (usedNames contains prefix) {
-      varCounter += 1
-      prefix + "_" + varCounter
-    } else prefix
-    usedNames += name
-    new porc.Variable(Some(name))
-  }
-  def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, newVarName(temp.optionalVariableName.getOrElse("_v")))
+  def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, Variable(temp.optionalVariableName.getOrElse(id"v")))
+  
+  def Variable(s: String) = new porc.Variable(Some(s))
 
   /** Spawn if we are not in a sequentialized section.
     */
@@ -91,11 +85,11 @@ class OrctimizerToPorc(co: CompilerOptions) {
     import orc.ast.porc.PorcInfixNotation._
     val oldCtx = ctx
 
-    val comp = newVarName("comp")
-    val v = newVarName("v")
-    val cr = newVarName("cr")
-    val newP = newVarName("P")
-    val newC = newVarName("C")
+    val comp = Variable(id"comp_$fut~")
+    val v = Variable(id"v_$fut~")
+    val cr = Variable(id"cr_$fut~")
+    val newP = Variable(id"P_$fut~")
+    val newC = Variable(id"C_$fut~")
 
     let(
       (comp, porc.Continuation(Seq(), {
@@ -137,6 +131,8 @@ class OrctimizerToPorc(co: CompilerOptions) {
     import CallGraphValues._
     import FlowGraph._
     import orc.ast.porc.PorcInfixNotation._
+    
+    val cf = s"_${ctx.containingFunction}"
 
     val oldCtx = ctx
 
@@ -193,10 +189,10 @@ class OrctimizerToPorc(co: CompilerOptions) {
           } else {
             // For possibly recursive functions spawn before calling and spawn before passing on the publication.
             // This provides trampolining.
-            val newP = newVarName("P")
-            val v = newVarName("temp")
-            val comp1 = newVarName("comp")
-            val comp2 = newVarName("comp")
+            val newP = Variable(id"P${cf}_$target")
+            val v = Variable(id"res${cf}_$target")
+            val comp1 = Variable(id"comp${cf}_$target")
+            val comp2 = Variable(id"comp${cf}_$target")
             killCheck :::
             let(
               (newP, porc.Continuation(Seq(v), {
@@ -211,7 +207,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
               }
           }
         } else {
-          val v = newVarName("temp")
+          val v = Variable(id"res${cf}_$target")
           killCheck :::
           catchExceptions(
             let((v, porc.MethodDirectCall(isExternal, argument(target), args.map(argument(_)).view.force))) {
@@ -221,7 +217,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         }
       }
       case Parallel.Z(left, right) => {
-        val comp = newVarName("comp")
+        val comp = Variable(id"comp${cf}")
         let(
           (comp, porc.Continuation(Seq(), {
             catchExceptions {
@@ -235,18 +231,18 @@ class OrctimizerToPorc(co: CompilerOptions) {
           }
       }
       case Branch.Z(left, x, right) => {
-        val newP = newVarName("P")
+        val newP = Variable(id"P${cf}_$x")
         val v = lookup(x)
         let((newP, porc.Continuation(Seq(v), catchExceptions(expression(right))))) {
           expression(left)(ctx.copy(p = newP))
         }
       }
       case Trim.Z(f) => {
-        val newP = newVarName("P")
-        val newK = newVarName("K")
-        val newC = newVarName("Ct")
-        val newT = newVarName("T")
-        val v = newVarName()
+        val newP = Variable(id"P${cf}")
+        val newK = Variable(id"K${cf}")
+        val newC = Variable(id"Ct${cf}")
+        val newT = Variable(id"T${cf}")
+        val v = Variable(id"v${cf}")
 
         let((newT, porc.NewTerminator(ctx.t)),
           (newC, porc.NewTerminatorCounter(ctx.c, newT)),
@@ -265,7 +261,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
           }
       }
       case Future.Z(f) => {
-        val fut = newVarName("fut")
+        val fut = Variable(id"fut${cf}_$f")
         val zeroOrOnePubRhs = ctx.publications.publicationsOf(f) <= 1
         let((fut, porc.NewFuture(zeroOrOnePubRhs))) {
           buildFuture(fut, f) :::
@@ -274,31 +270,31 @@ class OrctimizerToPorc(co: CompilerOptions) {
       }
       case Force.Z(xs, vs, e) => {
         val porcXs = xs.map(lookup)
-        val newP = newVarName("P")
+        val newP = Variable(id"P${cf}")
         val body = expression(e)
         let((newP, porc.Continuation(porcXs, catchExceptions(body)))) {
           porc.Force(newP, ctx.c, ctx.t, vs.map(argument).view.force)
         }
       }
       case Resolve.Z(futures, e) => {
-        val newP = newVarName("P")
+        val newP = Variable(id"P${cf}")
         val v = argument(e)
         let((newP, porc.Continuation(Seq(), ctx.p(v)))) {
           porc.Resolve(newP, ctx.c, ctx.t, futures.map(argument).view.force)
         }
       }
       case Otherwise.Z(left, right) => {
-        val newC = newVarName("C")
-        val flag = newVarName("flag")
-        val cr = newVarName("cr")
+        val newC = Variable(id"C${cf}")
+        val flag = Variable(id"flag${cf}")
+        val cr = Variable(id"cr${cf}")
 
         val cl = {
-          val newP = newVarName("P")
-          val v = newVarName()
+          val newP = Variable(id"P${cf}")
+          val v = Variable(id"v${cf}")
           let(
             (newP, porc.Continuation(Seq(v), {
-              val newP2 = newVarName("P")
-              val v2 = newVarName()
+              val newP2 = Variable(id"P2${cf}")
+              val v2 = Variable(id"v2${cf}")
               let(
                 (newP2, porc.Continuation(Seq(v2), {
                   porc.NewToken(ctx.c) :::
@@ -319,8 +315,8 @@ class OrctimizerToPorc(co: CompilerOptions) {
           // Here we branch on flag using the Halted exception.
           // We halt the token if we never passed it to right.
           catchExceptions {
-            val newP2 = newVarName("P")
-            val v2 = newVarName()
+            val newP2 = Variable(id"P${cf}")
+            val v2 = Variable(id"v${cf}")
             let(
               (newP2, porc.Continuation(Seq(v2), {
                 catchExceptions {
@@ -354,7 +350,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         val selfV = lookup(self)
 
         val fieldInfos = for ((f, b) <- bindings) yield {
-          val varName = newVarName(f.name)
+          val varName = Variable(id"${f.name}")
           val (value, binder) = b match {
             case FieldFuture.Z(e) =>
               val zeroOrOnePubRhs = ctx.publications.publicationsOf(e) <= 1
@@ -375,7 +371,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
       }
       case GetField.Z(o, f) => {
         if (useDirectGetFields) {
-          val v = o.value ->> newVarName(f.name)
+          val v = o.value ->> Variable(id"${f.name}")
           let((v, porc.GetField(argument(o), f))) {
             ctx.p(v)
           }
@@ -385,7 +381,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
       }
       case GetMethod.Z(o) => {
         if (useDirectGetFields) {
-          val v = o.value ->> newVarName()
+          val v = o.value ->> Variable(id"${o}")
           let((v, porc.GetMethod(argument(o)))) {
             ctx.p(v)
           }
@@ -416,10 +412,10 @@ class OrctimizerToPorc(co: CompilerOptions) {
     import orc.ast.porc.PorcInfixNotation._
 
     val oldCtx = ctx
-    val argP = newVarName("P")
-    val argC = newVarName("C")
-    val argT = newVarName("T")
     val Method.Z(f, formals, body, _, _, _) = d
+    val argP = Variable(id"P_$f")
+    val argC = Variable(id"C_$f")
+    val argT = Variable(id"T_$f")
     val args = formals.map(lookup)
     val name = lookup(f)
 
@@ -427,14 +423,14 @@ class OrctimizerToPorc(co: CompilerOptions) {
       catchExceptions({
         d match {
           case _: Routine.Z => {
-            implicit val ctx = oldCtx.copy(p = argP, c = argC, t = argT, recursives = oldCtx.recursives ++ recursiveGroup)
+            implicit val ctx = oldCtx.copy(p = argP, c = argC, t = argT, recursives = oldCtx.recursives ++ recursiveGroup, containingFunction = f.toString)
             expression(body)
           }
           case _: Service.Z => {
-            val newC = newVarName("Cs")
-            val newP = newVarName("P")
-            val v = newVarName("v")
-            implicit val ctx = oldCtx.copy(p = newP, c = newC, t = oldCtx.t, recursives = oldCtx.recursives ++ recursiveGroup)
+            val newC = Variable(id"Cs_$f")
+            val newP = Variable(id"Ps_$f")
+            val v = Variable(id"v_$f")
+            implicit val ctx = oldCtx.copy(p = newP, c = newC, t = oldCtx.t, recursives = oldCtx.recursives ++ recursiveGroup, containingFunction = f.toString)
             porc.CheckKilled(ctx.t) :::
               // FIXME: Audit.
               let((newC, porc.NewServiceCounter(argC, oldCtx.c, ctx.t)),
@@ -447,7 +443,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
                 }
           }
         }
-      })(oldCtx.copy(c = argC))
+      })(oldCtx.copy(c = argC, containingFunction = f.toString))
     }
 
     d.value ->> porc.MethodCPS(name, argP, argC, argT, d.isInstanceOf[Routine.Z], args, newBody)
