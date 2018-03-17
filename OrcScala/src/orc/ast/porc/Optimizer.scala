@@ -335,10 +335,9 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val allOpts = List[Optimization](TailSpawnElim, InlineLet, EtaReduce, TryCatchElim, TryFinallyElim, EtaSpawnReduce, InlineSpawn)
 
   val opts = allOpts.filter { o =>
-    val b = co.options.optimizationFlags(s"porc:${o.name}").asBool()
-    Logger.fine(s"${if (b) "ENABLED" else "disabled"} ${o.name}")
-    b
+    co.options.optimizationFlags(s"porc:${o.name}").asBool()
   }
+  Logger.fine(s"ENABLED: ${opts.map(_.name).mkString(", ")}; disabled: ${allOpts.filterNot(opts.contains).map(_.name).mkString(", ")}")
 }
 
 object Optimizer {

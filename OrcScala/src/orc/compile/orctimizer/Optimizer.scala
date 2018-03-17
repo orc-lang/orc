@@ -883,10 +883,9 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
     */
 
   val opts = allOpts.filter { o =>
-    val b = co.options.optimizationFlags(s"orct:${o.name}").asBool()
-    Logger.fine(s"${if (b) "ENABLED" else "disabled"} ${o.name}")
-    b
+    co.options.optimizationFlags(s"orct:${o.name}").asBool()
   }
+  Logger.fine(s"ENABLED: ${opts.map(_.name).mkString(", ")}; disabled: ${allOpts.filterNot(opts.contains).map(_.name).mkString(", ")}")
 }
 /*
 case class UnrollOptimizer(co: CompilerOptions) extends Optimizer(co) {
