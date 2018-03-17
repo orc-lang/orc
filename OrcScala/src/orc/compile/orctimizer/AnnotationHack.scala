@@ -25,7 +25,7 @@ class OrcAnnotation extends InvokerMethod with SiteMetadata {
   override def publications: orc.values.sites.Range = orc.values.sites.Range(1, 1)
   override def timeToPublish: orc.values.sites.Delay = orc.values.sites.Delay.NonBlocking
   override def timeToHalt: orc.values.sites.Delay = orc.values.sites.Delay.NonBlocking
-  override def effects: Effects = Effects.None
+  override def effects: Effects = Effects.BeforePub
   override def isDirectCallable: Boolean = true
   
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = new OnlyDirectInvoker {
