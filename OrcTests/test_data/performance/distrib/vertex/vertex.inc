@@ -90,7 +90,7 @@ def timeRepetitions(setUpTestRep, runTestRep, tearDownTestRep, numRepetitions) =
     JavaSys.nanoTime() >finishElapsed_ns>
     (finishElapsed_ns - startElapsed_ns) / 1000  >elapsed_us>
     (finishCpuTime_ns - startCpuTime_ns) / 1000000  >cpuTime_ms>
-    Println("Repetition " + thisRepetitionNum + ": finish run.  Elapsed time " + elapsed_us + " µs, CPU time " + cpuTime_ms + " ms") >>
+    Println("Repetition " + thisRepetitionNum + ": finish run.  Elapsed time " + elapsed_us + " µs, leader CPU time " + cpuTime_ms + " ms") >>
     append(testElapsedTimes, [[thisRepetitionNum, elapsed_us, cpuTime_ms]])  >testElapsedTimes'>
     Println("Repetition " + thisRepetitionNum + ": tearing down.") >>
     (tearDownTestRep() >> stop; signal)  >>
@@ -112,7 +112,7 @@ def executeTest() =
   (setUpTest() >> stop; signal)  >>
   timeRepetitions(setUpTestRep, runTestRep, tearDownTestRep, numRepetitions)  >repetitionTimes>
   writeCsvFile(buildOutputPathname("repetition-times", "csv"), "Repetitions' elapsed times output file",
-    ["Repetition number", "Elapsed time (µs)", "CPU time (ms)"], repetitionTimes)  >>
+    ["Repetition number", "Elapsed time (µs)", "Leader CPU time (ms)"], repetitionTimes)  >>
   Println("Tearing down test.") >>
   (tearDownTest() >> stop; signal)  >>
   Println("Test finish.") >>

@@ -89,7 +89,7 @@ def timeRepetitions(testPayload, numRepetitions) =
 	JavaSys.nanoTime() >finishElapsed_ns>
 	(finishElapsed_ns - startElapsed_ns) / 1000  >elapsed_us>
     (finishCpuTime_ns - startCpuTime_ns) / 1000000  >cpuTime_ms>	
-	Println("Repetition " + thisRepetitionNum + ": finish.  Elapsed time " + elapsed_us + " µs, CPU time " + cpuTime_ms + " ms") >>
+	Println("Repetition " + thisRepetitionNum + ": finish.  Elapsed time " + elapsed_us + " µs, leader CPU time " + cpuTime_ms + " ms") >>
 	append(testElapsedTimes, [[thisRepetitionNum, elapsed_us, cpuTime_ms]])  >testElapsedTimes'>
 	(if remainingRepetitions :> 0 then timeRepetitions'(thisRepetitionNum + 1, remainingRepetitions - 1, testElapsedTimes') else testElapsedTimes')
   timeRepetitions'(1, numRepetitions - 1, [])
@@ -106,7 +106,7 @@ writeFactorValuesTable([
 ])  >>
 timeRepetitions(testPayload, numRepetitions)  >repetitionTimes>
 writeCsvFile(buildOutputPathname("repetition-times", "csv"), "Repetitions' elapsed times output file",
-  ["Repetition number", "Elapsed time (µs)", "CPU time (ms)"], repetitionTimes)  >>
+  ["Repetition number", "Elapsed time (µs)", "Leader CPU time (ms)"], repetitionTimes)  >>
 repetitionTimes
 
 
@@ -114,7 +114,7 @@ repetitionTimes
 OUTPUT:
 Repetition ...: start.
 Repetition ...: published ...
-Repetition ...: finish.  Elapsed time ... µs, CPU time ... ms
+Repetition ...: finish.  Elapsed time ... µs, leader CPU time ... ms
 ......
 Repetitions' elapsed times output file written to ...
 [[..., ...], ......]
