@@ -570,7 +570,7 @@ object SimpleWorkStealingScheduler {
 
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
   @inline
-  final val traceTasks = true
+  final val traceTasks = false
   
   if (traceTasks) {
     //DumperRegistry.register(WorkStealingSchedulerTaskTracer.dumpSchedule)
