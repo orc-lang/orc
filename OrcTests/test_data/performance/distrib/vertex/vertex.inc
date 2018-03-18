@@ -62,8 +62,9 @@ def resetGraph() :: Signal =
 
 def dumpGraph() :: Signal =
   def dumpVertices(vn) =
-    vertices(vn)? >v>
-    Println(v.name() + ": pathLen=" + v.pathLen()? + afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges()))) >>
+    vertices(vn)?  >v>
+    (v.pathLen().readD(); "(undef)")  >pl>
+    Println(v.name() + ": pathLen=" + pl + afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges())))  >>
     (if vn + 1 <: numVertices then dumpVertices(vn + 1) else signal)
   dumpVertices(0)
 
@@ -80,19 +81,19 @@ def getProcessCumulativeCpuTime() =
 
 def timeRepetitions(setUpTestRep, runTestRep, tearDownTestRep, numRepetitions) =
   def timeRepetitions'(thisRepetitionNum, remainingRepetitions, testElapsedTimes) =
-    Println("Repetition " + thisRepetitionNum + ": setting up.") >>
+    Println("Repetition " + thisRepetitionNum + ": setting up.")  >>
     (setUpTestRep() >> stop; signal)  >>
-    Println("Repetition " + thisRepetitionNum + ": start run.") >>
-    JavaSys.nanoTime() >startElapsed_ns>
+    Println("Repetition " + thisRepetitionNum + ": start run.")  >>
+    JavaSys.nanoTime()  >startElapsed_ns>
     getProcessCumulativeCpuTime()  >startCpuTime_ns>
-    (runTestRep() >p> Println("Repetition " + thisRepetitionNum + ": published " + p) >> stop; signal) >>
+    (runTestRep() >p> Println("Repetition " + thisRepetitionNum + ": published " + p) >> stop; signal)  >>
     getProcessCumulativeCpuTime()  >finishCpuTime_ns>
-    JavaSys.nanoTime() >finishElapsed_ns>
+    JavaSys.nanoTime()  >finishElapsed_ns>
     (finishElapsed_ns - startElapsed_ns) / 1000  >elapsed_us>
     (finishCpuTime_ns - startCpuTime_ns) / 1000000  >cpuTime_ms>
-    Println("Repetition " + thisRepetitionNum + ": finish run.  Elapsed time " + elapsed_us + " µs, leader CPU time " + cpuTime_ms + " ms") >>
+    Println("Repetition " + thisRepetitionNum + ": finish run.  Elapsed time " + elapsed_us + " µs, leader CPU time " + cpuTime_ms + " ms")  >>
     append(testElapsedTimes, [[thisRepetitionNum, elapsed_us, cpuTime_ms]])  >testElapsedTimes'>
-    Println("Repetition " + thisRepetitionNum + ": tearing down.") >>
+    Println("Repetition " + thisRepetitionNum + ": tearing down.")  >>
     (tearDownTestRep() >> stop; signal)  >>
     (if remainingRepetitions :> 0 then timeRepetitions'(thisRepetitionNum + 1, remainingRepetitions - 1, testElapsedTimes') else testElapsedTimes')
   timeRepetitions'(1, numRepetitions - 1, [])
@@ -108,12 +109,12 @@ def executeTest() =
     ("Probability of edge", probEdge, "", "probEdge", "Probability of edge between a given vertex pair"),
     ("Cluster size", NumberOfRuntimeEngines(), "", "dOrcNumRuntimes", "Number of d-Orc runtime engines running")
   ])  >>
-  Println("Test start. Setting up test.") >>
+  Println("Test start. Setting up test.")  >>
   (setUpTest() >> stop; signal)  >>
   timeRepetitions(setUpTestRep, runTestRep, tearDownTestRep, numRepetitions)  >repetitionTimes>
   writeCsvFile(buildOutputPathname("repetition-times", "csv"), "Repetitions' elapsed times output file",
     ["Repetition number", "Elapsed time (µs)", "Leader CPU time (ms)"], repetitionTimes)  >>
-  Println("Tearing down test.") >>
+  Println("Tearing down test.")  >>
   (tearDownTest() >> stop; signal)  >>
-  Println("Test finish.") >>
+  Println("Test finish.")  >>
   repetitionTimes

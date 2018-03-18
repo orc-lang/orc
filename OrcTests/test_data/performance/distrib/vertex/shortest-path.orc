@@ -41,7 +41,6 @@ def setUpTestRep() =
   resetGraph()
 
 def runTestRep() :: Signal =
-  randomGraph(numVertices, probEdge, 40)  >>
   -- start at startVertex with path len 0
   updatePathLenFor(vertices(0)?, 0) >> stop;
   signal
@@ -50,7 +49,7 @@ def tearDownTestRep() =
   dumpGraph()
 
 def tearDownTest() =
-  signal#
+  signal
 
 executeTest()
 
