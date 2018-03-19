@@ -81,10 +81,38 @@ final public class PorcEClosure {
         return body.call(values);
     }
     */
-    
+
+    private static final ThreadLocal<Boolean> toStringRecursionCheck = new ThreadLocal<Boolean>() {
+        @Override
+        @SuppressWarnings("boxing")
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
+
 	@Override
+    @SuppressWarnings("boxing")
 	public String toString() {
-		return body.getRootNode().getName();
+      // FIXME: The recursion check will be SLOW. But it may not matter. However it may not even be good to have this as a default.
+      StringBuilder sb = new StringBuilder();
+      sb.append(body.getRootNode().getName());
+      sb.append(':');
+      sb.append(body.getRootNode().getClass().getSimpleName());
+      if (!toStringRecursionCheck.get()) {
+        toStringRecursionCheck.set(true);
+        sb.append('[');
+        boolean notFirst = false;
+        for (Object v : environment) {
+          if (notFirst) {
+            sb.append(", ");
+          }
+          sb.append(v);
+          notFirst = true;
+        }
+        sb.append(']');
+        toStringRecursionCheck.set(false);
+      }
+      return sb.toString();
 	}
 
 }
