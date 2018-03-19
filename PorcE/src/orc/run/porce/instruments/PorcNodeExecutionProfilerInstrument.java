@@ -37,7 +37,7 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 
 	public static final String ID = "porc-execution-profiler";
 
-	private PorcNodeExecutionProfiler profiler;
+	protected PorcNodeExecutionProfiler profiler;
 
 	@Override
 	protected void onCreate(Env env) {
@@ -84,6 +84,7 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 					final FrameSlot profilerStateSlot = getProfilerStateSlot(rootNode);
 					final ConditionProfile setStateProfile = ConditionProfile.createBinaryProfile();
 					return new ExecutionEventNode() {
+					    @SuppressWarnings("null")
 						@Override
 						protected void onEnter(VirtualFrame frame) {
 							ProfilerState state = (ProfilerState) FrameUtil.getObjectSafe(frame, profilerStateSlot);

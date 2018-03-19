@@ -16,7 +16,6 @@ import orc.run.porce.runtime.CounterNested;
 import orc.run.porce.runtime.CounterService;
 import orc.run.porce.runtime.CounterTerminator;
 import orc.run.porce.runtime.PorcEExecution;
-import orc.run.porce.runtime.Terminator;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;

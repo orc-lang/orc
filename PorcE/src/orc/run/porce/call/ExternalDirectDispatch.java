@@ -11,16 +11,13 @@
 
 package orc.run.porce.call;
 
-import orc.CaughtEvent;
 import orc.DirectInvoker;
 import orc.Invoker;
-import orc.error.runtime.ExceptionHaltException;
 import orc.error.runtime.HaltException;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;

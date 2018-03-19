@@ -58,13 +58,15 @@ public class InternalCPSDispatch extends Dispatch {
 		internal.setTail(v);
 	}
 	
+	@Override
 	public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
 		arguments[0] = ((PorcEClosure)target).environment;
-		internal.execute(frame, (PorcEClosure)target, arguments);
+		internal.execute(frame, target, arguments);
 	}
 	
-	public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
-		internal.execute(frame, (PorcEClosure)target, buildArguments((PorcEClosure)target, arguments));
+	@Override
+    public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
+		internal.execute(frame, target, buildArguments((PorcEClosure)target, arguments));
 	}
 	
 	protected static Object[] buildArguments(PorcEClosure target, Object[] arguments) {

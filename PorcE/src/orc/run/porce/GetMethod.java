@@ -12,7 +12,6 @@
 package orc.run.porce;
 
 import orc.Accessor;
-import orc.CaughtEvent;
 import orc.ErrorAccessor;
 import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.PorcEClosure;
@@ -78,7 +77,7 @@ public class GetMethod extends Expression {
         return execution.runtime().getAccessor(t, field);
     }
 
-    @TruffleBoundary(allowInlining = true, throwsControlFlowException = true)
+    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
     protected static Object accessWithBoundary(final Accessor accessor, final Object obj) {
         return accessor.get(obj);
     }

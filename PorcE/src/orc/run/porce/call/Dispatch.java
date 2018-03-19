@@ -11,7 +11,6 @@
 
 package orc.run.porce.call;
 
-import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.frame.VirtualFrame;

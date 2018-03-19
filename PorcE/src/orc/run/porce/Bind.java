@@ -12,17 +12,15 @@
 package orc.run.porce;
 
 import orc.FutureReader;
-import orc.error.runtime.HaltException;
 import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
-import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.CallClosureSchedulable;
 import orc.run.porce.runtime.Future;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcEFutureReader;
 import orc.run.porce.runtime.PorcERuntime;
 
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -118,7 +116,7 @@ public abstract class Bind extends Expression {
             @Cached("createDispatch()") Dispatch dispatch,
             @Cached("createBinaryProfile()") ConditionProfile inlineProfile,
             @Cached("create()") BranchProfile callProfile) {
-            PorcERuntime r = execution.runtime();
+//            PorcERuntime r = execution.runtime();
           
             CallClosureSchedulable call = readerClassProfile.profile(reader).fastPublish(value);
             if (call != null) {
