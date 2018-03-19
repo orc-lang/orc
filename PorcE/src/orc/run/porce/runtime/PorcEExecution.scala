@@ -39,8 +39,8 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     notifyOrc(e)
   }
 
-  @TruffleBoundary(allowInlining = true) @noinline
   def notifyOfException(e: Throwable, node: Node) = {
+    @TruffleBoundary @noinline
     def handle(e: Throwable) = {
       val oe = OrcBacktrace.orcifyException(e, node)
       notifyOrc(new CaughtEvent(oe))

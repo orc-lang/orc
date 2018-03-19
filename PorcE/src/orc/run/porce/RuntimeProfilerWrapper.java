@@ -51,12 +51,12 @@ public final class RuntimeProfilerWrapper {
 	}
 
 	public static class Boundaries {
-		@TruffleBoundary(allowInlining = true)
+		@TruffleBoundary
 		static void traceEnter(long region, int id) {
 			RuntimeProfiler.traceEnter(region, id);
 		}
 
-		@TruffleBoundary(allowInlining = true)
+		@TruffleBoundary
 		static void traceExit(long region, int id) {
 			RuntimeProfiler.traceExit(region, id);
 		}

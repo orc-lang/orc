@@ -67,7 +67,7 @@ trait PorcEWithWorkStealingScheduler extends Orc {
     throw new UnsupportedOperationException("Stage not supported in PorcE");
   }
 
-  @TruffleBoundary(allowInlining = true) @noinline
+  @TruffleBoundary @noinline
   def schedule(t: Schedulable): Unit = {
     val sStart = StopWatches.workerSchedulingTime.start()
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.

@@ -131,7 +131,6 @@ abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(
       
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
-  @TruffleBoundary(allowInlining = true) @noinline
   protected def handleHaltToken() = {
     SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
   }

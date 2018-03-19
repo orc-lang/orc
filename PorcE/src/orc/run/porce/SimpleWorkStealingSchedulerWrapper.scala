@@ -13,7 +13,6 @@ package orc.run.porce
 
 import orc.run.extensions.{ SimpleWorkStealingScheduler }
 import com.oracle.truffle.api.CompilerDirectives.{ TruffleBoundary, CompilationFinal }
-import orc.Schedulable
 
 object SimpleWorkStealingSchedulerWrapper {
   @CompilationFinal
@@ -97,37 +96,37 @@ object SimpleWorkStealingSchedulerWrapper {
   }
 
   object Boundaries {
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def shareSchedulableID(d: AnyRef, s: AnyRef): Unit = {
       SimpleWorkStealingScheduler.shareSchedulableID(d, s)
     }
 
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def getSchedulableID(s: AnyRef) = {
       SimpleWorkStealingScheduler.getSchedulableID(s)
     }
 
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def traceTaskParent(parent: AnyRef, child: AnyRef): Unit = {
       SimpleWorkStealingScheduler.traceTaskParent(parent, child)
     }
 
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def traceTaskParent(parent: AnyRef, child: Long): Unit = {
       SimpleWorkStealingScheduler.traceTaskParent(parent, child)
     }
 
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def traceTaskParent(parent: Long, child: Long): Unit = {
       SimpleWorkStealingScheduler.traceTaskParent(parent, child)
     }
 
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def enterSchedulable(s: AnyRef, t: SimpleWorkStealingScheduler.SchedulableExecutionType): Unit = {
       SimpleWorkStealingScheduler.enterSchedulable(s, t)
     }
 
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def enterSchedulableInline(): Long = {
       val s = SimpleWorkStealingScheduler.newSchedulableID()
       SimpleWorkStealingScheduler.traceTaskParent(SimpleWorkStealingScheduler.currentSchedulable, s)
@@ -135,22 +134,22 @@ object SimpleWorkStealingSchedulerWrapper {
       s
     }
 
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def currentSchedulable: AnyRef = {
       SimpleWorkStealingScheduler.currentSchedulable
     }
 
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def exitSchedulable(s: AnyRef): Unit = {
       SimpleWorkStealingScheduler.exitSchedulable(s)
     }
 
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def exitSchedulable(s: AnyRef, old: AnyRef): Unit = {
       SimpleWorkStealingScheduler.exitSchedulable(s, old)
     }
     
-    @TruffleBoundary(allowInlining = true) @noinline
+    @TruffleBoundary @noinline
     def exitSchedulable(s: Long, old: AnyRef): Unit = {
       SimpleWorkStealingScheduler.exitSchedulable(s, old)
     }

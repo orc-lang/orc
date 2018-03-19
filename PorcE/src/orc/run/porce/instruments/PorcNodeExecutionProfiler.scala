@@ -27,7 +27,7 @@ import com.oracle.truffle.api.vm.PolyglotEngine
 class PorcNodeExecutionProfiler(env: Env) extends ProfilerBase {
   import ProfilerUtils._
 
-  @TruffleBoundary(allowInlining = true) @noinline
+  @TruffleBoundary @noinline
   def dispose(): Unit = {
     val out = ExecutionLogOutputStream("porc-profile-dispose", "csv", "Porc profile dump")
     if (out.isDefined) {
@@ -37,7 +37,7 @@ class PorcNodeExecutionProfiler(env: Env) extends ProfilerBase {
   }
   
   
-  @TruffleBoundary(allowInlining = true) @noinline
+  @TruffleBoundary @noinline
   def dump(out: PrintWriter): Unit = synchronized {
     //val out = new PrintWriter(env.out())
     val csv = new CsvWriter(out.write(_))
@@ -53,7 +53,7 @@ class PorcNodeExecutionProfiler(env: Env) extends ProfilerBase {
     out.flush();
   }
 
-  @TruffleBoundary(allowInlining = true) @noinline
+  @TruffleBoundary @noinline
   def reset(): Unit = synchronized {
     for (c <- nodeCounts.values().asScala) {
       c.reset()
@@ -62,7 +62,7 @@ class PorcNodeExecutionProfiler(env: Env) extends ProfilerBase {
 
   val nodeCounts = new HashMap[PorcAST, Counter]();
 
-  @TruffleBoundary(allowInlining = true) @noinline
+  @TruffleBoundary @noinline
   def getCounter(n: PorcAST): Counter = synchronized {
     nodeCounts.computeIfAbsent(n, (_) => new Counter())
   }

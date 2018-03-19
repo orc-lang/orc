@@ -42,7 +42,6 @@ class Future(val raceFreeResolution: Boolean) extends OrcValue with orc.Future {
 
   /** Resolve this to a value and call publish and halt on each blocked FutureReader.
     */
-  //@TruffleBoundary(allowInlining = true) @noinline
   final def localBind(v: AnyRef): Unit = {
     //assert(!v.isInstanceOf[Field], s"Future cannot be bound to value $v")
     //assert(!v.isInstanceOf[orc.Future], s"Future cannot be bound to value $v")
@@ -72,7 +71,6 @@ class Future(val raceFreeResolution: Boolean) extends OrcValue with orc.Future {
 
   /** Resolve this to stop and call halt on each blocked FutureReader.
     */
-  //@TruffleBoundary(allowInlining = true) @noinline
   final def localStop(): Unit = {
     val finalBlocked = fastLocalStop()
     
