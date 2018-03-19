@@ -21,6 +21,7 @@ import orc.run.porce.runtime.Future;
 import orc.run.porce.runtime.PorcEFutureReader;
 import orc.run.porce.runtime.PorcERuntime;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
@@ -43,22 +44,43 @@ public abstract class Bind extends Expression {
       this.execution = execution;
     }
   
-    @SuppressWarnings("null")
     @Specialization(guards = { "exactlyFuture(future)" })
-    @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
     public PorcEUnit bindExactlyFuture(VirtualFrame frame, final Future future, final Object value,
+        @Cached("create()") MaximumValueProfile readersLengthProfile,
         @Cached("createBinaryProfile()") ConditionProfile lastBindProfile,
         @Cached("createCallReaderPublish()") CallReaderPublish callPublish) {
         FutureReader[] readers = future.fastLocalBind(value);
         if (lastBindProfile.profile(readers != null)) {
-            int i = 0;
-            while (i < readers.length && readers[i] != null) {
-              FutureReader r = readers[i];
-              callPublish.execute(frame, i, r, value);
-              i += 1;
+            @SuppressWarnings("null")
+            int max = readersLengthProfile.max(readers.length);
+            if (max <= 8) {
+              callAllPublishExplode(frame, value, callPublish, readers, max);
+            } else {
+              callAllPublishLoop(frame, value, callPublish, readers);
             }
         }
         return PorcEUnit.SINGLETON;
+    }
+
+    @SuppressWarnings("boxing")
+    @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
+    private void callAllPublishExplode(VirtualFrame frame, final Object value, CallReaderPublish callPublish, FutureReader[] readers, int max) {
+      CompilerAsserts.compilationConstant(max);
+      int i = 0;
+      while (i < max && i < readers.length && readers[i] != null) {
+        FutureReader r = readers[i];
+        callPublish.execute(frame, i, r, value);
+        i += 1;
+      }
+    }
+
+    private void callAllPublishLoop(VirtualFrame frame, final Object value, CallReaderPublish callPublish, FutureReader[] readers) {
+      int i = 0;
+      while (i < readers.length && readers[i] != null) {
+        FutureReader r = readers[i];
+        callPublish.execute(frame, i, r, value);
+        i += 1;
+      }
     }
     
     @Specialization()
