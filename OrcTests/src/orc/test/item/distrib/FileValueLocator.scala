@@ -1,6 +1,6 @@
 //
 // FileValueLocator.scala -- Scala class FileValueLocator
-// Project PorcE
+// Project OrcTests
 //
 // Created by jthywiss on Sep 20, 2017.
 //

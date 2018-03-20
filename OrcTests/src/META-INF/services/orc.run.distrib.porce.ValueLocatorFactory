@@ -10,3 +10,4 @@
 # URL: http://orc.csres.utexas.edu/license.shtml .
 #
 orc.test.item.distrib.FileValueLocatorFactory
+orc.test.item.distrib.VertexValueLocatorFactory
