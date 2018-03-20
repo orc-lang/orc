@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 28, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,6 +22,15 @@ import orc.run.distrib.AbstractLocation
 trait ValueLocator {
   val currentLocations: PartialFunction[Any, Set[PeerLocation]]
   val permittedLocations: PartialFunction[Any, Set[PeerLocation]]
+}
+
+/** Service provider to get ValueLocator instances for a DOrcExecution.
+  *
+  * @see java.util.ServiceLoader
+  * @author jthywiss
+  */
+trait ValueLocatorFactory {
+  def apply(execution: DOrcExecution): ValueLocator
 }
 
 /** A Distributed Orc runtime participating in this cluster of runtimes.

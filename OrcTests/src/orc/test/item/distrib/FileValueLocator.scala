@@ -11,7 +11,9 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib.porce
+package orc.test.item.distrib
+
+import orc.run.distrib.porce.{ DOrcExecution, PeerLocation, ValueLocator, ValueLocatorFactory }
 
 /** A ValueLocator that looks up java.io.File names in a filename-to-location
   * Map.
@@ -36,4 +38,12 @@ class FileValueLocator(execution: DOrcExecution) extends ValueLocator {
     case f: java.io.File if filenameLocationMap.contains(f.getName) => Set(execution.locationForFollowerNum(filenameLocationMap(f.getName)))
   }
 
+}
+
+/** Service provider to get FileValueLocator instance.
+  *
+  * @author jthywiss
+  */
+class FileValueLocatorFactory extends ValueLocatorFactory {
+  def apply(execution: DOrcExecution): FileValueLocator = new FileValueLocator(execution)
 }

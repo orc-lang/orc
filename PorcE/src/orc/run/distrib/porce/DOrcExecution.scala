@@ -13,16 +13,20 @@
 
 package orc.run.distrib.porce
 
-import com.oracle.truffle.api.RootCallTarget
-import com.oracle.truffle.api.frame.VirtualFrame
-import com.oracle.truffle.api.nodes.RootNode
+import java.util.ServiceLoader
+
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 
 import orc.{ OrcEvent, OrcExecutionOptions, PublishedEvent }
 import orc.compile.parse.OrcSourceRange
 import orc.compiler.porce.PorcToPorcE
+import orc.run.distrib.DOrcPlacementPolicy
 import orc.run.porce.{ HasId, PorcEUnit }
 import orc.run.porce.runtime.{ CPSCallContext, PorcEClosure, PorcEExecution, PorcEExecutionWithLaunch }
-import orc.run.distrib.DOrcPlacementPolicy
+
+import com.oracle.truffle.api.RootCallTarget
+import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.nodes.RootNode
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -64,8 +68,9 @@ abstract class DOrcExecution(
 
   private val hereSet: Set[PeerLocation] = Set(runtime.here)
 
-  //TODO: Add a ValueLocator registration mechanism.
-  protected val valueLocators: Set[ValueLocator] = Set(new FileValueLocator(this))
+  protected val valueLocatorFactoryServiceLoader: ServiceLoader[ValueLocatorFactory] = ServiceLoader.load(classOf[ValueLocatorFactory])
+
+  protected val valueLocators: Set[ValueLocator] = valueLocatorFactoryServiceLoader.asScala.map(_(this)).toSet
 
   def currentLocations(v: Any): Set[PeerLocation] = {
     def pfc(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
