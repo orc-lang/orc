@@ -27,7 +27,7 @@ import sun.misc.Unsafe
   *
   * @author amp
   */
-final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val values: Array[AnyRef], execution: PorcEExecution) extends Terminatable {
+final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val values: Array[AnyRef], val execution: PorcEExecution) extends Terminatable {
   join =>
 
   import Join._

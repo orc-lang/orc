@@ -357,6 +357,17 @@ final case class NewFuture(raceFreeResolution: Boolean) extends Expression
 final case class Bind(@subtree future: Argument, @subtree v: Argument) extends Expression
 @leaf @transform
 final case class BindStop(@subtree future: Argument) extends Expression
+
+/** Spawn the v(P, C), where P is a future binding continuation and C is a counter 
+  * to use while computing the value, and execute k(f), where f is the future.
+  *
+  * The actual execution does NOT need to actually perform the spawn or build a future.
+  * For example, Graft can be executed as v(k) directly in cases where value is
+  * fast or k forces the future quickly.
+  */
+@leaf @transform
+final case class Graft(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree v: Argument) extends Expression
+
 /** Force a sequence of futures and pass their values to p.
   *
   * If any future halts this whole call halts.
@@ -367,6 +378,7 @@ final case class BindStop(@subtree future: Argument) extends Expression
 final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression {
   require(!futures.isInstanceOf[collection.TraversableView[_, _]])
 }
+
 /** Resolve a sequence of futures.
   *
   * This calls p when every future is either stopped or resolved to a value.

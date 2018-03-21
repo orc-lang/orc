@@ -208,6 +208,8 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           porce.Sequence.create((constructClosure +: newMethods :+ transform(body)(thisCtx)).toArray)
         case porc.NewFuture.Z(raceFreeResolution) =>
           porce.NewFuture.create(raceFreeResolution)
+        case porc.Graft.Z(p, c, t, v) =>
+          porce.Graft.create(ctx.execution, transform(p), transform(c), transform(t), transform(v))
         case porc.NewSimpleCounter.Z(p, h) =>
           porce.NewCounter.Simple.create(ctx.execution, transform(p), transform(h))
         case porc.NewServiceCounter.Z(p, p2, t) =>
@@ -253,7 +255,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             porce.Force.New.create(transform(p), transform(c), transform(t), futures.size, ctx.execution))
           val processors = futures.zipWithIndex.map { p =>
             val (f, i) = p
-            porce.Force.Future.create(porce.Read.Local.create(join), transform(f), i)
+            porce.Force.Future.create(porce.Read.Local.create(join), transform(f), i, ctx.execution)
           }
           val finishJoin = porce.Force.Finish.create(porce.Read.Local.create(join), ctx.execution)
           finishJoin.setTail(thisCtx.inTailPosition)

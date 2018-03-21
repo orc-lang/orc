@@ -81,6 +81,8 @@ class PrettyPrint(includeNestedCode: Boolean = true) {
         case Bind(f, v) => pp"bind $f $v"
         case BindStop(f) => pp"bind $f stop"
 
+        case Graft(p, c, t, v) => pp"graft $p $c $t $v"
+
         case Force(p, c, t, vs) => pp"force $p $c $t (${vs.map(reduce(_)).mkString(", ")})"
         case Resolve(p, c, t, vs) => pp"resolve $p $c $t (${vs.map(reduce(_)).mkString(", ")})"
 

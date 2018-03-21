@@ -26,6 +26,7 @@ import orc.run.porce.call.CatchSelfTailCall;
 import orc.run.porce.runtime.KilledException;
 import orc.run.porce.runtime.SourceSectionFromPorc;
 
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
@@ -58,7 +59,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     }
     
     final public long getTimePerCall() {
-    	if (timePerCall < 0 || CompilerDirectives.inInterpreter()) {
+    	if (shouldTimeCall()) {
         	long n = totalSpawnedCalls.get();
     		
     		if (n >= SpecializationConfiguration.MinCallsForTimePerCall) {
@@ -218,7 +219,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured) {
     	// Add self tail call catcher to the body during construction.
-        return new PorcERootNode(language, descriptor, CatchSelfTailCall.create(body), nArguments, nCaptured);
+        PorcERootNode r = new PorcERootNode(language, descriptor, CatchSelfTailCall.create(body), nArguments, nCaptured);
+        Truffle.getRuntime().createCallTarget(r);
+        return r;
     }
 
     @Override

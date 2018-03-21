@@ -22,6 +22,7 @@ import orc.lib.state.{ NewFlag, PublishIfNotSet, SetFlag }
 import orc.lib.builtin.structured.{ TupleConstructor }
 import orc.util.TUnknown
 import orc.lib.builtin.structured.TupleArityChecker
+import orc.compile.Logger
 
 case class ConversionContext(
     p: porc.Variable, c: porc.Variable, t: porc.Variable,
@@ -51,6 +52,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
 
   val useDirectCalls = co.options.optimizationFlags("porc:directcalls").asBool(true)
   val useDirectGetFields = co.options.optimizationFlags("porc:directgetfields").asBool(true)
+  val usePorcGraft = co.options.optimizationFlags("porc:usegraft").asBool(false)
 
   val vars: mutable.Map[BoundVar, porc.Variable] = new mutable.HashMap()
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, Variable(temp.optionalVariableName.getOrElse(id"v")))
@@ -76,20 +78,42 @@ class OrctimizerToPorc(co: CompilerOptions) {
       porc.HaltToken(ctx.c)
     })
   }
+  
+  def buildGraft(v: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
+    import orc.ast.porc.PorcInfixNotation._
+    val oldCtx = ctx
+    val cf = s"${ctx.containingFunction}"
+
+    val vClosure = Variable(id"V_${cf}_$v")
+    val newP = Variable(id"P_${cf}_$v")
+    val newC = Variable(id"C_${cf}_$v")
+
+    let(
+      (vClosure, porc.Continuation(Seq(newP, newC), {
+        implicit val ctx = oldCtx.copy(p = newP, c = newC)
+        catchExceptions {
+          expression(v)
+        }
+      }))) {
+      porc.Graft(ctx.p, ctx.c, ctx.t, vClosure)
+    }
+  }
+
 
   /** Run expression f to bind future fut.
     *
     * This uses the current counter and terminator, but does not publish any value.
     */
-  def buildFuture(fut: porc.Variable, f: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
+  def buildSlowFuture(fut: porc.Variable, f: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
     import orc.ast.porc.PorcInfixNotation._
     val oldCtx = ctx
+    val cf = s"${ctx.containingFunction}"
 
-    val comp = Variable(id"comp_$fut~")
-    val v = Variable(id"v_$fut~")
-    val cr = Variable(id"cr_$fut~")
-    val newP = Variable(id"P_$fut~")
-    val newC = Variable(id"C_$fut~")
+    val comp = Variable(id"comp_${cf}_$fut~")
+    val v = Variable(id"v_${cf}_$fut~")
+    val cr = Variable(id"cr_${cf}_$fut~")
+    val newP = Variable(id"P_${cf}_$fut~")
+    val newC = Variable(id"C_${cf}_$fut~")
 
     let(
       (comp, porc.Continuation(Seq(), {
@@ -121,11 +145,6 @@ class OrctimizerToPorc(co: CompilerOptions) {
   // FIXME: If an executing expression is killed, it will not halt it's counter.
   //        I think in all cases Killed and Halted will always be handled the same way. The exception might be otherwise which
   //        could easily remedy the problem by placing a kill check in the LHS branch.
-
-  // FIXME: Make it an error to have an exception escape a Porc function (even p and stuff).
-  //        This would enable checks at the top-level (the scheduler and such) to catch mistakes.
-  //        In addition, there could be a check at the root of closures.
-  //        The exception would be that direct callable methods would be allowed to throw. However these are not used yet.
 
   def expression(expr: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
     import CallGraphValues._
@@ -260,11 +279,14 @@ class OrctimizerToPorc(co: CompilerOptions) {
             }
           }
       }
+      case Future.Z(f) if usePorcGraft => {
+        buildGraft(f)
+      }
       case Future.Z(f) => {
         val fut = Variable(id"fut${cf}_$f")
         val zeroOrOnePubRhs = ctx.publications.publicationsOf(f) <= 1
         let((fut, porc.NewFuture(zeroOrOnePubRhs))) {
-          buildFuture(fut, f) :::
+          buildSlowFuture(fut, f) :::
             ctx.p(fut)
         }
       }
@@ -346,6 +368,31 @@ class OrctimizerToPorc(co: CompilerOptions) {
           expression(body)
         porc.MethodDeclaration(ctx.t, defs.map(callable(defs.map(_.name), _)).view.force, b)
       }
+      case New.Z(self, _, bindings, _) if usePorcGraft => {
+        Logger.warning(s"Fast futures are not used in objects yet. ($self)")
+        
+        val selfV = lookup(self)
+
+        val fieldInfos = for ((f, b) <- bindings) yield {
+          val varName = Variable(id"${f.name}")
+          val (value, binder) = b match {
+            case FieldFuture.Z(e) =>
+              val zeroOrOnePubRhs = ctx.publications.publicationsOf(e) <= 1
+              (porc.NewFuture(zeroOrOnePubRhs), Some(buildSlowFuture(varName, e)))
+            case FieldArgument.Z(a) =>
+              (argument(a), None)
+          }
+          ((varName, value), (f, varName), binder)
+        }
+        val (fieldVars, fields, binders) = {
+          val (fvs, fs, bs) = fieldInfos.unzip3
+          (fvs.toSeq, fs.toMap, bs.flatten)
+        }
+
+        let(fieldVars :+ ((selfV, porc.New(fields))): _*) {
+          binders.foldRight(ctx.p(selfV): porc.Expression)((a, b) => porc.Sequence(Seq(a, b)))
+        }
+      }
       case New.Z(self, _, bindings, _) => {
         val selfV = lookup(self)
 
@@ -354,7 +401,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
           val (value, binder) = b match {
             case FieldFuture.Z(e) =>
               val zeroOrOnePubRhs = ctx.publications.publicationsOf(e) <= 1
-              (porc.NewFuture(zeroOrOnePubRhs), Some(buildFuture(varName, e)))
+              (porc.NewFuture(zeroOrOnePubRhs), Some(buildSlowFuture(varName, e)))
             case FieldArgument.Z(a) =>
               (argument(a), None)
           }

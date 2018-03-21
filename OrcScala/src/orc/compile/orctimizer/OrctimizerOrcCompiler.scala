@@ -168,7 +168,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         classOf[CallContinuation], classOf[Continuation],
         classOf[MethodCPS], classOf[MethodDirect], classOf[MethodCPSCall], classOf[MethodDirectCall], classOf[IfLenientMethod],
         classOf[Force], classOf[GetField], classOf[Resolve], classOf[GetMethod],
-        classOf[New], classOf[NewFuture], classOf[Bind], classOf[BindStop],
+        classOf[New], classOf[NewFuture], classOf[Bind], classOf[BindStop], classOf[Graft],
         classOf[Spawn], classOf[NewTerminator], classOf[Kill], classOf[CheckKilled], 
         classOf[NewSimpleCounter], classOf[NewServiceCounter], classOf[NewTerminatorCounter],
         classOf[NewToken], classOf[HaltToken], classOf[SetDiscorporate], 

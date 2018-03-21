@@ -150,6 +150,8 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         BindStop(renameVariables(fut))
       case f @ NewFuture.Z(raceFreeResolution) =>
         f.value
+      case Graft.Z(p, c, t, v) =>
+        Graft(renameVariables(p), renameVariables(c), renameVariables(t), renameVariables(v))
     })
   }
 
