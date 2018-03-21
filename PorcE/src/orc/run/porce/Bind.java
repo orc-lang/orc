@@ -116,23 +116,23 @@ public abstract class Bind extends Expression {
             @Cached("createDispatch()") Dispatch dispatch,
             @Cached("createBinaryProfile()") ConditionProfile inlineProfile,
             @Cached("create()") BranchProfile callProfile) {
-//            PorcERuntime r = execution.runtime();
+            PorcERuntime r = execution.runtime();
           
             CallClosureSchedulable call = readerClassProfile.profile(reader).fastPublish(value);
             if (call != null) {
                 callProfile.enter();
-//                if(inlineProfile.profile(!r.isWorkQueueUnderful(r.minQueueSize()) && r.incrementAndCheckStackDepth())) {
+                if(inlineProfile.profile(!r.isWorkQueueUnderful(r.minQueueSize()) && r.incrementAndCheckStackDepth())) {
                     Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
                     SimpleWorkStealingSchedulerWrapper.enterSchedulable(call, SimpleWorkStealingSchedulerWrapper.InlineExecution());
                     try {
                         dispatch.executeDispatchWithEnvironment(frame, call.closure(), call.arguments());
                     } finally {
                         SimpleWorkStealingSchedulerWrapper.exitSchedulable(call, old);
-//                        r.decrementStackDepth();
+                        r.decrementStackDepth();
                     }
-//                } else {
-//                    execution.runtime().schedule(call);
-//                } 
+                } else {
+                    execution.runtime().schedule(call);
+                } 
             }
         }
         
