@@ -309,6 +309,20 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
+  
+  val SequentializeForce = OptFull("sequentialize-force") { (e, a) =>    
+    e match {
+      case Force.Z(xs, vs, body) => {
+        val pairs = xs zip vs
+        val r = pairs.foldRight(body.value: Expression) { (p, body) =>
+          val (x, v) = p
+          Force(x, v.value, body)
+        }
+        Some(r)
+      }
+      case _ => None
+    }
+  }
 
   val ResolveElim = OptFull("resolve-elim") { (e, a) =>
     e match {
@@ -867,7 +881,7 @@ case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
       Normalize,
       IfDefElim, Inline, FutureForceElim, BranchElim, OtherwiseElim, TrimElim, UnusedFutureElim, StopEquiv, 
       ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant, 
-      FutureElim, GetMethodElim, TupleElim, MethodElim)
+      FutureElim, GetMethodElim, TupleElim, MethodElim, SequentializeForce)
   /*
   val allOpts = List(
     BranchReassoc,
