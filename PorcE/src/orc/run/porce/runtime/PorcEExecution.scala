@@ -83,7 +83,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       val v = callSiteMap.get(callSiteId)
       if (v == null)
         callSiteMap.computeIfAbsent(callSiteId, (_) => 
-          truffleRuntime.createCallTarget(new InvokeCallRecordRootNode(runtime.language, arguments.length + 3, this)))
+          truffleRuntime.createCallTarget(new InvokeCallRecordRootNode(runtime.language, arguments.length + 3, callSiteId, this)))
       else
         v
     }

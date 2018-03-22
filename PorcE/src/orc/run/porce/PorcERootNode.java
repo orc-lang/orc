@@ -192,10 +192,12 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     public Object execute(final VirtualFrame frame) {
         final Object[] arguments = frame.getArguments();
         if (arguments.length != nArguments + 1) {
+            transferToInterpreter();
             throwArityException(arguments.length - 1, nArguments);
         }
         final Object[] captureds = (Object[]) arguments[0];
         if (captureds.length != nCaptured) {
+            transferToInterpreter();
             InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
         }
 
@@ -209,7 +211,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         }
     }
 
-    @TruffleBoundary(allowInlining = true)
+    @TruffleBoundary
     private static void throwArityException(final int nReceived, final int nExpected) {
         throw new ArityMismatchException(nExpected, nReceived);
     }

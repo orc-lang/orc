@@ -26,6 +26,8 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
  * @author amp
  */
 public class InvokeCallRecordRootNode extends PorcERootNode {
+    private final int callSiteId;
+
     @Override
     public int getId() {
         // FIXME: Clearly the inheritance hierarchy is messed up. This should be fixed if and when refactoring happens for anything related.
@@ -41,8 +43,9 @@ public class InvokeCallRecordRootNode extends PorcERootNode {
         return Call.CPS.create(readTarget, readArgs, execution, false);
     }
 
-    public InvokeCallRecordRootNode(final PorcELanguage language, final int nArguments, final PorcEExecution execution) {
-        super(language, new FrameDescriptor(), buildBody(nArguments, execution), nArguments, 0);
+    public InvokeCallRecordRootNode(final PorcELanguage language, final int nArguments, final int callSiteId, final PorcEExecution execution) {
+        super(language, new FrameDescriptor(), buildBody(nArguments, execution), nArguments + 1, 0);
+        this.callSiteId = callSiteId;
     }
     
     @Override
@@ -52,11 +55,11 @@ public class InvokeCallRecordRootNode extends PorcERootNode {
     
     @Override
     public String getName() {
-        return hashCode() + "<invokeCallRecord>";
+        return callSiteId + "<invokeCallRecord>";
     }
     
     @Override
     public String toString() {
-        return hashCode() + "<invokeCallRecord>";
+        return callSiteId + "<invokeCallRecord>";
     }
 }
