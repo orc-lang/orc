@@ -121,7 +121,71 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      (porce ++ scala).sortBy(o => (o.run, -o.nCPUs, o.toString))
+      (porce /*++ scala*/).sortBy(o => (o.run, -o.nCPUs, o.toString))
+    }
+    runExperiment(experimentalConditions)
+  }
+}
+
+object PorcEFutureForceOptimizationExperiment extends PorcEBenchmark {
+  def softTimeLimit: Double = 60 * 9
+  
+  trait HasRunNumber {
+    def run: Int
+  }   
+  
+  val jvmOpts = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g")
+    
+  case class MyPorcEExperimentalCondition(
+      run: Int,
+      orcFile: File, 
+      useGraft: Boolean,
+      sequentializeForce: Boolean
+      ) 
+      extends ArthursBenchmarkEnv.PorcEExperimentalCondition with HasRunNumber {
+    override def factorDescriptions = Seq(
+      FactorDescription("run", "Run Number", "", ""),
+      FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
+      FactorDescription("useGraft", "Use Porc-level Graft", "", ""),
+      FactorDescription("sequentializeForce", "Sequentialize All Forces", "", ""),
+    )
+    override def systemProperties = super.systemProperties ++ Map(
+        "graal.TruffleBackgroundCompilation" -> "true",
+        "orc.numerics.preferLP" -> "true",
+        "graal.TruffleCompilationThreshold" -> 800,
+        )
+        
+    override def toOrcArgs = {
+      val optopt = Seq( 
+        if (useGraft) Some("porc:usegraft") else None,
+        if (sequentializeForce) Some("orct:sequentialize-force") else None
+        ).flatten
+      super.toOrcArgs ++ Seq("-O", "3", "--opt-opt", optopt.mkString(","))
+    }
+    
+    override def toJvmArgs = jvmOpts ++ super.toJvmArgs
+  }
+
+  def main(args: Array[String]): Unit = {
+    val experimentalConditions = {
+      val porce = for {
+        run <- 0 until 1
+        useGraft <- Seq(true, false)
+        sequentializeForce <- Seq(true, false)
+        fn <- Seq(
+            "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-compute-for-tree.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-compute-for-tree-opt.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            )
+      } yield {
+        assert(new File(fn).isFile(), fn)
+        MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), useGraft, sequentializeForce)
+      }
+      porce.sortBy(o => (o.run, o.toString))
     }
     runExperiment(experimentalConditions)
   }

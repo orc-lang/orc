@@ -3,9 +3,10 @@
  -}
 
 include "benchmark.inc"
---include "porce-debug.inc"
+include "porce-debug.inc"
 
-import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+--import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+--import site SinglePublication = "orc.compile.orctimizer.SinglePublication"
 
 import class BlackScholesResult = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesResult"
 import class BlackScholesData = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesData"
@@ -28,23 +29,27 @@ def forTree(low, high) =
   	--Println("for " + low + " to " + high) >>
   	for(low, high)
   else
-    val split = low + (high - low) / 2 #
+    low + (high - low) / 2 >split>
   	( forTree(low, split) | forTree(split, high) )
 
 
 val compute = BlackScholes.compute
   
 def run(data) =
+	val riskless = BlackScholesData.riskless()
+	val volatility = BlackScholesData.volatility()
 	val res = Array(data.length?)
+	
 	forTree(0, data.length?) >i>
-	  res(i) := compute(data(i)?.price(), data(i)?.strike(), data(i)?.maturity(), BlackScholesData.riskless(), BlackScholesData.volatility()) >>
+	  res(i) := compute(data(i)?.price(), data(i)?.strike(), data(i)?.maturity(), riskless, volatility) >>
+	  --data(i)? >d> res(i) := compute(d.price(), d.strike(), d.maturity(), riskless, volatility) >>
 	  --TraceTask(i) >> 
 	  stop ;
 	res
 
 val data = BlackScholesData.data()
 
-benchmarkSized("Black-Scholes-scala-compute", data.length?, { data }, run, BlackScholesData.check)
+benchmarkSized("Black-Scholes-scala-compute-for-tree", data.length?, { data }, run, BlackScholesData.check)
 
 {-
 BENCHMARK
