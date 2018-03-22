@@ -197,33 +197,9 @@ object Tracer {
   def dumpBuffers(suffix: String) = synchronized {
     val oldBuffers = takeBuffers()
     
-    if (false) {
-      val a = System.err
-      /* Convention: synchronize on a during output of block */
-      a synchronized {
-        a.append(s"Trace Buffer: begin $suffix\n")
-        a.append(s"-----Time-(ms)-----  -----Time-(ns)-----  -----Thread-ID-----  -Token/Group-ID-  EvntType  ------From------  -------To-------\n")
-  
-        for (tb <- oldBuffers) {
-          Tracer synchronized {
-            tb synchronized {
-              for (i <- 0 to tb.eventsInBuffer - 1) {
-                if (!onlyDumpSelectedLocations || selectedLocations.contains(tb.locationIds(i))) {
-                  val eventTypeName = eventTypeNameMap(tb.typeIds(i))
-                  val prettyFromArg = eventPrettyprintFromArg(tb.typeIds(i))(tb.fromArgs(i))
-                  val prettyToArg = eventPrettyprintToArg(tb.typeIds(i))(tb.toArgs(i))
-                  a.append(f"${tb.millitimes(i)}%19d  ${tb.nanotimes(i)}%19d  ${tb.javaThreadId}%19d  ${tb.locationIds(i)}%016x  ${eventTypeName}  ${prettyFromArg}%16s  ${prettyToArg}%16s\n")
-                }
-              }
-            }
-          }
-        }
-        a.append(s"Trace Buffer: end $suffix\n")
-      }
-    }
-
-    val csvOut = ExecutionLogOutputStream(s"trace-$suffix", "csv", "Trace output file")
-    if (csvOut.isDefined && oldBuffers.nonEmpty && oldBuffers.exists(_.eventsInBuffer > 0)) {
+    // Use lazy to prevent the file from being opened and created if it's not needed
+    lazy val csvOut = ExecutionLogOutputStream(s"trace-$suffix", "csv", "Trace output file")
+    if (oldBuffers.nonEmpty && oldBuffers.exists(_.eventsInBuffer > 0) && csvOut.isDefined) {
       val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
       val csvWriter = new CsvWriter(traceCsv.append(_))
       val tableColumnTitles = Seq("Absolute Time (ms) [absTime]", "Precise Time (ns) [time]", "Thread ID [threadId]", "Token/Group ID [sourceId]", "Event Type [type]", "From [from]", "To [to]")
@@ -240,13 +216,14 @@ object Tracer {
     }
   }
 
-  DumperRegistry.register(dumpBuffers)
-
   private def register(tb: TraceBuffer) = synchronized {
     buffers += tb
   }
 
-  if (traceOn) Runtime.getRuntime().addShutdownHook(new Thread(() => dumpBuffers("shutdown"), "TraceBufferDumpThread"))
+  if (traceOn) {
+    DumperRegistry.register(dumpBuffers)
+    Runtime.getRuntime().addShutdownHook(new Thread(() => dumpBuffers("shutdown"), "TraceBufferDumpThread"))
+  }
 }
 
 private class ConstantSeq[A](val value: A, override val length: Int) extends Seq[A] {
