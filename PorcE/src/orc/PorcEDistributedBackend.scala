@@ -32,6 +32,7 @@ class PorcEDistributedBackend extends PorcBackend {
     // Add options to prevent the use of features which are incompatible with DOrc.
     oos.add("porc:directgetfields=false")
     oos.add("porc:directcalls=false")
+    oos.add("porc:usegraft=false")
     options.optimizationOptions = oos
     
     options

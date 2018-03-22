@@ -52,7 +52,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
 
   val useDirectCalls = co.options.optimizationFlags("porc:directcalls").asBool(true)
   val useDirectGetFields = co.options.optimizationFlags("porc:directgetfields").asBool(true)
-  val usePorcGraft = co.options.optimizationFlags("porc:usegraft").asBool(false)
+  val usePorcGraft = co.options.optimizationFlags("porc:usegraft").asBool(true)
 
   val vars: mutable.Map[BoundVar, porc.Variable] = new mutable.HashMap()
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, Variable(temp.optionalVariableName.getOrElse(id"v")))
