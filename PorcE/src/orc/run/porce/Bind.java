@@ -108,15 +108,11 @@ public abstract class Bind extends Expression {
         }
       
         public abstract void execute(VirtualFrame frame, int index, final FutureReader reader, final Object value);
-      
-        @Specialization(guards = {"index == cachedIndex"}, limit = "8")
-        public void porce(VirtualFrame frame, int index, final PorcEFutureReader reader, final Object value,
-            @Cached("index") int cachedIndex,
-            @Cached("createClassProfile()") ValueProfile readerClassProfile,
-            @Cached("createDispatch()") Dispatch dispatch,
-            @Cached("createBinaryProfile()") ConditionProfile inlineProfile,
-            @Cached("create()") BranchProfile callProfile) {
-            PorcERuntime r = execution.runtime();
+
+	private void porce(VirtualFrame frame, final PorcEFutureReader reader, final Object value,
+		ValueProfile readerClassProfile, Dispatch dispatch, ConditionProfile inlineProfile,
+		BranchProfile callProfile) {
+	    PorcERuntime r = execution.runtime();
           
             CallClosureSchedulable call = readerClassProfile.profile(reader).fastPublish(value);
             if (call != null) {
@@ -134,6 +130,25 @@ public abstract class Bind extends Expression {
                     execution.runtime().schedule(call);
                 } 
             }
+	}
+
+        @Specialization(guards = {"index == cachedIndex"}, limit = "8")
+        public void porceSeparateCaches(VirtualFrame frame, int index, final PorcEFutureReader reader, final Object value,
+            @Cached("index") int cachedIndex,
+            @Cached("createClassProfile()") ValueProfile readerClassProfile,
+            @Cached("createDispatch()") Dispatch dispatch,
+            @Cached("createBinaryProfile()") ConditionProfile inlineProfile,
+            @Cached("create()") BranchProfile callProfile) {
+            porce(frame, reader, value, readerClassProfile, dispatch, inlineProfile, callProfile);
+        }
+        
+        @Specialization(replaces = "porceSeparateCaches")
+        public void porceSharedCache(VirtualFrame frame, int index, final PorcEFutureReader reader, final Object value,
+            @Cached("createClassProfile()") ValueProfile readerClassProfile,
+            @Cached("createDispatch()") Dispatch dispatch,
+            @Cached("createBinaryProfile()") ConditionProfile inlineProfile,
+            @Cached("create()") BranchProfile callProfile) {
+            porce(frame, reader, value, readerClassProfile, dispatch, inlineProfile, callProfile);
         }
         
         @Specialization
