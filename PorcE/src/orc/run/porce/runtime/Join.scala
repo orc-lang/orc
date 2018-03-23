@@ -21,10 +21,6 @@ import sun.misc.Unsafe
   *
   * This is analogous to orc.run.core.Join.
   *
-  * @param inValues a list of value which may contain futures. All the futures in this array will be blocked on.
-  *
-  * This class must be subclassed to implement halt and done.
-  *
   * @author amp
   */
 final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val values: Array[AnyRef], val execution: PorcEExecution) extends Terminatable {

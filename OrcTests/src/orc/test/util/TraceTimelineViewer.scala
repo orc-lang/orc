@@ -1,5 +1,5 @@
 //
-// TraceTimelineViewer.scala -- Scala object TraceTimelineViewer
+// TraceTimelineViewer.scala -- Swing application TraceTimelineViewer
 // Project OrcTests
 //
 // Copyright (c) 2018 The University of Texas at Austin. All rights reserved.

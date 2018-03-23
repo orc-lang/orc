@@ -56,6 +56,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   })
   
   def potentiallySchedule(s: Schedulable) = {
+    // Logger.log(Level.WARNING, "nonInlinableSchedule", new Exception)
     nonInlinableScheduleCount.increment()
     if (allowSpawnInlining || actuallySchedule) {
       def isFast = {
@@ -140,8 +141,8 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       val depth = stackDepthThreadLocal.get()
       //if (depth.value > PorcERuntime.maxStackDepth / 2)
       //  Logger.log(Level.INFO, s"decr (depth=${depth.value})")
-        
-      depth.value -= 1
+      
+        depth.value -= 1
     }
   }
 
