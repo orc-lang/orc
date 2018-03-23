@@ -21,7 +21,6 @@ import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
 import orc.util.ABPWSDeque
 import java.util.concurrent.atomic.AtomicLong
-import java.lang.management.ManagementFactory
 import java.util.Collections
 import java.util.WeakHashMap
 import orc.util.DumperRegistry
@@ -60,7 +59,7 @@ class SimpleWorkStealingScheduler(
   val maxWorkers = overrideWorkers.getOrElse(minWorkers + maxSiteThreads)
   /** The maximum amount of time (ms) to wait between attempts to steal work.
     */
-  val maxStealWait = 100
+  val maxStealWait = 3
   /** The ideal number of active (non-blocked) worker threads.
     */
   val goalUsableThreads = minWorkers + goalExtraThreads
@@ -645,7 +644,7 @@ object SimpleWorkStealingScheduler {
     }
   }
   
-  val threadMXBean: management.ThreadMXBean = null // ManagementFactory.getThreadMXBean
+  val threadMXBean: management.ThreadMXBean = null // java.lang.management.ManagementFactory.getThreadMXBean
   
   def getCPUTime() = {
     if (threadMXBean != null) {
