@@ -202,7 +202,7 @@ class SimpleWorkStealingScheduler(
     private[SimpleWorkStealingScheduler] val workQueue: SchedulingQueue[Schedulable] = new ABPWSDeque(workerQueueLength)
     
     def queueSize = workQueue.size
-
+    
     //@volatile
     var isPotentiallyBlocked = false
     var isInternallyBlocked = true
@@ -217,7 +217,7 @@ class SimpleWorkStealingScheduler(
     var stealFailures = 0
     var overflows = 0
     var atRemovalSafePoint = false
-
+    
     private[this] var prngState: Int = workerID + 1 // Must be non-zero
     private[this] var stealFailureRunLength = 0
     private[this] var wasIdle = true
@@ -401,9 +401,13 @@ class SimpleWorkStealingScheduler(
       val w = workers(index)
       if (w != null) {
         t = w.workQueue.steal()
+        if (t != null)
+          SimpleWorkStealingScheduler.traceWorkerSteal(this, w)
       }
       if (t == null) {
         t = inputQueue.poll()
+        if (t != null)
+          SimpleWorkStealingScheduler.traceWorkerSteal(this, -1)
       }
       t
     }
@@ -538,6 +542,9 @@ object SimpleWorkStealingScheduler {
   final val WorkerBusy = 32L
   orc.util.Tracer.registerEventTypeId(WorkerBusy, "WrkrBusy")
 
+  final val WorkerSteal = 36L
+  orc.util.Tracer.registerEventTypeId(WorkerSteal, "WrkrStel")
+
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
   final val traceScheduler = false
 
@@ -555,6 +562,19 @@ object SimpleWorkStealingScheduler {
     }
   }
 
+  @inline
+  def traceWorkerSteal(thiefThread: SimpleWorkStealingScheduler#Worker, victimThread: SimpleWorkStealingScheduler#Worker): Unit = {
+    if (traceScheduler) {
+      orc.util.Tracer.trace(WorkerSteal, victimThread.getId, thiefThread.workerID, victimThread.workerID)
+    }
+  }
+
+  @inline
+  def traceWorkerSteal(thiefThread: SimpleWorkStealingScheduler#Worker, victim: Long): Unit = {
+    if (traceScheduler) {
+      orc.util.Tracer.trace(WorkerSteal, victim, thiefThread.workerID, victim)
+    }
+  }
   
   
     
