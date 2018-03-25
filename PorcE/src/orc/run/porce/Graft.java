@@ -17,6 +17,7 @@ import orc.run.porce.runtime.Future;
 import orc.run.porce.runtime.KilledException;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.PorcERuntime$;
 
 import com.oracle.truffle.api.dsl.Cached;
@@ -155,6 +156,7 @@ public abstract class Graft extends Expression {
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
+	    execution.registerRootNode(r);
 	    return r;
 	}
 
@@ -164,18 +166,20 @@ public abstract class Graft extends Expression {
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
+	    execution.registerRootNode(r);
 	    return r;
 	}
 
 	protected RootNode createNewP() {
 	    Expression body = Sequence
 		    .create(new Expression[] { Bind.create(Read.Closure.create(1), Read.Argument.create(0), execution),
-			    HaltToken.create(Read.Closure.create(0), execution) });
+		    HaltToken.create(Read.Closure.create(0), execution) });
 	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null,
 		    body, 1, 2);
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
+	    execution.registerRootNode(r);
 	    return r;
 	}
     }

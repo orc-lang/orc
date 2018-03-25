@@ -96,15 +96,21 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   def invokeClosure(target: PorcEClosure, args: Array[AnyRef]): Unit = {
     val callTarget = {
       val key = target.body.getRootNode()
-      val v = trampolineMap.get(key)
-      if (v == null)
+          val v = trampolineMap.get(key)
+          if (v == null)
         trampolineMap.computeIfAbsent(key, (root) => 
           truffleRuntime.createCallTarget(new InvokeWithTrampolineRootNode(runtime.language, root, this)))
-      else
-        v
-    }
+          else
+            v
+      }
     args(0) = target.environment
     callTarget.call(args: _*)
+  }
+  
+  private val extraRegisteredRootNodes = Collections.synchronizedList(new ArrayList[RootNode]())
+  
+  def registerRootNode(root: RootNode): Unit = {
+    extraRegisteredRootNodes.add(root)
   }
   
   {
@@ -149,35 +155,12 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
     */
   
-    {
-      val csvOut = ExecutionLogOutputStream("trampoline-calls", "csv", "Trampoline call counts")
-      if (csvOut.isDefined) {
-        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-        val csvWriter = new CsvWriter(traceCsv.append(_))
-        val tableColumnTitles = Seq(
-            "RootNode Name [name]", 
-            "Number of Calls [calls]")
-        csvWriter.writeHeader(tableColumnTitles)
-        for (t <- trampolineMap.values().asScala) {
-          t.getRootNode match {
-            case n: InvokeWithTrampolineRootNode if n.getRoot() != null =>
-              csvWriter.writeRow(Seq(n.getRoot().getName, n.getCallCount, n.getRoot().porcNode.map(_.sourceTextRange.toString).getOrElse("")))
-            case n: InvokeWithTrampolineRootNode =>
-              Logger.warning(s"Failed to dump trampoline call counts since root == null: $n")
-            case _ =>
-              ()
-          }
-        }
-        traceCsv.close()
-      }
-    }
-  
     val specializationsOut = ExecutionLogOutputStream("truffle-node-specializations", "txt", "Truffle node specializations")
     if (specializationsOut.isDefined) {
         val out = new PrintWriter(new OutputStreamWriter(specializationsOut.get))
         val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
-        for (t <- callTargets.toSeq.sortBy(_.toString)) {
-          DumpSpecializations(t.getRootNode, out)
+        for (r <- (callTargets.map(_.getRootNode) ++ extraRegisteredRootNodes.asScala).toSeq.sortBy(_.toString)) {
+          DumpSpecializations(r, out)
         }
         out.close()
     }
