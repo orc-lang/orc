@@ -33,6 +33,9 @@ object Terminator {
   
   val TerminatorAddChild = 150L
   Tracer.registerEventTypeId(TerminatorAddChild, "TrmAddCh", _.formatted("%016x"), _.formatted("%016x"))
+  
+  val TerminatorRemoveChild = 151L
+  Tracer.registerEventTypeId(TerminatorRemoveChild, "TrmRemCh", _.formatted("%016x"), _.formatted("%016x"))
 }
 
 /** A termination tracker.
@@ -61,7 +64,7 @@ class Terminator(val depth: Int) extends Terminatable {
     if (orig == null) {
       child.kill()
     } else {
-      //Tracer.trace(TerminatorAddChild, hashCode(), child.hashCode(), 0)
+      //Tracer.trace(TerminatorAddChild, 0, hashCode(), child.hashCode())
       orig.add(child)
 
       // This commented code should be enabled to run terminator_leak.orc
@@ -89,8 +92,10 @@ class Terminator(val depth: Int) extends Terminatable {
     */
   @TruffleBoundary(allowInlining = true) @noinline
   final def removeChild(child: Terminatable): Unit = {
+    //Logger.log(Level.INFO, "", new Exception)
     val orig = children.get()
     if (orig != null) {
+      //Tracer.trace(TerminatorRemoveChild, 0, hashCode(), child.hashCode())
       orig.remove(child)
     }
   }
