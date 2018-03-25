@@ -25,6 +25,7 @@ import orc.error.runtime.HaltException;
 import orc.run.porce.call.CatchSelfTailCall;
 import orc.run.porce.runtime.KilledException;
 import orc.run.porce.runtime.SourceSectionFromPorc;
+import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.CompilerAsserts;
@@ -35,6 +36,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.RootCallTarget;
 
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     
@@ -61,14 +63,16 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     final public long getTimePerCall() {
     	if (shouldTimeCall()) {
         	long n = totalSpawnedCalls.get();
+            	long t = totalSpawnedTime.get();
     		
     		if (n >= SpecializationConfiguration.MinCallsForTimePerCall) {
         		CompilerDirectives.transferToInterpreterAndInvalidate();
-            	long t = totalSpawnedTime.get();
             	n = totalSpawnedCalls.get();
         		timePerCall = t / n;
+    		} else if (n < 2) {
+                	return Long.MAX_VALUE;
     		} else {
-    			return Long.MAX_VALUE;
+                	return t / n;
     		}
     	}
 		return timePerCall;
@@ -173,8 +177,10 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     protected @Child Expression body;
     private final int nArguments;
     private final int nCaptured;
+    
+    public RootCallTarget trampolineCallTarget;
 
-    public PorcERootNode(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured) {
+    public PorcERootNode(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured, PorcEExecution execution) {
         super(language, descriptor);
         this.body = body;
         this.nArguments = nArguments;
@@ -217,9 +223,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         throw new ArityMismatchException(nExpected, nReceived);
     }
 
-    public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured) {
+    public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured, PorcEExecution execution) {
     	// Add self tail call catcher to the body during construction.
-        PorcERootNode r = new PorcERootNode(language, descriptor, CatchSelfTailCall.create(body), nArguments, nCaptured);
+        PorcERootNode r = new PorcERootNode(language, descriptor, CatchSelfTailCall.create(body), nArguments, nCaptured, execution);
         Truffle.getRuntime().createCallTarget(r);
         return r;
     }

@@ -60,9 +60,11 @@ public abstract class Graft extends Expression {
     
     protected boolean shouldInlineSpawn(VirtualFrame frame) {
 	try {
+	    final PorcERuntime r = execution.runtime();
 	    PorcEClosure computation = v.executePorcEClosure(frame);
-	    return allowSpawnInlining
-		    && computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit;
+	    return (allowSpawnInlining
+		    && computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit)
+		    || !r.isWorkQueueUnderful(r.minQueueSize() + 2);
 	} catch (UnexpectedResultException e) {
 	    throw InternalPorcEError.typeError(this, e);
 	}
@@ -152,7 +154,7 @@ public abstract class Graft extends Expression {
 	    Expression newC = NewCounter.Simple.create(execution, Read.Closure.create(0), cr);
 
 	    Expression body = new ProfilingPCallNode(newP, newC);
-	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, body, 0, 3);
+	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, body, 0, 3, execution);
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
@@ -161,8 +163,10 @@ public abstract class Graft extends Expression {
 	}
 
 	protected RootNode createCR() {
-	    Expression body = Sequence.create(new Expression[] { BindStop.create(Read.Closure.create(1)), HaltToken.create(Read.Closure.create(0), execution) });
-	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, body, 0, 2);
+	    Expression body = Sequence.create(new Expression[] { 
+		    BindStop.create(Read.Closure.create(1)), 
+		    HaltToken.create(Read.Closure.create(0), execution) });
+	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, body, 0, 2, execution);
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
@@ -171,11 +175,11 @@ public abstract class Graft extends Expression {
 	}
 
 	protected RootNode createNewP() {
-	    Expression body = Sequence
-		    .create(new Expression[] { Bind.create(Read.Closure.create(1), Read.Argument.create(0), execution),
+	    Expression body = Sequence.create(new Expression[] { 
+		    Bind.create(Read.Closure.create(1), Read.Argument.create(0), execution),
 		    HaltToken.create(Read.Closure.create(0), execution) });
 	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null,
-		    body, 1, 2);
+		    body, 1, 2, execution);
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
@@ -217,7 +221,7 @@ public abstract class Graft extends Expression {
     }
 
     // This duplication of "fullFuture" allows this node to specialize to only inline and then switch back to both later by adding this specialization.
-    @Specialization(guards = { "!shouldInlineSpawn(frame)" })
+    @Specialization()
     public PorcEUnit fullAfterNoFuture(final VirtualFrame frame,
         @Cached("createFrameSlot(frame, compSlotID)") FrameSlot compSlot,
         @Cached("createFrameSlot(frame, futSlotID)") FrameSlot futSlot,

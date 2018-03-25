@@ -44,7 +44,7 @@ public class InvokeCallRecordRootNode extends PorcERootNode {
     }
 
     public InvokeCallRecordRootNode(final PorcELanguage language, final int nArguments, final int callSiteId, final PorcEExecution execution) {
-        super(language, new FrameDescriptor(), buildBody(nArguments, execution), nArguments + 1, 0);
+        super(language, new FrameDescriptor(), buildBody(nArguments, execution), nArguments + 1, 0, execution);
         this.callSiteId = callSiteId;
     }
     

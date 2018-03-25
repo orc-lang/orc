@@ -27,6 +27,9 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.RootNode
 import com.oracle.truffle.api.nodes.Node
+import java.util.Collections
+import java.util.ArrayList
+import orc.run.porce.PorcERootNode
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -76,7 +79,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   // TODO: callSiteMap and trampolineMap are really similar. One is indexed by call target and one by call site. These will be strongly correlated. Should they be combined or otherwise used together?
 
-  val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
+  private val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
 
   def invokeCallTarget(callSiteId: Int, p: PorcEClosure, c: Counter, t: Terminator, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     val callTarget = {
@@ -91,18 +94,24 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     callTarget.call(args: _*)
   }
 
-  val trampolineMap = new java.util.concurrent.ConcurrentHashMap[RootNode, RootCallTarget]()
+  private val trampolineMap = new java.util.concurrent.ConcurrentHashMap[RootNode, RootCallTarget]()
 
   def invokeClosure(target: PorcEClosure, args: Array[AnyRef]): Unit = {
     val callTarget = {
       val key = target.body.getRootNode()
+      def createCallTarget(root: RootNode) = truffleRuntime.createCallTarget(new InvokeWithTrampolineRootNode(runtime.language, root, this))
+      key match {
+        case key: PorcERootNode =>
+          key.trampolineCallTarget = createCallTarget(key)
+          key.trampolineCallTarget
+        case _ =>
           val v = trampolineMap.get(key)
           if (v == null)
-        trampolineMap.computeIfAbsent(key, (root) => 
-          truffleRuntime.createCallTarget(new InvokeWithTrampolineRootNode(runtime.language, root, this)))
+            trampolineMap.computeIfAbsent(key, (root) => createCallTarget(root))
           else
             v
       }
+    }
     args(0) = target.environment
     callTarget.call(args: _*)
   }
@@ -154,7 +163,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       }
     }
     */
-  
+    
     val specializationsOut = ExecutionLogOutputStream("truffle-node-specializations", "txt", "Truffle node specializations")
     if (specializationsOut.isDefined) {
         val out = new PrintWriter(new OutputStreamWriter(specializationsOut.get))

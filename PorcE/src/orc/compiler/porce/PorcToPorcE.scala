@@ -108,7 +108,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
       runtime = execution.runtime,
       inTailPosition = true)
     val newBody = transform(m.body.toZipper())
-    val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, 3, 0)
+    val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, 3, 0, execution)
     rootNode.setPorcAST(m)
     val callTarget = makeCallTarget(rootNode)
     val closure = new PorcEClosure(Array(), callTarget, true)
@@ -156,7 +156,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
             val ctx = innerCtx.withTailPosition.copy(descriptor = descriptor, closureVariables = capturedVars, argumentVariables = args)
 
             val newBody = transform(body)(ctx)
-            val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, args.size, capturedVars.size)
+            val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, args.size, capturedVars.size, ctx.execution)
             rootNode.setPorcAST(e.value)
             makeCallTarget(rootNode)
             porce.NewContinuation.create(capturingExprs, rootNode, reuse)
@@ -295,7 +295,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
 
       val newBody = transform(m.body)(ctx)
       val methodSlot = oldCtx.descriptor.findOrAddFrameSlot(m.name)
-      val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, arguments.size, closureVariables.size)
+      val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, arguments.size, closureVariables.size, ctx.execution)
       rootNode.setPorcAST(m.value)
       val readClosure = porce.Read.Local.create(closureSlot)
 
