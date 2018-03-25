@@ -65,9 +65,9 @@ object TraceTimelineViewer {
     }
   }
   implicit val NodeOrdering: Ordering[Node] = Ordering.by(_.start) 
-  case class Edge(time: Duration, source: Long, target: Long)
+  case class Edge(time: Duration, source: Long, target: Long, tpe: EdgeType)
   implicit val EdgeOrdering: Ordering[Edge] = Ordering.by(_.time) 
-  
+
   case class Timeline(nodes: IndexedSeq[Node], edges: IndexedSeq[Edge]) {
     val nodesById = nodes.map(n => n.id -> n).toMap
     
@@ -130,6 +130,9 @@ object TraceTimelineViewer {
   case object StackExecution extends SchedulableExecutionType(1)
   case object InlineExecution extends SchedulableExecutionType(2)
   case object DataItemExecution extends SchedulableExecutionType(3)
+  case object Idle extends SchedulableExecutionType(4)
+  case object StealFrom extends SchedulableExecutionType(5)
+  case object StealTo extends SchedulableExecutionType(5)
   
   object SchedulableExecutionType {
     def apply(i: Long): SchedulableExecutionType = {
@@ -141,11 +144,16 @@ object TraceTimelineViewer {
     }
   }
   
+  sealed abstract class EdgeType
+  case object Dependency extends EdgeType  
+  case object Steal extends EdgeType  
+
   def loadTimeline(inputFilename: String): Timeline = {
     val reader = Files.newBufferedReader(Paths.get(inputFilename))
     val lines = reader.lines().iterator.asScala
     var lastTask = 0L
     var lastBufSt = 0L
+    var lastIdle = 0L
     
     val nodes = collection.mutable.HashMap[Long, Node]()
     val edges = collection.mutable.Buffer[Edge]()
@@ -174,14 +182,14 @@ object TraceTimelineViewer {
           })
         }
         case "TaskPrnt" => {
-          edges += Edge(time, from, to)
+          edges += Edge(time, from, to, Dependency)
         }
         case "Execute" => {
           nodes += -from -> new Node(-from, time, time, DataItemExecution, thread) {
             override val label = from.toString
             override val hasBox = false
           }
-          edges += Edge(time, lastTask, -from)
+          edges += Edge(time, lastTask, -from, Dependency)
         }
         case "NewBufSt" => {
           nodes += time.toNanos() -> new Node(time.toNanos(), time, null, DataItemExecution, thread) {
@@ -193,6 +201,31 @@ object TraceTimelineViewer {
           nodes.get(lastBufSt).foreach(orig => {
             nodes += lastBufSt -> orig.copy(end = time)
           })
+        }
+        case "WrkrIdle" => {
+          nodes += time.toNanos() -> new Node(time.toNanos(), time, null, Idle, thread) {
+            override val label = "Idle"
+          }
+          lastIdle = time.toNanos()
+        }
+        case "WrkrBusy" => {
+          nodes.get(lastIdle).foreach(orig => {
+            nodes += lastIdle -> orig.copy(end = time)
+          })
+        }
+        case "WrkrStel" => {
+          val victim =  getCompactThreadID(source)
+          val id1 = time.toNanos()
+          val id2 = id1 + 1
+          nodes += id1 -> new Node(id1, time, time, StealFrom, victim) {
+            override val label = ""
+            override val hasBox = false
+          }
+          nodes += id2 -> new Node(id2, time, time, StealTo, thread) {
+            override val label = ""
+            override val hasBox = false
+          }
+          edges += Edge(time, id1, id2, Steal)
         }
         case _ => ()
       }
@@ -234,7 +267,7 @@ object TraceTimelineViewer {
 
       //println(s"${g.getClip}, ${g.getClipBounds}")
 
-      val threadHeight = g.getClip.asInstanceOf[Rectangle2D].getHeight / (timeline.maxThread max 8)
+      val threadHeight = g.getClip.asInstanceOf[Rectangle2D].getHeight / ((timeline.maxThread + 2) max 8)
       
       implicit class NodeAdds(n: Node) {
         def rect = {
@@ -275,11 +308,11 @@ object TraceTimelineViewer {
         import timeline._
         g.fill(new Rectangle2D.Double(
             minTime.toDoubleSeconds, minThread * threadHeight, 
-            maxTime.toDoubleSeconds - minTime.toDoubleSeconds, (maxThread - minThread + 1) * threadHeight))
+            maxTime.toDoubleSeconds - minTime.toDoubleSeconds, (maxThread - minThread + 3) * threadHeight))
       }
       
       val boundingBox = new Rectangle2D.Double(timeline.minTime.toDoubleSeconds, timeline.minThread, 
-          timeline.maxTime.toDoubleSeconds - timeline.minTime.toDoubleSeconds, (timeline.maxThread - timeline.minThread) * threadHeight)
+          timeline.maxTime.toDoubleSeconds - timeline.minTime.toDoubleSeconds, (timeline.maxThread + 1) * threadHeight)
       
       // Nodes
       
@@ -311,6 +344,8 @@ object TraceTimelineViewer {
             new Color(0.9f, 0.9f, 0.0f, 0.4f)       
           case InlineExecution =>
             new Color(0.7f, 0.7f, 0.7f, 0.2f)
+          case Idle =>
+            new Color(1f, 0f, 0f, 0.8f)
           case _ =>
             new Color(0.0f, 0.0f, 0.7f, 0.8f)
         })
@@ -329,12 +364,17 @@ object TraceTimelineViewer {
       // Edges
       if (showEdges) {
         g.setStroke(new BasicStroke((2 / zoom).toFloat))
-        g.setPaint(new Color(0.5f, 0f, 0.5f, 0.2f))
         (edgesToDrawTime ++ edgesToDrawEnds).foreach(e => {
           val source = timeline.nodesById(e.source)
           val target = timeline.nodesById(e.target)
           boundingBox.add(source.topStartAnchor)
           boundingBox.add(target.startAnchor)
+          g.setPaint(e.tpe match {
+            case Dependency =>
+              new Color(0.5f, 0f, 0.5f, 0.02f)
+            case Steal =>
+              new Color(0.5f, 1f, 0.5f, 0.5f)
+          })
           g.draw(new Line2D.Double(source.topStartAnchor, target.startAnchor))
         })
       }
@@ -404,7 +444,21 @@ object TraceTimelineViewer {
         }
       })
       
-
+      // Time marks
+      val y = (timeline.maxThread + 1) * threadHeight
+      g.setPaint(new Color(1.0f, 1.0f, 1.0f, 0.9f))
+      g.setFont(countFont)
+      val tickScale = if (ends.toDoubleSeconds - starts.toDoubleSeconds > 0.01) 1000 else 10000 
+      def round(x: Double) = (x * tickScale).floor / tickScale
+      for (x <- round(starts.toDoubleSeconds) until round(ends.toDoubleSeconds) by (1.0 / tickScale)) {
+          g.draw(new Line2D.Double(x, y, x, y + threadHeight/2))
+          val t = g.getTransform
+          boundingBox.add(new Point2D.Double(x, y + threadHeight*0.75))
+          g.translate(x, y + threadHeight/2)
+          g.drawString(s"${(x * 1000).formatted("%.3f")}ms", 0, 0)
+          g.setTransform(t)
+      }
+      
       //val minPoint = g.getTransform.transform(new Point2D.Double(boundingBox.getX, boundingBox.getY), null)
       //val maxPoint = g.getTransform.transform(new Point2D.Double(boundingBox.getX + boundingBox.getWidth, boundingBox.getY + boundingBox.getHeight), null)
       val boundingDim = new Dimension((boundingBox.getWidth * zoom + 1).toInt, (boundingBox.getHeight * zoom + 1).toInt)
