@@ -39,7 +39,7 @@ def run(data) =
 	val riskless = BlackScholesData.riskless()
 	val volatility = BlackScholesData.volatility()
 	val res = Array(data.length?)
-	
+    --res >> volatility >> riskless >>
 	forTree(0, data.length?) >i>
 	  res(i) := compute(data(i)?.price(), data(i)?.strike(), data(i)?.maturity(), riskless, volatility) >>
 	  --data(i)? >d> res(i) := compute(d.price(), d.strike(), d.maturity(), riskless, volatility) >>
