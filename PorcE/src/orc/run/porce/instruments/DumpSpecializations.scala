@@ -19,10 +19,16 @@ import orc.run.porce.HasPorcNode
 
 import com.oracle.truffle.api.dsl.Introspection
 import com.oracle.truffle.api.nodes.{ Node, NodeVisitor }
+import orc.run.porce.PorcERootNode
 
 object DumpSpecializations {
   def apply(node: Node, out: PrintWriter): Unit = {
-    out.println(s"Specializations for ${node}:")
+    out.println(s"=== ${node}:")
+    node match {
+      case r: PorcERootNode =>
+        out.println(s"    timePerCall = ${r.getTimePerCall}, totalSpawnedCalls = ${r.getTotalSpawnedCalls}, totalSpawnedTime = ${r.getTotalSpawnedTime}")
+      case _ => ()
+    }
     node.accept(new NodeVisitor {
       def visit(node: Node): Boolean = {
         printSpecializations(node, out, true, "  ")
@@ -37,6 +43,7 @@ object DumpSpecializations {
       // Using lazy here to make sure this runs only once.
       lazy val header = if (printHeader) {
         val specsStr = specs.filter(_.isActive()).map(_.getMethodName()).mkString("; ")
+        out.print("--- ")
         findNodeWithSource(node) match {
           case p: HasPorcNode if p.porcNode.isDefined && p.porcNode.get.sourceTextRange.isDefined =>
             out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.sourceTextRange.get.lineContentWithCaret}")
