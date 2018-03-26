@@ -41,9 +41,29 @@ import com.oracle.truffle.api.RootCallTarget;
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     
     // TODO: PERFORMANCE: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters).
-    // The challange of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
+    // The challenge of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
     private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
+
+    /*
+     *  The solution for a racy version is to use a volatile long and split it into two "fields" one for each value (as an int).
+     *  Writes to volatile longs are atomic and the voltatile read/writes shouldn't be much more expensive than normal read/write
+     *  since they will not happen often enough to be combined.
+    private volatile long both = 0;
+    private final int getTotalSpawnedTime(long both) {
+	return (int) (both & 0xffffffff);
+    }
+    private final int getTotalSpawnedCalls(long both) {
+	return (int) (both >> 32);
+    }
+    */
+    
+    public final long getTotalSpawnedTime() {
+	return totalSpawnedTime.get();
+    }
+    public final long getTotalSpawnedCalls() {
+	return totalSpawnedCalls.get();
+    }
     
     @CompilationFinal
     private boolean internal = false;
