@@ -9,11 +9,10 @@ val n = problemSizeScaledInt(5000)
 
 benchmarkSized("Wide", n, { Counter(n) }, {
 val c = _
-
 upto(n) >> c.dec() >> stop |
-c.onZero() >> "Done!",
+c.onZero() >> "Done!" },
 { _ >> false }
-})
+)
 
 {-
 OUTPUT:
