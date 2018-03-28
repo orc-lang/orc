@@ -661,6 +661,7 @@ def Table(n, f) =
   val a = Array[A](n) :: Array[A]
   def fill(Integer, lambda (Integer) :: A) :: Signal
   def fill(i, f) =
+    -- FIXME: Should use a tree shaped computation instead of a chain.
     if i <: 0 then signal
     else ((a(i) := f(i)), fill(i-1, f)) >> signal
   fill(n-1, f) >> ({ a(_)? })

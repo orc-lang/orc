@@ -9,6 +9,28 @@
 -- URL: http://orc.csres.utexas.edu/license.shtml .
 --
 
+val Runtime = new {
+  val jvmRuntime =
+    import class JavaLangRuntime = "java.lang.Runtime"
+    JavaLangRuntime.getRuntime()
+  val jvmSystem =
+    import class JavaLangSystem = "java.lang.System"
+    JavaLangSystem
+  val availableProcessors = jvmRuntime.availableProcessors()
+  val tasksPerProcessor = (
+    import site Read = "orc.lib.str.Read"
+    val r = jvmSystem.getProperty("orc.run.tasksPerProcessor")
+    Iff(r = null) >>
+    Read(r).longValue()
+  ) ; 128
+  val defaultNumberOfPartitions =  (
+    import site Read = "orc.lib.str.Read"
+    val r = jvmSystem.getProperty("orc.run.defaultNumberOfPartitions")
+    Iff(r = null) >>
+    Read(r).longValue()
+  ) ; availableProcessors * tasksPerProcessor
+}
+
 {--
 Miscellaneous utility functions.
 --}
@@ -77,7 +99,20 @@ signals(5)]]></programlisting>
 @implementation
 --}
 def signals(Integer) :: Signal
-def signals(n) = if n :> 0 then (signal | signals(n-1)) else stop
+def signals(n) =
+  max(n / Runtime.defaultNumberOfPartitions, 1) >seqSize> ( 
+  def parPhase(n :: Integer) :: Signal = n >> (
+    if n <= seqSize then
+      seqPhase(n)
+    else
+      n / 2 >n'> (parPhase(n') | parPhase(n - n')) 
+  )
+  def seqPhase(n :: Integer) :: Signal = n >> (
+    if n :> 0 then (signal | seqPhase(n - 1))
+    else stop
+  )
+  n >> parPhase(n)
+)
 
 {--
 @def forBy(Integer, Integer, Integer) :: Integer
@@ -92,9 +127,24 @@ forBy(1,6,2)]]></programlisting>
 @implementation
 --}
 def forBy(Integer, Integer, Integer) :: Integer
-def forBy(low, high, step) =
-  if low >= high then stop
-  else ( low | forBy(low+step, high, step) )
+def forBy(low, high, step) = step >> 
+  max((high - low) / step / Runtime.defaultNumberOfPartitions, 1) * step >seqSize> ( 
+  def parPhase(low :: Integer, high :: Integer) :: Integer = low >> high >> (
+    val diff = high - low
+    if diff <= 0 then
+      stop
+    else if diff <= seqSize then
+      seqPhase(low, high)
+    else
+      low + (diff / 2 / step) * step >split>
+      ( parPhase(low, split) | parPhase(split, high) )
+  )
+  def seqPhase(low :: Integer, high :: Integer) :: Integer = low >> high >> (
+    if low >= high then stop
+    else ( low | low+step >x> seqPhase(x, high) )
+  )
+  low >> high >> parPhase(low, high)
+)
 
 {--
 @def for(Integer, Integer) :: Integer
@@ -219,6 +269,7 @@ def fillArray(a, f) =
   val n = a.length?
   def fill(Integer, lambda(Integer) :: A) :: Bot
   def fill(i, f) =
+    -- FIXME: Should use a tree shaped computation instead of a chain.
     if i = n then stop
     else ( a(i) := f(i) >> stop
          | fill(i+1, f) )
