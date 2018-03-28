@@ -81,14 +81,14 @@ def forTree(low, high) = low >> high >> (
   	( forTree(low, split) | forTree(split, high) )
 )
 
-
 val compute = BlackScholes.compute
   
 def run(data) =
 	val res = Array(data.length?)
 	val riskless = BlackScholesData.riskless()
 	val volatility = BlackScholesData.volatility()
-	res >> forTree(0, data.length?) >i>
+	res >> riskless >> volatility >>
+	forTree(0, data.length?) >i>
 	  Sequentialize() >>
 	  data(i)? >d>
 	  res(i) := compute(d.price(), d.strike(), d.maturity(), riskless, volatility) >>
