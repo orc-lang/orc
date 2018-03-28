@@ -16,6 +16,7 @@ import static orc.run.porce.SpecializationConfiguration.ExternalCPSDirectSpecial
 import orc.DirectInvoker;
 import orc.Invoker;
 import orc.run.porce.RuntimeProfilerWrapper;
+import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
@@ -105,14 +106,15 @@ public class ExternalCPSDispatch extends Dispatch {
 		protected ValueProfile[] argumentTypeProfiles = null;
 		
 		@CompilerDirectives.CompilationFinal
-		protected InternalCPSDispatch.InternalCPSDispatchInternal dispatchP = null;
+		protected StackCheckingDispatch dispatchP = null;
 		
-		protected InternalCPSDispatch.InternalCPSDispatchInternal getDispatchP() {
+		protected StackCheckingDispatch getDispatchP() {
 			if (dispatchP == null) {
 				CompilerDirectives.transferToInterpreterAndInvalidate();
 				computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
-					InternalCPSDispatch.InternalCPSDispatchInternal n = insert(InternalCPSDispatch.InternalCPSDispatchInternal.createBare(true, execution));
+				    StackCheckingDispatch n = insert(StackCheckingDispatch.create(execution));
 					n.setTail(isTail);
+					notifyInserted(n);
 					return n;
 				});
 			}
@@ -156,7 +158,7 @@ public class ExternalCPSDispatch extends Dispatch {
 				} finally {
 					RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
 				}
-				getDispatchP().execute(frame, pub, new Object[] { pub.environment, v });
+				getDispatchP().executeDispatch(frame, pub, v);
 			} catch (final TailCallException e) {
 				throw e;
 			} catch (final Throwable e) {

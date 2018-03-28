@@ -216,20 +216,12 @@ public class Force {
 	}
 
 	protected Dispatch createCall() {
-	    return InternalCPSDispatch.create(true, execution, isTail);
+	    return StackCheckingDispatch.create(execution);
 	}
 
 	@Specialization(guards = { "InlineForceResolved", "join.isResolved()" }, replaces = { "blocked" })
 	public PorcEUnit resolved(final VirtualFrame frame, final Join join, @Cached("createCall()") Dispatch call) {
-	    //CompilerDirectives.ensureVirtualizedHere(join);
-	    if (call instanceof InternalCPSDispatch) {
-		((InternalCPSDispatch) call).executeDispatchWithEnvironment(frame, join.p(), join.values());
-	    } else {
-		Object[] values = join.values();
-		Object[] valuesWithoutPrefix = new Object[values.length - 1];
-		System.arraycopy(values, 1, valuesWithoutPrefix, 0, valuesWithoutPrefix.length);
-		call.executeDispatch(frame, join.p(), valuesWithoutPrefix);
-	    }
+	    call.executeDispatchWithEnvironment(frame, join.p(), join.values());
 	    return PorcEUnit.SINGLETON;
 	}
 
@@ -271,7 +263,7 @@ public class Force {
 	protected SingleFuture(final PorcEExecution execution) {
 	    super();
 	    this.execution = execution;
-	    call = InternalCPSDispatch.create(true, execution, false);
+	    call = StackCheckingDispatch.create(execution);
 	}
 
 	@Override
@@ -296,11 +288,7 @@ public class Force {
 		((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 		// ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 	    } else {
-		if (call instanceof InternalCPSDispatch) {
-		    ((InternalCPSDispatch) call).executeDispatchWithEnvironment(frame, p, new Object[] { null, v });
-		} else {
-		    call.executeDispatch(frame, p, new Object[] { v });
-		}
+		call.executeDispatchWithEnvironment(frame, p, new Object[] { null, v });
 	    }
 
 	    return PorcEUnit.SINGLETON;

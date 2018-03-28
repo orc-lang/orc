@@ -11,8 +11,6 @@
 
 package orc.run.porce;
 
-import orc.run.porce.call.Dispatch;
-import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.CallClosureSchedulable;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
@@ -32,23 +30,29 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 @NodeChild(value = "computation", type = Expression.class)
 @Introspectable
 public abstract class Spawn extends Expression {
-    private final PorcEExecution execution;
     private final boolean mustSpawn;
+    private final PorcEExecution execution;
 
-    @Child
-    protected Dispatch call = makeCall();
     protected final ConditionProfile moreTasksNeeded = ConditionProfile.createCountingProfile();
-    protected final ConditionProfile spawnProfile = ConditionProfile.createCountingProfile();
+    
+    @Child
+    protected StackCheckingDispatch dispatch;
 
     protected Spawn(boolean mustSpawn, PorcEExecution execution) {
 	this.mustSpawn = mustSpawn;
 	this.execution = execution;
+	this.dispatch = StackCheckingDispatch.create(execution);
+    }
+
+    @Override
+    public void setTail(boolean v) {
+	super.setTail(v);
+	dispatch.setTail(v);
     }
 
     @Specialization(guards = { "!shouldInlineSpawn(computation)" } )
     public PorcEUnit spawn(final VirtualFrame frame, final Counter c, final Terminator t, final PorcEClosure computation) {
 	final PorcERuntime r = execution.runtime();
-	t.checkLive();
 	/* ROOTNODE-STATISTICS
 	if (CompilerDirectives.inInterpreter() && computation.body.getRootNode() instanceof PorcERootNode) {
 	    //Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
@@ -56,28 +60,13 @@ public abstract class Spawn extends Expression {
 	}
 	*/
         // The incrementAndCheckStackDepth call should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.
-        if(!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize())) && spawnProfile.profile(r.incrementAndCheckStackDepth())) {
-            invokeInline(frame, computation, true, r);
+        if(!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize())) && dispatch.spawnProfile.profile(r.incrementAndCheckStackDepth())) {
+            dispatch.executeInline(frame, computation, true);
         } else {
+            t.checkLive();
             execution.runtime().schedule(CallClosureSchedulable.apply(computation, execution));
         } 
         return PorcEUnit.SINGLETON;
-    }
-
-    /**
-     * @param frame
-     * @param computation
-     */
-    private void invokeInline(final VirtualFrame frame, final PorcEClosure computation, final boolean useStackDepth, final PorcERuntime r) {
-      Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
-      long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
-      try {
-          call.executeDispatch(frame, computation, new Object[] {});
-      } finally {
-          if (useStackDepth)
-              r.decrementStackDepth();
-          SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
-      }
     }
 
     @Specialization(guards = { "shouldInlineSpawn(computation)" }, replaces = { "spawn" })
@@ -87,13 +76,9 @@ public abstract class Spawn extends Expression {
 	final PorcERuntime r = execution.runtime();
 
 	if (r.actuallySchedule()) {
-	    if (spawnProfile.profile(r.incrementAndCheckStackDepth())) {
-		invokeInline(frame, computation, true, r);
-	    } else {
-		return spawn(frame, c, t, computation);
-	    }
+	    dispatch.executeDispatch(frame, computation);
 	} else {
-	    invokeInline(frame, computation, false, r);
+	    dispatch.executeInline(frame, computation, false);
 	}
 	return PorcEUnit.SINGLETON;
     }
@@ -112,19 +97,7 @@ public abstract class Spawn extends Expression {
 		return allowSpawnInlining && (!mustSpawn || allowAllSpawnInlining) &&
 			computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit;
     }
-
-    protected Dispatch makeCall() {
-	Dispatch n = insert(InternalCPSDispatch.create(true, execution, isTail));
-	n.setTail(isTail);
-	return n;
-    }
-
-    @Override
-    public void setTail(boolean b) {
-	super.setTail(b);
-	call.setTail(b);
-    }
-
+    
     public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn, final Expression computation, final PorcEExecution execution) {
 	return SpawnNodeGen.create(mustSpawn, execution, c, t, computation);
     }

@@ -115,7 +115,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     * 
     * If this returns true the caller must call decrementStackDepth() after it finishes.
     */
-  @TruffleBoundary @noinline
+  @TruffleBoundary(allowInlining = true) @noinline
   def incrementAndCheckStackDepth() = {
     if (maxStackDepth > 0) {
       val depth = stackDepthThreadLocal.get()
@@ -135,7 +135,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     *
     * @see incrementAndCheckStackDepth()
     */
-  @TruffleBoundary @noinline
+  @TruffleBoundary(allowInlining = true) @noinline
   def decrementStackDepth() = {
     if (maxStackDepth > 0) {
       val depth = stackDepthThreadLocal.get()
