@@ -92,6 +92,7 @@ public class Resolve extends Expression {
 	        	computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
 	        		Dispatch n = insert(InternalCPSDispatch.create(true, execution, isTail));
 	        		n.setTail(isTail);
+				notifyInserted(n);
 	        		return n;
 	        	});
         	}

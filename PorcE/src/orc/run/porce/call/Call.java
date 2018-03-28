@@ -67,6 +67,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 			computeAtomicallyIfNull(() -> internalCall, (v) -> this.internalCall = v, () -> {
 				InternalCPSDispatch n = insert(makeInternalCall());
 				n.setTail(isTail);
+				notifyInserted(n);
 				return n;
 			});
 		}
@@ -82,6 +83,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 			computeAtomicallyIfNull(() -> externalCall, (v) -> this.externalCall = v, () -> {
 				ExternalDispatch n = insert(makeExternalCall());
 				n.setTail(isTail);
+				notifyInserted(n);
 				return n;
 			});
 		}
@@ -98,6 +100,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 			computeAtomicallyIfNull(() -> interceptedCall, (v) -> this.interceptedCall = v, () -> {
 				InterceptedDispatch n = insert(makeInterceptedCall());
 				n.setTail(isTail);
+				notifyInserted(n);
 				return n;
 			});
 		}

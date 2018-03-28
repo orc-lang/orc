@@ -49,8 +49,11 @@ public class TailCallLoop extends NodeBase {
     private LoopNode getLoopNode(VirtualFrame frame) {
     	if (loop == null) {
     		CompilerDirectives.transferToInterpreterAndInvalidate();
-	    	computeAtomicallyIfNull(() -> loop, (v) -> loop = v, () ->
-	    		insert(Truffle.getRuntime().createLoopNode(new CatchTailCallRepeatingNode(frame.getFrameDescriptor(), execution))));
+	    	computeAtomicallyIfNull(() -> loop, (v) -> loop = v, () -> {
+	    	    	LoopNode n = insert(Truffle.getRuntime().createLoopNode(new CatchTailCallRepeatingNode(frame.getFrameDescriptor(), execution)));
+			notifyInserted(n);
+	    		return n;
+	    	});
     	}
     	return loop;
     }

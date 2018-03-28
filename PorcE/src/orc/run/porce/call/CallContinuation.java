@@ -55,6 +55,7 @@ public class CallContinuation<ExternalDispatch extends Dispatch> extends Express
 			computeAtomicallyIfNull(() -> internalCall, (v) -> this.internalCall = v, () -> {
 				InternalCPSDispatch n = insert(makeInternalCall());
 				n.setTail(isTail);
+				notifyInserted(n);
 				return n;
 			});
 		}
