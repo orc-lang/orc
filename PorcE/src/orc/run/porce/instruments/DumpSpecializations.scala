@@ -20,6 +20,7 @@ import orc.run.porce.HasPorcNode
 import com.oracle.truffle.api.dsl.Introspection
 import com.oracle.truffle.api.nodes.{ Node, NodeVisitor }
 import orc.run.porce.PorcERootNode
+import com.oracle.truffle.api.dsl.Introspectable
 
 object DumpSpecializations {
   def apply(node: Node, out: PrintWriter): Unit = {
@@ -37,12 +38,9 @@ object DumpSpecializations {
     })
   }
 
-  private def printSpecializations(node: Node, out: PrintWriter, printHeader: Boolean, prefix: String) = {
-    if (Introspection.isIntrospectable(node)) {
-      val specs = Introspection.getSpecializations(node).asScala
-      // Using lazy here to make sure this runs only once.
-      lazy val header = if (printHeader) {
-        val specsStr = specs.filter(_.isActive()).map(_.getMethodName()).mkString("; ")
+  private def printSpecializations(node: Node, out: PrintWriter, doPrintHeader: Boolean, prefix: String) = {
+    def printHeader(specsStr: String) = {
+      if (doPrintHeader) {
         out.print("--- ")
         findNodeWithSource(node) match {
           case p: HasPorcNode if p.porcNode.isDefined && p.porcNode.get.sourceTextRange.isDefined =>
@@ -56,19 +54,25 @@ object DumpSpecializations {
             out.println(s"$prefix${node.getClass} $specsStr")
         }
         out.println(s"$prefix$prefix| $node")
-        ()
       }
+    }
+
+    if (Introspection.isIntrospectable(node)) {
+      val specs = Introspection.getSpecializations(node).asScala
+      val specsStr = specs.filter(_.isActive()).map(_.getMethodName()).mkString("; ")
+      printHeader(specsStr)
       for (s <- specs) {
         val n = s.getInstances()
         if (n > 0) {
-          header
-          out.println(s"$prefix$prefix${s.getMethodName()}: (${n}) ${(0 until n).map(s.getCachedData(_).asScala.mkString("{", ", ", "}")).mkString("; ")}")              
+          out.println(s"$prefix$prefix${s.getMethodName()}: (${n}) ${(0 until n).map(s.getCachedData(_).asScala.mkString("{", ", ", "}")).mkString("; ")}")
         } else if (s.isExcluded()) {
-          header
-          out.println(s"$prefix$prefix${s.getMethodName()}: EXCLUDED")              
+          out.println(s"$prefix$prefix${s.getMethodName()}: EXCLUDED")
         }
       }
+    } else if (node.getClass.getAnnotationsByType(classOf[AdhocIntrospectable]).length > 0) {
+      printHeader("")
     }
+
   }
   
   def specializationsAsString(n: Node): String = {
