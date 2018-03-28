@@ -124,33 +124,53 @@ case class OptFull(name: String)(f: (Expression.Z, AnalysisResults) => Option[Ex
 abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   def opts: Seq[Optimization]
   
-  val optimizeOptimizationResult = false
+  val optimizeOptimizationResult = true
 
   def apply(e: Expression.Z, cache: AnalysisCache): Expression = {
     val optimizationTransform: Transform = new Transform { optimizationTransform =>
       val results = new AnalysisResults(cache, e)
-      
+
+      def performOpts(e: Expression.Z): Expression.Z = {
+        import orc.util.StringExtension._
+        //Logger.finer(s"Optimizing:${" " * e.parents.size}${e.value.getClass.getSimpleName} ${e.value.toString.truncateTo(40)}")
+        opts.foldLeft(e)((e, opt) => {
+          //Logger.finer(s"invoking ${opt.name} on:\n${e.value.toString.truncateTo(120)}")
+          opt(e, results) match {
+            case None => e
+            case Some(e2) =>
+              val e3 = if (e.value != e2) {
+                Logger.finer(s"${opt.name}:\n${e.value.toString.truncateTo(120)}\n====>\n${e2.toString.truncateTo(120)}")
+                countOptimization(opt)
+                val e3 = e.replace(e.value ->> e2)
+                results.addMapping(e3, e)
+                e3
+              } else {
+                e
+              }
+              e3
+          }
+        })
+      }      
+      override val onArgument = {
+        case e => {
+          import orc.util.StringExtension._
+          val e1 = performOpts(e) match {
+            case a: Argument.Z =>
+              a
+            case _: Expression.Z =>
+              Logger.warning(s"MAYBE A BUG: An argument in a non-expression position could be optimized but the result was not an argument:\n${e.toString.truncateTo(240)}")
+              e
+          }
+          if(optimizeOptimizationResult && e1 != e)
+            optimizationTransform(e1)
+          else
+            e1.value
+        }
+      }
+
       override val onExpression = {
         case (e: Expression.Z) => {
-          import orc.util.StringExtension._
-          //Logger.finer(s"Optimizing:${" " * e.parents.size}${e.value.getClass.getSimpleName} ${e.value.toString.truncateTo(40)}")
-          val e1 = opts.foldLeft(e)((e, opt) => {
-            //Logger.finer(s"invoking ${opt.name} on:\n${e.value.toString.truncateTo(120)}")
-            opt(e, results) match {
-              case None => e
-              case Some(e2) =>
-                val e3 = if (e.value != e2) {
-                  Logger.finer(s"${opt.name}:\n${e.value.toString.truncateTo(120)}\n====>\n${e2.toString.truncateTo(120)}")
-                  countOptimization(opt)
-                  val e3 = e.replace(e.value ->> e2)
-                  results.addMapping(e3, e)
-                  e3
-                } else {
-                  e
-                }
-                e3
-            }
-          })
+          val e1 = performOpts(e)
           if(optimizeOptimizationResult && e1 != e)
             optimizationTransform(e1)
           else
@@ -305,6 +325,20 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             Some(newBody)
         }
         eliminateNonFutures() orElse eliminateDuplicateForces()
+      }
+      case _ => None
+    }
+  }
+  
+  val UnforcedRefElim = OptFull("unforced-ref-elim") { (e, a) =>
+    e match {
+      case v: Var.Z => {
+        val force = v.parents.collectFirst({
+          case Force.Z(xs, vs, body) if vs.exists((v1) => v.value == v1.value && v != v1) =>
+            //Logger.fine(s"By ID: ${v.value} in force (${xs.mkString(",")}) (${vs.map(_.value).mkString(",")})")
+            xs(vs.map(_.value).indexOf(v.value))
+        })
+        force
       }
       case _ => None
     }
@@ -878,10 +912,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
-      Normalize,
+      Normalize, SequentializeForce,
       IfDefElim, Inline, FutureForceElim, BranchElim, OtherwiseElim, TrimElim, UnusedFutureElim, StopEquiv, 
       ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant, 
-      FutureElim, GetMethodElim, TupleElim, MethodElim, SequentializeForce)
+      FutureElim, GetMethodElim, TupleElim, MethodElim, UnforcedRefElim)
   /*
   val allOpts = List(
     BranchReassoc,

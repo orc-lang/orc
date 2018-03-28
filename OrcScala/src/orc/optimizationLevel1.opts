@@ -1,6 +1,11 @@
 remove-unused-defs
 remove-unused-types
 fraction-defs
+orct
+orct:normalize
+orct:type-elim
+orct:unforced-ref-elim
+orct:max-passes=1
 porc
 porc:eta-reduce
 porc:eta-spawn-reduce
