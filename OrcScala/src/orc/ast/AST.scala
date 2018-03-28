@@ -17,6 +17,7 @@ import scala.collection.mutable.{ ArrayBuffer, Buffer }
 
 import orc.compile.parse.OrcSourceRange
 import scala.util.matching.Regex
+import swivel.Zipper
 
 trait Positioned {
   /** The source position (range) of this AST node, initially set to undefined. */
@@ -172,7 +173,10 @@ object hasOptionalVariableName {
           case p if p.startsWith("~") => (p.substring(1), false, false)
           case p => (p, false, true)
         }
-        val v = ai.next match {
+        val v = (ai.next match {
+          case Zipper(v, _) => v
+          case v => v
+        }) match {
           case v: hasOptionalVariableName if useVariableName && v.optionalVariableName.isDefined => v.optionalVariableName.get
           case c: OrcSyntaxConvertible => c.toOrcSyntax
           //case p: Positioned if p.sourceTextRange.isDefined => p.sourceTextRange.get.content
