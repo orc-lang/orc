@@ -42,4 +42,4 @@ porc:inline-let
 porc:let-inline-expansion-threshold=30
 porc:try-catch-elim
 porc:try-finally-elim
-porc:max-passes=3
+porc:max-passes=2

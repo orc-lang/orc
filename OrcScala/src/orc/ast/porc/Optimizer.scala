@@ -215,10 +215,13 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     }
   }
 
-  val TryCatchElim = Opt("try-catch-elim") {
-    // TODO: Figure out why this is taking multiple passes to finish. This should eliminate all excess onHalted expressions in one pass.
-    case (TryOnException.Z(Zipper(BindingSequence(bindings, TryOnException(b, h1)), _), h2), a) if h1 == h2.value =>
-      TryOnException(BindingSequence(bindings, b), h2.value)
+  val TryCatchElim = OptFull("try-catch-elim") { (expr, a) =>
+    expr match {
+      // TODO: Figure out why this is taking multiple passes to finish. This should eliminate all excess onHalted expressions in one pass.
+      case TryOnException.Z(Zipper(BindingSequence(bindings, TryOnException(b, h1)), _), h2) if h1 == h2.value =>
+        Some(TryOnException(BindingSequence(bindings, b), h2.value))
+      case _ => None
+    }
   }
 
   val TryFinallyElim = Opt("try-finally-elim") {
@@ -345,12 +348,12 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 object Optimizer {
   object :::> {
     def unapply(e: PorcAST.Z): Option[(Expression, Expression)] = e match {
-      case Sequence.Z(e :: l) =>
+      case Sequence.Z(e +: l) =>
         Some((e.value, Sequence(l.map(_.value))))
       case _ => None
     }
     def unapply(e: PorcAST): Option[(Expression, Expression)] = e match {
-      case Sequence(e :: l) =>
+      case Sequence(e +: l) =>
         Some((e, Sequence(l)))
       case _ => None
     }
