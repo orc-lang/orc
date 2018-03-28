@@ -34,6 +34,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.RootCallTarget;
@@ -69,7 +70,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private boolean internal = false;
     
     @CompilationFinal
-    private long timePerCall = -1;
+    long timePerCall = -1;
    
     final public void addSpawnedCall(long time) {
         totalSpawnedTime.getAndAdd(time);
@@ -199,12 +200,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final int nCaptured;
     
     public RootCallTarget trampolineCallTarget;
+    private final PorcEExecution execution;
 
     public PorcERootNode(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured, PorcEExecution execution) {
         super(language, descriptor);
         this.body = body;
         this.nArguments = nArguments;
         this.nCaptured = nCaptured;
+	this.execution = execution;
     }
     
     public Expression getBody() {
@@ -217,23 +220,31 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     @Override
     public Object execute(final VirtualFrame frame) {
-        final Object[] arguments = frame.getArguments();
-        if (arguments.length != nArguments + 1) {
-            transferToInterpreter();
-            throwArityException(arguments.length - 1, nArguments);
-        }
-        final Object[] captureds = (Object[]) arguments[0];
-        if (captureds.length != nCaptured) {
-            transferToInterpreter();
-            InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
-        }
+	if (!SpecializationConfiguration.UniversalTCO) {
+            final Object[] arguments = frame.getArguments();
+            if (arguments.length != nArguments + 1) {
+                transferToInterpreter();
+                throwArityException(arguments.length - 1, nArguments);
+            }
+            final Object[] captureds = (Object[]) arguments[0];
+            if (captureds.length != nCaptured) {
+                transferToInterpreter();
+                InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
+            }
+	}
 
         try {
             final Object ret = body.execute(frame);
             return ret;
         } catch (KilledException | HaltException e) {
             transferToInterpreter();
-            Logger.log(Level.WARNING, () -> "Caught " + e + " in root node " + this, e);
+            Logger.log(Level.SEVERE, () -> "Caught " + e + " in root node " + this, e);
+            return PorcEUnit.SINGLETON;
+        } catch (ControlFlowException e) {
+            throw e;
+        } catch (Exception e) {
+            transferToInterpreter();
+            execution.notifyOfException(e, this);
             return PorcEUnit.SINGLETON;
         }
     }
