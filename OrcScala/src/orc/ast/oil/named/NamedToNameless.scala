@@ -80,7 +80,7 @@ trait NamedToNameless {
     a -> {
       case Constant(v) => nameless.Constant(v)
       case (x: BoundVar) => {
-        var i = context indexOf x
+        val i = context indexOf x
         assert(i >= 0, s"Cannot find bound variable $x ($i)")
         nameless.Variable(i)
       }
@@ -93,7 +93,7 @@ trait NamedToNameless {
     def toType(t: Type): nameless.Type = namedToNameless(t, typecontext)
     t -> {
       case u: BoundTypevar => {
-        var i = typecontext indexOf u
+        val i = typecontext indexOf u
         assert(i >= 0, t)
         nameless.TypeVar(i)
       }
