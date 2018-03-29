@@ -91,6 +91,8 @@ public abstract class Graft extends Expression {
         //   so it can be built when it is recieved, OR these closures need to exist at PorcE start time.
         //   The latter is probably easier and better. The targets can be created during porc to porce conversion
         //   and then just used when needed.
+	
+	protected final Object newCSlotID = new Object();
       
 	@Child
 	NewContinuation compClosureNode;
@@ -149,12 +151,19 @@ public abstract class Graft extends Expression {
 	}
 
 	protected RootNode createComp() {
+	    FrameDescriptor descript = new FrameDescriptor();
+	    FrameSlot newCSlot = descript.findOrAddFrameSlot(newCSlotID, FrameSlotKind.Object);
+	    
 	    Expression cr = NewContinuation.create(new Expression[] { Read.Closure.create(0), Read.Closure.create(2) }, createCR(), false);
-	    Expression newP = NewContinuation.create(new Expression[] { Read.Closure.create(0), Read.Closure.create(2) }, createNewP(), false);
 	    Expression newC = NewCounter.Simple.create(execution, Read.Closure.create(0), cr);
 
-	    Expression body = new ProfilingPCallNode(newP, newC);
-	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, body, 0, 3, execution);
+	    Expression newP = NewContinuation.create(new Expression[] { Read.Local.create(newCSlot), Read.Closure.create(2) }, createNewP(), false);
+
+	    Expression body = Sequence.create(new Expression[] {
+		    Write.Local.create(newCSlot, newC),
+		    new ProfilingPCallNode(newP, Read.Local.create(newCSlot))
+	    });
+	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), descript, body, 0, 3, execution);
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
@@ -178,8 +187,7 @@ public abstract class Graft extends Expression {
 	    Expression body = Sequence.create(new Expression[] { 
 		    Bind.create(Read.Closure.create(1), Read.Argument.create(0), execution),
 		    HaltToken.create(Read.Closure.create(0), execution) });
-	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null,
-		    body, 1, 2, execution);
+	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, body, 1, 2, execution);
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
