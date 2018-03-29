@@ -34,7 +34,12 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 trait PorcEWithWorkStealingScheduler extends Orc {
   var scheduler: SimpleWorkStealingScheduler = null
   
-  final def isWorkQueueUnderful(n: Int): Boolean = Thread.currentThread().asInstanceOf[SimpleWorkStealingScheduler#Worker].queueSize < n
+  final def isWorkQueueUnderful(n: Int): Boolean = {
+    Thread.currentThread() match {
+      case t: SimpleWorkStealingScheduler#Worker => t.queueSize < n
+      case _ => true
+    }
+  }
 
   def beforeExecute(): Unit
 
