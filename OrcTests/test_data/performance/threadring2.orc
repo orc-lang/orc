@@ -38,7 +38,7 @@ def threadRingRunner(p) =
 benchmarkSized("ThreadRing-2", problemSizeScaledInt(2000) + problemSizeScaledInt(20000), {signal}, { _ >>
 threadRingRunner(problemSizeScaledInt(2000)) >x>
 x + threadRingRunner(problemSizeScaledInt(20000))
-}, ThreadRing.check)
+}, ThreadRing.check) >> stop
 
 {-
 OUTPUT:
