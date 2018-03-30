@@ -116,6 +116,7 @@ public class InternalCPSDispatch extends Dispatch {
 		private RootNode rootNode;
 
 		protected final BranchProfile exceptionProfile = BranchProfile.create();
+		protected final BranchProfile haltProfile = BranchProfile.create();
 
 		public RootNode getRootNodeCached() {
 			if (CompilerDirectives.inInterpreter()) {
@@ -181,9 +182,12 @@ public class InternalCPSDispatch extends Dispatch {
             try {
                 call.call(arguments);
             } catch (final TailCallException e) {
-                throw e;
-            } catch (final Throwable e) {
-                exceptionProfile.enter();
+		throw e;
+	    } catch (final HaltException e) {
+		haltProfile.enter();
+		throw e;
+	    } catch (final Throwable e) {
+		exceptionProfile.enter();
                 execution.notifyOfException(e, this);
                 throw HaltException.SINGLETON();
             }
@@ -196,6 +200,8 @@ public class InternalCPSDispatch extends Dispatch {
               call.call(target.body, arguments);
             } catch (final TailCallException e) {
                 throw e;
+	    } catch (final HaltException e) {
+		throw e;
             } catch (final Throwable e) {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);

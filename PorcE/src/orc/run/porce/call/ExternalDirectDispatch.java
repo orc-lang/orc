@@ -48,6 +48,8 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 		// DUPLICATION: This code is duplicated (mostly) in ExternalCPSDispatch.specificDirect.
 		try {
 			return invokeDirectWithBoundary(invoker, target, arguments);
+        	} catch (final HaltException e) {
+        	    throw e;
 		}  catch (final Throwable e) {
             exceptionProfile.enter();
             execution.notifyOfException(e, this);

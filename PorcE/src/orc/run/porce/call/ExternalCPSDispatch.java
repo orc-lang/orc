@@ -15,6 +15,7 @@ import static orc.run.porce.SpecializationConfiguration.ExternalCPSDirectSpecial
 
 import orc.DirectInvoker;
 import orc.Invoker;
+import orc.error.runtime.HaltException;
 import orc.run.porce.RuntimeProfilerWrapper;
 import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.SpecializationConfiguration;
@@ -101,6 +102,7 @@ public class ExternalCPSDispatch extends Dispatch {
 		}
 	
 		protected final BranchProfile exceptionProfile = BranchProfile.create();
+		protected final BranchProfile haltProfile = BranchProfile.create();
 		
 		@CompilerDirectives.CompilationFinal(dimensions = 1)
 		protected ValueProfile[] argumentTypeProfiles = null;
@@ -161,6 +163,9 @@ public class ExternalCPSDispatch extends Dispatch {
 				getDispatchP().executeDispatch(frame, pub, v);
 			} catch (final TailCallException e) {
 				throw e;
+	        	} catch (final HaltException e) {
+	        		haltProfile.enter();
+				counter.haltToken();
 			} catch (final Throwable e) {
 				exceptionProfile.enter();
 				execution.notifyOfException(e, this);
@@ -182,6 +187,9 @@ public class ExternalCPSDispatch extends Dispatch {
 				invokeWithBoundary(invoker, callContext, target, profileArgumentTypes(arguments));
 			} catch (final TailCallException e) {
 				throw e;
+	        	} catch (final HaltException e) {
+	        		haltProfile.enter();
+				counter.haltToken();
 			} catch (final Throwable e) {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
