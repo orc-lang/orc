@@ -38,6 +38,8 @@ public abstract class Graft extends Expression {
     protected static final boolean TRUE = true;
   
     protected final PorcEExecution execution;
+
+    protected final ValueProfile targetRoot = ValueProfile.createIdentityProfile();
     
     @Child
     protected Expression p;
@@ -63,7 +65,7 @@ public abstract class Graft extends Expression {
 	    final PorcERuntime r = execution.runtime();
 	    PorcEClosure computation = v.executePorcEClosure(frame);
 	    return (allowSpawnInlining
-		    && computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit)
+		    && computation.getTimePerCall(targetRoot) < SpecializationConfiguration.InlineAverageTimeLimit)
 		    || !r.isWorkQueueUnderful(r.minQueueSize() + 2);
 	} catch (UnexpectedResultException e) {
 	    throw InternalPorcEError.typeError(this, e);

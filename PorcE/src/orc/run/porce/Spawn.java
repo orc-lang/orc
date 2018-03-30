@@ -24,6 +24,7 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.ValueProfile;
 
 @NodeChild(value = "c", type = Expression.class)
 @NodeChild(value = "t", type = Expression.class)
@@ -34,6 +35,7 @@ public abstract class Spawn extends Expression {
     private final PorcEExecution execution;
 
     protected final ConditionProfile moreTasksNeeded = ConditionProfile.createCountingProfile();
+    protected final ValueProfile targetRoot = ValueProfile.createIdentityProfile();
     
     @Child
     protected StackCheckingDispatch dispatch;
@@ -95,7 +97,7 @@ public abstract class Spawn extends Expression {
     
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
 		return allowSpawnInlining && (!mustSpawn || allowAllSpawnInlining) &&
-			computation.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit;
+			computation.getTimePerCall(targetRoot) < SpecializationConfiguration.InlineAverageTimeLimit;
     }
     
     public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn, final Expression computation, final PorcEExecution execution) {

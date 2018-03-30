@@ -70,7 +70,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private boolean internal = false;
     
     @CompilationFinal
-    long timePerCall = -1;
+    private long timePerCall = -1;
    
     final public void addSpawnedCall(long time) {
         totalSpawnedTime.getAndAdd(time);
@@ -82,13 +82,13 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     }
     
     final public long getTimePerCall() {
+	//CompilerAsserts.compilationConstant(this);
     	if (shouldTimeCall()) {
         	long n = totalSpawnedCalls.get();
             	long t = totalSpawnedTime.get();
     		
     		if (n >= SpecializationConfiguration.MinCallsForTimePerCall) {
         		CompilerDirectives.transferToInterpreterAndInvalidate();
-            	n = totalSpawnedCalls.get();
         		timePerCall = t / n;
     		} else if (n < 2) {
                 	return Long.MAX_VALUE;

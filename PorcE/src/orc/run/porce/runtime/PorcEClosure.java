@@ -15,6 +15,8 @@ import orc.run.porce.PorcERootNode;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.profiles.ValueProfile;
 
 /**
  * A class representing PorcE closures including both Orc methods (def, site) and internal Porc continuations.
@@ -46,6 +48,15 @@ final public class PorcEClosure {
 	public long getTimePerCall() {
 		if (body.getRootNode() instanceof PorcERootNode) {
 			PorcERootNode root = (PorcERootNode)body.getRootNode();
+			return root.getTimePerCall();
+		} else {
+			return Long.MAX_VALUE;
+		}
+	}
+	public long getTimePerCall(ValueProfile bodyProfile) {
+	    RootNode r = bodyProfile.profile(body.getRootNode());
+		if (r instanceof PorcERootNode) {
+			PorcERootNode root = (PorcERootNode) r;
 			return root.getTimePerCall();
 		} else {
 			return Long.MAX_VALUE;
