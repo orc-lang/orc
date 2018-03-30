@@ -26,7 +26,7 @@ class Future(val raceFreeResolution: Boolean) extends OrcValue with orc.Future {
 
   private var _state: AnyRef = Unbound
   private var _blockedIndex: Int = 0
-  private var _blocked: Array[FutureReader] = Array.ofDim(2)
+  private var _blocked: Array[FutureReader] = new Array[FutureReader](2)
 
   /** Resolve this to a value and call publish and halt on each blocked FutureReader.
     */
