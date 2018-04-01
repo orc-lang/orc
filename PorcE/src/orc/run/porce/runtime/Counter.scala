@@ -26,7 +26,11 @@ import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.FrameInstance
 import com.oracle.truffle.api.nodes.{ Node => TruffleNode }
+import orc.util.SummingStopWatch
+import orc.util.DumperRegistry
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 
+@CompilationFinal
 object Counter {
   import CounterConstants._
 
@@ -120,6 +124,31 @@ object Counter {
   Tracer.registerEventTypeId(CounterTerminatorCreated, "CtrTermC", _.formatted("%016x"), _.formatted("%016x"))
   val CounterServiceCreated = 103L
   Tracer.registerEventTypeId(CounterServiceCreated, "CtrServC", _.formatted("%016x"), _.formatted("%016x"))
+
+  
+  @inline @CompilationFinal
+  private val enableTiming = false
+  
+  @inline @CompilationFinal
+  private val atomicOperationTimer = SummingStopWatch.maybe(enableTiming)
+  
+  @TruffleBoundary(allowInlining = true) @noinline
+  def startTimer(): Long = atomicOperationTimer.start()
+  @TruffleBoundary(allowInlining = true) @noinline
+  def stopTimer(s: Long) = atomicOperationTimer.stop(s)
+
+  if (SummingStopWatch.enabled && enableTiming) { 
+    DumperRegistry.registerCSVLineDumper("counter-timers", "csv", "counter times",
+        Seq(
+            "Dump ID [id]",
+            "Counter Time [time]",
+            "Count [count]",
+            )
+        ) { name =>
+          val (s, c) = atomicOperationTimer.getAndReset()
+          (name, s, c) 
+        }  
+  }
 }
 
 /** A counter which tracks an executing part of the program.
@@ -128,7 +157,8 @@ object Counter {
   */
 abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(n) {
   import CounterConstants._
-      
+  import Counter._
+  
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
   protected def handleHaltToken() = {
@@ -208,7 +238,9 @@ abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(
     * If we did halt call onContextHalted().
     */
   final def haltToken(): Unit = {
+    val s = startTimer()
     val n = decrementAndGet()
+    stopTimer(s)
     if (tracingEnabled) {
       logChange(s"- Down to $n")
       if (n < 0) {
@@ -243,7 +275,9 @@ abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(
   }
   
   final def newTokenOptimized(): Boolean = {
+    val s = startTimer()
     val n = getAndIncrement()
+    stopTimer(s)
     if (tracingEnabled) {
       logChange(s"+ Up from $n")
       assert(n >= 0, s"Spawning is not allowed once we go to zero count. $this")
@@ -288,6 +322,8 @@ abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(
   */
 final class CounterNested(execution: PorcEExecution, val parent: Counter, haltContinuation: PorcEClosure) extends Counter(1, parent.depth + 1) {
   import CounterConstants._
+  import Counter._
+  
   //Tracer.trace(Counter.CounterNestedCreated, hashCode(), parent.hashCode(), 0)
 
   if (CounterConstants.tracingEnabled) {
@@ -327,7 +363,9 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
   
   def haltTokenOptimized(): PorcEClosure = {
     // DUPLICATED: from Counter.haltToken()
+    val s = startTimer()
     val n = decrementAndGet()
+    stopTimer(s)
     if (tracingEnabled) {
       logChange(s"- Down to $n")
       if (n < 0) {
