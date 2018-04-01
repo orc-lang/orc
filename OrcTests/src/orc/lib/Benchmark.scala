@@ -37,6 +37,24 @@ object Benchmark {
   def nsToS(ns: Long) = ns.toDouble / 1000 / 1000 / 1000
   def msToS(ns: Long) = ns.toDouble / 1000
 
+  @inline
+  final val StartBenchmark = 201L
+  orc.util.Tracer.registerEventTypeId(StartBenchmark, "StrtBenc")
+  @inline
+  final val EndBenchmark = 202L
+  orc.util.Tracer.registerEventTypeId(EndBenchmark, "EndBenc ")
+
+  @inline
+  def traceStartBenchmark(): Unit = {
+    orc.util.Tracer.trace(StartBenchmark, 0, 0, 0)
+  }
+
+  @inline
+  def traceEndBenchmark(): Unit = {
+    orc.util.Tracer.trace(EndBenchmark, 0, 0, 0)
+  }
+
+  
   def endBenchmark(start: (Long, Long, Long, Long), iteration: Int, size: Double) = {
     val end = Benchmark.getTimes()
     BenchmarkTimes(iteration, nsToS(end._1 - start._1), nsToS(end._2 - start._2), msToS(end._3 - start._3), msToS(end._4 - start._4), size)
@@ -52,6 +70,7 @@ object StartBenchmark extends InvokerMethod {
         }
 
         def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+          Benchmark.traceStartBenchmark()
           Benchmark.getTimes()
         }
       }
@@ -75,6 +94,7 @@ object EndBenchmark extends InvokerMethod {
           val start = arguments(0).asInstanceOf[(Long, Long, Long, Long)]
           val iteration = arguments(1).asInstanceOf[Number]
           val size = arguments(2).asInstanceOf[Number]
+          Benchmark.traceEndBenchmark()
           Benchmark.endBenchmark(start, iteration.intValue(), size.doubleValue())
         }
       }
