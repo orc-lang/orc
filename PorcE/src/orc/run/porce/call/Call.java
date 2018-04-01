@@ -13,14 +13,18 @@ package orc.run.porce.call;
 
 import orc.run.porce.Expression;
 import orc.run.porce.PorcEUnit;
-import orc.run.porce.RuntimeProfilerWrapper;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.frame.FrameUtil;
 
 public abstract class Call<ExternalDispatch extends Dispatch> extends Expression {
 	@Child
@@ -39,6 +43,29 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	private final Expression[] arguments;
 	
 	private final PorcEExecution execution;
+
+	private static final Object externalCallStartTimeID = new Object();
+
+	public static FrameSlot getCallStartTimeSlot(Node n) {
+	    if (n instanceof Call) {
+		return ((Call) n).getCallStartTimeSlot();
+	    } else {
+		return getCallStartTimeSlot(n.getParent());
+	    }
+	}
+	
+	public FrameSlot getCallStartTimeSlot() {
+	    if (externalCallStartTimeSlot == null) {
+		CompilerDirectives.transferToInterpreterAndInvalidate();
+		computeAtomicallyIfNull(() -> externalCallStartTimeSlot, (v) -> this.externalCallStartTimeSlot = v, () -> {
+			return getRootNode().getFrameDescriptor().findOrAddFrameSlot(externalCallStartTimeID, FrameSlotKind.Long);
+		});
+	    }
+	    return externalCallStartTimeSlot;
+	}
+	
+	@CompilationFinal
+	private FrameSlot externalCallStartTimeSlot;
 
 	protected Call(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
 		this.target = target;
@@ -114,8 +141,8 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 		final Object targetValue = executeTargetObject(frame);
 		final Object[] argumentValues;
 		if (!profileIsInternal.profile(isInternal(targetValue))) {
-			RuntimeProfilerWrapper.traceEnter(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
-			// The traceExit is in Direct below and in ExternalCPSDispatch
+		    	frame.setLong(getCallStartTimeSlot(), orc.run.StopWatches.callTime().start());
+			// The stop is in Direct below and in ExternalCPSDispatch
 		}
 		if (arguments.length > 0) {
 			argumentValues = new Object[arguments.length];
@@ -151,7 +178,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 					try {
 						return getExternalCall().executeDirectDispatch(frame, target, arguments);
 					} finally {
-						RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
+					    	orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, getCallStartTimeSlot()));
 					}
 				}
 			};

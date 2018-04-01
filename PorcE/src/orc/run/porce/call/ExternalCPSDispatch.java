@@ -16,7 +16,6 @@ import static orc.run.porce.SpecializationConfiguration.ExternalCPSDirectSpecial
 import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.HaltException;
-import orc.run.porce.RuntimeProfilerWrapper;
 import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.CPSCallContext;
@@ -34,6 +33,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
@@ -158,7 +158,7 @@ public class ExternalCPSDispatch extends Dispatch {
 				try {
 					v = invokeDirectWithBoundary(invoker, target, profileArgumentTypes(arguments));
 				} finally {
-					RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
+				    	orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
 				}
 				getDispatchP().executeDispatch(frame, pub, v);
 			} catch (final TailCallException e) {
@@ -191,11 +191,11 @@ public class ExternalCPSDispatch extends Dispatch {
 	        		haltProfile.enter();
 				counter.haltToken();
 			} catch (final Throwable e) {
-                exceptionProfile.enter();
-                execution.notifyOfException(e, this);
-                counter.haltToken();
-            } finally {
-				RuntimeProfilerWrapper.traceExit(RuntimeProfilerWrapper.CallDispatch, getCallSiteId());
+                            exceptionProfile.enter();
+                            execution.notifyOfException(e, this);
+                            counter.haltToken();
+                        } finally {
+			    	orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
 			}
 		}
 	

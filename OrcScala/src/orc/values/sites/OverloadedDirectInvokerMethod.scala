@@ -42,11 +42,8 @@ abstract class OverloadedDirectInvokerMethod1[BaseArgumentType1 : ClassTag] exte
     }
   
     def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-      orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-      try {
+      orc.run.StopWatches.implementation {
         invokeDirectSpecialized(clsT1.cast(arguments(0)).asInstanceOf[T1])
-      } finally {
-        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
       }
     }
     
@@ -110,11 +107,8 @@ abstract class OverloadedDirectInvokerMethod2[BaseArgumentType1 : ClassTag, Base
     }
   
     def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-      orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-      try {
+      orc.run.StopWatches.implementation {
         invokeDirectSpecialized(clsT1.cast(arguments(0)).asInstanceOf[T1], clsT2.cast(arguments(1)).asInstanceOf[T2])
-      } finally {
-        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
       }
     }
     

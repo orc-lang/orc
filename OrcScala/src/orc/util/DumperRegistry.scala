@@ -13,17 +13,42 @@
 
 package orc.util
 
+import java.io.OutputStreamWriter
+
 /** A registry for tracing or other data collection utilities which allows them to be triggered to dump their output.
  * 
  */
 object DumperRegistry {
   private var operations: Seq[(String) => Unit] = Seq()
+  private var clears: Seq[() => Unit] = Seq()
   
   def register(operation: (String) => Unit): Unit = synchronized {
     operations +:= operation
   }
+
+  def registerClear(operation: () => Unit): Unit = synchronized {
+    clears +:= operation
+  }
+
+  def registerCSVLineDumper(basename: String, extension: String, description: String, tableColumnTitles: Seq[String])(operation: (String) => Product): Unit = {
+    ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
+    val csvOut = ExecutionLogOutputStream(basename, extension, description)
+    if (csvOut.isDefined) {
+      val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
+      val csvWriter = new CsvWriter(traceCsv.append(_))  
+      csvWriter.writeHeader(tableColumnTitles)
+  
+      register { name => 
+        csvWriter.writeRow(operation(name))
+        traceCsv.flush()
+      }
+    }
+  }
   
   def dump(name: String): Unit = synchronized {
     operations foreach { _(name) }
+  }
+  def clear(): Unit = synchronized {
+    clears foreach { _() }
   }
 }

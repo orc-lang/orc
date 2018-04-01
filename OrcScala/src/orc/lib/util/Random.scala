@@ -30,15 +30,12 @@ object Random extends InvokerMethod with SiteMetadata with FunctionalSite {
     }
 
     def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-      orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-      try {
+      orc.run.StopWatches.implementation {
         val n = arguments(0).asInstanceOf[Number]
         if (n.longValue() <= Int.MaxValue)
           ThreadLocalRandom.current().nextInt(n.intValue()).asInstanceOf[AnyRef]
         else
           throw new IllegalArgumentException(s"$Random($n): bound much be less than 2**31.")
-      } finally {
-        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
       }
     }
   }
@@ -48,11 +45,8 @@ object Random extends InvokerMethod with SiteMetadata with FunctionalSite {
     }
 
     def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-      orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-      try {
+      orc.run.StopWatches.implementation {
         ThreadLocalRandom.current().nextInt().asInstanceOf[AnyRef]
-      } finally {
-        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
       }
     }
   }
@@ -84,11 +78,8 @@ object URandom extends InvokerMethod with SiteMetadata with FunctionalSite {
     }
 
     def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-      orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-      try {
+      orc.run.StopWatches.implementation {
         ThreadLocalRandom.current().nextDouble().asInstanceOf[AnyRef]
-      } finally {
-        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
       }
     }
   }

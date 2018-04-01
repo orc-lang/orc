@@ -64,12 +64,9 @@ trait SpecificArity extends Site {
 trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
   def call(args: Array[AnyRef], callContext: CallContext) {
     //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
-    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
     try {
-      try {
+      orc.run.StopWatches.implementation {
         callContext.publish(evaluate(args))
-      } finally {
-        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
       }
     } catch {
       case (e: OrcException) => callContext.halt(e)
@@ -77,12 +74,9 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
   }
   def calldirect(args: Array[AnyRef]): AnyRef = {
     //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
-    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
     try {
-      try {
+      orc.run.StopWatches.implementation {
         evaluate(args)
-      } finally {
-        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
       }
     } catch {
       case e: Exception =>
@@ -100,28 +94,24 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
 trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
   def call(args: Array[AnyRef], callContext: CallContext) {
     //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
-    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-    try {
+    orc.run.StopWatches.implementation {
       evaluate(args) match {
         case Some(v) => callContext.publish(v)
         case None => callContext.halt
       }
-    } finally {
-      orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
     }
   }
   
   def calldirect(args: Array[AnyRef]): AnyRef = {
     //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
-    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
     (try {
-      evaluate(args)
+      orc.run.StopWatches.implementation {
+        evaluate(args)
+      }
     } catch {
       case e: Exception =>
         //throw HaltException.SINGLETON
         throw new ExceptionHaltException(e)
-    } finally {
-      orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
     }) match {
       case Some(v) => v
       case None => throw HaltException.SINGLETON
@@ -149,14 +139,11 @@ trait Site0 extends Site with SpecificArity {
   val arity = 0
 
   def call(args: Array[AnyRef], callContext: CallContext) {
-    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-    try {
+    orc.run.StopWatches.implementation {
       args match {
         case Array0() => call(callContext)
         case _ => throw new ArityMismatchException(0, args.size)
       }
-    } finally {
-      orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
     }
   }
 
@@ -169,14 +156,11 @@ trait Site1 extends Site with SpecificArity {
   val arity = 1
 
   def call(args: Array[AnyRef], callContext: CallContext) {
-    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-    try {
+    orc.run.StopWatches.implementation {
       args match {
         case Array1(a) => call(a, callContext)
         case _ => throw new ArityMismatchException(1, args.size)
       }
-    } finally {
-      orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
     }
   }
 
@@ -189,14 +173,11 @@ trait Site2 extends Site with SpecificArity {
   val arity = 2
 
   def call(args: Array[AnyRef], callContext: CallContext) {
-    orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-    try {
+    orc.run.StopWatches.implementation {
       args match {
         case Array2(a, b) => call(a, b, callContext)
         case _ => throw new ArityMismatchException(2, args.size)
       }
-    } finally {
-      orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
     }
   }
 

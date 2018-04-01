@@ -25,10 +25,18 @@ abstract class SummingStopWatch {
 
 object SummingStopWatch {
   @inline
-  val enabled = false
+  val enabled = true
   
   def apply() = {
     if (enabled) {
+      new Impl
+    } else {
+      new Disabled
+    }
+  }
+  
+  def maybe(b: Boolean) = {
+    if (enabled && b) {
       new Impl
     } else {
       new Disabled

@@ -94,14 +94,16 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 	    results
 	def h(i, results) if (softTimeLimit :> 0 && clock.time() :> (softTimeLimit * 1000)) = h(nRuns, results)
 	def h(i, results) = 
-		setup() >d> setRepStartTime() >> timeItSinglePub({ benchmark(d) }, i, size) >(r, pub)> 
+		setup() >d> setRepStartTime() >> 
+        DumperRegistry.clear() >> -- Clear dumpers that support that.
+		timeItSinglePub({ benchmark(d) }, i, size) >(r, pub)>
+        DumperRegistry.dump("rep" + i) >> -- Run Dumpers as soon as possible after the end of the benchmark to avoid including extra stuff.
 		(if check(pub) then Println(name + " results are correct up to hash collision.") else Error(name + " results are WRONG.")) >> (
 			val results' = r : results
 			writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
 			  ["Repetition number [rep]", "Elapsed time (s) [elapsedTime]", "Process CPU time (s) [cpuTime]", 
 			   "Runtime compilation time (s) [rtCompTime]", "GC time (s) [gcTime]"], 
 			  map(lambda(t) = [t.iteration(), t.runTime(), t.cpuTime(), t.compilationTime(), t.gcTime()], reverse(results'))) >>
-			DumperRegistry.dump("rep" + i) >>
 			h(i+1, results')
 		)
 	if nRuns >= 1 then

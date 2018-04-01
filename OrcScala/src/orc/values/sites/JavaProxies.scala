@@ -149,13 +149,8 @@ object JavaCall {
             }
             @throws[HaltException]
             def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              if (orc.run.RuntimeProfiler.profileRuntime)
-                orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-              try {
+              orc.run.StopWatches.implementation {
                 new JavaArrayElementProxy(target, arguments(0).asInstanceOf[java.lang.Long].intValue())
-              } finally {
-                if (orc.run.RuntimeProfiler.profileRuntime)
-                  orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
               }
             }
             override def toString(): String = s"<Array Index Invoker Long>@${super.toString}"            
@@ -169,13 +164,8 @@ object JavaCall {
             }
             @throws[HaltException]
             def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              if (orc.run.RuntimeProfiler.profileRuntime)
-                orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-              try {
+              orc.run.StopWatches.implementation {
                 new JavaArrayElementProxy(target, arguments(0).asInstanceOf[Number].intValue())
-              } finally {
-                if (orc.run.RuntimeProfiler.profileRuntime)
-                  orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
               }
             }
             override def toString(): String = s"<Array Index Invoker non-Long>@${super.toString}"            
@@ -255,56 +245,48 @@ abstract class InvocableInvoker(
   val boxedReturnType = OrcJavaCompatibility.box(invocable.returnType)
 
   def invokeDirect(theObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-    if (orc.run.RuntimeProfiler.profileRuntime)
-      orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.JavaDispatch)
-    try {
-      if (theObject == null && !invocable.isStatic) {
-        throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
-      }
-      val finalArgs = if (invocable.isVarArgs) {        
-        // TODO: PERFORMANCE: It may be worth it to replace all these scala collections calls with some optimized loops. Hot path, mumble, mumble.
-        
-        // Group var args into nested array argument.
-        val nNormalArgs = invocable.parameterTypes.length - 1
-        val (normalArgs, varArgs) = (arguments.take(nNormalArgs), arguments.drop(nNormalArgs))
-        val convertedNormalArgs = (normalArgs, invocable.parameterTypes).zipped.map(orc2java(_, _))
-
-        val varargType = invocable.parameterTypes(nNormalArgs).getComponentType()
-        val convertedVarArgs = varArgs.map(orc2java(_, varargType))
-        // The vararg array needs to have the correct dynamic type so we create it using reflection.
-        val varArgArray = JavaArray.newInstance(varargType, varArgs.size).asInstanceOf[Array[Object]]
-        convertedVarArgs.copyToArray(varArgArray)
-
-        (convertedNormalArgs :+ varArgArray).toArray
-      } else {
-        // IT might be good to optimize the vararg case above as well, but it's much less of a hot path and it would be harder to optimizer.
-        val end = arguments.length
-        var i = 0
-        while(i < end) {
-          arguments(i) = orc2java(arguments(i), invocable.parameterTypes(i))
-          i += 1
+    orc.run.StopWatches.javaCall {
+      try {
+        if (theObject == null && !invocable.isStatic) {
+          throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
         }
-        arguments
+        val finalArgs = if (invocable.isVarArgs) {        
+          // TODO: PERFORMANCE: It may be worth it to replace all these scala collections calls with some optimized loops. Hot path, mumble, mumble.
+          
+          // Group var args into nested array argument.
+          val nNormalArgs = invocable.parameterTypes.length - 1
+          val (normalArgs, varArgs) = (arguments.take(nNormalArgs), arguments.drop(nNormalArgs))
+          val convertedNormalArgs = (normalArgs, invocable.parameterTypes).zipped.map(orc2java(_, _))
+  
+          val varargType = invocable.parameterTypes(nNormalArgs).getComponentType()
+          val convertedVarArgs = varArgs.map(orc2java(_, varargType))
+          // The vararg array needs to have the correct dynamic type so we create it using reflection.
+          val varArgArray = JavaArray.newInstance(varargType, varArgs.size).asInstanceOf[Array[Object]]
+          convertedVarArgs.copyToArray(varArgArray)
+  
+          (convertedNormalArgs :+ varArgArray).toArray
+        } else {
+          // IT might be good to optimize the vararg case above as well, but it's much less of a hot path and it would be harder to optimizer.
+          val end = arguments.length
+          var i = 0
+          while(i < end) {
+            arguments(i) = orc2java(arguments(i), invocable.parameterTypes(i))
+            i += 1
+          }
+          arguments
+        }
+        //Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.parameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
+        val r = orc.run.StopWatches.javaImplementation {
+          // The returnType cast does not add any static information, but it enables runtime optimizations in Graal.
+          boxedReturnType.cast(mh.invokeExact(theObject, finalArgs)).asInstanceOf[AnyRef]
+        }
+        java2orc(r)
+      } catch {
+        case e: InvocationTargetException => throw new JavaException(e.getCause())
+        case e: ExceptionInInitializerError => throw new JavaException(e.getCause())
+        case e: InterruptedException => throw e
+        case e: Exception => throw new JavaException(e)
       }
-      //Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.parameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
-      if (orc.run.RuntimeProfiler.profileRuntime)
-        orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-      val r = try {
-        // The returnType cast does not add any static information, but it enables runtime optimizations in Graal.
-        boxedReturnType.cast(mh.invokeExact(theObject, finalArgs)).asInstanceOf[AnyRef]
-      } finally {
-        if (orc.run.RuntimeProfiler.profileRuntime)
-          orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
-      }
-      java2orc(r)
-    } catch {
-      case e: InvocationTargetException => throw new JavaException(e.getCause())
-      case e: ExceptionInInitializerError => throw new JavaException(e.getCause())
-      case e: InterruptedException => throw e
-      case e: Exception => throw new JavaException(e)
-    } finally {
-      if (orc.run.RuntimeProfiler.profileRuntime)
-        orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.JavaDispatch)
     }
   }
 }
@@ -501,16 +483,13 @@ case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: I
           target.isInstanceOf[JavaArrayDerefSite] && arguments.length == 0 && cls.isInstance(target.asInstanceOf[JavaArrayDerefSite].theArray)
         }
         def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-          orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-          val r = try {
-            val self = target.asInstanceOf[JavaArrayDerefSite]
-            mh.invokeExact(self.theArray, self.index)
-          } finally {
-            if (orc.run.RuntimeProfiler.profileRuntime) {
-              orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+          orc.run.StopWatches.javaCall {
+            val r = orc.run.StopWatches.javaImplementation {
+              val self = target.asInstanceOf[JavaArrayDerefSite]
+              mh.invokeExact(self.theArray, self.index)
             }
+            java2orc(r)
           }
-          java2orc(r)
         }
       }
     } else {
@@ -534,13 +513,11 @@ case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: 
           target.isInstanceOf[JavaArrayAssignSite] && arguments.length == 1 && cls.isInstance(target.asInstanceOf[JavaArrayAssignSite].theArray)
         }
         def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-          orc.run.RuntimeProfiler.traceEnter(orc.run.RuntimeProfiler.SiteImplementation)
-          try {
-            val self = target.asInstanceOf[JavaArrayAssignSite]
-            mh.invoke(self.theArray, self.index, orc2java(arguments(0), componentType))
-          } finally {
-            if (orc.run.RuntimeProfiler.profileRuntime) {
-              orc.run.RuntimeProfiler.traceExit(orc.run.RuntimeProfiler.SiteImplementation)
+          orc.run.StopWatches.javaCall {
+            val v = orc2java(arguments(0), componentType)
+            orc.run.StopWatches.javaImplementation {
+              val self = target.asInstanceOf[JavaArrayAssignSite]
+              mh.invoke(self.theArray, self.index, v)
             }
           }
         }

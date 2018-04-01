@@ -465,14 +465,8 @@ class SimpleWorkStealingScheduler(
     (name, ws.size, nBlocked, steals, stealFailures, newWorks, overflows, schedules, tasksRun, avgQueueSize, maxQueueSize, minQueueSize)
   }
   
-  {
-    ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
-    val csvOut = ExecutionLogOutputStream(s"work-stealing-scheduler-statistics", "csv", "WorkStealingScheduler statistics")
-    if (csvOut.isDefined) {
-      val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-      val csvWriter = new CsvWriter(traceCsv.append(_))
-  
-      val tableColumnTitles = Seq(
+  DumperRegistry.registerCSVLineDumper(s"work-stealing-scheduler-statistics", "csv", "WorkStealingScheduler statistics",
+      Seq(
           "Dump ID [id]",
           "Number of Workers [nWorkers]",
           "Number of Blocked Workers [nBlocked]",
@@ -486,15 +480,7 @@ class SimpleWorkStealingScheduler(
           "Maximum Local Queue Size [maxQueueSize]",
           "Minimum Local Queue Size [minQueueSize]",
           )
-      csvWriter.writeHeader(tableColumnTitles)
-  
-      DumperRegistry.register { name => 
-        csvWriter.writeRow(dumpStats(name))
-        traceCsv.flush()
-      }
-    }
-  }
-  
+      ) { name => dumpStats(name) }  
 
   final def startScheduler(): Unit = synchronized {
     for (_ <- 0 until minWorkers) {

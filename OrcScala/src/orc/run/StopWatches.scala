@@ -13,35 +13,33 @@
 
 package orc.run
 
-import java.io.OutputStreamWriter
-
 import orc.util.SummingStopWatch
 import orc.util.DumperRegistry
-import orc.util.ExecutionLogOutputStream
-import orc.util.CsvWriter
 
 object StopWatches {
+  val workerEnabled = false
+  
   /** Total time a worker uses including stealing
     */
-  val workerTime = SummingStopWatch()
+  val workerTime = SummingStopWatch.maybe(workerEnabled)
 
   /** Time a worker spends blocking for work
     *
     *  Inside workerStealingTime
     */
-  val workerWaitingTime = SummingStopWatch()
+  val workerWaitingTime = SummingStopWatch.maybe(workerEnabled)
 
   /** Time a worker spends executing real work
     *
     *  Inside workerTime
     */
-  val workerWorkingTime = SummingStopWatch()
+  val workerWorkingTime = SummingStopWatch.maybe(workerEnabled)
 
   /** Time a worker spends executing real work
     *
     *  Inside workerWorkingTime
     */
-  val workerSchedulingTime = SummingStopWatch()
+  val workerSchedulingTime = SummingStopWatch.maybe(workerEnabled)
 
   /** Get and reset the measured times.
     *
@@ -60,29 +58,132 @@ object StopWatches {
   }
   
 
-  if (SummingStopWatch.enabled) {
-    ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
-    val csvOut = ExecutionLogOutputStream(s"worker-times", "csv", "Worker time output file")
-    if (csvOut.isDefined) {
-      val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-      val csvWriter = new CsvWriter(traceCsv.append(_))
-  
-      val tableColumnTitles = Seq(
+  if (SummingStopWatch.enabled && workerEnabled) {
+    DumperRegistry.registerClear(getAndResetWorkerTimes _)
+    DumperRegistry.registerCSVLineDumper(s"worker-times", "csv", "Worker time output file",
+        Seq(
           "Dump ID [id]",
           "Worker task selection overhead [workerOverhead]",
           "Scheduling overhead [schedulingOverhead]",
           "Actual working time [workTime]",
           "Number of tasks [nTasks]",
-          )
-      csvWriter.writeHeader(tableColumnTitles)
-  
-      DumperRegistry.register { name => 
-        val (a, b, c, d) = getAndResetWorkerTimes()
-        csvWriter.writeRow((name, a, b, c, d))
-        traceCsv.flush()
-      }
+          )) { name => 
+      val (a, b, c, d) = getAndResetWorkerTimes()
+      (name, a, b, c, d)
     }
   }
 
-  // TODO: This could be extended to replace the RuntimeProfiler code, probably with lower overhead and faster processing.
+  /* Regions of interest:
+   * 
+   * Call dispatch
+   * Java-level dispatch
+   * Site implementations
+   */
+
+  @inline
+  private val callsEnabled = false
+  
+  /** Total time spent performing calls
+    */
+  val callTime = SummingStopWatch.maybe(callsEnabled)
+  
+  /** Time spend performing Java calls after transfer out of Orc
+    *
+    *  Inside callTime
+    */
+  val javaCallTime = SummingStopWatch.maybe(callsEnabled)
+  
+  @inline 
+  def javaCall[T](f: => T): T = {
+    if (callsEnabled) {
+      val s = javaCallTime.start()
+      try {
+        f: @inline
+      } finally {
+        javaCallTime.stop(s)
+      }
+    } else {
+      f
+    }
+  }
+
+  /** Time spent performing actual java execution
+    *
+    *  Inside javaCallTime
+    */
+  val javaImplTime = SummingStopWatch.maybe(callsEnabled)
+  
+  @inline 
+  def javaImplementation[T](f: => T): T = {
+    if (callsEnabled) {
+      val s = javaImplTime.start()
+      try {
+        f: @inline
+      } finally {
+        javaImplTime.stop(s)
+      }
+    } else {
+      f
+    }
+  }
+
+  
+  /** Time spent performing actual external work
+    *
+    *  Inside callTime
+    */
+  val implementationTime = SummingStopWatch.maybe(callsEnabled)
+  
+  @inline 
+  def implementation[T](f: => T): T = {
+    if (callsEnabled) {
+      val s = implementationTime.start()
+      try {
+        f: @inline
+      } finally {
+        implementationTime.stop(s)
+      }
+    } else {
+      f
+    }
+  }
+  
+  /** Get and reset the measured times.
+    *
+    *  Returns (Orc call overhead, Java dispatch overhead, time in calls, number of calls, number of Java calls)
+    */
+  def getAndResetCallTimes(): (Long, Long, Long, Long, Long) = {
+    val (callT, nCalls) = callTime.getAndReset()
+    val (javaCallT, nJavaCalls) = javaCallTime.getAndReset()
+    val (javaImplT, nJavaImpl) = javaImplTime.getAndReset()
+    val (implT, nImpl) = implementationTime.getAndReset()
+    
+    if ((nCalls - (nImpl + nJavaImpl)).abs > 5 || nJavaCalls != nJavaImpl) {
+      Logger.warning(s"The number of calls and implementations are mismatched. $nCalls != ${nImpl + nJavaImpl} || $nJavaCalls != $nJavaImpl")
+    }
+    
+    (callT - javaCallT - implT,
+     javaCallT - javaImplT,
+     javaImplT + implT,
+     nCalls,
+     nJavaCalls)
+  }
+  
+
+  if (SummingStopWatch.enabled && callsEnabled) {
+    DumperRegistry.registerClear(getAndResetCallTimes _)
+    
+    DumperRegistry.registerCSVLineDumper("call-times", "csv", "Worker time output file",
+        Seq(
+          "Dump ID [id]",
+          "Orc call overhead [orcOverhead]",
+          "Java dispatch overhead [javaOverhead]",
+          "time in calls [inCalls]",
+          "number of calls [nCalls]", 
+          "number of Java calls [nJavaCalls]"
+          )) { name => 
+      val (a, b, c, d, e) = getAndResetCallTimes()
+      (name, a, b, c, d, e)
+    }
+  }
 }
