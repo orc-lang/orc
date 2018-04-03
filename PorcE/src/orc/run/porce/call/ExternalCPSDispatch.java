@@ -158,7 +158,9 @@ public class ExternalCPSDispatch extends Dispatch {
 				try {
 					v = invokeDirectWithBoundary(invoker, target, profileArgumentTypes(arguments));
 				} finally {
-				    	orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
+				    if (orc.run.StopWatches.callsEnabled()) {
+					orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
+				    }
 				}
 				getDispatchP().executeDispatch(frame, pub, v);
 			} catch (final TailCallException e) {
@@ -195,7 +197,9 @@ public class ExternalCPSDispatch extends Dispatch {
                             execution.notifyOfException(e, this);
                             counter.haltToken();
                         } finally {
-			    	orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
+			    if (orc.run.StopWatches.callsEnabled()) {
+				orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
+			    }
 			}
 		}
 	

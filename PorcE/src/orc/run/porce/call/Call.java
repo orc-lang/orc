@@ -140,7 +140,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	public Object execute(final VirtualFrame frame) {
 		final Object targetValue = executeTargetObject(frame);
 		final Object[] argumentValues;
-		if (!profileIsInternal.profile(isInternal(targetValue))) {
+		if (!profileIsInternal.profile(isInternal(targetValue)) && orc.run.StopWatches.callsEnabled()) {
 		    	frame.setLong(getCallStartTimeSlot(), orc.run.StopWatches.callTime().start());
 			// The stop is in Direct below and in ExternalCPSDispatch
 		}
@@ -178,7 +178,9 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 					try {
 						return getExternalCall().executeDirectDispatch(frame, target, arguments);
 					} finally {
-					    	orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, getCallStartTimeSlot()));
+					    	if (orc.run.StopWatches.callsEnabled()) {
+					    	    	orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, getCallStartTimeSlot()));
+					    	}
 					}
 				}
 			};
