@@ -17,7 +17,8 @@ import orc.util.SummingStopWatch
 import orc.util.DumperRegistry
 
 object StopWatches {
-  val workerEnabled = false
+  @inline
+  final val workerEnabled = false
   
   /** Total time a worker uses including stealing
     */
@@ -81,7 +82,7 @@ object StopWatches {
    */
 
   @inline
-  private val callsEnabled = false
+  final val callsEnabled = false
   
   /** Total time spent performing calls
     */
