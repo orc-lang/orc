@@ -199,7 +199,25 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final int nArguments;
     private final int nCaptured;
     
-    public RootCallTarget trampolineCallTarget;
+    @CompilationFinal
+    private RootCallTarget trampolineCallTarget;
+
+    public RootCallTarget getTrampolineCallTarget() {
+	if (trampolineCallTarget == null) {
+	    CompilerDirectives.transferToInterpreterAndInvalidate();
+	    atomic(() -> {
+		if (trampolineCallTarget == null) {
+		    RootCallTarget v = Truffle.getRuntime().createCallTarget(new InvokeWithTrampolineRootNode(getLanguage(PorcELanguage.class), this, execution));
+		    // TODO: Use the new Java 9 fence when we start requiring Java 9
+		    // for PorcE.
+		    NodeBase.UNSAFE.fullFence();
+		    trampolineCallTarget = v;
+		}
+	    });
+	}
+	return trampolineCallTarget;
+    }
+
     private final PorcEExecution execution;
 
     public PorcERootNode(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured, PorcEExecution execution) {

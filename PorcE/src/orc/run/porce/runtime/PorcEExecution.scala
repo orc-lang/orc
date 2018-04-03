@@ -102,8 +102,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       def createCallTarget(root: RootNode) = truffleRuntime.createCallTarget(new InvokeWithTrampolineRootNode(runtime.language, root, this))
       key match {
         case key: PorcERootNode =>
-          key.trampolineCallTarget = createCallTarget(key)
-          key.trampolineCallTarget
+          key.getTrampolineCallTarget
         case _ =>
           val v = trampolineMap.get(key)
           if (v == null)
