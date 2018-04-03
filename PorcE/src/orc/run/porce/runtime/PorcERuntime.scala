@@ -23,6 +23,8 @@ import orc.run.porce.Logger
 import java.util.logging.Level
 import java.util.concurrent.atomic.LongAdder
 import orc.util.DumperRegistry
+import com.oracle.truffle.api.Truffle
+import com.oracle.truffle.api.CompilerDirectives
 
 /** The base runtime for PorcE runtimes.
  *  
@@ -52,7 +54,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   DumperRegistry.register(name => {
     val n = nonInlinableScheduleCount.sumThenReset()
     if (n > 0)
-      Logger.fine(s"PERFORMANCE: $name nonInlinableScheduleCount=$n")
+      Logger.info(s"PERFORMANCE: $name nonInlinableScheduleCount=$n (This may indicate a performance problem.)")
   })
   
   def potentiallySchedule(s: Schedulable) = {
@@ -105,27 +107,42 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   }
 
   private class IntHolder(var value: Int)
+  // Only used on slow path when the thread is not a Worker.
   private val stackDepthThreadLocal = new ThreadLocal[IntHolder]() {
     override def initialValue() = {
       new IntHolder(0)
     }
   }
-
+  
   /** Increment the stack depth and return true if we can continue to extend the stack.
     * 
     * If this returns true the caller must call decrementStackDepth() after it finishes.
     */
-  @TruffleBoundary(allowInlining = true) @noinline
-  def incrementAndCheckStackDepth() = {
+  def incrementAndCheckStackDepth(): Boolean = {
     if (maxStackDepth > 0) {
-      val depth = stackDepthThreadLocal.get()
-      //if (depth.value > PorcERuntime.maxStackDepth / 2)
-      //  Logger.log(Level.INFO, s"incr (depth=${depth.value})")
-        
-      val r = depth.value < maxStackDepth
-      if (r)
-        depth.value += 1
-      r
+      @TruffleBoundary @noinline
+      def incrementAndCheckStackDepthWithThreadLocal() = {
+        val depth = stackDepthThreadLocal.get()
+        val r = depth.value < maxStackDepth
+        if (r)
+          depth.value += 1
+        r
+      }
+      try {
+        val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
+        val r = t.stackDepth < maxStackDepth
+        if (r)
+          t.stackDepth += 1
+        r
+      } catch {
+        case _: ClassCastException => {
+          if (allExecutionOnWorkers.isValid()) {
+            CompilerDirectives.transferToInterpreterAndInvalidate()
+            allExecutionOnWorkers.invalidate()
+          }
+          incrementAndCheckStackDepthWithThreadLocal()
+        }
+      }
     } else {
       false
     }
@@ -135,22 +152,52 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     *
     * @see incrementAndCheckStackDepth()
     */
-  @TruffleBoundary(allowInlining = true) @noinline
   def decrementStackDepth() = {
     if (maxStackDepth > 0) {
-      val depth = stackDepthThreadLocal.get()
-      //if (depth.value > PorcERuntime.maxStackDepth / 2)
-      //  Logger.log(Level.INFO, s"decr (depth=${depth.value})")
-      
+      @TruffleBoundary @noinline
+      def decrementStackDepthWithThreadLocal() = {
+        val depth = stackDepthThreadLocal.get()
         depth.value -= 1
+      }
+      try {
+        val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]      
+        t.stackDepth -= 1
+      } catch {
+        case _: ClassCastException => {
+          if (allExecutionOnWorkers.isValid()) {
+            CompilerDirectives.transferToInterpreterAndInvalidate()
+            allExecutionOnWorkers.invalidate()
+          }
+          decrementStackDepthWithThreadLocal()
+        }
+      }
     }
   }
 
   def resetStackDepth() = {
     if (maxStackDepth > 0) {
-      stackDepthThreadLocal.get().value = 0
+      @TruffleBoundary @noinline
+      def resetStackDepthWithThreadLocal() = {
+        stackDepthThreadLocal.get().value = 0
+      }
+      try {
+        val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
+        t.stackDepth = 0
+      } catch {
+        case _: ClassCastException => {
+          if (allExecutionOnWorkers.isValid()) {
+            CompilerDirectives.transferToInterpreterAndInvalidate()
+            allExecutionOnWorkers.invalidate()
+          }
+          resetStackDepthWithThreadLocal()
+        }
+      }
     }
   }
+  
+  @inline
+  @CompilationFinal
+  final val allExecutionOnWorkers = Truffle.getRuntime.createAssumption("allExecutionOnWorkers")
 
   @inline
   @CompilationFinal

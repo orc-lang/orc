@@ -202,7 +202,11 @@ class SimpleWorkStealingScheduler(
     private[SimpleWorkStealingScheduler] val workQueue: SchedulingQueue[Schedulable] = new ABPWSDeque(workerQueueLength)
     
     def queueSize = workQueue.size
-    
+
+    // FIXME: Eliminate these hack fields and figure out a better way to handle this.
+    // Fields for use elsewhere. AKA fast thread locals.
+    var stackDepth: Int = 0
+
     //@volatile
     var isPotentiallyBlocked = false
     var isInternallyBlocked = true
