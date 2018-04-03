@@ -79,24 +79,25 @@ object RunResultsTableMerge {
       val reader = Files.newBufferedReader(path)
       val lines = reader.lines().iterator
       if (!lines.hasNext()) {
-        throw new DataFormatException(s"Empty file: ${path.toAbsolutePath}")
-      }
-      val header = lines.next()
-      if (firstHeader == null) {
-        firstHeader = header
-        print(headerPrefix + header + "\r\n")
+        Console.err.println(s"WARNING: Empty file: ${path.toAbsolutePath}")
       } else {
-        if (header != firstHeader) {
-          throw new DataFormatException(s"Inconsistent headers: $firstHeader vs. $header: ${path.toAbsolutePath}")
+        val header = lines.next()
+        if (firstHeader == null) {
+          firstHeader = header
+          print(headerPrefix + header + "\r\n")
+        } else {
+          if (header != firstHeader) {
+            throw new DataFormatException(s"Inconsistent headers: $firstHeader vs. $header: ${path.toAbsolutePath}")
+          }
         }
+        val factorValuesFile = Paths.get(path.toString.replace(fileBaseName, "factor-values"))
+        val factorValues = readFactorValues(factorValuesFile)
+        val rowPrefix = factorNamesInOrder.map(factorValues.getOrElse(_, "")).mkString(",") + ","
+        for (line <- lines.asScala) {
+          print(rowPrefix + line + "\r\n")
+        }
+        reader.close()
       }
-      val factorValuesFile = Paths.get(path.toString.replace(fileBaseName, "factor-values"))
-      val factorValues = readFactorValues(factorValuesFile)
-      val rowPrefix = factorNamesInOrder.map(factorValues.getOrElse(_, "")).mkString(",") + ","
-      for (line <- lines.asScala) {
-        print(rowPrefix + line + "\r\n")
-      }
-      reader.close()
     }
   }
 
