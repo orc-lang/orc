@@ -38,7 +38,7 @@ object ThreadRing extends BenchmarkApplication[Unit, Int] with ExpectedBenchmark
     }
   }
 
-  val N = BenchmarkConfig.problemSizeScaledInt(503)
+  val N = 503
 
   def threadRingRunner(p: Int) = {
     val ring = (0 until N).map(_ => new Channel[Int]()).toArray
@@ -79,8 +79,9 @@ object ThreadRing extends BenchmarkApplication[Unit, Int] with ExpectedBenchmark
   val size: Int = BenchmarkConfig.problemSizeScaledInt(2000) + BenchmarkConfig.problemSizeScaledInt(20000)
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0x36c,
-      10 -> 0x2226,
+      1 -> (2000 % 503 + 20000 % 503),
+      10 -> (20000 % 503 + 200000 % 503),
+      100 -> (200000 % 503 + 2000000 % 503),
       )
 }
 

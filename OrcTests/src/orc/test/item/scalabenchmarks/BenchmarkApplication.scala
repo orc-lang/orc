@@ -192,6 +192,12 @@ trait ExpectedBenchmarkResult[R] {
     val r = results match {
       case s: Iterable[_] =>
         s.take(summaryPrefix).mkString("[", ",\n", s"${if (summaryPrefix < s.size) ", ..." else ""}]] (${s.size} items)")
+      case s: java.util.Collection[_] =>
+        import collection.JavaConverters._
+        s.asScala.take(summaryPrefix).mkString("[", ",\n", s"${if (summaryPrefix < s.size) ", ..." else ""}]] (${s.size} items)")
+      case s: java.lang.Iterable[_] =>
+        import collection.JavaConverters._
+        s.asScala.take(summaryPrefix).mkString("[", ",\n", ", ...]")
       case a if a.getClass.isArray =>
         val s = unknownArray2IndexedSeq(a, takeOnly = summaryPrefix)
         s.mkString("[", ",\n", s"${if (s.size < JArray.getLength(a)) ", ..." else ""}] (${JArray.getLength(a)} items)")

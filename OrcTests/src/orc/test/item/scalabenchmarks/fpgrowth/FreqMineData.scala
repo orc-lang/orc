@@ -83,6 +83,6 @@ object FreqMineData extends ExpectedBenchmarkResult[ArrayList[ArrayList[Long]]] 
   val expectedMap: Map[Int, Int] = Map(
       1 -> 0x5bc57a67,
       10 -> 0x93078f48,
-      100 -> 0x38b58222,
+      100 -> 0x2b2a5cdf,
       )
 }

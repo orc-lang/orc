@@ -24,7 +24,7 @@ def threadRing(id, m, in, next) =
      else
        next.put(x+1) >> stop)
 
-val N = problemSizeScaledInt(503)
+val N = 503
 
 def threadRingRunner(Integer) :: Signal
 def threadRingRunner(p) =
