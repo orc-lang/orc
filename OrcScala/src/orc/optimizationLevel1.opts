@@ -5,6 +5,10 @@ orct
 orct:normalize
 orct:type-elim
 orct:unforced-ref-elim
+orct:branch-elim-arg
+orct:stop-elim
+orct:unused-future-elim
+orct:method-elim
 orct:max-passes=1
 porc
 porc:eta-reduce
