@@ -51,7 +51,7 @@ def tearDownTestRep() =
 def tearDownTest() =
   signal
 
-executeTest()
+executeTest(setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest)
 
 
 {-

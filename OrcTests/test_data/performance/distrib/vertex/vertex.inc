@@ -100,7 +100,7 @@ def timeRepetitions(setUpTestRep, runTestRep, tearDownTestRep, numRepetitions) =
 
 import site NumberOfRuntimeEngines = "orc.lib.NumberOfRuntimeEngines"
 
-def executeTest() =
+def executeTest(setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest) =
   setupOutput()  >>
   writeFactorValuesTable([
     --Factor name, Value, Units, ID, Comments
