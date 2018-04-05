@@ -100,7 +100,7 @@ signals(5)]]></programlisting>
 --}
 def signals(Integer) :: Signal
 def signals(n) =
-  max(n / Runtime.defaultNumberOfPartitions, 1) >seqSize> ( 
+  max(n / Runtime.defaultNumberOfPartitions, 2) >seqSize> ( 
   def parPhase(n :: Integer) :: Signal = n >> (
     if n <= seqSize then
       seqPhase(n)
@@ -128,7 +128,7 @@ forBy(1,6,2)]]></programlisting>
 --}
 def forBy(Integer, Integer, Integer) :: Integer
 def forBy(low, high, step) = step >> 
-  max((high - low) / step / Runtime.defaultNumberOfPartitions, 1) * step >seqSize> ( 
+  max((high - low) / step / Runtime.defaultNumberOfPartitions, 2) * step >seqSize> ( 
   def parPhase(low :: Integer, high :: Integer) :: Integer = low >> high >> (
     val diff = high - low
     if diff <= 0 then
