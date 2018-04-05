@@ -11,6 +11,8 @@
 
 package orc.run.porce;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import orc.error.runtime.HaltException;
 import orc.run.porce.call.Call;
 import orc.run.porce.runtime.Future;
@@ -74,6 +76,7 @@ public abstract class Graft extends Expression {
 
     protected final Object compSlotID = new Object();
     protected final Object futSlotID = new Object();
+    protected final Object newCSlotID = new Object();
 
     protected FrameSlot createFrameSlot(final VirtualFrame frame, Object id) {
 	FrameDescriptor descriptor = frame.getFrameDescriptor();
@@ -83,19 +86,51 @@ public abstract class Graft extends Expression {
     private final BranchProfile haltCatchProfile = BranchProfile.create();
     private final BranchProfile killCatchProfile = BranchProfile.create();
 
+    // FIXME: None of this will not work in distributed Orc because it creates new rootnodes/calltargets at runtime.
+    //   To make this work with distrib there will need to be a way to transmit a descriptor of the target
+    //   so it can be built when it is recieved, OR these closures need to exist at PorcE start time.
+    //   The latter is probably easier and better. The targets can be created during porc to porce conversion
+    //   and then just used when needed.
+
+    protected class ProfilingCallNode extends Expression {
+	@Child
+	protected Expression target;
+
+	protected final ValueProfile targetProfile = ValueProfile.createIdentityProfile();
+
+	@Child
+	protected Expression call;
+
+	protected ProfilingCallNode(Expression target, Expression... args) {
+	    this.target = target;
+	    call = Call.CPS.create((Expression) target.copy(), args, execution, false);
+	}
+
+	private boolean shouldTimeRoot(PorcERootNode root) {
+	    return root != null && root.shouldTimeCall();
+	}
+
+	@Override
+	public void executePorcEUnit(final VirtualFrame frame) {
+	    PorcERootNode root = targetProfile.profile((PorcERootNode) ((PorcEClosure) target.execute(frame)).body.getRootNode());
+	    long startTime = 0;
+	    if (shouldTimeRoot(root))
+		startTime = System.nanoTime();
+	    try {
+		call.execute(frame);
+	    } finally {
+		if (shouldTimeRoot(root) && startTime > 0) {
+		    root.addSpawnedCall(System.nanoTime() - startTime);
+		}
+	    }
+	}
+    }
+
     public FullFutureNodes createFullFutureNodes(FrameSlot futSlot, FrameSlot compSlot) {
 	return new FullFutureNodes(futSlot, compSlot);
     }
 
-    protected class FullFutureNodes extends Node {
-        // FIXME: This will not work in distributed Orc because it creates new rootnodes/calltargets at runtime.
-        //   To make this work with distrib there will need to be a way to transmit a descriptor of the target
-        //   so it can be built when it is recieved, OR these closures need to exist at PorcE start time.
-        //   The latter is probably easier and better. The targets can be created during porc to porce conversion
-        //   and then just used when needed.
-	
-	protected final Object newCSlotID = new Object();
-      
+    protected class FullFutureNodes extends Node {	
 	@Child
 	NewContinuation compClosureNode;
 	@Child
@@ -119,39 +154,6 @@ public abstract class Graft extends Expression {
 		    isTail);
 	}
 
-	class ProfilingPCallNode extends Expression {
-	    @Child
-	    Expression readTarget = Read.Closure.create(1);
-
-	    protected final ValueProfile targetProfile = ValueProfile.createIdentityProfile();
-
-	    @Child
-	    Expression call;
-
-	    protected ProfilingPCallNode(Expression newP, Expression newC) {
-		call = Call.CPS.create(Read.Closure.create(1), new Expression[] { newP, newC }, execution, false);
-	    }
-
-	    private boolean shouldTimeRoot(PorcERootNode root) {
-		return root != null && root.shouldTimeCall();
-	    }
-
-	    @Override
-	    public void executePorcEUnit(final VirtualFrame frame) {
-		PorcERootNode root = targetProfile.profile((PorcERootNode) ((PorcEClosure) readTarget.execute(frame)).body.getRootNode());
-		long startTime = 0;
-		if (shouldTimeRoot(root))
-		    startTime = System.nanoTime();
-		try {
-		    call.execute(frame);
-		} finally {
-		    if (shouldTimeRoot(root) && startTime > 0) {
-			root.addSpawnedCall(System.nanoTime() - startTime);
-		    }
-		}
-	    }
-	}
-
 	protected RootNode createComp() {
 	    FrameDescriptor descript = new FrameDescriptor();
 	    FrameSlot newCSlot = descript.findOrAddFrameSlot(newCSlotID, FrameSlotKind.Object);
@@ -163,7 +165,7 @@ public abstract class Graft extends Expression {
 
 	    Expression body = Sequence.create(new Expression[] {
 		    Write.Local.create(newCSlot, newC),
-		    new ProfilingPCallNode(newP, Read.Local.create(newCSlot))
+		    new ProfilingCallNode(Read.Closure.create(1), newP, Read.Local.create(newCSlot))
 	    });
 	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), descript, body, 0, 3, execution);
 	    if (porcNode().isDefined()) {
@@ -219,14 +221,114 @@ public abstract class Graft extends Expression {
         return PorcEUnit.SINGLETON;
     }
 
-    protected Expression createCallV() {
-	return Call.CPS.create((Expression) v.copy(), new Expression[] { (Expression) p.copy(), (Expression) c.copy() }, execution, isTail);
+
+    public NoFutureNodes createNoFutureNodes(FrameSlot futSlot, FrameSlot compSlot) {
+	return new NoFutureNodes(futSlot, compSlot);
+    }
+
+    protected orc.run.porce.runtime.Future HALTED_FUTURE = new orc.run.porce.runtime.Future(true);
+    {
+	HALTED_FUTURE.fastLocalStop();
+    }
+
+    protected class NoFutureNodes extends Expression {
+	@Child
+	Expression body;
+
+	protected NoFutureNodes(FrameSlot futSlot, FrameSlot newCSlot) {
+	    body = createComp(futSlot, newCSlot);
+	}
+	
+	@Override
+	public void executePorcEUnit(final VirtualFrame frame) {
+	    body.executePorcEUnit(frame);
+	}
+
+	protected Expression createComp(FrameSlot futSlot, FrameSlot newCSlot) {
+	    Expression cr = NewContinuation.create(
+		    new Expression[] { (Expression) c.copy(), Read.Local.create(futSlot), (Expression) p.copy() }, 
+		    createCR(), false);
+	    Expression newC = NewCounter.Simple.create(execution, (Expression) c.copy(), cr);
+
+	    Expression newP = NewContinuation.create(
+		    new Expression[] { Read.Local.create(newCSlot), Read.Local.create(futSlot), (Expression) p.copy() }, 
+		    createNewP(), false);
+	    
+	    Expression callV = new ProfilingCallNode((Expression) v.copy(), newP, Read.Local.create(newCSlot));
+	    Expression haltToken = HaltToken.create(Read.Local.create(newCSlot), execution);
+
+	    return Sequence.create(new Expression[] {
+		    NewToken.create((Expression) c.copy()),
+		    Write.Local.create(newCSlot, newC),
+		    TryOnException.create(callV, haltToken)
+	    });
+	}
+
+	protected RootNode createCR() {
+	    Expression crBody = Sequence.create(new Expression[] {
+		    new Expression() {
+			@Child
+			protected Expression readFlag = Read.Closure.create(1);
+			@Child
+			protected Expression callP = new ProfilingCallNode(Read.Closure.create(2), Read.Constant.create(HALTED_FUTURE));
+
+			protected final BranchProfile isFirst = BranchProfile.create();
+
+			@Override
+			public void executePorcEUnit(final VirtualFrame frame) {
+			    AtomicBoolean flag = (AtomicBoolean) readFlag.execute(frame);
+			    if (flag.compareAndSet(false, true)) {
+				isFirst.enter();
+				callP.executePorcEUnit(frame);
+			    }
+			}
+		    }, 
+		    HaltToken.create(Read.Closure.create(0), execution) });
+	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, crBody, 0, 3, execution);
+	    if (porcNode().isDefined()) {
+		r.setPorcAST(porcNode().get());
+	    }
+	    execution.registerRootNode(r);
+	    return r;
+	}
+
+	protected RootNode createNewP() {
+	    Expression pBody = Sequence.create(new Expression[] { 
+		    new Expression() {
+			@Child
+			protected Expression readFlag = Read.Closure.create(1);
+			@Child
+			protected Expression callP = new ProfilingCallNode(Read.Closure.create(2), Read.Argument.create(0));
+
+			protected final BranchProfile isFirst = BranchProfile.create();
+
+			@Override
+			public void executePorcEUnit(final VirtualFrame frame) {
+			    AtomicBoolean flag = (AtomicBoolean) readFlag.execute(frame);
+			    if (flag.compareAndSet(false, true)) {
+				isFirst.enter();
+				callP.executePorcEUnit(frame);
+			    }
+			}
+		    },
+		    HaltToken.create(Read.Closure.create(0), execution) });
+	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, pBody, 1, 3, execution);
+	    if (porcNode().isDefined()) {
+		r.setPorcAST(porcNode().get());
+	    }
+	    execution.registerRootNode(r);
+	    return r;
+	}
     }
     
     @Specialization(guards = { "shouldInlineSpawn(frame)" }, replaces = { "fullFuture" })
-    public PorcEUnit noFuture(final VirtualFrame frame, 
-          @Cached("createCallV()") Expression callV) {
-        callV.execute(frame);
+    public PorcEUnit noFuture(final VirtualFrame frame,
+	    @Cached("createFrameSlot(frame, futSlotID)") FrameSlot futSlot,
+	    @Cached("createFrameSlot(frame, newCSlotID)") FrameSlot newCSlot,
+	    @Cached("createNoFutureNodes(futSlot, newCSlot)") NoFutureNodes nodes) {
+	// Abuse the fut slot for the already-done flag. This is set on publication and on halting.
+        frame.setObject(futSlot, new AtomicBoolean(false));
+        nodes.executePorcEUnit(frame);
         return PorcEUnit.SINGLETON;
     }
 
