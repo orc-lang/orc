@@ -20,7 +20,7 @@ source(file.path(scriptDir, "plotting.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20180203-a009")
+dataDir <- file.path(localExperimentDataDir, "20180402-a001")
 #
 # Load main data
 
@@ -45,29 +45,38 @@ loadTruffleData <- function(benchmarkName, orcFile) {
   fp <- file.path(dataDir, "raw-output", paste0(n, "_orc*_24*_truffle-node-specializations_*.txt"))
   #print(fp)
   #print(Sys.glob(fp))
-  fn <- first(Sys.glob(fp))
-  if (length(fn) > 0) {
+  fns <- Sys.glob(fp)
+  if (length(fns) > 0 && length(first(fns)) > 0) {
+    fn <- first(fns)
     txt <- readLines(fn)
 
-    unoptSpawns <- countMatchingLines("spawn: (1) {}", txt)
-    inlinedSpawns <- countMatchingLines("inline: (1) {Catch", txt)
-    deinlinedSpawns <- countMatchingLines("spawnAfterInline: (1) {}", txt)
+    unoptGrafts <- countMatchingLines("fullFuture: (1) {", txt)
+    inlinedGrafts <- countMatchingLines("noFuture: (1) {", txt)
+    deinlinedGrafts <- countMatchingLines("fullAfterNoFuture: (1) {", txt)
+
+    unoptSpawns <- countMatchingLines("spawn: (1) {", txt)
+    inlinedSpawns <- countMatchingLines("inline: (1) {", txt)
+    deinlinedSpawns <- countMatchingLines("spawnAfterInline: (1) {", txt)
 
     forcesSingle <- countMatchingLines("| SingleFutureNodeGen", txt)
-    nonforcesSingle <- countMatchingLines("SingleFutureNodeGen<nonFuture=Binary(wasTrue=true, wasFalse=false)", txt)
-    blockedForcesSingle <- countMatchingLines("SingleFutureNodeGen<.*,unboundFuture=ResettableBranchProfile\\(visited=true\\).*>", txt, fixed = F)
+    nonforcesSingle <- countMatchingLines("run: (1) {HandleFuture(nonFuture=Binary(wasTrue=true, wasFalse=false)", txt)
+    blockedForcesSingle <- countMatchingLines("run: \\(1\\) \\{HandleFuture\\(.*,unboundFuture=ResettableBranchProfile\\(visited=true\\).*\\)", txt, fixed = F)
 
     forcesMulti <- countMatchingLines("| FinishNodeGen", txt)
-    blockedForcesMulti <- countMatchingLines("blocked: (1) {}", txt)
+    blockedForcesMulti <- countMatchingLines("blocked: (1) {", txt)
 
     data.frame(benchmarkName,
+               unoptGrafts = unoptGrafts + deinlinedGrafts,
+               inlinedGrafts = inlinedGrafts - deinlinedGrafts,
                unoptSpawns = unoptSpawns + deinlinedSpawns,
                inlinedSpawns = inlinedSpawns - deinlinedSpawns,
                remainingForces = blockedForcesSingle + blockedForcesMulti,
-               eliminatedForces = forcesSingle - blockedForcesSingle + forcesMulti - blockedForcesMulti
+               eliminatedForces = (forcesSingle - blockedForcesSingle) + (forcesMulti - blockedForcesMulti)
                )
   } else {
     data.frame(benchmarkName,
+               unoptGrafts = NA,
+               inlinedGrafts = NA,
                unoptSpawns = NA,
                inlinedSpawns = NA,
                remainingForces = NA,
@@ -122,12 +131,12 @@ dataPorcE <- dataOrct %>% group_by(benchmarkName) %>%
 
 values <- list(
   starting %>% transmute(benchmarkName, startingFutures = Future),
-  ending %>% transmute(benchmarkName, endingFutures = NewFuture),
+  ending %>% transmute(benchmarkName, endingFutures = NewFuture + Graft),
   starting %>% transmute(benchmarkName, startingForces = Force),
   ending %>% transmute(benchmarkName, endingForces = Force),
   starting %>% transmute(benchmarkName, startingSpawns = Future + Parallel + Branch),
-  dataPorc %>% filter(optimized == FALSE) %>% transmute(benchmarkName, startingPorcSpawns = Spawn),
-  ending %>% transmute(benchmarkName, endingSpawns = Spawn),
+  dataPorc %>% filter(optimized == FALSE) %>% transmute(benchmarkName, startingPorcSpawns = Spawn + Graft),
+  ending %>% transmute(benchmarkName, endingSpawns = Spawn + Graft),
   dataPorcE,
   benchmarkProperties
 )
@@ -150,10 +159,10 @@ r <- join_all(values, by = "benchmarkName") %>% mutate(benchmarkName = factor(be
 
 includedBenchmarks <- {
   txt <- "
-  #Black-Scholes-naive
-  #Black-Scholes-partially-seq
+  Black-Scholes-naive
+  Black-Scholes-partially-seq
   Black-Scholes-partitioned-seq
-  #Black-Scholes-scala-compute
+  Black-Scholes-scala-compute
   Black-Scholes-scala-compute-partially-seq
   Black-Scholes-scala-compute-partitioned-seq
   Dedup-boundedchannel
@@ -164,12 +173,12 @@ includedBenchmarks <- {
   SSSP-batched-partitioned
   Swaptions-naive-scala-sim
   Swaptions-naive-scala-subroutines-seq
-  #Swaptions-naive-scala-swaption
+  Swaptions-naive-scala-swaption
 "
   read.csv(text = txt, strip.white = T, header = F, stringsAsFactors = F)[[1]]
 }
 
-r <- r %>% filter(is.element(benchmarkName, includedBenchmarks))
+# r <- r %>% filter(is.element(benchmarkName, includedBenchmarks))
 
 # formatOpt <- function(remaining, starting, percentStatic, percentDynamic) {
 #   sprintf("% 4d (% 4d, %2.0f%% + %2.0f%% = %2.0f%%)", remaining, starting, percentStatic * 100, percentDynamic * 100, percentStatic * 100 + percentDynamic * 100)
@@ -177,19 +186,22 @@ r <- r %>% filter(is.element(benchmarkName, includedBenchmarks))
 
 t <- r %>% transmute(
   benchmarkName,
-  if_else(scalaCompute, "Scala", "Orc"),
+  language = if_else(scalaCompute, "Scala", "Orc"),
   parallelism,
 
-  remainingFutures = endingFutures, startingFutures = startingFutures,
-  percentStaticFutures = (startingFutures - endingFutures) / startingFutures * 100, percentDynamicFutures = 0,
+  remainingFutures = unoptGrafts, startingFutures = startingFutures,
+  percentStaticFutures = (startingFutures - endingFutures) / startingFutures * 100,
+  percentDynamicFutures = (endingFutures - remainingFutures) / startingFutures * 100,
   percentFutures = percentStaticFutures + percentDynamicFutures,
 
   remainingForces, startingForces,
-  percentStaticForces = (startingForces - endingForces) / startingForces * 100, percentDynamicForces = (endingForces - remainingForces) / startingForces * 100,
+  percentStaticForces = (startingForces - endingForces) / startingForces * 100,
+  percentDynamicForces = (endingForces - remainingForces) / startingForces * 100,
   percentForces = percentStaticForces + percentDynamicForces,
 
   remainingSpawns = unoptSpawns, startingSpawns,
-  percentStaticSpawns = (startingSpawns - endingSpawns) / startingSpawns * 100, percentDynamicSpawns = (endingSpawns - unoptSpawns) / startingSpawns * 100,
+  percentStaticSpawns = (startingSpawns - endingSpawns) / startingSpawns * 100,
+  percentDynamicSpawns = (endingSpawns - unoptSpawns) / startingSpawns * 100,
   percentSpawns = percentStaticSpawns + percentDynamicSpawns
 ) %>% mutate_if(is.numeric, round)
 
@@ -206,5 +218,7 @@ if (!dir.exists(outputDir)) {
 }
 
 write.csv(t, file = file.path(outputDir, "optimization.csv"), row.names = F)
+
+print(t)
 
 print(kable(t, "latex"))
