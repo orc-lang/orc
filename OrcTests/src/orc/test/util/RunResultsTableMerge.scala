@@ -77,10 +77,11 @@ object RunResultsTableMerge {
     var firstHeader: String = null
     for (path <- Files.find(rootPath, 1, (p, a) => p.toString.endsWith(fileBaseName + ".csv") || p.toString.endsWith(fileBaseName + "_0.csv")).iterator.asScala) {
       val reader = Files.newBufferedReader(path)
-      val lines = reader.lines().iterator
-      if (!lines.hasNext()) {
-        Console.err.println(s"WARNING: Empty file: ${path.toAbsolutePath}")
-      } else {
+      try {
+        val lines = reader.lines().iterator
+        if (!lines.hasNext()) {
+          throw new DataFormatException(s"Empty file: ${path.toAbsolutePath}")
+        }
         val header = lines.next()
         if (firstHeader == null) {
           firstHeader = header
@@ -96,6 +97,10 @@ object RunResultsTableMerge {
         for (line <- lines.asScala) {
           print(rowPrefix + line + "\r\n")
         }
+      } catch {
+        case e: Exception =>
+          Console.err.println(s"WARNING: Processing ${path.getFileName} failed: $e")
+      } finally {
         reader.close()
       }
     }
