@@ -53,8 +53,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   val nonInlinableScheduleCount = new LongAdder()
   DumperRegistry.register(name => {
     val n = nonInlinableScheduleCount.sumThenReset()
-    if (n > 0)
+    if (n > 1000)
       Logger.info(s"PERFORMANCE: $name nonInlinableScheduleCount=$n (This may indicate a performance problem.)")
+    else if (n > 0)
+      Logger.fine(s"PERFORMANCE: $name nonInlinableScheduleCount=$n")
   })
   
   def potentiallySchedule(s: Schedulable) = {
