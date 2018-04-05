@@ -63,7 +63,7 @@ def timeItSinglePub[A](f :: lambda() :: A, i, size) =
     StartBenchmark() >s>
     (f() >v> pub.write(v) >> stop ; EndBenchmark(s, i, size)) >r> 
     Println("Time used: " + r + " s; iteration " + (i+1) + " of " + nRuns) >>
-    (r, pub.readD() ; signal) 
+    (r, pub.readD() ; "stop") 
   )
   
 def timeIt[A](f :: lambda() :: A) =

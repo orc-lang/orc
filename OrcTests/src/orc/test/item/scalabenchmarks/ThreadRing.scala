@@ -79,9 +79,9 @@ object ThreadRing extends BenchmarkApplication[Unit, Int] with ExpectedBenchmark
   val size: Int = BenchmarkConfig.problemSizeScaledInt(2000) + BenchmarkConfig.problemSizeScaledInt(20000)
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> (2000 % 503 + 20000 % 503),
-      10 -> (20000 % 503 + 200000 % 503),
-      100 -> (200000 % 503 + 2000000 % 503),
+      1 -> (2001 % N + 20001 % N),
+      10 -> (20001 % N + 200001 % N),
+      100 -> (200001 % N + 2000001 % N),
       )
 }
 

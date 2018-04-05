@@ -6,14 +6,12 @@ include "benchmark.inc"
 
 import class BigSortData = "orc.test.item.scalabenchmarks.BigSortData"
 
-def debugPrintln(v) = signal
-
 def splitSortMerge(input) =
   val partitionSize = Floor(input.length? / nPartitions)
   val sortedPartitions = collect({
-    forBy(0, input.length?, partitionSize) >start> ( 
+    forBy(0, input.length?, partitionSize) >start> (
       val sorted = BigSortData.sort(input, start, min(partitionSize, input.length? - start))
-      debugPrintln(sorted.toString()) >> sorted
+      sorted
     )
   })
   BigSortData.mergeSorted(sortedPartitions)
