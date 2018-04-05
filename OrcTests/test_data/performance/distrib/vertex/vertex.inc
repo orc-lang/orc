@@ -100,11 +100,11 @@ def timeRepetitions(setUpTestRep, runTestRep, tearDownTestRep, numRepetitions) =
 
 import site NumberOfRuntimeEngines = "orc.lib.NumberOfRuntimeEngines"
 
-def executeTest(setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest) =
+def executeTest(programName, setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest) =
   setupOutput()  >>
   writeFactorValuesTable([
     --Factor name, Value, Units, ID, Comments
-    ("Program", "shortest-path.orc", "", "", ""),
+    ("Program", programName, "", "", ""),
     ("Number of vertices", numVertices, "", "numVertices", "Number of vertices to generate"),
     ("Probability of edge", probEdge, "", "probEdge", "Probability of edge between a given vertex pair"),
     ("Cluster size", NumberOfRuntimeEngines(), "", "dOrcNumRuntimes", "Number of d-Orc runtime engines running")

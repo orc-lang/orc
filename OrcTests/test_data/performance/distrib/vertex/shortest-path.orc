@@ -51,7 +51,7 @@ def tearDownTestRep() =
 def tearDownTest() =
   signal
 
-executeTest(setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest)
+executeTest("shortest-path.orc", setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest)
 
 
 {-
