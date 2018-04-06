@@ -25,6 +25,42 @@ case class PorcEBackendType() extends BackendType {
   def newBackend(): Backend[MethodCPS] = new PorcEBackend()
 }
 
+object PorcEBackend {
+  private def setSystemPropertyIfUnset(k: String, v: Any) = {
+    if (System.getProperty(k) == null)
+      System.setProperty(k, v.toString)
+  }
+  
+  def loadOptOpts(options: OrcCompilationOptions) = {
+    // Allow inline some spawns into there spawn site instead of calling them:
+    setSystemPropertyIfUnset(
+        "orc.porce.allowSpawnInlining",
+        options.optimizationFlags("porce:inline-spawn").asBool(true))
+
+    // Only inlining fast tasks (based on runtime profiling):
+    setSystemPropertyIfUnset(
+        "orc.porce.inlineAverageTimeLimit",
+        options.optimizationFlags("porce:inline-average-time-limit").asString("0.1"))
+
+    // Polymorphic inline caches for calls:
+    if (!options.optimizationFlags("porce:polymorphic-inline-caching").asBool(true)) {
+      setSystemPropertyIfUnset("orc.porce.cache.getFieldMaxCacheSize", 0)
+      setSystemPropertyIfUnset("orc.porce.cache.internalCallMaxCacheSize", 0)
+      setSystemPropertyIfUnset("orc.porce.cache.externalDirectCallMaxCacheSize", 0)
+      setSystemPropertyIfUnset("orc.porce.cache.externalCPSCallMaxCacheSize", 0)
+      setSystemPropertyIfUnset("orc.porce.optimizations.externalCPSDirectSpecialization", false)
+    }
+
+    // Specialize compiled code for runtime states such as futured already being resolved:
+    if (!options.optimizationFlags("porce:specialization").asBool(true)) {
+      setSystemPropertyIfUnset("orc.porce.optimizations.inlineForceResolved", false)
+      setSystemPropertyIfUnset("orc.porce.optimizations.inlineForceHalted", false)
+      setSystemPropertyIfUnset("orc.porce.optimizations.specializeOnCounterStates", false)
+      setSystemPropertyIfUnset("orc.porce.optimizations.environmentCaching", false)
+    }
+  }
+}
+
 /** A backend implementation using the Orctimizer and Porc compilers.
   *
   * This is designed to be extended with a runtime which takes Porc as input.
@@ -32,6 +68,11 @@ case class PorcEBackendType() extends BackendType {
   * @author amp
   */
 case class PorcEBackend(language: PorcELanguage = null) extends PorcBackend {
+  override def modifyCompilationOptions(options: OrcCompilationOptions): OrcCompilationOptions = {
+    PorcEBackend.loadOptOpts(options)
+    options
+  }
+  
   def createRuntime(options: OrcExecutionOptions): Runtime[MethodCPS] = new PorcERuntime("PorcE on Truffles", language) with Runtime[MethodCPS] {
     startScheduler(options)
 

@@ -42,4 +42,5 @@ porc:inline-let
 porc:let-inline-expansion-threshold=300
 porc:try-catch-elim
 porc:try-finally-elim
+porc:usegraft
 porc:max-passes=10

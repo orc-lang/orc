@@ -35,6 +35,8 @@ class PorcEDistributedBackend extends PorcBackend {
     oos.add("porc:usegraft=false")
     options.optimizationOptions = oos
     
+    PorcEBackend.loadOptOpts(options)
+    
     options
   }
   

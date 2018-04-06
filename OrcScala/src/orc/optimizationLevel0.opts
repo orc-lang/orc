@@ -1,3 +1,8 @@
 remove-unused-defs
 remove-unused-types
 fraction-defs
+
+porce:inline-spawn=false
+porce:inline-average-time-limit=0.0000001
+porce:polymorphic-inline-caching=false
+porce:specialization=false
