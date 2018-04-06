@@ -1,0 +1,44 @@
+{- wordcount.inc -- Orc include: Word count tests common defintions
+ -
+ - Created by jthywiss on Apr 5, 2018 13:37
+ -}
+
+include "benchmark.inc"
+
+import class JavaSys = "java.lang.System"
+
+{- Number of files to read. -}
+val numInputFiles = 12 -- problemSizeScaledInt(1.2) -- Read(JavaSys.getProperty("orc.test.numInputFiles", "12"))
+
+{- Number of times to re-read and word count each file. -}
+val repeatRead = 1 -- Read(JavaSys.getProperty("orc.test.repeatRead", "1"))
+
+val holmesDataDirPath = "../OrcTests/test_data/functional_valid/distrib/holmes_test_data"
+
+val inputDataDirPath = "../OrcTests/test_data/performance/distrib/wordcount/wordcount-input-data/"
+
+val targetFileSize = 17895697 {- bytes -} -- = 2 GiB / 120
+
+val numCopiesInputFiles = 120 -- can be numInputFiles, if we delete and re-gen input files for every condition
+
+
+{--------
+ - I/O Utilities
+ --------}
+
+def checkReadableFile(file) =
+  if file.canRead() then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
+
+def listFileNamesRecursively(dirPathName :: String) :: List[String] =
+  import class File = "java.io.File"
+  import class WordCount = "orc.test.item.distrib.WordCount"
+  WordCount.listFileNamesRecursively(File(dirPathName))  >fileNameArray>
+  arrayToList(fileNameArray)
+
+def createTestDataFiles() =
+  import class WordCount = "orc.test.item.distrib.WordCount"
+  WordCount.createTestFiles(holmesDataDirPath, inputDataDirPath, targetFileSize, numCopiesInputFiles)
+
+def deleteTestDataFiles() =
+  import class WordCount = "orc.test.item.distrib.WordCount"
+  WordCount.deleteTestFiles(inputDataDirPath, numCopiesInputFiles)
