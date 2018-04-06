@@ -5,10 +5,10 @@ and waits for them to terminate.
 
 include "benchmark.inc"
 
-val N = problemSizeLogScaledInt(18)
+val N = problemSizeLogScaledInt(10000, 2)
 def threads(n) = if n/=0 then n-1 >n'> (threads(n') | threads(n')) else stop
 
-benchmarkSized("Threads", N, { signal }, { _ >> threads(N) ; signal }, { _ >> false })
+benchmarkSized("Threads", 2 ** N, { signal }, { _ >> threads(N) ; signal }, { _ = signal })
 
 {-
 BENCHMARK

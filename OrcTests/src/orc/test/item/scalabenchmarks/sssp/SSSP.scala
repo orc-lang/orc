@@ -30,7 +30,7 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig, Ex
   * otherwise not optimized.
   */
 object SSSP extends ExpectedBenchmarkResult[Array[Int]] {
-  val (nodes, edges, source) = SSSPData.generate(BenchmarkConfig.problemSizeSqrtScaledInt(40000))
+  lazy val (nodes, edges, source) = SSSPData.generate(BenchmarkConfig.problemSizeSqrtScaledInt(40000))
 
   val expectedMap: Map[Int, Int] = Map(
       1 -> 0xac4404ef,

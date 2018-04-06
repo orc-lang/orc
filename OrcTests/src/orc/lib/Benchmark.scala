@@ -59,6 +59,24 @@ object Benchmark {
     val end = Benchmark.getTimes()
     BenchmarkTimes(iteration, nsToS(end._1 - start._1), nsToS(end._2 - start._2), msToS(end._3 - start._3), msToS(end._4 - start._4), size)
   }
+  
+  val maxFraction: Double = 1.0 / 100
+  val waitTime = 2000
+  val maxWaits = 5
+  
+  def waitForCompilation(): Unit = {
+    def h(last: Long, i: Long): Unit = {
+      val now = compilermxbean.getTotalCompilationTime
+      if (i < maxWaits && (now - last).abs > waitTime * maxFraction) {
+        if (i > 1) {
+          println(s"Waiting for compilation to finish (up to ${((maxWaits - i) * waitTime / 1000).toInt} more seconds)...") 
+        }
+        Thread.sleep(waitTime)
+        h(now, i+1)
+      }
+    }
+    h(0, 0)
+  }
 }
 
 object StartBenchmark extends InvokerMethod {

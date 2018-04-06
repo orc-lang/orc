@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray
 import java.util.concurrent.atomic.AtomicLongArray
 import scala.util.hashing.MurmurHash3
 import scala.collection.parallel.ParIterable
+import orc.lib.Benchmark
 
 trait BenchmarkApplication[T, R] {
   def setup(): T
@@ -37,6 +38,7 @@ trait BenchmarkApplication[T, R] {
 
   def runBenchmark(i: Int): BenchmarkTimes = {
     val ctx = setup()
+		Benchmark.waitForCompilation()
     val (bt, r) = time(i, size)(benchmark(ctx))
     if (check(r)) {
       println(s"$name results are correct up to hash collision.")

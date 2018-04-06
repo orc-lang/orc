@@ -5,6 +5,7 @@ import class System = "java.lang.System"
 import class JString = "java.lang.String"
 
 import class BenchmarkConfig = "orc.test.item.scalabenchmarks.BenchmarkConfig"
+import class Benchmark = "orc.lib.Benchmark"
 import site EndBenchmark = "orc.lib.EndBenchmark"
 import site StartBenchmark = "orc.lib.StartBenchmark"
 import class OrcTracer = "orc.util.Tracer"
@@ -31,8 +32,8 @@ val problemSize = (
   
 def problemSizeScaledInt(n :: Integer) :: Integer = 
   Floor((n * 1.0) * problemSize)
-def problemSizeLogScaledInt(n :: Integer) :: Integer = 
-  Floor((n * 1.0) * (Log(problemSize) + 1))
+def problemSizeLogScaledInt(n :: Integer, base :: Integer) :: Integer = 
+  Floor(Log(n * problemSize) / Log(base) + 1)
 def problemSizeSqrtScaledInt(n :: Integer) :: Integer = 
   Floor((n * 1.0) * sqrt(problemSize))
 
@@ -95,6 +96,7 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 	def h(i, results) if (softTimeLimit :> 0 && clock.time() :> (softTimeLimit * 1000)) = h(nRuns, results)
 	def h(i, results) = 
 		setup() >d> setRepStartTime() >> 
+		Benchmark.waitForCompilation() >>
         DumperRegistry.clear() >> -- Clear dumpers that support that.
 		timeItSinglePub({ benchmark(d) }, i, size) >(r, pub)>
         DumperRegistry.dump("rep" + i) >> -- Run Dumpers as soon as possible after the end of the benchmark to avoid including extra stuff.
