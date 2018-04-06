@@ -14,13 +14,20 @@ val numInputFiles = Read(JavaSys.getProperty("orc.test.numInputFiles", "12"))
 {- Number of times to re-read and word count each file. -}
 val repeatRead = Read(JavaSys.getProperty("orc.test.repeatRead", "1"))
 
+val holmesDataDirPath = "../OrcTests/test_data/functional_valid/distrib/holmes_test_data"
+
+val inputDataDirPath = "../OrcTests/test_data/performance/distrib/wordcount/wordcount-input-data/"
+
+val targetFileSize = 17895697 {- bytes -} -- = 2 GiB / 120
+
+val numCopiesInputFiles = 120 -- can be numInputFiles, if we delete and re-gen input files for every condition
+
 
 {--------
  - I/O Utilities
  --------}
 
 def checkReadableFile(file) =
-  import class JavaSys = "java.lang.System"
   if file.canRead() then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
 
 def listFileNamesRecursively(dirPathName :: String) :: List[String] =
@@ -29,7 +36,13 @@ def listFileNamesRecursively(dirPathName :: String) :: List[String] =
   WordCount.listFileNamesRecursively(File(dirPathName))  >fileNameArray>
   arrayToList(fileNameArray)
 
-val inputList = take(numInputFiles, listFileNamesRecursively("../OrcTests/test_data/performance/distrib/wordcount/wordcount-input-data/"))
+def createTestDataFiles() =
+  import class WordCount = "orc.test.item.distrib.WordCount"
+  WordCount.createTestFiles(holmesDataDirPath, inputDataDirPath, targetFileSize, numCopiesInputFiles)
+
+def deleteTestDataFiles() =
+  import class WordCount = "orc.test.item.distrib.WordCount"
+  WordCount.deleteTestFiles(inputDataDirPath, numCopiesInputFiles)
 
 
 {--------
@@ -65,6 +78,9 @@ import site NumberOfRuntimeEngines = "orc.lib.NumberOfRuntimeEngines"
 
 def executeTest(programName, setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest) =
   setupOutput()  >>
+  Println("Test start. Setting up test.")  >>
+  (setUpTest() >> stop; signal)  >>
+  take(numInputFiles, listFileNamesRecursively(inputDataDirPath))  >inputList>
   writeFactorValuesTable([
     --Factor name, Value, Units, ID, Comments
     ("Program", programName, "", "", ""),
@@ -72,9 +88,7 @@ def executeTest(programName, setUpTest, setUpTestRep, runTestRep, tearDownTestRe
     ("Reads per file", repeatRead, "", "repeatRead", "Number of concurrent reads of the file"),
     ("Cluster size", NumberOfRuntimeEngines(), "", "dOrcNumRuntimes", "Number of d-Orc runtime engines running")
   ])  >>
-  Println("Test start. Setting up test.")  >>
-  (setUpTest() >> stop; signal)  >>
-  timeRepetitions(setUpTestRep, runTestRep, tearDownTestRep, numRepetitions)  >repetitionTimes>
+  timeRepetitions(setUpTestRep, { runTestRep(inputList) }, tearDownTestRep, numRepetitions)  >repetitionTimes>
   writeCsvFile(buildOutputPathname("repetition-times", "csv"), "Repetitions' elapsed times output file",
     ["Repetition number", "Elapsed time (µs)", "Leader CPU time (ms)"], repetitionTimes)  >>
   Println("Tearing down test.")  >>

@@ -34,13 +34,12 @@ def repeatCountFilename(filename) =
  --------}
 
 def setUpTest() =
-  -- TODO: Generate test data files
-  signal
+  createTestDataFiles()
 
 def setUpTestRep() =
   signal
 
-def runTestRep() :: Signal =
+def runTestRep(inputList) =
   map(repeatCountFilename, inputList)  >wordCountList>
   afold((+), wordCountList)
 
@@ -48,7 +47,7 @@ def tearDownTestRep() =
   signal
 
 def tearDownTest() =
-  -- TODO: Remove test data files
+  -- deleteTestDataFiles()
   signal
 
 executeTest("wordcount-mixed-orc-java.orc", setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest)

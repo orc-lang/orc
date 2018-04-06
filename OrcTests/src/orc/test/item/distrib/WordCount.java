@@ -15,10 +15,15 @@ package orc.test.item.distrib;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,11 +115,11 @@ public class WordCount {
         return sum;
     }
 
-    public static void listFilesRecursively(File startFile, ArrayList<File> foundFiles) {
+    public static void listFilesRecursively(final File startFile, final ArrayList<File> foundFiles) {
         if (startFile.isFile() && !startFile.isHidden()) {
             foundFiles.add(startFile);
         } else if (startFile.isDirectory() && !startFile.isHidden()) {
-            for (File curFile : startFile.listFiles()) {
+            for (final File curFile : startFile.listFiles()) {
                 listFilesRecursively(curFile, foundFiles);
             }
         } else {
@@ -122,12 +127,12 @@ public class WordCount {
         }
     }
 
-    public static String[] listFileNamesRecursively(File startFile) {
-        ArrayList<File> files = new ArrayList<>();
+    public static String[] listFileNamesRecursively(final File startFile) {
+        final ArrayList<File> files = new ArrayList<>();
         listFilesRecursively(startFile, files);
-        String[] fileNames = new String[files.size()];
+        final String[] fileNames = new String[files.size()];
         int i = 0;
-        for (File file: files) {
+        for (final File file : files) {
             fileNames[i] = file.getPath();
             ++i;
         }
@@ -139,9 +144,9 @@ public class WordCount {
     ////////
 
     private static long getProcessCumulativeCpuTime() {
-        java.lang.management.OperatingSystemMXBean osMXBean = java.lang.management.ManagementFactory.getOperatingSystemMXBean();
+        final java.lang.management.OperatingSystemMXBean osMXBean = java.lang.management.ManagementFactory.getOperatingSystemMXBean();
         if (osMXBean instanceof com.sun.management.OperatingSystemMXBean) {
-            return ((com.sun.management.OperatingSystemMXBean)osMXBean).getProcessCpuTime();
+            return ((com.sun.management.OperatingSystemMXBean) osMXBean).getProcessCpuTime();
         } else {
             return -1L;
         }
@@ -179,11 +184,8 @@ public class WordCount {
     }
 
     public static void writeCsvFile(final String basename, final String description, final String[] tableColumnTitles, final Object[][] rows) throws IOException {
-        try (
-            final OutputStream csvOut = ExecutionLogOutputStream.apply(basename, "csv", description).get();
-            final OutputStreamWriter csvOsw = new OutputStreamWriter(csvOut, "UTF-8");
-        ) {
-            
+        try (final OutputStream csvOut = ExecutionLogOutputStream.apply(basename, "csv", description).get(); final OutputStreamWriter csvOsw = new OutputStreamWriter(csvOut, "UTF-8");) {
+
             final ArrayList<TraversableOnce<?>> newRows = new ArrayList<>(rows.length);
             for (final Object[] row : rows) {
                 newRows.add(JavaConverters.collectionAsScalaIterable(Arrays.asList(row)));
@@ -196,14 +198,52 @@ public class WordCount {
         System.out.println(description + " written to " + basename + ".csv");
     }
 
+    public static long createTestFiles(final String sourceDir, final String targetDir, final long targetFileSize, final int numFiles) throws IOException {
+        final Path sourceDirPath = FileSystems.getDefault().getPath(sourceDir);
+        final Path targetDirPath = FileSystems.getDefault().getPath(targetDir);
+        final Path firstCopyPath = targetDirPath.resolve("input-copy-1.txt");
+        try {
+            Files.createDirectory(targetDirPath);
+        } catch (final FileAlreadyExistsException e) {
+            System.err.println("Test data directory exists, leaving unchanged: " + targetDirPath);
+            final long copySize = Files.size(firstCopyPath);
+            System.err.println(numFiles + " files, each " + copySize + " B = " + numFiles * copySize + " B total");
+            return copySize;
+        }
+        System.err.println("Concatenating all files in " + sourceDirPath + " repeatedly to create input-copy-{1.." + numFiles + "}.txt (size ≥ " + targetFileSize + " B), in " + targetDirPath);
+        try (final FileOutputStream firstCopyOutStream = new FileOutputStream(firstCopyPath.toFile());) {
+            long bytesWritten = 0L;
+            while (bytesWritten < targetFileSize) {
+                for (final Path sourceFilePath : Files.newDirectoryStream(sourceDirPath)) {
+                    bytesWritten += Files.copy(sourceFilePath, firstCopyOutStream);
+                }
+            }
+        }
+        for (int i = 2; i <= numFiles; i++) {
+            Files.copy(firstCopyPath, targetDirPath.resolve("input-copy-" + i + ".txt"));
+        }
+        final long copySize = Files.size(firstCopyPath);
+        System.err.println(numFiles + " files, each " + copySize + " B = " + numFiles * copySize + " B total");
+        return copySize;
+    }
+
+    public static void deleteTestFiles(final String targetDir, final int numFiles) throws IOException {
+        final Path targetDirPath = FileSystems.getDefault().getPath(targetDir);
+        System.err.println("Deleting input-copy-{1.." + numFiles + "}.txt in " + targetDirPath);
+        for (int i = 1; i <= numFiles; i++) {
+            Files.deleteIfExists(targetDirPath.resolve("input-copy-" + i + ".txt"));
+        }
+        Files.delete(targetDirPath);
+    }
+
     public static void main(final String[] args) throws IOException {
         setupOutput();
 
         final int numRepetitions = Integer.parseInt(System.getProperty("orc.test.numRepetitions", "20"));
 
-        String dataDir = "../OrcTests/test_data/performance/distrib/wordcount/wordcount-input-data/";
-        int numInputFiles = Integer.parseInt(System.getProperty("orc.test.numInputFiles", "12"));
-        ArrayList<File> files = new ArrayList<>();
+        final String dataDir = "../OrcTests/test_data/performance/distrib/wordcount/wordcount-input-data/";
+        final int numInputFiles = Integer.parseInt(System.getProperty("orc.test.numInputFiles", "12"));
+        final ArrayList<File> files = new ArrayList<>();
         listFilesRecursively(new File(dataDir), files);
         inputList = files.subList(0, numInputFiles);
 
