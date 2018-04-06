@@ -25,8 +25,6 @@ object PorcEShared {
             //"test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
             //"test_data/performance/black-scholes/black-scholes-scala-compute-partially-seq.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
-            //"test_data/performance/black-scholes/black-scholes-scala-compute-for-tree.orc",
-            //"test_data/performance/black-scholes/black-scholes-scala-compute-for-tree-opt.orc",
             //"test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
             //"test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq-optimized.orc",
             //"test_data/performance/black-scholes/black-scholes-partially-seq.orc",
@@ -47,6 +45,9 @@ object PorcEShared {
             //"test_data/performance/dedup/dedup-boundedchannel.orc",
             "test_data/performance/dedup/dedup.orc",
             //"test_data/performance/fp-growth/fp-growth.orc",
+            "test_data/performance/map-reduce/wordcount-mixed-orc-java.orc",
+            "test_data/performance/map-reduce/wordcount-pure-orc.orc",
+            "test_data/performance/map-reduce/wordcount-pure-orc-seq.orc",
             )
             
   val mainPureOrcBenchmarks = Seq(
@@ -69,6 +70,8 @@ object PorcEShared {
             //"test_data/performance/dedup/dedup-boundedchannel.orc",
             "test_data/performance/dedup/dedup.orc",
             //"test_data/performance/fp-growth/fp-growth.orc",
+            "test_data/performance/map-reduce/wordcount-pure-orc.orc",
+            "test_data/performance/map-reduce/wordcount-pure-orc-seq.orc",
             )
             
   val mainScalaBenchmarks = Seq(

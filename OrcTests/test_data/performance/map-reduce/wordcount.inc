@@ -8,14 +8,16 @@ include "benchmark.inc"
 import class JavaSys = "java.lang.System"
 
 {- Number of files to read. -}
-val numInputFiles = 12 -- problemSizeScaledInt(1.2) -- Read(JavaSys.getProperty("orc.test.numInputFiles", "12"))
+val numInputFiles = 24 -- problemSizeScaledInt(1.2) -- Read(JavaSys.getProperty("orc.test.numInputFiles", "12"))
 
 {- Number of times to re-read and word count each file. -}
 val repeatRead = 1 -- Read(JavaSys.getProperty("orc.test.repeatRead", "1"))
 
-val holmesDataDirPath = "../OrcTests/test_data/functional_valid/distrib/holmes_test_data"
+val orcTestsPath = JavaSys.getProperty("orc.test.benchmark.datadir", "../OrcTests/")
 
-val inputDataDirPath = "../OrcTests/test_data/performance/distrib/wordcount/wordcount-input-data/"
+val holmesDataDirPath = orcTestsPath + "test_data/functional_valid/distrib/holmes_test_data"
+
+val inputDataDirPath = orcTestsPath + "test_data/performance/distrib/wordcount/wordcount-input-data/"
 
 val targetFileSize = 17895697 {- bytes -} -- = 2 GiB / 120
 
