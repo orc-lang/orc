@@ -21,8 +21,7 @@ source(file.path(scriptDir, "plotting.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
-dataDir <- file.path(localExperimentDataDir, "20180220-a002")
-#dataDir <- file.path(localExperimentDataDir, "20180203-a009")
+dataDir <- file.path(localExperimentDataDir, "20180405-a004")
 
 loadData <- function(dataDir) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
@@ -56,40 +55,40 @@ if(!exists("processedData")) {
   processedData <- loadData(dataDir) %>% mutate(experiment = factor("only"))
 }
 
-clear__ <- function() {
-  rm("processedData")
-}
-
 print(levels(processedData$benchmarkName))
 
 benchmarkProperties <- {
   csv <- "
-benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline
-Black-Scholes-naive (Orc),                               Fine,        F,            Naïve,       F
-Black-Scholes-partially-seq (Orc),                       Fine,        F,            Naïve,       F
-Black-Scholes-par (Scala),                               Fine,        NA,           Par. Col.,   TRUE
-Black-Scholes-partitioned-seq (Orc),                     Coarse,      F,            Partition,   F
-Black-Scholes-scala-compute (Orc),                       Fine,        T,            Naïve,       F
-Black-Scholes-scala-compute-for-tree (Orc),              Fine,        T,            Naïve,       F
-Black-Scholes-scala-compute-for-tree-opt (Orc),          Fine,        T,            Naïve,       F
-Black-Scholes-scala-compute-partially-seq (Orc),         Fine,        T,            Naïve,       F
-Black-Scholes-scala-compute-partitioned-seq (Orc),       Coarse,      T,            Partition,   F
-Dedup-boundedchannel (Orc),                              Coarse,      T,            Thread,      F
-Dedup-boundedqueue (Scala),                              Coarse,      NA,           Thread,      F
-Dedup-naive (Orc),                                       Fine,        T,            Naïve,       F
-Dedup-nestedpar (Scala),                                 Fine,        NA,           Par. Col.,   TRUE
-KMeans (Orc),                                            Fine,        F,            Naïve,       F
-KMeans-par (Scala),                                      Fine,        NA,           Par. Col.,   TRUE
-KMeans-par-manual (Scala),                               Coarse,      NA,           Partition,   F
-KMeans-scala-inner (Orc),                                Coarse,      T,            Partition,   F
-SSSP-batched (Orc),                                      Fine,        F,            Naïve,       F
-SSSP-batched-par (Scala),                                Fine,        NA,           Par. Col.,   TRUE
-SSSP-batched-partitioned (Orc),                          Coarse,      F,            Partition,   F
-Swaptions-naive-scala-sim (Orc),                         Coarse,      T,            Naïve,       F
-Swaptions-naive-scala-subroutines-seq (Orc),             Fine,        T,            Naïve,       F
-Swaptions-naive-scala-swaption (Orc),                    Coarse,      T,            Naïve,       F
-Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F
-Swaptions-par-trial (Scala),                             Coarse,      NA,           Par. Col.,   TRUE
+benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline, implType, optimized
+BigSort-naive (Orc),                                     Coarse,      F,            Naïve,       F,          Orc,      F
+BigSort-scala (Orc),                                     Coarse,      T,            Naïve,       F,          Orc+Scala,F
+BigSort-par (Scala),                                     Coarse,      NA,           Naïve,       T,          Scala,    F
+Black-Scholes-naive (Orc),                               Fine,        F,            Naïve,       F,          Orc,      F
+Black-Scholes-partially-seq (Orc),                       Fine,        F,            Naïve,       F,          Orc,      T
+Black-Scholes-par (Scala),                               Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
+Black-Scholes-partitioned-seq (Orc),                     Coarse,      F,            Partition,   F,          Orc,      T
+Black-Scholes-scala-compute (Orc),                       Fine,        T,            Naïve,       F,          Orc+Scala,F
+Black-Scholes-scala-compute-partially-seq (Orc),         Fine,        T,            Naïve,       F,          Orc+Scala,T
+Black-Scholes-scala-compute-partitioned-seq (Orc),       Coarse,      T,            Partition,   F,          Orc+Scala,T
+Dedup-boundedchannel (Orc),                              Coarse,      T,            Thread,      F,          Orc,      T
+Dedup-boundedqueue (Scala),                              Coarse,      NA,           Thread,      F,          Scala,    T
+Dedup-naive (Orc),                                       Fine,        T,            Naïve,       F,          Orc,      F
+Dedup-nestedpar (Scala),                                 Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
+KMeans (Orc),                                            Fine,        F,            Naïve,       F,          Orc,      F
+KMeans-par (Scala),                                      Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
+KMeans-par-manual (Scala),                               Coarse,      NA,           Partition,   F,          Scala,    T
+KMeans-scala-inner (Orc),                                Coarse,      T,            Partition,   F,          Orc+Scala,F
+SSSP-batched (Orc),                                      Fine,        F,            Naïve,       F,          Orc,      F
+SSSP-batched-par (Scala),                                Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
+SSSP-batched-partitioned (Orc),                          Coarse,      F,            Partition,   F,          Orc,      T
+Swaptions-naive-scala-sim (Orc),                         Coarse,      T,            Naïve,       F,          Orc+Scala,F
+Swaptions-naive-scala-subroutines-seq (Orc),             Fine,        T,            Naïve,       F,          Orc,      F
+Swaptions-naive-scala-swaption (Orc),                    Coarse,      T,            Naïve,       F,          Orc+Scala,T
+Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F,          Scala,    T
+Swaptions-par-trial (Scala),                             Coarse,      NA,           Par. Col.,   TRUE,       Scala,    F
+ThreadRing-2 (Orc),                                      Fine,        F,            Thread,      F,          Orc,      F
+ThreadRing (Scala),                                      Fine,        NA,           Thread,      TRUE,       Scala,    F
+Wide (Orc),                                              Fine,        f,            NA,          F,          Orc,      F
   "
   r <- read.csv(text = csv, strip.white = T, header = T) %>%
     replace_na(list(scalaCompute = T)) %>%
@@ -102,7 +101,7 @@ Swaptions-par-trial (Scala),                             Coarse,      NA,       
 }
 
 processedData <- processedData %>%
-  select(everything(), -contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
+  select(everything(), -contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline"), -contains("implType"), -contains("optimized")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
   left_join(benchmarkProperties, by = "benchmarkName") %>%
   group_by(benchmarkProblemName) %>%
   addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T, experiment = levels(processedData$experiment)[1]), baseline = elapsedTime_mean_problembaseline) %>%
@@ -139,7 +138,8 @@ includedBenchmarks <- {
   read.csv(text = txt, strip.white = T, header = F, stringsAsFactors = F)[[1]]
 }
 
-processedData <- processedData %>% filter(is.element(benchmarkName, includedBenchmarks))
+#processedData <- processedData %>% filter(is.element(benchmarkName, includedBenchmarks))
+#processedData <- processedData %>% filter(optimized == F)
 
 plotAllData <- function(data) {
   paletteValues <- rep(c(rbind(brewer.pal(8, "Dark2"), rev(brewer.pal(12, "Set3")))), 10)
@@ -212,7 +212,7 @@ scalingPlot <- function(problemName) {
   scalingPlot
 }
 
-scalingPlots <- lapply(levels(processedData$benchmarkProblemName), scalingPlot)
+#scalingPlots <- lapply(levels(processedData$benchmarkProblemName), scalingPlot)
 
 
 # Visualize the distribution of implementations of a given problem.
@@ -246,7 +246,7 @@ elapsedTimePlot <- function(problemName) {
   fullPerformancePlot
 }
 
-elapsedTimePlots <- lapply(levels(processedData$benchmarkProblemName), elapsedTimePlot)
+#elapsedTimePlots <- lapply(levels(processedData$benchmarkProblemName), elapsedTimePlot)
 
 #print(elapsedTimePlots)
 
@@ -272,7 +272,7 @@ normalizedPerformancePlot <- function(problemName) {
   fullPerformancePlot
 }
 
-normalizedPerformancePlots <- lapply(levels(processedData$benchmarkProblemName), normalizedPerformancePlot)
+#normalizedPerformancePlots <- lapply(levels(processedData$benchmarkProblemName), normalizedPerformancePlot)
 
 # print(normalizedPerformancePlots)
 
@@ -303,6 +303,11 @@ if (!dir.exists(outputDir)) {
   dir.create(outputDir)
 }
 
+timeOutputDir <- file.path(dataDir, "time")
+if (!dir.exists(timeOutputDir)) {
+  dir.create(timeOutputDir)
+}
+
 print(levels(processedData$benchmarkProblemName))
 
 # for (problem in levels(processedData$benchmarkProblemName)) {
@@ -313,6 +318,20 @@ print(levels(processedData$benchmarkProblemName))
 capture.output(sampleCountTable("rst"), file = file.path(outputDir, "usedSampleCounts.rst"), type = "output")
 
 sampleCountTable("rst")
+
+# Benchmark vs. Implementation table
+
+optLevel <- 3
+useNCPUs <- max(processedData$nCPUs)
+
+t <- processedData %>% filter(nCPUs == useNCPUs) %>% select(benchmarkProblemName, implType, elapsedTime_mean, optimized) %>% spread(implType, elapsedTime_mean)
+
+colnames(t)[colnames(t) == "Orc"] <- paste0("Orc -O", optLevel)
+
+write.csv(t, file = file.path(timeOutputDir, "mean_elapsed_time.csv"), row.names = F)
+
+print(t)
+print(kable(t, "latex"))
 
 # Combined faceted plot for all benchmarks.
 
@@ -353,8 +372,8 @@ overallScalingPlot <- processedData %>%
     strip.text = element_text(size=9)
   )
 
-print(overallScalingPlot + theme(legend.position = "bottom"))
-ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 7.5, height = 2, units = "in")
+#print(overallScalingPlot + theme(legend.position = "bottom"))
+#ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 7.5, height = 2, units = "in")
 
 # svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
 # print(overallScalingPlot + theme(legend.position = "bottom"))

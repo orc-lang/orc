@@ -21,7 +21,7 @@ object PorcEShared {
             //"test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
-            "test_data/performance/Wide.orc",
+            //"test_data/performance/Wide.orc",
             //"test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
             //"test_data/performance/black-scholes/black-scholes-scala-compute-partially-seq.orc",
             "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
@@ -36,18 +36,41 @@ object PorcEShared {
             "test_data/performance/bigsort/bigsort-scala.orc",
             "test_data/performance/bigsort/bigsort.orc",
             //"test_data/performance/bigsort/bigsort-partially-seq.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
-            //"test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
+            //"test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
             //"test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             //"test_data/performance/sssp/sssp-batched-partitioned.orc",
             "test_data/performance/sssp/sssp-batched.orc",
             //"test_data/performance/canneal/canneal-naive.orc",
             //"test_data/performance/canneal/canneal-partitioned.orc",
-            "test_data/performance/dedup/dedup-boundedchannel.orc",
+            //"test_data/performance/dedup/dedup-boundedchannel.orc",
             "test_data/performance/dedup/dedup.orc",
-            "test_data/performance/fp-growth/fp-growth.orc",
+            //"test_data/performance/fp-growth/fp-growth.orc",
             )
+            
+  val mainPureOrcBenchmarks = Seq(
+            "test_data/performance/savina_sieve.orc",
+            //"test_data/performance/8-queens.orc",
+            "test_data/performance/threads.orc",
+            "test_data/performance/threadring2.orc",
+            //"test_data/performance/Wide.orc",
+            //"test_data/performance/black-scholes/black-scholes-partially-seq.orc",
+            "test_data/performance/black-scholes/black-scholes.orc",
+            "test_data/performance/k-means/k-means.orc",
+            "test_data/performance/bigsort/bigsort.orc",
+            //"test_data/performance/bigsort/bigsort-partially-seq.orc",
+            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            //"test_data/performance/sssp/sssp-batched-partitioned.orc",
+            "test_data/performance/sssp/sssp-batched.orc",
+            //"test_data/performance/canneal/canneal-naive.orc",
+            //"test_data/performance/canneal/canneal-partitioned.orc",
+            //"test_data/performance/dedup/dedup-boundedchannel.orc",
+            "test_data/performance/dedup/dedup.orc",
+            //"test_data/performance/fp-growth/fp-growth.orc",
+            )
+            
   val mainScalaBenchmarks = Seq(
             //orc.test.item.scalabenchmarks.Mandelbrot,
             //orc.test.item.scalabenchmarks.NQueens,
@@ -56,12 +79,12 @@ object PorcEShared {
             orc.test.item.scalabenchmarks.kmeans.KMeansPar,
             //orc.test.item.scalabenchmarks.kmeans.KMeansParManual,
             orc.test.item.scalabenchmarks.BigSortPar,
-            //orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial, 
-            orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption,
+            orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial, 
+            //orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption,
             orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar, 
             //orc.test.item.scalabenchmarks.canneal.Canneal, 
-            //orc.test.item.scalabenchmarks.dedup.DedupNestedPar, 
-            orc.test.item.scalabenchmarks.dedup.DedupBoundedQueue,
+            orc.test.item.scalabenchmarks.dedup.DedupNestedPar, 
+            //orc.test.item.scalabenchmarks.dedup.DedupBoundedQueue,
             )
 
   val mainJvmOpts = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g", "-Xss8m")
@@ -88,7 +111,8 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
   case class MyPorcEExperimentalCondition(
       run: Int,
       orcFile: File, 
-      nCPUs: Int) 
+      nCPUs: Int, 
+      optLevel: Int) 
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
     override def nRuns = super.nRuns max 90
     
@@ -96,10 +120,11 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       FactorDescription("run", "Run Number", "", ""),
       FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
+      FactorDescription("optLevel", "Optimization Level", "", "-O level"),
     )
 
     override def systemProperties = super.systemProperties ++ mainSystemProperties
-    override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs
+    override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs ++ Seq("-O", optLevel.toString)
     override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
   }
   
@@ -121,17 +146,18 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = Set(1, 12, 24)
+      val nCPUsValues = Set(24)
       val porce = for {
-        run <- 0 until 3
-        nCPUs <- if (run < 1) nCPUsValues else nCPUsValues - 1
-        fn <- mainOrcBenchmarks
+        run <- 0 until 2
+        nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
+        optLevel <- Seq(3, 0)
+        fn <- if (optLevel < 2) mainPureOrcBenchmarks else mainOrcBenchmarks
       } yield {
         assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs)
+        MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs, optLevel)
       }
       val scala = for {
-        run <- 0 until 2
+        run <- 0 until 1
         nCPUs <- nCPUsValues
         benchmark <- mainScalaBenchmarks
       } yield {
@@ -143,108 +169,6 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
     runExperiment(experimentalConditions)
   }
 }
-
-object PorcEOptimizationLevelExperiment extends PorcEBenchmark {
-  import PorcEShared._
-  
-  def softTimeLimit: Double = 60 * 9
-  
-  case class MyPorcEExperimentalCondition(
-      run: Int,
-      orcFile: File, 
-      optLevel: Int) 
-      extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
-    override def nRuns = super.nRuns max 90
-    
-    val nCPUs = 24
-    
-    override def factorDescriptions = Seq(
-      FactorDescription("run", "Run Number", "", ""),
-      FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
-      FactorDescription("optLevel", "Optimization (-O) level", "", ""),
-    )
-
-    override def systemProperties = super.systemProperties ++ mainSystemProperties
-    override def toOrcArgs = super.toOrcArgs ++ Seq("-O", optLevel.toString, "--opt-opt", "orct:sequentialize-force")
-    override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
-  }
-
-  def main(args: Array[String]): Unit = {
-    val experimentalConditions = {
-      val porce = for {
-        run <- 0 until 1
-        optLevel <- 0 until 4
-        fn <- mainOrcBenchmarks
-      } yield {
-        assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), optLevel)
-      }
-      porce
-    }
-    runExperiment(experimentalConditions)
-  }
-}
-
-object PorcEOptimizationStatisticsExperiment extends PorcEBenchmark {
-  def softTimeLimit: Double = 60 * 5
-    
-  case class MyPorcEExperimentalCondition(
-      run: Int,
-      orcFile: File) 
-      extends ArthursBenchmarkEnv.PorcEExperimentalCondition {
-    override def factorDescriptions = Seq(
-      FactorDescription("run", "Run Number", "", ""),
-      FactorDescription("orcFile", "Orc File", "", "The Orc program file name")
-    )
-    override def systemProperties = super.systemProperties ++ Map(
-        "graal.TruffleBackgroundCompilation" -> "false",
-        "orc.numerics.preferLP" -> "true",
-        "orc.porce.universalTCO" -> "true",
-        "graal.TruffleCompilationThreshold" -> 800,
-        )
-        
-    override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3")
-    
-    override def toJvmArgs = Seq("-XX:+UseParallelGC", "-Xms16g", "-Xmx100g") ++ super.toJvmArgs
-  }
-
-  def main(args: Array[String]): Unit = {
-    val experimentalConditions = {
-      val porce = for {
-        fn <- Seq(
-            "test_data/performance/Mandelbrot.orc",
-            //"test_data/performance/8-queens.orc",
-            //"test_data/performance/threadring.orc",
-            //"test_data/performance/threadring2.orc",
-            "test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
-            "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
-            "test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
-            "test_data/performance/black-scholes/black-scholes.orc",
-            "test_data/performance/k-means/k-means-scala-inner.orc",
-            "test_data/performance/k-means/k-means.orc",
-            //"test_data/performance/bigsort/bigsort.orc",
-            //"test_data/performance/bigsort/bigsort-partially-seq.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            "test_data/performance/sssp/sssp-batched-partitioned.orc",
-            "test_data/performance/sssp/sssp-batched.orc",
-            //"test_data/performance/canneal/canneal-naive.orc",
-            //"test_data/performance/canneal/canneal-partitioned.orc",
-            "test_data/performance/dedup/dedup-boundedchannel.orc",
-            "test_data/performance/dedup/dedup.orc",
-            )
-      } yield {
-        assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(0, new File("OrcTests/" + fn))
-      }
-      porce
-    }
-    runExperiment(experimentalConditions)
-  }
-}
-
 
 object PorcEInliningTCOExperiment extends PorcEBenchmark {
   def softTimeLimit: Double = 60 * 3.5

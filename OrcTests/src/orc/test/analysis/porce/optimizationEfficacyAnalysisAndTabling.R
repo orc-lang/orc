@@ -20,7 +20,7 @@ source(file.path(scriptDir, "plotting.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20180402-a001")
+dataDir <- file.path(localExperimentDataDir, "20180405-a004")
 #
 # Load main data
 
@@ -203,7 +203,7 @@ t <- r %>% transmute(
   percentStaticSpawns = (startingSpawns - endingSpawns) / startingSpawns * 100,
   percentDynamicSpawns = (endingSpawns - unoptSpawns) / startingSpawns * 100,
   percentSpawns = percentStaticSpawns + percentDynamicSpawns
-) %>% mutate_if(is.numeric, round)
+) %>% mutate_if(is.numeric, round) %>% select(-parallelism)
 
 print("percentFutures")
 print(round(geomean(t$percentFutures / 100) * 100))

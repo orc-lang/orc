@@ -170,8 +170,7 @@ object ArthursBenchmarkEnv {
             "-Dgraal.TruffleBackgroundCompilation=true",
             ) ++
           Seq("orc.Main",
-            "--backend", "porc",
-            "-O", "3") ++
+            "--backend", "porc") ++
           toOrcArgs ++
           Seq(makePathRemotable(orcFile.getPath))
 
@@ -195,7 +194,7 @@ object ArthursBenchmarkEnv {
   trait CPUControlExperimentalCondition extends JVMExperimentalCondition {
     val nCPUs: Int
     
-    override def toJvmArgs = Seq(s"-Dgraal.TruffleCompilerThreads=${nCPUs min 4}") ++ super.toJvmArgs 
+    override def toJvmArgs = Seq(s"-Dgraal.TruffleCompilerThreads=${(nCPUs * 0.75).toInt}") ++ super.toJvmArgs 
     
     override def wrapperCmd = tasksetCommandPrefix(nCPUs)
   }
