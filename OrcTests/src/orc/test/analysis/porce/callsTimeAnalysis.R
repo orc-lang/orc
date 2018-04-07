@@ -20,13 +20,13 @@ source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 
 # The directory of a normal benchmark run
-benchmarkDir <- file.path(localExperimentDataDir, "20180402-a001")
+benchmarkDir <- file.path(localExperimentDataDir, "20180406-a002")
 
 # The directory of a call profiling run
-callsDir <- file.path(localExperimentDataDir, "20180402-a001")
+callsDir <- file.path(localExperimentDataDir, "20180406-a004")
 
 loadBenchmarkData <- function(dataDir) {
-  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
+  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
     mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1]))) %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
@@ -34,12 +34,12 @@ loadBenchmarkData <- function(dataDir) {
   levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "KMeans", "K-Means", levels(data$benchmarkProblemName))
 
   prunedData <- data %>%
-    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "optLevel", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
     # Drop any reps which have more than 1% compilation time.
-    filter(rtCompTime < cpuTime * 0.01)
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs, optLevel) %>%
+    filter(!any(rtCompTime < cpuTime * 0.01) | rtCompTime < cpuTime * 0.01)
 
   processedData <- prunedData %>%
-    group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>%
     bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95, R = 1) %>%
     # mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
     #        cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
@@ -49,7 +49,7 @@ loadBenchmarkData <- function(dataDir) {
 }
 
 loadCallsData <- function(dataDir) {
-  bdata <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
+  bdata <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
     mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1]))) %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
@@ -57,11 +57,13 @@ loadCallsData <- function(dataDir) {
   levels(bdata$benchmarkProblemName) <- if_else(levels(bdata$benchmarkProblemName) == "KMeans", "K-Means", levels(bdata$benchmarkProblemName))
 
   bprunedData <- bdata %>%
-    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "optLevel", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
     # Drop any reps which have more than 1% compilation time.
-    filter(rtCompTime < cpuTime * 0.01)
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs, optLevel) %>%
+    filter(!any(rtCompTime < cpuTime * 0.01) | rtCompTime < cpuTime * 0.01) %>%
+    ungroup()
 
-  data <- readMergedResultsTable(dataDir, "call-times", invalidate = T) %>%
+  data <- readMergedResultsTable(dataDir, "call-times", invalidate = F) %>%
     mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1]))) %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")"))) %>%
     mutate(rep = as.integer(substring(id, 4)))
@@ -71,11 +73,11 @@ loadCallsData <- function(dataDir) {
   levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "KMeans", "K-Means", levels(data$benchmarkProblemName))
 
   prunedData <- left_join(bprunedData, data) %>%
-    select(benchmarkProblemName, benchmarkName, nPartitions, problemSize, work, language, run, orcFile, nCPUs, rep,
+    select(benchmarkProblemName, benchmarkName, nPartitions, problemSize, work, language, run, orcFile, optLevel, nCPUs, rep,
            elapsedTime, cpuTime, orcOverhead, javaOverhead, inCalls, nCalls, nJavaCalls)
 
   processedData <- prunedData %>%
-    group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>%
+    group_by(benchmarkProblemName, language, benchmarkName, optLevel, nCPUs) %>%
     bootstrapStatistics(c("elapsedTime", "cpuTime", "orcOverhead", "javaOverhead", "inCalls", "nCalls", "nJavaCalls"), mean, confidence = 0.95, R = 1) %>%
     ungroup() %>%
     mutate_at(vars(contains("Overhead")), funs(. / 1000 / 1000 / 1000)) %>%
@@ -87,20 +89,90 @@ loadCallsData <- function(dataDir) {
   processedData
 }
 
-callsData <- loadCallsData(callsDir) %>%
-  select(benchmarkProblemName, benchmarkName, language, nCPUs,
-         overheadPercent_mean, overheadPercent_mean_lowerBound, overheadPercent_mean_upperBound, nSamples)
-benchmarkData <- loadBenchmarkData(callsDir)
+loadCounterData <- function(dataDir) {
+  bdata <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
+    mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1]))) %>%
+    mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
-processedData <- full_join(benchmarkData, callsData) %>%
-  mutate(compensatedElapsedTime_mean = elapsedTime_mean * (1 - overheadPercent_mean),
-         compensatedElapsedTime_mean_upperBound = elapsedTime_mean_upperBound * (1 - overheadPercent_mean_lowerBound),
-         compensatedElapsedTime_mean_lowerBound = elapsedTime_mean_lowerBound * (1 - overheadPercent_mean_upperBound)) %>%
-  select(benchmarkProblemName, benchmarkName, language, nCPUs,
+  levels(bdata$benchmarkProblemName) <- if_else(levels(bdata$benchmarkProblemName) == "Black", "Black-Scholes", levels(bdata$benchmarkProblemName))
+  levels(bdata$benchmarkProblemName) <- if_else(levels(bdata$benchmarkProblemName) == "KMeans", "K-Means", levels(bdata$benchmarkProblemName))
+
+  bprunedData <- bdata %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "optLevel", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
+    # Drop any reps which have more than 1% compilation time.
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs, optLevel) %>%
+    filter(!any(rtCompTime < cpuTime * 0.01) | rtCompTime < cpuTime * 0.01) %>%
+    ungroup()
+
+  data <- readMergedResultsTable(dataDir, "counter-timers", invalidate = F) %>%
+    mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1]))) %>%
+    mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")"))) %>%
+    mutate(rep = as.integer(substring(id, 4)))
+
+
+  levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "Black", "Black-Scholes", levels(data$benchmarkProblemName))
+  levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "KMeans", "K-Means", levels(data$benchmarkProblemName))
+
+  prunedData <- left_join(bprunedData, data) %>%
+    select(benchmarkProblemName, benchmarkName, nPartitions, problemSize, work, language, run, orcFile, optLevel, nCPUs, rep,
+           elapsedTime, cpuTime, time, count)
+
+  processedData <- prunedData %>%
+    group_by(benchmarkProblemName, language, benchmarkName, optLevel, nCPUs) %>%
+    bootstrapStatistics(c("elapsedTime", "cpuTime", "time", "count"), mean, confidence = 0.95, R = 1) %>%
+    ungroup() %>%
+    mutate_at(vars(time_mean, time_mean_lowerBound, time_mean_upperBound), funs(. / 1000 / 1000 / 1000)) %>%
+    mutate(counterOverheadPercent_mean = time_mean / cpuTime_mean,
+           counterOverheadPercent_mean_lowerBound = time_mean_lowerBound / cpuTime_mean_upperBound,
+           counterOverheadPercent_mean_upperBound = time_mean_upperBound / cpuTime_mean_lowerBound)
+
+  processedData
+}
+
+benchmarkData <- loadBenchmarkData(benchmarkDir)
+
+callsData <- loadCallsData(callsDir) %>%
+  select(benchmarkProblemName, benchmarkName, language, optLevel, nCPUs,
+         overheadPercent_mean, overheadPercent_mean_lowerBound, overheadPercent_mean_upperBound)
+
+counterData <- loadCounterData(callsDir) %>%
+  select(benchmarkProblemName, benchmarkName, language, optLevel, nCPUs,
+         counterOverheadPercent_mean, counterOverheadPercent_mean_lowerBound, counterOverheadPercent_mean_upperBound)
+
+processedData <- full_join(full_join(benchmarkData, callsData), counterData) %>%
+  mutate(compensatedElapsedTime_mean = elapsedTime_mean * (1 - overheadPercent_mean - counterOverheadPercent_mean),
+         compensatedElapsedTime_mean_upperBound = elapsedTime_mean_upperBound * (1 - overheadPercent_mean_lowerBound - counterOverheadPercent_mean_lowerBound),
+         compensatedElapsedTime_mean_lowerBound = elapsedTime_mean_lowerBound * (1 - overheadPercent_mean_upperBound - counterOverheadPercent_mean_upperBound)) %>%
+  select(benchmarkProblemName, benchmarkName, language, optLevel, nCPUs,
          elapsedTime_mean, elapsedTime_mean_lowerBound, elapsedTime_mean_upperBound,
          compensatedElapsedTime_mean, compensatedElapsedTime_mean_lowerBound, compensatedElapsedTime_mean_upperBound,
          cpuTime_mean, cpuTime_mean_lowerBound, cpuTime_mean_upperBound,
          overheadPercent_mean, overheadPercent_mean_lowerBound, overheadPercent_mean_upperBound,
+         counterOverheadPercent_mean, counterOverheadPercent_mean_lowerBound, counterOverheadPercent_mean_upperBound,
          nSamples)
 
-View(processedData)
+# t <- processedData %>%
+#   transmute(benchmarkProblemName, benchmarkName,
+#             elapsedTime = signif(elapsedTime_mean, 7), compensatedElapsedTime = signif(compensatedElapsedTime_mean, 7),
+#             invokationOverheadPercent = round(overheadPercent_mean * 100, 3), counterOverheadPercent = round(counterOverheadPercent_mean * 100, 3),
+#             nSamples)
+
+t <- processedData %>%
+  transmute(benchmarkProblemName, benchmarkName, optLevel, nCPUs,
+            elapsedTime_mean, elapsedTime_mean_lowerBound, elapsedTime_mean_upperBound,
+            compensatedElapsedTime_mean, compensatedElapsedTime_mean_lowerBound, compensatedElapsedTime_mean_upperBound,
+            invokationOverhead_mean = overheadPercent_mean, invokationOverhead_mean_lowerBound = overheadPercent_mean_lowerBound, invokationOverhead_mean_upperBound = overheadPercent_mean_upperBound,
+            counterOverhead_mean = counterOverheadPercent_mean, counterOverhead_mean_lowerBound = counterOverheadPercent_mean_lowerBound, counterOverhead_mean_upperBound = counterOverheadPercent_mean_upperBound,
+            nSamples)
+
+# Output
+
+timeOutputDir <- file.path(benchmarkDir, "time")
+if (!dir.exists(timeOutputDir)) {
+  dir.create(timeOutputDir)
+}
+
+print(t)
+
+write.csv(t, file = file.path(timeOutputDir, "mean_compensated_elapsed_time.csv"), row.names = F)
+
