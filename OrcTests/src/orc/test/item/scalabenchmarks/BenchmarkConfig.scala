@@ -24,7 +24,7 @@ object BenchmarkConfig {
   val problemSize = System.getProperty("orc.test.benchmark.problemSize", "1").toInt
 
   def problemSizeScaledInt(n: Int) = ((n * 1.0) * problemSize).floor.toInt
-  //FIX: def problemSizeLogScaledInt(n: Int) = ((n * 1.0) * (math.log(problemSize) + 1)).floor.toInt
+  def problemSizeLogScaledInt(n: Int, base: Int): Int = (math.log(n * problemSize) / math.log(base) + 1).floor.toInt
   def problemSizeSqrtScaledInt(n: Int) = ((n * 1.0) * math.sqrt(problemSize)).floor.toInt
 
   /** The number of times the benchmark function will run f or zero to

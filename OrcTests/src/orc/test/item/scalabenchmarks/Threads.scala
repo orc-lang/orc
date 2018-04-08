@@ -14,15 +14,11 @@ package orc.test.item.scalabenchmarks
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration.Duration
 
-object Threads {
+object Threads extends BenchmarkApplication[Unit, Unit] {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  /*
-	This program creates 2^20 (or about 1 million) threads
-	and waits for them to terminate.
-	*/
+  val N = BenchmarkConfig.problemSizeLogScaledInt(10000, 2)
 
-  val N = 18
   def threads(n: Int): Unit = {
     if (n != 0) {
       val t = Future {
@@ -33,9 +29,18 @@ object Threads {
     }
   }
 
-  def main(args: Array[String]): Unit = {
-    // Don't actually run it. It will DOS, at least linux systems, by spawning 2^N threads. Good fun.
-    //threads(N)
-    //ts.foreach(_.join())
+  def benchmark(arg: Unit): Unit = {
+    threads(N)
   }
+
+  def check(results: Unit): Boolean = {
+    true
+  }
+
+  def setup(): Unit = {
+  }
+
+  val name: String = "Threads"
+
+  val size: Int = math.pow(2, N).toInt
 }
