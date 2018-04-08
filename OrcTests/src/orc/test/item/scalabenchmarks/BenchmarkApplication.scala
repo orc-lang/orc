@@ -241,7 +241,7 @@ trait ExpectedBenchmarkResult[R] {
 
   def check(results: R): Boolean = {
     if (System.getProperty("orc.test.benchmark.summarizeResults", "false").toBoolean)
-      println(summarizeResults(results))
+      println(s"Hash: ${hash(results).formatted("0x%x")}\n${summarizeResults(results)}")
     if (BenchmarkConfig.checkResults) {
       lazy val actual = hash(results)
       val expected = try {

@@ -18,6 +18,7 @@ import orc.test.util.FactorDescription
 object PorcEShared {
   val mainOrcBenchmarks = Seq(
             "test_data/performance/savina_sieve.orc",
+            "test_data/performance/savina_sieve-seq.orc",
             //"test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
@@ -27,16 +28,17 @@ object PorcEShared {
             "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
             //"test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
             //"test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq-optimized.orc",
-            //"test_data/performance/black-scholes/black-scholes-partially-seq.orc",
+            "test_data/performance/black-scholes/black-scholes-partially-seq.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
             "test_data/performance/k-means/k-means-scala-inner.orc",
             "test_data/performance/k-means/k-means.orc",
+            "test_data/performance/k-means/k-means-seq.orc",
             "test_data/performance/bigsort/bigsort-scala.orc",
             "test_data/performance/bigsort/bigsort.orc",
-            //"test_data/performance/bigsort/bigsort-partially-seq.orc",
+            "test_data/performance/bigsort/bigsort-partially-seq.orc",
             //"test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
-            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             //"test_data/performance/sssp/sssp-batched-partitioned.orc",
             "test_data/performance/sssp/sssp-batched.orc",
@@ -49,19 +51,22 @@ object PorcEShared {
             "test_data/performance/map-reduce/wordcount-pure-orc.orc",
             "test_data/performance/map-reduce/wordcount-pure-orc-seq.orc",
             )
-            
+                        
   val mainPureOrcBenchmarks = Seq(
             "test_data/performance/savina_sieve.orc",
+            "test_data/performance/savina_sieve-seq.orc",
             //"test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
-            //"test_data/performance/black-scholes/black-scholes-partially-seq.orc",
+            //"test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
+            "test_data/performance/black-scholes/black-scholes-partially-seq.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
             "test_data/performance/k-means/k-means.orc",
+            "test_data/performance/k-means/k-means-seq.orc",
             "test_data/performance/bigsort/bigsort.orc",
-            //"test_data/performance/bigsort/bigsort-partially-seq.orc",
-            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
+            "test_data/performance/bigsort/bigsort-partially-seq.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             //"test_data/performance/sssp/sssp-batched-partitioned.orc",
             "test_data/performance/sssp/sssp-batched.orc",
@@ -73,10 +78,11 @@ object PorcEShared {
             "test_data/performance/map-reduce/wordcount-pure-orc.orc",
             "test_data/performance/map-reduce/wordcount-pure-orc-seq.orc",
             )
-            
+                        
   val mainScalaBenchmarks = Seq(
             //orc.test.item.scalabenchmarks.Mandelbrot,
             //orc.test.item.scalabenchmarks.NQueens,
+            orc.test.item.scalabenchmarks.SavinaSieve,
             orc.test.item.scalabenchmarks.ThreadRing,
             orc.test.item.scalabenchmarks.blackscholes.BlackScholesPar,
             orc.test.item.scalabenchmarks.kmeans.KMeansPar,

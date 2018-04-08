@@ -11,6 +11,8 @@ the runtime to adjust to changing behavior.
 
 include "benchmark.inc"
 
+import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+
 import class Sieve = "orc.test.item.scalabenchmarks.Sieve"
 
 import class Set = "java.util.Set"
@@ -26,18 +28,19 @@ def sieveFragment(outChan) =
 	val inChan = Channel() 
 	val list = ArrayList[Number](sieveFragementSize)
 	val next = Cell()
-	def check(x, iter) =
+	def check(x, iter) = Sequentialize() >> (
 		val p = Some(iter()) ; None() #
 		--val _ = Println("Checking " + x + " " + p) #
 		(p >None()> signal) |
 		(p >Some(p)>
 			Iff(x % p = 0) >> 
 			check(x, iter))
+	)
 	def filter(x) = 
-		val v = check(x, IterableToStream(list)) >> true ; false
+		val v = Sequentialize() >> (check(x, IterableToStream(list)) >> true ; false)
 		v >true> (
 			if list.size() <: sieveFragementSize then
-				list.add(x) >> outChan.put(x)
+				Sequentialize() >> list.add(x) >> outChan.put(x)
 			else
 				-- create a new fragment
 				(next.readD() ;
@@ -45,7 +48,7 @@ def sieveFragment(outChan) =
 				next.read().put(x)
 		) |
 		v >false> signal #
-	--val _ = Println("Creating new fragment: " + (counter.inc() >> counter.value()))
+	val _ = Println("Creating new fragment: " + (counter.inc() >> counter.value()))
 	repeat({ (inChan.get() ; next.readD().close() >> stop) >x> filter(x) }) >> stop |
 	inChan
 	

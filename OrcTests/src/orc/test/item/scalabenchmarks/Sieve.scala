@@ -39,9 +39,11 @@ Floor(sqrt(n))
 import java.util.{ Collections, HashSet, Set }
 
 import scala.collection.JavaConverters.asScalaSetConverter
+import scala.concurrent.Channel
+import java.util.ArrayList
 
 object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBenchmarkResult[Iterable[Long]] {
-  val N = BenchmarkConfig.problemSizeScaledInt(20000)
+  val N = BenchmarkConfig.problemSizeScaledInt(10000)
 
   def primes(n: Long): List[Long] = {
     def candidates(n: Long) = 3L until (n + 1) by 2
@@ -71,8 +73,76 @@ object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBen
   override def hash(results: Iterable[Long]): Int = results.toSet.##()
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0xae7d25a5,
-      10 -> 0x2a82d246,
+      1 -> 0x5138c428,
+      10 -> 0xcd3323cb,
       100 -> 0xbb1da227,
       )
+}
+
+
+object SavinaSieve extends BenchmarkApplication[Unit, Iterable[Long]] with HashBenchmarkResult[Iterable[Long]] {
+  import Util._
+  import collection.JavaConverters._
+  
+  val sieveFragementSize = 300
+  
+  def sieveFragment(outChan: Channel[Long]): Channel[Long] = {
+  	val inChan = new Channel[Long]() 
+	  val list = new ArrayList[Long](sieveFragementSize)
+  	var next: Channel[Long] = null
+  	def check(x: Long) = !list.asScala.exists(x % _ == 0)
+  	def filter(x: Long) = {
+  		val v = check(x)
+  		if (v) {
+  			if (list.size() < sieveFragementSize) {
+  				list.add(x)
+  				outChan.write(x)
+  			} else {
+  				// create a new fragment
+  			  if (next == null) {
+  			    next = sieveFragment(outChan)
+  			  }
+  				next.write(x)
+  			}
+  		}
+    }
+  	//println("Creating new fragment: " + inChan)
+    thread {
+      var isDone = false
+      while (!isDone) {
+        val x = inChan.read
+        if (x >= 0) 
+          filter(x)
+        else {
+          isDone = true
+          if (next != null)
+            next.write(x)
+          else
+            outChan.write(x)  
+        }        
+      }
+    }
+  	inChan
+  }
+	
+  def primes(n: Long): List[Long] = {
+    def candidates(n: Long) = 3L until (n + 1) by 2
+    val out = new Channel[Long]()
+    val filter = sieveFragment(out)
+    candidates(n).foreach(filter.write)
+    filter.write(-1)
+    2 :: Stream.continually(out.read).takeWhile(_ > 0).toList
+  }
+
+  def benchmark(ctx: Unit) = {
+    primes(Sieve.N)
+  }
+
+  val name: String = "Sieve-savina"
+
+  val size: Int = Sieve.N
+
+  def setup(): Unit = ()
+
+  val expected = Sieve
 }
