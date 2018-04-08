@@ -44,3 +44,8 @@ def createTestDataFiles() =
 def deleteTestDataFiles() =
   import class WordCount = "orc.test.item.distrib.WordCount"
   WordCount.deleteTestFiles(inputDataDirPath, numCopiesInputFiles)
+
+def check(x) =
+  import class WordCount = "orc.test.item.scalabenchmarks.WordCount"
+  WordCount.check(x)
+  

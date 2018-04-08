@@ -53,6 +53,6 @@ def tearDownTest() =
 val inputList = (setUpTest() >> stop; signal) >> take(numInputFiles, listFileNamesRecursively(inputDataDirPath))
 -- val _ = Println(inputList)
  
-benchmarkSized("wordcount-mixed-orc-java", numInputFiles * repeatRead, { setUpTestRep() >> inputList }, runTestRep, { _ >> tearDownTestRep() >> true }) >> stop ;
+benchmarkSized("wordcount-mixed-orc-java", numInputFiles * repeatRead, { setUpTestRep() >> inputList }, runTestRep, { tearDownTestRep() >> check(_) }) >> stop ;
 
 tearDownTest()
