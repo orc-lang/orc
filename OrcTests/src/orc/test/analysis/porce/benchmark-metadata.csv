@@ -1,5 +1,6 @@
 benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline, implType, optimized
-BigSort-naive (Orc),                                     Coarse,      F,            Naïve,       F,          Orc,      F
+BigSort-naive (Orc),                                     Fine,        F,            Naïve,       F,          Orc,      F
+BigSort-partially-seq (Orc),                             Fine,        F,            Naïve,       F,          Orc,      T
 BigSort-scala (Orc),                                     Coarse,      T,            Naïve,       F,          Orc+Scala,F
 BigSort-par (Scala),                                     Coarse,      NA,           Naïve,       T,          Scala,    F
 Black-Scholes-naive (Orc),                               Fine,        F,            Naïve,       F,          Orc,      F
@@ -14,6 +15,7 @@ Dedup-boundedqueue (Scala),                              Coarse,      NA,       
 Dedup-naive (Orc),                                       Fine,        T,            Naïve,       F,          Orc,      F
 Dedup-nestedpar (Scala),                                 Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
 KMeans (Orc),                                            Fine,        F,            Naïve,       F,          Orc,      F
+KMeans-seq (Orc),                                        Fine,        F,            Naïve,       F,          Orc,      T
 KMeans-par (Scala),                                      Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
 KMeans-par-manual (Scala),                               Coarse,      NA,           Partition,   F,          Scala,    T
 KMeans-scala-inner (Orc),                                Coarse,      T,            Partition,   F,          Orc+Scala,F
@@ -21,7 +23,8 @@ SSSP-batched (Orc),                                      Fine,        F,        
 SSSP-batched-par (Scala),                                Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
 SSSP-batched-partitioned (Orc),                          Coarse,      F,            Partition,   F,          Orc,      T
 Swaptions-naive-scala-sim (Orc),                         Coarse,      T,            Naïve,       F,          Orc+Scala,F
-Swaptions-naive-scala-subroutines-seq (Orc),             Fine,        T,            Naïve,       F,          Orc,      F
+Swaptions-naive-scala-subroutines (Orc),                 Fine,        T,            Naïve,       F,          Orc,      F
+Swaptions-naive-scala-subroutines-seq (Orc),             Fine,        T,            Naïve,       F,          Orc,      T
 Swaptions-naive-scala-swaption (Orc),                    Coarse,      T,            Naïve,       F,          Orc+Scala,T
 Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F,          Scala,    T
 Swaptions-par-trial (Scala),                             Coarse,      NA,           Par. Col.,   TRUE,       Scala,    F

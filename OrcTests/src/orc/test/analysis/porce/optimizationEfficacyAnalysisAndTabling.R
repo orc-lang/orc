@@ -17,6 +17,7 @@ localExperimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scri
 source(file.path(scriptDir, "readMergedResultsTable.R"))
 source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
+source(file.path(scriptDir, "porce", "utils.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
@@ -138,9 +139,9 @@ r <- join_all(values, by = "benchmarkName") %>% mutate(benchmarkName = factor(be
 #   sprintf("% 4d (% 4d, %2.0f%% + %2.0f%% = %2.0f%%)", remaining, starting, percentStatic * 100, percentDynamic * 100, percentStatic * 100 + percentDynamic * 100)
 # }
 
-t <- r %>% filter(optimized == F, implType == "Orc") %>%
+t <- r %>% filter(optimized == F, implType == "Orc") %>% addBenchmarkProblemName() %>%
   transmute(
-  benchmarkName,
+  benchmarkProblemName,
   #language = if_else(scalaCompute, "Scala", "Orc"),
   #parallelism,
 

@@ -88,14 +88,14 @@ object PorcEShared {
             orc.test.item.scalabenchmarks.kmeans.KMeansPar,
             //orc.test.item.scalabenchmarks.kmeans.KMeansParManual,
             orc.test.item.scalabenchmarks.BigSortPar,
-            orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial, 
+            orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial,
             //orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption,
-            orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar, 
-            //orc.test.item.scalabenchmarks.canneal.Canneal, 
-            orc.test.item.scalabenchmarks.dedup.DedupNestedPar, 
+            orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar,
+            //orc.test.item.scalabenchmarks.canneal.Canneal,
+            orc.test.item.scalabenchmarks.dedup.DedupNestedPar,
             //orc.test.item.scalabenchmarks.dedup.DedupBoundedQueue,
-            orc.test.item.scalabenchmarks.Threads, 
-            orc.test.item.scalabenchmarks.WordCount, 
+            orc.test.item.scalabenchmarks.Threads,
+            orc.test.item.scalabenchmarks.WordCount,
             )
 
   val mainJvmOpts = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g", "-Xss8m")

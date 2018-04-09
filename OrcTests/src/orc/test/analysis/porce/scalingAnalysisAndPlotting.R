@@ -18,6 +18,7 @@ localExperimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scri
 source(file.path(scriptDir, "readMergedResultsTable.R"))
 source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
+source(file.path(scriptDir, "porce", "utils.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
@@ -25,12 +26,8 @@ dataDir <- file.path(localExperimentDataDir, "20180407-a001")
 
 loadData <- function(dataDir) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
-    mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1]))) %>%
+    addBenchmarkProblemName() %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
-
-  levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "Black", "Black-Scholes", levels(data$benchmarkProblemName))
-  levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "KMeans", "K-Means", levels(data$benchmarkProblemName))
-  #levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "wordcount" | levels(data$benchmarkProblemName) == "WordCount", "Word Count", levels(data$benchmarkProblemName))
 
   d <<- data
 
@@ -83,7 +80,7 @@ benchmarkProperties <- {
 
 processedData <- processedData %>%
   select(everything(), -contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline"), -contains("implType"), -contains("optimized")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
-  left_join(benchmarkProperties, by = "benchmarkName") %>%
+  left_join(benchmarkProperties, by = c("benchmarkName")) %>%
   group_by(benchmarkProblemName) %>%
   #addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T, experiment = levels(processedData$experiment)[1]), baseline = elapsedTime_mean_problembaseline) %>%
   ungroup()
@@ -137,16 +134,24 @@ compensatedRows <- right_join(processedData, compensatedData, by = c("benchmarkP
         ) %>%
   select(colnames(processedData))
 
-t <- processedData %>% rbind(compensatedRows) %>% filter(nCPUs == useNCPUs) %>%
+longT <- processedData %>% rbind(compensatedRows) %>% filter(nCPUs == useNCPUs) %>%
   mutate(implType = factor(if_else(implType == "Orc", paste0("Orc -O", optLevel), as.character(implType)), levels = implTypes)) %>%
-  mutate(implType = if_else(optimized, paste0(implType, " Opt"), as.character(implType))) %>%
-  filter(!optimized) %>%
+  mutate(implType = if_else(optimized, paste0(implType, " Opt"), as.character(implType)))
+
+t <- longT %>%
+  filter(!optimized | language == "Scala") %>%
   select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
 
 write.csv(t, file = file.path(timeOutputDir, "mean_elapsed_time.csv"), row.names = F)
 
 print(t)
 print(kable(t, "latex"))
+
+t <- longT %>%
+  filter(optimized) %>%
+  select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
+
+print(t)
 
 #processedData <- processedData %>% filter(is.element(benchmarkName, includedBenchmarks))
 #processedData <- processedData %>% filter(optimized == F)

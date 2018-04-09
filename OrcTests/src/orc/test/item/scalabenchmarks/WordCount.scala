@@ -56,11 +56,11 @@ object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedB
     val wordCountList = data.par.map(repeatCountFilename)
     wordCountList.sum
   }
-
-  // Setup for all iterations.
-  createTestDataFiles()
   
   def setup(): List[String] = {
+    // Setup for all iterations.
+    createTestDataFiles()
+    
     listFileNamesRecursively(inputDataDirPath).take(size)
   }
 

@@ -1,0 +1,12 @@
+benchmarkNamePrefix, benchmarkProblemName
+BigSort,     Big Sort
+Black,       Black-Scholes
+Dedup,       Dedup
+KMeans,      K-Means
+Sieve,       Savina Sieve
+SSSP,        SSSP (BFS)
+Swaptions,   Swaptions
+ThreadRing,  Thread Ring
+Threads,     Fork Bomb
+wordcount,   Word Count
+WordCount,   Word Count
