@@ -212,14 +212,12 @@ trait PorcEBenchmark extends JVMRunner {
   def softTimeLimit: Double 
   
   def runExperiment(experimentalConditions: Iterable[JVMExperimentalCondition]) = {
-    if (System.getProperty("orc.executionlog.dir") == null)
+    lazy val runOutputDir = System.getProperty("orc.executionlog.dir")
+    if (System.getProperty("orc.executionlog.dir") == null || !(new File(s"$runOutputDir/experimental-conditions.csv").exists())) {
       ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
-    else {
-      val runOutputDir = System.getProperty("orc.executionlog.dir")
+    } else {
       println(s"orc.executionlog.dir is set. Assuming we are continuing an existing run. $runOutputDir/experimental-conditions.csv is not being rewritten. Make sure it's still correct.")
     }
-    
-    val runOutputDir = System.getProperty("orc.executionlog.dir")
     
     val selectedCond = Option(System.getProperty("orc.test.selectedTests")).map(_.split(","))
     val excludedCond = Option(System.getProperty("orc.test.excludedTests")).map(_.split(",")).getOrElse(Array())

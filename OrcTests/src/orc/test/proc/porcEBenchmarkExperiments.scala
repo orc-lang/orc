@@ -95,6 +95,7 @@ object PorcEShared {
             orc.test.item.scalabenchmarks.dedup.DedupNestedPar, 
             //orc.test.item.scalabenchmarks.dedup.DedupBoundedQueue,
             orc.test.item.scalabenchmarks.Threads, 
+            orc.test.item.scalabenchmarks.WordCount, 
             )
 
   val mainJvmOpts = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g", "-Xss8m")
