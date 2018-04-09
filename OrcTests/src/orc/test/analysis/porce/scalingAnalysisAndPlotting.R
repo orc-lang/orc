@@ -21,7 +21,7 @@ source(file.path(scriptDir, "plotting.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
-dataDir <- file.path(localExperimentDataDir, "20180406-a002")
+dataDir <- file.path(localExperimentDataDir, "20180407-a001")
 
 loadData <- function(dataDir) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
@@ -30,6 +30,7 @@ loadData <- function(dataDir) {
 
   levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "Black", "Black-Scholes", levels(data$benchmarkProblemName))
   levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "KMeans", "K-Means", levels(data$benchmarkProblemName))
+  #levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "wordcount" | levels(data$benchmarkProblemName) == "WordCount", "Word Count", levels(data$benchmarkProblemName))
 
   d <<- data
 
@@ -86,37 +87,6 @@ processedData <- processedData %>%
   group_by(benchmarkProblemName) %>%
   #addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T, experiment = levels(processedData$experiment)[1]), baseline = elapsedTime_mean_problembaseline) %>%
   ungroup()
-
-includedBenchmarks <- {
-  txt <- "
-  Black-Scholes-naive (Orc)
-  Black-Scholes-partially-seq (Orc)
-  Black-Scholes-par (Scala)
-  Black-Scholes-partitioned-seq (Orc)
-  Black-Scholes-scala-compute (Orc)
-  Black-Scholes-scala-compute-for-tree (Orc)
-  Black-Scholes-scala-compute-for-tree-opt (Orc)
-  Black-Scholes-scala-compute-partially-seq (Orc)
-  Black-Scholes-scala-compute-partitioned-seq (Orc)
-  Dedup-boundedchannel (Orc)
-  Dedup-boundedqueue (Scala)
-  Dedup-naive (Orc)
-  Dedup-nestedpar (Scala)
-  KMeans (Orc)
-  KMeans-par (Scala)
-  KMeans-par-manual (Scala)
-  KMeans-scala-inner (Orc)
-  SSSP-batched (Orc)
-  SSSP-batched-par (Scala)
-  SSSP-batched-partitioned (Orc)
-  Swaptions-naive-scala-sim (Orc)
-  Swaptions-naive-scala-subroutines-seq (Orc)
-  Swaptions-naive-scala-swaption (Orc)
-  Swaptions-par-swaption (Scala)
-  Swaptions-par-trial (Scala)
-"
-  read.csv(text = txt, strip.white = T, header = F, stringsAsFactors = F)[[1]]
-}
 
 # Sample count table
 

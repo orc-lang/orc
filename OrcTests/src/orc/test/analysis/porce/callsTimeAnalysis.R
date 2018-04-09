@@ -20,7 +20,7 @@ source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 
 # The directory of a normal benchmark run
-benchmarkDir <- file.path(localExperimentDataDir, "20180406-a002")
+benchmarkDir <- file.path(localExperimentDataDir, "20180407-a001")
 
 # The directory of a call profiling run
 callsDir <- file.path(localExperimentDataDir, "20180406-a004")

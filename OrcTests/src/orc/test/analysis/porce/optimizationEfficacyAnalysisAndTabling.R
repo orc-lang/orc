@@ -20,7 +20,7 @@ source(file.path(scriptDir, "plotting.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20180406-a002")
+dataDir <- file.path(localExperimentDataDir, "20180407-a001")
 #
 # Load main data
 

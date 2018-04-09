@@ -30,5 +30,9 @@ ThreadRing (Scala),                                      Fine,        NA,       
 Wide (Orc),                                              Fine,        F,            NA,          F,          Orc,      F
 Threads (Orc),                                           Fine,        F,            NA,          F,          Orc,      F
 wordcount-mixed-orc-java (Orc),                          Coarse,      T,            Naïve,       F,          Orc+Scala,F
-wordcount-pure-orc (Orc),                                Fine,        T,            Naïve,       F,          Orc,      F
-wordcount-pure-orc-seq (Orc),                            Fine,        T,            Naïve,       F,          Orc,      T
+wordcount-pure-orc (Orc),                                Fine,        F,            Naïve,       F,          Orc,      F
+wordcount-pure-orc-seq (Orc),                            Fine,        F,            Naïve,       F,          Orc,      T
+WordCount-par (Scala),                                   Coarse,      NA,           Partition,   T,          Scala,    F
+Sieve-savina (Orc),                                      Coarse,      F,            Thread,      F,          Orc,      F
+Sieve-savina-seq (Orc),                                  Coarse,      F,            Thread,      F,          Orc,      T
+Sieve-savina (Scala),                                    Coarse,      NA,           Thread,      T,          Scala,    F
