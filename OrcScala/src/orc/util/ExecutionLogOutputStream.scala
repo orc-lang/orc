@@ -53,18 +53,23 @@ object ExecutionLogOutputStream {
     */
   @throws[IOException]
   def apply(basename: String, extension: String, description: String): Option[OutputStream] = {
+    getFile(basename, extension) map { outFile =>
+      if (!outFile.createNewFile()) {
+        throw new IOException(s"$description: File already exists: ${outFile.getAbsolutePath}")
+      }
+      new FileOutputStream(outFile)
+    }
+  }
+
+  def getFile(basename: String, extension: String): Option[File] = {
     val outDir = System.getProperty("orc.executionlog.dir")
     if (outDir != null) {
       val fileBasenamePrefix = System.getProperty("orc.executionlog.fileprefix", "")
       val fileBasenameSuffix = Pattern.compile("${jvmName}", Pattern.LITERAL).matcher(System.getProperty("orc.executionlog.filesuffix", "")).replaceAll(ManagementFactory.getRuntimeMXBean.getName)
       val outFile = new File(outDir, s"$fileBasenamePrefix$basename$fileBasenameSuffix.$extension")
-      if (!outFile.createNewFile()) {
-        throw new IOException(s"$description: File already exists: ${outFile.getAbsolutePath}")
-      }
-      Some(new FileOutputStream(outFile))
+      Some(outFile)
     } else {
       None
     }
   }
-
 }
