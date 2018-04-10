@@ -11,10 +11,13 @@
 
 package orc.run.porce;
 
+import orc.run.porce.instruments.AdhocIntrospectable;
+
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
 
 @Instrumentable(factory = NewFutureWrapper.class)
+@AdhocIntrospectable
 public class NewFuture extends Expression {
     private final boolean raceFreeResolution;
 

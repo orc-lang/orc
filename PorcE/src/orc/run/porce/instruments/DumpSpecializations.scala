@@ -21,21 +21,36 @@ import com.oracle.truffle.api.dsl.Introspection
 import com.oracle.truffle.api.nodes.{ Node, NodeVisitor }
 import orc.run.porce.PorcERootNode
 import com.oracle.truffle.api.dsl.Introspectable
+import com.oracle.truffle.api.nodes.LoopNode
 
 object DumpSpecializations {
   def apply(node: Node, out: PrintWriter): Unit = {
     out.println(s"=== ${node}:")
-    node match {
-      case r: PorcERootNode =>
+    val calledEnough = node match {
+      case r: PorcERootNode if r.getTotalCalls >= System.getProperty("orc.test.benchmark.nRuns", "1").toInt =>
         out.println(s"    timePerCall = ${r.getTimePerCall}, totalSpawnedCalls = ${r.getTotalSpawnedCalls}, totalSpawnedTime = ${r.getTotalSpawnedTime}")
-      case _ => ()
-    }
-    node.accept(new NodeVisitor {
-      def visit(node: Node): Boolean = {
-        printSpecializations(node, out, true, "  ")
         true
-      }
-    })
+      case _ => false 
+    }
+    if (calledEnough) {
+      def doVisiting(node: Node): Unit =
+        node.accept(new NodeVisitor {
+          def visit(node: Node): Boolean = {
+            node match {
+              case l: LoopNode =>
+                // Skip loop nodes because they actually have two children which duplicate the body of the loop.
+                doVisiting(l.getRepeatingNode.asInstanceOf[Node])
+                false
+              case _ =>
+                printSpecializations(node, out, true, "  ")
+                true
+            }
+          }
+        })
+      doVisiting(node)
+    } else {
+      out.println(s"   Omitted due to not enough calls.")
+    }
   }
 
   private def printSpecializations(node: Node, out: PrintWriter, doPrintHeader: Boolean, prefix: String) = {

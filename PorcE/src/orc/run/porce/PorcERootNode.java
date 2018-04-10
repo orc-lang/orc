@@ -45,6 +45,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     // The challenge of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
     private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
+    private final AtomicLong totalCalls = new AtomicLong(0);
 
     /*
      *  The solution for a racy version is to use a volatile long and split it into two "fields" one for each value (as an int).
@@ -64,6 +65,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     }
     public final long getTotalSpawnedCalls() {
 	return totalSpawnedCalls.get();
+    }
+    public final long getTotalCalls() {
+	return totalCalls.get();
     }
     
     @CompilationFinal
@@ -250,6 +254,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
                 InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
             }
 	}
+	
+	if (timePerCall < 0)
+	    totalCalls.incrementAndGet();
 
         try {
             final Object ret = body.execute(frame);

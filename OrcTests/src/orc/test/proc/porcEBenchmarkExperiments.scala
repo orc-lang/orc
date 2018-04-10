@@ -181,6 +181,48 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
   }
 }
 
+object PorcEOptimizationExperiment extends PorcEBenchmark {
+  import PorcEShared._
+  
+  def softTimeLimit: Double = 60 * 4
+  override def hardTimeLimit: Double = 60 * 6
+  
+  case class MyPorcEExperimentalCondition(
+      run: Int,
+      orcFile: File, 
+      nCPUs: Int, 
+      optLevel: Int) 
+      extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
+    override def nRuns = super.nRuns max 90
+    
+    override def factorDescriptions = Seq(
+      FactorDescription("run", "Run Number", "", ""),
+      FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
+      FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
+      FactorDescription("optLevel", "Optimization Level", "", "-O level"),
+    )
+
+    override def systemProperties = super.systemProperties ++ mainSystemProperties
+    override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs ++ Seq("-O", optLevel.toString)
+    override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
+  }
+
+  def main(args: Array[String]): Unit = {
+    val experimentalConditions = {
+      val nCPUs = 24
+      val porce = for {
+        optLevel <- Seq(3, 0)
+        fn <- mainPureOrcBenchmarks
+      } yield {
+        assert(new File(fn).isFile(), fn)
+        MyPorcEExperimentalCondition(0, new File("OrcTests/" + fn), nCPUs, optLevel)
+      }
+      porce
+    }
+    runExperiment(experimentalConditions)
+  }
+}
+
 object PorcEInliningTCOExperiment extends PorcEBenchmark {
   def softTimeLimit: Double = 60 * 3.5
   //override def hardTimeLimit: Double = 60 * 5.5

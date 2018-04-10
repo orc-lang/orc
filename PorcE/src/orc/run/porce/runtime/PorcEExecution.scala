@@ -30,6 +30,8 @@ import com.oracle.truffle.api.nodes.Node
 import java.util.Collections
 import java.util.ArrayList
 import orc.run.porce.PorcERootNode
+import orc.util.DumperRegistry
+import java.io.FileOutputStream
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -121,6 +123,10 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     extraRegisteredRootNodes.add(root)
   }
   
+  def unregisterRootNode(root: RootNode): Unit = {
+    extraRegisteredRootNodes.remove(root)
+  }
+  
   {
     // This is disabled debug code for tracing problems related to Counters
     if (false) {
@@ -133,10 +139,25 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
   }
 
+  private val specializationsFile = ExecutionLogOutputStream.getFile(s"truffle-node-specializations", "txt")
+
+  specializationsFile foreach { specializationsFile =>
+    DumperRegistry.register { name =>
+      import scala.collection.JavaConverters._
+      specializationsFile.delete()
+      val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
+      val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
+      for (r <- (callTargets.map(_.getRootNode) ++ extraRegisteredRootNodes.asScala).toSeq.sortBy(_.toString)) {
+        DumpSpecializations(r, out)
+      }
+      out.close()
+    }
+  }
+
+  
   def onProgramHalted() = {
-    import scala.collection.JavaConverters._
-     
     /* ROOTNODE-STATISTICS
+		import scala.collection.JavaConverters._
     {
       val csvOut = ExecutionLogOutputStream("rootnode-statistics", "csv", "RootNode run times data")
       if (csvOut.isDefined) {
@@ -163,15 +184,6 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
     */
     
-    val specializationsOut = ExecutionLogOutputStream("truffle-node-specializations", "txt", "Truffle node specializations")
-    if (specializationsOut.isDefined) {
-        val out = new PrintWriter(new OutputStreamWriter(specializationsOut.get))
-        val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
-        for (r <- (callTargets.map(_.getRootNode) ++ extraRegisteredRootNodes.asScala).toSeq.sortBy(_.toString)) {
-          DumpSpecializations(r, out)
-        }
-        out.close()
-    }
   }
 }
 
