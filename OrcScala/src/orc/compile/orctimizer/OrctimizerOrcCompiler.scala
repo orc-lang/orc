@@ -77,7 +77,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         classOf[Routine], classOf[Service], classOf[IfLenientMethod], classOf[Call],
         classOf[Force], classOf[GetField], classOf[Resolve], classOf[GetMethod],
         classOf[New], classOf[FieldFuture], classOf[FieldArgument])
-      val optimizationsToOutput = optimizer.opts.map(_.name)
+      val optimizationsToOutput = optimizer.allOpts.map(_.name)
 
       val statisticsOutputs = ExecutionLogOutputStream("orctimizer-statistics", "csv", "Orctimizer static optimization statistics") map { out =>
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
@@ -174,7 +174,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         classOf[NewToken], classOf[HaltToken], classOf[SetDiscorporate], 
         classOf[TryOnException], classOf[TryFinally], 
         )
-      val optimizationsToOutput = optimizer.opts.map(_.name)
+      val optimizationsToOutput = optimizer.allOpts.map(_.name)
 
       val statisticsOutputs = ExecutionLogOutputStream("porc-optimizer-statistics", "csv", "Porc optimizer static optimization statistics") map { out =>
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
