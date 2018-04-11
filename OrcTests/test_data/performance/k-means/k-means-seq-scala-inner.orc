@@ -23,15 +23,15 @@ def sforBy(low, high, step, f) = Sequentialize() >> (
   h(low)
   )
 
-val n = 10
-val iters = 1
-
 import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
 import class LongAdder = "java.util.concurrent.atomic.LongAdder"
 
 import class Point = "orc.test.item.scalabenchmarks.kmeans.Point"
 import class KMeans = "orc.test.item.scalabenchmarks.kmeans.KMeans"
 import class KMeansData = "orc.test.item.scalabenchmarks.kmeans.KMeansData"
+
+val n = KMeans.n()
+val iters = KMeans.iters()
 
 class PointAdder {
   val x = DoubleAdder()

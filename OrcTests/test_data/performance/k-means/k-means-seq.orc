@@ -12,10 +12,6 @@ include "benchmark.inc"
 import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 type Double = Top
 
-val n = 10
-val iters = 1
-
-
 def smap(f, xs) = Sequentialize() >> ( 
   def h([], acc) = acc
   def h(x:xs, acc) =
@@ -41,6 +37,9 @@ import class KMeans = "orc.test.item.scalabenchmarks.kmeans.KMeans"
 
 import class DoubleAdder = "java.util.concurrent.atomic.DoubleAdder"
 import class LongAdder = "java.util.concurrent.atomic.LongAdder"
+
+val n = KMeans.n()
+val iters = KMeans.iters()
 
 class PointAdder {
   val x = DoubleAdder()

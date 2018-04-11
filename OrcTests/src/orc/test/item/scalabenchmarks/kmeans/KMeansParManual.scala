@@ -17,8 +17,6 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig, Ha
 
 object KMeansParManual extends BenchmarkApplication[Array[Point], Array[Point]] with HashBenchmarkResult[Array[Point]] {
   val expected = KMeansData
-  val n = 10
-  val iters = 1
   val nPartitions = BenchmarkConfig.nPartitions
 
   import KMeans._

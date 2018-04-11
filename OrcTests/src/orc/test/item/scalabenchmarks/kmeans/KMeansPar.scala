@@ -17,8 +17,6 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, HashBenchmarkResult
 
 object KMeansPar extends BenchmarkApplication[Array[Point], Array[Point]] with HashBenchmarkResult[Array[Point]] {
   val expected = KMeansData
-  val n = 10
-  val iters = 1
   
   def benchmark(data: Array[Point]) = {
     run(data)
@@ -31,6 +29,7 @@ object KMeansPar extends BenchmarkApplication[Array[Point], Array[Point]] with H
   val size: Int = KMeansData.data.size
   val name: String = "KMeans-par"
 
+  import KMeans._
 
   def run(xs: Array[Point]) = {
     var centroids: Array[Point] = xs take n
@@ -40,8 +39,6 @@ object KMeansPar extends BenchmarkApplication[Array[Point], Array[Point]] with H
     }
     centroids
   }
-  
-  import KMeans._
   
   def updateCentroids(data: Array[Point], centroids: Array[Point]): Array[Point] = {
     val xs = Array.fill(centroids.size)(new DoubleAdder())

@@ -73,7 +73,7 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
   }
   
   val n = 10
-  val iters = 1
+  val iters = 5
 
   def benchmark(data: Array[Point]) = {
     run(data)
