@@ -94,6 +94,11 @@ public class Force {
 			    return orc.run.porce.runtime.FutureConstants.Unbound;
 			}
 		    }
+		} else if (!InlineForceResolved || !InlineForceHalted) {
+		    if (isNonFuture(future))
+			return future;
+		    else
+			return orc.run.porce.runtime.FutureConstants.Unbound;
 		} else {
 		    throw InternalPorcEError.unreachable(self);
 		}
