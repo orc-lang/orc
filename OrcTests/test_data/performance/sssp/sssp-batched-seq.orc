@@ -38,7 +38,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
     )
     val colors = AtomicIntegerArray(nodes.length?)
     
-    def getAndMinResult(i, v) = (
+    def getAndMinResult(i, v) = Sequentialize() >> v >> i >> (
     	val old = result.get(i)
     	if old <: v then
     		old
@@ -48,7 +48,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
     		getAndMinResult(i, v)
     )
     
-	def processNode(index, outQ, gray) = (
+	def processNode(index, outQ, gray) = Sequentialize() >> index >> outQ >> gray >> (
 		val node = nodes(index)?
 		val currentCost = result.get(index)
 		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> edges(edgeIndex)? >edge> (
@@ -70,6 +70,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 			signal
 		)
 	
+	result >> q1 >> q2 >> outQLock >>
     result.set(source, 0) >>
 	q1.add(source) >>
 	h(q1, q2, 1) >>

@@ -32,6 +32,7 @@ def countLine(line) =
 def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"
+  Sequentialize() >> (
   def countLinesFrom(in, accumCount) =
     (in.readLine() ; null)  >nextLine>
     (if nextLine = null then accumCount else countLinesFrom(in, accumCount + countLine(nextLine))) #
@@ -39,6 +40,7 @@ def countFile(file) =
   countLinesFrom(in, 0)  >count>
   in.close()  >>
   count
+  )
 
 def repeatCountFilename(filename) =
   import class File = "java.io.File"

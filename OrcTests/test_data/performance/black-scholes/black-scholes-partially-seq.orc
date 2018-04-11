@@ -48,9 +48,11 @@ def compute(s, x, t, r, v) = Sequentialize() >> (
   
   
 def run(data) =
+    val riskless = BlackScholesData.riskless()
+    val volatility = BlackScholesData.volatility()
 	val res = Array(data.length?)
 	for(0, data.length?) >i> Sequentialize() >>
-	  res(i) := compute(data(i)?.price(), data(i)?.strike(), data(i)?.maturity(), BlackScholesData.riskless(), BlackScholesData.volatility()) 
+	  res(i) := compute(data(i)?.price(), data(i)?.strike(), data(i)?.maturity(), riskless, volatility) 
 	  >> stop ;
 	res
 

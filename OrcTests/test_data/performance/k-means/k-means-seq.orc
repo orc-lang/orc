@@ -47,13 +47,14 @@ class PointAdder {
   val y = DoubleAdder()
   val count = LongAdder()
   
-  def add(p) = (x.add(p.x()), y.add(p.y()), count.add(1)) >> signal
+  def add(p) = Sequentialize() >> (x.add(p.x()), y.add(p.y()), count.add(1)) >> signal
   
   {-- Get the average of the added points. 
     If this is called while points are being added this may have transient errors since the counter, x, or y may include values not included in the others. -}
-  def average() =
+  def average() = Sequentialize() >> ( 
     val c = count.sum()
   	Point(x.sum() / c, y.sum() / c)
+  	)
   
   def toString() = "<" + x + "," + y + ">"
 }
@@ -67,10 +68,10 @@ def run(xs) =
 
 def updateCentroids(xs, centroids) = 
   val pointAdders = listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
-  sfor(0, xs.length?, lambda(i) = (
+  forBy(0, xs.length?, 1) >i> (
     val p = xs(i)?
     pointAdders(closestIndex(p, centroids))?.add(p)
-  )) >>
+  ) >> stop ;
   listToArray(map({ _.average() }, arrayToList(pointAdders)))  
 
 def minBy(f, l) =
