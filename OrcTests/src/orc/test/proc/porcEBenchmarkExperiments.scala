@@ -186,8 +186,9 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 object PorcEOptimizationExperiment extends PorcEBenchmark {
   import PorcEShared._
   
+  // Run for a short time (4 min). But in one rep take 30 minutes, let it go, since we HAVE to finish at least one rep to get data.
   def softTimeLimit: Double = 60 * 4
-  override def hardTimeLimit: Double = 60 * 6
+  override def hardTimeLimit: Double = 60 * 30
   
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -195,7 +196,7 @@ object PorcEOptimizationExperiment extends PorcEBenchmark {
       nCPUs: Int, 
       optLevel: Int) 
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
-    override def nRuns = super.nRuns max 90
+    override def nRuns = super.nRuns max 30
     
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
@@ -213,8 +214,8 @@ object PorcEOptimizationExperiment extends PorcEBenchmark {
     val experimentalConditions = {
       val nCPUs = 24
       val porce = for {
-        optLevel <- Seq(3, 0)
         fn <- mainPureOrcBenchmarks
+        optLevel <- Seq(3, 0)
       } yield {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(0, new File("OrcTests/" + fn), nCPUs, optLevel)

@@ -9,6 +9,7 @@
 
 library(knitr)
 library(tidyr)
+library(stringr)
 
 scriptDir <- normalizePath(".") # dirname(dirname(sys.frame(1)$ofile))
 experimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scriptDir))))), "experiment-data")
@@ -21,8 +22,9 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20180407-a001")
-#
+dataDir <- file.path(localExperimentDataDir, "20180410-a004")
+
+
 # Load main data
 
 dataOrct <- readMergedResultsTable(dataDir, "orctimizer-statistics", invalidate = T) %>% filter(run == 0)
@@ -38,19 +40,24 @@ dataPorc <- dataPorc %>% dropMiddle()
 # Load truffle specialization information
 
 countMatchingLines <- function(str, lines, fixed = T) {
-  sum(grepl(str, lines, fixed = fixed))
+  #sum(grepl(str, lines, fixed = fixed))
+  if (fixed)
+    sum(str_detect(lines, fixed(str)))
+  else
+    sum(str_detect(lines, str))
 }
 
-loadTruffleData <- function(benchmarkName, orcFile) {
+loadTruffleData <- function(benchmarkName, orcFile, optLevel) {
   n <- sub("^.*/([^/.]*).orc", "\\1", orcFile)
-  fp <- file.path(dataDir, "raw-output", paste0(n, "_orc*_24_3*_truffle-node-specializations_*.txt"))
-  #print(fp)
-  #print(Sys.glob(fp))
+  fp <- file.path(dataDir, "raw-output", paste0(n, "_orc*_24_", optLevel, "_truffle-node-specializations_*.txt"))
+  # print(fp)
   fns <- Sys.glob(fp)
+  #print(fns)
   if (length(fns) > 0 && length(first(fns)) > 0) {
     fn <- first(fns)
     txt <- readLines(fn)
 
+    totalFutures <- countMatchingLines("| NewFuture", txt)
     totalGrafts <- countMatchingLines("| GraftNodeGen", txt)
     unoptGrafts <- countMatchingLines("fullFuture: (1) {", txt)
     inlinedGrafts <- countMatchingLines("noFuture: (1) {", txt)
@@ -69,19 +76,29 @@ loadTruffleData <- function(benchmarkName, orcFile) {
     blockedForcesMulti <- countMatchingLines("blocked: (1) {", txt)
 
     data.frame(benchmarkName,
-               unoptGrafts = unoptGrafts + deinlinedGrafts, # totalGrafts - (inlinedGrafts - deinlinedGrafts),
-               inlinedGrafts = inlinedGrafts - deinlinedGrafts,
+               orcFile,
+               optLevel,
+               totalFutures = totalFutures + totalGrafts,
+               unoptFutures = unoptGrafts + deinlinedGrafts + totalFutures,
+               inlinedFutures = inlinedGrafts - deinlinedGrafts,
+               totalSpawns,
                unoptSpawns = unoptSpawns + deinlinedSpawns,
                inlinedSpawns = inlinedSpawns - deinlinedSpawns,
+               totalForces = forcesSingle + forcesMulti,
                remainingForces = blockedForcesSingle + blockedForcesMulti,
                eliminatedForces = (forcesSingle - blockedForcesSingle) + (forcesMulti - blockedForcesMulti)
                )
   } else {
     data.frame(benchmarkName,
-               unoptGrafts = NA,
-               inlinedGrafts = NA,
+               orcFile,
+               optLevel,
+               totalFutures = NA,
+               unoptFutures = NA,
+               inlinedFutures = NA,
+               totalSpawns = NA,
                unoptSpawns = NA,
                inlinedSpawns = NA,
+               totalForces = NA,
                remainingForces = NA,
                eliminatedForces = NA
     )
@@ -98,26 +115,30 @@ benchmarkProperties <- {
 
   levels(r$granularity) <- c("S. Fine", "Fine", "Coarse")
 
-  r
+  r %>% filter(implType != "Scala")
 }
 
 starting <- dataOrct %>% filter(optimized == FALSE)
 ending <- dataPorc %>% filter(optimized == TRUE)
 
-dataPorcE <- dataOrct %>% group_by(benchmarkName) %>%
-  do(loadTruffleData(first(.$benchmarkName), first(.$orcFile)))
+dataPorcEO0 <- dataPorc %>% group_by(orcFile) %>%
+  do(loadTruffleData(first(.$benchmarkName), first(.$orcFile), 0)) %>% ungroup()
+dataPorcEO3 <- dataPorc %>% group_by(orcFile) %>%
+  do(loadTruffleData(first(.$benchmarkName), first(.$orcFile), 3)) %>% ungroup()
 
-values <- list(
-  starting %>% transmute(benchmarkName, startingFutures = Future),
-  ending %>% transmute(benchmarkName, endingFutures = NewFuture + Graft),
-  starting %>% transmute(benchmarkName, startingForces = Force),
-  ending %>% transmute(benchmarkName, endingForces = Force),
-  starting %>% transmute(benchmarkName, startingSpawns = Future + Parallel + Branch),
-  dataPorc %>% filter(optimized == FALSE) %>% transmute(benchmarkName, startingPorcSpawns = Spawn + Graft),
-  ending %>% transmute(benchmarkName, endingSpawns = Spawn + Graft),
-  dataPorcE,
-  benchmarkProperties
-)
+print(rbind(dataPorcEO0, dataPorcEO3) %>% arrange(orcFile, optLevel))
+
+# values <- list(
+#   starting %>% transmute(benchmarkName, startingFutures = Future),
+#   ending %>% transmute(benchmarkName, endingFutures = NewFuture + Graft),
+#   starting %>% transmute(benchmarkName, startingForces = Force),
+#   ending %>% transmute(benchmarkName, endingForces = Force),
+#   starting %>% transmute(benchmarkName, startingSpawns = Future + Parallel + Branch),
+#   dataPorc %>% filter(optimized == FALSE) %>% transmute(benchmarkName, startingPorcSpawns = Spawn + Graft),
+#   ending %>% transmute(benchmarkName, endingSpawns = Spawn + Graft),
+#   dataPorcEO3,
+#   benchmarkProperties
+# )
 
 join_all <- function(ds, by = NULL) {
   d <- NULL
@@ -133,33 +154,38 @@ join_all <- function(ds, by = NULL) {
 
 
 
-r <- join_all(values, by = "benchmarkName") %>% mutate(benchmarkName = factor(benchmarkName))
+r <- full_join(dataPorcEO0, dataPorcEO3, by = c("orcFile", "benchmarkName"), suffix = c(".O0", ".O3")) %>%
+  left_join(benchmarkProperties, by = "benchmarkName") %>%
+  mutate(benchmarkName = factor(benchmarkName))
 
 # formatOpt <- function(remaining, starting, percentStatic, percentDynamic) {
 #   sprintf("% 4d (% 4d, %2.0f%% + %2.0f%% = %2.0f%%)", remaining, starting, percentStatic * 100, percentDynamic * 100, percentStatic * 100 + percentDynamic * 100)
 # }
 
-t <- r %>% filter(optimized == F, implType == "Orc") %>% addBenchmarkProblemName() %>%
+t <- r %>% filter(optimized == F, scalaCompute == F, implType == "Orc") %>% addBenchmarkProblemName() %>%
   transmute(
   benchmarkProblemName,
   #language = if_else(scalaCompute, "Scala", "Orc"),
   #parallelism,
 
-  remainingFutures = unoptGrafts, startingFutures = startingFutures,
-  percentStaticFutures = (startingFutures - endingFutures) / startingFutures * 100,
-  percentDynamicFutures = (endingFutures - remainingFutures) / startingFutures * 100,
-  percentFutures = percentStaticFutures + percentDynamicFutures,
+  startingFutures = unoptFutures.O0,
+  remainingFutures = unoptFutures.O3,
+  # percentStaticFutures = (startingFutures - endingFutures) / startingFutures * 100,
+  # percentDynamicFutures = (endingFutures - remainingFutures) / startingFutures * 100,
+  percentFutures = (startingFutures - remainingFutures) / startingFutures * 100,
 
-  remainingForces, startingForces,
-  percentStaticForces = (startingForces - endingForces) / startingForces * 100,
-  percentDynamicForces = (endingForces - remainingForces) / startingForces * 100,
-  percentForces = percentStaticForces + percentDynamicForces,
+  startingForces = remainingForces.O0,
+  remainingForces = remainingForces.O3,
+  # percentStaticForces = (startingForces - endingForces) / startingForces * 100,
+  # percentDynamicForces = (endingForces - remainingForces) / startingForces * 100,
+  percentForces = (startingForces - remainingForces) / startingForces * 100,
 
-  remainingSpawns = unoptSpawns, startingSpawns,
-  percentStaticSpawns = (startingSpawns - endingSpawns) / startingSpawns * 100,
-  percentDynamicSpawns = (endingSpawns - unoptSpawns) / startingSpawns * 100,
-  percentSpawns = percentStaticSpawns + percentDynamicSpawns
-) %>% mutate_if(is.numeric, round)
+  startingSpawns = unoptSpawns.O0,
+  remainingSpawns = unoptSpawns.O3,
+  # percentStaticSpawns = (startingSpawns - endingSpawns) / startingSpawns * 100,
+  # percentDynamicSpawns = (endingSpawns - unoptSpawns) / startingSpawns * 100,
+  percentSpawns = (startingSpawns - remainingSpawns) / startingForces * 100
+) %>% arrange(benchmarkProblemName)
 
 print("percentFutures")
 print(round(geomean(t$percentFutures / 100) * 100))
@@ -167,6 +193,8 @@ print("percentForces")
 print(round(geomean(t$percentForces / 100) * 100))
 print("percentSpawns")
 print(round(geomean(t$percentSpawns / 100) * 100))
+
+t <- t %>% mutate_if(is.numeric, round)
 
 outputDir <- file.path(dataDir, "plots")
 if (!dir.exists(outputDir)) {

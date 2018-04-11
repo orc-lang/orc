@@ -10,9 +10,9 @@ Black-Scholes-partitioned-seq (Orc),                     Coarse,      F,        
 Black-Scholes-scala-compute (Orc),                       Fine,        T,            Naïve,       F,          Orc+Scala,F
 Black-Scholes-scala-compute-partially-seq (Orc),         Fine,        T,            Naïve,       F,          Orc+Scala,T
 Black-Scholes-scala-compute-partitioned-seq (Orc),       Coarse,      T,            Partition,   F,          Orc+Scala,T
-Dedup-boundedchannel (Orc),                              Coarse,      T,            Thread,      F,          Orc,      T
+Dedup-boundedchannel (Orc),                              Coarse,      F,            Thread,      F,          Orc,      T
 Dedup-boundedqueue (Scala),                              Coarse,      NA,           Thread,      F,          Scala,    T
-Dedup-naive (Orc),                                       Fine,        T,            Naïve,       F,          Orc,      F
+Dedup-naive (Orc),                                       Fine,        F,            Naïve,       F,          Orc,      F
 Dedup-nestedpar (Scala),                                 Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
 KMeans (Orc),                                            Fine,        F,            Naïve,       F,          Orc,      F
 KMeans-seq (Orc),                                        Fine,        F,            Naïve,       F,          Orc,      T
@@ -23,8 +23,8 @@ SSSP-batched (Orc),                                      Fine,        F,        
 SSSP-batched-par (Scala),                                Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
 SSSP-batched-partitioned (Orc),                          Coarse,      F,            Partition,   F,          Orc,      T
 Swaptions-naive-scala-sim (Orc),                         Coarse,      T,            Naïve,       F,          Orc+Scala,F
-Swaptions-naive-scala-subroutines (Orc),                 Fine,        T,            Naïve,       F,          Orc,      F
-Swaptions-naive-scala-subroutines-seq (Orc),             Fine,        T,            Naïve,       F,          Orc,      T
+Swaptions-naive-scala-subroutines (Orc),                 Fine,        F,            Naïve,       F,          Orc,      F
+Swaptions-naive-scala-subroutines-seq (Orc),             Fine,        F,            Naïve,       F,          Orc,      T
 Swaptions-naive-scala-swaption (Orc),                    Coarse,      T,            Naïve,       F,          Orc+Scala,T
 Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F,          Scala,    T
 Swaptions-par-trial (Scala),                             Coarse,      NA,           Par. Col.,   TRUE,       Scala,    F
