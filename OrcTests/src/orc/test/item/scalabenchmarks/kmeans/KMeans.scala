@@ -29,14 +29,17 @@ object KMeansData extends ExpectedBenchmarkResult[Array[Point]] {
 
   lazy val dataBase = readPoints(s"${System.getProperty("orc.test.benchmark.datadir", "")}test_data/performance/points.json")
   
-  def data = dataSized((BenchmarkConfig.problemSize / 3.0).ceil.toInt)
+  def data = dataSized(BenchmarkConfig.problemSize / 50.0)
   
-  private def dataSized(n: Int) = (0 until n).foldLeft(Array[Point]())((acc, _) => acc ++ dataBase)
+  private def dataSized(n: Double) = {
+    (0 until n.floor.toInt).foldLeft(Array[Point]())((acc, _) => acc ++ dataBase) ++ 
+      dataBase.take((dataBase.size * (n - n.toInt)).toInt)
+  }
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0x83731af5,
-      10 -> 0x83731af5,
-      100 -> 0x83731af5,
+      1 -> 0x4bc0c891,
+      10 -> 0x89fc5f12,
+      100 -> 0xe2e07226,
       )
   
   // println(s"Loaded ${dataBase.size} points from JSON")
@@ -166,9 +169,24 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
     }
     closestIndex
   }
+  def closestIndex(x: Point, choices: Array[Object]): Int = {
+    var index = 0
+    var closestIndex = -1
+    var closestDist = D(0)
+    for(y <- choices) {
+      val d = dist(x, y.asInstanceOf[Point])
+      if(closestIndex < 0 || d < closestDist) {
+        closestDist = d
+        closestIndex = index
+      }
+      index += 1
+    }
+    closestIndex
+  }
 
   def dist(x: Point, y: Point) = (x - y).modulus
 
+  
   def average(xs: Array[Point]) = xs.reduce(_ + _) / xs.size
   def sum(xs: Array[Point]) = xs.reduce(_ + _)
 }
