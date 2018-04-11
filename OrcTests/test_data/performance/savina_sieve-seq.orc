@@ -67,7 +67,7 @@ def primes(n) =
 
 val N = Sieve.N()
 
-benchmarkSized("Sieve-savina", N, { signal }, { _ >> primes(N) }, Sieve.check)
+benchmarkSized("Sieve-savina-seq", N, { signal }, { _ >> primes(N) }, Sieve.check)
 
 {-
 BENCHMARK

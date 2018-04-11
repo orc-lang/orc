@@ -81,7 +81,7 @@ val edges = SSSP.edges()
 val source = SSSP.source()
 
 
-benchmarkSized("SSSP-batched", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) }, SSSP.check)
+benchmarkSized("SSSP-batched-seq", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) }, SSSP.check)
 
 {-
 BENCHMARK
