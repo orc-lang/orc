@@ -140,13 +140,14 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   specializationsFile foreach { specializationsFile =>
     DumperRegistry.register { name =>
+      val repNum = name.drop(3).toInt // FIXME: I think the "name" should probably actually be the rep number.
       import scala.collection.JavaConverters._
       specializationsFile.delete()
       val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
       val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
       for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
-        DumpSpecializations(r, out)
+        DumpSpecializations(r, repNum, out)
       }
       out.close()
     }
