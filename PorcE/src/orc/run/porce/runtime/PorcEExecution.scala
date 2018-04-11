@@ -32,6 +32,7 @@ import java.util.ArrayList
 import orc.run.porce.PorcERootNode
 import orc.util.DumperRegistry
 import java.io.FileOutputStream
+import scala.ref.WeakReference
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -117,14 +118,10 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     callTarget.call(args: _*)
   }
   
-  private val extraRegisteredRootNodes = Collections.synchronizedList(new ArrayList[RootNode]())
+  private val extraRegisteredRootNodes = Collections.synchronizedList(new ArrayList[WeakReference[RootNode]]())
   
   def registerRootNode(root: RootNode): Unit = {
-    extraRegisteredRootNodes.add(root)
-  }
-  
-  def unregisterRootNode(root: RootNode): Unit = {
-    extraRegisteredRootNodes.remove(root)
+    extraRegisteredRootNodes.add(WeakReference(root))
   }
   
   {
@@ -147,7 +144,8 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       specializationsFile.delete()
       val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
-      for (r <- (callTargets.map(_.getRootNode) ++ extraRegisteredRootNodes.asScala).toSeq.sortBy(_.toString)) {
+      val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
+      for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
         DumpSpecializations(r, out)
       }
       out.close()
