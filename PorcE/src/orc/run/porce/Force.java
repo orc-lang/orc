@@ -49,8 +49,9 @@ public class Force {
     }
 
     protected static final class HandleFuture {
-	private final ResettableBranchProfile boundFuture = ResettableBranchProfile.create();
-	private final ResettableBranchProfile unboundFuture = ResettableBranchProfile.create();
+	final ResettableBranchProfile boundFuture = ResettableBranchProfile.create();
+	final ResettableBranchProfile unboundFuture = ResettableBranchProfile.create();
+	final ResettableBranchProfile haltFuture = ResettableBranchProfile.create();
 	private final ConditionProfile orcFuture = ConditionProfile.createBinaryProfile();
 	private final ConditionProfile porcEFuture = ConditionProfile.createBinaryProfile();
 	private final ConditionProfile nonFuture = ConditionProfile.createBinaryProfile();
@@ -61,7 +62,7 @@ public class Force {
 	    CompilerAsserts.compilationConstant(nonFuture);
 
 	    try {
-		if (nonFuture.profile(isNonFuture(future))) {
+		if (InlineForceResolved && nonFuture.profile(isNonFuture(future))) {
 		    throw new ValueAvailable(future);
 		} else if (porcEFuture.profile(future instanceof orc.run.porce.runtime.Future)) {
 		    final Object state = ((orc.run.porce.runtime.Future) future).getInternal();
@@ -115,6 +116,8 @@ public class Force {
 	    sb.append(boundFuture);
 	    sb.append(",unboundFuture=");
 	    sb.append(unboundFuture);
+	    sb.append(",haltFuture=");
+	    sb.append(haltFuture);
 	    sb.append(")");
 	    return sb.toString();
 	}
@@ -174,9 +177,10 @@ public class Force {
 	    Object v = handleFuture.handleFuture(this, future);
 
 	    if (v == orc.run.porce.runtime.FutureConstants.Halt) {
+		handleFuture.haltFuture.enter();
 		join.setHaltedST();
 	    } else if (v == orc.run.porce.runtime.FutureConstants.Unbound) {
-		handleFuture.boundFuture.enter();
+		handleFuture.unboundFuture.enter();
 		join.force(index, future);
 	    } else {
 		handleFuture.boundFuture.enter();
@@ -281,13 +285,16 @@ public class Force {
 	    Object v = handleFuture.handleFuture(this, future);
 
 	    if (v == orc.run.porce.runtime.FutureConstants.Halt) {
+		handleFuture.haltFuture.enter();
 		// TODO: PERFORMANCE: This cannot inline the halt continuation. Using a
 		// HaltToken node would allow that.
 		c.haltToken();
 	    } else if (v == orc.run.porce.runtime.FutureConstants.Unbound) {
+		handleFuture.unboundFuture.enter();
 		((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 		// ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 	    } else {
+		handleFuture.boundFuture.enter();
 		call.executeDispatchWithEnvironment(frame, p, new Object[] { null, v });
 	    }
 
