@@ -22,7 +22,7 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20171024-a003")
-dataDir <- file.path(localExperimentDataDir, "20180410-a004")
+dataDir <- file.path(localExperimentDataDir, "20180412-a002")
 
 
 # Load main data
@@ -162,7 +162,7 @@ r <- full_join(dataPorcEO0, dataPorcEO3, by = c("orcFile", "benchmarkName"), suf
 #   sprintf("% 4d (% 4d, %2.0f%% + %2.0f%% = %2.0f%%)", remaining, starting, percentStatic * 100, percentDynamic * 100, percentStatic * 100 + percentDynamic * 100)
 # }
 
-t <- r %>% filter(optimized == F, scalaCompute == F, implType == "Orc") %>% addBenchmarkProblemName() %>%
+t <- r %>% filter(optimized == T, scalaCompute == F, implType == "Orc") %>% addBenchmarkProblemName() %>%
   transmute(
   benchmarkProblemName,
   #language = if_else(scalaCompute, "Scala", "Orc"),

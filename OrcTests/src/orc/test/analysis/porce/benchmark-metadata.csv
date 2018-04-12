@@ -34,6 +34,7 @@ ThreadRing-2 (Orc),                                      Fine,        F,        
 ThreadRing (Scala),                                      Fine,        NA,           Thread,      TRUE,       Scala,    F
 Wide (Orc),                                              Fine,        F,            NA,          F,          Orc,      F
 Threads (Orc),                                           Fine,        F,            NA,          F,          Orc,      T
+Threads (Scala),                                         Fine,        NA,           NA,          F,          Scala,    T
 wordcount-java (Orc),                                    Coarse,      T,            Naïve,       F,          Orc+Scala,F
 wordcount-java-opt (Orc),                                Coarse,      T,            Naïve,       F,          Orc+Scala,T
 wordcount (Orc),                                         Fine,        F,            Naïve,       F,          Orc,      F

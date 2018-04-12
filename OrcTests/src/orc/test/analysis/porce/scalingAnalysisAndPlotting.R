@@ -22,14 +22,14 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
-dataDir <- file.path(localExperimentDataDir, "20180407-a001")
+dataDir <- file.path(localExperimentDataDir, "20180412-a002")
 
 loadData <- function(dataDir) {
-  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
+  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
     addBenchmarkProblemName() %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
-  d <<- data
+  #d <<- data
 
   prunedData <- data %>%
     dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "optLevel", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
@@ -139,7 +139,7 @@ longT <- processedData %>% rbind(compensatedRows) %>% filter(nCPUs == useNCPUs) 
   mutate(implType = if_else(optimized, paste0(implType, " Opt"), as.character(implType)))
 
 t <- longT %>%
-  filter(!optimized | language == "Scala") %>%
+  filter(optimized | language == "Scala") %>%
   select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
 
 write.csv(t, file = file.path(timeOutputDir, "mean_elapsed_time.csv"), row.names = F)
@@ -148,7 +148,7 @@ print(t)
 print(kable(t, "latex"))
 
 t <- longT %>%
-  filter(optimized) %>%
+  filter(!optimized | language == "Scala") %>%
   select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
 
 print(t)
