@@ -13,6 +13,7 @@ package orc.test.item.scalabenchmarks
 
 import java.util.Timer
 import java.util.TimerTask
+import orc.util.DumperRegistry
 
 object BenchmarkConfig {
   /** The benchmark should use this number to change the size of the problem.
@@ -80,6 +81,7 @@ object BenchmarkConfig {
       t.schedule(new TimerTask {
         def run(): Unit = {
           System.err.append("Hard time limit reached. Exiting JVM.\n")
+          DumperRegistry.dump("hardLimitReached")
           System.exit(124)
         }
       }, (hardTimeLimit * 1000).toLong)

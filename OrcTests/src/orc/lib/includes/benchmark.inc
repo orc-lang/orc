@@ -86,7 +86,7 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
 	val clock = Rclock()
 	def h(Integer, List[Top]) :: Signal
 	def h(i, results) if (i >= nRuns) = 
-	    val t = take(10, results)
+	    val t = take(min(10, length(results)), results)
 	    val tavg = sum(map({ _.runTime() }, t)) / length(t)
         Println("Minimum run time: " + minimum(map({ _.runTime() }, results))) >>
         Println("Minimum run time of last " + length(t) + ": " + minimum(map({ _.runTime() }, t))) >>

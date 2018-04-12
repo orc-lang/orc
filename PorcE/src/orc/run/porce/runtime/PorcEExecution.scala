@@ -137,10 +137,17 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   }
 
   private val specializationsFile = ExecutionLogOutputStream.getFile(s"truffle-node-specializations", "txt")
-
+  private var lastGoodRepNumber = 0
+  
   specializationsFile foreach { specializationsFile =>
     DumperRegistry.register { name =>
-      val repNum = name.drop(3).toInt // FIXME: I think the "name" should probably actually be the rep number.
+      val repNum = try {
+        name.drop(3).toInt + 1
+      } catch {
+        case _: NumberFormatException =>
+          lastGoodRepNumber + 1
+      }
+      lastGoodRepNumber = repNum
       import scala.collection.JavaConverters._
       specializationsFile.delete()
       val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
