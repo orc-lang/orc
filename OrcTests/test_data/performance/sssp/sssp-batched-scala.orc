@@ -15,11 +15,10 @@ otherwise not optimized.
 
 include "benchmark.inc"
 
-import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
-
 import class Node = "orc.test.item.scalabenchmarks.sssp.SSSPNode"
 import class Edge = "orc.test.item.scalabenchmarks.sssp.SSSPEdge"
 import class SSSP = "orc.test.item.scalabenchmarks.sssp.SSSP"
+import class SSSPBatchedPar = "orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar"
 
 import class AtomicLong = "java.util.concurrent.atomic.AtomicLong"
 import class AtomicIntegerArray = "java.util.concurrent.atomic.AtomicIntegerArray"
@@ -43,12 +42,8 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	def processNode(index, outQ, gray) = (
 		val node = nodes(index)?
 		val currentCost = result.get(index)
-		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> edges(edgeIndex)? >edge> (
-			val to = edge.to()
-			val newCost = currentCost + edge.cost()
-			val oldCost = getAndMinResult(to, newCost)
-			Ift(newCost <: oldCost) >> Ift(colors.getAndSet(to, gray) /= gray) >>
-			  withLock(outQLock, { outQ.add(to) })
+		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> (
+		    SSSPBatchedPar.processEdge(edges, colors, result, gray, edgeIndex, currentCost, outQ)
 		) >> stop ;
 		signal
 	)
@@ -72,7 +67,7 @@ val edges = SSSP.edges()
 val source = SSSP.source()
 
 
-benchmarkSized("SSSP-batched", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) }, SSSP.check)
+benchmarkSized("SSSP-batched-scala", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) }, SSSP.check)
 
 {-
 BENCHMARK

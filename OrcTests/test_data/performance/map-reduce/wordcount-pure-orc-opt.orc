@@ -32,10 +32,11 @@ def countLine(line) =
 def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"
-  Sequentialize() >> (
+  (
   def countLinesFrom(in, accumCount) =
-    (in.readLine() ; null)  >nextLine>
+    (in.readLine() ; null)  >nextLine> Sequentialize() >>
     (if nextLine = null then accumCount else countLinesFrom(in, accumCount + countLine(nextLine))) #
+  Sequentialize() >>
   BufferedReader(FileReader(file))  >in>
   countLinesFrom(in, 0)  >count>
   in.close()  >>
@@ -75,6 +76,6 @@ def tearDownTest() =
 val inputList = (setUpTest() >> stop; signal) >> take(numInputFiles, listFileNamesRecursively(inputDataDirPath))
 --val _ = Println(inputList)
  
-benchmarkSized("wordcount-pure-orc-seq", numInputFiles * repeatRead, { setUpTestRep() >> inputList }, runTestRep, { tearDownTestRep() >> check(_) }) >> stop ;
+benchmarkSized("wordcount-opt", numInputFiles * repeatRead, { setUpTestRep() >> inputList }, runTestRep, { tearDownTestRep() >> check(_) }) >> stop ;
 
 tearDownTest()

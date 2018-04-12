@@ -1,41 +1,46 @@
 benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline, implType, optimized
 BigSort-naive (Orc),                                     Fine,        F,            Naïve,       F,          Orc,      F
-BigSort-partially-seq (Orc),                             Fine,        F,            Naïve,       F,          Orc,      T
-BigSort-scala (Orc),                                     Coarse,      T,            Naïve,       F,          Orc+Scala,F
+BigSort-opt (Orc),                                       Coarse,      F,            Naïve,       F,          Orc,      T
+BigSort-scala-opt (Orc),                                 Coarse,      T,            Naïve,       F,          Orc+Scala,T
 BigSort-par (Scala),                                     Coarse,      NA,           Naïve,       T,          Scala,    F
-Black-Scholes-naive (Orc),                               Fine,        F,            Naïve,       F,          Orc,      F
-Black-Scholes-partially-seq (Orc),                       Fine,        F,            Naïve,       F,          Orc,      T
+Black-Scholes (Orc),                                     Fine,        F,            Naïve,       F,          Orc,      F
+Black-Scholes-opt (Orc),                                 Fine,        F,            Naïve,       F,          Orc,      T
 Black-Scholes-par (Scala),                               Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
-Black-Scholes-partitioned-seq (Orc),                     Coarse,      F,            Partition,   F,          Orc,      T
-Black-Scholes-scala-compute (Orc),                       Fine,        T,            Naïve,       F,          Orc+Scala,F
-Black-Scholes-scala-compute-partially-seq (Orc),         Fine,        T,            Naïve,       F,          Orc+Scala,T
-Black-Scholes-scala-compute-partitioned-seq (Orc),       Coarse,      T,            Partition,   F,          Orc+Scala,T
+Black-Scholes-scala (Orc),                               Fine,        T,            Naïve,       F,          Orc+Scala,F
+Black-Scholes-scala-opt (Orc),                           Fine,        T,            Naïve,       F,          Orc+Scala,T
 Dedup-boundedchannel (Orc),                              Coarse,      F,            Thread,      F,          Orc,      T
 Dedup-boundedqueue (Scala),                              Coarse,      NA,           Thread,      F,          Scala,    T
-Dedup-naive (Orc),                                       Fine,        F,            Naïve,       F,          Orc,      F
+Dedup-opt (Orc),                                         Fine,        F,            Naïve,       F,          Orc,      T
 Dedup-nestedpar (Scala),                                 Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
 KMeans (Orc),                                            Fine,        F,            Naïve,       F,          Orc,      F
-KMeans-seq (Orc),                                        Fine,        F,            Naïve,       F,          Orc,      T
+KMeans-opt (Orc),                                        Fine,        F,            Naïve,       F,          Orc,      T
 KMeans-par (Scala),                                      Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
 KMeans-par-manual (Scala),                               Coarse,      NA,           Partition,   F,          Scala,    T
-KMeans-scala-inner (Orc),                                Coarse,      T,            Partition,   F,          Orc+Scala,F
+KMeans-scala (Orc),                                      Coarse,      T,            Partition,   F,          Orc+Scala,F
+KMeans-scala-opt (Orc),                                  Coarse,      T,            Partition,   F,          Orc+Scala,T
 SSSP-batched (Orc),                                      Fine,        F,            Naïve,       F,          Orc,      F
 SSSP-batched-par (Scala),                                Fine,        NA,           Par. Col.,   TRUE,       Scala,    F
-SSSP-batched-partitioned (Orc),                          Coarse,      F,            Partition,   F,          Orc,      T
+SSSP-batched-opt (Orc),                                  Coarse,      F,            Naïve,       F,          Orc,      T
+SSSP-batched-scala (Orc),                                Fine,        F,            Naïve,       F,          Orc+Scala,F
+SSSP-batched-scala-opt (Orc),                            Coarse,      F,            Naïve,       F,          Orc+Scala,T
 Swaptions-naive-scala-sim (Orc),                         Coarse,      T,            Naïve,       F,          Orc+Scala,F
+Swaptions-naive-scala-sim-opt (Orc),                     Coarse,      T,            Naïve,       F,          Orc+Scala,T
 Swaptions-naive-scala-subroutines (Orc),                 Fine,        F,            Naïve,       F,          Orc,      F
-Swaptions-naive-scala-subroutines-seq (Orc),             Fine,        F,            Naïve,       F,          Orc,      T
-Swaptions-naive-scala-swaption (Orc),                    Coarse,      T,            Naïve,       F,          Orc+Scala,T
-Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F,          Scala,    T
+Swaptions-naive-scala-subroutines-opt (Orc),             Fine,        F,            Naïve,       F,          Orc,      T
+#Swaptions-naive-scala-swaption (Orc),                    Coarse,      T,            Naïve,       F,          Orc+Scala,T
+#Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F,          Scala,    T
 Swaptions-par-trial (Scala),                             Coarse,      NA,           Par. Col.,   TRUE,       Scala,    F
-ThreadRing-2 (Orc),                                      Fine,        F,            Thread,      F,          Orc,      F
+ThreadRing-2 (Orc),                                      Fine,        F,            Thread,      F,          Orc,      T
 ThreadRing (Scala),                                      Fine,        NA,           Thread,      TRUE,       Scala,    F
 Wide (Orc),                                              Fine,        F,            NA,          F,          Orc,      F
-Threads (Orc),                                           Fine,        F,            NA,          F,          Orc,      F
-wordcount-mixed-orc-java (Orc),                          Coarse,      T,            Naïve,       F,          Orc+Scala,F
-wordcount-pure-orc (Orc),                                Fine,        F,            Naïve,       F,          Orc,      F
-wordcount-pure-orc-seq (Orc),                            Fine,        F,            Naïve,       F,          Orc,      T
+Threads (Orc),                                           Fine,        F,            NA,          F,          Orc,      T
+wordcount-java (Orc),                                    Coarse,      T,            Naïve,       F,          Orc+Scala,F
+wordcount-java-opt (Orc),                                Coarse,      T,            Naïve,       F,          Orc+Scala,T
+wordcount (Orc),                                         Fine,        F,            Naïve,       F,          Orc,      F
+wordcount-opt (Orc),                                     Fine,        F,            Naïve,       F,          Orc,      T
 WordCount-par (Scala),                                   Coarse,      NA,           Partition,   T,          Scala,    F
 Sieve-savina (Orc),                                      Coarse,      F,            Thread,      F,          Orc,      F
-Sieve-savina-seq (Orc),                                  Coarse,      F,            Thread,      F,          Orc,      T
+Sieve-savina-opt (Orc),                                  Coarse,      F,            Thread,      F,          Orc,      T
+Sieve-savina-scala (Orc),                                Coarse,      T,            Thread,      F,          Orc+Scala,F
+Sieve-savina-scala-opt (Orc),                            Coarse,      T,            Thread,      F,          Orc+Scala,T
 Sieve-savina (Scala),                                    Coarse,      NA,           Thread,      T,          Scala,    F

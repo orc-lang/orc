@@ -83,16 +83,17 @@ object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBen
 object SavinaSieve extends BenchmarkApplication[Unit, Iterable[Long]] with HashBenchmarkResult[Iterable[Long]] {
   import Util._
   import collection.JavaConverters._
-  
+
+  def check(list: ArrayList[Long], x: Long) = !list.asScala.exists(x % _ == 0)
+
   val sieveFragementSize = 300
   
   def sieveFragment(outChan: Channel[Long]): Channel[Long] = {
   	val inChan = new Channel[Long]() 
 	  val list = new ArrayList[Long](sieveFragementSize)
   	var next: Channel[Long] = null
-  	def check(x: Long) = !list.asScala.exists(x % _ == 0)
   	def filter(x: Long) = {
-  		val v = check(x)
+  		val v = check(list, x)
   		if (v) {
   			if (list.size() < sieveFragementSize) {
   				list.add(x)

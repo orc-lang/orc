@@ -14,15 +14,19 @@ val compute = BlackScholes.compute
   
   
 def run(data) =
-	val res = Array(data.length?)
-	for(0, data.length?) >i> Sequentialize() >>
-	  res(i) := compute(data(i)?.price(), data(i)?.strike(), data(i)?.maturity(), BlackScholesData.riskless(), BlackScholesData.volatility()) 
-	  >> stop ;
-	res
+    val riskless = BlackScholesData.riskless()
+    val volatility = BlackScholesData.volatility()
+    val res = Array(data.length?)
+    riskless >> volatility >> res >>
+    for(0, data.length?) >i> Sequentialize() >>
+      data(i)? >option>
+      res(i) := compute(option.price(), option.strike(), option.maturity(), riskless, volatility) 
+      >> stop ;
+    res
 
 val data = BlackScholesData.data()
 
-benchmarkSized("Black-Scholes-scala-compute-partially-seq", data.length?, { data }, run, BlackScholesData.check)
+benchmarkSized("Black-Scholes-scala-opt", data.length?, { data }, run, BlackScholesData.check)
 
 {-
 BENCHMARK

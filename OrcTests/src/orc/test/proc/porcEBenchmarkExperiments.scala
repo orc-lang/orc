@@ -17,69 +17,58 @@ import orc.test.util.FactorDescription
 
 object PorcEShared {
   val mainOrcBenchmarks = Seq(
-            "test_data/performance/savina_sieve.orc",
-            "test_data/performance/savina_sieve-seq.orc",
+            "test_data/performance/sieve/savina_sieve.orc",
+            "test_data/performance/sieve/savina_sieve-opt.orc",
+            "test_data/performance/sieve/savina_sieve-scala.orc",
+            "test_data/performance/sieve/savina_sieve-scala-opt.orc",
             //"test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
-            //"test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
-            //"test_data/performance/black-scholes/black-scholes-scala-compute-partially-seq.orc",
-            "test_data/performance/black-scholes/black-scholes-scala-compute.orc",
-            //"test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq.orc",
-            //"test_data/performance/black-scholes/black-scholes-scala-compute-partitioned-seq-optimized.orc",
-            "test_data/performance/black-scholes/black-scholes-partially-seq.orc",
+            "test_data/performance/black-scholes/black-scholes-scala-opt.orc",
+            "test_data/performance/black-scholes/black-scholes-scala.orc",
+            "test_data/performance/black-scholes/black-scholes-opt.orc",
             "test_data/performance/black-scholes/black-scholes.orc",
-            "test_data/performance/k-means/k-means-scala-inner.orc",
+            "test_data/performance/k-means/k-means-scala.orc",
+            "test_data/performance/k-means/k-means-scala-opt.orc",
             "test_data/performance/k-means/k-means.orc",
-            "test_data/performance/k-means/k-means-seq.orc",
+            "test_data/performance/k-means/k-means-opt.orc",
             "test_data/performance/bigsort/bigsort-scala.orc",
             "test_data/performance/bigsort/bigsort.orc",
-            "test_data/performance/bigsort/bigsort-partially-seq.orc",
+            "test_data/performance/bigsort/bigsort-scala-opt.orc",
+            "test_data/performance/bigsort/bigsort-opt.orc",
             //"test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-sim-opt.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            //"test_data/performance/sssp/sssp-batched-partitioned.orc",
-            "test_data/performance/sssp/sssp-batched-seq.orc",
+            "test_data/performance/sssp/sssp-batched-opt.orc",
             "test_data/performance/sssp/sssp-batched.orc",
+            "test_data/performance/sssp/sssp-batched-scala-opt.orc",
+            "test_data/performance/sssp/sssp-batched-scala.orc",
             //"test_data/performance/canneal/canneal-naive.orc",
             //"test_data/performance/canneal/canneal-partitioned.orc",
             //"test_data/performance/dedup/dedup-boundedchannel.orc",
-            "test_data/performance/dedup/dedup.orc",
+            "test_data/performance/dedup/dedup-opt.orc",
             //"test_data/performance/fp-growth/fp-growth.orc",
             "test_data/performance/map-reduce/wordcount-mixed-orc-java.orc",
+            "test_data/performance/map-reduce/wordcount-mixed-orc-java-opt.orc",
             "test_data/performance/map-reduce/wordcount-pure-orc.orc",
-            "test_data/performance/map-reduce/wordcount-pure-orc-seq.orc",
+            "test_data/performance/map-reduce/wordcount-pure-orc-opt.orc",
             )
-                        
-  val mainPureOrcBenchmarks = Seq(
-            "test_data/performance/savina_sieve.orc",
-            "test_data/performance/savina_sieve-seq.orc",
+  private val nonOpt = Seq(
             //"test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
-            //"test_data/performance/black-scholes/black-scholes-partitioned-seq.orc",
-            "test_data/performance/black-scholes/black-scholes-partially-seq.orc",
-            "test_data/performance/black-scholes/black-scholes.orc",
-            "test_data/performance/k-means/k-means.orc",
-            "test_data/performance/k-means/k-means-seq.orc",
-            "test_data/performance/bigsort/bigsort.orc",
-            "test_data/performance/bigsort/bigsort-partially-seq.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-seq.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            //"test_data/performance/sssp/sssp-batched-partitioned.orc",
-            "test_data/performance/sssp/sssp-batched-seq.orc",
-            "test_data/performance/sssp/sssp-batched.orc",
-            //"test_data/performance/canneal/canneal-naive.orc",
-            //"test_data/performance/canneal/canneal-partitioned.orc",
-            //"test_data/performance/dedup/dedup-boundedchannel.orc",
-            "test_data/performance/dedup/dedup.orc",
-            //"test_data/performance/fp-growth/fp-growth.orc",
-            "test_data/performance/map-reduce/wordcount-pure-orc.orc",
-            "test_data/performance/map-reduce/wordcount-pure-orc-seq.orc",
             )
+  private val externalLanguages = Seq("scala", "java")
+  val mainPureOrcBenchmarks = mainOrcBenchmarks.filterNot(fn => externalLanguages.exists(fn contains _)) ++ Seq(
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            )
+            
+  def onlyOpt(s: Seq[String]): Seq[String] = s.filter(fn => (fn contains "opt") || nonOpt.exists(fn contains _))
                         
   val mainScalaBenchmarks = Seq(
             //orc.test.item.scalabenchmarks.Mandelbrot,
@@ -119,7 +108,7 @@ object PorcEShared {
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   import PorcEShared._
   
-  def softTimeLimit: Double = 60 * 9
+  def softTimeLimit: Double = 60 * 10
   
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -127,7 +116,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       nCPUs: Int, 
       optLevel: Int) 
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
-    override def nRuns = super.nRuns max 90
+    override def nRuns = super.nRuns
     
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
@@ -146,7 +135,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       benchmarkClass: Class[_], 
       nCPUs: Int) 
       extends ArthursBenchmarkEnv.ScalaExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
-    override def nRuns = super.nRuns / 2 max 50
+    override def nRuns = super.nRuns / 2 max 1
     
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
@@ -164,7 +153,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         run <- 0 until 2
         nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
         optLevel <- Seq(3, 0)
-        fn <- if (optLevel < 2) mainPureOrcBenchmarks else mainOrcBenchmarks
+        fn <- onlyOpt(if (optLevel < 2) mainPureOrcBenchmarks else mainOrcBenchmarks)
       } yield {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs, optLevel)
@@ -214,7 +203,7 @@ object PorcEOptimizationExperiment extends PorcEBenchmark {
     val experimentalConditions = {
       val nCPUs = 24
       val porce = for {
-        fn <- mainPureOrcBenchmarks
+        fn <- onlyOpt(mainPureOrcBenchmarks)
         optLevel <- Seq(3, 0)
       } yield {
         assert(new File(fn).isFile(), fn)

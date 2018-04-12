@@ -30,7 +30,6 @@ def cnd(x) =
 def compute(s, x, t, r, v) = 
     val d1 = round((Log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t)))
     val d2 = round(d1 - v * sqrt(t))
-    --val _ = Println((d1.getClass(), d1, d2.getClass(), d2))
 
     val call = s * cnd(d1) - x * Exp(-r * t) * cnd(d2)
     val put = x * Exp(-r * t) * cnd(-d2) - s * cnd(-d1)
@@ -49,7 +48,7 @@ def run(data) =
 
 val data = BlackScholesData.data()
 
-benchmarkSized("Black-Scholes-naive", data.length?, { data }, run, BlackScholesData.check)
+benchmarkSized("Black-Scholes", data.length?, { data }, run, BlackScholesData.check)
 
 {-
 BENCHMARK

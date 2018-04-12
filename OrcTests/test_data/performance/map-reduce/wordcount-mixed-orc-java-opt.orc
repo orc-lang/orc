@@ -1,36 +1,25 @@
-{- wordcount-pure-orc.orc -- Count words in text files, Pure Orc variant -}
+{- wordcount-mixed-orc-java.orc -- Count words in text files, Mixed Orc-Java variant -}
 
 {- This performance test counts words in a set of plain text files.  The
  - wordcount-input-data directory is walked, and a list of files is created.
  - The {{{repeatCountFilename}}} def is applied to each file in the list.
- - This def uses the {{{countFile}}} def {{{repeatRead}}} times to count the
- - the number of words in the given file.  A list of word counts (times
+ - This def uses our WordCount utility Java class {{{repeatRead}}} times to
+ - count the number of words in the given file.  A list of word counts (times
  - {{{repeatRead}}}) for each file is the result.  These counts are summed
  - using Orc's associative fold library function (afold).
  -}
 
 include "wordcount.inc"
 
-def countLine(line) =
-  import class BreakIterator = "java.text.BreakIterator"
-  import class Character = "java.lang.Character"
-  def containsAlphabetic(s, startPos, endPos) =
-    Character.isAlphabetic(s.codePointAt(startPos)) || (if startPos+1 <: endPos then containsAlphabetic(s, startPos+1, endPos) else false)
-  def wordCount'(startPos, wb, accumCount) =
-    wb.next()  >endPos>
-    (if endPos <: 0 then accumCount else (if containsAlphabetic(line, startPos, endPos) then wordCount'(endPos, wb, accumCount + 1) else wordCount'(endPos, wb, accumCount))) #
-  BreakIterator.getWordInstance() >wb>
-  wb.setText(line)  >>
-  wordCount'(0, wb, 0)
+import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
 def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"
-  def countLinesFrom(in, accumCount) =
-    (in.readLine() ; null)  >nextLine>
-    (if nextLine = null then accumCount else countLinesFrom(in, accumCount + countLine(nextLine))) #
+  import class WordCount = "orc.test.item.distrib.WordCount"
+  Sequentialize() >>
   BufferedReader(FileReader(file))  >in>
-  countLinesFrom(in, 0)  >count>
+  WordCount.countReader(in)  >count>
   in.close()  >>
   count
 
@@ -65,8 +54,8 @@ def tearDownTest() =
   signal
 
 val inputList = (setUpTest() >> stop; signal) >> take(numInputFiles, listFileNamesRecursively(inputDataDirPath))
---val _ = Println(inputList)
+-- val _ = Println(inputList)
  
-benchmarkSized("wordcount", numInputFiles * repeatRead, { setUpTestRep() >> inputList }, runTestRep, { tearDownTestRep() >> check(_) }) >> stop ;
+benchmarkSized("wordcount-java-opt", numInputFiles * repeatRead, { setUpTestRep() >> inputList }, runTestRep, { tearDownTestRep() >> check(_) }) >> stop ;
 
 tearDownTest()

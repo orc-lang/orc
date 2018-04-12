@@ -5,8 +5,6 @@
 
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
-Sequentialize() >> (
-
 include "benchmark.inc"
 
 import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
@@ -42,9 +40,9 @@ val n = KMeans.n()
 val iters = KMeans.iters()
 
 class PointAdder {
-  val x = DoubleAdder()
-  val y = DoubleAdder()
-  val count = LongAdder()
+  val x
+  val y
+  val count
   
   def add(p) = Sequentialize() >> (x.add(p.x()), y.add(p.y()), count.add(1)) >> signal
   
@@ -58,7 +56,11 @@ class PointAdder {
   def toString() = "<" + x + "," + y + ">"
 }
 
-def PointAdder() = new PointAdder
+def PointAdder() =
+  DoubleAdder() >x'>
+  DoubleAdder() >y'>
+  LongAdder() >count'>
+  new PointAdder { val x = x' # val y = y' # val count = count' }
 
 def run(xs) =
   def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> centroids
@@ -67,13 +69,13 @@ def run(xs) =
 
 def updateCentroids(xs, centroids) = 
   val pointAdders = listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
-  forBy(0, xs.length?, 1) >i> (
+  forBy(0, xs.length?, 1) >i> Sequentialize() >> (
     val p = xs(i)?
     pointAdders(closestIndex(p, centroids))?.add(p)
   ) >> stop ;
   listToArray(map({ _.average() }, arrayToList(pointAdders)))  
 
-def minBy(f, l) =
+def minBy(f, l) = Sequentialize() >> (
   def minBy'([x]) = (f(x), x)
   def minBy'(x:xs) =
     val (min, v) = minBy'(xs)
@@ -83,17 +85,16 @@ def minBy(f, l) =
     else
       (min, v)
   minBy'(l)(1)
+  )
 
-def closestIndex(x :: Point, choices) =
+def closestIndex(x :: Point, choices) = Sequentialize() >> 
   minBy({ dist(x, choices(_)?) }, range(0, choices.length?))
   
 def dist(x :: Point, y :: Point) = x.sub(y).modulus()
 
 val points = KMeansData.data()
 
-benchmarkSized("KMeans-seq", points.length?, { points }, run, KMeansData.check)
-
-)
+benchmarkSized("KMeans-opt", points.length?, { points }, run, KMeansData.check)
 
 {-
 BENCHMARK

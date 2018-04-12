@@ -73,10 +73,12 @@ def simulate(processor, swaption, seed) :: Number = Sequentialize() >> (
 def sim(processor, swaption) =
 	val sum = DoubleAdder()
 	val sumsq = DoubleAdder()
+	sum >> sumsq >>
     upto(nTrials) >i> 
     	simulate(processor, swaption, i) >p>
     	sum.add(p) >>
     	sumsq.add(p*p) >> stop ;
+    Sequentialize() >> 
     swaption.setSimSwaptionPriceMean(sum.sum() / nTrials) >>
     swaption.setSimSwaptionPriceStdError(sqrt((sumsq.sum() - sum.sum()*sum.sum()/nTrials) / (nTrials - 1.0)) / sqrt(nTrials))
 
@@ -85,7 +87,7 @@ def simAll(data) =
 	eachArray(data) >swaption> sim(processor, swaption) >> stop ;
 	data
 
-benchmarkSized("Swaptions-naive-scala-subroutines-seq", SwaptionData.nSwaptions() * SwaptionData.nTrials(),
+benchmarkSized("Swaptions-naive-scala-subroutines-opt", SwaptionData.nSwaptions() * SwaptionData.nTrials(),
 	{ loadData() }, simAll, SwaptionData.check)
 
 {-

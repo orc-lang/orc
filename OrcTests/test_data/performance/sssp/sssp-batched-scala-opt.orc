@@ -20,13 +20,15 @@ import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 import class Node = "orc.test.item.scalabenchmarks.sssp.SSSPNode"
 import class Edge = "orc.test.item.scalabenchmarks.sssp.SSSPEdge"
 import class SSSP = "orc.test.item.scalabenchmarks.sssp.SSSP"
+import class SSSPBatchedPar = "orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar"
 
 import class AtomicLong = "java.util.concurrent.atomic.AtomicLong"
 import class AtomicIntegerArray = "java.util.concurrent.atomic.AtomicIntegerArray"
 import class ArrayList = "java.util.ArrayList"
 
+def eachArrayList(a) = upto(a.size()) >i> a.get(i)
+
 def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
-	val outQLock = Semaphore(1)
 	val q1 = ArrayList()
 	val q2 = ArrayList()
     val result = (
@@ -37,32 +39,20 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
       a)
     )
     val colors = AtomicIntegerArray(nodes.length?)
+
+    result >> q1 >> q2 >> colors >> (    
     
-    def getAndMinResult(i, v) = Sequentialize() >> v >> i >> (
-    	val old = result.get(i)
-    	if old <: v then
-    		old
-    	else if result.compareAndSet(i, old, v) then 
-    		old
-    	else
-    		getAndMinResult(i, v)
-    )
-    
-	def processNode(index, outQ, gray) = Sequentialize() >> index >> outQ >> gray >> (
+	def processNode(index, outQ, gray) = index >> outQ >> gray >> (
 		val node = nodes(index)?
 		val currentCost = result.get(index)
-		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> edges(edgeIndex)? >edge> (
-			val to = edge.to()
-			val newCost = currentCost + edge.cost()
-			val oldCost = getAndMinResult(to, newCost)
-			Ift(newCost <: oldCost) >> Ift(colors.getAndSet(to, gray) /= gray) >>
-			  withLock(outQLock, { outQ.add(to) })
+		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> Sequentialize() >> (
+		    SSSPBatchedPar.processEdge(edges, colors, result, gray, edgeIndex, currentCost, outQ)
 		) >> stop ;
 		signal
 	)
 	
 	def h(inQ, outQ, gray) =
-		repeat(IterableToStream(inQ)) >i> processNode(i, outQ, gray) >> stop ;
+		eachArrayList(inQ) >i> processNode(i, outQ, gray) >> stop ;
 		inQ.clear() >> ( --Println("Batch " + gray + " done " + outQ) >>
 		if outQ.size() :> 0 then
 			h(outQ, inQ, gray + 1)
@@ -70,18 +60,18 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 			signal
 		)
 	
-	result >> q1 >> q2 >> outQLock >>
     result.set(source, 0) >>
 	q1.add(source) >>
 	h(q1, q2, 1) >>
 	result
+	)
 
 val nodes = SSSP.nodes()
 val edges = SSSP.edges()
 val source = SSSP.source()
 
 
-benchmarkSized("SSSP-batched-seq", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) }, SSSP.check)
+benchmarkSized("SSSP-batched-scala-opt", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) }, SSSP.check)
 
 {-
 BENCHMARK

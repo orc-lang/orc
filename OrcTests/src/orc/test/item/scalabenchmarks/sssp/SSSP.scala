@@ -161,6 +161,66 @@ object SSSPBatchedPar extends SSSPBase {
       val inQueue = batches(batchNumber)
       val outQueue = batches((batchNumber + 1) % 2)
       
+      for (queueIndex <- (0 until inQueue.size).par) {
+        val index = inQueue.get(queueIndex)
+        val currentCost = result.get(index)
+  
+        for (edgeIndex <- nodes(index).initialEdge until nodes(index).initialEdge + nodes(index).nEdges) {
+          processEdge(edges, colors, result, gray, edgeIndex, currentCost, outQueue)
+        }
+      }
+      
+      inQueue.clear()
+
+      gray += 1
+      batchNumber = (batchNumber + 1) % 2
+    }
+    (0 until result.length()).map(result.get(_)).toArray
+  }
+  
+  def processEdge(edges: Array[SSSPEdge], colors: AtomicIntegerArray, result: AtomicIntegerArray, gray: Int, edgeIndex: Int, currentCost: Int, outQueue: ArrayList[Int]) = {
+    val SSSPEdge(to, cost) = edges(edgeIndex)
+    val newCost = currentCost + cost
+    val oldCost = result.getAndAccumulate(to, newCost, _ min _)
+    if (newCost < oldCost) {
+      val oldColor = colors.getAndSet(to, gray)
+      if (oldColor != gray) {
+        outQueue synchronized {
+          outQueue.add(to)
+        }
+      }
+    }
+  }
+}
+
+object SSSPBatchedParManual extends SSSPBase {
+  val name: String = "SSSP-batched-par-manual"
+
+  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)) = {
+    val (nodes, edges, source) = ctx
+    ssspBatchedPar(nodes, edges, source)
+  }
+
+
+  def ssspBatchedPar(nodes: Array[SSSPNode], edges: Array[SSSPEdge], source: Int): Array[Int] = {
+    val colors = new AtomicIntegerArray(nodes.size)
+    var gray = 1
+    val result = new AtomicIntegerArray(nodes.size)
+    
+    for (i <- 0 until result.length()) { 
+      result.set(i, Int.MaxValue)
+    }
+    
+    val batches = (0 until 2).map(_ => new ArrayList[Int]()).toArray
+    var batchNumber = 0
+    
+    result.set(source, 0)
+    batches(batchNumber).add(source)
+    
+    while (! batches(batchNumber).isEmpty()) {
+      val inQueue = batches(batchNumber)
+      val outQueue = batches((batchNumber + 1) % 2)
+      
       val stride = (inQueue.size / 8) max 256
       
       for (qindexStart <- (0 until inQueue.size by stride).par) {

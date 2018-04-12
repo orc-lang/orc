@@ -40,10 +40,22 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
     )
     val colors = AtomicIntegerArray(nodes.length?)
     
-	def processNode(index, outQ, gray) = (
+    result >> q1 >> q2 >> colors >> outQLock >> (
+    
+    def getAndMinResult(i, v) = Sequentialize() >> v >> i >> (
+    	val old = result.get(i)
+    	if old <: v then
+    		old
+    	else if result.compareAndSet(i, old, v) then 
+    		old
+    	else
+    		getAndMinResult(i, v)
+    )
+    
+	def processNode(index, outQ, gray) = index >> outQ >> gray >> (
 		val node = nodes(index)?
 		val currentCost = result.get(index)
-		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> edges(edgeIndex)? >edge> (
+		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> Sequentialize() >> edges(edgeIndex)? >edge> (
 			val to = edge.to()
 			val newCost = currentCost + edge.cost()
 			val oldCost = getAndMinResult(to, newCost)
@@ -66,13 +78,15 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	q1.add(source) >>
 	h(q1, q2, 1) >>
 	result
+	
+	)
 
 val nodes = SSSP.nodes()
 val edges = SSSP.edges()
 val source = SSSP.source()
 
 
-benchmarkSized("SSSP-batched", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) }, SSSP.check)
+benchmarkSized("SSSP-batched-opt", nodes.length? * nodes.length?, { nodes >> edges >> source }, { _ >> sssp(nodes, edges, source) }, SSSP.check)
 
 {-
 BENCHMARK

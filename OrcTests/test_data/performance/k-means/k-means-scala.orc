@@ -29,7 +29,7 @@ class PointAdder {
     If this is called while points are being added this may have transient errors since the counter, x, or y may include values not included in the others. -}
   def average() =
     val c = count.sum()
-  	Point(x.sum() / c, y.sum() / c)
+    Point(x.sum() / c, y.sum() / c)
   
   def toString() = "<" + x + "," + y + ">"
 }
@@ -45,31 +45,14 @@ def updateCentroids(xs, centroids) =
   val pointAdders = listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
   forBy(0, xs.length?, 1) >i> (
     val p = xs(i)?
-    pointAdders(closestIndex(p, centroids))?.add(p)
+    pointAdders(KMeans.closestIndex(p, centroids))?.add(p)
   ) >> stop ;
   listToArray(map({ _.average() }, arrayToList(pointAdders)))  
 
-def minBy(f, l) =
-  def minBy'([x]) = (f(x), x)
-  def minBy'(x:xs) =
-    val (min, v) = minBy'(xs)
-    val m = f(x)
-    if min :> m then
-      (m, x)
-    else
-      (min, v)
-  minBy'(l)(1)
-
-def closestIndex(x :: Point, choices) =
-  minBy({ dist(x, choices(_)?) }, range(0, choices.length?))
-  
-def dist(x :: Point, y :: Point) = x.sub(y).modulus()
-
 val points = KMeansData.data()
 
-benchmarkSized("KMeans", points.length?, { points }, run, KMeansData.check)
+benchmarkSized("KMeans-scala", points.length?, { points }, run, KMeansData.check)
 
 {-
 BENCHMARK
 -}
-  

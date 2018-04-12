@@ -46,7 +46,7 @@ object SwaptionsParTrial extends BenchmarkApplication[Array[Swaption], Array[Swa
         swaption.simSwaptionPriceStdError = math.sqrt((sumsq - sum*sum/nTrials) / (nTrials - 1.0)) / math.sqrt(nTrials)
       }
     }
-    data.foreach(processor(_))
+    data.par.foreach(processor(_))
     data
   }
 

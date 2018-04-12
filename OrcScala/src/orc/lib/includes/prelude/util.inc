@@ -9,6 +9,9 @@
 -- URL: http://orc.csres.utexas.edu/license.shtml .
 --
 
+
+import site Sequentialize__ = "orc.compile.orctimizer.Sequentialize"
+
 val Runtime = new {
   val jvmRuntime =
     import class JavaLangRuntime = "java.lang.Runtime"
@@ -107,7 +110,7 @@ def signals(n) =
     else
       n / 2 >n'> (parPhase(n') | parPhase(n - n')) 
   )
-  def seqPhase(n :: Integer) :: Signal = n >> (
+  def seqPhase(n :: Integer) :: Signal = Sequentialize__() >> n >> (
     if n :> 0 then (signal | seqPhase(n - 1))
     else stop
   )
@@ -139,7 +142,7 @@ def forBy(low, high, step) = step >>
       low + (diff / 2 / step) * step >split>
       ( parPhase(low, split) | parPhase(split, high) )
   )
-  def seqPhase(low :: Integer, high :: Integer) :: Integer = low >> high >> (
+  def seqPhase(low :: Integer, high :: Integer) :: Integer = Sequentialize__() >> low >> high >> (
     if low >= high then stop
     else ( low | low+step >x> seqPhase(x, high) )
   )

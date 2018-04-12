@@ -14,6 +14,7 @@ include "benchmark.inc"
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
 import class Sieve = "orc.test.item.scalabenchmarks.Sieve"
+import class SavinaSieve = "orc.test.item.scalabenchmarks.SavinaSieve"
 
 import class Set = "java.util.Set"
 import class HashSet = "java.util.HashSet"
@@ -28,16 +29,8 @@ def sieveFragment(outChan) =
 	val inChan = Channel() 
 	val list = ArrayList[Number](sieveFragementSize)
 	val next = Cell()
-	def check(x, iter) = Sequentialize() >> (
-		val p = Some(iter()) ; None() #
-		--val _ = Println("Checking " + x + " " + p) #
-		(p >None()> signal) |
-		(p >Some(p)>
-			Iff(x % p = 0) >> 
-			check(x, iter))
-	)
 	def filter(x) = 
-		val v = Sequentialize() >> (check(x, IterableToStream(list)) >> true ; false)
+		val v = SavinaSieve.check(list, x)
 		v >true> (
 			if list.size() <: sieveFragementSize then
 				Sequentialize() >> list.add(x) >> outChan.put(x)
@@ -48,8 +41,7 @@ def sieveFragment(outChan) =
 				next.read().put(x)
 		) |
 		v >false> signal #
-	val _ = Println("Creating new fragment: " + (counter.inc() >> counter.value()))
-	repeat({ (inChan.get() ; next.readD().close() >> stop) >x> filter(x) }) >> stop |
+	repeat({ Sequentialize() >> (inChan.get() ; next.readD().close() >> stop) >x> filter(x) }) >> stop |
 	inChan
 	
 def sforBy(low, high, step, f) =
@@ -67,7 +59,7 @@ def primes(n) =
 
 val N = Sieve.N()
 
-benchmarkSized("Sieve-savina-seq", N, { signal }, { _ >> primes(N) }, Sieve.check)
+benchmarkSized("Sieve-savina-scala-opt", N, { signal }, { _ >> primes(N) }, Sieve.check)
 
 {-
 BENCHMARK

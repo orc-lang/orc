@@ -23,11 +23,6 @@ import class DataOutputStream = "java.io.DataOutputStream"
 import class MessageDigest = "java.security.MessageDigest"
 import class Integer = "java.lang.Integer" 
 
-def logHalt(name, f) =
-	val c = Channel() #
-	(f() >v> Println(name + " published: " + v) >> c.put(v) >> stop ; Println(name + " halted") >> c.close() >> stop) |
-	repeat(c.get)
-
 class CompressedChunk {
   val compressedDataCell = Cell()
   
@@ -40,13 +35,13 @@ class CompressedChunk {
   val uncompressedSHA1
   val uncompressedSize
 }
-def CompressedChunk(s, n) = new CompressedChunk { val uncompressedSHA1 = s # val uncompressedSize = n }
+def CompressedChunk(s, n) = s >> n >> new CompressedChunk { val uncompressedSHA1 = s # val uncompressedSize = n }
 
 val rabin = Rabin()
 val largeChunkMin = 2 * 1024 * 1024
 val readChunkSize = 128 * 1024 * 1024
 
-def sha1(chunk) = ArrayKey(
+def sha1(chunk) = Sequentialize() >> ArrayKey(
 	val m = MessageDigest.getInstance("SHA-1")
 	m.update(chunk.buffer(), chunk.start(), chunk.size()) >>
 	m.digest())
@@ -54,14 +49,16 @@ def sha1(chunk) = ArrayKey(
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
 def readSegements(minimumSegmentSize, in) =
-	def process(currentChunk, i) = Sequentialize() >> (
+	def process(currentChunk, i) = (
 		val splitPoint = rabin.segment(currentChunk, minimumSegmentSize)
 		if splitPoint = currentChunk.size() then
 			-- TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
 			Chunk.readFromInputStream(in, readChunkSize) >data>
 			process(currentChunk.append(data), i) ;
-			(currentChunk, i) | printLogLine("Done: readSegements " + (i + 1)) >> (Chunk.empty(), i + 1) 
+			Sequentialize() >> 
+			((currentChunk, i) | printLogLine("Done: readSegements " + (i + 1)) >> (Chunk.empty(), i + 1)) 
 		else
+			Sequentialize() >> 
 			(currentChunk.slice(0, splitPoint), i) |
 			process(currentChunk.slice(splitPoint, currentChunk.size()), i+1)
 			)
@@ -107,12 +104,12 @@ def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> (
 def write(out, outputPool) =
 	val _ = printLogLine("Start: write")
 	val alreadyOutput = Map()
-	def process((roughID, fineID), id) = Sequentialize() >> (
+	def process((roughID, fineID), id) = (
 		val cchunk = outputPool.get((roughID, fineID))
 		if cchunk = null then
 			--printLogLine("Poll: " + (roughID, fineID) + " " + outputPool) >>
 			Rwait(100) >> process((roughID, fineID), id)
-		else if cchunk.uncompressedSize = 0 then (
+		else if cchunk.uncompressedSize = 0 then Sequentialize() >> (
 			val _ = outputPool.remove((roughID, fineID))
 			if fineID = 0 then
 				printLogLine("Done") >>
@@ -124,6 +121,7 @@ def write(out, outputPool) =
 			val _ = outputPool.remove((roughID, fineID))
 			cchunk.outputChunkID := id >> stop ;
 			--printLogLine("Write: " + (roughID, fineID) + " " + cchunk) >>
+			Sequentialize() >> 
 			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1)) >>
 			alreadyOutput.put(cchunk.uncompressedSHA1, true) >>
 			process((roughID, fineID + 1), id + 1)
@@ -147,7 +145,7 @@ def dedup(in, out) =
 	write(out, outputPool)
 
 
-benchmarkSized("Dedup-naive", File(DedupData.localInputFile()).length(), { signal }, lambda(_) =
+benchmarkSized("Dedup-opt", File(DedupData.localInputFile()).length(), { signal }, lambda(_) =
   val (in, out) = (FileInputStream(DedupData.localInputFile()), DataOutputStream(FileOutputStream(DedupData.localOutputFile())))
   dedup(in, out) >>
   in.close() >>

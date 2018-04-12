@@ -3,12 +3,31 @@
  - Based on the microbenchmark in several languages at https://github.com/andreaferretti/kmeans
  -}
 
-include "benchmark.inc"
-
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+
+include "benchmark.inc"
 
 import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 type Double = Top
+
+def smap(f, xs) = Sequentialize() >> ( 
+  def h([], acc) = acc
+  def h(x:xs, acc) =
+    f(x) >y> h(xs, y : acc)
+  h(xs, []) 
+  )
+  
+def seach(xs) = Sequentialize() >> ( 
+  def h([]) = stop
+  def h(x:xs) = x | h(xs)
+  h(xs) 
+  )
+
+def sfor(low, high, f) = Sequentialize() >> ( 
+  def h(i) if (i >= high) = signal
+  def h(i) = f(i) >> h(i + 1)
+  h(low)
+  )
 
 import class Point = "orc.test.item.scalabenchmarks.kmeans.Point"
 import class KMeansData = "orc.test.item.scalabenchmarks.kmeans.KMeansData"
@@ -21,22 +40,27 @@ val n = KMeans.n()
 val iters = KMeans.iters()
 
 class PointAdder {
-  val x = DoubleAdder()
-  val y = DoubleAdder()
-  val count = LongAdder()
+  val x
+  val y
+  val count
   
-  def add(p) = (x.add(p.x()), y.add(p.y()), count.add(1)) >> signal
+  def add(p) = Sequentialize() >> (x.add(p.x()), y.add(p.y()), count.add(1)) >> signal
   
   {-- Get the average of the added points. 
     If this is called while points are being added this may have transient errors since the counter, x, or y may include values not included in the others. -}
-  def average() =
+  def average() = Sequentialize() >> ( 
     val c = count.sum()
-    Point(x.sum() / c, y.sum() / c)
+  	Point(x.sum() / c, y.sum() / c)
+  	)
   
   def toString() = "<" + x + "," + y + ">"
 }
 
-def PointAdder() = new PointAdder
+def PointAdder() =
+  DoubleAdder() >x'>
+  DoubleAdder() >y'>
+  LongAdder() >count'>
+  new PointAdder { val x = x' # val y = y' # val count = count' }
 
 def run(xs) =
   def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> centroids
@@ -50,13 +74,12 @@ def updateCentroids(xs, centroids) =
     pointAdders(KMeans.closestIndex(p, centroids))?.add(p)
   ) >> stop ;
   listToArray(map({ _.average() }, arrayToList(pointAdders)))  
-  
-def dist(x :: Point, y :: Point) = x.sub(y).modulus()
 
 val points = KMeansData.data()
 
-benchmarkSized("KMeans-scala-inner", points.length?, { points }, run, KMeansData.check)
+benchmarkSized("KMeans-scala-opt", points.length?, { points }, run, KMeansData.check)
 
 {-
 BENCHMARK
 -}
+  

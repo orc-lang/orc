@@ -45,7 +45,6 @@ def sieveFragment(outChan) =
 				next.read().put(x)
 		) |
 		v >false> signal #
-	--val _ = Println("Creating new fragment: " + (counter.inc() >> counter.value()))
 	repeat({ (inChan.get() ; next.readD().close() >> stop) >x> filter(x) }) >> stop |
 	inChan
 	
