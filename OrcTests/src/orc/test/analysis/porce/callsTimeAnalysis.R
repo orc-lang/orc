@@ -22,13 +22,13 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 
 # The directory of a normal benchmark run
-benchmarkDir <- file.path(localExperimentDataDir, "20180407-a001")
+benchmarkDir <- file.path(localExperimentDataDir, "20180412-a002")
 
 # The directory of a call profiling run
-callsDir <- file.path(localExperimentDataDir, "20180408-a001")
+callsDir <- file.path(localExperimentDataDir, "20180412-a003")
 
 loadBenchmarkData <- function(dataDir) {
-  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
+  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
     addBenchmarkProblemName() %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
@@ -48,7 +48,7 @@ loadBenchmarkData <- function(dataDir) {
 }
 
 loadCallsData <- function(dataDir) {
-  bdata <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
+  bdata <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
     addBenchmarkProblemName() %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
@@ -59,7 +59,7 @@ loadCallsData <- function(dataDir) {
     filter(!any(rtCompTime < cpuTime * 0.01) | rtCompTime < cpuTime * 0.01) %>%
     ungroup()
 
-  data <- readMergedResultsTable(dataDir, "call-times", invalidate = F) %>%
+  data <- readMergedResultsTable(dataDir, "call-times", invalidate = T) %>%
     addBenchmarkProblemName() %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")"))) %>%
     mutate(rep = as.integer(substring(id, 4)))
@@ -82,7 +82,7 @@ loadCallsData <- function(dataDir) {
 }
 
 loadCounterData <- function(dataDir) {
-  bdata <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
+  bdata <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
     addBenchmarkProblemName() %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
@@ -93,7 +93,7 @@ loadCounterData <- function(dataDir) {
     filter(!any(rtCompTime < cpuTime * 0.01) | rtCompTime < cpuTime * 0.01) %>%
     ungroup()
 
-  data <- readMergedResultsTable(dataDir, "counter-timers", invalidate = F) %>%
+  data <- readMergedResultsTable(dataDir, "counter-timers", invalidate = T) %>%
     addBenchmarkProblemName() %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")"))) %>%
     mutate(rep = as.integer(substring(id, 4)))

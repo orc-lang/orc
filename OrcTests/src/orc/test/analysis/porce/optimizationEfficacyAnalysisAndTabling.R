@@ -162,9 +162,10 @@ r <- full_join(dataPorcEO0, dataPorcEO3, by = c("orcFile", "benchmarkName"), suf
 #   sprintf("% 4d (% 4d, %2.0f%% + %2.0f%% = %2.0f%%)", remaining, starting, percentStatic * 100, percentDynamic * 100, percentStatic * 100 + percentDynamic * 100)
 # }
 
-t <- r %>% filter(optimized == T, scalaCompute == F, implType == "Orc") %>% addBenchmarkProblemName() %>%
+t <- r %>% filter(optimized == T, implType == "Orc" | implType == "Orc+Scala") %>% addBenchmarkProblemName() %>%
   transmute(
   benchmarkProblemName,
+  implType,
   #language = if_else(scalaCompute, "Scala", "Orc"),
   #parallelism,
 
@@ -184,7 +185,7 @@ t <- r %>% filter(optimized == T, scalaCompute == F, implType == "Orc") %>% addB
   remainingSpawns = unoptSpawns.O3,
   # percentStaticSpawns = (startingSpawns - endingSpawns) / startingSpawns * 100,
   # percentDynamicSpawns = (endingSpawns - unoptSpawns) / startingSpawns * 100,
-  percentSpawns = (startingSpawns - remainingSpawns) / startingForces * 100
+  percentSpawns = (startingSpawns - remainingSpawns) / startingSpawns * 100
 ) %>% arrange(benchmarkProblemName)
 
 print("percentFutures")
@@ -205,4 +206,31 @@ write.csv(t, file = file.path(outputDir, "optimization.csv"), row.names = F)
 
 print(t)
 
-print(kable(t, "latex"))
+print("Orc")
+print(kable(t %>% filter(implType == "Orc") %>% select(-implType), "latex"))
+
+# Trend analysis
+
+times <- read.csv(file.path(dataDir, "time", "mean_elapsed_time.csv"), header = T)
+
+optLevels <- c(0, 3, NA, NA, NA)
+implTypes <- c("Orc", "Orc", "Orc*", "Orc+Scala", "Scala")
+
+times <- times %>%
+  gather(key = implType, value = "time", Orc..O0.Opt, Orc..O3.Opt, Orc..Opt, Orc.Scala.Opt, Scala) %>%
+  mutate(implType = factor(implType, levels = c("Orc..O0.Opt", "Orc..O3.Opt", "Orc..Opt", "Orc.Scala.Opt", "Scala"))) %>%
+  mutate(optLevel = optLevels[implType], implType = implTypes[implType])
+
+optimizations <- t %>% transmute(benchmarkProblemName, implType, rem = remainingFutures + remainingForces + remainingSpawns, remainingFutures, percentFutures, remainingForces, percentForces, remainingSpawns, percentSpawns)
+
+#ttt <- full_join(tt %>% filter(implType == "Orc" | implType == "Orc+Scala", optLevel == 3 | is.na(optLevel)), d)
+times2 <- full_join(times,
+                 times %>%
+                   filter(implType == "Scala") %>%
+                   transmute(benchmarkProblemName, scalaTime = time)) %>%
+  filter(implType != "Scala") %>%
+  mutate(normalizedTime = time / scalaTime)
+comparison <- full_join(times2, optimizations)
+
+print(comparison %>% filter(implType != "Orc*", !is.na(normalizedTime)))
+
