@@ -19,9 +19,9 @@ def countLine(line) =
   import class BreakIterator = "java.text.BreakIterator"
   import class Character = "java.lang.Character"
   Sequentialize() >> (
-  def containsAlphabetic(s, startPos, endPos) =
+  def containsAlphabetic(s, startPos, endPos) = Sequentialize() >> startPos >>
     Character.isAlphabetic(s.codePointAt(startPos)) || (if startPos+1 <: endPos then containsAlphabetic(s, startPos+1, endPos) else false)
-  def wordCount'(startPos, wb, accumCount) =
+  def wordCount'(startPos, wb, accumCount) = Sequentialize() >> accumCount >>
     wb.next()  >endPos>
     (if endPos <: 0 then accumCount else (if containsAlphabetic(line, startPos, endPos) then wordCount'(endPos, wb, accumCount + 1) else wordCount'(endPos, wb, accumCount))) #
   BreakIterator.getWordInstance() >wb>
@@ -33,7 +33,7 @@ def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"
   (
-  def countLinesFrom(in, accumCount) =
+  def countLinesFrom(in, accumCount) = accumCount >>
     (in.readLine() ; null)  >nextLine> Sequentialize() >>
     (if nextLine = null then accumCount else countLinesFrom(in, accumCount + countLine(nextLine))) #
   Sequentialize() >>

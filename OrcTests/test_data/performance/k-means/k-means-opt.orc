@@ -10,25 +10,6 @@ include "benchmark.inc"
 import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 type Double = Top
 
-def smap(f, xs) = Sequentialize() >> ( 
-  def h([], acc) = acc
-  def h(x:xs, acc) =
-    f(x) >y> h(xs, y : acc)
-  h(xs, []) 
-  )
-  
-def seach(xs) = Sequentialize() >> ( 
-  def h([]) = stop
-  def h(x:xs) = x | h(xs)
-  h(xs) 
-  )
-
-def sfor(low, high, f) = Sequentialize() >> ( 
-  def h(i) if (i >= high) = signal
-  def h(i) = f(i) >> h(i + 1)
-  h(low)
-  )
-
 import class Point = "orc.test.item.scalabenchmarks.kmeans.Point"
 import class KMeansData = "orc.test.item.scalabenchmarks.kmeans.KMeansData"
 import class KMeans = "orc.test.item.scalabenchmarks.kmeans.KMeans"
@@ -67,14 +48,26 @@ def run(xs) =
   def run'(i, centroids) = run'(i - 1, updateCentroids(xs, centroids))
   run'(iters, KMeans.takePointArray(n, xs))
 
+def eachArray(a) = upto(a.length?) >i> a(i)?
+def fillArray(n, f) = 
+    Array(n) >a> 
+    (upto(n) >i> a(i) := f() >> stop ; a)
+def tabulateArray(n, f) = 
+    Array(n) >a> 
+    (upto(n) >i> a(i) := f(i) >> stop ; a)
+def mapArray(f, a) =
+    tabulateArray(a.length?, { f(a(_)?) })
+
 def updateCentroids(xs, centroids) = 
-  val pointAdders = listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
+  val pointAdders = fillArray(centroids.length?, { PointAdder() }) --listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
   forBy(0, xs.length?, 1) >i> Sequentialize() >> (
     val p = xs(i)?
     pointAdders(closestIndex(p, centroids))?.add(p)
   ) >> stop ;
-  listToArray(map({ _.average() }, arrayToList(pointAdders)))  
+  mapArray({ _.average() }, pointAdders)
+  --listToArray(map({ _.average() }, arrayToList(pointAdders)))  
 
+{-
 def minBy(f, l) = Sequentialize() >> (
   def minBy'([x]) = (f(x), x)
   def minBy'(x:xs) =
@@ -86,9 +79,18 @@ def minBy(f, l) = Sequentialize() >> (
       (min, v)
   minBy'(l)(1)
   )
+-}
 
-def closestIndex(x :: Point, choices) = Sequentialize() >> 
-  minBy({ dist(x, choices(_)?) }, range(0, choices.length?))
+def closestIndex(x :: Point, choices) = Sequentialize() >> (
+  def h(-1, minV, minI) = minI 
+  def h(i, minV, minI) =
+    val newV = dist(x, choices(i)?) 
+    if newV <: minV then
+      h(i - 1, newV, i)
+    else
+      h(i - 1, minV, minI) 
+  h(choices.length? - 1, 10000000000, -1)
+  )
   
 def dist(x :: Point, y :: Point) = x.sub(y).modulus()
 
