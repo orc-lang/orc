@@ -98,6 +98,7 @@ object PorcEShared {
         "orc.numerics.preferLP" -> true,
         "orc.porce.maxStackDepth" -> 512,
         "graal.TruffleCompilationThreshold" -> 300,
+        //"orc.porce.universalTCO" -> true,
         )
 
   trait HasRunNumber {
@@ -167,6 +168,65 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
       (porce ++ scala).sortBy(o => (o.run, -o.nCPUs, o.toString))
+    }
+    runExperiment(experimentalConditions)
+  }
+}
+
+
+object PorcESpawnFutureExperiment extends PorcEBenchmark {
+  import PorcEShared._
+  
+  def softTimeLimit: Double = 60 * 8
+  
+  case class MyPorcEExperimentalCondition(
+      run: Int,
+      orcFile: File, 
+      nCPUs: Int, 
+      optLevel: Int,
+      spawnLimit: Double,
+      optFutures: Boolean) 
+      extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
+    override def nRuns = super.nRuns
+    
+    override def factorDescriptions = Seq(
+      FactorDescription("run", "Run Number", "", ""),
+      FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
+      FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
+      FactorDescription("optLevel", "Optimization Level", "", "-O level"),
+      FactorDescription("spawnLimit", "Spawn Time Limit", "", ""),
+      FactorDescription("optFutures", "Optimize Futures", "", ""),
+    )
+
+    val spawnsOptOpt = s"porc:eta-spawn-reduce=true" // ${spawnLimit > 0}"
+    val spawnsProperties = 
+      Map(
+          "orc.porce.inlineAverageTimeLimit" -> spawnLimit,
+          "orc.porce.allowSpawnInlining" -> true) // (spawnLimit > 0))
+    val futuresOptOpt = s"orct:future-elim=$optFutures,orct:unused-future-elim=$optFutures,orct:future-force-elim=$optFutures,porc:usegraft=$optFutures"
+    
+    override def systemProperties = super.systemProperties ++ mainSystemProperties ++ spawnsProperties
+    override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs ++ Seq("-O", optLevel.toString, "--opt-opt", spawnsOptOpt + "," + futuresOptOpt)
+        
+    override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
+  }
+
+  def main(args: Array[String]): Unit = {
+    val experimentalConditions = {
+      val nCPUsValues = Seq(24)
+      val porce = for {
+        run <- 0 until 1
+        nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
+        optLevel <- Seq(3)
+        fn <- onlyOpt(mainPureOrcBenchmarks).toSeq.sorted
+        (optSpawns, optFutures) <- Seq((true, true))// Seq((false, false), (true, false), (true, true))
+        spawnLimit <- Seq(0.001, 0.01, 1, 10, 100, 0, 0.1)
+      } yield {
+        assert(new File(fn).isFile(), fn)
+        MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs, optLevel, spawnLimit, optFutures)
+      }
+      val lasts = Set(0, 0.1)
+      porce.sortBy(c => (lasts contains c.spawnLimit))
     }
     runExperiment(experimentalConditions)
   }

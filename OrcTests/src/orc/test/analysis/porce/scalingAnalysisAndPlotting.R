@@ -79,7 +79,7 @@ benchmarkProperties <- {
 }
 
 processedData <- processedData %>%
-  select(everything(), -contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline"), -contains("implType"), -contains("optimized")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
+  select(-contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline"), -contains("implType"), -contains("optimized")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
   left_join(benchmarkProperties, by = c("benchmarkName")) %>%
   group_by(benchmarkProblemName) %>%
   #addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T, experiment = levels(processedData$experiment)[1]), baseline = elapsedTime_mean_problembaseline) %>%
