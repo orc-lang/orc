@@ -82,7 +82,8 @@ processedData <- processedData %>%
   select(-contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline"), -contains("implType"), -contains("optimized")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
   left_join(benchmarkProperties, by = c("benchmarkName")) %>%
   group_by(benchmarkProblemName) %>%
-  #addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T, experiment = levels(processedData$experiment)[1]), baseline = elapsedTime_mean_problembaseline) %>%
+  addBaseline(elapsedTime_mean, c(language="Scala"), baseline = elapsedTime_mean_problembaseline) %>%
+  addBaseline(cpuTime_mean, c(language="Scala"), baseline = cpuTime_mean_problembaseline) %>%
   ungroup()
 
 # Sample count table
@@ -147,11 +148,47 @@ write.csv(t, file = file.path(timeOutputDir, "mean_elapsed_time.csv"), row.names
 print(t)
 print(kable(t, "latex"))
 
-t <- longT %>%
-  filter(!optimized | language == "Scala") %>%
-  select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
+filledInData <- processedData %>%
+  full_join(processedData %>%
+              filter(optLevel == 3, implType == "Orc") %>%
+              transmute(benchmarkProblemName, benchmarkName, optLevel = 0, elapsedTime_mean = 8 * 60),
+            by = c("benchmarkProblemName", "benchmarkName", "optLevel")) %>%
+  mutate(elapsedTime_mean = if_else(is.na(elapsedTime_mean.x), elapsedTime_mean.y, elapsedTime_mean.x), elapsedTime_mean.x = NULL, elapsedTime_mean.y = NULL)
 
-print(t)
+times2 <-
+  full_join(filledInData,
+            processedData %>%
+              filter(implType == "Orc", optLevel == 3) %>%
+              transmute(benchmarkProblemName, orc3Time = elapsedTime_mean)) %>%
+  full_join(processedData %>%
+              filter(implType == "Scala") %>%
+              transmute(benchmarkProblemName, scalaTime = elapsedTime_mean))
+  #filter(implType == "Orc") %>%
+  #mutate(normalizedTime = elapsedTime_mean / orc3Time)
+
+print(geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / orc3Time) %>% filter(optLevel == 0))$normalizedTime))
+
+print(
+  geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / if_else(is.na(scalaTime), 8 * 60, scalaTime)) %>% filter(implType == "Orc", optLevel == 3))$normalizedTime)
+  )
+print(
+  geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / if_else(is.na(scalaTime), 8 * 60, scalaTime)) %>% filter(implType == "Orc+Scala", optLevel == 3))$normalizedTime)
+  )
+
+print(
+  geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / scalaTime) %>% filter(implType == "Orc", optLevel == 3, normalizedTime > 1))$normalizedTime)
+)
+print(
+  geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / scalaTime) %>% filter(implType == "Orc+Scala", optLevel == 3, normalizedTime > 1))$normalizedTime)
+)
+
+# times2 %>% dropBounds() %>% ggplot(aes(cpuUtilization, normalizedTime, color = benchmarkProblemName)) + geom_point() + xlim(0, 24) + ylim(0, 250) + facet_wrap(~implType)
+
+# t <- longT %>%
+#   filter(!optimized | language == "Scala") %>%
+#   select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
+#
+# print(t)
 
 #processedData <- processedData %>% filter(is.element(benchmarkName, includedBenchmarks))
 #processedData <- processedData %>% filter(optimized == F)

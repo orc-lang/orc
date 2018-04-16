@@ -78,7 +78,7 @@ def segment(minimumSegmentSize, chunk) =
 
 {-- Compress a chunk with deduplication by publishing an existing compressed chuck if an identical one exists.
 -} 
-def compress(chunk, dedupPool, id) = Sequentialize() >> (
+def compress(chunk, dedupPool, id) = (
 	val hash = sha1(chunk)
 	val old = dedupPool.putIfAbsent(hash, CompressedChunk(hash, chunk.size()))
 	val compChunk = old >> dedupPool.get(hash)

@@ -50,6 +50,7 @@ object PorcEShared {
             //"test_data/performance/canneal/canneal-partitioned.orc",
             //"test_data/performance/dedup/dedup-boundedchannel.orc",
             "test_data/performance/dedup/dedup-opt.orc",
+            //"test_data/performance/dedup/dedup-scala-opt.orc",
             //"test_data/performance/fp-growth/fp-growth.orc",
             "test_data/performance/map-reduce/wordcount-mixed-orc-java.orc",
             "test_data/performance/map-reduce/wordcount-mixed-orc-java-opt.orc",
@@ -199,8 +200,7 @@ object PorcESpawnFutureExperiment extends PorcEBenchmark {
     )
 
     val spawnsOptOpt = s"porc:eta-spawn-reduce=true" // ${spawnLimit > 0}"
-    val spawnsProperties = 
-      Map(
+    val spawnsProperties = Map(
           "orc.porce.inlineAverageTimeLimit" -> spawnLimit,
           "orc.porce.allowSpawnInlining" -> true) // (spawnLimit > 0))
     val futuresOptOpt = s"orct:future-elim=$optFutures,orct:unused-future-elim=$optFutures,orct:future-force-elim=$optFutures,porc:usegraft=$optFutures"
@@ -215,12 +215,12 @@ object PorcESpawnFutureExperiment extends PorcEBenchmark {
     val experimentalConditions = {
       val nCPUsValues = Seq(24)
       val porce = for {
-        run <- 0 until 1
+        run <- 0 until 2
         nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
         optLevel <- Seq(3)
         fn <- onlyOpt(mainPureOrcBenchmarks).toSeq.sorted
         (optSpawns, optFutures) <- Seq((true, true))// Seq((false, false), (true, false), (true, true))
-        spawnLimit <- Seq(0.001, 0.01, 1, 10, 100, 0, 0.1)
+        spawnLimit <- Seq(0.001, 0.01, 1, 10, 100, 1000, 10000, 0, 0.1)
       } yield {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs, optLevel, spawnLimit, optFutures)

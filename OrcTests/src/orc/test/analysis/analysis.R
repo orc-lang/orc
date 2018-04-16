@@ -177,6 +177,9 @@ bootstrapStatistics <- function(.data, col, statistic, confidence = 0.95, R = 10
     l[[deparse(substitute(statistic))]] <- statistic
     l
   } else statistic
+  bootstrapStatistics_(.data, colName, statistics, confidence, R, trim)
+}
+bootstrapStatistics_ <- function(.data, colName, statistics, confidence = 0.95, R = 10000, trim = 0) {
   do(.data, .bootstrapStatistics_Internal(., colName, statistics, confidence, R, trim))
 }
 
