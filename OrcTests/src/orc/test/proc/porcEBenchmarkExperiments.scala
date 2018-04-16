@@ -155,7 +155,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         run <- 0 until 2
         nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
         optLevel <- Seq(3, 0)
-        fn <- onlyOpt(if (optLevel < 2) mainPureOrcBenchmarks else mainOrcBenchmarks)
+        fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else mainOrcBenchmarks
       } yield {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs, optLevel)
