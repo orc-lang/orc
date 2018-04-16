@@ -24,10 +24,10 @@ import com.oracle.truffle.api.dsl.Introspectable
 import com.oracle.truffle.api.nodes.LoopNode
 
 object DumpSpecializations {
-  def apply(node: Node, repNum: Int, out: PrintWriter): Unit = {
+  def apply(node: Node, callsRequired: Int, out: PrintWriter): Unit = {
     out.println(s"=== ${node}:")
     val calledEnough = node match {
-      case r: PorcERootNode if r.getTotalCalls > repNum =>
+      case r: PorcERootNode if r.getTotalCalls >= callsRequired =>
         out.println(s"    timePerCall = ${r.getTimePerCall}, totalSpawnedCalls = ${r.getTotalSpawnedCalls}, totalSpawnedTime = ${r.getTotalSpawnedTime}")
         true
       case _ => false 
