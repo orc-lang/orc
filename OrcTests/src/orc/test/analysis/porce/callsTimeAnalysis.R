@@ -22,7 +22,7 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 
 # The directory of a normal benchmark run
-benchmarkDir <- file.path(localExperimentDataDir, "20180412-a002")
+benchmarkDir <- file.path(localExperimentDataDir, "20180415-a001")
 
 # The directory of a call profiling run
 callsDir <- file.path(localExperimentDataDir, "20180412-a003")

@@ -21,34 +21,48 @@ source(file.path(scriptDir, "plotting.R"))
 source(file.path(scriptDir, "porce", "utils.R"))
 
 
-# dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
-dataDir <- file.path(localExperimentDataDir, "20180419-a002")
+#dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
+dataDir <- file.path(localExperimentDataDir, "20180415-a001")
 
-if(!exists("processedData")) {
+loadData <- function(dataDir) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
-    mutate(benchmarkProblemName = factor(sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1]))) %>%
+    addBenchmarkProblemName() %>%
     mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
 
-  levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "Black", "Black-Scholes", levels(data$benchmarkProblemName))
-  levels(data$benchmarkProblemName) <- if_else(levels(data$benchmarkProblemName) == "KMeans", "K-Means", levels(data$benchmarkProblemName))
+  #d <<- data
 
   prunedData <- data %>%
-    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "optLevel", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
     # Drop any reps which have more than 1% compilation time.
-    filter(rtCompTime < cpuTime * 0.01)
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs, optLevel) %>%
+    filter(!any(rtCompTime < cpuTime * 0.01) | rtCompTime < cpuTime * 0.01)
 
   processedData <- prunedData %>%
-    group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>% bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95) %>%
+    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
     #group_by(benchmarkName) %>% addBaseline(elapsedTime_mean, c(nCPUs=1), baseline = elapsedTime_mean_selfbaseline) %>%
     #group_by(benchmarkProblemName) %>% addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1), baseline = elapsedTime_mean_problembaseline) %>%
     ungroup()
+  processedData
 }
 
-clear__ <- function() {
-  rm("processedData")
+loadCompensatedData <- function(dataDir) {
+  source(file.path(scriptDir, "porce", "callsTimeAnalysis.R"), local=new.env())
+  read.csv(file.path(dataDir, "time", "mean_compensated_elapsed_time.csv"), header = T) %>%
+    select(everything(),
+           #-elapsedTime_mean, -elapsedTime_mean_lowerBound, -elapsedTime_mean_upperBound,
+           -nSamples)
+}
+
+if(!exists("processedData")) {
+  #processedData <- loadData(file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")) %>% mutate(experiment = "old")
+  #processedData <- processedData %>%
+  #   rbind(loadData(file.path(localExperimentDataDir, "20180220-a002")) %>% mutate(experiment = "new"))
+  #processedData <- processedData %>% mutate(experiment = factor(experiment, ordered = T, levels = c("old", "new")))
+  processedData <- loadData(dataDir) %>% mutate(experiment = factor("only"))
+  compensatedData <- loadCompensatedData(dataDir)
 }
 
 print(levels(processedData$benchmarkName))
@@ -65,42 +79,150 @@ benchmarkProperties <- {
 }
 
 processedData <- processedData %>%
-  select(everything(), -contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
-  left_join(benchmarkProperties, by = "benchmarkName") %>%
+  select(-contains("granularity"), -contains("scalaCompute"), -contains("parallelism"), -contains("isBaseline"), -contains("implType"), -contains("optimized")) %>% # Strip out the data we about to add. This allows the script to be rerun without reloading the data.
+  left_join(benchmarkProperties, by = c("benchmarkName")) %>%
   group_by(benchmarkProblemName) %>%
-  addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T), baseline = elapsedTime_mean_problembaseline) %>%
+  addBaseline(elapsedTime_mean, c(language="Scala"), baseline = elapsedTime_mean_problembaseline) %>%
+  addBaseline(cpuTime_mean, c(language="Scala"), baseline = cpuTime_mean_problembaseline) %>%
   ungroup()
 
-includedBenchmarks <- {
-  txt <- "
-  #Black-Scholes-naive (Orc)
-  #Black-Scholes-partially-seq (Orc)
-  Black-Scholes-par (Scala)
-  Black-Scholes-partitioned-seq (Orc)
-  #Black-Scholes-scala-compute (Orc)
-  Black-Scholes-scala-compute-partially-seq (Orc)
-  Black-Scholes-scala-compute-partitioned-seq (Orc)
-  Dedup-boundedchannel (Orc)
-  Dedup-boundedqueue (Scala)
-  Dedup-naive (Orc)
-  Dedup-nestedpar (Scala)
-  KMeans (Orc)
-  KMeans-par (Scala)
-  KMeans-par-manual (Scala)
-  KMeans-scala-inner (Orc)
-  SSSP-batched (Orc)
-  SSSP-batched-par (Scala)
-  SSSP-batched-partitioned (Orc)
-  Swaptions-naive-scala-sim (Orc)
-  Swaptions-naive-scala-subroutines-seq (Orc)
-  #Swaptions-naive-scala-swaption (Orc)
-  #Swaptions-par-swaption (Scala)
-  Swaptions-par-trial (Scala)
-"
-  read.csv(text = txt, strip.white = T, header = F, stringsAsFactors = F)[[1]]
+# Sample count table
+
+sampleCountData <- processedData %>%
+  mutate(implType = factor(if_else(implType == "Orc", paste0("Orc -O", optLevel), as.character(implType)))) %>%
+  select(experiment, benchmarkName, nCPUs, implType, nSamples)
+
+sampleCountTable <- function(format) {
+  kable(sampleCountData, format = format, caption = "The number of repetitions which were used for analysis from each run.")
 }
 
+# Output
+
+outputDir <- file.path(dataDir, "plots")
+if (!dir.exists(outputDir)) {
+  dir.create(outputDir)
+}
+
+timeOutputDir <- file.path(dataDir, "time")
+if (!dir.exists(timeOutputDir)) {
+  dir.create(timeOutputDir)
+}
+
+print(levels(processedData$benchmarkProblemName))
+
+# for (problem in levels(processedData$benchmarkProblemName)) {
+#   ggsave(file.path(outputDir, paste0(problem, "-scaling.pdf")), scalingPlot(problem), width = 7.5, height = 6)
+#   ggsave(file.path(outputDir, paste0(problem, "-normPerformance.pdf")), normalizedPerformancePlot(problem), width = 7.5, height = 8)
+# }
+
+capture.output(sampleCountTable("rst"), file = file.path(outputDir, "usedSampleCounts.rst"), type = "output")
+
+sampleCountTable("rst")
+
+# Benchmark vs. Implementation table
+
+useNCPUs <- max(processedData$nCPUs)
+useOptLevel <- max(processedData$optLevel, na.rm = T)
+
+implTypes <- c("Orc -O0", paste0("Orc -O", useOptLevel), "Orc*", "Orc+Scala", "Scala")
+
+compensatedRows <- right_join(processedData, compensatedData, by = c("benchmarkProblemName", "benchmarkName", "nCPUs", "optLevel")) %>%
+  filter(implType == "Orc", optLevel == useOptLevel) %>%
+  mutate(implType = "Orc*",
+         elapsedTime_mean = compensatedElapsedTime_mean,
+         elapsedTime_mean_upperBound = compensatedElapsedTime_mean_upperBound,
+         elapsedTime_mean_lowerBound = compensatedElapsedTime_mean_lowerBound
+        ) %>%
+  select(colnames(processedData))
+
+longT <- processedData %>% rbind(compensatedRows) %>% filter(nCPUs == useNCPUs) %>%
+  mutate(implType = factor(if_else(implType == "Orc", paste0("Orc -O", optLevel), as.character(implType)), levels = implTypes)) %>%
+  mutate(implType = if_else(optimized, paste0(implType, " Opt"), as.character(implType)))
+
+t <- longT %>%
+  filter(optimized | language == "Scala") %>%
+  select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
+
+write.csv(t, file = file.path(timeOutputDir, "mean_elapsed_time.csv"), row.names = F)
+
+print(kable(t, "latex"))
+
+print(
+  longT %>%
+    select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
+)
+
+filledInData <- processedData %>%
+  full_join(processedData %>%
+              filter(optLevel == 3, implType == "Orc") %>%
+              transmute(benchmarkProblemName, benchmarkName, optLevel = 0, elapsedTime_mean = 8 * 60),
+            by = c("benchmarkProblemName", "benchmarkName", "optLevel")) %>%
+  mutate(elapsedTime_mean = if_else(is.na(elapsedTime_mean.x), elapsedTime_mean.y, elapsedTime_mean.x), elapsedTime_mean.x = NULL, elapsedTime_mean.y = NULL)
+
+times2 <-
+  full_join(filledInData,
+            processedData %>%
+              filter(implType == "Orc", optLevel == 3, optimized == T) %>%
+              transmute(benchmarkProblemName, orc3Time = elapsedTime_mean)) %>%
+  full_join(processedData %>%
+              filter(implType == "Scala") %>%
+              transmute(benchmarkProblemName, scalaTime = elapsedTime_mean)) %>%
+  full_join(processedData %>%
+              filter(implType == "Orc+Scala", optimized == T) %>%
+              transmute(benchmarkProblemName, orcScalaTime = elapsedTime_mean))
+  #filter(implType == "Orc") %>%
+  #mutate(normalizedTime = elapsedTime_mean / orc3Time)
+
+# print(geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / orc3Time) %>% filter(optLevel == 3))$normalizedTime))
+
+normalizedToScalaTimeAtMost <- times2 %>% mutate(normalizedTime = elapsedTime_mean / if_else(is.na(scalaTime), 8 * 60, scalaTime))
+
+print(
+  geomean((normalizedToScalaTimeAtMost %>% filter(implType == "Orc", optLevel == 3, microbenchmark == F))$normalizedTime)
+)
+print(
+  geomean((normalizedToScalaTimeAtMost %>% filter(implType == "Orc", optLevel == 3, microbenchmark == T))$normalizedTime)
+)
+print(
+  geomean((normalizedToScalaTimeAtMost %>% filter(implType == "Orc+Scala", optLevel == 3, microbenchmark == F))$normalizedTime)
+)
+
+normalizedToOrcScalaTimeAtMost <- times2 %>% mutate(normalizedTime = elapsedTime_mean / orcScalaTime)
+
+print(
+  geomean((normalizedToOrcScalaTimeAtMost %>% filter(implType == "Orc", optLevel == 3, optimized == T, microbenchmark == F))$normalizedTime)
+)
+print(
+  geomean((normalizedToOrcScalaTimeAtMost %>% filter(implType == "Orc", optLevel == 0, optimized == T, microbenchmark == F))$normalizedTime)
+)
+print(
+  geomean((normalizedToOrcScalaTimeAtMost %>% filter(implType == "Scala", microbenchmark == F))$normalizedTime)
+)
+
+normalizedToOrc3Time <- times2 %>% mutate(normalizedTime = elapsedTime_mean / orc3Time)
+
+print(
+  geomean((normalizedToOrc3Time %>% filter(implType == "Orc", optLevel == 3, optimized == T, microbenchmark == F))$normalizedTime)
+)
+
+
+# print(
+#   geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / scalaTime) %>% filter(implType == "Orc", optLevel == 3, normalizedTime > 1))$normalizedTime)
+# )
+# print(
+#   geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / scalaTime) %>% filter(implType == "Orc+Scala", optLevel == 3, normalizedTime > 1))$normalizedTime)
+# )
+
+# times2 %>% dropBounds() %>% ggplot(aes(cpuUtilization, normalizedTime, color = benchmarkProblemName)) + geom_point() + xlim(0, 24) + ylim(0, 250) + facet_wrap(~implType)
+
+# t <- longT %>%
+#   filter(!optimized | language == "Scala") %>%
+#   select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
+#
+# print(t)
+
 #processedData <- processedData %>% filter(is.element(benchmarkName, includedBenchmarks))
+#processedData <- processedData %>% filter(optimized == F)
 
 plotAllData <- function(data) {
   paletteValues <- rep(c(rbind(brewer.pal(8, "Dark2"), rev(brewer.pal(12, "Set3")))), 10)
@@ -173,7 +295,7 @@ scalingPlot <- function(problemName) {
   scalingPlot
 }
 
-scalingPlots <- lapply(levels(processedData$benchmarkProblemName), scalingPlot)
+#scalingPlots <- lapply(levels(processedData$benchmarkProblemName), scalingPlot)
 
 
 # Visualize the distribution of implementations of a given problem.
@@ -207,7 +329,7 @@ elapsedTimePlot <- function(problemName) {
   fullPerformancePlot
 }
 
-elapsedTimePlots <- lapply(levels(processedData$benchmarkProblemName), elapsedTimePlot)
+#elapsedTimePlots <- lapply(levels(processedData$benchmarkProblemName), elapsedTimePlot)
 
 #print(elapsedTimePlots)
 
@@ -233,47 +355,9 @@ normalizedPerformancePlot <- function(problemName) {
   fullPerformancePlot
 }
 
-normalizedPerformancePlots <- lapply(levels(processedData$benchmarkProblemName), normalizedPerformancePlot)
+#normalizedPerformancePlots <- lapply(levels(processedData$benchmarkProblemName), normalizedPerformancePlot)
 
 # print(normalizedPerformancePlots)
-
-sampleCountData <- processedData %>% select(benchmarkName, nCPUs, nSamples) %>% spread(nCPUs, nSamples)
-
-sampleCountsPlot <- sampleCountData %>% ggplot(aes(
-  x = factor(nCPUs),
-  y = nSamples,
-  fill = benchmarkName)) +
-  labs(y = "Number of Samples", x = "Number of CPUs", fill = "Benchmark", shape = "Language") +
-  theme_minimal() + scale_color_brewer("Dark2") + facet_wrap(~benchmarkProblemName) +
-  geom_col(position = position_dodge()) +
-  geom_text(aes(label = format(nSamples, digits = 2, nsmall=0),
-                y = pmax(pmin(nSamples + (0.01 * 50), 50 * 0.9), 0)),
-            position = position_dodge(0.9), vjust = 0)
-# print(sampleCountsPlot)
-
-# Sample count table
-
-sampleCountTable <- function(format) {
-  kable(sampleCountData, format = format, caption = "The number of repetitions which were used for analysis from each run.")
-}
-
-# Output
-
-outputDir <- file.path(dataDir, "plots")
-if (!dir.exists(outputDir)) {
-  dir.create(outputDir)
-}
-
-print(levels(processedData$benchmarkProblemName))
-
-# for (problem in levels(processedData$benchmarkProblemName)) {
-#   ggsave(file.path(outputDir, paste0(problem, "-scaling.pdf")), scalingPlot(problem), width = 7.5, height = 6)
-#   ggsave(file.path(outputDir, paste0(problem, "-normPerformance.pdf")), normalizedPerformancePlot(problem), width = 7.5, height = 8)
-# }
-
-capture.output(sampleCountTable("rst"), file = file.path(outputDir, "usedSampleCounts.rst"), type = "output")
-
-sampleCountTable("rst")
 
 # Combined faceted plot for all benchmarks.
 
@@ -284,7 +368,7 @@ overallScalingPlot <- processedData %>%
     #ymin = elapsedTime_mean_problembaseline / elapsedTime_mean_lowerBound,
     #ymax = elapsedTime_mean_problembaseline / elapsedTime_mean_upperBound,
     color = parallelism,
-    group = benchmarkName,
+    group = if(levels(experiment) == c("only")) benchmarkName else factor(paste(experiment, benchmarkName)),
     linetype = factor(if_else((language == "Orc") & scalaCompute, "Orc+Scala", as.character(language)), levels = c("Orc+Scala", "Orc", "Scala"))
     )) +
   labs(y = "Speed Up", x = "Number of Cores", shape = "Granularity", linetype = "Language", color = "Parallelism") +
@@ -293,7 +377,8 @@ overallScalingPlot <- processedData %>%
   #scale_color_brewer(palette="PuBuGn", direction = -1) +
   scale_color_manual(values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
   # geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
-  geom_point(aes(shape = granularity), processedData, alpha = 0.7) +
+  geom_point(aes(shape = if(levels(experiment) == c("only")) granularity else factor(paste(experiment, granularity))),
+             processedData, alpha = 0.7) +
   geom_line() +
   geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
   expand_limits(y = 0) +
@@ -313,8 +398,8 @@ overallScalingPlot <- processedData %>%
     strip.text = element_text(size=9)
   )
 
-print(overallScalingPlot + theme(legend.position = "bottom"))
-ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 7.5, height = 2, units = "in")
+#print(overallScalingPlot + theme(legend.position = "bottom"))
+#ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 7.5, height = 2, units = "in")
 
 # svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
 # print(overallScalingPlot + theme(legend.position = "bottom"))

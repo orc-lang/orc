@@ -70,6 +70,7 @@ object PorcEShared {
             )
             
   def onlyOpt(s: Seq[String]): Seq[String] = s.filter(fn => (fn contains "opt") || nonOpt.exists(fn contains _))
+  def onlyNonOpt(s: Seq[String]): Seq[String] = s.filter(fn => !(fn contains "opt") || nonOpt.exists(fn contains _))
                         
   val mainScalaBenchmarks = Seq(
             //orc.test.item.scalabenchmarks.Mandelbrot,
@@ -150,12 +151,12 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = Set(24)
+      val nCPUsValues = Set(1, 8, 16, 24)
       val porce = for {
         run <- 0 until 2
         nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
-        optLevel <- Seq(3, 0)
-        fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else mainOrcBenchmarks
+        optLevel <- Seq(3/*, 0*/)
+        fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else onlyOpt(mainOrcBenchmarks)
       } yield {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs, optLevel)
@@ -168,7 +169,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      (porce ++ scala).sortBy(o => (o.run, -o.nCPUs, o.toString))
+      (/*porce ++*/ scala).sortBy(o => (o.run, o.nCPUs, o.toString))
     }
     runExperiment(experimentalConditions)
   }
