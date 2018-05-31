@@ -206,7 +206,7 @@ import java.time.Duration
 import ArthursBenchmarkEnv.{ JVMExperimentalCondition, JVMRunner, targetBinariesDir, targetHost, testRootDir }
 
 trait PorcEBenchmark extends JVMRunner {
-  lazy val remoteJavaHome = System.getProperty("orc.test.remoteJavaHome", "LocalInstalls/graalvm-0.33/jre")
+  lazy val remoteJavaHome = System.getProperty("orc.test.remoteJavaHome", "LocalInstalls/graalvm-1.0.0-rc1/jre")
   
   def hardTimeLimit: Double = softTimeLimit * 1.1
   def softTimeLimit: Double 
