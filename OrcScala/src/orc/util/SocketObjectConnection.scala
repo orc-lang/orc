@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Nov 15, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -93,14 +93,12 @@ object SocketObjectConnection {
   //  val connectTimeout = 10 // seconds
 
   def configSocket(socket: Socket) {
-    val IPTOS_LOWDELAY = 0x10
-
     socket.setTcpNoDelay(true)
     socket.setKeepAlive(true)
     /* Socket's PerformancePreferences hasn't been
      * implemented yet, but set is for future use. */
     socket.setPerformancePreferences(1, 2, 0)
-    socket.setTrafficClass(IPTOS_LOWDELAY)
+    socket.setTrafficClass(0xA0) /* DSCP CS5 */
     socket.setSoLinger(true, closeTimeout)
     //    socket.setSoTimeout(readTimeout)
   }
