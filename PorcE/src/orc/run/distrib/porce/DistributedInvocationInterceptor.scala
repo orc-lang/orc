@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 15, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -32,7 +32,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   // checks inlined. It may also be desirable to convert ShouldInterceptInvocation into
   // a Truffle node so that it can have true per site specialization.
   // TODO: PERFORMANCE: This would probably gain a lot by specializing on the number of arguments. That will probably require a simpler structure for the loops.
-  
+
   @noinline
   @TruffleBoundary(allowInlining = true)
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
@@ -44,10 +44,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
       //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
       true
     } else {
-      val here = execution.runtime.here
-      @inline
-      def checkValue(v: AnyRef): Boolean = !execution.currentLocations(v).contains(here)
-      val notAllHere = checkValue(target) || arguments.exists(checkValue(_))
+      val notAllHere = !execution.isLocal(target) || arguments.exists(!execution.isLocal(_))
       //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", notAllHere.toString)
       notAllHere
     }

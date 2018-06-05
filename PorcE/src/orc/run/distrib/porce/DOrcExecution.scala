@@ -44,12 +44,12 @@ import com.oracle.truffle.api.nodes.RootNode
   * @author jthywiss
   */
 abstract class DOrcExecution(
-  val executionId: DOrcExecution#ExecutionId,
-  val followerExecutionNum: Int,
-  programAst: DOrcRuntime#ProgramAST,
-  options: OrcExecutionOptions,
-  eventHandler: OrcEvent => Unit,
-  override val runtime: DOrcRuntime)
+    val executionId: DOrcExecution#ExecutionId,
+    val followerExecutionNum: Int,
+    programAst: DOrcRuntime#ProgramAST,
+    options: OrcExecutionOptions,
+    eventHandler: OrcEvent => Unit,
+    override val runtime: DOrcRuntime)
   extends PorcEExecution( /* node, options,*/ runtime, eventHandler)
   with DistributedInvocationInterceptor
   with ValueMarshaler
@@ -91,7 +91,7 @@ abstract class DOrcExecution(
       //TODO: Replace this with location tracking
       case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime).contains(runtime.here)
       case rmt: RemoteRef => false
-      case _ if valueLocators.exists({vl => vl.currentLocations.isDefinedAt(v) && vl.valueIsLocal(v)}) => true
+      case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.exists({ vl => vl.currentLocations.isDefinedAt(v) && vl.valueIsLocal(v) })
       case _ => true
     }
     //Logger.ValueLocation.finer(s"isLocal($v: ${if (v==null) "Null" else (v.getClass.getName)})=$result")
