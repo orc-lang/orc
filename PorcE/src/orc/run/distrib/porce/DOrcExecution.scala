@@ -76,8 +76,6 @@ abstract class DOrcExecution(
     def pfc(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
       { case vl if vl.currentLocations.isDefinedAt(v) => vl.currentLocations(v) }
     val cl = v match {
-      //TODO: Replace this with location tracking
-      case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime)
       case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.collect(pfc(v)).reduce(_.union(_))
       case _ => hereSet
@@ -88,8 +86,6 @@ abstract class DOrcExecution(
 
   def isLocal(v: Any): Boolean = {
     val result = v match {
-      //TODO: Replace this with location tracking
-      case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime).contains(runtime.here)
       case rmt: RemoteRef => false
       case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.exists({ vl => vl.currentLocations.isDefinedAt(v) && vl.valueIsLocal(v) })
       case _ => true

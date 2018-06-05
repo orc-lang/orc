@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 24, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -45,6 +45,6 @@ object MigrationDecision {
   *
   * @author jthywiss
   */
-trait PinnedPlacementPolicy {
+trait PinnedPlacementPolicy extends DOrcPlacementPolicy {
   def permittedLocations[L <: AbstractLocation](locations: ClusterLocations[L]): Set[L] = locations.hereSet
 }
