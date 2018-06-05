@@ -28,6 +28,10 @@ class VertexValueLocator(execution: DOrcExecution) extends ValueLocator {
     case v: VertexWithPathLen => Set(execution.locationForFollowerNum((v.name % numLocations - 1) + 1))
   }
 
+  override val valueIsLocal: PartialFunction[Any, Boolean] = {
+    case v: VertexWithPathLen => ((v.name % numLocations - 1) + 1) != execution.runtime.here.runtimeId
+  }
+
   override val permittedLocations: PartialFunction[Any, Set[PeerLocation]] = {
     case v: VertexWithPathLen => Set(execution.locationForFollowerNum((v.name % numLocations - 1) + 1))
   }

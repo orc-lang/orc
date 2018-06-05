@@ -86,6 +86,18 @@ abstract class DOrcExecution(
     cl
   }
 
+  def isLocal(v: Any): Boolean = {
+    val result = v match {
+      //TODO: Replace this with location tracking
+      case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime).contains(runtime.here)
+      case rmt: RemoteRef => false
+      case _ if valueLocators.exists({vl => vl.currentLocations.isDefinedAt(v) && vl.valueIsLocal(v)}) => true
+      case _ => true
+    }
+    //Logger.ValueLocation.finer(s"isLocal($v: ${if (v==null) "Null" else (v.getClass.getName)})=$result")
+    result
+  }
+
   def permittedLocations(v: Any): Set[PeerLocation] = {
     def pfp(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
       { case vl if vl.permittedLocations.isDefinedAt(v) => vl.permittedLocations(v) }

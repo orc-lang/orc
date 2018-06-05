@@ -21,6 +21,7 @@ import orc.run.distrib.AbstractLocation
   */
 trait ValueLocator {
   val currentLocations: PartialFunction[Any, Set[PeerLocation]]
+  val valueIsLocal: PartialFunction[Any, Boolean]
   val permittedLocations: PartialFunction[Any, Set[PeerLocation]]
 }
 

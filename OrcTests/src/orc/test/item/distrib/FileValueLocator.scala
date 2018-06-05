@@ -34,6 +34,10 @@ class FileValueLocator(execution: DOrcExecution) extends ValueLocator {
     case f: java.io.File if filenameLocationMap.contains(f.getName) => Set(execution.locationForFollowerNum(filenameLocationMap(f.getName)))
   }
 
+  override val valueIsLocal: PartialFunction[Any, Boolean] = {
+    case f: java.io.File if filenameLocationMap.contains(f.getName) => filenameLocationMap(f.getName) != execution.runtime.here.runtimeId
+  }
+
   override val permittedLocations: PartialFunction[Any, Set[PeerLocation]] = {
     case f: java.io.File if filenameLocationMap.contains(f.getName) => Set(execution.locationForFollowerNum(filenameLocationMap(f.getName)))
   }
