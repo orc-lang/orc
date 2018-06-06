@@ -72,6 +72,8 @@ abstract class DOrcExecution(
 
   protected val valueLocators: Set[ValueLocator] = valueLocatorFactoryServiceLoader.asScala.map(_(this)).toSet
 
+  protected val callLocationOverriders: Set[CallLocationOverrider] = valueLocators.filter(_.isInstanceOf[CallLocationOverrider]).asInstanceOf[Set[CallLocationOverrider]]
+
   def currentLocations(v: Any): Set[PeerLocation] = {
     def pfc(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
       { case vl if vl.currentLocations.isDefinedAt(v) => vl.currentLocations(v) }
@@ -105,6 +107,14 @@ abstract class DOrcExecution(
     }
     //Logger.ValueLocation.finest(s"permittedLocations($v: ${if (v==null) "Null" else (v.getClass.getName)})=$pl")
     pl
+  }
+
+  def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    callLocationOverriders.exists(_.callLocationMayNeedOverride(target, arguments))
+  }
+
+  def callLocationOverride(target: AnyRef, arguments: Array[AnyRef]): Set[PeerLocation] = {
+    callLocationOverriders.find(_.callLocationMayNeedOverride(target, arguments)).map(_.callLocationOverride(target, arguments)).getOrElse(Set.empty)
   }
 
   def selectLocationForCall(candidateLocations: Set[PeerLocation]): PeerLocation = candidateLocations.head

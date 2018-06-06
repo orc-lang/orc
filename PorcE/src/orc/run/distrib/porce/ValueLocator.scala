@@ -25,6 +25,11 @@ trait ValueLocator {
   val permittedLocations: PartialFunction[Any, Set[PeerLocation]]
 }
 
+trait CallLocationOverrider extends ValueLocator {
+  def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]) : Boolean
+  def callLocationOverride(target: AnyRef, arguments: Array[AnyRef]): Set[PeerLocation]
+}
+
 /** Service provider to get ValueLocator instances for a DOrcExecution.
   *
   * @see java.util.ServiceLoader

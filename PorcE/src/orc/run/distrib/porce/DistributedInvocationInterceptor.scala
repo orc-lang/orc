@@ -43,6 +43,9 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
       //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
       true
+    } else if (execution.callLocationMayNeedOverride(target, arguments)) {
+      //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
+      true
     } else {
       val notAllHere = !execution.isLocal(target) || arguments.exists(!execution.isLocal(_))
       //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", notAllHere.toString)
