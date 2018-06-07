@@ -169,7 +169,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      (/*porce ++*/ scala).sortBy(o => (o.run, o.nCPUs, o.toString))
+      (porce ++ scala).sortBy(o => (o.run, o.nCPUs, o.toString))
     }
     runExperiment(experimentalConditions)
   }
@@ -236,7 +236,7 @@ object PorcESpawnFutureExperiment extends PorcEBenchmark {
 object PorcEOptimizationExperiment extends PorcEBenchmark {
   import PorcEShared._
   
-  // Run for a short time (4 min). But in one rep take 30 minutes, let it go, since we HAVE to finish at least one rep to get data.
+  // Run for a short time (4 min). But if one rep take 30 minutes, let it go, since we HAVE to finish at least one rep to get data.
   def softTimeLimit: Double = 60 * 4
   override def hardTimeLimit: Double = 60 * 30
   

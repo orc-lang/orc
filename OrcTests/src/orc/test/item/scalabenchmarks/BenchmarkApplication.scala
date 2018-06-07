@@ -31,7 +31,7 @@ trait BenchmarkApplication[T, R] {
   def benchmark(ctx: T): R
   def check(results: R): Boolean
 
-  val size: Int
+  def size: Int
   val name: String
   
   override def toString() = s"BenchmarkApplication($name)" 

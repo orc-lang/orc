@@ -18,7 +18,7 @@ import java.security.MessageDigest
 import java.util.Arrays
 
 object DedupData {
-  val dataURL = new URL("ftp://ftp.utexas.edu/pub/ubuntu-iso/zesty/ubuntu-17.04-server-i386.iso")
+  val dataURL = new URL("http://old-releases.ubuntu.com/releases/17.04/ubuntu-17.04-server-i386.iso")
   private val localTargetFile = "dedup-input.iso"
   lazy val localInputFile = {
     val f = new File(localTargetFile)

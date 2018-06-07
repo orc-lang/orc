@@ -26,7 +26,7 @@ object KMeansPar extends BenchmarkApplication[Array[Point], Array[Point]] with H
     KMeansData.data
   }
   
-  val size: Int = KMeansData.data.size
+  lazy val size: Int = KMeansData.data.size
   val name: String = "KMeans-par"
 
   import KMeans._

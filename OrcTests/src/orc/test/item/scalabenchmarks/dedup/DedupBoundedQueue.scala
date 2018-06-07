@@ -98,5 +98,5 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit, Unit] {
 
   val name: String = "Dedup-boundedqueue"
 
-  val size: Int = new File(DedupData.localInputFile).length().toInt
+  lazy val size: Int = new File(DedupData.localInputFile).length().toInt
 }

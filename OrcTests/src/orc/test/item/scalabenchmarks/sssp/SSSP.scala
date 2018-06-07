@@ -45,7 +45,7 @@ abstract class SSSPBase extends BenchmarkApplication[(Array[SSSPNode], Array[SSS
     (nodes, edges, source)
   }
 
-  val size: Int = (SSSP.nodes.length / 100000) * SSSP.nodes.length
+  lazy val size: Int = (SSSP.nodes.length / 100000) * SSSP.nodes.length
 
   val expected = SSSP
 }

@@ -83,5 +83,5 @@ object DedupNestedPar extends BenchmarkApplication[Unit, Unit] {
 
   val name: String = "Dedup-nestedpar"
 
-  val size: Int = new File(DedupData.localInputFile).length().toInt
+  lazy val size: Int = new File(DedupData.localInputFile).length().toInt
 }
