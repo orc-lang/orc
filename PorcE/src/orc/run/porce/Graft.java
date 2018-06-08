@@ -86,7 +86,7 @@ public abstract class Graft extends Expression {
     private final BranchProfile haltCatchProfile = BranchProfile.create();
     private final BranchProfile killCatchProfile = BranchProfile.create();
 
-    // FIXME: None of this will not work in distributed Orc because it creates new rootnodes/calltargets at runtime.
+    // FIXME: None of this will work in distributed Orc because it creates new rootnodes/calltargets at runtime.
     //   To make this work with distrib there will need to be a way to transmit a descriptor of the target
     //   so it can be built when it is recieved, OR these closures need to exist at PorcE start time.
     //   The latter is probably easier and better. The targets can be created during porc to porce conversion

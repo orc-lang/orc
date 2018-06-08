@@ -49,7 +49,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     /*
      *  The solution for a racy version is to use a volatile long and split it into two "fields" one for each value (as an int).
-     *  Writes to volatile longs are atomic and the voltatile read/writes shouldn't be much more expensive than normal read/write
+     *  Writes to volatile longs are atomic and the volatile read/writes shouldn't be much more expensive than normal read/write
      *  since they will not happen often enough to be combined.
     private volatile long both = 0;
     private final int getTotalSpawnedTime(long both) {
