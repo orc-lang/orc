@@ -138,7 +138,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       benchmarkClass: Class[_], 
       nCPUs: Int) 
       extends ArthursBenchmarkEnv.ScalaExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
-    override def nRuns = super.nRuns / 2 max 1
+    //override def nRuns = super.nRuns / 2 max 1
     
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
@@ -153,7 +153,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
     val experimentalConditions = {
       val nCPUsValues = Set(1, 8, 16, 24)
       val porce = for {
-        run <- 0 until 2
+        run <- 0 until 1
         nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
         optLevel <- Seq(3/*, 0*/)
         fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else onlyOpt(mainOrcBenchmarks)
@@ -169,7 +169,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      (porce ++ scala).sortBy(o => (o.run, o.nCPUs, o.toString))
+      porce.sortBy(o => (o.run, -o.nCPUs, o.toString)) ++ scala
     }
     runExperiment(experimentalConditions)
   }

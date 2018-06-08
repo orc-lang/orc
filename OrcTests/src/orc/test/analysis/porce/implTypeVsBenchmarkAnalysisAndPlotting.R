@@ -20,9 +20,8 @@ source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 source(file.path(scriptDir, "porce", "utils.R"))
 
-
-#dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
-dataDir <- file.path(localExperimentDataDir, "20180415-a001")
+dataDir <- file.path(experimentDataDir, "PorcE", "impltype-comparison", "20180415-a001")
+# dataDir <- file.path(localExperimentDataDir, "20180415-a001")
 
 loadData <- function(dataDir) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
@@ -31,14 +30,18 @@ loadData <- function(dataDir) {
 
   #d <<- data
 
-  prunedData <- data %>%
+  prunedData <<- data %>%
+    group_by(benchmarkProblemName, language, benchmarkName, nCPUs, optLevel) %>%
+    mutate(totalReps = n()) %>%
+    ungroup() %>%
     dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "optLevel", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
     # Drop any reps which have more than 1% compilation time.
     group_by(benchmarkProblemName, language, benchmarkName, nCPUs, optLevel) %>%
     filter(!any(rtCompTime < cpuTime * 0.01) | rtCompTime < cpuTime * 0.01)
 
   processedData <- prunedData %>%
-    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95) %>%
+    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime", "totalReps"), mean, confidence = 0.95, R = 1) %>%
+    mutate(totalReps = totalReps_mean, totalReps_mean = NULL, totalReps_mean_upperBound = NULL, totalReps_mean_lowerBound = NULL) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
@@ -56,14 +59,12 @@ loadCompensatedData <- function(dataDir) {
            -nSamples)
 }
 
-if(!exists("processedData")) {
-  #processedData <- loadData(file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")) %>% mutate(experiment = "old")
-  #processedData <- processedData %>%
-  #   rbind(loadData(file.path(localExperimentDataDir, "20180220-a002")) %>% mutate(experiment = "new"))
-  #processedData <- processedData %>% mutate(experiment = factor(experiment, ordered = T, levels = c("old", "new")))
-  processedData <- loadData(dataDir) %>% mutate(experiment = factor("only"))
-  compensatedData <- loadCompensatedData(dataDir)
-}
+#processedData <- loadData(file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")) %>% mutate(experiment = "old")
+#processedData <- processedData %>%
+#   rbind(loadData(file.path(localExperimentDataDir, "20180220-a002")) %>% mutate(experiment = "new"))
+#processedData <- processedData %>% mutate(experiment = factor(experiment, ordered = T, levels = c("old", "new")))
+processedData <- loadData(dataDir) %>% mutate(experiment = factor("only"))
+compensatedData <- loadCompensatedData(dataDir)
 
 print(levels(processedData$benchmarkName))
 
@@ -95,6 +96,11 @@ sampleCountData <- processedData %>%
 sampleCountTable <- function(format) {
   kable(sampleCountData, format = format, caption = "The number of repetitions which were used for analysis from each run.")
 }
+
+# To quantify dropped elements:
+
+# prunedData %>% select(rep, totalReps)
+# prunedData %>% summarise(reps = paste(rep, collapse = ","), totalReps = max(totalReps))
 
 # Output
 

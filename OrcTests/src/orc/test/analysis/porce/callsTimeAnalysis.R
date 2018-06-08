@@ -22,10 +22,12 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 
 # The directory of a normal benchmark run
-benchmarkDir <- file.path(localExperimentDataDir, "20180415-a001")
+benchmarkDir <- file.path(experimentDataDir, "PorcE", "impltype-comparison", "20180415-a001")
+# benchmarkDir <- file.path(localExperimentDataDir, "20180415-a001")
 
 # The directory of a call profiling run
-callsDir <- file.path(localExperimentDataDir, "20180412-a003")
+callsDir <- file.path(experimentDataDir, "PorcE", "impltype-comparison", "20180415-a001", "call-profiling-20180412-a003")
+# callsDir <- file.path(localExperimentDataDir, "20180412-a003")
 
 loadBenchmarkData <- function(dataDir) {
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
