@@ -28,7 +28,7 @@ def sieveFragment(outChan) =
 	val inChan = Channel() 
 	val list = ArrayList[Number](sieveFragementSize)
 	val next = Cell()
-	def check(x, iter) = Sequentialize() >> (
+	def check(x, iter) = Sequentialize() >> ( -- Inferable (recursion)
 		val p = Some(iter()) ; None() #
 		--val _ = Println("Checking " + x + " " + p) #
 		(p >None()> signal) |
@@ -37,10 +37,12 @@ def sieveFragment(outChan) =
 			check(x, iter))
 	)
 	def filter(x) = 
-		val v = Sequentialize() >> (check(x, IterableToStream(list)) >> true ; false)
+		val v = Sequentialize() >> -- Inferable 
+			(check(x, IterableToStream(list)) >> true ; false)
 		v >true> (
 			if list.size() <: sieveFragementSize then
-				Sequentialize() >> list.add(x) >> outChan.put(x)
+				Sequentialize() >> -- Inferable 
+				list.add(x) >> outChan.put(x)
 			else
 				-- create a new fragment
 				(next.readD() ;

@@ -33,7 +33,8 @@ def sieveFragment(outChan) =
 		val v = SavinaSieve.check(list, x)
 		v >true> (
 			if list.size() <: sieveFragementSize then
-				Sequentialize() >> list.add(x) >> outChan.put(x)
+				Sequentialize() >> -- Inferable 
+				list.add(x) >> outChan.put(x)
 			else
 				-- create a new fragment
 				(next.readD() ;
@@ -41,7 +42,8 @@ def sieveFragment(outChan) =
 				next.read().put(x)
 		) |
 		v >false> signal #
-	repeat({ Sequentialize() >> (inChan.get() ; next.readD().close() >> stop) >x> filter(x) }) >> stop |
+	repeat({ Sequentialize() >> -- Hard (otherwise) 
+		(inChan.get() ; next.readD().close() >> stop) >x> filter(x) }) >> stop |
 	inChan
 	
 def sforBy(low, high, step, f) =

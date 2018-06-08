@@ -32,7 +32,7 @@ def sumPubs(f) =
 	f() >v> sum.add(v) >> stop ;
 	sum.sum()
 
-def simulate(processor, swaption, seed) :: Number = Sequentialize() >> (
+def simulate(processor, swaption, seed) :: Number = Sequentialize() >> ( -- Inferable (if tabulate array is sequential)
     val timeDelta = swaption.years() / nSteps
     val freqRatio = Ceil(swaption.paymentInterval() / timeDelta)
     val swapPathStart = Ceil(swaption.maturity() / timeDelta)
@@ -78,7 +78,7 @@ def sim(processor, swaption) =
     	simulate(processor, swaption, i) >p>
     	sum.add(p) >>
     	sumsq.add(p*p) >> stop ;
-    Sequentialize() >> 
+    Sequentialize() >> -- Inferable
     swaption.setSimSwaptionPriceMean(sum.sum() / nTrials) >>
     swaption.setSimSwaptionPriceStdError(sqrt((sumsq.sum() - sum.sum()*sum.sum()/nTrials) / (nTrials - 1.0)) / sqrt(nTrials))
 

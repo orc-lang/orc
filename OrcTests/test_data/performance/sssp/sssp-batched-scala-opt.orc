@@ -45,7 +45,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	def processNode(index, outQ, gray) = index >> outQ >> gray >> (
 		val node = nodes(index)?
 		val currentCost = result.get(index)
-		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> Sequentialize() >> (
+		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> Sequentialize() >> ( -- Inferable
 		    SSSPBatchedPar.processEdge(edges, colors, result, gray, edgeIndex, currentCost, outQ)
 		) >> stop ;
 		signal

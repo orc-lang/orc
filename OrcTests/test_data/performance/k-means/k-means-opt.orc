@@ -25,11 +25,12 @@ class PointAdder {
   val y
   val count
   
-  def add(p) = Sequentialize() >> (x.add(p.x()), y.add(p.y()), count.add(1)) >> signal
+  def add(p) = Sequentialize() >> -- Hard (typing on p)
+    (x.add(p.x()), y.add(p.y()), count.add(1)) >> signal
   
   {-- Get the average of the added points. 
     If this is called while points are being added this may have transient errors since the counter, x, or y may include values not included in the others. -}
-  def average() = Sequentialize() >> ( 
+  def average() = Sequentialize() >> ( -- Inferable
     val c = count.sum()
   	Point(x.sum() / c, y.sum() / c)
   	)
@@ -59,8 +60,9 @@ def mapArray(f, a) =
     tabulateArray(a.length?, { f(a(_)?) })
 
 def updateCentroids(xs, centroids) = 
-  val pointAdders = fillArray(centroids.length?, { PointAdder() }) --listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
-  forBy(0, xs.length?, 1) >i> Sequentialize() >> (
+  val pointAdders = fillArray(centroids.length?, { PointAdder() }) 
+  --listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
+  forBy(0, xs.length?, 1) >i> Sequentialize() >> ( -- Inferable (types)
     val p = xs(i)?
     pointAdders(closestIndex(p, centroids))?.add(p)
   ) >> stop ;
@@ -68,7 +70,7 @@ def updateCentroids(xs, centroids) =
   --listToArray(map({ _.average() }, arrayToList(pointAdders)))  
 
 {-
-def minBy(f, l) = Sequentialize() >> (
+def minBy(f, l) = Sequentialize() >> ( -- Inferable (recursion)
   def minBy'([x]) = (f(x), x)
   def minBy'(x:xs) =
     val (min, v) = minBy'(xs)
@@ -81,7 +83,7 @@ def minBy(f, l) = Sequentialize() >> (
   )
 -}
 
-def closestIndex(x :: Point, choices) = Sequentialize() >> (
+def closestIndex(x :: Point, choices) = Sequentialize() >> ( -- Inferable (recursion)
   def h(-1, minV, minI) = minI 
   def h(i, minV, minI) =
     val newV = dist(x, choices(i)?) 

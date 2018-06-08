@@ -27,7 +27,7 @@ def sim(processor, swaption) =
         processor.simulate(swaption, i) >p>
         sum.add(p) >>
         sumsq.add(p*p) >> stop ;
-    Sequentialize() >> 
+    Sequentialize() >> -- Inferable
     swaption.setSimSwaptionPriceMean(sum.sum() / nTrials) >>
     swaption.setSimSwaptionPriceStdError(sqrt((sumsq.sum() - sum.sum()*sum.sum()/nTrials) / (nTrials - 1.0)) / sqrt(nTrials))
 

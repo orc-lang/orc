@@ -12,9 +12,9 @@ class ArraySlice {
   val array
   val start
   val length
-  def apply(i) = Sequentialize() >> array(i+start)
+  def apply(i) = Sequentialize() >> array(i+start) -- Inferable
   val end
-  def toList() = Sequentialize() >> (
+  def toList() = Sequentialize() >> ( -- Inferable (recursion)
     def walk(0,acc) = acc
     def walk(i,acc) = walk(i-1, this(i-1)? : acc)
     walk(length, [])
@@ -24,7 +24,7 @@ class ArraySlice {
 }
 def ArraySlice(a, s, l) = a >a'> s >s'> l >l'> s + l >e'> new ArraySlice { val array = a' # val start = s' # val length = l' # val end = e' }
 
-def quicksort(slice) = Sequentialize() >> (
+def quicksort(slice) = Sequentialize() >> ( -- Inferable
   val a = slice.array
   def part(p, s, t) =
     def lr(i) = if i <: t && a(i)? <= p then lr(i+1) else i 
@@ -51,7 +51,7 @@ def mergeSorted(inputs) = (
   )
   val outputLen = sum(collect({ upto(inputs.length?) >i> inputs(i)?.length }))
   val output = Array(outputLen)
-  def minIndex() = indices >> (
+  def minIndex() = indices >> ( -- Inferable, but hard (must lift out of function)
     def h(i, min, minInd) if (i = indices.length?) = minInd
     def h(i, None(), None()) = (
       val y = indices(i)? >j> Ift(j <: inputs(i)?.length) >> inputs(i)?(j)?
@@ -69,7 +69,7 @@ def mergeSorted(inputs) = (
       )
     h(0, None(), None())
     )
-  def takeMinValue() = Sequentialize() >> indices >> (
+  def takeMinValue() = Sequentialize() >> indices >> ( -- Inferable (recursion on minIndex)
     val iO = minIndex()
     iO >Some(i)> (
       val x = inputs(i)?(indices(i)?)?
@@ -78,7 +78,7 @@ def mergeSorted(inputs) = (
       Some(x)) |
     iO >None()> None() 
     )
-  def merge(i) = Sequentialize() >> output >> (
+  def merge(i) = Sequentialize() >> output >> ( -- Inferable
     val x = takeMinValue()
     x >None()> signal |
     x >Some(y)> output(i) := y >> merge(i+1)

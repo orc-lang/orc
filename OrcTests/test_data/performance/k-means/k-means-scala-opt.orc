@@ -10,20 +10,20 @@ include "benchmark.inc"
 import class ConcurrentHashMap = "java.util.concurrent.ConcurrentHashMap"
 type Double = Top
 
-def smap(f, xs) = Sequentialize() >> ( 
+def smap(f, xs) = Sequentialize() >> ( -- Inferable (recursion)
   def h([], acc) = acc
   def h(x:xs, acc) =
     f(x) >y> h(xs, y : acc)
   h(xs, []) 
   )
   
-def seach(xs) = Sequentialize() >> ( 
+def seach(xs) = Sequentialize() >> (  -- Inferable (multiple publications)
   def h([]) = stop
   def h(x:xs) = x | h(xs)
   h(xs) 
   )
 
-def sfor(low, high, f) = Sequentialize() >> ( 
+def sfor(low, high, f) = Sequentialize() >> ( -- Inferable (recursion)
   def h(i) if (i >= high) = signal
   def h(i) = f(i) >> h(i + 1)
   h(low)
@@ -44,11 +44,12 @@ class PointAdder {
   val y
   val count
   
-  def add(p) = Sequentialize() >> (x.add(p.x()), y.add(p.y()), count.add(1)) >> signal
+  def add(p) = Sequentialize() >> -- Hard due to lack of typing on p to give delay on p.x()
+  	(x.add(p.x()), y.add(p.y()), count.add(1)) >> signal
   
   {-- Get the average of the added points. 
     If this is called while points are being added this may have transient errors since the counter, x, or y may include values not included in the others. -}
-  def average() = Sequentialize() >> ( 
+  def average() = Sequentialize() >> ( -- Inferable
     val c = count.sum()
   	Point(x.sum() / c, y.sum() / c)
   	)
@@ -79,7 +80,7 @@ def mapArray(f, a) =
 
 def updateCentroids(xs, centroids) = 
   val pointAdders = fillArray(centroids.length?, { PointAdder() }) --listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
-  forBy(0, xs.length?, 1) >i> Sequentialize() >> (
+  forBy(0, xs.length?, 1) >i> Sequentialize() >> ( -- Inferable
     val p = xs(i)?
     pointAdders(KMeans.closestIndex(p, centroids))?.add(p)
   ) >> stop ;

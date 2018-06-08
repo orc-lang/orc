@@ -42,7 +42,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
     
     result >> q1 >> q2 >> colors >> outQLock >> (
     
-    def getAndMinResult(i, v) = Sequentialize() >> v >> i >> (
+    def getAndMinResult(i, v) = Sequentialize() >> v >> i >> ( -- Inferable (recursion)
     	val old = result.get(i)
     	if old <: v then
     		old
@@ -55,7 +55,9 @@ def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
 	def processNode(index, outQ, gray) = index >> outQ >> gray >> (
 		val node = nodes(index)?
 		val currentCost = result.get(index)
-		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> Sequentialize() >> edges(edgeIndex)? >edge> (
+		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> 
+		  Sequentialize() >> -- Inferable (blocking) 
+		  edges(edgeIndex)? >edge> (
 			val to = edge.to()
 			val newCost = currentCost + edge.cost()
 			val oldCost = getAndMinResult(to, newCost)

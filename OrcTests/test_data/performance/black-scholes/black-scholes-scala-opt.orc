@@ -18,7 +18,7 @@ def run(data) =
     val volatility = BlackScholesData.volatility()
     val res = Array(data.length?)
     riskless >> volatility >> res >>
-    for(0, data.length?) >i> Sequentialize() >>
+    for(0, data.length?) >i> Sequentialize() >> -- Inferable
       data(i)? >option>
       res(i) := compute(option.price(), option.strike(), option.maturity(), riskless, volatility) 
       >> stop ;

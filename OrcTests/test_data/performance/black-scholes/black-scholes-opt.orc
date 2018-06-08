@@ -18,12 +18,12 @@ val a4 = -1.821255978
 val a5 = 1.330274429
 val rsqrt2pi = BlackScholes.rsqrt2pi()
 
-def abs(x) = Sequentialize() >> Abs(x)
+def abs(x) = Abs(x)
 
-def round(x) = Sequentialize() >> x.doubleValue()
+def round(x) = Sequentialize() >> x.doubleValue() -- Inferable
 
 -- The cumulative normal distribution function
-def cnd(x) = Sequentialize() >> (
+def cnd(x) = Sequentialize() >> ( -- Inferable
     val l = abs(x)
     val k = round(1.0 / (1.0 + 0.2316419 * l))
     val w = round(1.0 - rsqrt2pi * Exp(-l * l / 2) * (a1 * k + a2 * k*k + a3 * k*k*k + a4 * k*k*k*k + a5 * k*k*k*k*k))
@@ -33,7 +33,7 @@ def cnd(x) = Sequentialize() >> (
       w
     )
 
-def compute(s, x, t, r, v) = Sequentialize() >> (
+def compute(s, x, t, r, v) = Sequentialize() >> ( -- Inferable (propogation from cnd)
     val d1 = round((Log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t)))
     val d2 = round(d1 - v * sqrt(t))
 
@@ -49,7 +49,7 @@ def run(data) =
     val volatility = BlackScholesData.volatility()
 	val res = Array(data.length?)
 	riskless >> volatility >> res >>
-	for(0, data.length?) >i> Sequentialize() >>
+	for(0, data.length?) >i> Sequentialize() >> -- Inferable (by propogation from compute)
 	  data(i)? >option>
 	  res(i) := compute(option.price(), option.strike(), option.maturity(), riskless, volatility) 
 	  >> stop ;

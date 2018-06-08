@@ -18,10 +18,10 @@ import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 def countLine(line) =
   import class BreakIterator = "java.text.BreakIterator"
   import class Character = "java.lang.Character"
-  Sequentialize() >> (
-  def containsAlphabetic(s, startPos, endPos) = Sequentialize() >> startPos >>
+  Sequentialize() >> ( -- Inferable
+  def containsAlphabetic(s, startPos, endPos) = Sequentialize() >> startPos >> -- Inferable
     Character.isAlphabetic(s.codePointAt(startPos)) || (if startPos+1 <: endPos then containsAlphabetic(s, startPos+1, endPos) else false)
-  def wordCount'(startPos, wb, accumCount) = Sequentialize() >> accumCount >>
+  def wordCount'(startPos, wb, accumCount) = Sequentialize() >> accumCount >> -- Inferable (recursion)
     wb.next()  >endPos>
     (if endPos <: 0 then accumCount else (if containsAlphabetic(line, startPos, endPos) then wordCount'(endPos, wb, accumCount + 1) else wordCount'(endPos, wb, accumCount))) #
   BreakIterator.getWordInstance() >wb>
@@ -34,9 +34,9 @@ def countFile(file) =
   import class FileReader = "java.io.FileReader"
   (
   def countLinesFrom(in, accumCount) = accumCount >>
-    (in.readLine() ; null)  >nextLine> Sequentialize() >>
+    (in.readLine() ; null)  >nextLine> Sequentialize() >> -- Inferable (recursion)
     (if nextLine = null then accumCount else countLinesFrom(in, accumCount + countLine(nextLine))) #
-  Sequentialize() >>
+  Sequentialize() >> -- Inferable
   BufferedReader(FileReader(file))  >in>
   countLinesFrom(in, 0)  >count>
   in.close()  >>

@@ -41,7 +41,7 @@ val rabin = Rabin()
 val largeChunkMin = 2 * 1024 * 1024
 val readChunkSize = 128 * 1024 * 1024
 
-def sha1(chunk) = Sequentialize() >> ArrayKey(
+def sha1(chunk) = Sequentialize() >> ArrayKey( -- Inferable (type)
 	val m = MessageDigest.getInstance("SHA-1")
 	m.update(chunk.buffer(), chunk.start(), chunk.size()) >>
 	m.digest())
@@ -55,10 +55,10 @@ def readSegements(minimumSegmentSize, in) =
 			-- TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
 			Chunk.readFromInputStream(in, readChunkSize) >data>
 			process(currentChunk.append(data), i) ;
-			Sequentialize() >> 
+			Sequentialize() >> -- Inferable (multiple publications)
 			((currentChunk, i) | printLogLine("Done: readSegements " + (i + 1)) >> (Chunk.empty(), i + 1)) 
 		else
-			Sequentialize() >> 
+			Sequentialize() >> -- Inferable (multiple publications)
 			(currentChunk.slice(0, splitPoint), i) |
 			process(currentChunk.slice(splitPoint, currentChunk.size()), i+1)
 			)
@@ -69,7 +69,7 @@ def readSegements(minimumSegmentSize, in) =
 -}
 def segment(minimumSegmentSize, chunk) =
 	def process(chunk, i) if (chunk.size() = 0) = {- printLogLine("segment " + i) >> -} (Chunk.empty(), i)
-	def process(chunk, i) = Sequentialize() >> (
+	def process(chunk, i) = Sequentialize() >> ( -- Inferable (multiple publications)
 		val splitPoint = rabin.segment(chunk, minimumSegmentSize) #
 		(chunk.slice(0, splitPoint), i) |
 		process(chunk.slice(splitPoint, chunk.size()), i + 1)
@@ -87,7 +87,7 @@ def compress(chunk, dedupPool, id) = (
 	compChunk
 	)
 
-def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> (
+def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> ( -- Inferable
 	if isAlreadyOutput then
 		--printLogLine("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
 		out.writeBytes("R") >> 
@@ -109,7 +109,7 @@ def write(out, outputPool) =
 		if cchunk = null then
 			--printLogLine("Poll: " + (roughID, fineID) + " " + outputPool) >>
 			Rwait(100) >> process((roughID, fineID), id)
-		else if cchunk.uncompressedSize = 0 then Sequentialize() >> (
+		else if cchunk.uncompressedSize = 0 then Sequentialize() >> ( -- Inferable
 			val _ = outputPool.remove((roughID, fineID))
 			if fineID = 0 then
 				printLogLine("Done") >>
@@ -121,7 +121,7 @@ def write(out, outputPool) =
 			val _ = outputPool.remove((roughID, fineID))
 			cchunk.outputChunkID := id >> stop ;
 			--printLogLine("Write: " + (roughID, fineID) + " " + cchunk) >>
-			Sequentialize() >> 
+			Sequentialize() >> -- Inferable
 			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1)) >>
 			alreadyOutput.put(cchunk.uncompressedSHA1, true) >>
 			process((roughID, fineID + 1), id + 1)

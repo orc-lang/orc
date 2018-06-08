@@ -17,7 +17,7 @@ def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"
   import class WordCount = "orc.test.item.distrib.WordCount"
-  Sequentialize() >>
+  Sequentialize() >> -- Inferable
   BufferedReader(FileReader(file))  >in>
   WordCount.countReader(in)  >count>
   in.close()  >>

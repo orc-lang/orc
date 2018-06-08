@@ -11,7 +11,7 @@ import class BigSortData = "orc.test.item.scalabenchmarks.BigSortData"
 def splitSortMerge(input) =
   val partitionSize = Floor(input.length? / nPartitions)
   val sortedPartitions = collect({
-    forBy(0, input.length?, partitionSize) >start> Sequentialize() >> (
+    forBy(0, input.length?, partitionSize) >start> Sequentialize() >> ( -- Inferable
       val sorted = BigSortData.sort(input, start, min(partitionSize, input.length? - start))
       sorted
     )

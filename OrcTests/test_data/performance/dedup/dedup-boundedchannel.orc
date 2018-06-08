@@ -55,7 +55,7 @@ def sha1(chunk) = ArrayKey(
 -}
 def readSegements(minimumSegmentSize, in, callback) =
 	val _ = printLogLine("Start: readSegements")
-	def process(currentChunk, i) = Sequentialize() >> (
+	def process(currentChunk, i) = Sequentialize() >> ( -- Inferable (complex otherwise)
 		val splitPoint = rabin.segment(currentChunk, minimumSegmentSize)
 		if splitPoint = currentChunk.size() then
 			-- TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
@@ -74,7 +74,7 @@ def readSegements(minimumSegmentSize, in, callback) =
 -}
 def segment(minimumSegmentSize, chunk, callback) =
 	def process(chunk, i) if (chunk.size() = 0) = callback(Chunk.empty(), i)
-	def process(chunk, i) = Sequentialize() >> (
+	def process(chunk, i) = Sequentialize() >> ( -- Inferable
 		val splitPoint = rabin.segment(chunk, minimumSegmentSize) #
 		callback(chunk.slice(0, splitPoint), i) >>
 		process(chunk.slice(splitPoint, chunk.size()), i + 1)
@@ -83,7 +83,7 @@ def segment(minimumSegmentSize, chunk, callback) =
 	
 {-- Compress a chunk with deduplication by publishing an existing compressed chuck if an identical one exists.
 -} 
-def compress(chunk, dedupPool, id) = Sequentialize() >> (
+def compress(chunk, dedupPool, id) = Sequentialize() >> ( -- Inferable
 	val hash = sha1(chunk)
 	val old = dedupPool.putIfAbsent(hash, CompressedChunk(hash, chunk.size()))
 	val compChunk = old >> dedupPool.get(hash)
@@ -92,7 +92,7 @@ def compress(chunk, dedupPool, id) = Sequentialize() >> (
 	compChunk
 	)
 
-def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> (
+def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> ( -- Inferable
 	if isAlreadyOutput then
 		--printLogLine("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
 		out.writeBytes("R") >> 
@@ -109,7 +109,7 @@ def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> (
 def write(out, outputPool) =
 	val _ = printLogLine("Start: write")
 	val alreadyOutput = Map()
-	def process((roughID, fineID), id) = Sequentialize() >> (
+	def process((roughID, fineID), id) = Sequentialize() >> ( -- Inferable (recursion)
 		val cchunk = outputPool.get((roughID, fineID))
 		if cchunk = null then
 			--printLogLine("Poll: " + (roughID, fineID) + " " + outputPool) >>
@@ -142,15 +142,15 @@ def dedup(in, out) =
 	val roughChunks = BoundedChannel(nPartitions)
 	val fineChunks = BoundedChannel(nPartitions)
 
-	def fineSegment(roughChunk, roughID) = Sequentialize() >>
+	def fineSegment(roughChunk, roughID) = Sequentialize() >> -- Inferable
 		segment(0, roughChunk, { fineChunks.put((_, roughID, _)) })
-	def fineSegmentThread() = Sequentialize() >> (
+	def fineSegmentThread() = Sequentialize() >> ( -- Inferable
 		val _ = printLogLine("Start: segment")
 		repeat({ roughChunks.get() >(roughChunk, roughID)> fineSegment(roughChunk, roughID) }) >> stop ;
 		printLogLine("Done: segment") >> stop
 		)
 		
-	def compressThread() = Sequentialize() >> ( 
+	def compressThread() = Sequentialize() >> ( -- Inferable
 		val _ = printLogLine("Start: compress")
 		repeat({ fineChunks.get() >(fineChunk, roughID, fineID)> 
 				 compress(fineChunk, dedupPool, (roughID, fineID)) >compressedChunk>
