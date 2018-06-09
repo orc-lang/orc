@@ -258,9 +258,9 @@ class SimpleWorkStealingScheduler(
               afterExecute(this, t, ex)
           }
           isInternallyBlocked = true
+          tasksRun += 1
         }
         StopWatches.workerTime.stop(workerStart)
-        tasksRun += 1
       }
     }
 
