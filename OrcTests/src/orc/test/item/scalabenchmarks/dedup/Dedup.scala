@@ -23,6 +23,8 @@ import orc.test.item.scalabenchmarks.BenchmarkApplication
 object Dedup extends BenchmarkApplication[Unit, Unit] {
   val threadPool = new ForkJoinPool()
   
+  // FIXME: This does not close the output file (or input file) which means it doesn't wait for the output to be flushed out of even internal buffers.
+  
   case class CompressedChunk(uncompressedSHA1: ArrayKey, uncompressedSize: Int) {
     var outputChunkID: Int = -1
     private val compressPromise = Promise[Array[Byte]]()
