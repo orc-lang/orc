@@ -6,7 +6,25 @@ addBenchmarkProblemName <- function(.data) {
   .data %>%
     mutate(benchmarkNamePrefix = sapply(strsplit(as.character(benchmarkName), "[- ._]"), function(v) v[1])) %>%
     left_join(.benchmarkProblemNames, by = c("benchmarkNamePrefix")) %>%
-    select(-benchmarkNamePrefix)
+    select(-benchmarkNamePrefix) %>%
+    mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
+}
+
+.benchmarkMetadata <- {
+  r <- read.csv(file.path(scriptDir, "porce", "benchmark-metadata.csv"), strip.white = T, header = T) %>%
+    replace_na(list(scalaCompute = T)) %>%
+    mutate(granularity = factor(granularity, c("Super Fine", "Fine", "Coarse"), ordered = T)) %>%
+    mutate(parallelism = factor(if_else(parallelism == "Par. Col.", "Naïve", as.character(parallelism))))
+
+  levels(r$granularity) <- c("S. Fine", "Fine", "Coarse")
+
+  r
+}
+
+addBenchmarkMetadata <- function(.data) {
+  .data %>%
+    select(-one_of(colnames(.benchmarkMetadata)[-1])) %>%
+    left_join(.benchmarkMetadata, by = c("benchmarkName"))
 }
 
 loadAndPruneBenchmarkData <- function(dataDir, benchmarkIDCols, runIDCols = c("run"), timeCols = c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), invalidate = T) {

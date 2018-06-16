@@ -254,6 +254,9 @@ trait PorcEBenchmark extends JVMRunner {
       }
     }
     
+    println("Waiting")
+    Thread.sleep(5 * 1000)
+    
     for (expCondition <- filteredExperimentalConditions) {
       runJVM(expCondition, runOutputDir, softTimeLimit, hardTimeLimit)
     }

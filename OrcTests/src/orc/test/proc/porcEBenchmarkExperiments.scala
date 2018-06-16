@@ -69,6 +69,13 @@ object PorcEShared {
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             )
             
+  val mainOrcScalaBenchmarks = mainOrcBenchmarks.filter(fn => externalLanguages.exists(fn contains _) && 
+            !Seq(
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
+            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            ).contains(fn)
+            )
+            
   def onlyOpt(s: Seq[String]): Seq[String] = s.filter(fn => (fn contains "opt") || nonOpt.exists(fn contains _))
   def onlyNonOpt(s: Seq[String]): Seq[String] = s.filter(fn => !(fn contains "opt") || nonOpt.exists(fn contains _))
                         
@@ -106,6 +113,7 @@ object PorcEShared {
   trait HasRunNumber {
     def run: Int
   }  
+  
 }
 
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
@@ -357,8 +365,10 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
 
 
 object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
-  def softTimeLimit: Double = 60 * 15
-  override def hardTimeLimit: Double = 60 * 18
+  import PorcEShared._
+  
+  def softTimeLimit: Double = 60 * 10
+  override def hardTimeLimit: Double = 60 * 14
   
   trait Option extends Product with Serializable {
     def optopt(enabled: Boolean): Map[String, String] = Map()
@@ -368,6 +378,12 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
   case class BooleanOptOpt(name: String, enabledState: Boolean) extends Option {
     override def optopt(enabled: Boolean): Map[String, String] = {
       Map(name -> (if(enabled) enabledState else !enabledState).toString)
+    }
+  }
+  
+  case class StringOptOpt(name: String, enabledState: String, disabledState: String) extends Option {
+    override def optopt(enabled: Boolean): Map[String, String] = {
+      Map(name -> (if(enabled) enabledState else disabledState))
     }
   }
   
@@ -448,30 +464,24 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
 
     // Allow inline some spawns into there spawn site instead of calling them:
     val AllowSpawnInlining = Seq(
-        BooleanSysProp("orc.porce.allowSpawnInlining", true),
+        BooleanOptOpt("porce:inline-spawn", true),
         )
 
     // Only inlining fast tasks (based on runtime profiling):
     val InlineAverageTimeLimit = Seq(
-        StringSysProp("orc.porce.inlineAverageTimeLimit", "10.0", "10000000.0"),
+        StringOptOpt("porce:inline-average-time-limit", "0.1", "0.0000001"),
         )
 
     // Polymorphic inline caches for calls:
     val PolyInlineCaches = Seq(
-      StringSysProp("orc.porce.cache.getFieldMaxCacheSize", "4", "0"),
-      StringSysProp("orc.porce.cache.internalCallMaxCacheSize", "12", "0"),
-      StringSysProp("orc.porce.cache.externalDirectCallMaxCacheSize", "8", "0"),
-      StringSysProp("orc.porce.cache.externalCPSCallMaxCacheSize", "12", "0"),
-      BooleanSysProp("orc.porce.optimizations.externalCPSDirectSpecialization", true),
+        BooleanOptOpt("porce:polymorphic-inline-caching", true)
       )
 
     // Specialize compiled code for runtime states such as futured already being resolved:
     val SpecializeOnRuntimeStates = Seq(
-      BooleanSysProp("orc.porce.optimizations.inlineForceResolved", true),
-      BooleanSysProp("orc.porce.optimizations.inlineForceHalted", true),
-      BooleanSysProp("orc.porce.optimizations.specializeOnCounterStates", true),
-      BooleanSysProp("orc.porce.optimizations.environmentCaching", true),
+        BooleanOptOpt("porce:specialization", true),
       )
+      
     // Optimized TCO (instead of using trampolining through the scheduler):
     val OptimizedTCO = Seq(
       BooleanSysProp("orc.porce.universalTCO", true),
@@ -490,16 +500,17 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
   val LastUsedStep = Seq()
   
   val Steps = Seq(
-      Orctimizer.PeepholeOptimizations ++ Porc.PeepholeOptimizations,
-      Orctimizer.Inlining ++ Porc.Inlining,
-      Orctimizer.ForceElimination,
-      Orctimizer.FutureElimination,
+      //Orctimizer.PeepholeOptimizations ++ Porc.PeepholeOptimizations,
+      //Orctimizer.Inlining ++ Porc.Inlining,
+      //Orctimizer.ForceElimination,
+      //Orctimizer.FutureElimination,
+      // PorcE.OccationallySchedule,
       PorcE.PolyInlineCaches,
+      PorcE.AllowSpawnInlining ++ PorcE.InlineAverageTimeLimit,
       PorcE.SpecializeOnRuntimeStates,
-      PorcE.OccationallySchedule ++ PorcE.AllowSpawnInlining ++ PorcE.InlineAverageTimeLimit,
       //LimitedPrecision,
       LastUsedStep,
-      PorcE.OptimizedTCO,
+      //PorcE.OptimizedTCO,
       )
   
   case class MyPorcEExperimentalCondition(
@@ -516,10 +527,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
     val enabledOptions = Steps.take(step).flatten
     val disabledOptions = Steps.drop(step).flatten
     
-    override def systemProperties = super.systemProperties ++ Map(
-        "graal.TruffleBackgroundCompilation" -> "false",
-        "orc.numerics.preferLP" -> "true"
-        ) ++ 
+    override def systemProperties = super.systemProperties ++ mainSystemProperties ++ 
         enabledOptions.flatMap(_.sysprop(true)) ++ 
         disabledOptions.flatMap(_.sysprop(false))
     
@@ -527,10 +535,9 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
       val opts = (enabledOptions.flatMap(_.optopt(true)) ++ disabledOptions.flatMap(_.optopt(false)))
       opts.map({ case (n, v) => s"$n=$v"}).mkString(",")
     }
-        
-    override def toOrcArgs = super.toOrcArgs ++ Seq("-O", "3", "--opt-opt", optoptString)
-    
-    override def toJvmArgs = Seq("-XX:+UseG1GC", "-Xms64g", "-Xmx100g") ++ super.toJvmArgs
+
+    override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs ++ Seq("-O", "3", "--opt-opt", optoptString)    
+    override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
   }
   
   def main(args: Array[String]): Unit = {
@@ -538,16 +545,12 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
       val nCPUsValues = Seq(24)
       val porce = for {
         nCPUs <- nCPUsValues
-        fn <- Seq(
-            //"test_data/performance/bigsort/bigsort.orc",
-            "test_data/performance/canneal/canneal-naive.orc",
-            "test_data/performance/sssp/sssp-batched.orc",
-            //"test_data/performance/dedup/dedup.orc",
-            "test_data/performance/black-scholes/black-scholes.orc",
-            "test_data/performance/k-means/k-means.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            //"test_data/performance/Mandelbrot.orc",
-            )
+        fn <- onlyOpt(mainOrcBenchmarks)
+        /*onlyOpt(mainOrcScalaBenchmarks) ++ Seq(
+            "test_data/performance/dedup/dedup-opt.orc",
+            "test_data/performance/threads.orc",
+            "test_data/performance/threadring2.orc",
+            )*/
         step <- 0 to Steps.indexOf(LastUsedStep)
       } yield {
         assert(new File(fn).isFile(), fn)
