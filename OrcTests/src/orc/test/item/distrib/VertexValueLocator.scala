@@ -13,27 +13,51 @@
 
 package orc.test.item.distrib
 
-import orc.run.distrib.porce.{ DOrcExecution, PeerLocation, ValueLocator, ValueLocatorFactory }
+import orc.run.distrib.porce.{ CallLocationOverrider, DOrcExecution, PeerLocation, ValueLocator, ValueLocatorFactory }
 
 /** A ValueLocator that maps VertexWithPathLen instances to a location base
   * on the vertex name.
   *
   * @author jthywiss
   */
-class VertexValueLocator(execution: DOrcExecution) extends ValueLocator {
+class VertexValueLocator(execution: DOrcExecution) extends ValueLocator with CallLocationOverrider {
   /* Assuming follower numbers are contiguous from 0 (leader) to n-1 */
   private val numLocations = execution.runtime.allLocations.size
 
+  @inline
+  private def locationFromVertexName(name: Int) = (name % numLocations - 1) + 1
+
   override val currentLocations: PartialFunction[Any, Set[PeerLocation]] = {
-    case v: VertexWithPathLen => Set(execution.locationForFollowerNum((v.name % numLocations - 1) + 1))
+    case v: VertexWithPathLen => Set(execution.locationForFollowerNum(locationFromVertexName(v.name)))
   }
 
   override val valueIsLocal: PartialFunction[Any, Boolean] = {
-    case v: VertexWithPathLen => ((v.name % numLocations - 1) + 1) != execution.runtime.here.runtimeId
+    case v: VertexWithPathLen => locationFromVertexName(v.name) != execution.runtime.here.runtimeId
   }
 
   override val permittedLocations: PartialFunction[Any, Set[PeerLocation]] = {
-    case v: VertexWithPathLen => Set(execution.locationForFollowerNum((v.name % numLocations - 1) + 1))
+    case v: VertexWithPathLen => Set(execution.locationForFollowerNum(locationFromVertexName(v.name)))
+  }
+
+  override def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    target match {
+      case c: Class[_] if c == classOf[VertexWithPathLen] => {
+        require(arguments.length == 4 && arguments(0).isInstanceOf[Int])
+        locationFromVertexName(arguments(0).asInstanceOf[Int]) != execution.runtime.here.runtimeId
+      }
+      case _ => false
+    }
+  }
+
+  override def callLocationOverride(target: AnyRef, arguments: Array[AnyRef]): Set[PeerLocation] = {
+    target match {
+      case c: Class[_] if c == classOf[VertexWithPathLen] => {
+        require(arguments.length == 4 && arguments(0).isInstanceOf[Int])
+        val loc = locationFromVertexName(arguments(0).asInstanceOf[Int])
+        if (loc == execution.runtime.here.runtimeId) Set.empty else Set(execution.locationForFollowerNum(loc))
+      }
+      case _ => Set.empty
+    }
   }
 
 }

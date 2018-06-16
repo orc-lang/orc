@@ -13,22 +13,22 @@
 
 package orc.test.item.distrib
 
-import orc.run.distrib.porce.{ DOrcExecution, PeerLocation, ValueLocator, ValueLocatorFactory }
+import orc.run.distrib.porce.{ CallLocationOverrider, DOrcExecution, DOrcRuntime, PeerLocation, ValueLocator, ValueLocatorFactory }
 
 /** A ValueLocator that looks up java.io.File names in a filename-to-location
   * Map.
   *
   * @author jthywiss
   */
-class FileValueLocator(execution: DOrcExecution) extends ValueLocator {
+class FileValueLocator(execution: DOrcExecution) extends ValueLocator with CallLocationOverrider {
   /* Assuming follower numbers are contiguous from 0 (leader) to n-1 */
   private val numLocations = execution.runtime.allLocations.size
   /* Map files to locations 1 ... n-1, skipping leader (0) */
   val filenameLocationMap =
     /* wordcount-input-data files */
     1.to(120).map(i => (s"input-copy-$i.txt", (i % numLocations - 1) + 1)).toMap ++
-    /* holmes_test_data files */
-    1.to(12).map(i => (s"adventure-$i.txt", (i % numLocations - 1) + 1)).toMap
+      /* holmes_test_data files */
+      1.to(12).map(i => (s"adventure-$i.txt", (i % numLocations - 1) + 1)).toMap
 
   override val currentLocations: PartialFunction[Any, Set[PeerLocation]] = {
     case f: java.io.File if filenameLocationMap.contains(f.getName) => Set(execution.locationForFollowerNum(filenameLocationMap(f.getName)))
@@ -40,6 +40,30 @@ class FileValueLocator(execution: DOrcExecution) extends ValueLocator {
 
   override val permittedLocations: PartialFunction[Any, Set[PeerLocation]] = {
     case f: java.io.File if filenameLocationMap.contains(f.getName) => Set(execution.locationForFollowerNum(filenameLocationMap(f.getName)))
+  }
+
+  def remoteLocationForFilePath(filePath: String): Option[DOrcRuntime#RuntimeId] = {
+    val loc = filenameLocationMap.get(filePath.split(java.io.File.separatorChar).last)
+    if (loc.isEmpty || loc.get == execution.runtime.here.runtimeId) None else Some(loc.get)
+  }
+
+  override def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    target match {
+      case c: Class[_] if c == classOf[java.io.File] && arguments.length == 1 && arguments(0).isInstanceOf[String] => {
+        remoteLocationForFilePath(arguments(0).asInstanceOf[String]).nonEmpty
+      }
+      case _ => false
+    }
+  }
+
+  override def callLocationOverride(target: AnyRef, arguments: Array[AnyRef]): Set[PeerLocation] = {
+    target match {
+      case c: Class[_] if c == classOf[java.io.File] && arguments.length == 1 && arguments(0).isInstanceOf[String] => {
+        val loc = remoteLocationForFilePath(arguments(0).asInstanceOf[String])
+        if (loc.isEmpty) Set.empty else Set(execution.locationForFollowerNum(loc.get))
+      }
+      case _ => Set.empty
+    }
   }
 
 }

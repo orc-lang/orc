@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 import orc.{ CaughtEvent, Schedulable }
 import orc.run.porce.runtime.{ CPSCallContext, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
+
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
@@ -33,6 +34,10 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   // a Truffle node so that it can have true per site specialization.
   // TODO: PERFORMANCE: This would probably gain a lot by specializing on the number of arguments. That will probably require a simpler structure for the loops.
 
+  /** Remove the PorcE context from the arg list, leaving the actual external call args */
+  @inline
+  private def cleanUpArgumentList(arguments: Array[AnyRef]): Array[AnyRef] = arguments.drop(3)
+
   @noinline
   @TruffleBoundary(allowInlining = true)
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
@@ -43,7 +48,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
       //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
       true
-    } else if (execution.callLocationMayNeedOverride(target, arguments)) {
+    } else if (execution.callLocationMayNeedOverride(target, cleanUpArgumentList(arguments))) {
       //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
       true
     } else {
@@ -56,18 +61,28 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   override def invokeIntercepted(callContext: CPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     //Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target) ++ arguments)
 
-    // TODO: If this every turns out to be a performance issue I suspect a bloom-filter-optimized set would help.
-    val intersectLocs = (arguments map execution.currentLocations).fold(execution.currentLocations(target)) { _ & _ }
-    require(!(intersectLocs contains execution.runtime.here))
-    Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
-    val candidateDestinations = {
+    /* Case 1: If there's a call location override, use it */
+    val clo = execution.callLocationOverride(target, arguments)
+    val candidateDestinations = if (clo.nonEmpty) {
+      Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): callLocationOverride=$clo")
+      clo
+    } else {
+      /* Look up current locations, and find their intersection */
+      val intersectLocs = (arguments map execution.currentLocations).fold(execution.currentLocations(target)) { _ & _ }
+      require(!(intersectLocs contains execution.runtime.here))
+      Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
+
       if (intersectLocs.nonEmpty) {
+        /* Case 2: If the intersection of current locations is non-empty, use it */
         intersectLocs
       } else {
+        /* Look up permitted locations, and find their intersection */
         val intersectPermittedLocs = (arguments map execution.permittedLocations).fold(execution.permittedLocations(target)) { _ & _ }
         if (intersectPermittedLocs.nonEmpty) {
+          /* Case 3: If the intersection of permitted locations is non-empty, use it */
           intersectPermittedLocs
         } else {
+          /* Case 4: No permitted location, fail */
           val nla = new NoLocationAvailable((target +: arguments.toSeq).map(v => (v, execution.currentLocations(v).map(_.runtimeId))))
           execution.notifyOrc(CaughtEvent(nla))
           throw nla
