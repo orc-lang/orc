@@ -18,7 +18,8 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig, Ex
 
 import KMeans.D
 
-
+// FIXME: Enlarge problem size to something on the order of:
+//   204800 points, 34 dimensions, 25 centroid, 15 iterations
 
 object KMeansData extends ExpectedBenchmarkResult[Array[Point]] {
   def readPoints(path: String): Array[Point] = {

@@ -6,6 +6,8 @@ include "benchmark.inc"
 
 import class BigSortData = "orc.test.item.scalabenchmarks.BigSortData"
 
+-- FIXME: Fix for merge to be simple, fast, and binary only.
+
 class ArraySlice {
   val array
   val start

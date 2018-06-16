@@ -8,6 +8,8 @@ import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
 include "benchmark.inc"
 
+-- FIXME: Fix for merge to be simple, fast, and binary only.
+
 class ArraySlice {
   val array
   val start

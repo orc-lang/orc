@@ -13,10 +13,15 @@ package orc.test.item.scalabenchmarks.blackscholes
 
 import orc.test.item.scalabenchmarks.{ BenchmarkApplication, HashBenchmarkResult }
 
+// FIXME: This does not scale the way it should. Possible reasons are:
+//    GC overhead due to allocating two 50-70MB objects for every run
+//    Overhead in Scala parallel collections
+
 object BlackScholesPar extends BenchmarkApplication[Array[BlackScholesStock], Array[BlackScholesResult]] with HashBenchmarkResult[Array[BlackScholesResult]] {
   val expected = BlackScholesData
   
   def benchmark(data: Array[BlackScholesStock]) = {
+    //val out = Array.ofDim[BlackScholesResult](data.length)
     val res = for (BlackScholesStock(s, x, t) <- data.par) yield {
       BlackScholes.compute(s, x, t, BlackScholesData.riskless, BlackScholesData.volatility)
     }

@@ -20,7 +20,7 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig, Ex
 import BlackScholes.D
 
 case class BlackScholesStock(price: D, strike: D, maturity: D)
-case class BlackScholesResult(call: D, put: D) {
+case class BlackScholesResult(var call: D, var put: D) {
   override def hashCode(): Int = {
     val prec = 1e6
     (call * prec).toLong.## * 37 ^ (put * prec).toLong.## 
@@ -81,13 +81,13 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array
   val a3: D = 1.781477937
   val a4: D = -1.821255978
   val a5: D = 1.330274429
-  val rsqrt2pi: D = 1.0 / Math.sqrt(2.0 * Math.PI)
+  val rsqrt2pi: D = 1.0 / sqrt(2.0 * Math.PI)
 
   // The cumulative normal distribution function
   def cnd(x: D): D = {
     val l = math.abs(x)
     val k = round(1.0 / (1.0 + 0.2316419 * l))
-    val w = round(1.0 - rsqrt2pi * StrictMath.exp(-l * l / 2) * (a1 * k + a2 * k * k + a3 * k * k * k + a4 * k * k * k * k + a5 * k * k * k * k * k))
+    val w = round(1.0 - rsqrt2pi * Math.exp(-l * l / 2) * (a1 * k + a2 * k * k + a3 * k * k * k + a4 * k * k * k * k + a5 * k * k * k * k * k))
 
     if (x < 0.0) {
       1.0 - w

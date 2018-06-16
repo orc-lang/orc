@@ -15,6 +15,8 @@ import java.util.Random
 
 import scala.annotation.tailrec
 
+// FIXME: Fix for merge to be simple, fast, and binary only.
+
 object BigSortData extends ExpectedBenchmarkResult[IndexedSeq[Number]] {
   val arraySize = BenchmarkConfig.problemSizeScaledInt(1000)
   
