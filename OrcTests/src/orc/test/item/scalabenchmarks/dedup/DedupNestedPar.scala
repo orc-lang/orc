@@ -19,6 +19,9 @@ import scala.annotation.tailrec
 import orc.test.item.scalabenchmarks.BenchmarkApplication
 import orc.test.item.scalabenchmarks.Util.thread
 
+// FIXME: This is not scaling and it's not clear why. Work just seems to execute pretty sparsely.
+//   GC overhead is a bit of an issue (7% of the runtime), but it doesn't seem to be affecting scaling in a huge way.
+
 object DedupNestedPar extends BenchmarkApplication[Unit, Unit] {
   import Dedup._
   
@@ -71,6 +74,9 @@ object DedupNestedPar extends BenchmarkApplication[Unit, Unit] {
     doOutput(0, 0, 0)
     
     loopThread.join()
+    
+    in.close()
+    out.close()
   }
   
   def benchmark(ctx: Unit): Unit = {

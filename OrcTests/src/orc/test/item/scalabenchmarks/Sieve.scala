@@ -43,7 +43,7 @@ import scala.concurrent.Channel
 import java.util.ArrayList
 
 object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBenchmarkResult[Iterable[Long]] {
-  val N = BenchmarkConfig.problemSizeScaledInt(1000)
+  val N = BenchmarkConfig.problemSizeScaledInt(10000)
 
   def primes(n: Long): List[Long] = {
     def candidates(n: Long) = 3L until (n + 1) by 2
@@ -73,9 +73,9 @@ object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBen
   override def hash(results: Iterable[Long]): Int = results.toSet.##()
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0x8fa191bd,
-      10 -> 0x5138c428,
-      100 -> 0xcd3323cb,
+      1 -> 0x5138c428,
+      10 -> 0xcd3323cb,
+      100 -> 0x6807cb31,
       )
 }
 

@@ -14,6 +14,7 @@ package orc.test.item.scalabenchmarks.dedup
 import java.io.{ DataOutputStream, File, FileInputStream, FileOutputStream, IOException }
 import java.security.MessageDigest
 import java.util.concurrent.{ ConcurrentHashMap, ForkJoinPool }
+import java.lang.ThreadLocal
 
 import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration.Duration
@@ -22,8 +23,6 @@ import orc.test.item.scalabenchmarks.BenchmarkApplication
 
 object Dedup extends BenchmarkApplication[Unit, Unit] {
   val threadPool = new ForkJoinPool()
-  
-  // FIXME: This does not close the output file (or input file) which means it doesn't wait for the output to be flushed out of even internal buffers.
   
   case class CompressedChunk(uncompressedSHA1: ArrayKey, uncompressedSize: Int) {
     var outputChunkID: Int = -1
@@ -40,8 +39,12 @@ object Dedup extends BenchmarkApplication[Unit, Unit] {
   val largeChunkMin = 2 * 1024 * 1024
   val readChunkSize = 128 * 1024 * 1024
 
+	val sha1Instance = new ThreadLocal[MessageDigest]() {
+    override def initialValue() = MessageDigest.getInstance("SHA-1")
+  }
+
   def sha1(chunk: Chunk): ArrayKey = new ArrayKey({
-  	val m = MessageDigest.getInstance("SHA-1")
+    val m = sha1Instance.get()
   	m.update(chunk.buffer, chunk.start, chunk.size)
   	m.digest()
 	})
@@ -119,6 +122,9 @@ object Dedup extends BenchmarkApplication[Unit, Unit] {
 			alreadyOutput.put(cchunk.uncompressedSHA1, true)
 			//print(s"$id: ($roughID, $fineID) $roughChunk (${roughChunk.size}), $fineChunk (${fineChunk.size})\r")
     }
+
+    in.close()
+    out.close()
   }
 
   def benchmark(ctx: Unit): Unit = {

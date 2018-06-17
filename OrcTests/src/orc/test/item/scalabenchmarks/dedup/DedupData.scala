@@ -52,6 +52,5 @@ object DedupData {
     val h = Arrays.hashCode(dst.digest())
     println(h.formatted("%x"))
     h == 0xc991c9e1
-    //fc0e31a0
   }
 }

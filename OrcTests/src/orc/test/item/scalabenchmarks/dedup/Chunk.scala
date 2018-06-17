@@ -30,22 +30,22 @@ case class Chunk(buffer: Array[Byte], start: Int, end: Int) {
   }
   
   def appendArray(a: Array[Byte]): Chunk = {
-    val newBuf = Array.ofDim[Byte](size + a.length)
+    val newBuf = Chunk.newBuffer(size + a.length)
     System.arraycopy(buffer, start, newBuf, 0, size)
     System.arraycopy(a, 0, newBuf, size, a.length)
     Chunk(newBuf, 0, newBuf.length)
   }
   
   def append(a: Chunk): Chunk = {
-    val newBuf = Array.ofDim[Byte](size + a.size)
+    val newBuf = Chunk.newBuffer(size + a.size)
     System.arraycopy(buffer, start, newBuf, 0, size)
     System.arraycopy(a.buffer, a.start, newBuf, size, a.size)
     Chunk(newBuf, 0, newBuf.length)
   }
   
   def compact = {
-    if (size < buffer.length) {
-      val newBuf = Array.ofDim[Byte](size)
+    if (Chunk.actuallyCompact && size < buffer.length) {
+      val newBuf = Chunk.newBuffer(size)
       System.arraycopy(buffer, start, newBuf, 0, size)
       Chunk(newBuf, 0, newBuf.length)
     } else {
@@ -56,7 +56,7 @@ case class Chunk(buffer: Array[Byte], start: Int, end: Int) {
   def deflate() = {
     val deflater = new Deflater(5)
     deflater.setInput(buffer, start, size)
-    val out = Array.ofDim[Byte]((size * 1001) / 1000 + 12)
+    val out = Chunk.newBuffer((size * 1001) / 1000 + 12)
     deflater.finish()
     val n = deflater.deflate(out)
     val r = Chunk(out, 0, n)
@@ -66,14 +66,24 @@ case class Chunk(buffer: Array[Byte], start: Int, end: Int) {
 }
 
 object Chunk {
+  @inline
+  private final val actuallyCompact = true
+  
   val empty = Chunk(Array.emptyByteArray, 0, 0)
   
   def fromArray(a: Array[Byte]) = {
     Chunk(a, 0, a.length)
   }
   
+  def newBuffer(n: Int) = {
+    // Round to nearest multiple of 16k
+    //val roundTo = 16 * 1024
+    //val nn = (n + roundTo - 1) / roundTo * roundTo
+    Array.ofDim[Byte](n)
+  }
+  
   def readFromInputStream(in: InputStream, n: Int): Chunk = {
-    val a = Array.ofDim[Byte](n)
+    val a = newBuffer(n)
     val nRead = in.read(a)
     if (nRead > 0) {
       Chunk(a, 0, nRead).compact

@@ -132,7 +132,9 @@ object SSSPBatched extends SSSPBase {
   }
   
 }
-  
+ 
+// FIXME: Has contention issue. See line 186.
+
 object SSSPBatchedPar extends SSSPBase {
   val name: String = "SSSP-batched-par"
 
@@ -181,6 +183,7 @@ object SSSPBatchedPar extends SSSPBase {
   def processEdge(edges: Array[SSSPEdge], colors: AtomicIntegerArray, result: AtomicIntegerArray, gray: Int, edgeIndex: Int, currentCost: Int, outQueue: ArrayList[Int]) = {
     val SSSPEdge(to, cost) = edges(edgeIndex)
     val newCost = currentCost + cost
+    // FIXME: This next line is a major source of contention.
     val oldCost = result.getAndAccumulate(to, newCost, _ min _)
     if (newCost < oldCost) {
       val oldColor = colors.getAndSet(to, gray)

@@ -19,6 +19,9 @@ import scala.annotation.tailrec
 import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig }
 import orc.test.item.scalabenchmarks.Util.thread
 
+// FIXME: There seems to be very little overlapping work happening in the threads. Maybe they are convoying on the queues or something.
+//   GC overhead is a bit of an issue (7% of the runtime), but it doesn't seem to be affecting scaling in a huge way.
+
 object DedupBoundedQueue extends BenchmarkApplication[Unit, Unit] {
   import Dedup._
   
@@ -86,6 +89,9 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit, Unit] {
     readThread.join()
     segmentThreads foreach { _.terminate() }
     compressThreads foreach { _.terminate() }
+    
+    in.close()
+    out.close()
   }
   
   def benchmark(ctx: Unit): Unit = {
