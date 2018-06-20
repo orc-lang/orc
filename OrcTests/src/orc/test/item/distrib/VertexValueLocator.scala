@@ -32,7 +32,7 @@ class VertexValueLocator(execution: DOrcExecution) extends ValueLocator with Cal
   }
 
   override val valueIsLocal: PartialFunction[Any, Boolean] = {
-    case v: VertexWithPathLen => locationFromVertexName(v.name) != execution.runtime.here.runtimeId
+    case v: VertexWithPathLen => locationFromVertexName(v.name) == execution.runtime.here.runtimeId
   }
 
   override val permittedLocations: PartialFunction[Any, Set[PeerLocation]] = {

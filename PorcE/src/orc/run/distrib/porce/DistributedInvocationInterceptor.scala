@@ -69,7 +69,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     } else {
       /* Look up current locations, and find their intersection */
       val intersectLocs = (arguments map execution.currentLocations).fold(execution.currentLocations(target)) { _ & _ }
-      require(!(intersectLocs contains execution.runtime.here))
+      require(!(intersectLocs contains execution.runtime.here), s"intersectLocs contains here on call: $target(${arguments.mkString(",")}")
       Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
 
       if (intersectLocs.nonEmpty) {
