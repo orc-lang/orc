@@ -80,8 +80,6 @@ class Processor(nTrials: Int) {
     val timeDelta = swaption.years / nSteps
     val drifts = Array.ofDim[Double](swaption.factors.size, nSteps - 1)
     
-    // TODO: There is probably a clean way to implement this as a single scanLeft operation.
-    
     for (i <- 0 until swaption.factors.size) {
       drifts(i)(0) = 0.5 * timeDelta * swaption.factors(i)(0) * swaption.factors(i)(0)
     }

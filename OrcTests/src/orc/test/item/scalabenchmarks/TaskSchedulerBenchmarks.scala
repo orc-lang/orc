@@ -173,7 +173,6 @@ object TaskSchedulerBenchmarks {
   }
 
   class ThreadPoolExecutorImpl extends ThreadPoolExecutor(
-    //TODO: Make more of these params configurable
     math.max(16, Runtime.getRuntime().availableProcessors * 2),
     256,
     2000L, TimeUnit.MILLISECONDS,
