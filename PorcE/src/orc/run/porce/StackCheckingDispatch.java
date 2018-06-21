@@ -25,6 +25,7 @@ import orc.run.porce.runtime.PorcERuntime;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 /**
@@ -33,6 +34,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
  * @author amp
  */
 @AdhocIntrospectable
+@Instrumentable(factory = StackCheckingDispatchWrapper.class)
 public class StackCheckingDispatch extends Dispatch {
     @Child
     protected Dispatch call = null;
@@ -41,6 +43,10 @@ public class StackCheckingDispatch extends Dispatch {
 
     private StackCheckingDispatch(PorcEExecution execution) {
 	super(execution);
+    }
+
+    StackCheckingDispatch(StackCheckingDispatch orig) {
+	super(orig.execution);
     }
 
     @Override
