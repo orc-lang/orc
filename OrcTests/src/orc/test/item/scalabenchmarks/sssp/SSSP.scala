@@ -12,7 +12,6 @@
 package orc.test.item.scalabenchmarks.sssp
 
 import java.util.ArrayList
-import java.util.concurrent.atomic.AtomicIntegerArray
 
 import scala.collection.JavaConverters.asScalaBufferConverter
 
@@ -22,30 +21,30 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig, Ex
   *
   * Implemented using BFS.
   *
-  * This implementation is based on the implementation in Parboil
-  * (http://impact.crhc.illinois.edu/parboil/parboil.aspx), which uses
-  * a queue instead of marking (as in the Rodinia version).
-  *
   * This is a naive implementation which uses mutable arrays but is
-  * otherwise not optimized.
+  * otherwise not optimized. It does not implement edge weights since
+  * non-weighted SSSP scales better using simple algorithms.
   */
 object SSSP extends ExpectedBenchmarkResult[Array[Int]] {
-  lazy val (nodes, edges, source) = SSSPData.generate(BenchmarkConfig.problemSizeSqrtScaledInt(40000))
+  lazy val (nodes, edges, source) = {
+    val (ns, es, src) = SSSPData.generate(BenchmarkConfig.problemSizeSqrtScaledInt(80000))
+    (ns, es.map(_.to), src)
+  }
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0xac4404ef,
-      10 -> 0xddd2d72e,
-      100 -> 0x3544edc6,
+      1 -> 0x18e8f495,
+      10 -> 0xb6304a01,
+      100 -> 0x55e0917b,
       )
 }
 
-abstract class SSSPBase extends BenchmarkApplication[(Array[SSSPNode], Array[SSSPEdge], Int), Array[Int]] with HashBenchmarkResult[Array[Int]] {
-  def setup(): (Array[SSSPNode], Array[SSSPEdge], Int) = {
+abstract class SSSPBase extends BenchmarkApplication[(Array[SSSPNode], Array[Int], Int), Array[Int]] with HashBenchmarkResult[Array[Int]] {
+  def setup(): (Array[SSSPNode], Array[Int], Int) = {
     import SSSP._
     (nodes, edges, source)
   }
 
-  lazy val size: Int = (SSSP.nodes.length / 100000) * SSSP.nodes.length
+  lazy val size: Int = SSSP.nodes.length * SSSP.nodes.length
 
   val expected = SSSP
 }
@@ -53,34 +52,27 @@ abstract class SSSPBase extends BenchmarkApplication[(Array[SSSPNode], Array[SSS
 object SSSPSeq extends SSSPBase {
   val name: String = "SSSP-seq"
 
-  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)) = {
+  def benchmark(ctx: (Array[SSSPNode], Array[Int], Int)) = {
     val (nodes, edges, source) = ctx
     ssspSeq(nodes, edges, source)
   }
   
-  def ssspSeq(nodes: Array[SSSPNode], edges: Array[SSSPEdge], source: Int): Array[Int] = {
-    val colors = Array.fill(nodes.size)(0)
-    var gray = 1
+  def ssspSeq(nodes: Array[SSSPNode], edges: Array[Int], source: Int): Array[Int] = {
+    val visited = Array.fill(nodes.size)(false)
     val result = Array.fill(nodes.size)(Int.MaxValue)
     val queue = collection.mutable.Queue[Int]()
     result(source) = 0
     queue.enqueue(source)
     while (queue.nonEmpty) {
       val index = queue.dequeue()
-      val currentCost = result(index)
 
-      for (SSSPEdge(to, cost) <- nodes(index).edges(edges)) {
-        val newCost = currentCost + cost
-        if (newCost < result(to)) {
-          result(to) = newCost
-          if (colors(to) != gray) {
-            colors(to) = gray
-            queue.enqueue(to)
-          }
+      for (to <- nodes(index).edges(edges)) {
+        if (!visited(to)) {
+          result(to) = result(index) + 1
+          visited(to) = true
+          queue.enqueue(to)
         }
       }
-
-      gray += 1
     }
     result
   }
@@ -89,14 +81,13 @@ object SSSPSeq extends SSSPBase {
 object SSSPBatched extends SSSPBase {
   val name: String = "SSSP-batched"
 
-  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)) = {
+  def benchmark(ctx: (Array[SSSPNode], Array[Int], Int)) = {
     val (nodes, edges, source) = ctx
     ssspBatched(nodes, edges, source)
   }
 
-  def ssspBatched(nodes: Array[SSSPNode], edges: Array[SSSPEdge], source: Int): Array[Int] = {
-    val colors = Array.fill(nodes.size)(0)
-    var gray = 1
+  def ssspBatched(nodes: Array[SSSPNode], edges: Array[Int], source: Int): Array[Int] = {
+    val visited = Array.fill(nodes.size)(false)
     val result = Array.fill(nodes.size)(Int.MaxValue)
     val batches = (0 until 2).map(_ => new ArrayList[Int]()).toArray
     var batchNumber = 0
@@ -109,23 +100,19 @@ object SSSPBatched extends SSSPBase {
       val outQueue = batches((batchNumber + 1) % 2)
       
       for (index <- inQueue.asScala) {
-        val currentCost = result(index)
+        @inline def currentCost = result(index)
   
-        for (SSSPEdge(to, cost) <- nodes(index).edges(edges)) {
-          val newCost = currentCost + cost
-          if (newCost < result(to)) {
-            result(to) = newCost
-            if (colors(to) != gray) {
-              colors(to) = gray
-              outQueue.add(to)
-            }
+        for (to <- nodes(index).edges(edges)) {
+          if (!visited(to)) {
+            result(to) = currentCost + 1
+            visited(to) = true
+            outQueue.add(to)
           }
         }
       }
       
       inQueue.clear()
 
-      gray += 1
       batchNumber = (batchNumber + 1) % 2
     }
     result
@@ -138,25 +125,19 @@ object SSSPBatched extends SSSPBase {
 object SSSPBatchedPar extends SSSPBase {
   val name: String = "SSSP-batched-par"
 
-  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)) = {
+  def benchmark(ctx: (Array[SSSPNode], Array[Int], Int)) = {
     val (nodes, edges, source) = ctx
     ssspBatchedPar(nodes, edges, source)
   }
 
-
-  def ssspBatchedPar(nodes: Array[SSSPNode], edges: Array[SSSPEdge], source: Int): Array[Int] = {
-    val colors = new AtomicIntegerArray(nodes.size)
-    var gray = 1
-    val result = new AtomicIntegerArray(nodes.size)
-    
-    for (i <- 0 until result.length()) { 
-      result.set(i, Int.MaxValue)
-    }
+  def ssspBatchedPar(nodes: Array[SSSPNode], edges: Array[Int], source: Int): Array[Int] = {
+    val visited = Array.fill(nodes.size)(false)
+    val result = Array.fill(nodes.size)(Int.MaxValue)
     
     val batches = (0 until 2).map(_ => new ArrayList[Int]()).toArray
     var batchNumber = 0
     
-    result.set(source, 0)
+    result(source) = 0
     batches(batchNumber).add(source)
     
     while (! batches(batchNumber).isEmpty()) {
@@ -165,32 +146,39 @@ object SSSPBatchedPar extends SSSPBase {
       
       for (queueIndex <- (0 until inQueue.size).par) {
         val index = inQueue.get(queueIndex)
-        val currentCost = result.get(index)
-  
+ 
         for (edgeIndex <- nodes(index).initialEdge until nodes(index).initialEdge + nodes(index).nEdges) {
-          processEdge(edges, colors, result, gray, edgeIndex, currentCost, outQueue)
+          processEdge(edges, visited, result, edgeIndex, result(index), outQueue)
         }
       }
       
       inQueue.clear()
 
-      gray += 1
       batchNumber = (batchNumber + 1) % 2
     }
-    (0 until result.length()).map(result.get(_)).toArray
+    result
   }
   
-  def processEdge(edges: Array[SSSPEdge], colors: AtomicIntegerArray, result: AtomicIntegerArray, gray: Int, edgeIndex: Int, currentCost: Int, outQueue: ArrayList[Int]) = {
-    val SSSPEdge(to, cost) = edges(edgeIndex)
-    val newCost = currentCost + cost
-    // FIXME: This next line is a major source of contention.
-    val oldCost = result.getAndAccumulate(to, newCost, _ min _)
-    if (newCost < oldCost) {
-      val oldColor = colors.getAndSet(to, gray)
-      if (oldColor != gray) {
-        outQueue synchronized {
-          outQueue.add(to)
-        }
+  def processEdge(edges: Array[Int], visited: Array[Boolean], result: Array[Int], edgeIndex: Int, currentCost: Int, outQueue: ArrayList[Int]) = {
+    val to = edges(edgeIndex)
+    if (!visited(to)) {
+      visited(to) = true
+      result(to) = currentCost + 1
+      
+      outQueue synchronized {
+        outQueue.add(to)
+      }
+    }
+  }
+  
+  def processEdge(edges: Array[Int], visited: ArrayList[Object], result: ArrayList[Object], edgeIndex: Int, currentCost: Int, outQueue: ArrayList[Object]) = {
+    val to = edges(edgeIndex)
+    if (!visited.get(to).asInstanceOf[Boolean]) {
+      visited.set(to, true.asInstanceOf[AnyRef])
+      result.set(to, (currentCost.asInstanceOf[Number].longValue() + 1).asInstanceOf[AnyRef])
+      
+      outQueue synchronized {
+        outQueue.add(to.asInstanceOf[AnyRef])
       }
     }
   }
@@ -199,25 +187,19 @@ object SSSPBatchedPar extends SSSPBase {
 object SSSPBatchedParManual extends SSSPBase {
   val name: String = "SSSP-batched-par-manual"
 
-  def benchmark(ctx: (Array[SSSPNode], Array[SSSPEdge], Int)) = {
+  def benchmark(ctx: (Array[SSSPNode], Array[Int], Int)) = {
     val (nodes, edges, source) = ctx
     ssspBatchedPar(nodes, edges, source)
   }
-
-
-  def ssspBatchedPar(nodes: Array[SSSPNode], edges: Array[SSSPEdge], source: Int): Array[Int] = {
-    val colors = new AtomicIntegerArray(nodes.size)
-    var gray = 1
-    val result = new AtomicIntegerArray(nodes.size)
-    
-    for (i <- 0 until result.length()) { 
-      result.set(i, Int.MaxValue)
-    }
+  
+  def ssspBatchedPar(nodes: Array[SSSPNode], edges: Array[Int], source: Int): Array[Int] = {
+    val visited = Array.fill(nodes.size)(false)
+    val result = Array.fill(nodes.size)(Int.MaxValue)
     
     val batches = (0 until 2).map(_ => new ArrayList[Int]()).toArray
     var batchNumber = 0
     
-    result.set(source, 0)
+    result(source) = 0
     batches(batchNumber).add(source)
     
     while (! batches(batchNumber).isEmpty()) {
@@ -232,18 +214,9 @@ object SSSPBatchedParManual extends SSSPBase {
         
         for (queueIndex <- qindexStart until qindexEnd) {
           val index = inQueue.get(queueIndex)
-          val currentCost = result.get(index)
-    
+          
           for (edgeIndex <- nodes(index).initialEdge until nodes(index).initialEdge + nodes(index).nEdges) {
-            val SSSPEdge(to, cost) = edges(edgeIndex) 
-            val newCost = currentCost + cost
-            val oldCost = result.getAndAccumulate(to, newCost, _ min _)
-            if (newCost < oldCost) {
-              val oldColor = colors.getAndSet(to, gray)
-              if (oldColor != gray) {
-                localQ.add(to)
-              }
-            }
+            SSSPBatchedPar.processEdge(edges, visited, result, edgeIndex, result(index), localQ)
           }
         }
         
@@ -254,9 +227,8 @@ object SSSPBatchedParManual extends SSSPBase {
       
       inQueue.clear()
 
-      gray += 1
       batchNumber = (batchNumber + 1) % 2
     }
-    (0 until result.length()).map(result.get(_)).toArray
+    result
   }
 }

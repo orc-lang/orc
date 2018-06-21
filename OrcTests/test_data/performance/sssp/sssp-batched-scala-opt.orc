@@ -4,12 +4,9 @@ Single-Source Shortest Path
 
 Implemented using BFS.
 
-This implementation is based on the implementation in Parboil 
-(http://impact.crhc.illinois.edu/parboil/parboil.aspx), which uses
-a queue instead of marking (as in the Rodinia version).
-
 This is a naive implementation which uses mutable arrays but is
-otherwise not optimized.
+otherwise not optimized. It does not implement edge weights since
+non-weighted SSSP scales better using simple algorithms.
 
 -}
 
@@ -22,47 +19,42 @@ import class Edge = "orc.test.item.scalabenchmarks.sssp.SSSPEdge"
 import class SSSP = "orc.test.item.scalabenchmarks.sssp.SSSP"
 import class SSSPBatchedPar = "orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar"
 
-import class AtomicLong = "java.util.concurrent.atomic.AtomicLong"
-import class AtomicIntegerArray = "java.util.concurrent.atomic.AtomicIntegerArray"
 import class ArrayList = "java.util.ArrayList"
+import class Collections = "java.util.Collections"
 
 def eachArrayList(a) = upto(a.size()) >i> a.get(i)
 
-def sssp(nodes :: Array[Node], edges :: Array[Edge], source :: Integer) =
+def sssp(nodes :: Array[Node], edges :: Array[Integer], source :: Integer) =
+	val outQLock = Semaphore(1)
 	val q1 = ArrayList()
 	val q2 = ArrayList()
-    val result = (
-      AtomicIntegerArray(nodes.length?) >a> (
-      upto(nodes.length?) >i>
-      a.set(i, 1073741824) >>
-      stop ;
-      a)
-    )
-    val colors = AtomicIntegerArray(nodes.length?)
-
-    result >> q1 >> q2 >> colors >> (    
+    val result = ArrayList(Collections.nCopies(nodes.length?, 1073741824))
+    val visited = ArrayList(Collections.nCopies(nodes.length?, false))
     
-	def processNode(index, outQ, gray) = index >> outQ >> gray >> (
+    result >> q1 >> q2 >> visited >> outQLock >> (
+    
+	def processNode(index, outQ) = index >> outQ >> (
 		val node = nodes(index)?
 		val currentCost = result.get(index)
-		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> Sequentialize() >> ( -- Inferable
-		    SSSPBatchedPar.processEdge(edges, colors, result, gray, edgeIndex, currentCost, outQ)
-		) >> stop ;
+		--Println("Processing node " + index + " " + node + " " + currentCost) >>
+		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> 
+			Sequentialize() >>
+			SSSPBatchedPar.processEdge(edges, visited, result, edgeIndex, currentCost, outQ) >> stop ;
 		signal
 	)
 	
-	def h(inQ, outQ, gray) =
-		eachArrayList(inQ) >i> processNode(i, outQ, gray) >> stop ;
-		inQ.clear() >> ( --Println("Batch " + gray + " done " + outQ) >>
+	def h(inQ, outQ) =
+		eachArrayList(inQ) >i> processNode(i, outQ) >> stop ;
+		inQ.clear() >> (
 		if outQ.size() :> 0 then
-			h(outQ, inQ, gray + 1)
+			h(outQ, inQ)
 		else
 			signal
 		)
 	
     result.set(source, 0) >>
 	q1.add(source) >>
-	h(q1, q2, 1) >>
+	h(q1, q2) >>
 	result
 	)
 

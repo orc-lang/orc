@@ -4,12 +4,9 @@ Single-Source Shortest Path
 
 Implemented using BFS.
 
-This implementation is based on the implementation in Parboil 
-(http://impact.crhc.illinois.edu/parboil/parboil.aspx), which uses
-a queue instead of marking (as in the Rodinia version).
-
 This is a naive implementation which uses mutable arrays but is
-otherwise not optimized.
+otherwise not optimized. It does not implement edge weights since
+non-weighted SSSP scales better using simple algorithms.
 
 -}
 

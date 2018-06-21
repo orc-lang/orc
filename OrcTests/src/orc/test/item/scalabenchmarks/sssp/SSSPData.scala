@@ -15,6 +15,7 @@ import scala.util.Random
 
 case class SSSPNode(initialEdge: Int, nEdges: Int) {
   def edges(edges: Array[SSSPEdge]) = edges.view(initialEdge, initialEdge + nEdges)
+  def edges(edges: Array[Int]) = edges.view(initialEdge, initialEdge + nEdges)
 }
 
 case class SSSPEdge(to: Int, cost: Int) {
