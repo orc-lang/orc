@@ -15,10 +15,9 @@ import java.util.Random
 
 import scala.annotation.tailrec
 
-// FIXME: Fix for merge to be simple, fast, and binary only.
-
 object BigSortData extends ExpectedBenchmarkResult[IndexedSeq[Number]] {
-  val arraySize = BenchmarkConfig.problemSizeScaledInt(1000)
+  // TODO: We may need to be increased by 10x.
+  val arraySize = BenchmarkConfig.problemSizeScaledInt(10000)
   
   def makeRandomArray(n: Int): Array[Number] = {
     val rng = new Random(n)
@@ -30,52 +29,40 @@ object BigSortData extends ExpectedBenchmarkResult[IndexedSeq[Number]] {
   def sort(a: Array[Number], start: Int, length: Int): IndexedSeq[Number] = {
     a.slice(start, start + length).sorted
   }
-  
-  def mergeSorted(inputs: Seq[IndexedSeq[Number]]): IndexedSeq[Number] = {
-    val indices = Array.fill(inputs.size)(0) 
-    val outputLen = inputs.map(_.size).sum
-    val output = Array.ofDim[Number](outputLen)
 
-    def minIndex(): Option[Int] = {
-      try {
-        val (nextI, indexI) = indices.view.zipWithIndex
-          .filter({ case (nextI, indexI) => nextI < inputs(indexI).size })
-          .minBy({ case (nextI, indexI) => inputs(indexI)(nextI) })
+  def mergeSortedArray(a: Array[Any], b: Array[Any]): Array[Number] = {
+    mergeSorted(a.seq.asInstanceOf[IndexedSeq[Number]], b.seq.asInstanceOf[IndexedSeq[Number]]).toArray
+  }
   
-        Some(indexI)
-      } catch {
-        case _: UnsupportedOperationException =>
-          None
-      }
-    }
+  def mergeSorted(a: IndexedSeq[Number], b: IndexedSeq[Number]): IndexedSeq[Number] = {
+    val outputLen = a.length + b.length
+    val output = Array.ofDim[Number](outputLen)
     
-    def takeMinValue(): Option[Number] = {
-      minIndex() map { i =>
-        val x = inputs(i)(indices(i))
-        indices(i) = indices(i) + 1
-        x
-      }
-    }
+    var aI = 0
+    var bI = 0
+    var oI = 0
     
-    @tailrec
-    def merge(i: Int): Unit = {
-      takeMinValue() match {
-        case Some(v) =>
-          output(i) = v
-          merge(i + 1)
-        case None =>
-          ()
-      }
-    }
-    merge(0)
+    val ordering = implicitly[Ordering[Number]]
     
+    while(oI < outputLen) {
+      if (aI < a.length && (bI >= b.length || ordering.lt(a(aI), b(bI)))) {
+        output(oI) = a(aI)
+        aI += 1
+      } else if (bI < b.length) {
+        output(oI) = b(bI)
+        bI += 1
+      } else {
+        assert(false)
+      }
+      oI += 1
+    }
     output
   }
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0x1c2ca2af,
-      10 -> 0xc63f1164,
-      100 -> 0x98189f1b,
+      1 -> 0xc63f1164,
+      10 -> 0x98189f1b,
+      100 -> 0xaa7a1f70,
       )
 }
 
@@ -90,7 +77,7 @@ abstract class BigSortBase extends BenchmarkApplication[Array[Number], IndexedSe
     val sortedPartitions = for (start <- 0 until input.size by partitionSize) yield {
       sort(input.slice(start, start + (partitionSize min (input.size - start))))
     }
-    mergeSorted(sortedPartitions)
+    sortedPartitions.reduce(mergeSorted)
   }
 
   def splitSortMergePar(input: Array[Number], sort: IndexedSeq[Number] => IndexedSeq[Number]): IndexedSeq[Number] = {
@@ -98,7 +85,7 @@ abstract class BigSortBase extends BenchmarkApplication[Array[Number], IndexedSe
     val sortedPartitions = for (start <- (0 until input.size by partitionSize).par) yield {
       sort(input.slice(start, start + (partitionSize min (input.size - start))))
     }
-    mergeSorted(sortedPartitions.toIndexedSeq)
+    sortedPartitions.reduce(mergeSorted)
   }
 
   val size: Int = (arraySize.toDouble * math.log(arraySize)).toInt

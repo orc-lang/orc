@@ -6,8 +6,6 @@ include "benchmark.inc"
 
 import class BigSortData = "orc.test.item.scalabenchmarks.BigSortData"
 
--- FIXME: Fix for binary only merge.
-
 def splitSortMerge(input) =
   val partitionSize = Floor(input.length? / nPartitions)
   val sortedPartitions = collect({
@@ -16,7 +14,7 @@ def splitSortMerge(input) =
       sorted
     )
   })
-  BigSortData.mergeSorted(sortedPartitions)
+  cfold(BigSortData.mergeSorted, sortedPartitions)
 
 def setup() = BigSortData.makeRandomArray(BigSortData.arraySize())
   

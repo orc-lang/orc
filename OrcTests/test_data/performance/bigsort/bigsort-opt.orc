@@ -8,7 +8,10 @@ import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
 include "benchmark.inc"
 
--- FIXME: Fix for merge to be simple, fast, and binary only.
+def orderedAnd(true, b) = b()
+def orderedAnd(false, b) = false
+def orderedOr(true, b) = true
+def orderedOr(false, b) = b()
 
 class ArraySlice {
   val array
@@ -45,49 +48,24 @@ def quicksort(slice) = Sequentialize() >> ( -- Inferable
   sort(slice.start, slice.end - 1) >> slice
   )
 
-def mergeSorted(inputs) = (
-  val indices = (
-    val a = Array(inputs.length?)
-    upto(a.length?) >i> a(i) := 0 >> stop ;
-    a
-  )
-  val outputLen = sum(collect({ upto(inputs.length?) >i> inputs(i)?.length }))
-  val output = Array(outputLen)
-  def minIndex() = indices >> ( -- Inferable, but hard (must lift out of function)
-    def h(i, min, minInd) if (i = indices.length?) = minInd
-    def h(i, None(), None()) = (
-      val y = indices(i)? >j> Ift(j <: inputs(i)?.length) >> inputs(i)?(j)?
-      if (y >> true ; false) then
-        h(i+1, Some(y), Some(i))
-      else
-        h(i+1, None(), None())
-      )
-    def h(i, Some(min), Some(minInd)) = (
-      val y = indices(i)? >j> Ift(j <: inputs(i)?.length) >> inputs(i)?(j)?
-      if (y <: min ; false) then
-        h(i+1, Some(y), Some(i))
-      else
-        h(i+1, Some(min), Some(minInd))
-      )
-    h(0, None(), None())
-    )
-  def takeMinValue() = Sequentialize() >> indices >> ( -- Inferable (recursion on minIndex)
-    val iO = minIndex()
-    iO >Some(i)> (
-      val x = inputs(i)?(indices(i)?)?
-      x >> 
-      indices(i) := indices(i)? + 1 >> 
-      Some(x)) |
-    iO >None()> None() 
-    )
-  def merge(i) = Sequentialize() >> output >> ( -- Inferable
-    val x = takeMinValue()
-    x >None()> signal |
-    x >Some(y)> output(i) := y >> merge(i+1)
-    )
-  merge(0) >> output
-  )
 
+def mergeSorted(a :: ArraySlice, b :: ArraySlice) =
+	Sequentialize() >> (
+    val outputLen = a.length + b.length
+    val output = Array(outputLen)
+    
+    def h(aI, bI, oI) if (oI >= outputLen) = ArraySlice(output, 0, outputLen)
+    def h(aI, bI, oI) =
+      if orderedAnd(aI <: a.length, lambda() = orderedOr(bI >= b.length, lambda() = a(aI)? <: b(bI)?)) then
+        output(oI) := a(aI)? >> stop |
+        h(aI+1, bI, oI+1)
+      else if bI <: b.length then
+        output(oI) := b(bI)? >> stop |
+        h(aI, bI+1, oI+1)
+      else
+        Error("IPE")
+    h(0, 0, 0)
+	)
 def splitSortMerge(input, sort) =
   val partitionSize = Floor(input.length? / nPartitions)
   val sortedPartitions = collect({
@@ -96,7 +74,7 @@ def splitSortMerge(input, sort) =
       sorted
     )
   })
-  mergeSorted(listToArray(sortedPartitions))
+  cfold(mergeSorted, sortedPartitions).array
 
 def setup() = BigSortData.makeRandomArray(BigSortData.arraySize())
   
