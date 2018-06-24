@@ -14,6 +14,10 @@ package orc.run.porce;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 
 public abstract class SpecializationConfiguration {
+    	public static abstract class StopWatches {
+    	    public static final boolean workerEnabled = orc.run.StopWatches.workerEnabled();
+    	    public static final boolean callsEnabled = orc.run.StopWatches.callsEnabled();
+    	}
 	
 	static {
 		if (System.getProperty("orc.porce.truffleASTInlining") != null) {

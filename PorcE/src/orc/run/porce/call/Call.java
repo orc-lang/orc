@@ -13,6 +13,7 @@ package orc.run.porce.call;
 
 import orc.run.porce.Expression;
 import orc.run.porce.PorcEUnit;
+import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
@@ -140,7 +141,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 	public Object execute(final VirtualFrame frame) {
 		final Object targetValue = executeTargetObject(frame);
 		final Object[] argumentValues;
-		if (!profileIsInternal.profile(isInternal(targetValue)) && orc.run.StopWatches.callsEnabled()) {
+		if (!profileIsInternal.profile(isInternal(targetValue)) && SpecializationConfiguration.StopWatches.callsEnabled) {
 		    	frame.setLong(getCallStartTimeSlot(), orc.run.StopWatches.callTime().start());
 			// The stop is in Direct below and in ExternalCPSDispatch
 		}
@@ -178,7 +179,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 					try {
 						return getExternalCall().executeDirectDispatch(frame, target, arguments);
 					} finally {
-					    	if (orc.run.StopWatches.callsEnabled()) {
+					    	if (SpecializationConfiguration.StopWatches.callsEnabled) {
 					    	    	orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, getCallStartTimeSlot()));
 					    	}
 					}

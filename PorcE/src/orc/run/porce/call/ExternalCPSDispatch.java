@@ -158,7 +158,7 @@ public class ExternalCPSDispatch extends Dispatch {
 				try {
 					v = invokeDirectWithBoundary(invoker, target, profileArgumentTypes(arguments));
 				} finally {
-				    if (orc.run.StopWatches.callsEnabled()) {
+				    if (SpecializationConfiguration.StopWatches.callsEnabled) {
 					orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
 				    }
 				}
@@ -197,7 +197,7 @@ public class ExternalCPSDispatch extends Dispatch {
                             execution.notifyOfException(e, this);
                             counter.haltToken();
                         } finally {
-			    if (orc.run.StopWatches.callsEnabled()) {
+			    if (SpecializationConfiguration.StopWatches.callsEnabled) {
 				orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
 			    }
 			}
