@@ -34,13 +34,28 @@ class OrcAnnotation extends InvokerMethod with SiteMetadata {
   }
 }
 
+// FIXME: Sequentialize causes objects to fail to ever fill their fields. This results in what appears to be deadlock.
 class Sequentialize extends OrcAnnotation
+
 class SinglePublication extends OrcAnnotation
 
 object AnnotationHack {
+  def isAnnotationForced[A <: OrcAnnotation : ClassTag]: Boolean = {
+    val TargetAnnotation = implicitly[ClassTag[A]]
+    val annotationName = TargetAnnotation.runtimeClass.getName
+    System.getProperty(annotationName, "") match {
+      case "force" =>
+        true
+      case _ =>
+        false
+    }
+  }
+  
   def inAnnotation[A <: OrcAnnotation : ClassTag](e: Expression.Z): Boolean = {
     val TargetAnnotation = implicitly[ClassTag[A]]
     e.parents exists {
+      case _ if isAnnotationForced[A] => 
+        true
       case Branch.Z(Call.Z(Constant.Z(TargetAnnotation(_)), _, _), _, _) => 
         true
       case _ =>

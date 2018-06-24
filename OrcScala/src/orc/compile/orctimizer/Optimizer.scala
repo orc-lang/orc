@@ -220,6 +220,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           None
       }
       case n @ New.Z(self, _, fields, _) => {
+        // FIXME: Allow future elimination on fields that reference one another. 
+        //  At least if they form a DAG. This would still require a way to 
+        //  reference the new object before it is initialized.
         var changed = false
         val newFields = fields.map({
           case (n, f @ FieldFuture.Z(a: Argument.Z)) if !a.freeVars.contains(self) => n -> {
