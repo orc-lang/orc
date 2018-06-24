@@ -75,6 +75,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     
     @CompilationFinal
     private long timePerCall = -1;
+    @CompilationFinal
+    private boolean totalCallsDone = false;
    
     final public void addSpawnedCall(long time) {
         totalSpawnedTime.getAndAdd(time);
@@ -255,8 +257,12 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             }
 	}
 	
-	if (timePerCall < 0)
-	    totalCalls.incrementAndGet();
+	if (!totalCallsDone) {
+	    if (totalCalls.incrementAndGet() >= 100) {
+		CompilerDirectives.transferToInterpreterAndInvalidate();
+		totalCallsDone = true;
+	    }
+	}
 
         try {
             final Object ret = body.execute(frame);
