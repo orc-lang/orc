@@ -25,7 +25,7 @@ abstract class SummingStopWatch {
 
 object SummingStopWatch {
   @inline
-  val enabled = true
+  val enabled = false
   
   def apply() = {
     if (enabled) {
