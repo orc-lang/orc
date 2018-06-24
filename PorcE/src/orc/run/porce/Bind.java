@@ -119,7 +119,7 @@ public abstract class Bind extends Expression {
                 callProfile.enter();
                 if(inlineProfile.profile(!r.isWorkQueueUnderful(r.minQueueSize()) && r.incrementAndCheckStackDepth())) {
                     Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
-                    SimpleWorkStealingSchedulerWrapper.enterSchedulable(call, SimpleWorkStealingSchedulerWrapper.InlineExecution());
+                    SimpleWorkStealingSchedulerWrapper.enterSchedulable(call, SimpleWorkStealingSchedulerWrapper.InlineExecution);
                     try {
                         dispatch.executeDispatchWithEnvironment(frame, call.closure(), call.arguments());
                     } finally {

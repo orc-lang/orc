@@ -46,7 +46,7 @@ public class HaltToken extends Expression {
         if (cont != null) {
         	hasContinuationProfile.enter();
             Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
-            SimpleWorkStealingSchedulerWrapper.enterSchedulable(counter, SimpleWorkStealingSchedulerWrapper.InlineExecution());
+            SimpleWorkStealingSchedulerWrapper.enterSchedulable(counter, SimpleWorkStealingSchedulerWrapper.InlineExecution);
             try {
                 call.executeDispatch(frame, cont, EMPTY_ARGS);
             } finally {
