@@ -199,7 +199,7 @@ object hasOptionalVariableName {
   private def cleanIdentifierString(s: String) = BAD_CHARACTERS_ENDS.replaceAllIn(BAD_CHARACTERS.replaceAllIn(s, "_"), "")
   
   private val nextVarMap: collection.mutable.Map[String, Int] = collection.mutable.Map()
-  private val generateUniqueVariableNames = false
+  private val generateUniqueVariableNames = System.getProperty("orc.ast.generateUniqueVariableNames", "false").toBoolean
   
   private def getNextVariableName(s: String): String = {
     if (generateUniqueVariableNames) synchronized {
