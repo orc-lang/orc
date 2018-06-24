@@ -51,7 +51,7 @@ class Terminator(val depth: Int) extends Terminatable {
 
   def this() = this(0)
 
-  protected[this] var children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
+  protected[this] val children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
 
   /** Add a child to this terminator.
     *
