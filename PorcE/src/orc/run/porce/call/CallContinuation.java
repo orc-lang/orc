@@ -21,81 +21,86 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 public class CallContinuation<ExternalDispatch extends Dispatch> extends Expression {
-	@Child
-	protected InternalCPSDispatch internalCall = null;
-	
-	@Child
-	private Expression target;
-	@Children
-	private final Expression[] arguments;
-	
-	private final PorcEExecution execution;
+    @Child
+    protected InternalCPSDispatch internalCall = null;
 
-	protected CallContinuation(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
-		this.target = target;
-		this.arguments = arguments;
-		this.execution = execution;
-	}
+    @Child
+    private Expression target;
+    @Children
+    private final Expression[] arguments;
 
-	
-	@Override
-	public void setTail(boolean v) {
-		super.setTail(v);
-		if (internalCall != null)
-			internalCall.setTail(v);
-	}
+    private final PorcEExecution execution;
 
-	protected InternalCPSDispatch makeInternalCall() {
-		return InternalCPSDispatch.createBare(true, execution);
-	}
+    protected CallContinuation(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
+        this.target = target;
+        this.arguments = arguments;
+        this.execution = execution;
+    }
 
-	protected InternalCPSDispatch getInternalCall() {
-		if (internalCall == null) {
-			CompilerDirectives.transferToInterpreterAndInvalidate();
-			computeAtomicallyIfNull(() -> internalCall, (v) -> this.internalCall = v, () -> {
-				InternalCPSDispatch n = insert(makeInternalCall());
-				n.setTail(isTail);
-				notifyInserted(n);
-				return n;
-			});
-		}
-		return internalCall;
-	}
+    @Override
+    public void setTail(boolean v) {
+        super.setTail(v);
+        if (internalCall != null) {
+            internalCall.setTail(v);
+        }
+    }
 
-	@Override
-	public Object execute(final VirtualFrame frame) {
-		final Object targetValue = executeTargetObject(frame);
-		final Object[] argumentValuesI = new Object[arguments.length + 1];
-		executeArguments(frame, argumentValuesI, 1);
-		argumentValuesI[0] = ((PorcEClosure)targetValue).environment;
+    protected InternalCPSDispatch makeInternalCall() {
+        return InternalCPSDispatch.createBare(true, execution);
+    }
 
-		getInternalCall().executeDispatchWithEnvironment(frame, targetValue, argumentValuesI);
-		return PorcEUnit.SINGLETON;
-	}
+    protected InternalCPSDispatch getInternalCall() {
+        if (internalCall == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            computeAtomicallyIfNull(() -> internalCall, (v) -> this.internalCall = v, () -> {
+                InternalCPSDispatch n = insert(makeInternalCall());
+                n.setTail(isTail);
+                notifyInserted(n);
+                return n;
+            });
+        }
+        return internalCall;
+    }
 
-   public static class CPS {
-       public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution, boolean isTail) {
-    	   if (isTail) {
-    		   return createTail(target, arguments, execution);
-    	   } else {
-    		   return createNontail(target, arguments, execution);
-    	   }
-       }
-       public static Expression createNontail(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
-           return CatchTailCall.create(createTail(target, arguments, execution), execution);
-       }
-       public static Expression createTail(final Expression target, final Expression[] arguments, final PorcEExecution execution) {
-           return new CallContinuation<Dispatch>(target, arguments, execution);
-       }
-	}
+    @Override
+    public Object execute(final VirtualFrame frame) {
+        final Object targetValue = executeTargetObject(frame);
+        final Object[] argumentValuesI = new Object[arguments.length + 1];
+        executeArguments(frame, argumentValuesI, 1);
+        argumentValuesI[0] = ((PorcEClosure) targetValue).environment;
 
-	@ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
-	public void executeArguments(final VirtualFrame frame, final Object[] argumentValues, int offset) {
-		assert argumentValues.length - offset == arguments.length;
-		for (int i = 0; i < arguments.length; i++) {
-			argumentValues[i + offset] = arguments[i].execute(frame);
-		}
-	}
+        getInternalCall().executeDispatchWithEnvironment(frame, targetValue, argumentValuesI);
+        return PorcEUnit.SINGLETON;
+    }
+
+    public static class CPS {
+        public static Expression create(final Expression target, final Expression[] arguments,
+                final PorcEExecution execution, boolean isTail) {
+            if (isTail) {
+                return createTail(target, arguments, execution);
+            } else {
+                return createNontail(target, arguments, execution);
+            }
+        }
+
+        public static Expression createNontail(final Expression target, final Expression[] arguments,
+                final PorcEExecution execution) {
+            return CatchTailCall.create(createTail(target, arguments, execution), execution);
+        }
+
+        public static Expression createTail(final Expression target, final Expression[] arguments,
+                final PorcEExecution execution) {
+            return new CallContinuation<Dispatch>(target, arguments, execution);
+        }
+    }
+
+    @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
+    public void executeArguments(final VirtualFrame frame, final Object[] argumentValues, int offset) {
+        assert argumentValues.length - offset == arguments.length;
+        for (int i = 0; i < arguments.length; i++) {
+            argumentValues[i + offset] = arguments[i].execute(frame);
+        }
+    }
 
     public Object executeTargetObject(final VirtualFrame frame) {
         return target.execute(frame);

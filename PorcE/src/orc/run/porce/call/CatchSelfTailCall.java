@@ -26,57 +26,57 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 public class CatchSelfTailCall extends Expression {
-	@Child
+    @Child
     protected LoopNode loop;
-    
+
     protected CatchSelfTailCall(final Expression body) {
-    	this.loop = Truffle.getRuntime().createLoopNode(new CatchSelfTailCallRepeatingNode(body));
+        this.loop = Truffle.getRuntime().createLoopNode(new CatchSelfTailCallRepeatingNode(body));
     }
-	
+
     @Specialization
     public PorcEUnit run(VirtualFrame frame) {
-    	loop.executeLoop(frame);
-		return PorcEUnit.SINGLETON;
+        loop.executeLoop(frame);
+        return PorcEUnit.SINGLETON;
     }
-    
+
     public Expression getBody() {
-    	CatchSelfTailCallRepeatingNode rep = (CatchSelfTailCallRepeatingNode) loop.getRepeatingNode();
-    	return rep.body;
+        CatchSelfTailCallRepeatingNode rep = (CatchSelfTailCallRepeatingNode) loop.getRepeatingNode();
+        return rep.body;
     }
 
     public static CatchSelfTailCall create(final Expression body) {
         return CatchSelfTailCallNodeGen.create(body);
     }
-    
+
     protected static class CatchSelfTailCallRepeatingNode extends Node implements RepeatingNode {
-    	@Child
-		protected Expression body;
-		private final BranchProfile selfTailCallProfile = BranchProfile.create();
+        @Child
+        protected Expression body;
+        private final BranchProfile selfTailCallProfile = BranchProfile.create();
 
-		public CatchSelfTailCallRepeatingNode(Expression body) {
-			this.body = body;
-		}
+        public CatchSelfTailCallRepeatingNode(Expression body) {
+            this.body = body;
+        }
 
-		@Override
-		public boolean executeRepeating(VirtualFrame frame) {
-			try {
-				body.execute(frame);
-				return false;
-			} catch (SelfTailCallException e) {
-				selfTailCallProfile.enter();
-				return true;
-			}
-		}
-		
-		@Override
-		public String toString() {
-			RootNode root = getRootNode();
-			if (root instanceof PorcERootNode) {
-		        return ((PorcERootNode)root).toString() + "<selftailrecloop>";
-			} else {
-				return hashCode() + "<selftailrecloop>";
-			}
-		}
-	}
+        @Override
+        public boolean executeRepeating(VirtualFrame frame) {
+            try {
+                body.execute(frame);
+                return false;
+            } catch (SelfTailCallException e) {
+                selfTailCallProfile.enter();
+                return true;
+            }
+        }
+
+        @Override
+        public String toString() {
+            RootNode root = getRootNode();
+            if (root instanceof PorcERootNode) {
+                return ((PorcERootNode) root).toString() + "<selftailrecloop>";
+            } else {
+                return hashCode() + "<selftailrecloop>";
+            }
+        }
+    }
 
 }

@@ -17,23 +17,23 @@ import orc.run.porce.runtime.TailCallException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class CatchTailDispatch extends Dispatch {
-	@Child
+    @Child
     protected TailCallLoop loop;
-	@Child
-	protected Dispatch body;
-	
-	@Override
+    @Child
+    protected Dispatch body;
+
+    @Override
     public void setTail(boolean v) {
-		super.setTail(v);
-		body.setTail(v);
-	}
+        super.setTail(v);
+        body.setTail(v);
+    }
 
     protected CatchTailDispatch(final Dispatch body, final PorcEExecution execution) {
-    	super(execution);
-    	this.body = body;
-		this.loop = TailCallLoop.create(execution);
+        super(execution);
+        this.body = body;
+        this.loop = TailCallLoop.create(execution);
     }
-    
+
     @Override
     public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
         try {
@@ -42,7 +42,7 @@ public class CatchTailDispatch extends Dispatch {
             loop.executeTailCalls(frame, e);
         }
     }
-    
+
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
         try {

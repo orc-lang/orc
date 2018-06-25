@@ -18,33 +18,34 @@ import orc.run.porce.runtime.TailCallException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class CatchTailCall extends Expression {
-	@Child
+    @Child
     protected TailCallLoop loop;
-	@Child
-	protected Expression body;
-	
-	protected final PorcEExecution execution; 
+    @Child
+    protected Expression body;
 
-	@Override
+    protected final PorcEExecution execution;
+
+    @Override
     public void setTail(boolean v) {
-		super.setTail(v);
-		body.setTail(v);
-	}
+        super.setTail(v);
+        body.setTail(v);
+    }
 
     protected CatchTailCall(final Expression body, final PorcEExecution execution) {
-    	this.body = body;
-		this.execution = execution;
-		this.loop = TailCallLoop.create(execution);
+        this.body = body;
+        this.execution = execution;
+        this.loop = TailCallLoop.create(execution);
     }
-    
+
     @Override
     public void executePorcEUnit(VirtualFrame frame) {
-    	try {
-    		body.executePorcEUnit(frame);
-    	} catch (TailCallException e) {
-    		// TODO: This does not add an initial target to the set. It probably should in some cases, but it would be almost impossible to do that here.
-			loop.executeTailCalls(frame, e);
-    	}
+        try {
+            body.executePorcEUnit(frame);
+        } catch (TailCallException e) {
+            // TODO: This does not add an initial target to the set. It probably should in some cases, but it would be
+            // almost impossible to do that here.
+            loop.executeTailCalls(frame, e);
+        }
     }
 
     public static CatchTailCall create(final Expression body, final PorcEExecution execution) {

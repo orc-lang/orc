@@ -42,25 +42,25 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
 public class ExternalCPSDispatch extends Dispatch {
-	@Child
-	protected ExternalCPSDispatch.ExternalCPSDispatchInternal internal;
+    @Child
+    protected ExternalCPSDispatch.ExternalCPSDispatchInternal internal;
 
-	protected ExternalCPSDispatch(final PorcEExecution execution) {
-		super(execution);
-		internal = ExternalCPSDispatch.ExternalCPSDispatchInternal.createBare(execution);
-	}
+    protected ExternalCPSDispatch(final PorcEExecution execution) {
+        super(execution);
+        internal = ExternalCPSDispatch.ExternalCPSDispatchInternal.createBare(execution);
+    }
 
-	protected ExternalCPSDispatch(final ExternalCPSDispatch orig) {
-		super(orig.internal.execution);
-		internal = ExternalCPSDispatch.ExternalCPSDispatchInternal.createBare(orig.internal.execution);
-	}
-	 
-	@Override
-	public void setTail(boolean v) {
-		super.setTail(v);
-		internal.setTail(v);
-	}
-    
+    protected ExternalCPSDispatch(final ExternalCPSDispatch orig) {
+        super(orig.internal.execution);
+        internal = ExternalCPSDispatch.ExternalCPSDispatchInternal.createBare(orig.internal.execution);
+    }
+
+    @Override
+    public void setTail(boolean v) {
+        super.setTail(v);
+        internal.setTail(v);
+    }
+
     @Override
     public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
         PorcEClosure pub = (PorcEClosure) arguments[0];
@@ -68,7 +68,7 @@ public class ExternalCPSDispatch extends Dispatch {
         Terminator term = (Terminator) arguments[2];
         internal.execute(frame, target, pub, counter, term, buildArguments(0, arguments));
     }
-    
+
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
         PorcEClosure pub = (PorcEClosure) arguments[1];
@@ -76,190 +76,200 @@ public class ExternalCPSDispatch extends Dispatch {
         Terminator term = (Terminator) arguments[3];
         internal.execute(frame, target, pub, counter, term, buildArguments(1, arguments));
     }
-	
-	@SuppressWarnings({"boxing"})
-	protected static Object[] buildArguments(int offset, Object[] arguments) {
-		CompilerAsserts.compilationConstant(arguments.length);
-		Object[] newArguments = new Object[arguments.length - 3 - offset];
-		System.arraycopy(arguments, 3 + offset, newArguments, 0, newArguments.length);
-		return newArguments;
-	}
-	
-	static ExternalCPSDispatch createBare(PorcEExecution execution) {
-		return new ExternalCPSDispatch(execution);
-	}
 
-	@ImportStatic({ SpecializationConfiguration.class })
-	@Introspectable
-	@Instrumentable(factory = ExternalCPSDispatchInternalWrapper.class)
-	public static abstract class ExternalCPSDispatchInternal extends DispatchBase {
-		protected ExternalCPSDispatchInternal(final PorcEExecution execution) {
-			super(execution);
-		}
-		
-		protected ExternalCPSDispatchInternal(final ExternalCPSDispatchInternal orig) {
-			super(orig.execution);
-		}
-	
-		protected final BranchProfile exceptionProfile = BranchProfile.create();
-		protected final BranchProfile haltProfile = BranchProfile.create();
-		
-		@CompilerDirectives.CompilationFinal(dimensions = 1)
-		protected ValueProfile[] argumentTypeProfiles = null;
-		
-		@CompilerDirectives.CompilationFinal
-		protected StackCheckingDispatch dispatchP = null;
-		
-		protected StackCheckingDispatch getDispatchP() {
-			if (dispatchP == null) {
-				CompilerDirectives.transferToInterpreterAndInvalidate();
-				computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
-				    StackCheckingDispatch n = insert(StackCheckingDispatch.create(execution));
-					n.setTail(isTail);
-					notifyInserted(n);
-					return n;
-				});
-			}
-			return dispatchP;
-		}
+    @SuppressWarnings({ "boxing" })
+    protected static Object[] buildArguments(int offset, Object[] arguments) {
+        CompilerAsserts.compilationConstant(arguments.length);
+        Object[] newArguments = new Object[arguments.length - 3 - offset];
+        System.arraycopy(arguments, 3 + offset, newArguments, 0, newArguments.length);
+        return newArguments;
+    }
 
-		@SuppressWarnings("boxing")
-		@ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
-		protected Object[] profileArgumentTypes(Object[] arguments) {
-			CompilerAsserts.compilationConstant(arguments.length);
-			
-			if (argumentTypeProfiles == null) {
-			    CompilerDirectives.transferToInterpreterAndInvalidate();
-				computeAtomicallyIfNull(() -> argumentTypeProfiles, (v) -> argumentTypeProfiles = v, () -> {
-					ValueProfile[] n = new ValueProfile[arguments.length];
-					for(int i = 0; i < n.length; i++) {
-						n[i] = ValueProfile.createClassProfile();
-					}
-					return n;
-				});
-			}
-			
-			for(int i = 0; i < arguments.length; i++) {
-				arguments[i] = argumentTypeProfiles[i].profile(arguments[i]);
-			}
-			
-			return arguments;
-		}
-		
-	
-		public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter, Terminator term, Object[] arguments);
-	
-		@Specialization(guards = { "ExternalCPSDirectSpecialization", "invoker != null", "canInvokeWithBoundary(invoker, target, profileArgumentTypes(arguments))" }, limit = "ExternalDirectCallMaxCacheSize")
-		public void specificDirect(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
-				@Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker) {
-			// DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
-			try {
-				final Object v;
-				try {
-					v = invokeDirectWithBoundary(invoker, target, profileArgumentTypes(arguments));
-				} finally {
-				    if (SpecializationConfiguration.StopWatches.callsEnabled) {
-					orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
-				    }
-				}
-				getDispatchP().executeDispatch(frame, pub, v);
-			} catch (final TailCallException e) {
-				throw e;
-	        	} catch (final HaltException e) {
-	        		haltProfile.enter();
-				counter.haltToken();
-			} catch (final Throwable e) {
-				exceptionProfile.enter();
-				execution.notifyOfException(e, this);
-				counter.haltToken();
-			}
-			// Token: All exception handlers halt the token that was passed to this
-			// call. Calls are not allowed to keep the token if they throw an
-			// exception.
-		}
-		
-		@Specialization(guards = { "isNotDirectInvoker(invoker) || !ExternalCPSDirectSpecialization", "canInvokeWithBoundary(invoker, target, profileArgumentTypes(arguments))" }, limit = "ExternalCPSCallMaxCacheSize")
-		public void specific(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
-				@Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker) {
-			// Token: Passed to callContext from arguments.
-			final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
-	
-			try {
-				callContext.begin();
-				invokeWithBoundary(invoker, callContext, target, profileArgumentTypes(arguments));
-			} catch (final TailCallException e) {
-				throw e;
-	        	} catch (final HaltException e) {
-	        		haltProfile.enter();
-				counter.haltToken();
-			} catch (final Throwable e) {
-                            exceptionProfile.enter();
-                            execution.notifyOfException(e, this);
-                            counter.haltToken();
-                        } finally {
-			    if (SpecializationConfiguration.StopWatches.callsEnabled) {
-				orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
-			    }
-			}
-		}
-	
-		@Specialization(replaces = { "specific", "specificDirect" })
-		public void universal(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter, Terminator term, final Object[] arguments,
-				@Cached("createBinaryProfile()") ConditionProfile isDirectProfile) {
-			final Invoker invoker = getInvokerWithBoundary(target, arguments);
-			if (ExternalCPSDirectSpecialization && isDirectProfile.profile(invoker instanceof DirectInvoker)) {
-				specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker);
-			} else {
-				specific(frame, target, pub, counter, term, arguments, invoker);
-			}
-		}
-	
-		static ExternalCPSDispatchInternal createBare(PorcEExecution execution) {
-			return ExternalCPSDispatchFactory.ExternalCPSDispatchInternalNodeGen.create(execution);
-		}
-	
-		/* Utilties */
-		
-		protected static boolean isNotDirectInvoker(final Invoker invoker) {
-			return !(invoker instanceof DirectInvoker);
-		}
-	
-		protected Invoker getInvokerWithBoundary(final Object target, final Object[] arguments) {
-			return getInvokerWithBoundary(execution.runtime(), target, arguments);
-		}
-	
-		protected DirectInvoker getDirectInvokerWithBoundary(final Object target, final Object[] arguments) {
-			Invoker invoker = getInvokerWithBoundary(execution.runtime(), target, arguments);
-			if (invoker instanceof DirectInvoker) {
-				return (DirectInvoker) invoker;
-			} else {
-				return null;
-			}
-		}
-		
-		@TruffleBoundary(allowInlining = true)
-		protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object target,
-				final Object[] arguments) {
-			return runtime.getInvoker(target, arguments);
-		}
-	
-		@TruffleBoundary(allowInlining = true)
-		protected static boolean canInvokeWithBoundary(final Invoker invoker, final Object target,
-				final Object[] arguments) {
-			return invoker.canInvoke(target, arguments);
-		}
-	
-		@TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-		protected static void invokeWithBoundary(final Invoker invoker, final CPSCallContext callContext,
-				final Object target, final Object[] arguments) {
-			invoker.invoke(callContext, target, arguments);
-		}
-	
-		@TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-		protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object target,
-				final Object[] arguments) {
-			return invoker.invokeDirect(target, arguments);
-		}
-	}
+    static ExternalCPSDispatch createBare(PorcEExecution execution) {
+        return new ExternalCPSDispatch(execution);
+    }
+
+    @ImportStatic({ SpecializationConfiguration.class })
+    @Introspectable
+    @Instrumentable(factory = ExternalCPSDispatchInternalWrapper.class)
+    public static abstract class ExternalCPSDispatchInternal extends DispatchBase {
+        protected ExternalCPSDispatchInternal(final PorcEExecution execution) {
+            super(execution);
+        }
+
+        protected ExternalCPSDispatchInternal(final ExternalCPSDispatchInternal orig) {
+            super(orig.execution);
+        }
+
+        protected final BranchProfile exceptionProfile = BranchProfile.create();
+        protected final BranchProfile haltProfile = BranchProfile.create();
+
+        @CompilerDirectives.CompilationFinal(dimensions = 1)
+        protected ValueProfile[] argumentTypeProfiles = null;
+
+        @CompilerDirectives.CompilationFinal
+        protected StackCheckingDispatch dispatchP = null;
+
+        protected StackCheckingDispatch getDispatchP() {
+            if (dispatchP == null) {
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+                computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
+                    StackCheckingDispatch n = insert(StackCheckingDispatch.create(execution));
+                    n.setTail(isTail);
+                    notifyInserted(n);
+                    return n;
+                });
+            }
+            return dispatchP;
+        }
+
+        @SuppressWarnings("boxing")
+        @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
+        protected Object[] profileArgumentTypes(Object[] arguments) {
+            CompilerAsserts.compilationConstant(arguments.length);
+
+            if (argumentTypeProfiles == null) {
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+                computeAtomicallyIfNull(() -> argumentTypeProfiles, (v) -> argumentTypeProfiles = v, () -> {
+                    ValueProfile[] n = new ValueProfile[arguments.length];
+                    for (int i = 0; i < n.length; i++) {
+                        n[i] = ValueProfile.createClassProfile();
+                    }
+                    return n;
+                });
+            }
+
+            for (int i = 0; i < arguments.length; i++) {
+                arguments[i] = argumentTypeProfiles[i].profile(arguments[i]);
+            }
+
+            return arguments;
+        }
+
+        public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter,
+                Terminator term, Object[] arguments);
+
+        @Specialization(guards = {
+                "ExternalCPSDirectSpecialization", "invoker != null",
+                "canInvokeWithBoundary(invoker, target, profileArgumentTypes(arguments))" },
+            limit = "ExternalDirectCallMaxCacheSize")
+        public void specificDirect(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter,
+                Terminator term, final Object[] arguments,
+                @Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker) {
+            // DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
+            try {
+                final Object v;
+                try {
+                    v = invokeDirectWithBoundary(invoker, target, profileArgumentTypes(arguments));
+                } finally {
+                    if (SpecializationConfiguration.StopWatches.callsEnabled) {
+                        orc.run.StopWatches.callTime()
+                                .stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
+                    }
+                }
+                getDispatchP().executeDispatch(frame, pub, v);
+            } catch (final TailCallException e) {
+                throw e;
+            } catch (final HaltException e) {
+                haltProfile.enter();
+                counter.haltToken();
+            } catch (final Throwable e) {
+                exceptionProfile.enter();
+                execution.notifyOfException(e, this);
+                counter.haltToken();
+            }
+            // Token: All exception handlers halt the token that was passed to this
+            // call. Calls are not allowed to keep the token if they throw an
+            // exception.
+        }
+
+        @Specialization(guards = {
+                "isNotDirectInvoker(invoker) || !ExternalCPSDirectSpecialization",
+                "canInvokeWithBoundary(invoker, target, profileArgumentTypes(arguments))" },
+            limit = "ExternalCPSCallMaxCacheSize")
+        public void specific(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter,
+                Terminator term, final Object[] arguments,
+                @Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker) {
+            // Token: Passed to callContext from arguments.
+            final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
+
+            try {
+                callContext.begin();
+                invokeWithBoundary(invoker, callContext, target, profileArgumentTypes(arguments));
+            } catch (final TailCallException e) {
+                throw e;
+            } catch (final HaltException e) {
+                haltProfile.enter();
+                counter.haltToken();
+            } catch (final Throwable e) {
+                exceptionProfile.enter();
+                execution.notifyOfException(e, this);
+                counter.haltToken();
+            } finally {
+                if (SpecializationConfiguration.StopWatches.callsEnabled) {
+                    orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
+                }
+            }
+        }
+
+        @Specialization(replaces = { "specific", "specificDirect" })
+        public void universal(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter,
+                Terminator term, final Object[] arguments,
+                @Cached("createBinaryProfile()") ConditionProfile isDirectProfile) {
+            final Invoker invoker = getInvokerWithBoundary(target, arguments);
+            if (ExternalCPSDirectSpecialization && isDirectProfile.profile(invoker instanceof DirectInvoker)) {
+                specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker);
+            } else {
+                specific(frame, target, pub, counter, term, arguments, invoker);
+            }
+        }
+
+        static ExternalCPSDispatchInternal createBare(PorcEExecution execution) {
+            return ExternalCPSDispatchFactory.ExternalCPSDispatchInternalNodeGen.create(execution);
+        }
+
+        /* Utilties */
+
+        protected static boolean isNotDirectInvoker(final Invoker invoker) {
+            return !(invoker instanceof DirectInvoker);
+        }
+
+        protected Invoker getInvokerWithBoundary(final Object target, final Object[] arguments) {
+            return getInvokerWithBoundary(execution.runtime(), target, arguments);
+        }
+
+        protected DirectInvoker getDirectInvokerWithBoundary(final Object target, final Object[] arguments) {
+            Invoker invoker = getInvokerWithBoundary(execution.runtime(), target, arguments);
+            if (invoker instanceof DirectInvoker) {
+                return (DirectInvoker) invoker;
+            } else {
+                return null;
+            }
+        }
+
+        @TruffleBoundary(allowInlining = true)
+        protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object target,
+                final Object[] arguments) {
+            return runtime.getInvoker(target, arguments);
+        }
+
+        @TruffleBoundary(allowInlining = true)
+        protected static boolean canInvokeWithBoundary(final Invoker invoker, final Object target,
+                final Object[] arguments) {
+            return invoker.canInvoke(target, arguments);
+        }
+
+        @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
+        protected static void invokeWithBoundary(final Invoker invoker, final CPSCallContext callContext,
+                final Object target, final Object[] arguments) {
+            invoker.invoke(callContext, target, arguments);
+        }
+
+        @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
+        protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object target,
+                final Object[] arguments) {
+            return invoker.invokeDirect(target, arguments);
+        }
+    }
 
 }

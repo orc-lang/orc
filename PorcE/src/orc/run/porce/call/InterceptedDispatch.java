@@ -24,39 +24,39 @@ import com.oracle.truffle.api.instrumentation.Instrumentable;
 
 @Instrumentable(factory = InterceptedDispatchWrapper.class)
 public abstract class InterceptedDispatch extends Dispatch {
-	protected InterceptedDispatch(InterceptedDispatch orig) {
-		this(orig.execution);
-	}
-	
-	protected InterceptedDispatch(PorcEExecution execution) {
-		super(execution);
-	}
+    protected InterceptedDispatch(InterceptedDispatch orig) {
+        this(orig.execution);
+    }
 
-	@Specialization
-	public void run(final VirtualFrame frame, final Object newTarget, final Object[] newArguments) {
-		final PorcEClosure pub = (PorcEClosure) newArguments[0];
-		final Counter counter = (Counter) newArguments[1];
-		final Terminator term = (Terminator) newArguments[2];
+    protected InterceptedDispatch(PorcEExecution execution) {
+        super(execution);
+    }
 
-		// Token: Passed to callContext from arguments.
-		final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
+    @Specialization
+    public void run(final VirtualFrame frame, final Object newTarget, final Object[] newArguments) {
+        final PorcEClosure pub = (PorcEClosure) newArguments[0];
+        final Counter counter = (Counter) newArguments[1];
+        final Terminator term = (Terminator) newArguments[2];
 
-		invokeInterceptedWithBoundary(callContext, newTarget, newArguments);
-	}
+        // Token: Passed to callContext from arguments.
+        final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
 
-	@TruffleBoundary
-	private void invokeInterceptedWithBoundary(final CPSCallContext callContext, final Object newTarget,
-			final Object[] newArguments) {
-		execution.invokeIntercepted(callContext, newTarget, buildArgumentValues(newArguments));
-	}
+        invokeInterceptedWithBoundary(callContext, newTarget, newArguments);
+    }
 
-	protected Object[] buildArgumentValues(final Object[] newArguments) {
-		final Object[] argumentValues = new Object[newArguments.length - 3];
-		System.arraycopy(newArguments, 3, argumentValues, 0, argumentValues.length);
-		return argumentValues;
-	}
+    @TruffleBoundary
+    private void invokeInterceptedWithBoundary(final CPSCallContext callContext, final Object newTarget,
+            final Object[] newArguments) {
+        execution.invokeIntercepted(callContext, newTarget, buildArgumentValues(newArguments));
+    }
 
-	static InterceptedDispatch create(PorcEExecution execution) {
-		return InterceptedDispatchNodeGen.create(execution);
-	}
+    protected Object[] buildArgumentValues(final Object[] newArguments) {
+        final Object[] argumentValues = new Object[newArguments.length - 3];
+        System.arraycopy(newArguments, 3, argumentValues, 0, argumentValues.length);
+        return argumentValues;
+    }
+
+    static InterceptedDispatch create(PorcEExecution execution) {
+        return InterceptedDispatchNodeGen.create(execution);
+    }
 }
