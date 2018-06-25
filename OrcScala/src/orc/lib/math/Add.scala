@@ -27,13 +27,13 @@ object Add extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite 
           case (a: BigDecimal, b: BigDecimal) =>
             invoker(a, b)(_ + _)
           case (a: java.lang.Double, b: java.lang.Double) => 
-            invoker(a, b)(_ + _)
+            invoker(a, b)(_.doubleValue() + _.doubleValue())
           case (a: java.math.BigDecimal, b: java.math.BigDecimal) => 
             invoker(a, b)(_.add(_))
           case (a: java.lang.Long, b: java.lang.Long) => 
-            invoker(a, b)(_ + _)
+            invoker(a, b)(_.longValue() + _.longValue())
           case (a: java.lang.Integer, b: java.lang.Integer) => 
-            invoker(a, b)(_ + _)
+            invoker(a, b)(_.intValue() + _.intValue())
           case (a: BigInt, b: BigInt) => 
             invoker(a, b)(_ + _)
           case (a: java.math.BigInteger, b: java.math.BigInteger) => 
@@ -43,17 +43,17 @@ object Add extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite 
           case (a: Number, b: BigDecimal) => 
             invoker(a, b)(_.doubleValue() + _)
           case (a: java.lang.Double, b: Number) =>
-            invoker(a, b)(_ + _.doubleValue())
+            invoker(a, b)(_.doubleValue() + _.doubleValue())
           case (a: Number, b: java.lang.Double) => 
-            invoker(a, b)(_.doubleValue() + _)
+            invoker(a, b)(_.doubleValue() + _.doubleValue())
           case (a: BigInt, b: Number) => 
             invoker(a, b)(_ + _.longValue())
           case (a: Number, b: BigInt) => 
             invoker(a, b)(_.longValue() + _)
           case (a: java.lang.Long, b: Number) => 
-            invoker(a, b)(_ + _.longValue())
+            invoker(a, b)(_.longValue() + _.longValue())
           case (a: Number, b: java.lang.Long) => 
-            invoker(a, b)(_.longValue() + _)
+            invoker(a, b)(_.longValue() + _.longValue())
           case (a: Number, b: Number) =>
             IllegalArgumentInvoker(this, Array(a, b))
         }
