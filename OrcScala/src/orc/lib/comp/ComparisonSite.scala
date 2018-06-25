@@ -68,21 +68,93 @@ abstract class ComparisonSite extends OverloadedDirectInvokerMethod2[AnyRef, Any
 }
 
 case object Greater extends ComparisonSite {
+  override def getInvokerSpecialized(arg1: AnyRef, arg2: AnyRef): Invoker = {
+    // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
+    (arg1, arg2) match {
+      case (a: BigDecimal, b: BigDecimal) =>
+        invoker(a, b)((a, b) => a > b)
+      case (a: java.lang.Double, b: java.lang.Double) => 
+        invoker(a, b)((a, b) => a > b)
+      case (a: java.lang.Long, b: java.lang.Long) => 
+        invoker(a, b)((a, b) => a > b)
+      case (a: java.lang.Integer, b: java.lang.Integer) => 
+        invoker(a, b)((a, b) => a > b)
+      case (a: BigInt, b: BigInt) => 
+        invoker(a, b)((a, b) => a > b)
+      case _ =>
+        super.getInvokerSpecialized(arg1, arg2)
+    }
+  }
+
   protected def compare(comp: Int): Boolean = comp > 0  
   override def toString = "Greater"
 }
 
 case object Greq extends ComparisonSite {
+  override def getInvokerSpecialized(arg1: AnyRef, arg2: AnyRef): Invoker = {
+    // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
+    (arg1, arg2) match {
+      case (a: BigDecimal, b: BigDecimal) =>
+        invoker(a, b)((a, b) => a >= b)
+      case (a: java.lang.Double, b: java.lang.Double) => 
+        invoker(a, b)((a, b) => a >= b)
+      case (a: java.lang.Long, b: java.lang.Long) => 
+        invoker(a, b)((a, b) => a >= b)
+      case (a: java.lang.Integer, b: java.lang.Integer) => 
+        invoker(a, b)((a, b) => a >= b)
+      case (a: BigInt, b: BigInt) => 
+        invoker(a, b)((a, b) => a >= b)
+      case _ =>
+        super.getInvokerSpecialized(arg1, arg2)
+    }
+  }
+
   protected def compare(comp: Int): Boolean = comp >= 0  
   override def toString = "Greq"
 }
 
 case object Leq extends ComparisonSite {
+  override def getInvokerSpecialized(arg1: AnyRef, arg2: AnyRef): Invoker = {
+    // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
+    (arg1, arg2) match {
+      case (a: BigDecimal, b: BigDecimal) =>
+        invoker(a, b)((a, b) => a <= b)
+      case (a: java.lang.Double, b: java.lang.Double) => 
+        invoker(a, b)((a, b) => a <= b)
+      case (a: java.lang.Long, b: java.lang.Long) => 
+        invoker(a, b)((a, b) => a <= b)
+      case (a: java.lang.Integer, b: java.lang.Integer) => 
+        invoker(a, b)((a, b) => a <= b)
+      case (a: BigInt, b: BigInt) => 
+        invoker(a, b)((a, b) => a <= b)
+      case _ =>
+        super.getInvokerSpecialized(arg1, arg2)
+    }
+  }
+
   protected def compare(comp: Int): Boolean = comp <= 0  
   override def toString = "Leq"
 }
 
 case object Less extends ComparisonSite {
+  override def getInvokerSpecialized(arg1: AnyRef, arg2: AnyRef): Invoker = {
+    // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
+    (arg1, arg2) match {
+      case (a: BigDecimal, b: BigDecimal) =>
+        invoker(a, b)((a, b) => a < b)
+      case (a: java.lang.Double, b: java.lang.Double) => 
+        invoker(a, b)((a, b) => a < b)
+      case (a: java.lang.Long, b: java.lang.Long) => 
+        invoker(a, b)((a, b) => a < b)
+      case (a: java.lang.Integer, b: java.lang.Integer) => 
+        invoker(a, b)((a, b) => a < b)
+      case (a: BigInt, b: BigInt) => 
+        invoker(a, b)((a, b) => a < b)
+      case _ =>
+        super.getInvokerSpecialized(arg1, arg2)
+    }
+  }
+  
   protected def compare(comp: Int): Boolean = comp < 0  
   override def toString = "Less"
 }
