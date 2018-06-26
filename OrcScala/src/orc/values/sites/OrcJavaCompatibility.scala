@@ -69,9 +69,8 @@ object OrcJavaCompatibility {
   /** Convenience method for <code>orc2java(orcValue, classOf[Object])</code> */
   def orc2java(orcValue: AnyRef): Object = orc2java(orcValue, classOf[Object])
 
-  /** Orc to Java value conversion, given an expected Java type */
-  def orc2java(orcValue: AnyRef, expectedType: Class[_]): Object = {
-    def asNumber(i: Number): Object = {
+  /** Utility methods for orc2java handling any primitive numeric expectedType. */
+  private def orc2javaAsNumber(i: Number, expectedType: Class[_]): Object = {
       expectedType match {
         case `byteRefClass` | java.lang.Byte.TYPE => i.byteValue
         case `shortRefClass` | java.lang.Short.TYPE => i.shortValue
@@ -82,7 +81,9 @@ object OrcJavaCompatibility {
         case _ => i
       }
     }.asInstanceOf[Object]
-    def asFloat(f: Number): Object = {
+  
+  /** Utility methods for orc2java handling primitive floating-point numeric expectedType. */
+  private def orc2javaAsFloat(f: Number, expectedType: Class[_]): Object = {
       expectedType match {
         case `floatRefClass` | java.lang.Float.TYPE => f.floatValue
         case `doubleRefClass` | java.lang.Double.TYPE => f.doubleValue
@@ -90,13 +91,32 @@ object OrcJavaCompatibility {
       }
     }.asInstanceOf[Object]
 
+  /** Orc to Java value conversion, given an expected Java type */
+  def orc2java(orcValue: AnyRef, expectedType: Class[_]): Object = {
     orcValue match {
-      case f: BigDecimal => asFloat(f)
-      case f: java.lang.Double => asFloat(f)
-      case f: java.lang.Float => asFloat(f)
+      case f: BigDecimal => orc2javaAsFloat(f, expectedType)
+      case f: java.lang.Double => orc2javaAsFloat(f, expectedType)
+      case f: java.lang.Float => orc2javaAsFloat(f, expectedType)
 
-      case i: BigInt => asNumber(i)
-      case i: java.lang.Number => asNumber(i)
+      case i: BigInt => orc2javaAsNumber(i, expectedType)
+      case i: java.lang.Number => orc2javaAsNumber(i, expectedType)
+
+      case _ => orcValue
+    }
+  }
+
+  // TODO: Ideally orc2javaAsFixedPrecision would not be needed or would be deduplicated.
+  /** Variant of orc2java which does not handle arbitrary precision numbers.
+    *
+    * This is needed by PorcE since this method does not call into any recursive or
+    * iterative functions, so they can be partially evaluated by Graal.
+    */
+  def orc2javaAsFixedPrecision(orcValue: AnyRef, expectedType: Class[_]): Object = {
+    orcValue match {
+      case f: java.lang.Double => orc2javaAsFloat(f, expectedType)
+      case f: java.lang.Float => orc2javaAsFloat(f, expectedType)
+
+      case i: java.lang.Number => orc2javaAsNumber(i, expectedType)
 
       case _ => orcValue
     }
