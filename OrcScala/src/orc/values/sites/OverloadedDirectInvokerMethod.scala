@@ -32,7 +32,7 @@ final class OverloadedDirectInvokerBase1[-T1](
   
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     val argumentTypeCorrect = clsT1.isInstance(arguments(0)) || (clsT1 eq clsBaseT1) && arguments(0) == null 
-    ((target eq method) || target == method) && arguments.length == 1 && argumentTypeCorrect
+    ((method eq target) || method == target) && arguments.length == 1 && argumentTypeCorrect
   }
 
   def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
@@ -104,8 +104,8 @@ final class OverloadedDirectInvokerBase2[-T1, -T2](
   
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     val argumentTypeCorrect1 = clsT1.isInstance(arguments(0)) || (clsT1 eq clsBaseT1) && arguments(0) == null 
-    val argumentTypeCorrect2 = clsT2.isInstance(arguments(0)) || (clsT2 eq clsBaseT2) && arguments(0) == null 
-    ((target eq method) || target == method) && arguments.length == 2 && argumentTypeCorrect1 && argumentTypeCorrect2
+    val argumentTypeCorrect2 = clsT2.isInstance(arguments(1)) || (clsT2 eq clsBaseT2) && arguments(1) == null 
+    ((method eq target) || method == target) && arguments.length == 2 && argumentTypeCorrect1 && argumentTypeCorrect2
   }
 
   def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
