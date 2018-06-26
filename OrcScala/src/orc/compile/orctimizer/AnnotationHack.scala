@@ -28,10 +28,12 @@ class OrcAnnotation extends InvokerMethod with SiteMetadata {
   override def effects: Effects = Effects.BeforePub
   override def isDirectCallable: Boolean = true
   
-  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = new OnlyDirectInvoker {
+  class Invoker extends OnlyDirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = true
     def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = Signal
   }
+  
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = new Invoker
 }
 
 // FIXME: Sequentialize causes objects to fail to ever fill their fields. This results in what appears to be deadlock.

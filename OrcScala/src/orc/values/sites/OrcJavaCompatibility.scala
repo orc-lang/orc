@@ -104,7 +104,7 @@ object OrcJavaCompatibility {
 
   // Java Method and Constructor do NOT have a decent supertype, so we wrap them here
   // to at least share an common invocation method.  Ugh.
-  abstract class Invocable {
+  sealed abstract class Invocable {
     val parameterTypes: Array[java.lang.Class[_]]
     val returnType: java.lang.Class[_]
     val isStatic: Boolean

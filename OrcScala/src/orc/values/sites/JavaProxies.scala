@@ -230,21 +230,31 @@ object JavaCall {
 /** 
   * @author jthywiss, amp
   */
-abstract class InvocableInvoker(
+sealed abstract class InvocableInvoker(
     @inline final val invocable: Invocable,
     @inline final val targetCls: Class[_],
     @inline final val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
+  
+  /** As in Invoker, except that it must only contain constant length loops (with 
+   *  respect to invocable, etc) and cannot use recursion. This requirement applies
+   *  to all transitively called functions as well. This rules out most of the 
+   *  Scala collections library and any calls to unknown code.
+   */
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
   
-  val mh = {
+  final val mh = {
     val m = invocable.toMethodHandle
     m.asSpreader(classOf[Array[Object]], m.`type`().parameterCount() - 1).
       asType(MethodType.methodType(classOf[Object], classOf[Object], classOf[Array[Object]]))
   }
   
-  val boxedReturnType = OrcJavaCompatibility.box(invocable.returnType)
+  final val boxedReturnType = OrcJavaCompatibility.box(invocable.returnType)
+  
+  def getRealTarget(theObject: AnyRef) = theObject
 
-  def invokeDirect(theObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+  final def invokeDirect(inputObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+    val theObject = getRealTarget(inputObject)
+    
     orc.run.StopWatches.javaCall {
       try {
         if (theObject == null && !invocable.isStatic) {
@@ -318,10 +328,8 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
             case _ => false
           }
         }
-        
-        override def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-          super.invokeDirect(target.asInstanceOf[JavaMemberProxy].theObject, arguments)
-        }
+
+        override def getRealTarget(target: AnyRef) = target.asInstanceOf[JavaMemberProxy].theObject
   
         override def toString() = s"<Member Invoker>($javaClass.$memberName)"
       }
