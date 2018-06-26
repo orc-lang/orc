@@ -19,7 +19,7 @@ val Runtime = (
     val jvmSystem_ =
       import class JavaLangSystem = "java.lang.System"
       JavaLangSystem
-    val availableProcessors_ = jvmRuntime.availableProcessors()
+    val availableProcessors_ = jvmRuntime_.availableProcessors()
     val tasksPerProcessor_ = (
       import site Read = "orc.lib.str.Read"
       val r = jvmSystem_.getProperty("orc.run.tasksPerProcessor")
