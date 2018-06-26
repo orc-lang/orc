@@ -61,8 +61,8 @@ object Benchmark {
   }
   
   val maxFraction: Double = 1.0 / 100
-  val waitTime = 2000
-  val maxWaits = 5
+  val waitTime = 1000
+  val maxWaits = 10
   
   def waitForCompilation(): Unit = {
     def h(last: Long, i: Long): Unit = {
