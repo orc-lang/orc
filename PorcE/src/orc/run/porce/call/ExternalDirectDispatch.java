@@ -15,6 +15,7 @@ import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.HaltException;
 import orc.run.porce.SpecializationConfiguration;
+import orc.run.porce.ValueClassesProfile;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 
@@ -40,15 +41,18 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
     }
 
     protected final BranchProfile exceptionProfile = BranchProfile.create();
+    protected final ValueClassesProfile argumentClassesProfile = new ValueClassesProfile();
 
     @Specialization(guards = {
-            "canInvokeWithBoundary(invoker, target, arguments)" },
+            "canInvoke.executeCanInvoke(frame, invoker, target, argumentClassesProfile.profile(arguments))" },
         limit = "ExternalDirectCallMaxCacheSize")
     public Object specific(final VirtualFrame frame, final Object target, final Object[] arguments,
-            @Cached("getInvokerWithBoundary(target, arguments)") DirectInvoker invoker) {
+            @Cached("getInvokerWithBoundary(target, arguments)") DirectInvoker invoker,
+            @Cached("create()") InvokerCanInvoke canInvoke,
+            @Cached("create()") InvokerInvokeDirect invokeDirect) {
         // DUPLICATION: This code is duplicated (mostly) in ExternalCPSDispatch.specificDirect.
         try {
-            return invokeDirectWithBoundary(invoker, target, arguments);
+            return invokeDirect.executeInvokeDirect(frame, invoker, target, argumentClassesProfile.profile(arguments));
         } catch (final HaltException e) {
             throw e;
         } catch (final Throwable e) {
@@ -58,12 +62,13 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
         }
     }
 
-    @Specialization(replaces = { "specific" })
-    public Object universal(final VirtualFrame frame, final Object target, final Object[] arguments) {
+    @Specialization() // replaces = { "specific" })
+    public Object universal(final VirtualFrame frame, final Object target, final Object[] arguments,
+        @Cached("create()") InvokerInvokeDirect invokeDirect) {
         // FIXME: This is much better for code de-duplication however if getInvokerWithBoundary throws an exception then
         // this will break.
-        final DirectInvoker invoker = getInvokerWithBoundary(target, arguments);
-        return specific(frame, target, arguments, invoker);
+        final DirectInvoker invoker = getInvokerWithBoundary(target, argumentClassesProfile.profile(arguments));
+        return specific(frame, target, arguments, invoker, null, invokeDirect);
     }
 
     static ExternalDirectDispatch createBare(final PorcEExecution execution) {
@@ -80,17 +85,5 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
     protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object target,
             final Object[] arguments) {
         return runtime.getInvoker(target, arguments);
-    }
-
-    @TruffleBoundary(allowInlining = true)
-    protected static boolean canInvokeWithBoundary(final Invoker invoker, final Object target,
-            final Object[] arguments) {
-        return invoker.canInvoke(target, arguments);
-    }
-
-    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-    protected static Object invokeDirectWithBoundary(final DirectInvoker invoker, final Object target,
-            final Object[] arguments) {
-        return invoker.invokeDirect(target, arguments);
     }
 }
