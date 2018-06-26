@@ -51,6 +51,9 @@ class Terminator(val depth: Int) extends Terminatable {
 
   def this() = this(0)
 
+  // FIXME: This should be made into a var which uses Unsafe (and eventually VarHandles) for atomic access.
+  //         The overhead of the volitile reads seems to be small, but allowing the optimizer to merge 
+  //         checks (which would be non-volitile reads) would be good.
   protected[this] val children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
 
   /** Add a child to this terminator.
