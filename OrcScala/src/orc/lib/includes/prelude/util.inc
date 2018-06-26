@@ -12,27 +12,34 @@
 
 import site Sequentialize__ = "orc.compile.orctimizer.Sequentialize"
 
-val Runtime = new {
-  val jvmRuntime =
-    import class JavaLangRuntime = "java.lang.Runtime"
-    JavaLangRuntime.getRuntime()
-  val jvmSystem =
-    import class JavaLangSystem = "java.lang.System"
-    JavaLangSystem
-  val availableProcessors = jvmRuntime.availableProcessors()
-  val tasksPerProcessor = (
-    import site Read = "orc.lib.str.Read"
-    val r = jvmSystem.getProperty("orc.run.tasksPerProcessor")
-    Iff(r = null) >>
-    Read(r).longValue()
-  ) ; 128
-  val defaultNumberOfPartitions =  (
-    import site Read = "orc.lib.str.Read"
-    val r = jvmSystem.getProperty("orc.run.defaultNumberOfPartitions")
-    Iff(r = null) >>
-    Read(r).longValue()
-  ) ; availableProcessors * tasksPerProcessor
-}
+val Runtime = (
+    val jvmRuntime_ =
+      import class JavaLangRuntime = "java.lang.Runtime"
+      JavaLangRuntime.getRuntime()
+    val jvmSystem_ =
+      import class JavaLangSystem = "java.lang.System"
+      JavaLangSystem
+    val availableProcessors_ = jvmRuntime.availableProcessors()
+    val tasksPerProcessor_ = (
+      import site Read = "orc.lib.str.Read"
+      val r = jvmSystem_.getProperty("orc.run.tasksPerProcessor")
+      Iff(r = null) >>
+      Read(r).longValue()
+    ) ; 128
+    val defaultNumberOfPartitions_ =  (
+      import site Read = "orc.lib.str.Read"
+      val r = jvmSystem_.getProperty("orc.run.defaultNumberOfPartitions")
+      Iff(r = null) >>
+      Read(r).longValue()
+    ) ; availableProcessors_ * tasksPerProcessor_
+    new {
+      val jvmRuntime = jvmRuntime_
+      val jvmSystem = jvmSystem_
+      val availableProcessors = availableProcessors_
+      val tasksPerProcessor = tasksPerProcessor_
+      val defaultNumberOfPartitions = defaultNumberOfPartitions_
+    }
+)
 
 {--
 Miscellaneous utility functions.
