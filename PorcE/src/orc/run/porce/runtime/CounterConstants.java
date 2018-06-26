@@ -17,6 +17,8 @@ package orc.run.porce.runtime;
  * @author amp
  */
 public abstract class CounterConstants {
+    public static final boolean enableTiming = false;
+
     // Due to inlining, changing this will likely require a full rebuild.
     public static final boolean tracingEnabled = false;
     

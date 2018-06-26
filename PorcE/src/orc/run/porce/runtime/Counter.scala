@@ -124,18 +124,17 @@ object Counter {
   Tracer.registerEventTypeId(CounterTerminatorCreated, "CtrTermC", _.formatted("%016x"), _.formatted("%016x"))
   val CounterServiceCreated = 103L
   Tracer.registerEventTypeId(CounterServiceCreated, "CtrServC", _.formatted("%016x"), _.formatted("%016x"))
-
-  
-  @inline @CompilationFinal
-  private val enableTiming = false
   
   @inline @CompilationFinal
   private val atomicOperationTimer = SummingStopWatch.maybe(enableTiming)
   
+  def startTimer(): Long = if (enableTiming) startTimerReal else 0
+  def stopTimer(s: Long) = if (enableTiming) stopTimerReal(s)
+  
   @TruffleBoundary(allowInlining = true) @noinline
-  def startTimer(): Long = atomicOperationTimer.start()
+  def startTimerReal(): Long = if (SummingStopWatch.enabled) atomicOperationTimer.start() else 0
   @TruffleBoundary(allowInlining = true) @noinline
-  def stopTimer(s: Long) = atomicOperationTimer.stop(s)
+  def stopTimerReal(s: Long) = if (SummingStopWatch.enabled) atomicOperationTimer.stop(s)
 
   if (SummingStopWatch.enabled && enableTiming) { 
     DumperRegistry.registerCSVLineDumper("counter-timers", "csv", "counter times",
