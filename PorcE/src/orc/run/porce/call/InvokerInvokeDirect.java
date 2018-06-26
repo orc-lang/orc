@@ -17,7 +17,7 @@ import orc.DirectInvoker;
 import orc.compile.orctimizer.OrcAnnotation;
 import orc.error.runtime.JavaException;
 import orc.run.porce.NodeBase;
-import orc.values.NumericsConfigConstants;
+import orc.values.NumericsConfig;
 import orc.values.sites.InvocableInvoker;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
@@ -120,7 +120,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
                 if (a instanceof scala.math.BigDecimal || a instanceof scala.math.BigInt || a instanceof java.math.BigDecimal || a instanceof java.math.BigInteger) {
                     arguments[i] = orc2java(a, cls);
                 } else {
-                    arguments[i] = OrcJavaCompatibility.orc2javaNoAP(a, cls);
+                    arguments[i] = OrcJavaCompatibility.orc2javaAsFixedPrecision(a, cls);
                 }
             }
             long jis = 0;
@@ -135,7 +135,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
                     orc.run.StopWatches.javaImplTime().stop(jis);
                 }
             }
-            if ((!NumericsConfigConstants.preferLong || !NumericsConfigConstants.preferDouble) && r instanceof Number) {
+            if ((!NumericsConfig.preferLong() || !NumericsConfig.preferDouble()) && r instanceof Number) {
                 return java2orc(r);
             } else {
                 return OrcJavaCompatibility.java2orc(r);
