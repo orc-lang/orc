@@ -12,7 +12,7 @@
 //
 package orc.values.sites
 
-import java.lang.invoke.{ MethodHandles, MethodType }
+import java.lang.invoke.{ MethodHandles, MethodHandle, MethodType }
 import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTargetException }
 
 import orc.{ Accessor, ErrorAccessor, IllegalArgumentInvoker, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, OrcRuntime, TargetArgsThrowsInvoker, TargetThrowsInvoker }
@@ -477,6 +477,23 @@ abstract class ArrayAccessor extends Accessor {
 }
 
 
+object JavaArrayDerefSite {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends OnlyDirectInvoker {
+    def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+      target.isInstanceOf[JavaArrayDerefSite] && arguments.length == 0 && cls.isInstance(target.asInstanceOf[JavaArrayDerefSite].theArray)
+    }
+    def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+      orc.run.StopWatches.javaCall {
+        val r = orc.run.StopWatches.javaImplementation {
+          val self = target.asInstanceOf[JavaArrayDerefSite]
+          mh.invokeExact(self.theArray, self.index)
+        }
+        java2orc(r)
+      }
+    }
+  }
+}
+
 /** A site that will dereference a Java array's component when called
   *
   * @author jthywiss, amp
@@ -486,22 +503,26 @@ case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: I
     if (args.length == 0) {
       val cls = theArray.getClass
       val mh = MethodHandles.arrayElementGetter(cls).asType(MethodType.methodType(classOf[Object], classOf[Object], Integer.TYPE))
-      new OnlyDirectInvoker {
-        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-          target.isInstanceOf[JavaArrayDerefSite] && arguments.length == 0 && cls.isInstance(target.asInstanceOf[JavaArrayDerefSite].theArray)
-        }
-        def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-          orc.run.StopWatches.javaCall {
-            val r = orc.run.StopWatches.javaImplementation {
-              val self = target.asInstanceOf[JavaArrayDerefSite]
-              mh.invokeExact(self.theArray, self.index)
-            }
-            java2orc(r)
-          }
-        }
-      }
+      new JavaArrayDerefSite.Invoker(cls, mh)
     } else {
       IllegalArgumentInvoker(this, args)
+    }
+  }
+}
+
+object JavaArrayAssignSite {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle, val componentType: Class[_]) extends OnlyDirectInvoker {
+    def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+      target.isInstanceOf[JavaArrayAssignSite] && arguments.length == 1 && cls.isInstance(target.asInstanceOf[JavaArrayAssignSite].theArray)
+    }
+    def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+      orc.run.StopWatches.javaCall {
+        val v = orc2java(arguments(0), componentType)
+        orc.run.StopWatches.javaImplementation {
+          val self = target.asInstanceOf[JavaArrayAssignSite]
+          mh.invokeExact(self.theArray, self.index, v)
+        }
+      }
     }
   }
 }
@@ -514,22 +535,9 @@ case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 1) {
       val cls = theArray.getClass
-      val mh = MethodHandles.arrayElementSetter(cls)
+      val mh = MethodHandles.arrayElementSetter(cls).asType(MethodType.methodType(classOf[Object], classOf[Object], Integer.TYPE, classOf[Object]))
       val componentType = Option(cls.getComponentType).getOrElse[Class[_]](classOf[AnyRef])
-      new OnlyDirectInvoker {
-        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-          target.isInstanceOf[JavaArrayAssignSite] && arguments.length == 1 && cls.isInstance(target.asInstanceOf[JavaArrayAssignSite].theArray)
-        }
-        def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-          orc.run.StopWatches.javaCall {
-            val v = orc2java(arguments(0), componentType)
-            orc.run.StopWatches.javaImplementation {
-              val self = target.asInstanceOf[JavaArrayAssignSite]
-              mh.invoke(self.theArray, self.index, v)
-            }
-          }
-        }
-      }
+      new JavaArrayAssignSite.Invoker(cls, mh, componentType)
     } else {
       IllegalArgumentInvoker(this, args)
     }

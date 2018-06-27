@@ -14,7 +14,6 @@
 package orc.run.porce.call;
 
 import orc.Invoker;
-import orc.compile.orctimizer.OrcAnnotation;
 import orc.run.porce.NodeBase;
 import orc.values.sites.InvocableInvoker;
 import orc.values.sites.OverloadedDirectInvokerBase1;
@@ -70,7 +69,10 @@ abstract class InvokerCanInvoke extends NodeBase {
         return invoker instanceof InvocableInvoker ||
                 invoker instanceof OverloadedDirectInvokerBase1 ||
                 invoker instanceof OverloadedDirectInvokerBase2 ||
-                invoker instanceof OrcAnnotation.Invoker;
+                invoker instanceof orc.compile.orctimizer.OrcAnnotation.Invoker ||
+                invoker instanceof orc.values.sites.JavaArrayDerefSite.Invoker ||
+                invoker instanceof orc.values.sites.JavaArrayAssignSite.Invoker ||
+                false;
     }
 
     @Specialization

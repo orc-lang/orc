@@ -151,19 +151,110 @@ abstract class InvokerInvokeDirect extends NodeBase {
         }
     }
 
+    private static Object orc2javaOpt(Object a, Class<?> cls) {
+        if (a instanceof scala.math.BigDecimal || a instanceof scala.math.BigInt || a instanceof java.math.BigDecimal || a instanceof java.math.BigInteger) {
+            return orc2java(a, cls);
+        } else {
+            return OrcJavaCompatibility.orc2javaAsFixedPrecision(a, cls);
+        }
+    }
+
+    private static Object java2orcOpt(Object r) {
+        if ((!NumericsConfig.preferLong() || !NumericsConfig.preferDouble()) && r instanceof Number) {
+            return java2orc(r);
+        } else {
+            return OrcJavaCompatibility.java2orc(r);
+        }
+    }
+
+    @Specialization
+    public Object javaArrayAssignSite(orc.values.sites.JavaArrayAssignSite.Invoker invoker, Object target, Object[] arguments) {
+        long jcs = 0;
+        if (orc.run.StopWatches.callsEnabled()) {
+            jcs = orc.run.StopWatches.javaCallTime().start();
+        }
+        try {
+            Object v = orc2javaOpt(arguments[0], invoker.componentType());
+            long jis = 0;
+            if (orc.run.StopWatches.callsEnabled()) {
+                jis = orc.run.StopWatches.javaImplTime().start();
+            }
+            try {
+                orc.values.sites.JavaArrayAssignSite self = (orc.values.sites.JavaArrayAssignSite)target;
+                callMethodHandleInt2(invoker.mh(), self.theArray(), self.index(), v);
+                return orc.values.Signal$.MODULE$;
+            } finally {
+                if (orc.run.StopWatches.callsEnabled()) {
+                    orc.run.StopWatches.javaImplTime().stop(jis);
+                }
+            }
+        } catch (InvocationTargetException | ExceptionInInitializerError e) {
+            throw new JavaException(e.getCause());
+        } catch (Throwable e) {
+            throw new JavaException(e);
+        } finally {
+            if (orc.run.StopWatches.callsEnabled()) {
+                orc.run.StopWatches.javaCallTime().stop(jcs);
+            }
+        }
+    }
+
+
+    @Specialization
+    public Object javaArrayDerefSite(orc.values.sites.JavaArrayDerefSite.Invoker invoker, Object target, Object[] arguments) {
+        long jcs = 0;
+        if (orc.run.StopWatches.callsEnabled()) {
+            jcs = orc.run.StopWatches.javaCallTime().start();
+        }
+        try {
+            Object r;
+            long jis = 0;
+            if (orc.run.StopWatches.callsEnabled()) {
+                jis = orc.run.StopWatches.javaImplTime().start();
+            }
+            try {
+                orc.values.sites.JavaArrayDerefSite self = (orc.values.sites.JavaArrayDerefSite) target;
+                r = callMethodHandleInt1(invoker.mh(), self.theArray(), self.index());
+            } finally {
+                if (orc.run.StopWatches.callsEnabled()) {
+                    orc.run.StopWatches.javaImplTime().stop(jis);
+                }
+            }
+            return java2orcOpt(r);
+        } catch (InvocationTargetException | ExceptionInInitializerError e) {
+            throw new JavaException(e.getCause());
+        } catch (Throwable e) {
+            throw new JavaException(e);
+        } finally {
+            if (orc.run.StopWatches.callsEnabled()) {
+                orc.run.StopWatches.javaCallTime().stop(jcs);
+            }
+        }
+    }
+
     @TruffleBoundary(allowInlining = true)
-    private Object orc2java(Object v, Class<?> cls) {
+    private static Object orc2java(Object v, Class<?> cls) {
         return OrcJavaCompatibility.orc2java(v, cls);
     }
 
     @TruffleBoundary(allowInlining = true)
-    private Object java2orc(Object v) {
+    private static Object java2orc(Object v) {
         return OrcJavaCompatibility.java2orc(v);
     }
 
     @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-    private Object callMethodHandle(MethodHandle mh, Object theObject, Object[] arguments) throws Throwable {
+    private static Object callMethodHandle(MethodHandle mh, Object theObject, Object[] arguments) throws Throwable {
         return mh.invokeExact(theObject, arguments);
+    }
+
+    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
+    private static Object callMethodHandleInt1(MethodHandle mh, Object theObject, int arg) throws Throwable {
+        return mh.invokeExact(theObject, arg);
+    }
+
+    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
+    private static Object callMethodHandleInt2(MethodHandle mh, Object theObject, int arg1, Object arg2) throws Throwable {
+        return mh.invokeExact(theObject, arg1, arg2);
     }
 
     @Specialization(guards = { "isPartiallyEvaluable(invoker)" })
