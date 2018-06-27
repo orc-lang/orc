@@ -30,17 +30,17 @@ import com.oracle.truffle.api.profiles.BranchProfile;
 @Introspectable
 @ImportStatic(SpecializationConfiguration.class)
 public class HaltToken extends Expression {
-	
+
 	private final PorcEExecution execution;
 
 	protected HaltToken(final PorcEExecution execution) {
 		this.execution = execution;
 	}
-	
+
 	private static Object[] EMPTY_ARGS = new Object[0];
-	
+
     @Specialization(guards = { "SpecializeOnCounterStates" })
-    public PorcEUnit nested(VirtualFrame frame, final CounterNested counter, 
+    public PorcEUnit nested(VirtualFrame frame, final CounterNested counter,
     		@Cached("createCall()") Dispatch call, @Cached("create()") BranchProfile hasContinuationProfile) {
         PorcEClosure cont = counter.haltTokenOptimized();
         if (cont != null) {
@@ -55,7 +55,7 @@ public class HaltToken extends Expression {
         }
         return PorcEUnit.SINGLETON;
     }
-    
+
     @Specialization
     public PorcEUnit any(final Counter counter) {
         counter.haltToken();
@@ -63,11 +63,11 @@ public class HaltToken extends Expression {
     }
 
     protected Dispatch createCall() {
-    	Dispatch n = InternalCPSDispatch.create(true, execution, isTail);
+    	Dispatch n = InternalCPSDispatch.create(false, execution, isTail);
 		n.setTail(isTail);
 		return n;
     }
-    
+
     public static HaltToken create(final Expression parent, final PorcEExecution execution) {
         return HaltTokenNodeGen.create(execution, parent);
     }

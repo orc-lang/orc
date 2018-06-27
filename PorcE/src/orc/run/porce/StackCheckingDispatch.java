@@ -87,7 +87,8 @@ public class StackCheckingDispatch extends Dispatch {
 	if (call == null) {
 	    CompilerDirectives.transferToInterpreterAndInvalidate();
 	    computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
-		Dispatch n = insert(InternalCPSDispatch.create(true, execution, isTail));
+		Dispatch n = insert(InternalCPSDispatch.create(false, execution, isTail));
+		n.setTail(isTail);
 		notifyInserted(n);
 		return n;
 	    });
@@ -115,10 +116,10 @@ public class StackCheckingDispatch extends Dispatch {
 
     @Override
     public void setTail(boolean b) {
-	super.setTail(b);
-	if (call != null) {
-        call.setTail(b);
-    }
+        super.setTail(b);
+        if (call != null) {
+            call.setTail(b);
+        }
     }
 
     @Override
