@@ -29,7 +29,7 @@ import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 
 /**
- * 
+ *
  *
  * @author amp
  */
@@ -39,7 +39,7 @@ public class StackCheckingDispatch extends Dispatch {
     @Child
     protected Dispatch call = null;
 
-    public final ConditionProfile spawnProfile = ConditionProfile.createBinaryProfile();
+    public final ConditionProfile spawnProfile = ConditionProfile.createCountingProfile();
 
     private StackCheckingDispatch(PorcEExecution execution) {
 	super(execution);
@@ -75,12 +75,12 @@ public class StackCheckingDispatch extends Dispatch {
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] args) {
 	final PorcERuntime r = execution.runtime();
         final PorcEClosure computation = (PorcEClosure) target;
-	if (CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
-		spawnProfile.profile(r.incrementAndCheckStackDepth()))) {
+        // CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
+	if (spawnProfile.profile(r.incrementAndCheckStackDepth())) {
             executeInline(frame, computation, args, true);
         } else {
             execution.runtime().schedule(CallClosureSchedulable.varArgs(computation, args, execution));
-        }	
+        }
     }
 
     protected Dispatch getCall() {
@@ -102,12 +102,13 @@ public class StackCheckingDispatch extends Dispatch {
 	try {
 	    getCall().executeDispatchWithEnvironment(frame, computation, args);
 	} finally {
-	    if (useStackDepth)
-		r.decrementStackDepth();
+	    if (useStackDepth) {
+            r.decrementStackDepth();
+        }
 	    SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
 	}
     }
-    
+
     public void executeInline(final VirtualFrame frame, final PorcEClosure computation, final boolean useStackDepth) {
 	executeInline(frame, computation, new Object[] { null }, useStackDepth);
     }
@@ -115,17 +116,18 @@ public class StackCheckingDispatch extends Dispatch {
     @Override
     public void setTail(boolean b) {
 	super.setTail(b);
-	if (call != null)
-	    call.setTail(b);
+	if (call != null) {
+        call.setTail(b);
     }
-    
+    }
+
     @Override
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
         properties.put("spawnProfile", spawnProfile);
         return properties;
     }
-    
+
     public static StackCheckingDispatch create(PorcEExecution execution) {
 	return new StackCheckingDispatch(execution);
     }

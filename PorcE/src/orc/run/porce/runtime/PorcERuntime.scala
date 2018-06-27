@@ -126,15 +126,13 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       def incrementAndCheckStackDepthWithThreadLocal() = {
         val depth = stackDepthThreadLocal.get()
         val r = depth.value < maxStackDepth
-        if (r)
-          depth.value += 1
+        depth.value += (if (r) 1 else 0)
         r
       }
       try {
         val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
         val r = t.stackDepth < maxStackDepth
-        if (r)
-          t.stackDepth += 1
+        t.stackDepth += (if (r) 1 else 0)
         r
       } catch {
         case _: ClassCastException => {
