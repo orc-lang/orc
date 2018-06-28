@@ -95,10 +95,11 @@ public class Force {
 			}
 		    }
 		} else if (!InlineForceResolved || !InlineForceHalted) {
-		    if (isNonFuture(future))
-			return future;
-		    else
-			return orc.run.porce.runtime.FutureConstants.Unbound;
+                    if (isNonFuture(future)) {
+                        return future;
+                    } else {
+                        return orc.run.porce.runtime.FutureConstants.Unbound;
+                    }
 		} else {
 		    throw InternalPorcEError.unreachable(self);
 		}
@@ -138,12 +139,12 @@ public class Force {
     public static class New extends Expression {
 	private final PorcEExecution execution;
 	private final int nFutures;
-		
+
 	public New(PorcEExecution execution, final int nFutures) {
 	    this.execution = execution;
 	    this.nFutures = nFutures;
 	}
-	
+
 	@Specialization
 	public Object run(final PorcEClosure p, final Counter c, final Terminator t) {
 	    final Object[] values = new Object[nFutures + 1];
@@ -163,8 +164,8 @@ public class Force {
     public static class Future extends Expression {
 	private final PorcEExecution execution;
 	private final int index;
-	
-		
+
+
 	public Future(PorcEExecution execution, int index) {
 	    this.execution = execution;
 	    this.index = index;
@@ -275,25 +276,30 @@ public class Force {
 	    call = StackCheckingDispatch.create(execution);
 	}
 
+	protected abstract Expression getC();
+
 	@Override
 	public void setTail(boolean v) {
 	    super.setTail(v);
 	    call.setTail(v);
 	}
 
+	protected HaltToken createHaltToken() {
+	    return HaltToken.create((Expression)getC().deepCopy(), execution);
+	}
+
 	@Specialization
 	public Object run(final VirtualFrame frame, final PorcEClosure p, final Counter c, final Terminator t,
 		final Object _future,
 		@Cached("create()") HandleFuture handleFuture,
-		@Cached("createClassProfile()") ValueProfile futureTypeProfile) {
+		@Cached("createClassProfile()") ValueProfile futureTypeProfile,
+		@Cached("createHaltToken()") HaltToken haltToken) {
 	    Object future = futureTypeProfile.profile(_future);
 	    Object v = handleFuture.handleFuture(this, future);
 
 	    if (v == orc.run.porce.runtime.FutureConstants.Halt) {
 		handleFuture.haltFuture.enter();
-		// TODO: PERFORMANCE: This cannot inline the halt continuation. Using a
-		// HaltToken node would allow that.
-		c.haltToken();
+		haltToken.execute(frame);
 	    } else if (v == orc.run.porce.runtime.FutureConstants.Unbound) {
 		handleFuture.unboundFuture.enter();
 		((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
