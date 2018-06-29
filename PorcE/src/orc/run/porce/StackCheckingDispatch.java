@@ -24,6 +24,7 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.profiles.ConditionProfile;
@@ -79,8 +80,17 @@ public class StackCheckingDispatch extends Dispatch {
 	if (spawnProfile.profile(r.incrementAndCheckStackDepth())) {
             executeInline(frame, computation, args, true);
         } else {
-            execution.runtime().schedule(CallClosureSchedulable.varArgs(computation, args, execution));
+            createSchedulableAndSchedule(args, computation);
         }
+    }
+
+    /**
+     * @param args
+     * @param computation
+     */
+    @TruffleBoundary(allowInlining = false)
+    private void createSchedulableAndSchedule(final Object[] args, final PorcEClosure computation) {
+        execution.runtime().schedule(CallClosureSchedulable.varArgs(computation, args, execution));
     }
 
     protected Dispatch getCall() {
