@@ -50,6 +50,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     //PorcERuntime.resetStackDepth()
   }
 
+  def afterExecute(): Unit = {
+    //Counter.flushAllCounterOffsets()
+  }
+
   val nonInlinableScheduleCount = new LongAdder()
   DumperRegistry.register(name => {
     val n = nonInlinableScheduleCount.sumThenReset()

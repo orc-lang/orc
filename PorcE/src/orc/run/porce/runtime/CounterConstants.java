@@ -11,17 +11,19 @@
 
 package orc.run.porce.runtime;
 
-/** 
+/**
  * Class to help Graal constant fold configuration values used by Counter.
- * 
+ *
  * @author amp
  */
 public abstract class CounterConstants {
     public static final boolean enableTiming = false;
 
+    public static final boolean enableCounting = false;
+
     // Due to inlining, changing this will likely require a full rebuild.
     public static final boolean tracingEnabled = false;
-    
+
     // FIXME: Make this configurable.
     public static final int maxCounterDepth = 8000;
 }

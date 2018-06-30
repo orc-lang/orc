@@ -176,23 +176,26 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
     if(isBlocked()) {
       finishBlocked()
     } else {
-      unsafe.fullFence()  
+      unsafe.fullFence()
       t.addChild(this)
       checkComplete(0)
     }
-  
+
     elements = null
   }
-  
+
   /** As finish(), but this must be in the blocked state.
     *
-    * This is slightly faster and has smaller code-size than finish().  
+    * This is slightly faster and has smaller code-size than finish().
     */
   @TruffleBoundary @noinline
   def finishBlocked() = {
     // This fence is needed because we are doing non-atomic accesses before this call, but
     // after this we may have updates or reads from other threads.
     unsafe.fullFence()
+
+    // Force flushes because p could be called in another thread at any time.
+    Counter.flushAllCounterOffsets(force = true)
 
     t.addChild(this)
 
@@ -227,11 +230,11 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
   def done(): Unit = {
     t.removeChild(this)
     /* ROOTNODE-STATISTICS
-		p.body.getRootNode() match {
-		  case n: PorcERootNode => n.incrementBindJoin()
-		  case _ => ()
-		}
-		*/
+    p.body.getRootNode() match {
+      case n: PorcERootNode => n.incrementBindJoin()
+      case _ => ()
+    }
+    */
     val s = CallClosureSchedulable(p, execution)
     SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
     // Token: Pass to p.

@@ -127,7 +127,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
       halt()
       null
     }
-  
+
     def fastPublish(v: AnyRef): CallClosureSchedulable = {
       if (unsafe.compareAndSwapObject(values, elementOffset, this, v)) {
         // Now decrement the number of unbound values and see if we are done.
@@ -226,7 +226,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     if(isBlocked()) {
       finishBlocked()
     } else {
-      unsafe.fullFence()  
+      unsafe.fullFence()
       t.addChild(this)
       if(isHaltedST()) {
         halt()
@@ -235,15 +235,18 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
       }
     }
   }
-  
+
   /** As finish(), but this must be in the blocked state.
     *
-    * This is slightly faster and has smaller code-size than finish().  
+    * This is slightly faster and has smaller code-size than finish().
     */
   def finishBlocked() = {
     // This fence is needed because we are doing non-atomic accesses before this call, but
     // after this we may have updates or reads from other threads.
     unsafe.fullFence()
+
+    // Force flushes because p could be called in another thread at any time.
+    Counter.flushAllCounterOffsets(force = true)
 
     t.addChild(this)
 
@@ -290,16 +293,16 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
   def done(): Unit = {
     execution.runtime.potentiallySchedule(fastDone())
   }
-  
+
   def fastDone(): CallClosureSchedulable = {
     //Logger.finer(s"Done for $this with: $state ${values.mkString(", ")}")
     t.removeChild(this)
     /* ROOTNODE-STATISTICS
-		p.body.getRootNode() match {
-		  case n: PorcERootNode => n.incrementBindJoin()
-		  case _ => ()
-		}
-		*/
+    p.body.getRootNode() match {
+      case n: PorcERootNode => n.incrementBindJoin()
+      case _ => ()
+    }
+    */
     // Token: Pass to p.
     val s = CallClosureSchedulable.varArgs(p, values, execution)
     SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)

@@ -302,6 +302,8 @@ public class Force {
 		haltToken.execute(frame);
 	    } else if (v == orc.run.porce.runtime.FutureConstants.Unbound) {
 		handleFuture.unboundFuture.enter();
+		// Force flushes because p could be called in another thread at any time.
+		Counter.flushAllCounterOffsets(true);
 		((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 		// ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 	    } else {

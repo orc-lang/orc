@@ -42,6 +42,7 @@ trait PorcEWithWorkStealingScheduler extends Orc {
   }
 
   def beforeExecute(): Unit
+  def afterExecute(): Unit
 
   def startScheduler(options: OrcExecutionOptions): Unit = {
     val maxSiteThreads = if (options.maxSiteThreads > 0) options.maxSiteThreads else 256
@@ -52,10 +53,15 @@ trait PorcEWithWorkStealingScheduler extends Orc {
 
       override def afterExecute(w: Worker, r: Schedulable, t: Throwable): Unit = {
         //r.onComplete()
+        PorcEWithWorkStealingScheduler.this.afterExecute()
         if (t != null) {
           CompilerDirectives.transferToInterpreter()
           Logger.log(Level.SEVERE, s"Schedulable threw exception: $r", t)
         }
+      }
+      
+      override def onCompleteStealingFailure(w: Worker): Unit = {
+        Counter.flushAllCounterOffsets()
       }
     }
 
@@ -71,9 +77,13 @@ trait PorcEWithWorkStealingScheduler extends Orc {
   override def stage(a: Schedulable, b: Schedulable): Unit = {
     throw new UnsupportedOperationException("Stage not supported in PorcE");
   }
-
+  
   @TruffleBoundary @noinline
   def schedule(t: Schedulable): Unit = {
+    // This flushAllCounterOffsets must have force = true because halts associated with news 
+    // which are still in our local buffer could happen as soon as the task receiving the 
+    // new tokens is scheduled
+    Counter.flushAllCounterOffsets(force = true)
     val sStart = StopWatches.workerSchedulingTime.start()
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.
     //t.onSchedule()
