@@ -43,7 +43,7 @@ class SimpleWorkStealingScheduler(
     val goalExtraThreads: Int = 0,
     val workerQueueLength: Int = 1024 * 2) {
   schedulerThis =>
-    
+
   val nCores = Runtime.getRuntime().availableProcessors()
 
   val overrideWorkers = Option(System.getProperty("orc.SimpleWorkStealingScheduler.overrideWorkers")).map(_.toInt)
@@ -59,7 +59,7 @@ class SimpleWorkStealingScheduler(
   val maxWorkers = overrideWorkers.getOrElse(minWorkers + maxSiteThreads)
   /** The maximum amount of time (ms) to wait between attempts to steal work.
     */
-  val maxStealWait = 3
+  val maxStealWait = 10
   /** The ideal number of active (non-blocked) worker threads.
     */
   val goalUsableThreads = minWorkers + goalExtraThreads
@@ -200,7 +200,7 @@ class SimpleWorkStealingScheduler(
   @sun.misc.Contended
   final class Worker(var workerID: Int) extends Thread(s"Worker $workerID") {
     private[SimpleWorkStealingScheduler] val workQueue: SchedulingQueue[Schedulable] = new ABPWSDeque(workerQueueLength)
-    
+
     def queueSize = workQueue.size
 
     // FIXME: Eliminate these hack fields and figure out a better way to handle this.
@@ -221,7 +221,7 @@ class SimpleWorkStealingScheduler(
     var stealFailures = 0
     var overflows = 0
     var atRemovalSafePoint = false
-    
+
     private[this] var prngState: Int = workerID + 1 // Must be non-zero
     private[this] var stealFailureRunLength = 0
     private[this] var wasIdle = true
@@ -262,6 +262,7 @@ class SimpleWorkStealingScheduler(
         }
         StopWatches.workerTime.stop(workerStart)
       }
+      onCompleteStealingFailure(this)
     }
 
     @inline
@@ -374,6 +375,7 @@ class SimpleWorkStealingScheduler(
           // overwriting previous tasks as the queue is used.
           workQueue.clean()
         } else if (stealFailureRunLength > stealAttemptsBeforeBlocking) {
+          onCompleteStealingFailure(this)
           val waitingStart = StopWatches.workerWaitingTime.start()
           try {
             if (!wasIdle) {
@@ -441,7 +443,7 @@ class SimpleWorkStealingScheduler(
 
   def dumpStats(name: String) = {
     val ws = currentWorkers
-    
+
     // Count a thread as working if it is executing a potentially blocking task and is RUNNABLE
     val nBlocked = ws.count(t => {
       t.isPotentiallyBlocked && t.getState != Thread.State.RUNNABLE
@@ -456,7 +458,7 @@ class SimpleWorkStealingScheduler(
       val queueSizes = ws.map(_.workQueue.size)
       (queueSizes.sum / queueSizes.size, queueSizes.max, queueSizes.min)
     }
-    
+
     for (w <- ws) {
       w.newWorks = 0
       w.steals = 0
@@ -465,10 +467,10 @@ class SimpleWorkStealingScheduler(
       w.schedules = 0
       w.tasksRun = 0
     }
-    
+
     (name, ws.size, nBlocked, steals, stealFailures, newWorks, overflows, schedules, tasksRun, avgQueueSize, maxQueueSize, minQueueSize)
   }
-  
+
   DumperRegistry.registerCSVLineDumper(s"work-stealing-scheduler-statistics", "csv", "WorkStealingScheduler statistics",
       Seq(
           "Dump ID [id]",
@@ -484,7 +486,7 @@ class SimpleWorkStealingScheduler(
           "Maximum Local Queue Size [maxQueueSize]",
           "Minimum Local Queue Size [minQueueSize]",
           )
-      ) { name => dumpStats(name) }  
+      ) { name => dumpStats(name) }
 
   final def startScheduler(): Unit = synchronized {
     for (_ <- 0 until minWorkers) {
@@ -522,6 +524,13 @@ class SimpleWorkStealingScheduler(
   def beforeExecute(w: Worker, r: Schedulable): Unit = {}
 
   def afterExecute(w: Worker, r: Schedulable, t: Throwable): Unit = {}
+
+  /** Called after a worker attempts to steal from all other threads and fails.
+    *
+    * When this returns the thread will block for a short time to avoid flooding steal
+    * operations.
+    */
+  def onCompleteStealingFailure(w: Worker): Unit = {}
 }
 
 object SimpleWorkStealingScheduler {
@@ -565,9 +574,9 @@ object SimpleWorkStealingScheduler {
       orc.util.Tracer.trace(WorkerSteal, victim, thiefThread.workerID, victim)
     }
   }
-  
-  
-    
+
+
+
   final val TaskParent = 33L
   orc.util.Tracer.registerEventTypeId(TaskParent, "TaskPrnt")
 
@@ -580,15 +589,15 @@ object SimpleWorkStealingScheduler {
   /* Because of aggressive inlining, changing this flag requires a clean rebuild */
   @inline
   final val traceTasks = false
-  
+
   if (traceTasks) {
     //DumperRegistry.register(WorkStealingSchedulerTaskTracer.dumpSchedule)
   }
-  
+
   val nextSchedulableID = new AtomicLong(1)
-  
+
   val idMap = Collections.synchronizedMap(new WeakHashMap[AnyRef, Long]())
-  
+
   @inline
   def newSchedulableID() = {
     if (traceTasks) {
@@ -597,12 +606,12 @@ object SimpleWorkStealingScheduler {
       0
     }
   }
-  
+
   @inline
   def shareSchedulableID(dst: AnyRef, src: AnyRef): Unit = {
     idMap.put(dst, getSchedulableID(src))
   }
-  
+
   @inline
   def getSchedulableID(s: AnyRef): Long = {
     if (traceTasks) {
@@ -612,38 +621,38 @@ object SimpleWorkStealingScheduler {
         s match {
           case l: java.lang.Long => l
           case s =>
-            idMap.computeIfAbsent(s, _ => newSchedulableID())          
+            idMap.computeIfAbsent(s, _ => newSchedulableID())
         }
       }
     } else {
       0
     }
   }
-  
+
   @inline
   def traceTaskParent(parent: AnyRef, child: AnyRef): Unit = {
     traceTaskParent(getSchedulableID(parent), getSchedulableID(child))
   }
-  
+
   @inline
   def traceTaskParent(parent: AnyRef, child: Long): Unit = {
     traceTaskParent(getSchedulableID(parent), child)
   }
-  
+
   @inline
   def traceTaskParent(parent: Long, child: Long): Unit = {
     if (traceTasks) {
       orc.util.Tracer.trace(TaskParent, 0L, parent, child)
     }
   }
-  
+
   val currentSchedulableTL = new ThreadLocal[AnyRef]()
-  
+
   sealed abstract class SchedulableExecutionType(val id: Long)
   case object SchedulerExecution extends SchedulableExecutionType(0)
   case object StackExecution extends SchedulableExecutionType(1)
   case object InlineExecution extends SchedulableExecutionType(2)
-  
+
   object SchedulableExecutionType {
     def apply(i: Long): SchedulableExecutionType = {
       i match {
@@ -653,15 +662,15 @@ object SimpleWorkStealingScheduler {
       }
     }
   }
-  
+
   val threadMXBean: management.ThreadMXBean = null // java.lang.management.ManagementFactory.getThreadMXBean
-  
+
   def getCPUTime() = {
     if (threadMXBean != null) {
       threadMXBean.getCurrentThreadCpuTime
     } else 0
   }
-  
+
   @inline
   def enterSchedulable(s: AnyRef, t: SchedulableExecutionType): Unit = {
     if (traceTasks) {
@@ -669,7 +678,7 @@ object SimpleWorkStealingScheduler {
       currentSchedulableTL.set(s)
     }
   }
-  
+
   @inline
   def enterSchedulable(s: Long, t: SchedulableExecutionType): Unit = {
     if (traceTasks) {
@@ -677,7 +686,7 @@ object SimpleWorkStealingScheduler {
       currentSchedulableTL.set(s.asInstanceOf[AnyRef])
     }
   }
-  
+
   @inline
   def currentSchedulable: AnyRef = {
     if (traceTasks) {
@@ -686,7 +695,7 @@ object SimpleWorkStealingScheduler {
       null
     }
   }
-  
+
   @inline
   def exitSchedulable(s: AnyRef): Unit = {
     if (traceTasks) {
@@ -694,7 +703,7 @@ object SimpleWorkStealingScheduler {
       orc.util.Tracer.trace(TaskEnd, 0L, getSchedulableID(s), getCPUTime())
     }
   }
-  
+
   @inline
   def exitSchedulable(s: AnyRef, old: AnyRef): Unit = {
     if (traceTasks) {
@@ -703,7 +712,7 @@ object SimpleWorkStealingScheduler {
       currentSchedulableTL.set(old)
     }
   }
-  
+
   @inline
   def exitSchedulable(s: Long, old: AnyRef): Unit = {
     if (traceTasks) {
