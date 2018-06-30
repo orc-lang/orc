@@ -16,17 +16,31 @@ package orc.util
 import java.util.concurrent.atomic.LongAdder
 
 abstract class SummingStopWatch {
-  def start(): Long  
+  /**
+   * Start this timer and return a handle for the start.
+   */
+  def start(): Long
+
+  /**
+   * Finalize a range between the start passed in and the current time.
+   */
   def stop(start: Long): Unit
-  
+
+  /**
+   * Returns: (sum, count)
+   */
   def get(): (Long, Long)
+
+  /**
+   * Returns: (sum, count)
+   */
   def getAndReset(): (Long, Long)
 }
 
 object SummingStopWatch {
   @inline
   val enabled = false
-  
+
   def apply() = {
     if (enabled) {
       new Impl
@@ -34,7 +48,7 @@ object SummingStopWatch {
       new Disabled
     }
   }
-  
+
   def maybe(b: Boolean) = {
     if (enabled && b) {
       new Impl
@@ -42,33 +56,33 @@ object SummingStopWatch {
       new Disabled
     }
   }
-  
+
   final class Disabled extends SummingStopWatch {
     def start(): Long = 0
     def stop(start: Long): Unit = ()
-    
+
     def get(): (Long, Long) = (-1, -1)
     def getAndReset(): (Long, Long) = (-1, -1)
   }
-  
+
   final class Impl extends SummingStopWatch {
     private var sum = new LongAdder()
     private var count = new LongAdder()
-  
+
     @inline
     def start(): Long = {
       System.nanoTime()
     }
-    
+
     @inline
     def stop(start: Long): Unit = {
       val end = System.nanoTime()
       sum.add(end - start)
       count.add(1)
     }
-    
+
     def get() = (sum.longValue(), count.longValue())
-    
+
     def getAndReset() = {
       val olds = sum
       val oldc = count
