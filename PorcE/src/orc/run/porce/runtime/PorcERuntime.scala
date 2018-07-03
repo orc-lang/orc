@@ -27,16 +27,16 @@ import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.CompilerDirectives
 
 /** The base runtime for PorcE runtimes.
- *  
- *  WARNING: This runtime does not support onSchedule and onComplete on 
- *  schedulables. See PorcEWithWorkStealingScheduler. 
+ *
+ *  WARNING: This runtime does not support onSchedule and onComplete on
+ *  schedulables. See PorcEWithWorkStealingScheduler.
   */
 class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) extends Orc(engineInstanceName)
   with PorcEInvocationBehavior
   with PorcEWithWorkStealingScheduler
   with SupportForRwait
-  with SupportForSynchronousExecution 
-  // with SupportForSchedulerUseProfiling 
+  with SupportForSynchronousExecution
+  // with SupportForSchedulerUseProfiling
   {
 
   override def removeRoot(arg: ExecutionRoot) = synchronized {
@@ -51,7 +51,6 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   }
 
   def afterExecute(): Unit = {
-    //Counter.flushAllCounterOffsets()
   }
 
   val nonInlinableScheduleCount = new LongAdder()
@@ -62,7 +61,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     else if (n > 0)
       Logger.fine(s"PERFORMANCE: $name nonInlinableScheduleCount=$n")
   })
-  
+
   def potentiallySchedule(s: Schedulable) = {
     // Logger.log(Level.WARNING, "nonInlinableSchedule", new Exception)
     nonInlinableScheduleCount.increment()
@@ -91,17 +90,17 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       } else {
         //Logger.log(Level.INFO, s"Scheduling $s", new RuntimeException())
         /* ROOTNODE-STATISTICS
-  			if (CompilerDirectives.inInterpreter()) {
-  			  s match {
-  			    case s: CallClosureSchedulable =>
-  			      s.closure.body.getRootNode match {
-  			        case r: PorcERootNode => r.incrementSpawn()
-  			        case _ => ()
-  			      }
-  			  }
-  				//Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
-  			}
-  			*/
+        if (CompilerDirectives.inInterpreter()) {
+          s match {
+            case s: CallClosureSchedulable =>
+              s.closure.body.getRootNode match {
+                case r: PorcERootNode => r.incrementSpawn()
+                case _ => ()
+              }
+          }
+          //Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
+        }
+        */
         schedule(s)
       }
     } else {
@@ -119,9 +118,9 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       new IntHolder(0)
     }
   }
-  
+
   /** Increment the stack depth and return true if we can continue to extend the stack.
-    * 
+    *
     * If this returns true the caller must call decrementStackDepth() after it finishes.
     */
   def incrementAndCheckStackDepth(): Boolean = {
@@ -164,7 +163,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         depth.value -= 1
       }
       try {
-        val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]      
+        val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
         t.stackDepth -= 1
       } catch {
         case _: ClassCastException => {
@@ -198,7 +197,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       }
     }
   }
-  
+
   @inline
   @CompilationFinal
   final val allExecutionOnWorkers = Truffle.getRuntime.createAssumption("allExecutionOnWorkers")
@@ -211,19 +210,19 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   @CompilationFinal
   final val maxStackDepth = System.getProperty("orc.porce.maxStackDepth", "16").toInt
   // TODO: Make maxStackDepth user configurable
-  
+
   @inline
   @CompilationFinal
   final val actuallySchedule = PorcERuntime.actuallySchedule
-  
+
   @inline
   @CompilationFinal
   final val occationallySchedule = PorcERuntime.occationallySchedule
-  
+
   @inline
   @CompilationFinal
   final val allowAllSpawnInlining = PorcERuntime.allowAllSpawnInlining
-  
+
   @inline
   @CompilationFinal
   final val allowSpawnInlining = PorcERuntime.allowSpawnInlining
@@ -233,19 +232,19 @@ object PorcERuntime {
   @inline
   @CompilationFinal
   val actuallySchedule = System.getProperty("orc.porce.actuallySchedule", "true").toBoolean
-  
+
   @inline
   @CompilationFinal
   val occationallySchedule = System.getProperty("orc.porce.occationallySchedule", "true").toBoolean
-  
+
   @inline
   @CompilationFinal
   val allowAllSpawnInlining = System.getProperty("orc.porce.allowAllSpawnInlining", "true").toBoolean
-  
+
   @inline
   @CompilationFinal
   val allowSpawnInlining = System.getProperty("orc.porce.allowSpawnInlining", "true").toBoolean
-  
+
   // HACK: Force loading of a few classes in Truffle. Without this the error handling code crashes and destroys the stack trace.
   Option(Class.forName("com.oracle.truffle.api.TruffleStackTrace")).foreach(_.getClassLoader())
 }

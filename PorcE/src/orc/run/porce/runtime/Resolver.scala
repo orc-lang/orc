@@ -195,7 +195,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
     unsafe.fullFence()
 
     // Force flushes because p could be called in another thread at any time.
-    Counter.flushAllCounterOffsets(force = true)
+    Counter.flushAllCounterOffsets(flushOnlyPositive = true)
 
     t.addChild(this)
 

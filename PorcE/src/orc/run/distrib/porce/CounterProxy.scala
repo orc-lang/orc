@@ -71,7 +71,7 @@ trait CounterProxyManager {
     * @author jthywiss, amp
     */
   sealed abstract class DistributedCounterFragment private[CounterProxyManager] (val id: CounterProxyManager#DistributedCounterId)
-    extends Counter(0, 0) with DistributedCounter {
+    extends Counter(0, 0, execution) with DistributedCounter {
     // TODO: PERFORMANCE: Reduce or eliminate the use of synchonized here. The state would need to be compacted and there would be complications with the local count, but it is possible to do I think.
     
     /** The number of credit is 1/(2**credits).

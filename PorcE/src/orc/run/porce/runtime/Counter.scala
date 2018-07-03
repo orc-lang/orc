@@ -154,6 +154,12 @@ object Counter {
   }
 
   @inline
+  private var counterCount = new LongAdder()
+
+  @TruffleBoundary(allowInlining = true) @noinline
+  def incrCounter(): Unit = if (enableCounting) counterCount.add(1)
+
+  @inline
   private var changeCount = new LongAdder()
 
   @TruffleBoundary(allowInlining = true) @noinline
@@ -187,6 +193,7 @@ object Counter {
     DumperRegistry.registerCSVLineDumper("counter-counts", "csv", "counter counts",
         Seq(
             "Dump ID [id]",
+            "Counter Count [counters]",
             "Change Count [changes]",
             "Initial global increment count [initialIncrs]",
             "Flush all count [flushAlls]",
@@ -194,13 +201,22 @@ object Counter {
             "Flush Count [flushes]",
             )
         ) { name =>
+          val counters = counterCount.sumThenReset()
           val changes = changeCount.sumThenReset()
           val flushAlls = flushAllCount.sumThenReset()
           val initialIncrs = initialIncrCount.sumThenReset()
           val flushes = flushCount.sumThenReset()
           val flushedSum = flushSizeSum.sumThenReset()
-          (name, changes, initialIncrs, flushAlls, flushedSum, flushes)
+          (name, counters, changes, initialIncrs, flushAlls, flushedSum, flushes)
         }
+    DumperRegistry.registerClear { () =>
+      counterCount.reset()
+      changeCount.reset()
+      flushAllCount.reset()
+      initialIncrCount.reset()
+      flushCount.reset()
+      flushSizeSum.reset()
+    }
   }
 
   protected class CounterOffsetHolder() {
@@ -232,17 +248,17 @@ object Counter {
     }
   }
 
-  def flushAllCounterOffsets(force: Boolean = false): Unit = if (Thread.currentThread().isInstanceOf[SimpleWorkStealingScheduler#Worker]){
+  def flushAllCounterOffsets(flushOnlyPositive: Boolean = false): Unit = if (Thread.currentThread().isInstanceOf[SimpleWorkStealingScheduler#Worker]){
     import scala.collection.JavaConverters._
     val map = counterOffsetsThreadLocal.get()
 
     incrFlushAllCount()
     // TODO: PERFORMANCE: This does lots of iterations and repeated checks. It should be optimized.
-    while(!map.isEmpty() && (!force || map.values().asScala.exists(_.value > 0))) {
+    while(!map.isEmpty() && (!flushOnlyPositive || map.values().asScala.exists(_.value > 0))) {
       val elements = map.asScala.toArray
-      elements.filter(e => !force || e._2.value > 0).foreach(e => map.remove(e._1))
+      elements.filter(e => !flushOnlyPositive || e._2.value > 0).foreach(e => map.remove(e._1))
       for ((c, coh) <- elements) {
-        if (!force || coh.value > 0)
+        if (!flushOnlyPositive || coh.value > 0)
           c.flushCounterOffsetAndHandle(coh)
       }
     }
@@ -253,11 +269,12 @@ object Counter {
   *
   * @author amp
   */
-abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(n) {
+abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecution) extends AtomicInteger(n) {
   import CounterConstants._
   import Counter._
 
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
+  incrCounter()
 
   protected def handleHaltToken() = {
     SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
@@ -267,8 +284,8 @@ abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(
     throw new StackOverflowError(s"The Orc stack is limited to $maxCounterDepth. Make sure your functions are actually tail recursive.")
   }
 
-  def this() = {
-    this(1, 0)
+  def this(execution: PorcEExecution) = {
+    this(1, 0, execution)
   }
 
   @elidable(elidable.ASSERTION)
@@ -549,7 +566,8 @@ abstract class Counter protected (n: Int, val depth: Int) extends AtomicInteger(
 /** A Counter which forwards it's halting to a parent Counter and executes a closure on halt.
   *
   */
-final class CounterNested(execution: PorcEExecution, val parent: Counter, haltContinuation: PorcEClosure) extends Counter(1, parent.depth + 1) {
+final class CounterNested(execution: PorcEExecution, val parent: Counter, haltContinuation: PorcEClosure)
+    extends Counter(1, parent.depth + 1, execution) {
   import CounterConstants._
   import Counter._
 
@@ -560,8 +578,6 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
     require(parent != null)
     require(haltContinuation != null)
   }
-
-  Counter.flushAllCounterOffsets(force = true)
 
   def onResurrect() = {
     if (tracingEnabled) {
@@ -650,7 +666,8 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
   * This is specifically designed to handle calls into a Service methods.
   *
   */
-final class CounterService(execution: PorcEExecution, val parentCalling: Counter, val parentContaining: Counter, terminator: Terminator) extends Counter(1, parentCalling.depth+1) with Terminatable {
+final class CounterService(execution: PorcEExecution, val parentCalling: Counter, val parentContaining: Counter, terminator: Terminator)
+    extends Counter(1, parentCalling.depth+1, execution) with Terminatable {
   //Tracer.trace(Counter.CounterServiceCreated, hashCode(), parentCalling.hashCode(), parentContaining.hashCode())
 
   if (CounterConstants.tracingEnabled) {
@@ -659,8 +676,6 @@ final class CounterService(execution: PorcEExecution, val parentCalling: Counter
     require(parentCalling != null)
     require(parentContaining != null)
   }
-
-  Counter.flushAllCounterOffsets(force = true)
 
   /** True if this counter has tokens from it's parents.
     */
@@ -709,7 +724,8 @@ final class CounterService(execution: PorcEExecution, val parentCalling: Counter
   * This is specifically designed to make sure terminators do not become garbage when there body halts.
   *
   */
-final class CounterTerminator(execution: PorcEExecution, val parent: Counter, terminator: Terminator) extends Counter(1, parent.depth+1) with Terminatable {
+final class CounterTerminator(execution: PorcEExecution, val parent: Counter, terminator: Terminator)
+    extends Counter(1, parent.depth+1, execution) with Terminatable {
   //Tracer.trace(Counter.CounterTerminatorCreated, hashCode(), parent.hashCode(), terminator.hashCode())
 
   if (CounterConstants.tracingEnabled) {

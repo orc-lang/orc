@@ -16,11 +16,11 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 
 public abstract class SimpleWorkStealingSchedulerWrapper {
     public static final boolean traceTasks = SimpleWorkStealingScheduler.traceTasks();
-    public static final SimpleWorkStealingScheduler.SchedulableExecutionType SchedulerExecution = 
+    public static final SimpleWorkStealingScheduler.SchedulableExecutionType SchedulerExecution =
 	    orc.run.extensions.SimpleWorkStealingScheduler.SchedulerExecution$.MODULE$;
-    public static final SimpleWorkStealingScheduler.SchedulableExecutionType StackExecution = 
+    public static final SimpleWorkStealingScheduler.SchedulableExecutionType StackExecution =
 	    orc.run.extensions.SimpleWorkStealingScheduler.StackExecution$.MODULE$;
-    public static final SimpleWorkStealingScheduler.SchedulableExecutionType InlineExecution = 
+    public static final SimpleWorkStealingScheduler.SchedulableExecutionType InlineExecution =
 	    orc.run.extensions.SimpleWorkStealingScheduler.InlineExecution$.MODULE$;
 
   public static void shareSchedulableID(Object d, Object s) {
@@ -150,7 +150,7 @@ public abstract class SimpleWorkStealingSchedulerWrapper {
     public static void exitSchedulable(Object s, Object old) {
       SimpleWorkStealingScheduler.exitSchedulable(s, old);
     }
-    
+
     @TruffleBoundary
     public static void exitSchedulable(long s, Object old) {
       SimpleWorkStealingScheduler.exitSchedulable(s, old);

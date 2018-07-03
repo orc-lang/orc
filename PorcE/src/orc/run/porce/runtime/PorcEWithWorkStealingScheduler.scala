@@ -33,7 +33,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
   */
 trait PorcEWithWorkStealingScheduler extends Orc {
   var scheduler: SimpleWorkStealingScheduler = null
-  
+
   final def isWorkQueueUnderful(n: Int): Boolean = {
     Thread.currentThread() match {
       case t: SimpleWorkStealingScheduler#Worker => t.queueSize < n
@@ -59,9 +59,9 @@ trait PorcEWithWorkStealingScheduler extends Orc {
           Logger.log(Level.SEVERE, s"Schedulable threw exception: $r", t)
         }
       }
-      
+
       override def onCompleteStealingFailure(w: Worker): Unit = {
-        Counter.flushAllCounterOffsets()
+        Counter.flushAllCounterOffsets(flushOnlyPositive = false)
       }
     }
 
@@ -77,13 +77,13 @@ trait PorcEWithWorkStealingScheduler extends Orc {
   override def stage(a: Schedulable, b: Schedulable): Unit = {
     throw new UnsupportedOperationException("Stage not supported in PorcE");
   }
-  
+
   @TruffleBoundary @noinline
   def schedule(t: Schedulable): Unit = {
-    // This flushAllCounterOffsets must have force = true because halts associated with news 
-    // which are still in our local buffer could happen as soon as the task receiving the 
+    // This flushAllCounterOffsets must have force = true because halts associated with news
+    // which are still in our local buffer could happen as soon as the task receiving the
     // new tokens is scheduled
-    Counter.flushAllCounterOffsets(force = true)
+    Counter.flushAllCounterOffsets(flushOnlyPositive = true)
     val sStart = StopWatches.workerSchedulingTime.start()
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.
     //t.onSchedule()

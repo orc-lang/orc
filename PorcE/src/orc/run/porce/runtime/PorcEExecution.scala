@@ -51,7 +51,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       val oe = OrcBacktrace.orcifyException(e, node)
       notifyOrc(new CaughtEvent(oe))
     }
-    
+
     e match {
       case e: ExceptionHaltException => handle(e.getCause())
       case e: HaltException => ()
@@ -67,7 +67,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     require(!callTargetMap.contains(-1))
     this.callTargetMap ++= callTargetMap
   }
-  
+
   def callTargetToId(callTarget: RootCallTarget): Int = {
     callTarget.getRootNode() match {
       case r: HasId => r.getId()
@@ -88,7 +88,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     val callTarget = {
       val v = callSiteMap.get(callSiteId)
       if (v == null)
-        callSiteMap.computeIfAbsent(callSiteId, (_) => 
+        callSiteMap.computeIfAbsent(callSiteId, (_) =>
           truffleRuntime.createCallTarget(new InvokeCallRecordRootNode(runtime.language, arguments.length + 3, callSiteId, this)))
       else
         v
@@ -117,13 +117,13 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     args(0) = target.environment
     callTarget.call(args: _*)
   }
-  
+
   private val extraRegisteredRootNodes = Collections.synchronizedList(new ArrayList[WeakReference[RootNode]]())
-  
+
   def registerRootNode(root: RootNode): Unit = {
     extraRegisteredRootNodes.add(WeakReference(root))
   }
-  
+
   {
     // This is disabled debug code for tracing problems related to Counters
     if (false) {
@@ -138,7 +138,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   private val specializationsFile = ExecutionLogOutputStream.getFile(s"truffle-node-specializations", "txt")
   private var lastGoodRepNumber = 0
-  
+
   specializationsFile foreach { specializationsFile =>
     DumperRegistry.register { name =>
       val repNum = try {
@@ -160,18 +160,18 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
   }
 
-  
+
   def onProgramHalted() = {
     /* ROOTNODE-STATISTICS
-		import scala.collection.JavaConverters._
+    import scala.collection.JavaConverters._
     {
       val csvOut = ExecutionLogOutputStream("rootnode-statistics", "csv", "RootNode run times data")
       if (csvOut.isDefined) {
         val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
         val csvWriter = new CsvWriter(traceCsv.append(_))
         val tableColumnTitles = Seq(
-            "RootNode Name [name]", "Total Spawns [spawns]", 
-            "Total Bind Single Future [bindSingle]", "Total Bind Multiple Futures [bindJoin]", 
+            "RootNode Name [name]", "Total Spawns [spawns]",
+            "Total Bind Single Future [bindSingle]", "Total Bind Multiple Futures [bindJoin]",
             "Total Halt Continuation [halt]", "Total Publication Callbacks [publish]",
             "Total Spawned Time (ns) [totalSpawnedTime]", "Total Spawned Calls [spawnedCalls]")
         csvWriter.writeHeader(tableColumnTitles)
@@ -179,7 +179,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
           t.getRootNode match {
             case n: PorcERootNode =>
               val (nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime) = n.getCollectedCallInformation()
-              csvWriter.writeRow(Seq(n.getName, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime, 
+              csvWriter.writeRow(Seq(n.getName, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime,
                   n.porcNode.map(_.sourceTextRange.toString).getOrElse("")))
             case _ =>
               ()
@@ -189,7 +189,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       }
     }
     */
-    
+
   }
 }
 
@@ -225,7 +225,7 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
 
   val p: PorcEClosure = new orc.run.porce.runtime.PorcEClosure(Array.emptyObjectArray, pCallTarget, false)
 
-  val c: Counter = new Counter {
+  val c: Counter = new Counter(execution) {
     def onResurrect() = {
       throw new AssertionError("The top-level counter can never be resurrected.")
     }
@@ -264,5 +264,5 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
   protected override def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
     super.setCallTargetMap(callTargetMap)
     this.callTargetMap += (-1 -> pCallTarget)
-  }  
+  }
 }
