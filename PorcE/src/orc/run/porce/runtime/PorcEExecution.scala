@@ -124,18 +124,6 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     extraRegisteredRootNodes.add(WeakReference(root))
   }
 
-  {
-    // This is disabled debug code for tracing problems related to Counters
-    if (false) {
-      val timer = new Timer(true)
-      timer.schedule(new TimerTask {
-        def run(): Unit = {
-          Counter.report()
-        }
-      }, 20000)
-    }
-  }
-
   private val specializationsFile = ExecutionLogOutputStream.getFile(s"truffle-node-specializations", "txt")
   private var lastGoodRepNumber = 0
 

@@ -111,7 +111,6 @@ trait CounterProxyManager {
       assert(!waitingForCredit)
       val n = incrementAndGet()
       // Token: Create a token that is held by the request credits message. It will be returned with the credits.
-      logChange(s"'waiting for credit' to $n")
       requestCredits()
       waitingForCredit = true
     }
@@ -123,7 +122,6 @@ trait CounterProxyManager {
     final def activate(credits: Int): Unit = synchronized {
       Logger.Proxy.entering(getClass.getName, s"activate $credits")
       val n = incrementAndGet()
-      logChange(s"activate to $n")
       if(this.credits < 0) {
         this.credits = credits
       } else if(this.credits == credits) {

@@ -11,116 +11,19 @@
 
 package orc.run.porce.runtime
 
-import java.io.{ PrintWriter, StringWriter }
-import java.util.concurrent.{ ConcurrentHashMap, LinkedBlockingDeque }
-import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger }
-import java.util.logging.Level
-
-import scala.annotation.elidable
-
-import orc.ast.porc
-import orc.run.porce.{ HasPorcNode, Logger, SimpleWorkStealingSchedulerWrapper }
-import orc.run.extensions.SimpleWorkStealingScheduler
-import orc.util.Tracer
-
-import com.oracle.truffle.api.{ RootCallTarget, Truffle }
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
-import com.oracle.truffle.api.frame.FrameInstance
-import com.oracle.truffle.api.nodes.{ Node => TruffleNode }
-import orc.util.SummingStopWatch
-import orc.util.DumperRegistry
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 import java.util.IdentityHashMap
-import java.util.concurrent.atomic.LongAdder
+import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger, LongAdder }
+
+import orc.run.extensions.SimpleWorkStealingScheduler
+import orc.run.porce.{ Logger, SimpleWorkStealingSchedulerWrapper }
+import orc.util.{ DumperRegistry, SummingStopWatch, Tracer }
+
+import com.oracle.truffle.api.CompilerDirectives.{ CompilationFinal, TruffleBoundary }
 import com.oracle.truffle.api.CompilerDirectives
 
 @CompilationFinal
 object Counter {
   import CounterConstants._
-
-  val liveCounters = ConcurrentHashMap.newKeySet[Counter]()
-
-  def exceptionString(e: Exception) = {
-    val ss = new StringWriter()
-    e.printStackTrace(new PrintWriter(ss))
-    val s = ss.toString()
-    s.dropWhile(_ != ':').drop(1)
-  }
-
-  @TruffleBoundary @noinline
-  def getPorcStackTrace(): Seq[Either[porc.PorcAST, String]] = {
-    val b = Seq.newBuilder[Either[porc.PorcAST, String]]
-    def appendIfPorc(n: TruffleNode) = n match {
-      case n: HasPorcNode =>
-        n.porcNode match {
-          case Some(n) =>
-            b += Left(n)
-          case None =>
-            b += Right(n.toString())
-        }
-      case null =>
-        {}
-      case n =>
-        b += Right(n.toString())
-    }
-    Truffle.getRuntime.iterateFrames((f: FrameInstance) => {
-      appendIfPorc(f.getCallNode)
-      f.getCallTarget match {
-        case c: RootCallTarget =>
-          appendIfPorc(c.getRootNode)
-        case t =>
-          Logger.fine(s"Found unknown target: $t")
-      }
-    })
-    b.result()
-  }
-
-  val leavesOnly = false
-
-  @TruffleBoundary @noinline
-  def report() = {
-    if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
-      import scala.collection.JavaConverters._
-
-      val allCounters = liveCounters.asScala
-      lazy val parentCounters = allCounters.collect({
-        case c: CounterNested =>
-          c.parent
-      }).toSet
-      lazy val leafCounters = allCounters.filterNot(parentCounters)
-      val counters = if (leavesOnly) leafCounters else allCounters
-
-      Logger.fine(s"========================= Counter Report; showing ${counters.size} of ${allCounters.size} counters")
-      Logger.fine("\n" + counters.map(c => s"$c: log size = ${c.log.size}, count = ${c.get}, isDiscorporated = ${c.isDiscorporated}").mkString("\n"))
-      for (c <- counters) {
-        if(true || c.get > 0) {
-          Logger.fine(s"$c:")
-          for(e <- c.log.asScala) {
-            Logger.fine(exceptionString(e))
-          }
-          c.log.clear()
-        }
-      }
-    } else {
-      //Logger.warning(s"Cannot report Counter information if FINE is not loggable in ${Logger.julLogger.getName} or tracingEnabled == false")
-    }
-  }
-
-  @elidable(elidable.ASSERTION)
-  @TruffleBoundary @noinline
-  def addCounter(c: Counter) = {
-    if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
-      liveCounters.add(c)
-    }
-  }
-
-  @elidable(elidable.ASSERTION)
-  @TruffleBoundary @noinline
-  def removeCounter(c: Counter) = {
-    if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
-      liveCounters.remove(c)
-    }
-  }
 
   val CounterNestedCreated = 101L
   Tracer.registerEventTypeId(CounterNestedCreated, "CtrNestC", _.formatted("%016x"), _.formatted("%016x"))
@@ -270,8 +173,8 @@ object Counter {
   * @author amp
   */
 abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecution) extends AtomicInteger(n) {
-  import CounterConstants._
   import Counter._
+  import CounterConstants._
 
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
   incrCounter()
@@ -288,44 +191,6 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     this(1, 0, execution)
   }
 
-  @elidable(elidable.ASSERTION)
-  private val log = if (tracingEnabled) new LinkedBlockingDeque[Exception]() else null
-
-  @elidable(elidable.ASSERTION)
-  @TruffleBoundary @noinline
-  protected final def logChange(s: => String) = {
-    //Logger.finer(s"Counter $this: $s")
-    if (tracingEnabled && Logger.julLogger.isLoggable(Level.FINE)) {
-      val stack = Counter.getPorcStackTrace().map(n => {
-        n match {
-          case Left(n) =>
-            def rangeStr = n.sourceTextRange.map(_.lineContentWithCaret).getOrElse("")
-            def nodeStr = n.toString().take(80)
-            s"$rangeStr\n$nodeStr"
-          case Right(s) =>
-            s"[$s]"
-        }
-      }).mkString("\n---vvv---\n")
-      log.add(new Exception(s"$s in Porc stack:\n$stack"))
-      if(log.size() > 1000) {
-        log.pollFirst()
-      }
-    }
-  }
-
-  if (tracingEnabled) {
-    logChange(s"Init to $n")
-    Counter.addCounter(this)
-  }
-
-  // */
-
-  /*
-  val log: LinkedBlockingDeque[Exception] = null
-  @inline
-  private def logChange(s: => String) = {
-  }
-  // */
 
   /* Multi-threaded Counter Implementation
    *
@@ -453,6 +318,9 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     def decrGlobal() = {
       val n = decrementAndGet()
       handleHaltToken()
+      if (tracingEnabled) {
+        assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
+      }
       if (n == 0) {
         doHalt()
       }
@@ -466,26 +334,10 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
       decrGlobal()
     }
     stopTimer(s)
-    /*
-    if (tracingEnabled) {
-      logChange(s"- Down to $n")
-      if (n < 0) {
-        Counter.report()
-      }
-      assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
-    }
-    */
   }
 
   @TruffleBoundary(allowInlining = true) @noinline
   private final def doHalt() = {
-    if (tracingEnabled) {
-      //Logger.fine(s"Halted $this")
-      //Counter.report()
-      if (!isDiscorporated) {
-        //Counter.removeCounter(this)
-      }
-    }
     onHalt()
   }
 
@@ -506,7 +358,6 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     def incrGlobal() = {
       val n = getAndIncrement()
       if (tracingEnabled) {
-        logChange(s"+ Up from $n")
         assert(n >= 0, s"Spawning is not allowed once we go to zero count. $this")
       }
       n == 0
@@ -534,9 +385,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   @TruffleBoundary(allowInlining = false) @noinline
   final def doResurrect() = {
     if (tracingEnabled) {
-      Counter.addCounter(this)
       Logger.fine(s"Resurrected $this")
-      //if(!isDiscorporated) Counter.report()
       //assert(isDiscorporated, s"Resurrected counters must be discorporated. $this")
     }
     onResurrect()
@@ -568,8 +417,8 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   */
 final class CounterNested(execution: PorcEExecution, val parent: Counter, haltContinuation: PorcEClosure)
     extends Counter(1, parent.depth + 1, execution) {
-  import CounterConstants._
   import Counter._
+  import CounterConstants._
 
   //Tracer.trace(Counter.CounterNestedCreated, hashCode(), parent.hashCode(), 0)
 
