@@ -309,15 +309,16 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     }
   }
 
+  def flushCounterOffsetAndGet(coh: CounterOffset): Int = {
+    val n = addAndGet(coh.value)
+    incrFlushes(coh.value)
+    //Logger.info(s"Flushed $this ($coh) @ ${Thread.currentThread()}: global before = ${n - coh.value}, global after = ${n}")
+    coh.value = 0
+    coh.globalCountHeld = false
+    n
+  }
+
   def flushCounterOffsetAndHandle(coh: CounterOffset): Unit = {
-    def flushCounterOffsetAndGet(coh: CounterOffset): Int = {
-      val n = addAndGet(coh.value)
-      incrFlushes(coh.value)
-      //Logger.info(s"Flushed $this ($coh) @ ${Thread.currentThread()}: global before = ${n - coh.value}, global after = ${n}")
-      coh.value = 0
-      coh.globalCountHeld = false
-      n
-    }
     if (coh.value != 0) {
       val n = flushCounterOffsetAndGet(coh)
       if (n == 0) {
@@ -328,7 +329,14 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     }
   }
 
-  def flushCounterOffsetAndHandle(): Unit = flushCounterOffsetAndHandle(getCounterOffset())
+  def flushCounterOffsetIfLocalHalt(coh: CounterOffset): Boolean = {
+    if (coh.value == -get()) {
+      val n = flushCounterOffsetAndGet(coh)
+      n == 0
+    } else {
+      false
+    }
+  }
 
   @volatile
   var isDiscorporated = false
@@ -504,11 +512,8 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
     val coh = getCounterOffset()
     incrChanges()
 
-    @TruffleBoundary(allowInlining = true) @noinline
-    def decrGlobal() = {
-      val n = decrementAndGet()
-      handleHaltToken()
-      if (n == 0) {
+    def computeReturn(b: Boolean): PorcEClosure = {
+      if (b) {
         // Call the haltContinuation if we didn't discorporate.
         if (!isDiscorporated) {
           // Token: from parent
@@ -524,15 +529,23 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
       }
     }
 
+    @TruffleBoundary(allowInlining = true) @noinline
+    def decrGlobal(): PorcEClosure = {
+      val n = decrementAndGet()
+      handleHaltToken()
+      computeReturn(n == 0)
+    }
+
     val r = if (CompilerDirectives.injectBranchProbability(
         CompilerDirectives.FASTPATH_PROBABILITY,
         coh != null)) {
       coh.value -= 1
-      null
-      // TODO: PERFORMANCE: Always returning null disables inlining of halt closures into the halt token operation.
       /*
-       * If we compare the global counter to the offset on every decrement, then if the
-       * offset - the global count = 0 then we can flush and potentially go to zero.
+       * We compare the global counter to the offset, then if
+       * the offset - the global count = 0 then we can flush and potentially go to zero.
+       */
+      /* TODO: PERFORMANCE: Lots of READs from the global count which could be a problem.
+       *
        * This approach requires lots of reads from the global count which could cause
        * cache contention if the counter is written frequently. In addition this approach
        * is not complete: Multiple threads could end up waiting with portions of the
@@ -541,6 +554,7 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
        * Cache bouncing reads could be avoided by marking counters which are used in multiple
        * threads and disabling the check for them.
        */
+      computeReturn(flushCounterOffsetIfLocalHalt(coh))
     } else {
       decrGlobal()
     }
