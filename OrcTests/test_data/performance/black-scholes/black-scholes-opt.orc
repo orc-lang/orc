@@ -24,21 +24,21 @@ def round(x) = Sequentialize() >> x.doubleValue() -- Inferable
 
 -- The cumulative normal distribution function
 def cnd(x) = Sequentialize() >> ( -- Inferable
-    val l = abs(x)
-    val k = round(1.0 / (1.0 + 0.2316419 * l))
-    val w = round(1.0 - rsqrt2pi * Exp(-l * l / 2) * (a1 * k + a2 * k*k + a3 * k*k*k + a4 * k*k*k*k + a5 * k*k*k*k*k))
+    abs(x) >l>
+    round(1.0 / (1.0 + 0.2316419 * l)) >k>
+    round(1.0 - rsqrt2pi * Exp(-l * l / 2) * (a1 * k + a2 * k*k + a3 * k*k*k + a4 * k*k*k*k + a5 * k*k*k*k*k)) >w> (
     if x <: 0.0 then
       1.0 - w
     else
       w
-    )
+    ))
 
 def compute(s, x, t, r, v) = Sequentialize() >> ( -- Inferable (propogation from cnd)
-    val d1 = round((Log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t)))
-    val d2 = round(d1 - v * sqrt(t))
+    round((Log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t))) >d1>
+    round(d1 - v * sqrt(t)) >d2>
 
-    val call = s * cnd(d1) - x * Exp(-r * t) * cnd(d2)
-    val put = x * Exp(-r * t) * cnd(-d2) - s * cnd(-d1)
+    s * cnd(d1) - x * Exp(-r * t) * cnd(d2) >call>
+    x * Exp(-r * t) * cnd(-d2) - s * cnd(-d1) >put>
     
     BlackScholesResult(call, put)
     )
