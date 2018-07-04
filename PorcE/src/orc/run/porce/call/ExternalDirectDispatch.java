@@ -49,7 +49,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
     public Object specific(final VirtualFrame frame, final Object target, final Object[] arguments,
             @Cached("getInvokerWithBoundary(target, arguments)") DirectInvoker invoker,
             @Cached("create()") InvokerCanInvoke canInvoke,
-            @Cached("create()") InvokerInvokeDirect invokeDirect) {
+            @Cached("create(execution)") InvokerInvokeDirect invokeDirect) {
         // DUPLICATION: This code is duplicated (mostly) in ExternalCPSDispatch.specificDirect.
         try {
             return invokeDirect.executeInvokeDirect(frame, invoker, target, argumentClassesProfile.profile(arguments));
@@ -64,7 +64,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
 
     @Specialization() // replaces = { "specific" })
     public Object universal(final VirtualFrame frame, final Object target, final Object[] arguments,
-        @Cached("create()") InvokerInvokeDirect invokeDirect) {
+        @Cached("create(execution)") InvokerInvokeDirect invokeDirect) {
         // FIXME: This is much better for code de-duplication however if getInvokerWithBoundary throws an exception then
         // this will break.
         final DirectInvoker invoker = getInvokerWithBoundary(target, argumentClassesProfile.profile(arguments));

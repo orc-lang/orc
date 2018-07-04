@@ -134,7 +134,7 @@ public class ExternalCPSDispatch extends Dispatch {
                 Terminator term, final Object[] arguments,
                 @Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker,
                 @Cached("create()") InvokerCanInvoke canInvoke,
-                @Cached("create()") InvokerInvokeDirect invokeDirect) {
+                @Cached("create(execution)") InvokerInvokeDirect invokeDirect) {
             // DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
             try {
                 final Object v;
@@ -170,7 +170,7 @@ public class ExternalCPSDispatch extends Dispatch {
                 Terminator term, final Object[] arguments,
                 @Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker,
                 @Cached("create()") InvokerCanInvoke canInvoke,
-                @Cached("create()") InvokerInvoke invoke) {
+                @Cached("create(execution)") InvokerInvoke invoke) {
             // Token: Passed to callContext from arguments.
             final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
 
@@ -197,8 +197,8 @@ public class ExternalCPSDispatch extends Dispatch {
         public void universal(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter,
                 Terminator term, final Object[] arguments,
                 @Cached("createBinaryProfile()") ConditionProfile isDirectProfile,
-                @Cached("create()") InvokerInvokeDirect invokeDirect,
-                @Cached("create()") InvokerInvoke invoke) {
+                @Cached("create(execution)") InvokerInvokeDirect invokeDirect,
+                @Cached("create(execution)") InvokerInvoke invoke) {
             final Invoker invoker = getInvokerWithBoundary(target, arguments);
             if (ExternalCPSDirectSpecialization && isDirectProfile.profile(invoker instanceof DirectInvoker)) {
                 specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker, null, invokeDirect);

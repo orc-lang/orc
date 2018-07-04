@@ -13,11 +13,17 @@
 
 package orc.run.porce.call;
 
+import orc.CallContext;
 import orc.DirectInvoker;
 import orc.compile.orctimizer.OrcAnnotation;
 import orc.error.runtime.JavaException;
+import orc.run.extensions.DirectSiteInvoker;
 import orc.run.porce.NodeBase;
+import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.StackCheckingDispatch;
+import orc.run.porce.runtime.CPSCallContext;
 import orc.values.NumericsConfig;
+import orc.values.Signal$;
 import orc.values.sites.InvocableInvoker;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
@@ -27,6 +33,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -40,6 +47,12 @@ import com.oracle.truffle.api.frame.VirtualFrame;
  */
 @Introspectable
 abstract class InvokerInvokeDirect extends NodeBase {
+    protected final PorcEExecution execution;
+
+    protected InvokerInvokeDirect(PorcEExecution execution) {
+        this.execution = execution;
+    }
+
     /**
      * Dispatch the call to the target with the given arguments.
      *
@@ -54,6 +67,9 @@ abstract class InvokerInvokeDirect extends NodeBase {
      */
     public abstract Object executeInvokeDirect(VirtualFrame frame, DirectInvoker invoker, Object target,
             Object[] arguments);
+
+    // TODO: SMELL: Most of this class reimplementations various sites to specialize them to
+    //   PorcE by using partial evaluation or inlining publications.
 
     @SuppressWarnings("unchecked")
     @Specialization
@@ -266,14 +282,57 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return invoker instanceof OrcAnnotation.Invoker;
     }
 
+    @Specialization(guards = { "isChannelPut(invoker)" })
+    public Object channelPut(VirtualFrame frame, DirectSiteInvoker invoker, Object target, Object[] arguments,
+            @Cached("create(execution)") StackCheckingDispatch dispatch) {
+        orc.lib.state.Channel.ChannelInstance.PutSite putSite = (orc.lib.state.Channel.ChannelInstance.PutSite)target;
+        synchronized (putSite.channel) {
+            final Object item = arguments[0];
+            if (putSite.channel.closed) {
+                throw orc.error.runtime.HaltException.SINGLETON();
+            }
+            while(true) { // Contains break. Loops until a live reader is removed or readers is empty.
+              if (putSite.channel.readers.isEmpty()) {
+                  // If there are no waiting callers, queue this item.
+                  putSite.channel.contents.addLast(item);
+                  break;
+              } else {
+                  // If there are callers waiting, give this item to
+                  // the top caller.
+                  CallContext receiver = putSite.channel.readers.removeFirst();
+                  if (receiver.isLive()) { // If the reader is live then publish into it.
+                      Object v = orc.values.sites.compatibility.SiteAdaptor.object2value(item);
+                      if (receiver instanceof CPSCallContext) {
+                          CPSCallContext r = (CPSCallContext)receiver;
+                          if (r.publishOptimized()) {
+                              dispatch.executeDispatch(frame, r.p(), v);
+                          }
+                      } else {
+                          receiver.publish(v);
+                      }
+                    break;
+                  } else { // If the reader is dead then go through the loop again to get another reader.
+                  }
+              }
+            }
+            // Since this is an asynchronous channel, a put call
+            // always returns.
+            return Signal$.MODULE$;
+        }
+    }
+
+    protected static boolean isChannelPut(DirectSiteInvoker invoker) {
+        return invoker.siteCls() == orc.lib.state.Channel.ChannelInstance.PutSite.class;
+    }
+
     @Specialization
     @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
     public Object unknown(DirectInvoker invoker, Object target, Object[] arguments) {
         return invoker.invokeDirect(target, arguments);
     }
 
-    public static InvokerInvokeDirect create() {
-        return InvokerInvokeDirectNodeGen.create();
+    public static InvokerInvokeDirect create(PorcEExecution execution) {
+        return InvokerInvokeDirectNodeGen.create(execution);
     }
 
 }

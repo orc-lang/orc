@@ -56,20 +56,61 @@ public class Channel extends EvalSite implements TypedSite {
     // return new ArrowType(ChannelOfX, 1);
     // }
 
-    protected class ChannelInstance extends DotSite implements DOrcPlacementPolicy {
+    public static class ChannelInstance extends DotSite implements DOrcPlacementPolicy {
 
-        protected final LinkedList<Object> contents;
-        protected final LinkedList<CallContext> readers;
-        protected CallContext closer;
+        public final LinkedList<Object> contents;
+        public final LinkedList<CallContext> readers;
+        public CallContext closer;
         /**
          * Once this becomes true, no new items may be put, and gets on an empty
          * channel die rather than blocking.
          */
-        protected boolean closed = false;
+        public boolean closed = false;
 
         ChannelInstance() {
             contents = new LinkedList<>();
             readers = new LinkedList<CallContext>();
+        }
+
+        public static class PutSite extends EvalSite {
+            public final ChannelInstance channel;
+
+            PutSite(ChannelInstance channel) {
+                this.channel = channel;
+            }
+
+            public Object evaluate(final Args args) throws TokenException {
+                synchronized (channel) {
+                    final Object item = args.getArg(0);
+                    if (channel.closed) {
+                        throw orc.error.runtime.HaltException.SINGLETON();
+                    }
+                    while (true) { // Contains break. Loops until a live reader is removed or readers is empty.
+                        if (channel.readers.isEmpty()) {
+                            // If there are no waiting callers, queue this item.
+                            channel.contents.addLast(item);
+                            break;
+                        } else {
+                            // If there are callers waiting, give this item to
+                            // the top caller.
+                            CallContext receiver = channel.readers.removeFirst();
+                            if (receiver.isLive()) { // If the reader is live then publish into it.
+                                receiver.publish(object2value(item));
+                                break;
+                            } else { // If the reader is dead then go through the loop again to get another reader.
+                            }
+                        }
+                    }
+                    // Since this is an asynchronous channel, a put call
+                    // always returns.
+                    return signal();
+                }
+            }
+
+            @Override
+            public boolean nonBlocking() {
+                return true;
+            }
         }
 
         @Override
@@ -102,42 +143,7 @@ public class Channel extends EvalSite implements TypedSite {
                     return true;
                 }
             });
-            addMember("put", new SiteAdaptor() {
-                @Override
-                public void callSite(final Args args, final CallContext writer) throws TokenException {
-                    synchronized (ChannelInstance.this) {
-                        final Object item = args.getArg(0);
-                        if (closed) {
-                            writer.halt();
-                            return;
-                        }
-                        while(true) { // Contains break. Loops until a live reader is removed or readers is empty.
-                          if (readers.isEmpty()) {
-                              // If there are no waiting callers, queue this item.
-                              contents.addLast(item);
-                              break;
-                          } else {
-                              // If there are callers waiting, give this item to
-                              // the top caller.
-                              CallContext receiver = readers.removeFirst();
-                              if (receiver.isLive()) { // If the reader is live then publish into it.
-                                receiver.publish(object2value(item));
-                                break;
-                              } else { // If the reader is dead then go through the loop again to get another reader.
-                              }
-                          }
-                        }
-                        // Since this is an asynchronous channel, a put call
-                        // always returns.
-                        writer.publish(signal());
-                    }
-                }
-
-                @Override
-                public boolean nonBlocking() {
-                    return true;
-                }
-            });
+            addMember("put", new PutSite(ChannelInstance.this));
             addMember("getD", new SiteAdaptor() {
                 @Override
                 public void callSite(final Args args, final CallContext reader) {

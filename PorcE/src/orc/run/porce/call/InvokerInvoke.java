@@ -20,6 +20,7 @@ import orc.error.runtime.JavaException;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.CPSCallContext;
+import orc.run.porce.runtime.PorcEExecution;
 import orc.values.sites.InvocableInvoker;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
@@ -45,6 +46,12 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 @ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
 abstract class InvokerInvoke extends NodeBase {
+    protected final PorcEExecution execution;
+
+    protected InvokerInvoke(PorcEExecution execution) {
+        this.execution = execution;
+    }
+
     /**
      * Dispatch the call to the target with the given arguments.
      *
@@ -61,7 +68,7 @@ abstract class InvokerInvoke extends NodeBase {
 
     @Specialization(guards = { "ExternalCPSDirectSpecialization" })
     public void unknownDirect(VirtualFrame frame, DirectInvoker invoker, CPSCallContext callContext, Object target, Object[] arguments,
-            @Cached("create()") InvokerInvokeDirect invokeDirect) {
+            @Cached("create(execution)") InvokerInvokeDirect invokeDirect) {
         try {
             callContext.publish(invokeDirect.executeInvokeDirect(frame, invoker, target, arguments));
         } catch (HaltException e) {
@@ -75,7 +82,8 @@ abstract class InvokerInvoke extends NodeBase {
         invoker.invoke(callContext, target, arguments);
     }
 
-    public static InvokerInvoke create() {
-        return InvokerInvokeNodeGen.create();
+
+    public static InvokerInvoke create(PorcEExecution execution) {
+        return InvokerInvokeNodeGen.create(execution);
     }
 }

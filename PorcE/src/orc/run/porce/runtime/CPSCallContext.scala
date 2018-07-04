@@ -31,11 +31,11 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
 
   final def publishNonterminal(v: AnyRef): Unit = {
     /* ROOTNODE-STATISTICS
-		p.body.getRootNode() match {
-		  case n: PorcERootNode => n.incrementPublication()
-  	  case _ => ()
-		}    
-		*/
+    p.body.getRootNode() match {
+      case n: PorcERootNode => n.incrementPublication()
+      case _ => ()
+    }
+    */
     c.newToken() // Token: Passed to p.
     val s = CallClosureSchedulable(p, v, execution)
     SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
@@ -51,16 +51,32 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
     // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
     if (compareAndSet(false, true)) {
       /* ROOTNODE-STATISTICS
-  		p.body.getRootNode() match {
-  		  case n: PorcERootNode => n.incrementPublication()
-  		  case _ => ()
-  		}
-  		*/
+      p.body.getRootNode() match {
+        case n: PorcERootNode => n.incrementPublication()
+        case _ => ()
+      }
+      */
       val s = CallClosureSchedulable(p, v, execution)
       SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
       // Token: pass to p
       runtime.potentiallySchedule(s)
       t.removeChild(this)
+    }
+  }
+
+  final def publishOptimized() = {
+    // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
+    if (compareAndSet(false, true)) {
+      /* ROOTNODE-STATISTICS
+      p.body.getRootNode() match {
+        case n: PorcERootNode => n.incrementPublication()
+        case _ => ()
+      }
+      */
+      t.removeChild(this)
+      true
+    } else {
+      false
     }
   }
 
