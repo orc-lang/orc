@@ -206,6 +206,7 @@ class SimpleWorkStealingScheduler(
     // FIXME: Eliminate these hack fields and figure out a better way to handle this.
     // Fields for use elsewhere. AKA fast thread locals.
     var stackDepth: Int = 0
+    var counterOffsets: AnyRef = null
 
     //@volatile
     var isPotentiallyBlocked = false

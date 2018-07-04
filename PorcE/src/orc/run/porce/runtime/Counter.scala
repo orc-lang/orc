@@ -11,7 +11,6 @@
 
 package orc.run.porce.runtime
 
-import java.util.IdentityHashMap
 import java.util.concurrent.atomic.{ AtomicBoolean, AtomicInteger, LongAdder }
 
 import orc.run.extensions.SimpleWorkStealingScheduler
@@ -20,6 +19,7 @@ import orc.util.{ DumperRegistry, SummingStopWatch, Tracer }
 
 import com.oracle.truffle.api.CompilerDirectives.{ CompilationFinal, TruffleBoundary }
 import com.oracle.truffle.api.CompilerDirectives
+import scala.collection.mutable.ArrayBuffer
 
 @CompilationFinal
 object Counter {
@@ -122,48 +122,70 @@ object Counter {
     }
   }
 
-  protected class CounterOffsetHolder() {
+  protected class CounterOffset(val counter: Counter) {
+    var inThreadList: Boolean = false
     var value: Int = 0
     var globalCountHeld: Boolean = false
-  }
-  private val counterOffsetsThreadLocal = new ThreadLocal[IdentityHashMap[Counter, CounterOffsetHolder]]() {
-    override def initialValue() = {
-      //Logger.info(s"Counter offsets initializing for ${Thread.currentThread()}")
-      new IdentityHashMap[Counter, CounterOffsetHolder]()
+    var nextCounterOffset: CounterOffset = null
+
+    def register(worker: SimpleWorkStealingScheduler#Worker) = {
+      if (CompilerDirectives.injectBranchProbability(
+        CompilerDirectives.SLOWPATH_PROBABILITY,
+        !inThreadList)) {
+        // CompilerDirectives.transferToInterpreter()
+        nextCounterOffset = worker.counterOffsets.asInstanceOf[CounterOffset]
+        worker.counterOffsets = this
+        inThreadList = true
+      }
+    }
+
+    override def toString(): String = {
+      f"CounterOffset@${hashCode()}%x(inThreadList=$inThreadList, value=$value, globalCountHeld=$globalCountHeld)"
     }
   }
 
-  @TruffleBoundary(allowInlining = false) @noinline
-  private def getCounterOffsetHolder(c: Counter): CounterOffsetHolder = {
-    if (Thread.currentThread().isInstanceOf[SimpleWorkStealingScheduler#Worker]){
-      val map = counterOffsetsThreadLocal.get()
-      val coh = map.get(c)
-      if (coh == null) {
-        val coh1 = new CounterOffsetHolder()
-        map.put(c, coh1)
-        coh1
-      } else {
-        coh
-      }
-    } else {
-      //Logger.info(s"Non-worker CounterOffsetHolder request on ${Thread.currentThread()}")
-      null
-    }
-  }
+  def flushAllCounterOffsets(flushOnlyPositive: Boolean = false): Unit = {
+    Thread.currentThread() match {
+      case worker: SimpleWorkStealingScheduler#Worker =>
+        incrFlushAllCount()
+        //Logger.info(s"Flushing all ${Thread.currentThread()}: flushOnlyPositive = $flushOnlyPositive")
+        var done = false
+        while(!done) {
+          done = true
+          val headList = worker.counterOffsets.asInstanceOf[CounterOffset]
+          worker.counterOffsets = null
 
-  def flushAllCounterOffsets(flushOnlyPositive: Boolean = false): Unit = if (Thread.currentThread().isInstanceOf[SimpleWorkStealingScheduler#Worker]){
-    import scala.collection.JavaConverters._
-    val map = counterOffsetsThreadLocal.get()
+          if (headList != null) {
+            //Logger.info(s"Flushing all ${Thread.currentThread()}: flushOnlyPositive = $flushOnlyPositive: BEFORE\n${Stream.iterate(headList)(_.nextCounterOffset).takeWhile(_ != null).mkString("\n")}")
+          }
 
-    incrFlushAllCount()
-    // TODO: PERFORMANCE: This does lots of iterations and repeated checks. It should be optimized.
-    while(!map.isEmpty() && (!flushOnlyPositive || map.values().asScala.exists(_.value > 0))) {
-      val elements = map.asScala.toArray
-      elements.filter(e => !flushOnlyPositive || e._2.value > 0).foreach(e => map.remove(e._1))
-      for ((c, coh) <- elements) {
-        if (!flushOnlyPositive || coh.value > 0)
-          c.flushCounterOffsetAndHandle(coh)
-      }
+          val buffer = ArrayBuffer[CounterOffset]()
+
+          {
+            var current = headList
+            while (current != null) {
+              current.inThreadList = false
+              buffer += current
+              current = current.nextCounterOffset
+            }
+          }
+
+          for (current <- buffer) {
+            if (!flushOnlyPositive || current.value >= 0) {
+              //Logger.info(s"Flushing all ${Thread.currentThread()}: flushing: $current")
+              current.counter.flushCounterOffsetAndHandle(current)
+              done = false
+            } else {
+              //Logger.info(s"Flushing all ${Thread.currentThread()}: adding back into the queue: $current")
+              current.register(worker)
+            }
+          }
+
+          if (worker.counterOffsets != null) {
+            //Logger.info(s"Flushing all ${Thread.currentThread()}: flushOnlyPositive = $flushOnlyPositive: AFTER\n${Stream.iterate(worker.counterOffsets.asInstanceOf[CounterOffset])(_.nextCounterOffset).takeWhile(_ != null).mkString("\n")}")
+          }
+        }
+      case _ => ()
     }
   }
 }
@@ -191,6 +213,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     this(1, 0, execution)
   }
 
+  val counterOffsets = Array.ofDim[CounterOffset](execution.runtime.scheduler.maxWorkers)
 
   /* Multi-threaded Counter Implementation
    *
@@ -271,13 +294,26 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
    *   at most every so often (1ms or something).
    */
 
-  protected def getCounterOffsetHolder(): CounterOffsetHolder = Counter.getCounterOffsetHolder(this)
+  protected def getCounterOffset(): CounterOffset = {
+    Thread.currentThread() match {
+      case worker: SimpleWorkStealingScheduler#Worker =>
+        if (counterOffsets(worker.workerID) == null) {
+          //CompilerDirectives.transferToInterpreter()
+          val r = new CounterOffset(this)
+          counterOffsets(worker.workerID) = r
+        }
+        val offset = counterOffsets(worker.workerID)
+        offset.register(worker)
+        offset
+      case _ => null
+    }
+  }
 
-  def flushCounterOffsetAndHandle(coh: CounterOffsetHolder): Unit = {
-    def flushCounterOffsetAndGet(coh: CounterOffsetHolder): Int = {
+  def flushCounterOffsetAndHandle(coh: CounterOffset): Unit = {
+    def flushCounterOffsetAndGet(coh: CounterOffset): Int = {
       val n = addAndGet(coh.value)
       incrFlushes(coh.value)
-      //Logger.info(s"Flushed $this ($coh) @ ${Thread.currentThread()}: offset = ${coh.value}, global before = ${n - coh.value}, global after = ${n}")
+      //Logger.info(s"Flushed $this ($coh) @ ${Thread.currentThread()}: global before = ${n - coh.value}, global after = ${n}")
       coh.value = 0
       coh.globalCountHeld = false
       n
@@ -287,10 +323,12 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
       if (n == 0) {
         doHalt()
       }
+    } else {
+      coh.globalCountHeld = false
     }
   }
 
-  def flushCounterOffsetAndHandle(): Unit = flushCounterOffsetAndHandle(getCounterOffsetHolder())
+  def flushCounterOffsetAndHandle(): Unit = flushCounterOffsetAndHandle(getCounterOffset())
 
   @volatile
   var isDiscorporated = false
@@ -311,7 +349,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     */
   final def haltToken(): Unit = {
     val s = startTimer()
-    val coh = getCounterOffsetHolder()
+    val coh = getCounterOffset()
     incrChanges()
 
     @TruffleBoundary(allowInlining = true) @noinline
@@ -331,6 +369,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
         coh != null)) {
       coh.value -= 1
     } else {
+      //CompilerDirectives.transferToInterpreter()
       decrGlobal()
     }
     stopTimer(s)
@@ -351,7 +390,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
 
   final def newTokenOptimized(): Boolean = {
     val s = startTimer()
-    val coh = getCounterOffsetHolder()
+    val coh = getCounterOffset()
     incrChanges()
 
     @TruffleBoundary(allowInlining = true) @noinline
@@ -370,12 +409,14 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
         coh.value += 1
         false
       } else {
+        //CompilerDirectives.transferToInterpreter()
         incrInitialIncrCount()
+        //Logger.info(s"First count $this ($coh) @ ${Thread.currentThread()}: global before = ${get()}")
         coh.globalCountHeld = true
-        //Logger.info(s"First count $this ($coh) @ ${Thread.currentThread()}: offset = ${coh.value}, global before = ${n - 1}, global after = ${n}")
         incrGlobal()
       }
     } else {
+      //CompilerDirectives.transferToInterpreter()
       incrGlobal()
     }
     stopTimer(s)
@@ -460,7 +501,7 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
   def haltTokenOptimized(): PorcEClosure = {
     // DUPLICATED: from Counter.haltToken()
     val s = startTimer()
-    val coh = getCounterOffsetHolder()
+    val coh = getCounterOffset()
     incrChanges()
 
     @TruffleBoundary(allowInlining = true) @noinline
