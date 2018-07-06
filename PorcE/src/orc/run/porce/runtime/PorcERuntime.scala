@@ -63,7 +63,9 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   })
 
   def potentiallySchedule(s: Schedulable) = {
-    // Logger.log(Level.WARNING, "nonInlinableSchedule", new Exception)
+    if (logNoninlinableSchedules) {
+      Logger.log(Level.WARNING, "nonInlinableSchedule", new Exception)
+    }
     nonInlinableScheduleCount.increment()
     if (allowSpawnInlining || actuallySchedule) {
       def isFast = {
@@ -197,6 +199,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       }
     }
   }
+
+  @inline
+  @CompilationFinal
+  final val logNoninlinableSchedules = System.getProperty("orc.porce.logNoninlinableSchedules", "false").toBoolean
 
   @inline
   @CompilationFinal
