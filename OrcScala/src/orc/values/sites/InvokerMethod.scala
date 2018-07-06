@@ -17,19 +17,19 @@ import orc.{Invoker, Accessor, OrcRuntime}
 /** An external method interface in which the method provides Invokers directly.
   */
 trait InvokerMethod {
-  /** Get an invoker for this target type and argment types.
+  /** Get an invoker for this target type and argument types.
     *
     * This method is slow and the results should be cached if possible.
     *
-    * @return An Invoker or DirectInvoker for the given values or an 
-    * 			  instance of InvokerError if there is no invoker.
-    * 
+    * @return An Invoker or DirectInvoker for the given values or an
+    *         instance of InvokerError if there is no invoker.
+    *
     * @see UncallableValueInvoker
     */
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker
 }
 
-  
+
 /** An external value interface in which the value provides Accessors directly.
   */
 trait AccessorValue {
@@ -37,9 +37,9 @@ trait AccessorValue {
     *
     * This method is slow and the results should be cached if possible.
     *
-    * @return An Accessor for the given classes or an 
-    * 			  instance of AccessorError if there is no accessor.
-    * 
+    * @return An Accessor for the given classes or an
+    *         instance of AccessorError if there is no accessor.
+    *
     * @see NoSuchMemberAccessor, DoesNotHaveMembersAccessor
     */
   def getAccessor(runtime: OrcRuntime, field: Field): Accessor

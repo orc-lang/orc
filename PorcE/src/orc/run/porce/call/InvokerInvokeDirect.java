@@ -37,6 +37,7 @@ import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ControlFlowException;
 
 /**
  * A node to call canInvoke on invokers.
@@ -282,43 +283,56 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return invoker instanceof OrcAnnotation.Invoker;
     }
 
+    private static class GotValueException extends ControlFlowException {
+        final Object value;
+        final CPSCallContext r;
+        public GotValueException(CPSCallContext r, Object value) {
+            this.r = r;
+            this.value = value;
+        }
+    }
+
     @Specialization(guards = { "isChannelPut(invoker)" })
     public Object channelPut(VirtualFrame frame, DirectSiteInvoker invoker, Object target, Object[] arguments,
             @Cached("create(execution)") StackCheckingDispatch dispatch) {
         orc.lib.state.Channel.ChannelInstance.PutSite putSite = (orc.lib.state.Channel.ChannelInstance.PutSite)target;
-        synchronized (putSite.channel) {
-            final Object item = arguments[0];
-            if (putSite.channel.closed) {
-                throw orc.error.runtime.HaltException.SINGLETON();
-            }
-            while(true) { // Contains break. Loops until a live reader is removed or readers is empty.
-              if (putSite.channel.readers.isEmpty()) {
-                  // If there are no waiting callers, queue this item.
-                  putSite.channel.contents.addLast(item);
-                  break;
-              } else {
-                  // If there are callers waiting, give this item to
-                  // the top caller.
-                  CallContext receiver = putSite.channel.readers.removeFirst();
-                  if (receiver.isLive()) { // If the reader is live then publish into it.
-                      Object v = orc.values.sites.compatibility.SiteAdaptor.object2value(item);
-                      if (receiver instanceof CPSCallContext) {
-                          CPSCallContext r = (CPSCallContext)receiver;
-                          if (r.publishOptimized()) {
-                              dispatch.executeDispatch(frame, r.p(), v);
+        try {
+            synchronized (putSite.channel) {
+                final Object item = arguments[0];
+                if (putSite.channel.closed) {
+                    throw orc.error.runtime.HaltException.SINGLETON();
+                }
+                while(true) { // Contains break. Loops until a live reader is removed or readers is empty.
+                  if (putSite.channel.readers.isEmpty()) {
+                      // If there are no waiting callers, queue this item.
+                      putSite.channel.contents.addLast(item);
+                      break;
+                  } else {
+                      // If there are callers waiting, give this item to
+                      // the top caller.
+                      CallContext receiver = putSite.channel.readers.removeFirst();
+                      if (receiver.isLive()) { // If the reader is live then publish into it.
+                          Object v = orc.values.sites.compatibility.SiteAdaptor.object2value(item);
+                          if (receiver instanceof CPSCallContext) {
+                              CPSCallContext r = (CPSCallContext)receiver;
+                              if (r.publishOptimized()) {
+                                  throw new GotValueException(r, v);
+                              }
+                          } else {
+                              receiver.publish(v);
                           }
-                      } else {
-                          receiver.publish(v);
+                        break;
+                      } else { // If the reader is dead then go through the loop again to get another reader.
                       }
-                    break;
-                  } else { // If the reader is dead then go through the loop again to get another reader.
                   }
-              }
+                }
             }
-            // Since this is an asynchronous channel, a put call
-            // always returns.
-            return Signal$.MODULE$;
+        } catch (GotValueException e) {
+            dispatch.executeDispatch(frame, e.r.p(), e.value);
         }
+        // Since this is an asynchronous channel, a put call
+        // always returns.
+        return Signal$.MODULE$;
     }
 
     protected static boolean isChannelPut(DirectSiteInvoker invoker) {

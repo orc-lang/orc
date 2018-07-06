@@ -112,37 +112,43 @@ public class Channel extends EvalSite implements TypedSite {
                 return true;
             }
         }
+        public static class GetSite extends SiteAdaptor {
+            public final ChannelInstance channel;
 
-        @Override
-        protected void addMembers() {
-            addMember("get", new SiteAdaptor() {
-                @Override
-                public void callSite(final Args args, final CallContext reader) {
-                    synchronized (ChannelInstance.this) {
-                        if (contents.isEmpty()) {
-                            if (closed) {
-                                reader.halt();
-                            } else {
-                                reader.setQuiescent();
-                                readers.addLast(reader);
-                            }
+            GetSite(ChannelInstance channel) {
+                this.channel = channel;
+            }
+
+            @Override
+            public void callSite(final Args args, final CallContext reader) {
+                synchronized (channel) {
+                    if (channel.contents.isEmpty()) {
+                        if (channel.closed) {
+                            reader.halt();
                         } else {
-                            // If there is an item available, pop it and return
-                            // it.
-                            reader.publish(object2value(contents.removeFirst()));
-                            if (closer != null && contents.isEmpty()) {
-                                closer.publish(signal());
-                                closer = null;
-                            }
+                            reader.setQuiescent();
+                            channel.readers.addLast(reader);
+                        }
+                    } else {
+                        // If there is an item available, pop it and return
+                        // it.
+                        reader.publish(object2value(channel.contents.removeFirst()));
+                        if (channel.closer != null && channel.contents.isEmpty()) {
+                            channel.closer.publish(signal());
+                            channel.closer = null;
                         }
                     }
                 }
+            }
 
-                @Override
-                public boolean nonBlocking() {
-                    return true;
-                }
-            });
+            @Override
+            public boolean nonBlocking() {
+                return true;
+            }
+        }
+        @Override
+        protected void addMembers() {
+            addMember("get", new GetSite(ChannelInstance.this));
             addMember("put", new PutSite(ChannelInstance.this));
             addMember("getD", new SiteAdaptor() {
                 @Override

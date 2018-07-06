@@ -17,14 +17,17 @@ import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.HaltException;
 import orc.error.runtime.JavaException;
+import orc.run.extensions.SiteInvoker;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
+import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.values.sites.InvocableInvoker;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
 import orc.values.sites.OrcJavaCompatibility;
+import orc.values.Signal$;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
@@ -74,6 +77,41 @@ abstract class InvokerInvoke extends NodeBase {
         } catch (HaltException e) {
             callContext.halt();
         }
+    }
+
+    @Specialization(guards = { "isChannelGet(invoker)" })
+    public void channelGet(VirtualFrame frame, SiteInvoker invoker, CPSCallContext callContext, Object target, Object[] arguments,
+            @Cached("create(execution)") StackCheckingDispatch dispatch) {
+        orc.lib.state.Channel.ChannelInstance.GetSite getSite = (orc.lib.state.Channel.ChannelInstance.GetSite)target;
+        Object v = this;
+        synchronized (getSite.channel) {
+            if (getSite.channel.contents.isEmpty()) {
+                if (getSite.channel.closed) {
+                    callContext.halt();
+                } else {
+                    callContext.setQuiescent();
+                    getSite.channel.readers.addLast(callContext);
+                }
+            } else {
+                // If there is an item available, pop it and return
+                // it.
+                Object v1 = orc.values.sites.compatibility.SiteAdaptor.object2value(getSite.channel.contents.removeFirst());
+                if (getSite.channel.closer != null && getSite.channel.contents.isEmpty()) {
+                    getSite.channel.closer.publish(Signal$.MODULE$);
+                    getSite.channel.closer = null;
+                }
+                if (callContext.publishOptimized()) {
+                    v = v1;
+                }
+            }
+        }
+        if (v != this) {
+            dispatch.executeDispatch(frame, callContext.p(), v);
+        }
+    }
+
+    protected static boolean isChannelGet(SiteInvoker invoker) {
+        return invoker.siteCls() == orc.lib.state.Channel.ChannelInstance.GetSite.class;
     }
 
     @Specialization
