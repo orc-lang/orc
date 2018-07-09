@@ -19,6 +19,7 @@ import orc.compile.orctimizer.OrcAnnotation;
 import orc.error.runtime.JavaException;
 import orc.run.extensions.DirectSiteInvoker;
 import orc.run.porce.NodeBase;
+import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.runtime.CPSCallContext;
@@ -34,6 +35,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -46,6 +48,7 @@ import com.oracle.truffle.api.nodes.ControlFlowException;
  *
  * @author amp
  */
+@ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
 abstract class InvokerInvokeDirect extends NodeBase {
     protected final PorcEExecution execution;
@@ -73,7 +76,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
     //   PorcE by using partial evaluation or inlining publications.
 
     @SuppressWarnings("unchecked")
-    @Specialization
+    @Specialization(guards = { "KnownSiteSpecialization" })
     public <T1> Object overloadedDirectInvokerBase1(OverloadedDirectInvokerBase1<T1> invoker, Object target,
             Object[] arguments) {
         if (orc.run.StopWatches.callsEnabled()) {
@@ -94,7 +97,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
     }
 
     @SuppressWarnings("unchecked")
-    @Specialization
+    @Specialization(guards = { "KnownSiteSpecialization" })
     public <T1, T2> Object overloadedDirectInvokerBase2(OverloadedDirectInvokerBase2<T1, T2> invoker, Object target,
             Object[] arguments) {
         if (orc.run.StopWatches.callsEnabled()) {
@@ -116,7 +119,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return f.apply(a, b);
     }
 
-    @Specialization(guards = { "!invoker.invocable().isVarArgs()" })
+    @Specialization(guards = { "!invoker.invocable().isVarArgs()", "KnownSiteSpecialization" })
     public Object invocableInvoker(InvocableInvoker invoker, Object target, Object[] arguments) {
         Object theObject = invoker.getRealTarget(target);
         OrcJavaCompatibility.Invocable invocable = invoker.invocable();
@@ -184,7 +187,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
         }
     }
 
-    @Specialization
+    @Specialization(guards = { "KnownSiteSpecialization" })
     public Object javaArrayAssignSite(orc.values.sites.JavaArrayAssignSite.Invoker invoker, Object target, Object[] arguments) {
         long jcs = 0;
         if (orc.run.StopWatches.callsEnabled()) {
@@ -217,7 +220,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
     }
 
 
-    @Specialization
+    @Specialization(guards = { "KnownSiteSpecialization" })
     public Object javaArrayDerefSite(orc.values.sites.JavaArrayDerefSite.Invoker invoker, Object target, Object[] arguments) {
         long jcs = 0;
         if (orc.run.StopWatches.callsEnabled()) {
@@ -274,7 +277,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return mh.invokeExact(theObject, arg1, arg2);
     }
 
-    @Specialization(guards = { "isPartiallyEvaluable(invoker)" })
+    @Specialization(guards = { "isPartiallyEvaluable(invoker)", "KnownSiteSpecialization" })
     public Object partiallyEvaluable(DirectInvoker invoker, Object target, Object[] arguments) {
         return invoker.invokeDirect(target, arguments);
     }
@@ -283,60 +286,67 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return invoker instanceof OrcAnnotation.Invoker;
     }
 
-    private static class GotValueException extends ControlFlowException {
+    private static final class GotValue {
         final Object value;
         final CPSCallContext r;
-        public GotValueException(CPSCallContext r, Object value) {
+        public GotValue(CPSCallContext r, Object value) {
             this.r = r;
             this.value = value;
         }
     }
 
-    @Specialization(guards = { "isChannelPut(invoker)" })
+    @Specialization(guards = { "isChannelPut(invoker)", "KnownSiteSpecialization" })
     public Object channelPut(VirtualFrame frame, DirectSiteInvoker invoker, Object target, Object[] arguments,
             @Cached("create(execution)") StackCheckingDispatch dispatch) {
         orc.lib.state.Channel.ChannelInstance.PutSite putSite = (orc.lib.state.Channel.ChannelInstance.PutSite)target;
-        try {
-            synchronized (putSite.channel) {
-                final Object item = arguments[0];
-                if (putSite.channel.closed) {
-                    throw orc.error.runtime.HaltException.SINGLETON();
-                }
-                while(true) { // Contains break. Loops until a live reader is removed or readers is empty.
-                  if (putSite.channel.readers.isEmpty()) {
-                      // If there are no waiting callers, queue this item.
-                      putSite.channel.contents.addLast(item);
-                      break;
-                  } else {
-                      // If there are callers waiting, give this item to
-                      // the top caller.
-                      CallContext receiver = putSite.channel.readers.removeFirst();
-                      if (receiver.isLive()) { // If the reader is live then publish into it.
-                          Object v = orc.values.sites.compatibility.SiteAdaptor.object2value(item);
-                          if (receiver instanceof CPSCallContext) {
-                              CPSCallContext r = (CPSCallContext)receiver;
-                              if (r.publishOptimized()) {
-                                  throw new GotValueException(r, v);
-                              }
-                          } else {
-                              receiver.publish(v);
-                          }
-                        break;
-                      } else { // If the reader is dead then go through the loop again to get another reader.
-                      }
-                  }
-                }
+        GotValue p = performChannelPut(arguments, putSite);
+        if (p != null) {
+            if (p.r.publishOptimized()) {
+                dispatch.executeDispatch(frame, p.r.p(), p.value);
             }
-        } catch (GotValueException e) {
-            dispatch.executeDispatch(frame, e.r.p(), e.value);
+        } else {
+            throw orc.error.runtime.HaltException.SINGLETON();
         }
         // Since this is an asynchronous channel, a put call
         // always returns.
         return Signal$.MODULE$;
     }
 
+    @TruffleBoundary(allowInlining = true)
+    private GotValue performChannelPut(Object[] arguments, orc.lib.state.Channel.ChannelInstance.PutSite putSite) {
+        synchronized (putSite.channel) {
+            final Object item = arguments[0];
+            if (putSite.channel.closed) {
+                return null;
+            }
+            while (true) { // Contains break. Loops until a live reader is removed or readers is empty.
+                if (putSite.channel.readers.isEmpty()) {
+                    // If there are no waiting callers, queue this item.
+                    putSite.channel.contents.addLast(item);
+                    break;
+                } else {
+                    // If there are callers waiting, give this item to
+                    // the top caller.
+                    CallContext receiver = putSite.channel.readers.removeFirst();
+                    if (receiver.isLive()) { // If the reader is live then publish into it.
+                        Object v = orc.values.sites.compatibility.SiteAdaptor.object2value(item);
+                        if (receiver instanceof CPSCallContext) {
+                            return new GotValue((CPSCallContext) receiver, v);
+                        } else {
+                            receiver.publish(v);
+                        }
+                        break;
+                    } else { // If the reader is dead then go through the loop again to get another reader.
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     protected static boolean isChannelPut(DirectSiteInvoker invoker) {
         return invoker.siteCls() == orc.lib.state.Channel.ChannelInstance.PutSite.class;
+
     }
 
     @Specialization

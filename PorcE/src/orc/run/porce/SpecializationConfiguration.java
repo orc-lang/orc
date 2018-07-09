@@ -98,6 +98,10 @@ public abstract class SpecializationConfiguration {
             .parseBoolean(System.getProperty("orc.porce.optimizations.externalCPSDirectSpecialization", "true"));
 
     @CompilationFinal
+    public static final boolean KnownSiteSpecialization = Boolean
+            .parseBoolean(System.getProperty("orc.porce.optimizations.knownSiteSpecialization", "false"));
+
+    @CompilationFinal
     public static final boolean EnvironmentCaching = Boolean
             .parseBoolean(System.getProperty("orc.porce.optimizations.environmentCaching", "true"));
 }

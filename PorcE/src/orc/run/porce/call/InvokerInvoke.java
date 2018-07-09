@@ -79,10 +79,19 @@ abstract class InvokerInvoke extends NodeBase {
         }
     }
 
-    @Specialization(guards = { "isChannelGet(invoker)" })
+    @Specialization(guards = { "isChannelGet(invoker)", "KnownSiteSpecialization" })
     public void channelGet(VirtualFrame frame, SiteInvoker invoker, CPSCallContext callContext, Object target, Object[] arguments,
             @Cached("create(execution)") StackCheckingDispatch dispatch) {
         orc.lib.state.Channel.ChannelInstance.GetSite getSite = (orc.lib.state.Channel.ChannelInstance.GetSite)target;
+        Object v = performChannelGet(callContext, getSite);
+        if (v != this) {
+            dispatch.executeDispatch(frame, callContext.p(), v);
+        }
+    }
+
+    @TruffleBoundary(allowInlining = true)
+    private Object performChannelGet(CPSCallContext callContext,
+            orc.lib.state.Channel.ChannelInstance.GetSite getSite) {
         Object v = this;
         synchronized (getSite.channel) {
             if (getSite.channel.contents.isEmpty()) {
@@ -105,9 +114,7 @@ abstract class InvokerInvoke extends NodeBase {
                 }
             }
         }
-        if (v != this) {
-            dispatch.executeDispatch(frame, callContext.p(), v);
-        }
+        return v;
     }
 
     protected static boolean isChannelGet(SiteInvoker invoker) {
