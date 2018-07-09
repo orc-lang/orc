@@ -68,17 +68,17 @@ object PorcEShared {
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             )
-            
-  val mainOrcScalaBenchmarks = mainOrcBenchmarks.filter(fn => externalLanguages.exists(fn contains _) && 
+
+  val mainOrcScalaBenchmarks = mainOrcBenchmarks.filter(fn => externalLanguages.exists(fn contains _) &&
             !Seq(
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             ).contains(fn)
             )
-            
+
   def onlyOpt(s: Seq[String]): Seq[String] = s.filter(fn => (fn contains "opt") || nonOpt.exists(fn contains _))
   def onlyNonOpt(s: Seq[String]): Seq[String] = s.filter(fn => !(fn contains "opt") || nonOpt.exists(fn contains _))
-                        
+
   val mainScalaBenchmarks = Seq(
             //orc.test.item.scalabenchmarks.Mandelbrot,
             //orc.test.item.scalabenchmarks.NQueens,
@@ -112,23 +112,23 @@ object PorcEShared {
 
   trait HasRunNumber {
     def run: Int
-  }  
-  
+  }
+
 }
 
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   import PorcEShared._
-  
+
   def softTimeLimit: Double = 60 * 10
-  
+
   case class MyPorcEExperimentalCondition(
       run: Int,
-      orcFile: File, 
-      nCPUs: Int, 
-      optLevel: Int) 
+      orcFile: File,
+      nCPUs: Int,
+      optLevel: Int)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
     override def nRuns = super.nRuns
-    
+
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
       FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
@@ -140,20 +140,20 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
     override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs ++ Seq("-O", optLevel.toString)
     override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
   }
-  
+
   case class MyScalaExperimentalCondition(
       run: Int,
-      benchmarkClass: Class[_], 
-      nCPUs: Int) 
+      benchmarkClass: Class[_],
+      nCPUs: Int)
       extends ArthursBenchmarkEnv.ScalaExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
     //override def nRuns = super.nRuns / 2 max 1
-    
+
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
       FactorDescription("benchmarkClass", "Benchmark Class", "", "The class run for this benchmark"),
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use")
     )
-    
+
     override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
   }
 
@@ -184,21 +184,65 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 }
 
 
-object PorcESpawnFutureExperiment extends PorcEBenchmark {
+object PorcEKnownSiteSpecializationExperiment extends PorcEBenchmark {
   import PorcEShared._
-  
-  def softTimeLimit: Double = 60 * 8
-  
+
+  def softTimeLimit: Double = 60 * 7
+
   case class MyPorcEExperimentalCondition(
       run: Int,
-      orcFile: File, 
-      nCPUs: Int, 
-      optLevel: Int,
-      spawnLimit: Double,
-      optFutures: Boolean) 
+      orcFile: File,
+      nCPUs: Int,
+      knownSiteSpecialization: Boolean)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
     override def nRuns = super.nRuns
-    
+
+    override def factorDescriptions = Seq(
+      FactorDescription("run", "Run Number", "", ""),
+      FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
+      FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
+      FactorDescription("knownSiteSpecialization", "Specialize known sites", "", ""),
+    )
+
+    override def systemProperties = super.systemProperties ++ mainSystemProperties ++
+      Map("orc.porce.optimizations.knownSiteSpecialization" -> knownSiteSpecialization
+          )
+    override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs
+    override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
+  }
+
+  def main(args: Array[String]): Unit = {
+    val experimentalConditions = {
+      val porce = for {
+        cpus <- Seq(8) //Seq(8, 24)
+        fn <- onlyOpt(mainPureOrcBenchmarks)
+        knownSiteSpecialization <- Seq(true) // Seq(true, false)
+      } yield {
+        assert(new File(fn).isFile(), fn)
+        MyPorcEExperimentalCondition(0, new File("OrcTests/" + fn), cpus, knownSiteSpecialization)
+      }
+      porce
+    }
+    runExperiment(experimentalConditions)
+  }
+}
+
+
+object PorcESpawnFutureExperiment extends PorcEBenchmark {
+  import PorcEShared._
+
+  def softTimeLimit: Double = 60 * 8
+
+  case class MyPorcEExperimentalCondition(
+      run: Int,
+      orcFile: File,
+      nCPUs: Int,
+      optLevel: Int,
+      spawnLimit: Double,
+      optFutures: Boolean)
+      extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
+    override def nRuns = super.nRuns
+
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
       FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
@@ -213,10 +257,10 @@ object PorcESpawnFutureExperiment extends PorcEBenchmark {
           "orc.porce.inlineAverageTimeLimit" -> spawnLimit,
           "orc.porce.allowSpawnInlining" -> true) // (spawnLimit > 0))
     val futuresOptOpt = s"orct:future-elim=$optFutures,orct:unused-future-elim=$optFutures,orct:future-force-elim=$optFutures,porc:usegraft=$optFutures"
-    
+
     override def systemProperties = super.systemProperties ++ mainSystemProperties ++ spawnsProperties
     override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs ++ Seq("-O", optLevel.toString, "--opt-opt", spawnsOptOpt + "," + futuresOptOpt)
-        
+
     override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
   }
 
@@ -243,19 +287,19 @@ object PorcESpawnFutureExperiment extends PorcEBenchmark {
 
 object PorcEOptimizationExperiment extends PorcEBenchmark {
   import PorcEShared._
-  
+
   // Run for a short time (4 min). But if one rep take 30 minutes, let it go, since we HAVE to finish at least one rep to get data.
   def softTimeLimit: Double = 60 * 4
   override def hardTimeLimit: Double = 60 * 30
-  
+
   case class MyPorcEExperimentalCondition(
       run: Int,
-      orcFile: File, 
-      nCPUs: Int, 
-      optLevel: Int) 
+      orcFile: File,
+      nCPUs: Int,
+      optLevel: Int)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
     override def nRuns = super.nRuns max 30
-    
+
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
       FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
@@ -287,14 +331,14 @@ object PorcEOptimizationExperiment extends PorcEBenchmark {
 object PorcEInliningTCOExperiment extends PorcEBenchmark {
   def softTimeLimit: Double = 60 * 3.5
   //override def hardTimeLimit: Double = 60 * 5.5
-    
+
   case class MyPorcEExperimentalCondition(
-      orcFile: File, 
-      nCPUs: Int, 
-      allowAllSpawnInlining: Boolean, 
-      universalTCO: Boolean, 
-      actuallySchedule: Boolean, 
-      optLevel: Int) 
+      orcFile: File,
+      nCPUs: Int,
+      allowAllSpawnInlining: Boolean,
+      universalTCO: Boolean,
+      actuallySchedule: Boolean,
+      optLevel: Int)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
     override def factorDescriptions = Seq(
       FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
@@ -304,7 +348,7 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
       FactorDescription("actuallySchedule", "Allow scheduling in potentiallySchedule", "", "When false spawning only happens at spawn."),
       FactorDescription("optLevel", "Optimization Level", "", "-O level"),
     )
-    
+
     override def systemProperties = super.systemProperties ++ Map(
         "graal.TruffleBackgroundCompilation" -> "false",
         "orc.porce.allowSpawnInlining" -> true,
@@ -314,15 +358,15 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
         "orc.porce.actuallySchedule" -> actuallySchedule,
         "graal.TruffleCompilationThreshold" -> 150,
         )
-        
+
     override def toOrcArgs = super.toOrcArgs ++ Seq("-O", optLevel.toString)
-    
+
     override def toJvmArgs = Seq("-XX:+UseParallelGC", "-Xms6g", "-Xmx64g") ++ super.toJvmArgs
   }
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = (Seq(24)).reverse 
+      val nCPUsValues = (Seq(24)).reverse
       val porce = for {
         optLevel <- Seq(3)
         fn <- Seq(
@@ -357,7 +401,7 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, allowAllSpawnInlining, universalTCO, actuallySchedule, optLevel)
       }
-      porce 
+      porce
     }
     runExperiment(experimentalConditions)
   }
@@ -366,39 +410,39 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
 
 object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
   import PorcEShared._
-  
+
   def softTimeLimit: Double = 60 * 10
   override def hardTimeLimit: Double = 60 * 14
-  
+
   trait Option extends Product with Serializable {
     def optopt(enabled: Boolean): Map[String, String] = Map()
     def sysprop(enabled: Boolean): Map[String, String] = Map()
   }
-  
+
   case class BooleanOptOpt(name: String, enabledState: Boolean) extends Option {
     override def optopt(enabled: Boolean): Map[String, String] = {
       Map(name -> (if(enabled) enabledState else !enabledState).toString)
     }
   }
-  
+
   case class StringOptOpt(name: String, enabledState: String, disabledState: String) extends Option {
     override def optopt(enabled: Boolean): Map[String, String] = {
       Map(name -> (if(enabled) enabledState else disabledState))
     }
   }
-  
+
   case class BooleanSysProp(name: String, enabledState: Boolean) extends Option {
     override def sysprop(enabled: Boolean): Map[String, String] = {
       Map(name -> (if(enabled) enabledState else !enabledState).toString)
     }
   }
-  
+
   case class StringSysProp(name: String, enabledState: String, disabledState: String) extends Option {
     override def sysprop(enabled: Boolean): Map[String, String] = {
       Map(name -> (if(enabled) enabledState else disabledState))
     }
   }
-  
+
   object Orctimizer {
     val PeepholeOptimizations = Seq(
       BooleanOptOpt("orct:branch-elim", true),
@@ -417,19 +461,19 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
       BooleanOptOpt("orct:method-elim", true),
       BooleanOptOpt("orct:tuple-elim", true),
       )
-  
+
     val Inlining = Seq(
       BooleanOptOpt("orct:inline", true),
       )
-  
+
     // Future Optimizations:
-    
+
     val ForceElimination = Seq(
       BooleanOptOpt("orct:force-elim", true),
       BooleanOptOpt("orct:resolve-elim", true),
       BooleanOptOpt("orct:lift-force", true),
       )
-  
+
     val FutureElimination = Seq(
       BooleanOptOpt("orct:future-elim", true),
       BooleanOptOpt("orct:unused-future-elim", true),
@@ -444,7 +488,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
       BooleanOptOpt("porc:try-catch-elim", true),
       BooleanOptOpt("porc:try-finally-elim", true),
       )
-  
+
     val Inlining = Seq(
       BooleanOptOpt("porc:inline-let", true),
       BooleanOptOpt("porc:eta-reduce", true),
@@ -481,7 +525,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
     val SpecializeOnRuntimeStates = Seq(
         BooleanOptOpt("porce:specialization", true),
       )
-      
+
     // Optimized TCO (instead of using trampolining through the scheduler):
     val OptimizedTCO = Seq(
       BooleanSysProp("orc.porce.universalTCO", true),
@@ -496,9 +540,9 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
         BooleanSysProp("orc.porce.allowAllSpawnInlining", true),
         )
   }
-  
+
   val LastUsedStep = Seq()
-  
+
   val Steps = Seq(
       //Orctimizer.PeepholeOptimizations ++ Porc.PeepholeOptimizations,
       //Orctimizer.Inlining ++ Porc.Inlining,
@@ -512,34 +556,34 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
       LastUsedStep,
       //PorcE.OptimizedTCO,
       )
-  
+
   case class MyPorcEExperimentalCondition(
-      orcFile: File, 
-      nCPUs: Int, 
-      step: Int) 
+      orcFile: File,
+      nCPUs: Int,
+      step: Int)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
     override def factorDescriptions = Seq(
       FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use"),
       FactorDescription("step", "Development step", "", ""),
     )
-    
+
     val enabledOptions = Steps.take(step).flatten
     val disabledOptions = Steps.drop(step).flatten
-    
-    override def systemProperties = super.systemProperties ++ mainSystemProperties ++ 
-        enabledOptions.flatMap(_.sysprop(true)) ++ 
+
+    override def systemProperties = super.systemProperties ++ mainSystemProperties ++
+        enabledOptions.flatMap(_.sysprop(true)) ++
         disabledOptions.flatMap(_.sysprop(false))
-    
+
     def optoptString = {
       val opts = (enabledOptions.flatMap(_.optopt(true)) ++ disabledOptions.flatMap(_.optopt(false)))
       opts.map({ case (n, v) => s"$n=$v"}).mkString(",")
     }
 
-    override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs ++ Seq("-O", "3", "--opt-opt", optoptString)    
+    override def toOrcArgs = super.toOrcArgs ++ mainOrcArgs ++ Seq("-O", "3", "--opt-opt", optoptString)
     override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
   }
-  
+
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
       val nCPUsValues = Seq(24)
@@ -556,7 +600,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, step)
       }
-      
+
       /*for(c <- porce) {
         println(c)
         println(c.systemProperties.toSeq.sortBy(_._1).map({ case (n, v) => s"$n=$v"}).mkString(", "))
@@ -570,12 +614,12 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
 
 object PorcESteadyStateExperiment extends PorcEBenchmark {
   def softTimeLimit: Double = 60 * 10
-    
+
   case class MyPorcEExperimentalCondition(
-      orcFile: File, 
-      truffleBackgroundCompilation: Boolean, 
-      truffleCompilationThreshold: Int, 
-      truffleCompilerThreads: Int) 
+      orcFile: File,
+      truffleBackgroundCompilation: Boolean,
+      truffleCompilationThreshold: Int,
+      truffleCompilerThreads: Int)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition {
     override def factorDescriptions = Seq(
       FactorDescription("orcFile", "Orc File", "", "The Orc program file name"),
@@ -590,7 +634,7 @@ object PorcESteadyStateExperiment extends PorcEBenchmark {
         )
   }
   case class MyScalaExperimentalCondition(
-      benchmarkClass: Class[_]) 
+      benchmarkClass: Class[_])
       extends ArthursBenchmarkEnv.ScalaExperimentalCondition {
     override def factorDescriptions = Seq(
       FactorDescription("benchmarkClass", "Benchmark Class", "", "The class run for this benchmark"),
@@ -624,7 +668,7 @@ object PorcESteadyStateExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(cls)
       }
-      porce ++ scala 
+      porce ++ scala
     }
     runExperiment(experimentalConditions)
   }
