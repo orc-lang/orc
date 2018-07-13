@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.LinkedList;
 
 import orc.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.CounterType;
@@ -56,7 +57,7 @@ public class Counter extends EvalSite implements TypedSite {
     protected class CounterInstance extends DotSite implements DOrcPlacementPolicy {
         // TODO: Reimplement this without the lock. It will probably scale much better with AtomicInteger
         protected int count;
-        protected final LinkedList<CallContext> waiters = new LinkedList<CallContext>();
+        protected final LinkedList<MaterializedCallContext> waiters = new LinkedList<MaterializedCallContext>();
 
         public CounterInstance(final int init) {
             super();
@@ -112,7 +113,7 @@ public class Counter extends EvalSite implements TypedSite {
                             caller.publish(signal());
                         } else {
                             caller.setQuiescent();
-                            waiters.add(caller);
+                            waiters.add(caller.materialize());
                         }
                     }
                 }

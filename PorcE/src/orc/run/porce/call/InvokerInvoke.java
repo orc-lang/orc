@@ -13,6 +13,7 @@
 
 package orc.run.porce.call;
 
+import orc.CallContext;
 import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.HaltException;
@@ -67,10 +68,10 @@ abstract class InvokerInvoke extends NodeBase {
      * @param arguments
      *            The arguments to the call as expected by the invoker (without PCT).
      */
-    public abstract void executeInvoke(VirtualFrame frame, Invoker invoker, CPSCallContext callContext, Object target, Object[] arguments);
+    public abstract void executeInvoke(VirtualFrame frame, Invoker invoker, CallContext callContext, Object target, Object[] arguments);
 
-    @Specialization(guards = { "ExternalCPSDirectSpecialization" })
-    public void unknownDirect(VirtualFrame frame, DirectInvoker invoker, CPSCallContext callContext, Object target, Object[] arguments,
+    //@Specialization(guards = { "ExternalCPSDirectSpecialization" })
+    public void unknownDirect(VirtualFrame frame, DirectInvoker invoker, CallContext callContext, Object target, Object[] arguments,
             @Cached("create(execution)") InvokerInvokeDirect invokeDirect) {
         try {
             callContext.publish(invokeDirect.executeInvokeDirect(frame, invoker, target, arguments));
@@ -79,7 +80,7 @@ abstract class InvokerInvoke extends NodeBase {
         }
     }
 
-    @Specialization(guards = { "isChannelGet(invoker)", "KnownSiteSpecialization" })
+    //@Specialization(guards = { "isChannelGet(invoker)", "KnownSiteSpecialization" })
     public void channelGet(VirtualFrame frame, SiteInvoker invoker, CPSCallContext callContext, Object target, Object[] arguments,
             @Cached("create(execution)") StackCheckingDispatch dispatch) {
         orc.lib.state.Channel.ChannelInstance.GetSite getSite = (orc.lib.state.Channel.ChannelInstance.GetSite)target;
@@ -123,7 +124,7 @@ abstract class InvokerInvoke extends NodeBase {
 
     @Specialization
     @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-    public void unknown(Invoker invoker, CPSCallContext callContext, Object target, Object[] arguments) {
+    public void unknown(Invoker invoker, CallContext callContext, Object target, Object[] arguments) {
         invoker.invoke(callContext, target, arguments);
     }
 

@@ -15,6 +15,7 @@ package orc.run.core
 
 import orc.CallContext
 import orc.error.OrcException
+import orc.MaterializedCallContext
 
 /** An abstract call controller for any call made by a token.
   *
@@ -31,7 +32,7 @@ import orc.error.OrcException
   *
   * @author dkitchin
   */
-abstract class CallController(val caller: Token) extends CallContext with Blocker {
+abstract class CallController(val caller: Token) extends MaterializedCallContext with Blocker {
   // This is the only Blocker that can produce exceptions.
 
   protected var state: CallState = CallState.InProgress(List())

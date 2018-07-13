@@ -35,9 +35,10 @@ object Prompt extends Site1 with TypedSite {
   def call(arg: AnyRef, callContext: CallContext) {
     arg match {
       case prompt: String => {
+        val ctx = callContext.materialize()
         val callback = new PromptCallback() {
-          def respondToPrompt(response: String) = callContext.publish(response)
-          def cancelPrompt() = callContext.halt()
+          def respondToPrompt(response: String) = ctx.publish(response)
+          def cancelPrompt() = ctx.halt()
         }
         callContext.notifyOrc(PromptEvent(prompt, callback))
       }

@@ -64,7 +64,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
 
   def potentiallySchedule(s: Schedulable) = {
     if (logNoninlinableSchedules) {
-      Logger.log(Level.WARNING, "nonInlinableSchedule", new Exception)
+      Logger.log(Level.WARNING, s"nonInlinableSchedule: $s", new Exception)
     }
     nonInlinableScheduleCount.increment()
     if (allowSpawnInlining || actuallySchedule) {

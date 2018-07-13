@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import scala.collection.JavaConversions;
 
 import orc.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.BoundedChannelType;
@@ -56,8 +57,8 @@ public class BoundedChannel extends EvalSite implements TypedSite {
     protected class ChannelInstance extends DotSite implements DOrcPlacementPolicy {
 
         protected final LinkedList<Object> contents;
-        protected final LinkedList<CallContext> readers;
-        protected final LinkedList<CallContext> writers;
+        protected final LinkedList<MaterializedCallContext> readers;
+        protected final LinkedList<MaterializedCallContext> writers;
         protected CallContext closer;
         /** The number of open slots in the channel. */
         protected int open;
@@ -66,8 +67,8 @@ public class BoundedChannel extends EvalSite implements TypedSite {
         ChannelInstance(final int bound) {
             open = bound;
             contents = new LinkedList<>();
-            readers = new LinkedList<CallContext>();
-            writers = new LinkedList<CallContext>();
+            readers = new LinkedList<MaterializedCallContext>();
+            writers = new LinkedList<MaterializedCallContext>();
         }
 
         @Override
@@ -81,7 +82,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                                 reader.halt();
                             } else {
                                 reader.setQuiescent();
-                                readers.addLast(reader);
+                                readers.addLast(reader.materialize());
                             }
                         } else {
                             reader.publish(object2value(contents.removeFirst()));
@@ -140,7 +141,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         } else if (open == 0) {
                             contents.addLast(item);
                             writer.setQuiescent();
-                            writers.addLast(writer);
+                            writers.addLast(writer.materialize());
                         } else {
                             contents.addLast(item);
                             --open;
@@ -184,7 +185,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         // collect all values in a list
                         final Object out = JavaConversions.collectionAsScalaIterable(contents).toList();
                         contents.clear();
-                        
+
                         ArrayList<CallContext> oldWriters = new ArrayList<>(writers);
                         writers.clear();
                         // resume all writers

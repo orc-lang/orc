@@ -13,14 +13,20 @@ package orc.run.porce.call;
 
 import static orc.run.porce.SpecializationConfiguration.ExternalCPSDirectSpecialization;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.HaltException;
 import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.ValueClassesProfile;
+import orc.run.porce.HaltToken;
+import orc.run.porce.Logger;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
+import orc.run.porce.runtime.DirectVirtualCallContext;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
@@ -38,8 +44,10 @@ import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.profiles.IntValueProfile;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
 public class ExternalCPSDispatch extends Dispatch {
@@ -134,7 +142,8 @@ public class ExternalCPSDispatch extends Dispatch {
                 Terminator term, final Object[] arguments,
                 @Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker,
                 @Cached("create()") InvokerCanInvoke canInvoke,
-                @Cached("create(execution)") InvokerInvokeDirect invokeDirect) {
+                @Cached("create(execution)") InvokerInvokeDirect invokeDirect,
+                @Cached("create(execution)") HaltToken.KnownCounter haltToken) {
             // DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
             try {
                 final Object v;
@@ -151,11 +160,11 @@ public class ExternalCPSDispatch extends Dispatch {
                 throw e;
             } catch (final HaltException e) {
                 haltProfile.enter();
-                counter.haltToken();
+                haltToken.execute(frame, counter);
             } catch (final Throwable e) {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
-                counter.haltToken();
+                haltToken.execute(frame, counter);
             }
             // Token: All exception handlers halt the token that was passed to this
             // call. Calls are not allowed to keep the token if they throw an
@@ -170,27 +179,42 @@ public class ExternalCPSDispatch extends Dispatch {
                 Terminator term, final Object[] arguments,
                 @Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker,
                 @Cached("create()") InvokerCanInvoke canInvoke,
-                @Cached("create(execution)") InvokerInvoke invoke) {
+                @Cached("create(execution)") InvokerInvoke invoke,
+                @Cached("createVirtualContextHandler()") VirtualContextHandler handler) {
             // Token: Passed to callContext from arguments.
-            final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
+            final DirectVirtualCallContext callContext = new DirectVirtualCallContext(execution, getCallSiteId()) {
+                @Override
+                public PorcEClosure p() {
+                    return pub;
+                }
+                @Override
+                public Counter c() {
+                    return counter;
+                }
+                @Override
+                public Terminator t() {
+                    return term;
+                }
+            };
 
             try {
-                callContext.begin();
                 invoke.executeInvoke(frame, invoker, callContext, target, argumentClassesProfile.profile(arguments));
             } catch (final TailCallException e) {
                 throw e;
             } catch (final HaltException e) {
                 haltProfile.enter();
-                counter.haltToken();
+                handler.haltToken.execute(frame, counter);
             } catch (final Throwable e) {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
-                counter.haltToken();
+                handler.haltToken.execute(frame, counter);
             } finally {
                 if (SpecializationConfiguration.StopWatches.callsEnabled) {
                     orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
                 }
             }
+            //Logger.info(() -> target + "(" + Arrays.toString(arguments) + ") -> " + callContext.toString());
+            handler.execute(frame, pub, counter, term, callContext);
         }
 
         @Specialization(replaces = { "specific", "specificDirect" })
@@ -198,12 +222,13 @@ public class ExternalCPSDispatch extends Dispatch {
                 Terminator term, final Object[] arguments,
                 @Cached("createBinaryProfile()") ConditionProfile isDirectProfile,
                 @Cached("create(execution)") InvokerInvokeDirect invokeDirect,
-                @Cached("create(execution)") InvokerInvoke invoke) {
+                @Cached("create(execution)") InvokerInvoke invoke,
+                @Cached("createVirtualContextHandler()") VirtualContextHandler handler) {
             final Invoker invoker = getInvokerWithBoundary(target, arguments);
             if (ExternalCPSDirectSpecialization && isDirectProfile.profile(invoker instanceof DirectInvoker)) {
-                specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker, null, invokeDirect);
+                specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker, null, invokeDirect, handler.haltToken);
             } else {
-                specific(frame, target, pub, counter, term, arguments, invoker, null, invoke);
+                specific(frame, target, pub, counter, term, arguments, invoker, null, invoke, handler);
             }
         }
 
@@ -234,6 +259,78 @@ public class ExternalCPSDispatch extends Dispatch {
         protected static Invoker getInvokerWithBoundary(final PorcERuntime runtime, final Object target,
                 final Object[] arguments) {
             return runtime.getInvoker(target, arguments);
+        }
+
+        /**
+         * Utility node to collect all DirectVirtualCallContext handling code and state.
+         *
+         * @author amp
+         */
+        protected final class VirtualContextHandler extends Node {
+            private final ConditionProfile exactlyOneSelfPublicationProfile = ConditionProfile.createBinaryProfile();
+            private final ConditionProfile hasSelfPublicationsProfile = ConditionProfile.createBinaryProfile();
+            private final IntValueProfile selfPublicationsListSizeProfile = IntValueProfile.createIdentityProfile();
+            private final ConditionProfile haltedProfile = ConditionProfile.createBinaryProfile();
+
+            private final ConditionProfile hasOtherPublicationsProfile = ConditionProfile.createBinaryProfile();
+            private final IntValueProfile otherPublicationsListSizeProfile = IntValueProfile.createIdentityProfile();
+            private final ConditionProfile otherPublicationsHaltProfile = ConditionProfile.createBinaryProfile();
+
+            private final ConditionProfile hasOtherHalts = ConditionProfile.createBinaryProfile();
+            private final IntValueProfile otherHaltsListSizeProfile = IntValueProfile.createIdentityProfile();
+
+            final HaltToken.KnownCounter haltToken = HaltToken.KnownCounter.create(execution);
+
+            @SuppressWarnings("null")
+            public void execute(VirtualFrame frame, PorcEClosure pub, Counter counter, Terminator term, DirectVirtualCallContext callContext) {
+                final ArrayList<Object> selfPublicationList = callContext.selfPublicationList();
+                final boolean halted = callContext.halted();
+                if (exactlyOneSelfPublicationProfile.profile(selfPublicationList != null && selfPublicationList.size() == 1 && halted)) {
+                    getDispatchP().executeDispatch(frame, pub, selfPublicationList.get(0));
+                } else {
+                    if (hasSelfPublicationsProfile.profile(selfPublicationList != null)) {
+                        final int size = selfPublicationsListSizeProfile.profile(selfPublicationList.size());
+                        for (int i = 0; i < size; i++) {
+                            counter.newToken();
+                            getDispatchP().executeDispatch(frame, pub, selfPublicationList.get(i));
+                        }
+                    }
+                    if (haltedProfile.profile(halted)) {
+                        haltToken.execute(frame, counter);
+                    }
+                }
+
+                final ArrayList<Object> otherPublicationList = callContext.otherPublicationList();
+                if (hasOtherPublicationsProfile.profile(otherPublicationList != null)) {
+                    final int size = otherPublicationsListSizeProfile.profile(otherPublicationList.size());
+                    for (int i = 0; i < size; i += 3) {
+                        CPSCallContext ctx = (CPSCallContext)otherPublicationList.get(i + 0);
+                        Object v = otherPublicationList.get(i + 1);
+                        boolean halt = ((Boolean)otherPublicationList.get(i + 2)).booleanValue();
+                        if (!otherPublicationsHaltProfile.profile(halt)) {
+                            ctx.c().newToken();
+                        }
+                        getDispatchP().executeDispatch(frame, ctx.p(), v);
+                        if (otherPublicationsHaltProfile.profile(halt)) {
+                            ctx.t().removeChild(ctx);
+                        }
+                    }
+                }
+
+                final ArrayList<CPSCallContext> otherHaltedList = callContext.otherHaltedList();
+                if (hasOtherHalts.profile(otherHaltedList != null)) {
+                    final int size = otherHaltsListSizeProfile.profile(otherHaltedList.size());
+                    for (int i = 0; i < size; i++) {
+                        CPSCallContext ctx = otherHaltedList.get(i);
+                        haltToken.execute(frame, ctx.c());
+                        ctx.t().removeChild(ctx);
+                    }
+                }
+            }
+        }
+
+        protected VirtualContextHandler createVirtualContextHandler() {
+            return new VirtualContextHandler();
         }
     }
 

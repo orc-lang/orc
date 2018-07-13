@@ -295,7 +295,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
         }
     }
 
-    @Specialization(guards = { "isChannelPut(invoker)", "KnownSiteSpecialization" })
+    //@Specialization(guards = { "isChannelPut(invoker)", "KnownSiteSpecialization" })
     public Object channelPut(VirtualFrame frame, DirectSiteInvoker invoker, Object target, Object[] arguments,
             @Cached("create(execution)") StackCheckingDispatch dispatch) {
         orc.lib.state.Channel.ChannelInstance.PutSite putSite = (orc.lib.state.Channel.ChannelInstance.PutSite)target;

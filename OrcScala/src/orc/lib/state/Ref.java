@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import orc.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.RefType;
@@ -60,7 +61,7 @@ public class Ref extends EvalSite implements TypedSite {
 
     public static class RefInstance extends DotSite implements DOrcPlacementPolicy {
 
-        protected Queue<CallContext> readQueue;
+        protected Queue<MaterializedCallContext> readQueue;
         Object contents;
 
         public RefInstance() {
@@ -74,7 +75,7 @@ public class Ref extends EvalSite implements TypedSite {
              * needed, and it also frees the memory associated with the read
              * queue once the reference has been assigned.
              */
-            this.readQueue = new LinkedList<CallContext>();
+            this.readQueue = new LinkedList<MaterializedCallContext>();
         }
 
         /*
@@ -119,7 +120,7 @@ public class Ref extends EvalSite implements TypedSite {
                      */
                     if (readQueue != null) {
                         reader.setQuiescent();
-                        readQueue.add(reader);
+                        readQueue.add(reader.materialize());
                     }
                     /* Otherwise, return the contents of the ref */
                     else {
@@ -144,8 +145,8 @@ public class Ref extends EvalSite implements TypedSite {
                      * set.
                      */
                     if (readQueue != null) {
-                        Queue<CallContext> rq = readQueue;
-                        
+                        Queue<MaterializedCallContext> rq = readQueue;
+
                         /*
                          * Null out the read queue. This indicates that the ref
                          * has been written. It also allowed the associated
@@ -158,7 +159,7 @@ public class Ref extends EvalSite implements TypedSite {
                          * value to them.
                          */
                         for (final CallContext reader : rq) {
-                            reader.publish(object2value(val));
+                            writer.virtualCallContextFor(reader).publish(object2value(val));
                         }
                     }
 

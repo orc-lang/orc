@@ -62,7 +62,7 @@ object Rwait extends Site1 with EffectFreeSite {
     def doit(delay: BigInt) = {
       if (delay > 0) {
         callContext.setQuiescent()
-        callContext.notifyOrc(RwaitEvent(delay, callContext))
+        callContext.notifyOrc(RwaitEvent(delay, callContext.materialize()))
       } else if (delay == 0) {
         callContext.publish(Signal)
       } else {

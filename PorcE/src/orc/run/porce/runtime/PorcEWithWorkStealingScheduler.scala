@@ -80,9 +80,6 @@ trait PorcEWithWorkStealingScheduler extends Orc {
 
   @TruffleBoundary @noinline
   def schedule(t: Schedulable): Unit = {
-    // This flushAllCounterOffsets must have force = true because halts associated with news
-    // which are still in our local buffer could happen as soon as the task receiving the
-    // new tokens is scheduled
     Counter.flushAllCounterOffsets(flushOnlyPositive = true)
     val sStart = StopWatches.workerSchedulingTime.start()
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.

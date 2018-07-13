@@ -45,7 +45,7 @@ trait FutureReader {
     * `publish` must execute quickly as the time this takes to execute will delay
     * the execution of the binder of the future. The implementation may block on
     * locks if needed, but the lock latency should be as short as possible.
-    * 
+    *
     * `publish` must be thread-safe.
     */
   def publish(v: AnyRef): Unit
@@ -55,7 +55,7 @@ trait FutureReader {
     * `halt` must execute quickly as the time this takes to execute will delay
     * the execution of the binder of the future. The implementation may block on
     * locks if needed, but the lock latency should be as short as possible.
-    * 
+    *
     * `halt` must be thread-safe.
     */
   def halt(): Unit
@@ -113,9 +113,35 @@ case class BoundFuture(v: AnyRef) extends Future {
 
 /** The interface through which the environment response to site calls.
   *
+  * Unlike the super class, MaterializedCallContext may be stored and used in
+  * other threads. MaterializedCallContexts are thread safe.
+  */
+trait MaterializedCallContext extends CallContext {
+  final def materialize(): MaterializedCallContext = this
+  final def virtualCallContextFor(ctx: CallContext): CallContext = ctx
+}
+
+/** The interface through which the environment response to site calls.
+  *
   * Published values passed to publish and publishNonterminal may not be futures.
+  *
+  * Contexts which are not an instance of MaterializedCallContext are
+  * "virtual". Virtual contexts may not be stored or passed to another thread.
+  * It's implementation may rely on code executed in the site calling thread
+  * after the site call returns.
   */
 trait CallContext {
+  /** Return a reified instance of this context that can be stored or.
+    */
+  def materialize(): MaterializedCallContext
+
+  /** Return a CallContext which publishes as if it were `ctx`, but
+    * is virtual if possible.
+    *
+    * The returned VirtualCallContext maybe optimized to make use of the
+    * enclosing call context on the stack.
+    */
+  def virtualCallContextFor(ctx: CallContext): CallContext
 
   // TODO: Consider making this a separate API that is not core to the Orc JVM API.
   /** Submit an event to the Orc runtime.
@@ -135,18 +161,18 @@ trait CallContext {
     */
   def publish(v: AnyRef): Unit = {
     publishNonterminal(v)
-    halt
+    halt()
   }
 
   @deprecated("Use publish(Signal) explicitly.", "3.0")
-  def publish() { publish(Signal) }
+  final def publish() { publish(Signal) }
 
   /** Halt this call without publishing a value.
     */
   def halt(): Unit
 
   @deprecated("Use halt(e).", "3.0")
-  def !!(e: OrcException): Unit = halt(e)
+  final def !!(e: OrcException): Unit = halt(e)
 
   /** Halt this call without publishing a value, providing an exception which caused the halt.
     */
@@ -205,9 +231,9 @@ trait Schedulable extends Runnable {
     * It is assumed by default that a schedulable unit might block.
     */
   val nonblocking: Boolean = false
-  
+
   /** The priority of this schedulable.
-    * 
+    *
     * This should not change after it is first requested, so this should
     * be implemented as val or lazy val.
     */

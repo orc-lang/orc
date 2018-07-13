@@ -29,39 +29,41 @@ final public class PorcEClosure {
 
     public final boolean isRoutine;
 
-    // TODO: PERFORMANCE: Using a frame instead of an array for captured values may perform better. Though that will mainly be true when we start using native values.
-	public PorcEClosure(final Object[] environment, final RootCallTarget body, final boolean isRoutine) {
-		CompilerDirectives.interpreterOnly(() -> {
-			if (body == null) {
-				throw new IllegalArgumentException("body == null");
-			}
-			if (environment == null) {
-				throw new IllegalArgumentException("environment == null");
-			}
-		});
+    // TODO: PERFORMANCE: Using a frame instead of an array for captured values may perform better. Though that will
+    // mainly be true when we start using native values.
+    public PorcEClosure(final Object[] environment, final RootCallTarget body, final boolean isRoutine) {
+        CompilerDirectives.interpreterOnly(() -> {
+            if (body == null) {
+                throw new IllegalArgumentException("body == null");
+            }
+            if (environment == null) {
+                throw new IllegalArgumentException("environment == null");
+            }
+        });
 
-		this.environment = environment;
-		this.body = body;
-		this.isRoutine = isRoutine;
-	}
-	
-	public long getTimePerCall() {
-		if (body.getRootNode() instanceof PorcERootNode) {
-			PorcERootNode root = (PorcERootNode)body.getRootNode();
-			return root.getTimePerCall();
-		} else {
-			return Long.MAX_VALUE;
-		}
-	}
-	public long getTimePerCall(ValueProfile bodyProfile) {
-	    RootNode r = bodyProfile.profile(body.getRootNode());
-		if (r instanceof PorcERootNode) {
-			PorcERootNode root = (PorcERootNode) r;
-			return root.getTimePerCall();
-		} else {
-			return Long.MAX_VALUE;
-		}
-	}
+        this.environment = environment;
+        this.body = body;
+        this.isRoutine = isRoutine;
+    }
+
+    public long getTimePerCall() {
+        if (body.getRootNode() instanceof PorcERootNode) {
+            PorcERootNode root = (PorcERootNode) body.getRootNode();
+            return root.getTimePerCall();
+        } else {
+            return Long.MAX_VALUE;
+        }
+    }
+
+    public long getTimePerCall(ValueProfile bodyProfile) {
+        RootNode r = bodyProfile.profile(body.getRootNode());
+        if (r instanceof PorcERootNode) {
+            PorcERootNode root = (PorcERootNode) r;
+            return root.getTimePerCall();
+        } else {
+            return Long.MAX_VALUE;
+        }
+    }
 
     public Object callFromRuntimeArgArray(final Object[] values) {
         values[0] = environment;
@@ -101,29 +103,30 @@ final public class PorcEClosure {
         }
     };
 
-	@Override
+    @Override
     @SuppressWarnings("boxing")
-	public String toString() {
-      // FIXME: The recursion check will be SLOW. But it may not matter. However it may not even be good to have this as a default.
-      StringBuilder sb = new StringBuilder();
-      sb.append(body.getRootNode().getName());
-      sb.append(':');
-      sb.append(body.getRootNode().getClass().getSimpleName());
-      if (!toStringRecursionCheck.get()) {
-        toStringRecursionCheck.set(true);
-        sb.append('[');
-        boolean notFirst = false;
-        for (Object v : environment) {
-          if (notFirst) {
-            sb.append(", ");
-          }
-          sb.append(v);
-          notFirst = true;
+    public String toString() {
+        // FIXME: The recursion check will be SLOW. But it may not matter. However it may not even be good to have this
+        // as a default.
+        StringBuilder sb = new StringBuilder();
+        sb.append(body.getRootNode().getName());
+        sb.append(':');
+        sb.append(body.getRootNode().getClass().getSimpleName());
+        if (!toStringRecursionCheck.get()) {
+            toStringRecursionCheck.set(true);
+            sb.append('[');
+            boolean notFirst = false;
+            for (Object v : environment) {
+                if (notFirst) {
+                    sb.append(", ");
+                }
+                sb.append(v);
+                notFirst = true;
+            }
+            sb.append(']');
+            toStringRecursionCheck.set(false);
         }
-        sb.append(']');
-        toStringRecursionCheck.set(false);
-      }
-      return sb.toString();
-	}
+        return sb.toString();
+    }
 
 }

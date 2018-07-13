@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import orc.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.CellType;
@@ -52,7 +53,7 @@ public class Cell extends EvalSite implements TypedSite {
 
     protected class CellInstance extends DotSite implements DOrcPlacementPolicy {
 
-        protected Queue<CallContext> readQueue;
+        protected Queue<MaterializedCallContext> readQueue;
         Object contents;
 
         CellInstance() {
@@ -66,7 +67,7 @@ public class Cell extends EvalSite implements TypedSite {
              * frees the memory associated with the read queue once the cell has
              * been assigned.
              */
-            this.readQueue = new LinkedList<CallContext>();
+            this.readQueue = new LinkedList<MaterializedCallContext>();
         }
 
         @Override
@@ -102,7 +103,7 @@ public class Cell extends EvalSite implements TypedSite {
                      */
                     if (readQueue != null) {
                         reader.setQuiescent();
-                        readQueue.add(reader);
+                        readQueue.add(reader.materialize());
                     }
                     /* Otherwise, return the contents of the cell */
                     else {
@@ -132,8 +133,8 @@ public class Cell extends EvalSite implements TypedSite {
                         /* Set the contents of the cell */
                         contents = val;
 
-                        Queue<CallContext> rq = readQueue;
-                        
+                        Queue<MaterializedCallContext> rq = readQueue;
+
                         /*
                          * Null out the read queue. This indicates that the cell
                          * has been written. It also allowed the associated
@@ -146,7 +147,7 @@ public class Cell extends EvalSite implements TypedSite {
                          * value to them.
                          */
                         for (final CallContext reader : rq) {
-                            reader.publish(object2value(val));
+                            writer.virtualCallContextFor(reader).publish(object2value(val));
                         }
 
                         /* A successful write publishes a signal. */

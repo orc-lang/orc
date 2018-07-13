@@ -14,6 +14,7 @@ package orc.lib.state;
 import java.util.LinkedList;
 
 import orc.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.SyncChannelType;
 import orc.run.distrib.AbstractLocation;
@@ -59,11 +60,11 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
         // Invariant: senderQueue is empty or receiverQueue is empty
         protected final LinkedList<SenderItem> senderQueue;
-        protected final LinkedList<CallContext> receiverQueue;
+        protected final LinkedList<MaterializedCallContext> receiverQueue;
 
         SyncChannelInstance() {
             senderQueue = new LinkedList<>();
-            receiverQueue = new LinkedList<CallContext>();
+            receiverQueue = new LinkedList<MaterializedCallContext>();
         }
 
         @Override
@@ -79,7 +80,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
                 // If there are no waiting senders, put this caller on the queue
                 if (senderQueue.isEmpty()) {
                     receiver.setQuiescent();
-                    receiverQueue.addLast(receiver);
+                    receiverQueue.addLast(receiver.materialize());
                 }
                 // If there is a waiting sender, both sender and receiver return
                 else {

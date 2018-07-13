@@ -14,6 +14,7 @@ package orc.lib.state;
 import java.util.LinkedList;
 
 import orc.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.SemaphoreType;
@@ -57,8 +58,8 @@ public class Semaphore extends EvalSite implements TypedSite {
 
     public class SemaphoreInstance extends DotSite implements DOrcPlacementPolicy {
 
-        protected final LinkedList<CallContext> waiters = new LinkedList<CallContext>();
-        protected final LinkedList<CallContext> snoopers = new LinkedList<CallContext>();
+        protected final LinkedList<MaterializedCallContext> waiters = new LinkedList<MaterializedCallContext>();
+        protected final LinkedList<MaterializedCallContext> snoopers = new LinkedList<MaterializedCallContext>();
 
         /* Invariant: n >= 0 */
         protected int n;
@@ -76,12 +77,12 @@ public class Semaphore extends EvalSite implements TypedSite {
                     synchronized (SemaphoreInstance.this) {
                         if (0 == n) {
                             waiter.setQuiescent();
-                            waiters.offer(waiter);
+                            waiters.offer(waiter.materialize());
                             if (!snoopers.isEmpty()) {
-                                LinkedList<CallContext> oldSnoopers = (LinkedList<CallContext>) snoopers.clone();
+                                LinkedList<MaterializedCallContext> oldSnoopers = (LinkedList<MaterializedCallContext>) snoopers.clone();
                                 snoopers.clear();
                                 for (final CallContext snooper : oldSnoopers) {
-                                	snooper.publish(signal());
+                                    waiter.virtualCallContextFor(snooper).publish(signal());
                                 }
                             }
                         } else {
@@ -116,7 +117,7 @@ public class Semaphore extends EvalSite implements TypedSite {
                         if (waiters.isEmpty()) {
                             ++n;
                         } else {
-                            final CallContext waiter = waiters.poll();
+                            final CallContext waiter = sender.virtualCallContextFor(waiters.poll());
                             waiter.publish(signal());
                         }
                         sender.publish(signal());
@@ -134,7 +135,7 @@ public class Semaphore extends EvalSite implements TypedSite {
                     synchronized (SemaphoreInstance.this) {
                         if (waiters.isEmpty()) {
                             snooper.setQuiescent();
-                            snoopers.offer(snooper);
+                            snoopers.offer(snooper.materialize());
                         } else {
                             snooper.publish(signal());
                         }

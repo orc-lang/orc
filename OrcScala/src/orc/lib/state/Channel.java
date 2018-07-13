@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import orc.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.ChannelType;
@@ -59,8 +60,8 @@ public class Channel extends EvalSite implements TypedSite {
     public static class ChannelInstance extends DotSite implements DOrcPlacementPolicy {
 
         public final LinkedList<Object> contents;
-        public final LinkedList<CallContext> readers;
-        public CallContext closer;
+        public final LinkedList<MaterializedCallContext> readers;
+        public MaterializedCallContext closer;
         /**
          * Once this becomes true, no new items may be put, and gets on an empty
          * channel die rather than blocking.
@@ -69,17 +70,18 @@ public class Channel extends EvalSite implements TypedSite {
 
         ChannelInstance() {
             contents = new LinkedList<>();
-            readers = new LinkedList<CallContext>();
+            readers = new LinkedList<MaterializedCallContext>();
         }
 
-        public static class PutSite extends EvalSite {
+        public static class PutSite extends SiteAdaptor {
             public final ChannelInstance channel;
 
             PutSite(ChannelInstance channel) {
                 this.channel = channel;
             }
 
-            public Object evaluate(final Args args) throws TokenException {
+            @Override
+            public void callSite(final Args args, final CallContext reader) {
                 synchronized (channel) {
                     final Object item = args.getArg(0);
                     if (channel.closed) {
@@ -93,7 +95,7 @@ public class Channel extends EvalSite implements TypedSite {
                         } else {
                             // If there are callers waiting, give this item to
                             // the top caller.
-                            CallContext receiver = channel.readers.removeFirst();
+                            CallContext receiver = reader.virtualCallContextFor(channel.readers.removeFirst());
                             if (receiver.isLive()) { // If the reader is live then publish into it.
                                 receiver.publish(object2value(item));
                                 break;
@@ -103,7 +105,7 @@ public class Channel extends EvalSite implements TypedSite {
                     }
                     // Since this is an asynchronous channel, a put call
                     // always returns.
-                    return signal();
+                    reader.publish(signal());
                 }
             }
 
@@ -127,14 +129,14 @@ public class Channel extends EvalSite implements TypedSite {
                             reader.halt();
                         } else {
                             reader.setQuiescent();
-                            channel.readers.addLast(reader);
+                            channel.readers.addLast(reader.materialize());
                         }
                     } else {
                         // If there is an item available, pop it and return
                         // it.
                         reader.publish(object2value(channel.contents.removeFirst()));
                         if (channel.closer != null && channel.contents.isEmpty()) {
-                            channel.closer.publish(signal());
+                            reader.virtualCallContextFor(channel.closer).publish(signal());
                             channel.closer = null;
                         }
                     }
@@ -206,12 +208,12 @@ public class Channel extends EvalSite implements TypedSite {
                     synchronized (ChannelInstance.this) {
                         closed = true;
                         for (final CallContext reader : readers) {
-                            reader.halt();
+                            caller.virtualCallContextFor(reader).halt();
                         }
                         if (contents.isEmpty()) {
                             caller.publish(signal());
                         } else {
-                            closer = caller;
+                            closer = caller.materialize();
                             closer.setQuiescent();
                         }
                     }
@@ -228,7 +230,7 @@ public class Channel extends EvalSite implements TypedSite {
                     synchronized (ChannelInstance.this) {
                         closed = true;
                         for (final CallContext reader : readers) {
-                            reader.halt();
+                            caller.virtualCallContextFor(reader).halt();
                         }
                         caller.publish(signal());
                     }

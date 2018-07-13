@@ -20,6 +20,7 @@ import orc.util.{ DumperRegistry, SummingStopWatch, Tracer }
 import com.oracle.truffle.api.CompilerDirectives.{ CompilationFinal, TruffleBoundary }
 import com.oracle.truffle.api.CompilerDirectives
 import scala.collection.mutable.ArrayBuffer
+import java.util.logging.Level
 
 @CompilationFinal
 object Counter {
@@ -202,7 +203,21 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
   incrCounter()
 
-  protected def handleHaltToken() = {
+  protected def handleHaltToken(optimized: Boolean) = {
+    if (false && execution.runtime.logNoninlinableSchedules) {
+      if (!optimized && get() == -counterOffsets.map({
+          case null => (0).toInt
+          case coh => coh.value.toInt
+        }).sum) {
+          def myThreadOffset = Thread.currentThread() match {
+            case worker: SimpleWorkStealingScheduler#Worker =>
+              counterOffsets(worker.workerID)
+            case _ => null
+          }
+          def offsetsStr = counterOffsets.collect({ case coh if coh != null => coh.value }).mkString(",")
+          Logger.log(Level.WARNING, s"Effective halt: $this (${get()}; $myThreadOffset; ${offsetsStr})", new Exception)
+      }
+    }
     SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
   }
 
@@ -331,7 +346,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   }
 
   def flushCounterOffsetIfLocalHalt(coh: CounterOffset): Boolean = {
-    if (coh.value == -get()) {
+    if (coh.value == -get() && coh.value < 0) {
       val n = flushCounterOffsetAndGet(coh)
       n == 0
     } else {
@@ -364,7 +379,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     @TruffleBoundary(allowInlining = true) @noinline
     def decrGlobal() = {
       val n = decrementAndGet()
-      handleHaltToken()
+      handleHaltToken(false)
       if (tracingEnabled) {
         assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
       }
@@ -377,6 +392,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
         CompilerDirectives.FASTPATH_PROBABILITY,
         coh != null)) {
       coh.value -= 1
+      handleHaltToken(false)
     } else {
       //CompilerDirectives.transferToInterpreter()
       decrGlobal()
@@ -517,6 +533,7 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
       if (b) {
         // Call the haltContinuation if we didn't discorporate.
         if (!isDiscorporated) {
+          //Logger.info(s"$haltContinuation")
           // Token: from parent
           haltContinuation
         } else {
@@ -533,7 +550,7 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
     @TruffleBoundary(allowInlining = true) @noinline
     def decrGlobal(): PorcEClosure = {
       val n = decrementAndGet()
-      handleHaltToken()
+      handleHaltToken(n == 0)
       computeReturn(n == 0)
     }
 
@@ -555,7 +572,9 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
        * Cache bouncing reads could be avoided by marking counters which are used in multiple
        * threads and disabling the check for them.
        */
-      computeReturn(flushCounterOffsetIfLocalHalt(coh))
+      val halted = flushCounterOffsetIfLocalHalt(coh)
+      handleHaltToken(halted)
+      computeReturn(halted)
     } else {
       decrGlobal()
     }
