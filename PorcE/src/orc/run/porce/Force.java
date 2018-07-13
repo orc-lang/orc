@@ -213,7 +213,7 @@ public class Force {
     public static abstract class Finish extends Expression {
 	protected static final boolean TRUE = true;
 
-	private final PorcEExecution execution;
+	protected final PorcEExecution execution;
 
 	public Finish(PorcEExecution execution) {
 	    this.execution = execution;
@@ -236,9 +236,10 @@ public class Force {
 	}
 
 	@Specialization(guards = { "InlineForceHalted", "join.isHalted()" }, replaces = { "blocked" })
-	public PorcEUnit halted(final Join join) {
+	public PorcEUnit halted(final VirtualFrame frame, final Join join,
+                @Cached("create(execution)") HaltToken.KnownCounter haltToken) {
 	    //CompilerDirectives.ensureVirtualizedHere(join);
-	    join.c().haltToken();
+	    haltToken.execute(frame, join.c());
 	    return PorcEUnit.SINGLETON;
 	}
 

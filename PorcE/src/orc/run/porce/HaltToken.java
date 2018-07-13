@@ -18,6 +18,7 @@ import orc.run.porce.runtime.CounterNested;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
@@ -27,48 +28,74 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 @NodeChild("counter")
-@Introspectable
-@ImportStatic(SpecializationConfiguration.class)
 public class HaltToken extends Expression {
 
-	private final PorcEExecution execution;
+    protected final PorcEExecution execution;
 
-	protected HaltToken(final PorcEExecution execution) {
-		this.execution = execution;
-	}
-
-	private static Object[] EMPTY_ARGS = new Object[0];
-
-    @Specialization(guards = { "SpecializeOnCounterStates" })
-    public PorcEUnit nested(VirtualFrame frame, final CounterNested counter,
-    		@Cached("createCall()") Dispatch call, @Cached("create()") BranchProfile hasContinuationProfile) {
-        PorcEClosure cont = counter.haltTokenOptimized();
-        if (cont != null) {
-        	hasContinuationProfile.enter();
-            Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
-            SimpleWorkStealingSchedulerWrapper.enterSchedulable(counter, SimpleWorkStealingSchedulerWrapper.InlineExecution);
-            try {
-                call.executeDispatch(frame, cont, EMPTY_ARGS);
-            } finally {
-                SimpleWorkStealingSchedulerWrapper.exitSchedulable(counter, old);
-            }
-        }
-        return PorcEUnit.SINGLETON;
+    protected HaltToken(final PorcEExecution execution) {
+        this.execution = execution;
     }
 
     @Specialization
-    public PorcEUnit any(final Counter counter) {
-        counter.haltToken();
+    public PorcEUnit any(VirtualFrame frame, final Counter counter,
+            @Cached("create(execution)") KnownCounter known) {
+        CompilerDirectives.interpreterOnly(() -> {
+            known.setTail(isTail);
+        });
+        known.execute(frame, counter);
         return PorcEUnit.SINGLETON;
-    }
-
-    protected Dispatch createCall() {
-    	Dispatch n = InternalCPSDispatch.create(false, execution, isTail);
-		n.setTail(isTail);
-		return n;
     }
 
     public static HaltToken create(final Expression parent, final PorcEExecution execution) {
         return HaltTokenNodeGen.create(execution, parent);
+    }
+
+    @Introspectable
+    @ImportStatic(SpecializationConfiguration.class)
+    public static abstract class KnownCounter extends NodeBase {
+
+        private final PorcEExecution execution;
+
+        protected KnownCounter(final PorcEExecution execution) {
+            this.execution = execution;
+        }
+
+        private static Object[] EMPTY_ARGS = new Object[0];
+
+        public abstract PorcEUnit execute(VirtualFrame frame, final Counter counter);
+
+        @Specialization(guards = { "SpecializeOnCounterStates" })
+        public PorcEUnit nested(VirtualFrame frame, final CounterNested counter,
+                @Cached("createCall()") Dispatch call,
+                @Cached("create()") BranchProfile hasContinuationProfile) {
+            PorcEClosure cont = counter.haltTokenOptimized();
+            if (cont != null) {
+                hasContinuationProfile.enter();
+                Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
+                SimpleWorkStealingSchedulerWrapper.enterSchedulable(counter, SimpleWorkStealingSchedulerWrapper.InlineExecution);
+                try {
+                    call.executeDispatch(frame, cont, EMPTY_ARGS);
+                } finally {
+                    SimpleWorkStealingSchedulerWrapper.exitSchedulable(counter, old);
+                }
+            }
+            return PorcEUnit.SINGLETON;
+        }
+
+        @Specialization
+        public PorcEUnit any(final Counter counter) {
+            counter.haltToken();
+            return PorcEUnit.SINGLETON;
+        }
+
+        protected Dispatch createCall() {
+            Dispatch n = InternalCPSDispatch.create(false, execution, isTail);
+            n.setTail(isTail);
+            return n;
+        }
+
+        public static KnownCounter create(final PorcEExecution execution) {
+            return HaltTokenNodeGen.KnownCounterNodeGen.create(execution);
+        }
     }
 }
