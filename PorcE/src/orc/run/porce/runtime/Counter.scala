@@ -122,6 +122,7 @@ object Counter {
     }
   }
 
+  @sun.misc.Contended
   protected class CounterOffset(val counter: Counter) {
     var inThreadList: Boolean = false
     var value: Int = 0

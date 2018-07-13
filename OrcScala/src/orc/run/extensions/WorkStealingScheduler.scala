@@ -197,7 +197,6 @@ class SimpleWorkStealingScheduler(
     }
   }
 
-  @sun.misc.Contended
   final class Worker(var workerID: Int) extends Thread(s"Worker $workerID") {
     private[SimpleWorkStealingScheduler] val workQueue: SchedulingQueue[Schedulable] = new ABPWSDeque(workerQueueLength)
 
