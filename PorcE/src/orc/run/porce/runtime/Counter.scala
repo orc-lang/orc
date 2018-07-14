@@ -168,7 +168,10 @@ object Counter {
             while (current != null) {
               current.inThreadList = false
               buffer += current
+              val prev = current
               current = current.nextCounterOffset
+              // This clear is critical for avoiding long chains of retained memory from infrequently used CounterOffsets
+              prev.nextCounterOffset = null
             }
           }
 
