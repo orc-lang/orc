@@ -30,7 +30,10 @@ trait Edge[N, W] {
 }
 
 /** Vertex class for SSSP; includes path length (weight accumulator) Ref and a Semaphore. */
-case class VertexWithPathLen(name: Int, next: VertexWithPathLen, outEdges: List[EdgeWithIntWeight], pathLen: Ref.RefInstance, pathLenSemaphore: Semaphore#SemaphoreInstance) extends Vertex[Int, EdgeWithIntWeight] { }
+case class VertexWithPathLen(name: Int, next: VertexWithPathLen, outEdges: List[EdgeWithIntWeight]) extends Vertex[Int, EdgeWithIntWeight] {
+  val pathLen: Ref.RefInstance = new Ref.RefInstance()
+  val pathLenSemaphore: Semaphore.SemaphoreInstance = new Semaphore.SemaphoreInstance(1)
+}
 
 /** Edge class for SSSP. */
 case class EdgeWithIntWeight(head: Int, tail: Int, weight: Int) extends Edge[Int, Int] { }

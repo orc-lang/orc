@@ -26,10 +26,10 @@ type VertexName = Integer
 
 def mkEdge(head :: VertexName, tail :: VertexName, weight :: EdgeWeight) :: Edge = Edge(head, tail, weight)
 
-def mkVertex(name :: VertexName, next :: Vertex, outEdges :: List[Edge]) :: Vertex = Vertex(name, next, outEdges, Ref[EdgeWeight](), Semaphore(1))
+def mkVertex(name :: VertexName, next :: Vertex, outEdges :: List[Edge]) :: Vertex = Vertex(name, next, outEdges)
 
 def freshVertex(oldVertex :: Vertex, next :: Vertex) :: Vertex =
-  Vertex(oldVertex.name(), next, oldVertex.outEdges(), Ref[EdgeWeight](), Semaphore(1))
+  Vertex(oldVertex.name(), next, oldVertex.outEdges())
 
 def vertexNamed(targetName :: VertexName, vertex :: Vertex) :: Vertex =
   if vertex = null then
