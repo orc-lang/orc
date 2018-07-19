@@ -55,7 +55,7 @@ public class Semaphore extends EvalSite implements TypedSite {
         return SemaphoreType.getBuilder();
     }
 
-    public class SemaphoreInstance extends DotSite implements DOrcPlacementPolicy {
+    public static class SemaphoreInstance extends DotSite implements DOrcPlacementPolicy {
 
         protected final LinkedList<CallContext> waiters = new LinkedList<CallContext>();
         protected final LinkedList<CallContext> snoopers = new LinkedList<CallContext>();
@@ -64,7 +64,7 @@ public class Semaphore extends EvalSite implements TypedSite {
         protected int n;
 
         /* Precondition: n >= 0 */
-        SemaphoreInstance(final int n) {
+        public SemaphoreInstance(final int n) {
             this.n = n;
         }
 
