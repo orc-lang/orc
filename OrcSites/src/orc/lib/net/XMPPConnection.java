@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 import orc.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
@@ -152,7 +153,7 @@ public class XMPPConnection extends EvalSite {
         /** Buffer for received messages. */
         final LinkedList<Object> received = new LinkedList<>();
         /** Queue of tokens waiting to receive messages. */
-        final LinkedList<CallContext> receivers = new LinkedList<CallContext>();
+        final LinkedList<MaterializedCallContext> receivers = new LinkedList<MaterializedCallContext>();
         private final XMPPConnectionSite xmppConnectionSite;
 
         public ChatSite(final XMPPConnectionSite xmppConnectionSite, final String userJid) {
@@ -203,7 +204,7 @@ public class XMPPConnection extends EvalSite {
                     synchronized (received) {
                         if (received.isEmpty()) {
                             // System.out.println("(enqueued)");
-                            receivers.addLast(receiver);
+                            receivers.addLast(receiver.materialize());
                         } else {
                             // System.out.println("(immed publish)");
                             receiver.publish(received.removeFirst());

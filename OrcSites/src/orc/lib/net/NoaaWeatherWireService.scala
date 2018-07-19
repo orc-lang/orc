@@ -64,7 +64,7 @@ class NoaaWeatherWireService extends Site with SpecificArity with TypedSite with
   protected def streamMessages(userId: String, password: String, callContext: CallContext): Unit = {
     try {
       val r = new NwwsReceiver(userId, password)
-      r.run(processMessage(callContext)(_))
+      r.run(processMessage(callContext.materialize())(_))
     } catch {
       case ie: InterruptedException => { callContext.halt; throw ie }
       case e: Exception if NonFatal(e) => { callContext.halt(new JavaException(e)) }

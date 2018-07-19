@@ -59,7 +59,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
         protected final LinkedList<Object> contents;
         protected final LinkedList<MaterializedCallContext> readers;
         protected final LinkedList<MaterializedCallContext> writers;
-        protected CallContext closer;
+        protected MaterializedCallContext closer;
         /** The number of open slots in the channel. */
         protected int open;
         protected boolean closed = false;
@@ -230,7 +230,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         if (contents.isEmpty()) {
                             caller.publish(signal());
                         } else {
-                            closer = caller;
+                            closer = caller.materialize();
                             closer.setQuiescent();
                         }
                     }

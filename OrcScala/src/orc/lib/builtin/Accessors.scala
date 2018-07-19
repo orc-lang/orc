@@ -13,7 +13,7 @@
 
 package orc.lib.builtin
 
-import orc.{ Accessor, CallContext, ErrorAccessor, FutureReader, Invoker, OnlyDirectInvoker, OrcRuntime }
+import orc.{ Accessor, CallContext, MaterializedCallContext, ErrorAccessor, FutureReader, Invoker, OnlyDirectInvoker, OrcRuntime }
 import orc.util.ArrayExtensions.{ Array1, Array2 }
 import orc.values.Field
 import orc.values.sites.InvokerMethod
@@ -33,14 +33,14 @@ class GetFieldInvoker(accessor: Accessor, f: Field) extends Invoker {
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     target == GetFieldSite && arguments.length == 2 && f == arguments(1) && accessor.canGet(arguments(0))
   }
-  
+
   def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     val v = accessor.get(arguments(0))
     v match {
       case f: orc.Future =>
         f.get match {
           case orc.FutureState.Unbound =>
-            f.read(new FutureHandler(callContext))
+            f.read(new FutureHandler(callContext.materialize()))
           case orc.FutureState.Bound(v) =>
             callContext.publish(v)
           case orc.FutureState.Stopped =>
@@ -72,7 +72,7 @@ class GetMethodPassthroughInvoker() extends OnlyDirectInvoker {
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     target == GetMethodSite && arguments.length == 1
   }
-  
+
   def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     arguments(0)
   }
@@ -82,14 +82,14 @@ class GetMethodApplyInvoker(accessor: Accessor) extends Invoker {
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     target == GetMethodSite && arguments.length == 1 && accessor.canGet(arguments(0))
   }
-  
+
   def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     val v = accessor.get(arguments(0))
     v match {
       case f: orc.Future =>
         f.get match {
           case orc.FutureState.Unbound =>
-            f.read(new FutureHandler(callContext))
+            f.read(new FutureHandler(callContext.materialize()))
           case orc.FutureState.Bound(v) =>
             callContext.publish(v)
           case orc.FutureState.Stopped =>
@@ -101,7 +101,7 @@ class GetMethodApplyInvoker(accessor: Accessor) extends Invoker {
   }
 }
 
-class FutureHandler(callContext: CallContext) extends FutureReader {
+class FutureHandler(callContext: MaterializedCallContext) extends FutureReader {
   def publish(v: AnyRef): Unit = callContext.publish(v)
   def halt(): Unit = callContext.halt()
 }

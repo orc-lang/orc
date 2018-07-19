@@ -47,10 +47,10 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
     private class SenderItem {
 
-        CallContext sender;
+        MaterializedCallContext sender;
         Object sent;
 
-        SenderItem(final CallContext sender, final Object sent) {
+        SenderItem(final MaterializedCallContext sender, final Object sent) {
             this.sender = sender;
             this.sent = sent;
         }
@@ -105,7 +105,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
                 // queue
                 if (receiverQueue.isEmpty()) {
                     sender.setQuiescent();
-                    senderQueue.addLast(new SenderItem(sender, item));
+                    senderQueue.addLast(new SenderItem(sender.materialize(), item));
                 }
 
                 // If there is a waiting receiver, both receiver and sender

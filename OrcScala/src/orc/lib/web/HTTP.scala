@@ -106,7 +106,8 @@ object HTTP extends TotalSite {
   }
 
   case class HTTPPost(url: URL) extends Site2 {
-    def call(a: AnyRef, b: AnyRef, callContext: CallContext) {
+    def call(a: AnyRef, b: AnyRef, ctx: CallContext) {
+      val callContext = ctx.materialize()
       val post = a.toString
       val postContentType = b.toString +
         (if (b.toString.toLowerCase.contains("charset="))
