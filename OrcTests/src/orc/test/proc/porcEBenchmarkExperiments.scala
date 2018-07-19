@@ -58,7 +58,7 @@ object PorcEShared {
             "test_data/performance/map-reduce/wordcount-pure-orc-opt.orc",
             )
   private val nonOpt = Seq(
-            //"test_data/performance/8-queens.orc",
+            "test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
@@ -81,7 +81,7 @@ object PorcEShared {
 
   val mainScalaBenchmarks = Seq(
             //orc.test.item.scalabenchmarks.Mandelbrot,
-            //orc.test.item.scalabenchmarks.NQueens,
+            orc.test.item.scalabenchmarks.NQueens,
             orc.test.item.scalabenchmarks.SavinaSieve,
             orc.test.item.scalabenchmarks.ThreadRing,
             orc.test.item.scalabenchmarks.blackscholes.BlackScholesPar,
@@ -98,14 +98,23 @@ object PorcEShared {
             orc.test.item.scalabenchmarks.WordCount,
             )
 
-  val mainJvmOpts = Seq("-XX:+UseParallelGC", "-Xms8g", "-Xmx64g", "-Xss8m")
-  val mainOrcArgs = Seq("-O", "3", "--opt-opt", "orct:sequentialize-force")
+  val mainJvmOpts = Seq(
+      "-javaagent:ScalaGraalAgent-0.1.jar",
+      "-XX:-RestrictContended",
+      "-XX:+UseParallelGC",
+      "-Xms8g", "-Xmx64g", "-Xss8m")
+
+  val mainOrcArgs = Seq(
+      "-O", "3",
+      "--opt-opt", "orct:sequentialize-force",
+      "--max-site-threads=32")
 
   val mainSystemProperties = Map[String, Any](
         "graal.TruffleBackgroundCompilation" -> true,
         "graal.TraceTruffleCompilation" -> true,
         "orc.numerics.preferLP" -> true,
         "orc.porce.maxStackDepth" -> 512,
+        "orc.porce.optimizations.knownSiteSpecialization" -> true,
         "graal.TruffleCompilationThreshold" -> 300,
         //"orc.porce.universalTCO" -> true,
         )
@@ -177,7 +186,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      porce.sortBy(o => (o.run, -o.nCPUs, o.toString)) ++ scala
+      porce.sortBy(o => (o.run, -o.nCPUs, o.toString)) ++ scala.sortBy(o => (o.run, -o.nCPUs, o.toString))
     }
     runExperiment(experimentalConditions)
   }
