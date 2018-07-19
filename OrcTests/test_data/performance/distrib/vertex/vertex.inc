@@ -24,15 +24,21 @@ import class Edge = "orc.test.item.distrib.EdgeWithIntWeight"
 type EdgeWeight = Integer
 type VertexName = Integer
 
-val vertices = Array[Vertex](numVertices)
-
 def mkEdge(head :: VertexName, tail :: VertexName, weight :: EdgeWeight) :: Edge = Edge(head, tail, weight)
 
-def mkVertex(name :: VertexName, outEdges :: List[Edge]) :: Vertex = Vertex(name, outEdges, Ref[EdgeWeight](), Semaphore(1))
+def mkVertex(name :: VertexName, next :: Vertex, outEdges :: List[Edge]) :: Vertex = Vertex(name, next, outEdges, Ref[EdgeWeight](), Semaphore(1))
 
-def resetVertex(vertexRef :: Ref[Vertex]) :: Signal =
-  vertexRef?  >oldVertex>
-  vertexRef := Vertex(oldVertex.name(), oldVertex.outEdges(), Ref[EdgeWeight](), Semaphore(1))
+def freshVertex(oldVertex :: Vertex, next :: Vertex) :: Vertex =
+  Vertex(oldVertex.name(), next, oldVertex.outEdges(), Ref[EdgeWeight](), Semaphore(1))
+
+def vertexNamed(targetName :: VertexName, vertex :: Vertex) :: Vertex =
+  if vertex = null then
+    stop
+  else
+    if vertex.name() = targetName then
+      vertex
+    else
+      vertexNamed(targetName, vertex.next())
 
 
 {--------
@@ -46,27 +52,32 @@ def randomEdges(head :: VertexName, numVertices :: Integer,  probEdge :: Number,
     )
   })
 
-def randomGraph(numVertices :: Integer, probEdge :: Number, maxWeight :: EdgeWeight) :: Signal =
-  (upto(numVertices) >vn> (
-    vertices(vn) := mkVertex(vn, randomEdges(vn, numVertices,  probEdge, { Random(maxWeight) + 1 }))
-  )) >> stop ; signal
+def randomGraph(numVertices :: Number, probEdge :: Number, maxWeight :: EdgeWeight) :: Vertex =
+  def randomGraph'(vn :: Number) :: Vertex =
+    if vn <: numVertices then
+      mkVertex(vn, randomGraph'(vn + 1), randomEdges(vn, numVertices,  probEdge, { Random(maxWeight) + 1 }))
+    else
+      null
+  randomGraph'(0)
 
-def resetGraph() :: Signal =
-  (upto(numVertices) >vn> (
-    resetVertex(vertices(vn))
-  )) >> stop ; signal
+def freshGraph(oldVertices :: Vertex) :: Vertex =
+  if oldVertices /= null then
+    freshVertex(oldVertices, freshGraph(oldVertices.next()))
+  else
+    null
+
 
 {--------
  - Output
  --------}
 
-def dumpGraph() :: Signal =
-  def dumpVertices(vn) =
-    vertices(vn)?  >v>
+def dumpGraph(v :: Vertex) :: Signal =
+  if v /= null then (
     (v.pathLen().readD(); "(undef)")  >pl>
     Println(v.name() + ": pathLen=" + pl + afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges())))  >>
-    (if vn + 1 <: numVertices then dumpVertices(vn + 1) else signal)
-  dumpVertices(0)
+    dumpGraph(v.next())
+  ) else
+    signal
 
 
 {--------
