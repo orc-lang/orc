@@ -55,9 +55,16 @@ abstract class VirtualCallContextBase(val execution: PorcEExecution, val callSit
 
   protected def isClean: Boolean
 
+  var isOpen = true
+
+  def close(): Unit = {
+    isOpen = false
+  }
+
   def materialize(): MaterializedCallContext = {
     assert(isClean, s"$this cannot be materialized because it is not clean.")
     val r = new CPSCallContext(execution, p, c, t, callSiteId)
+    close()
     r.begin()
     r
   }
@@ -72,6 +79,13 @@ abstract class VirtualCallContextBase(val execution: PorcEExecution, val callSit
   }
 }
 
+object DirectVirtualCallContext {
+  /** The size in *items* of each buffer when it is first used.
+    */
+  @inline
+  private val initialBufferSize = 2
+}
+
 abstract class DirectVirtualCallContext(execution: PorcEExecution, callSiteId: Int)
     extends VirtualCallContextBase(execution, callSiteId) {
   virtualCtx =>
@@ -81,20 +95,30 @@ abstract class DirectVirtualCallContext(execution: PorcEExecution, callSiteId: I
   var otherPublicationList: ArrayList[AnyRef] = null
   var otherHaltedList: ArrayList[CPSCallContext] = null
 
-  protected def isClean = halted == false && selfPublicationList == null && otherPublicationList == null
+  protected def isClean = isOpen && halted == false && selfPublicationList == null && otherPublicationList == null
+
+  override def close() = {
+    super.close()
+    selfPublicationList = null
+    otherPublicationList = null
+    otherHaltedList = null
+  }
 
   @TruffleBoundary(allowInlining = true) @noinline
   private def addSelfPublication(v: AnyRef) = {
+    assert(isOpen)
     if (selfPublicationList == null) {
-      selfPublicationList = new ArrayList(2)
+      selfPublicationList = new ArrayList(DirectVirtualCallContext.initialBufferSize)
     }
     selfPublicationList.add(v)
   }
 
   @TruffleBoundary(allowInlining = true) @noinline
   private def addOtherPublication(o: CPSCallContext, v: AnyRef, halt: Boolean) = {
+    assert(isOpen)
     if (otherPublicationList == null) {
-      otherPublicationList = new ArrayList(6)
+      // Each other publication is 3 array elements.
+      otherPublicationList = new ArrayList(DirectVirtualCallContext.initialBufferSize * 3)
     }
     otherPublicationList.add(o)
     otherPublicationList.add(v)
@@ -103,13 +127,16 @@ abstract class DirectVirtualCallContext(execution: PorcEExecution, callSiteId: I
 
   @TruffleBoundary(allowInlining = true) @noinline
   private def addOtherHalt(o: CPSCallContext) = {
+    assert(isOpen)
     if (otherHaltedList == null) {
-      otherHaltedList = new ArrayList(2)
+      otherHaltedList = new ArrayList(DirectVirtualCallContext.initialBufferSize)
     }
     otherHaltedList.add(o)
   }
 
   def virtualCallContextFor(ctx: CallContext): CallContext = {
+    assert(isOpen)
+    if (true)
     ctx match {
       case ctx: CPSCallContext => new VirtualCallContextBase(execution, callSiteId) {
         def p = ctx.p
@@ -117,6 +144,12 @@ abstract class DirectVirtualCallContext(execution: PorcEExecution, callSiteId: I
         def t = ctx.t
 
         protected def isClean = virtualCtx.isClean
+
+        override def materialize(): MaterializedCallContext = {
+          assert(isClean, s"$this cannot be materialized because it is not clean.")
+          close()
+          ctx
+        }
 
         def virtualCallContextFor(ctx: CallContext): CallContext = {
           virtualCtx.virtualCallContextFor(ctx)
@@ -137,6 +170,7 @@ abstract class DirectVirtualCallContext(execution: PorcEExecution, callSiteId: I
           * The semantics of a publication for a handle include halting so add that.
           */
         override final def publish(v: AnyRef) = {
+          assert(isOpen)
           // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
           if (ctx.halted.compareAndSet(false, true)) {
             /* ROOTNODE-STATISTICS
@@ -150,6 +184,7 @@ abstract class DirectVirtualCallContext(execution: PorcEExecution, callSiteId: I
         }
 
         final def halt(): Unit = {
+          assert(isOpen)
           if (ctx.halted.compareAndSet(false, true)) {
             virtualCtx.addOtherHalt(ctx)
           }
@@ -162,6 +197,8 @@ abstract class DirectVirtualCallContext(execution: PorcEExecution, callSiteId: I
       case ctx: VirtualCallContextBase => ctx
       case ctx => ctx
     }
+    else
+    ctx
   }
 
   final def publishNonterminal(v: AnyRef): Unit = {
@@ -179,6 +216,7 @@ abstract class DirectVirtualCallContext(execution: PorcEExecution, callSiteId: I
     * The semantics of a publication for a handle include halting so add that.
     */
   override final def publish(v: AnyRef) = {
+    assert(isOpen)
     // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
     if (!halted) {
       /* ROOTNODE-STATISTICS

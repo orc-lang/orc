@@ -15,6 +15,7 @@ import static orc.run.porce.SpecializationConfiguration.ExternalCPSDirectSpecial
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 import orc.DirectInvoker;
 import orc.Invoker;
@@ -198,7 +199,15 @@ public class ExternalCPSDispatch extends Dispatch {
             };
 
             try {
-                invoke.executeInvoke(frame, invoker, callContext, target, argumentClassesProfile.profile(arguments));
+                try {
+                    invoke.executeInvoke(frame, invoker, callContext, target, argumentClassesProfile.profile(arguments));
+                } finally {
+                    if (SpecializationConfiguration.StopWatches.callsEnabled) {
+                        orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
+                    }
+                }
+                //Logger.info(() -> target + "(" + Arrays.toString(arguments) + ") -> " + callContext.toString());
+                handler.execute(frame, pub, counter, term, callContext);
             } catch (final TailCallException e) {
                 throw e;
             } catch (final HaltException e) {
@@ -208,13 +217,7 @@ public class ExternalCPSDispatch extends Dispatch {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
                 handler.haltToken.execute(frame, counter);
-            } finally {
-                if (SpecializationConfiguration.StopWatches.callsEnabled) {
-                    orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
-                }
             }
-            //Logger.info(() -> target + "(" + Arrays.toString(arguments) + ") -> " + callContext.toString());
-            handler.execute(frame, pub, counter, term, callContext);
         }
 
         @Specialization(replaces = { "specific", "specificDirect" })
@@ -279,28 +282,33 @@ public class ExternalCPSDispatch extends Dispatch {
             private final ConditionProfile hasOtherHalts = ConditionProfile.createBinaryProfile();
             private final IntValueProfile otherHaltsListSizeProfile = IntValueProfile.createIdentityProfile();
 
-            final HaltToken.KnownCounter haltToken = HaltToken.KnownCounter.create(execution);
+            @Child
+            HaltToken.KnownCounter haltToken = HaltToken.KnownCounter.create(execution);
 
             @SuppressWarnings("null")
             public void execute(VirtualFrame frame, PorcEClosure pub, Counter counter, Terminator term, DirectVirtualCallContext callContext) {
-                final ArrayList<Object> selfPublicationList = callContext.selfPublicationList();
                 final boolean halted = callContext.halted();
-                if (exactlyOneSelfPublicationProfile.profile(selfPublicationList != null && selfPublicationList.size() == 1 && halted)) {
-                    getDispatchP().executeDispatch(frame, pub, selfPublicationList.get(0));
-                } else {
-                    if (hasSelfPublicationsProfile.profile(selfPublicationList != null)) {
-                        final int size = selfPublicationsListSizeProfile.profile(selfPublicationList.size());
-                        for (int i = 0; i < size; i++) {
-                            counter.newToken();
-                            getDispatchP().executeDispatch(frame, pub, selfPublicationList.get(i));
-                        }
-                    }
-                    if (haltedProfile.profile(halted)) {
-                        haltToken.execute(frame, counter);
-                    }
-                }
-
+                final ArrayList<Object> selfPublicationList = callContext.selfPublicationList();
                 final ArrayList<Object> otherPublicationList = callContext.otherPublicationList();
+                final ArrayList<CPSCallContext> otherHaltedList = callContext.otherHaltedList();
+                callContext.close();
+
+                // FIXME: There is a race such that counters are failing to halt (and halting early in a few cases).
+                //    Adding logging here eliminates the issue. This is presumably due to the extra delay and synchronization.
+
+                // The sleep does not seem to solve the problem, but the logging does. WTF.
+//                try {
+//                  Thread.sleep(10);
+//                } catch (InterruptedException e) {
+//                }
+
+//                if (otherPublicationList != null || otherHaltedList != null) {
+//                  Logger.log(Level.INFO, () -> "Context with other operations: " + callContext +
+//                      " " + selfPublicationList +
+//                      " " + otherPublicationList +
+//                      " " + otherHaltedList);
+//                }
+
                 if (hasOtherPublicationsProfile.profile(otherPublicationList != null)) {
                     final int size = otherPublicationsListSizeProfile.profile(otherPublicationList.size());
                     for (int i = 0; i < size; i += 3) {
@@ -308,6 +316,7 @@ public class ExternalCPSDispatch extends Dispatch {
                         Object v = otherPublicationList.get(i + 1);
                         boolean halt = ((Boolean)otherPublicationList.get(i + 2)).booleanValue();
                         if (!otherPublicationsHaltProfile.profile(halt)) {
+                            //throw new RuntimeException();
                             ctx.c().newToken();
                         }
                         getDispatchP().executeDispatch(frame, ctx.p(), v);
@@ -317,8 +326,8 @@ public class ExternalCPSDispatch extends Dispatch {
                     }
                 }
 
-                final ArrayList<CPSCallContext> otherHaltedList = callContext.otherHaltedList();
                 if (hasOtherHalts.profile(otherHaltedList != null)) {
+                    //throw new RuntimeException();
                     final int size = otherHaltsListSizeProfile.profile(otherHaltedList.size());
                     for (int i = 0; i < size; i++) {
                         CPSCallContext ctx = otherHaltedList.get(i);
@@ -326,6 +335,23 @@ public class ExternalCPSDispatch extends Dispatch {
                         ctx.t().removeChild(ctx);
                     }
                 }
+
+                if (exactlyOneSelfPublicationProfile.profile(selfPublicationList != null && selfPublicationList.size() == 1 && halted)) {
+                    getDispatchP().executeDispatch(frame, pub, selfPublicationList.get(0));
+                } else {
+                    if (hasSelfPublicationsProfile.profile(selfPublicationList != null)) {
+                        final int size = selfPublicationsListSizeProfile.profile(selfPublicationList.size());
+                        for (int i = 0; i < size; i++) {
+                            //throw new RuntimeException();
+                            counter.newToken();
+                            getDispatchP().executeDispatch(frame, pub, selfPublicationList.get(i));
+                        }
+                    }
+                    if (haltedProfile.profile(halted)) {
+                        haltToken.execute(frame, counter);
+                    }
+                }
+
             }
         }
 
