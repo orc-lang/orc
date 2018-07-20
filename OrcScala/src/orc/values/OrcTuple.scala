@@ -23,22 +23,22 @@ import java.util.Arrays
   */
 case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorValue with PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement with Product {
   assert(values.length > 1)
-  
+
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
     args match {
       case Array1(bi: BigInt) => {
         val size = values.length
-        
+
         new OnlyDirectInvoker {
           def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-            (target, args) match { 
+            (target, args) match {
               case (t: OrcTuple, Array1(bi: BigInt)) =>
                 t.values.length == size
               case _ =>
                 false
             }
           }
-        
+
           def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
             orc.run.StopWatches.implementation {
               target.asInstanceOf[OrcTuple].values(arguments(0).asInstanceOf[BigInt].intValue())
@@ -48,10 +48,10 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
       }
       case Array1(i: java.lang.Long) => {
         val size = values.length
-        
+
         new OnlyDirectInvoker {
           def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-            (target, args) match { 
+            (target, args) match {
               case (t: OrcTuple, Array1(bi: java.lang.Long)) =>
                 t.values.length == size
               case _ =>
@@ -70,7 +70,7 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
         IllegalArgumentInvoker(this, args)
     }
   }
-  
+
   def getAccessor(runtime: OrcRuntime, f: Field) = {
     ClassDoesNotHaveMembersAccessor(classOf[OrcTuple])
   }
@@ -111,7 +111,7 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
 
   override def productArity: Int = values.length
 
-  override def hashCode() = Arrays.hashCode(values)
+  override def hashCode() = scala.util.hashing.MurmurHash3.productHash(this)
   override def equals(o: Any): Boolean = o match {
     case o: OrcTuple => Arrays.equals(values, o.values)
     case _ => false
