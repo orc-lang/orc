@@ -250,6 +250,7 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
   def begin(): Unit = {
+    Counter.flushAllCounterOffsets(flushOnlyPositive = true)
     t.addChild(this)
   }
 

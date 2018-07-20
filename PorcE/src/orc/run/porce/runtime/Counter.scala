@@ -146,6 +146,8 @@ object Counter {
     }
   }
 
+  // TODO: In some cases there is no need to flush an all counters. Instead, flushing a known counter and all its ancestors.
+
   def flushAllCounterOffsets(flushOnlyPositive: Boolean = false): Unit = {
     Thread.currentThread() match {
       case worker: SimpleWorkStealingScheduler#Worker =>
@@ -480,6 +482,15 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     */
   def onResurrect(): Unit
 }
+
+// FIXME: There is a race that could potentially cause a counter to be non-zero without holding a token in it's parent.
+//   This could only happen if a counter is resurrecting and is delayed for a long time between increasing it's counter
+//   and calling parent.newToken(). See "SNZI: Scalable NonZero Indicators", Faith Ellen, et al. fig 4 for more details.
+//   This may or may not affect Orc because there is only one case where Orc should call newToken on a counter
+//   on which it does not have an existing token: resurrecting a service. However, services are discorporated so
+//   0-transients are safe as long as there is a token somewhere else in the program to keep the runtime from exiting.
+//   This token should always exist since some other part of the program must be trying to call the service and there
+//   for have a token.
 
 /** A Counter which forwards it's halting to a parent Counter and executes a closure on halt.
   *
