@@ -37,11 +37,11 @@ import com.oracle.truffle.api.profiles.ValueProfile;
 @Introspectable
 public abstract class Bind extends Expression {
     protected final PorcEExecution execution;
-  
+
     protected Bind(final PorcEExecution execution) {
       this.execution = execution;
     }
-  
+
     @Specialization(guards = { "exactlyFuture(future)" })
     public PorcEUnit bindExactlyFuture(VirtualFrame frame, final Future future, final Object value,
         @Cached("create()") MaximumValueProfile readersLengthProfile,
@@ -80,13 +80,13 @@ public abstract class Bind extends Expression {
         i += 1;
       }
     }
-    
+
     @Specialization()
     public PorcEUnit bindFuture(final Future future, final Object value) {
         future.bind(value);
         return PorcEUnit.SINGLETON;
     }
-    
+
     protected static boolean exactlyFuture(Future f) {
       return f.getClass() == Future.class;
     }
@@ -106,14 +106,14 @@ public abstract class Bind extends Expression {
         protected CallReaderPublish(final PorcEExecution execution) {
           this.execution = execution;
         }
-      
+
         public abstract void execute(VirtualFrame frame, int index, final FutureReader reader, final Object value);
 
 	private void porce(VirtualFrame frame, final PorcEFutureReader reader, final Object value,
 		ValueProfile readerClassProfile, Dispatch dispatch, ConditionProfile inlineProfile,
 		BranchProfile callProfile) {
 	    PorcERuntime r = execution.runtime();
-          
+
             CallClosureSchedulable call = readerClassProfile.profile(reader).fastPublish(value);
             if (call != null) {
                 callProfile.enter();
@@ -121,14 +121,14 @@ public abstract class Bind extends Expression {
                     Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
                     SimpleWorkStealingSchedulerWrapper.enterSchedulable(call, SimpleWorkStealingSchedulerWrapper.InlineExecution);
                     try {
-                        dispatch.executeDispatchWithEnvironment(frame, call.closure(), call.arguments());
+                        dispatch.executeDispatchWithEnvironment(frame, call.closure(), call.arguments() != null ? call.arguments() : new Object[] { null });
                     } finally {
                         SimpleWorkStealingSchedulerWrapper.exitSchedulable(call, old);
                         r.decrementStackDepth();
                     }
                 } else {
                     execution.runtime().schedule(call);
-                } 
+                }
             }
 	}
 
@@ -141,7 +141,7 @@ public abstract class Bind extends Expression {
             @Cached("create()") BranchProfile callProfile) {
             porce(frame, reader, value, readerClassProfile, dispatch, inlineProfile, callProfile);
         }
-        
+
         @Specialization(replaces = "porceSeparateCaches")
         public void porceSharedCache(VirtualFrame frame, int index, final PorcEFutureReader reader, final Object value,
             @Cached("createClassProfile()") ValueProfile readerClassProfile,
@@ -150,12 +150,12 @@ public abstract class Bind extends Expression {
             @Cached("create()") BranchProfile callProfile) {
             porce(frame, reader, value, readerClassProfile, dispatch, inlineProfile, callProfile);
         }
-        
+
         @Specialization
         public void orc(int index, final FutureReader reader, final Object value) {
             reader.publish(value);
         }
-        
+
         protected Dispatch createDispatch() {
           return InternalCPSDispatch.create(execution, false);
         }

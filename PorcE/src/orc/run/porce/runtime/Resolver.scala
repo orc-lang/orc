@@ -79,7 +79,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
     *
     * All methods are called in the multi-threaded phase.
     */
-  final private class JoinElement(i: Int, f: orc.Future) extends AtomicBoolean with FutureReader {
+  final private class JoinElement(i: Int, f: orc.Future) extends AtomicBoolean with PorcEFutureReader {
     /** Start blocking on the future.
       *
       */
@@ -102,6 +102,27 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
         // Halt if we have not already halted.
         SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
         resolver.checkComplete(decrementUnboundMT())
+      }
+    }
+
+    def fastPublish(v: AnyRef): CallClosureSchedulable = {
+      val p = fastHalt()
+      if (p != null) {
+        val s = CallClosureSchedulable(p, execution)
+        SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
+        s
+      } else {
+        null
+      }
+    }
+
+    def fastHalt(): PorcEClosure = {
+      if (compareAndSet(false, true)) {
+        // Now decrement the number of unbound values and see if we are done.
+        SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
+        resolver.fastCheckComplete(decrementUnboundMT())
+      } else {
+        null
       }
     }
   }
@@ -225,9 +246,25 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
     }
   }
 
+  private final def fastCheckComplete(n: Int): PorcEClosure = {
+    if (n == 0) {
+      //Logger.finest(s"$join: Join finished with: ${values.mkString(", ")}")
+      fastDone()
+    } else {
+      null
+    }
+  }
+
   /** Handle a successful completion.
     */
+  @TruffleBoundary(allowInlining = true)
   def done(): Unit = {
+    val s = CallClosureSchedulable(fastDone(), execution)
+    SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
+    execution.runtime.potentiallySchedule(s)
+  }
+
+  def fastDone(): PorcEClosure = {
     t.removeChild(this)
     /* ROOTNODE-STATISTICS
     p.body.getRootNode() match {
@@ -235,10 +272,8 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
       case _ => ()
     }
     */
-    val s = CallClosureSchedulable(p, execution)
-    SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
     // Token: Pass to p.
-    execution.runtime.potentiallySchedule(s)
+    p
   }
 
   /** Handle being killed by the terminator.
