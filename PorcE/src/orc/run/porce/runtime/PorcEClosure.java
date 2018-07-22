@@ -12,6 +12,7 @@
 package orc.run.porce.runtime;
 
 import orc.run.porce.PorcERootNode;
+import orc.values.Format;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
@@ -112,7 +113,7 @@ final public class PorcEClosure {
         sb.append(body.getRootNode().getName());
         sb.append(':');
         sb.append(body.getRootNode().getClass().getSimpleName());
-        if (!toStringRecursionCheck.get()) {
+        if (PorcERuntime.displayClosureValues() && !toStringRecursionCheck.get()) {
             toStringRecursionCheck.set(true);
             sb.append('[');
             boolean notFirst = false;
@@ -120,7 +121,8 @@ final public class PorcEClosure {
                 if (notFirst) {
                     sb.append(", ");
                 }
-                sb.append(v);
+                String s = Format.formatValue(v);
+                sb.append(s.substring(0, s.length() < 50 ? s.length() - 1 : 48));
                 notFirst = true;
             }
             sb.append(']');

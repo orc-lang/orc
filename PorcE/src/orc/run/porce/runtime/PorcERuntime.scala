@@ -236,6 +236,9 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
 
 object PorcERuntime {
   @inline
+  final val displayClosureValues = System.getProperty("orc.porce.displayClosureValues", "false").toBoolean
+
+  @inline
   @CompilationFinal
   val actuallySchedule = System.getProperty("orc.porce.actuallySchedule", "true").toBoolean
 

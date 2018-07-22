@@ -77,8 +77,12 @@ final class CallClosureSchedulable private (private var _closure: PorcEClosure, 
   }
 
   override def toString(): String = {
-    val a = if (arguments == null) "" else {
-      arguments.map(Format.formatValue).mkString(", ")
+    val a = if (PorcERuntime.displayClosureValues) {
+      if (arguments == null) "" else {
+        arguments.map(v => Format.formatValue(v).take(48)).mkString(", ")
+      }
+    } else {
+      ""
     }
 
     s"$closure($a)" // %$priority
