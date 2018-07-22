@@ -124,7 +124,7 @@ object Counter {
   }
 
   @sun.misc.Contended
-  protected class CounterOffset(val counter: Counter) {
+  protected final class CounterOffset(val counter: Counter) {
     var inThreadList: Boolean = false
     var value: Int = 0
     var globalCountHeld: Boolean = false
@@ -135,9 +135,7 @@ object Counter {
         CompilerDirectives.SLOWPATH_PROBABILITY,
         !inThreadList)) {
         // CompilerDirectives.transferToInterpreter()
-        nextCounterOffset = worker.counterOffsets.asInstanceOf[CounterOffset]
-        worker.counterOffsets = this
-        inThreadList = true
+        pushCounterOffset(worker, this) : @inline
       }
     }
 
@@ -148,48 +146,62 @@ object Counter {
 
   // TODO: In some cases there is no need to flush an all counters. Instead, flushing a known counter and all its ancestors.
 
+  /** Remove and return the first CounterOffset in the Worker.
+    */
+  def removeNextCounterOffset(worker: SimpleWorkStealingScheduler#Worker): Unit = {
+    val headList = worker.counterOffsets.asInstanceOf[CounterOffset]
+    if (headList != null) {
+      worker.counterOffsets = headList.nextCounterOffset
+      headList.nextCounterOffset = null
+      headList.inThreadList = false
+    }
+  }
+
+  /** Remove and return the CounterOffset following `previous`.
+    */
+  @inline
+  def removeNextCounterOffset(previous: CounterOffset): Unit = {
+    val headList = previous.nextCounterOffset
+    if (headList != null) {
+      previous.nextCounterOffset = headList.nextCounterOffset
+      headList.nextCounterOffset = null
+      headList.inThreadList = false
+    }
+  }
+
+  private def pushCounterOffset(worker: SimpleWorkStealingScheduler#Worker, coh: CounterOffset): Unit = {
+    coh.nextCounterOffset = worker.counterOffsets.asInstanceOf[CounterOffset]
+    worker.counterOffsets = coh
+    coh.inThreadList = true
+  }
+
   def flushAllCounterOffsets(flushOnlyPositive: Boolean = false): Unit = {
     Thread.currentThread() match {
       case worker: SimpleWorkStealingScheduler#Worker =>
         incrFlushAllCount()
         //Logger.info(s"Flushing all ${Thread.currentThread()}: flushOnlyPositive = $flushOnlyPositive")
-        var done = false
-        while(!done) {
-          done = true
-          val headList = worker.counterOffsets.asInstanceOf[CounterOffset]
-          worker.counterOffsets = null
 
-          if (headList != null) {
-            //Logger.info(s"Flushing all ${Thread.currentThread()}: flushOnlyPositive = $flushOnlyPositive: BEFORE\n${Stream.iterate(headList)(_.nextCounterOffset).takeWhile(_ != null).mkString("\n")}")
-          }
+        var prev: CounterOffset = null
+        var current = worker.counterOffsets.asInstanceOf[CounterOffset]
 
-          val buffer = ArrayBuffer[CounterOffset]()
+        while (current != null) {
+          if (!flushOnlyPositive || current.value >= 0) {
+            //Logger.info(s"Flushing all ${Thread.currentThread()}: flushing: $current")
+            if (prev != null)
+              removeNextCounterOffset(prev)
+            else
+              removeNextCounterOffset(worker)
 
-          {
-            var current = headList
-            while (current != null) {
-              current.inThreadList = false
-              buffer += current
-              val prev = current
-              current = current.nextCounterOffset
-              // This clear is critical for avoiding long chains of retained memory from infrequently used CounterOffsets
-              prev.nextCounterOffset = null
-            }
-          }
+            current.counter.flushCounterOffsetAndHandle(current)
 
-          for (current <- buffer) {
-            if (!flushOnlyPositive || current.value >= 0) {
-              //Logger.info(s"Flushing all ${Thread.currentThread()}: flushing: $current")
-              current.counter.flushCounterOffsetAndHandle(current)
-              done = false
-            } else {
-              //Logger.info(s"Flushing all ${Thread.currentThread()}: adding back into the queue: $current")
-              current.register(worker)
-            }
-          }
-
-          if (worker.counterOffsets != null) {
-            //Logger.info(s"Flushing all ${Thread.currentThread()}: flushOnlyPositive = $flushOnlyPositive: AFTER\n${Stream.iterate(worker.counterOffsets.asInstanceOf[CounterOffset])(_.nextCounterOffset).takeWhile(_ != null).mkString("\n")}")
+            // Step to the node that replaced this one.
+            if (prev != null)
+              current = prev.nextCounterOffset
+            else
+              current = worker.counterOffsets.asInstanceOf[CounterOffset]
+          } else {
+            prev = current
+            current = current.nextCounterOffset
           }
         }
       case _ => ()
