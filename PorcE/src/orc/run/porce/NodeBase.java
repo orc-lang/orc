@@ -117,6 +117,7 @@ public abstract class NodeBase extends Node implements HasPorcNode {
     private int callSiteId = -1;
 
     protected int getCallSiteId() {
+        CompilerAsserts.compilationConstant(this);
         if (callSiteId >= 0) {
             return callSiteId;
         } else {

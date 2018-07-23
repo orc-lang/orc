@@ -31,6 +31,7 @@ public final class ValueClassesProfile {
     @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
     public Object[] profile(Object[] arguments) {
         CompilerAsserts.compilationConstant(arguments.length);
+        CompilerAsserts.compilationConstant(this);
 
         if (argumentTypeProfiles == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
