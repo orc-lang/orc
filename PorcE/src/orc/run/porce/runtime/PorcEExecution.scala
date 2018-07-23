@@ -84,6 +84,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   private val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
 
+  @TruffleBoundary(allowInlining = true) @noinline
   def invokeCallTarget(callSiteId: Int, p: PorcEClosure, c: Counter, t: Terminator, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     val callTarget = {
       val v = callSiteMap.get(callSiteId)
@@ -99,6 +100,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   private val trampolineMap = new java.util.concurrent.ConcurrentHashMap[RootNode, RootCallTarget]()
 
+  @TruffleBoundary(allowInlining = true) @noinline
   def invokeClosure(target: PorcEClosure, args: Array[AnyRef]): Unit = {
     val callTarget = {
       val key = target.body.getRootNode()

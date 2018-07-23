@@ -58,33 +58,33 @@ object Counter {
   }
 
   @inline
-  private var counterCount = new LongAdder()
+  private val counterCount = new LongAdder()
 
   @TruffleBoundary(allowInlining = true) @noinline
   def incrCounter(): Unit = if (enableCounting) counterCount.add(1)
 
   @inline
-  private var changeCount = new LongAdder()
+  private val changeCount = new LongAdder()
 
   @TruffleBoundary(allowInlining = true) @noinline
   def incrChanges(): Unit = if (enableCounting) changeCount.add(1)
 
   @inline
-  private var initialIncrCount = new LongAdder()
+  private val initialIncrCount = new LongAdder()
 
   @TruffleBoundary(allowInlining = true) @noinline
   def incrInitialIncrCount(): Unit = if (enableCounting) initialIncrCount.add(1)
 
   @inline
-  private var flushAllCount = new LongAdder()
+  private val flushAllCount = new LongAdder()
 
   @TruffleBoundary(allowInlining = true) @noinline
   def incrFlushAllCount(): Unit = if (enableCounting) flushAllCount.add(1)
 
   @inline
-  private var flushCount = new LongAdder()
+  private val flushCount = new LongAdder()
   @inline
-  private var flushSizeSum = new LongAdder()
+  private val flushSizeSum = new LongAdder()
 
 
   @TruffleBoundary(allowInlining = true) @noinline
