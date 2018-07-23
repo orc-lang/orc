@@ -40,7 +40,7 @@ import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.RootCallTarget;
 
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
-    
+
     // TODO: PERFORMANCE: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters).
     // The challenge of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
@@ -59,7 +59,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 	return (int) (both >> 32);
     }
     */
-    
+
     public final long getTotalSpawnedTime() {
 	return totalSpawnedTime.get();
     }
@@ -69,30 +69,30 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     public final long getTotalCalls() {
 	return totalCalls.get();
     }
-    
+
     @CompilationFinal
     private boolean internal = false;
-    
+
     @CompilationFinal
     private long timePerCall = -1;
     @CompilationFinal
     private boolean totalCallsDone = false;
-   
+
     final public void addSpawnedCall(long time) {
         totalSpawnedTime.getAndAdd(time);
-        totalSpawnedCalls.getAndIncrement();        
+        totalSpawnedCalls.getAndIncrement();
     }
-    
+
     final public boolean shouldTimeCall() {
     	return timePerCall < 0 || CompilerDirectives.inInterpreter();
     }
-    
+
     final public long getTimePerCall() {
 	//CompilerAsserts.compilationConstant(this);
     	if (shouldTimeCall()) {
         	long n = totalSpawnedCalls.get();
             	long t = totalSpawnedTime.get();
-    		
+
     		if (n >= SpecializationConfiguration.MinCallsForTimePerCall) {
         		CompilerDirectives.transferToInterpreterAndInvalidate();
         		timePerCall = t / n;
@@ -116,7 +116,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     	if (CompilerDirectives.inInterpreter()) {
     		totalSpawns.getAndIncrement();
     	}
-    } 
+    }
 
     final public void incrementHalt() {
     	if (CompilerDirectives.inInterpreter()) {
@@ -145,7 +145,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 	public scala.Tuple7<Long, Long, Long, Long, Long, Long, Long> getCollectedCallInformation() {
 		return new scala.Tuple7<>(
 				totalSpawns.get(), totalBindSingle.get(), totalBindJoin.get(), totalHalt.get(), totalPublication.get(),
-				totalSpawnedTime.get(), totalSpawnedCalls.get()        
+				totalSpawnedTime.get(), totalSpawnedCalls.get()
 				);
     }
     */
@@ -158,7 +158,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 		section = SourceSectionFromPorc.apply(ast);
 		internal = !(ast instanceof orc.ast.porc.Method);
 	}
-    
+
     @Override
     public boolean isInternal() {
       return internal;
@@ -168,7 +168,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     public Option<PorcAST> porcNode() {
         return porcNode;
     }
-    
+
     @CompilationFinal
     private SourceSection section = null;
 
@@ -176,7 +176,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     public SourceSection getSourceSection() {
         return section;
     }
-    
+
     @Override
     public String getName() {
         String name = "<no AST>";
@@ -202,9 +202,10 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     }
 
     protected @Child Expression body;
+    protected @Child FlushAllCounters flushAllCounters;
     private final int nArguments;
     private final int nCaptured;
-    
+
     @CompilationFinal
     private RootCallTarget trampolineCallTarget;
 
@@ -232,8 +233,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         this.nArguments = nArguments;
         this.nCaptured = nCaptured;
 	this.execution = execution;
+	this.flushAllCounters = FlushAllCounters.create(-1, execution);
     }
-    
+
     public Expression getBody() {
     	if (body instanceof CatchSelfTailCall) {
     		return ((CatchSelfTailCall) body).getBody();
@@ -256,7 +258,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
                 InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
             }
 	}
-	
+
 	if (!totalCallsDone) {
 	    if (totalCalls.incrementAndGet() >= 100) {
 		CompilerDirectives.transferToInterpreterAndInvalidate();
@@ -266,6 +268,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
         try {
             final Object ret = body.execute(frame);
+            if (CompilerDirectives.inInterpreter() || CompilerDirectives.inCompilationRoot()) {
+                flushAllCounters.execute(frame);
+            }
             return ret;
         } catch (KilledException | HaltException e) {
             transferToInterpreter();
