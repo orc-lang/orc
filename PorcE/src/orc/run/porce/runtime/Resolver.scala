@@ -265,12 +265,6 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
 
   def fastDone(): PorcEClosure = {
     t.removeChild(this)
-    /* ROOTNODE-STATISTICS
-    p.body.getRootNode() match {
-      case n: PorcERootNode => n.incrementBindJoin()
-      case _ => ()
-    }
-    */
     // Token: Pass to p.
     p
   }

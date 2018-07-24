@@ -152,34 +152,6 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
 
   def onProgramHalted() = {
-    /* ROOTNODE-STATISTICS
-    import scala.collection.JavaConverters._
-    {
-      val csvOut = ExecutionLogOutputStream("rootnode-statistics", "csv", "RootNode run times data")
-      if (csvOut.isDefined) {
-        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-        val csvWriter = new CsvWriter(traceCsv.append(_))
-        val tableColumnTitles = Seq(
-            "RootNode Name [name]", "Total Spawns [spawns]",
-            "Total Bind Single Future [bindSingle]", "Total Bind Multiple Futures [bindJoin]",
-            "Total Halt Continuation [halt]", "Total Publication Callbacks [publish]",
-            "Total Spawned Time (ns) [totalSpawnedTime]", "Total Spawned Calls [spawnedCalls]")
-        csvWriter.writeHeader(tableColumnTitles)
-        for (t <- callTargetMap.values) {
-          t.getRootNode match {
-            case n: PorcERootNode =>
-              val (nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime) = n.getCollectedCallInformation()
-              csvWriter.writeRow(Seq(n.getName, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime,
-                  n.porcNode.map(_.sourceTextRange.toString).getOrElse("")))
-            case _ =>
-              ()
-          }
-        }
-        traceCsv.close()
-      }
-    }
-    */
-
   }
 }
 

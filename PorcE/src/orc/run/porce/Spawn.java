@@ -36,7 +36,7 @@ public abstract class Spawn extends Expression {
 
     protected final ConditionProfile moreTasksNeeded = ConditionProfile.createCountingProfile();
     protected final ValueProfile targetRoot = ValueProfile.createIdentityProfile();
-    
+
     @Child
     protected StackCheckingDispatch dispatch;
 
@@ -55,19 +55,13 @@ public abstract class Spawn extends Expression {
     @Specialization(guards = { "!shouldInlineSpawn(computation)" } )
     public PorcEUnit spawn(final VirtualFrame frame, final Counter c, final Terminator t, final PorcEClosure computation) {
 	final PorcERuntime r = execution.runtime();
-	/* ROOTNODE-STATISTICS
-	if (CompilerDirectives.inInterpreter() && computation.body.getRootNode() instanceof PorcERootNode) {
-	    //Logger.info(() -> "Spawning call: " + computation + ", body =  " + computation.body.getRootNode() + " (" + computation.body.getRootNode().getClass() + "), getTimePerCall() = " + computation.getTimePerCall());
-	    ((PorcERootNode)computation.body.getRootNode()).incrementSpawn();
-	}
-	*/
         // The incrementAndCheckStackDepth call should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.
         if(!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize())) && dispatch.spawnProfile.profile(r.incrementAndCheckStackDepth())) {
             dispatch.executeInline(frame, computation, true);
         } else {
             t.checkLive();
             execution.runtime().schedule(CallClosureSchedulable.apply(computation, execution));
-        } 
+        }
         return PorcEUnit.SINGLETON;
     }
 
@@ -94,12 +88,12 @@ public abstract class Spawn extends Expression {
 
     private static final boolean allowSpawnInlining = PorcERuntime$.MODULE$.allowSpawnInlining();
     private static final boolean allowAllSpawnInlining = PorcERuntime$.MODULE$.allowAllSpawnInlining();
-    
+
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
 		return allowSpawnInlining && (!mustSpawn || allowAllSpawnInlining) &&
 			computation.getTimePerCall(targetRoot) < SpecializationConfiguration.InlineAverageTimeLimit;
     }
-    
+
     public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn, final Expression computation, final PorcEExecution execution) {
 	return SpawnNodeGen.create(mustSpawn, execution, c, t, computation);
     }

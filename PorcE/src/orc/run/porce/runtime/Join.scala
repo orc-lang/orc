@@ -296,12 +296,6 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
   def fastDone(): CallClosureSchedulable = {
     //Logger.finer(s"Done for $this with: $state ${values.mkString(", ")}")
     t.removeChild(this)
-    /* ROOTNODE-STATISTICS
-    p.body.getRootNode() match {
-      case n: PorcERootNode => n.incrementBindJoin()
-      case _ => ()
-    }
-    */
     // Token: Pass to p.
     val s = CallClosureSchedulable.varArgs(p, values, execution)
     SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)

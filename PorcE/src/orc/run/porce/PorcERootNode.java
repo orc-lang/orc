@@ -106,51 +106,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 		return timePerCall;
     }
 
-    /* ROOTNODE-STATISTICS
-    private final AtomicLong totalSpawns = new AtomicLong(0);
-    private final AtomicLong totalBindSingle = new AtomicLong(0);
-    private final AtomicLong totalBindJoin = new AtomicLong(0);
-    private final AtomicLong totalHalt = new AtomicLong(0);
-    private final AtomicLong totalPublication = new AtomicLong(0);
-
-    final public void incrementSpawn() {
-    	if (CompilerDirectives.inInterpreter()) {
-    		totalSpawns.getAndIncrement();
-    	}
-    }
-
-    final public void incrementHalt() {
-    	if (CompilerDirectives.inInterpreter()) {
-    		totalHalt.getAndIncrement();
-    	}
-    }
-
-    final public void incrementPublication() {
-    	if (CompilerDirectives.inInterpreter()) {
-    		totalPublication.getAndIncrement();
-    	}
-    }
-
-    final public void incrementBindSingle() {
-    	if (CompilerDirectives.inInterpreter()) {
-    		totalBindSingle.getAndIncrement();
-    	}
-    }
-
-    final public void incrementBindJoin() {
-    	if (CompilerDirectives.inInterpreter()) {
-    		totalBindJoin.getAndIncrement();
-    	}
-    }
-
-	public scala.Tuple7<Long, Long, Long, Long, Long, Long, Long> getCollectedCallInformation() {
-		return new scala.Tuple7<>(
-				totalSpawns.get(), totalBindSingle.get(), totalBindJoin.get(), totalHalt.get(), totalPublication.get(),
-				totalSpawnedTime.get(), totalSpawnedCalls.get()
-				);
-    }
-    */
-
     private Option<PorcAST> porcNode = Option.apply(null);
 
 	public void setPorcAST(final PorcAST ast) {
