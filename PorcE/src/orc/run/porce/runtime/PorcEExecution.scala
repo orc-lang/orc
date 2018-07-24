@@ -220,7 +220,7 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
       throw new AssertionError("The top-level counter can never be resurrected.")
     }
 
-    def onHalt(): Unit = {
+    def onHaltOptimized(): PorcEClosure = {
       // Runs regardless of discorporation.
       Logger.fine("Top level context complete.")
       runtime.removeRoot(execution)
@@ -230,6 +230,7 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
         execution.notifyAll()
       }
       execution.onProgramHalted()
+      null
     }
   }
 

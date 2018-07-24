@@ -61,7 +61,8 @@ trait PorcEWithWorkStealingScheduler extends Orc {
       }
 
       override def onCompleteStealingFailure(w: Worker): Unit = {
-        Counter.flushAllCounterOffsets(flushOnlyPositive = false)
+        // Flush ALL counters if we go idle.
+        Counter.flushAllCounterOffsets(0)
       }
     }
 
@@ -80,7 +81,8 @@ trait PorcEWithWorkStealingScheduler extends Orc {
 
   @TruffleBoundary @noinline
   def schedule(t: Schedulable): Unit = {
-    Counter.flushAllCounterOffsets(flushOnlyPositive = true)
+    // Flush positive counters because t may execute in another thread.
+    Counter.flushAllCounterOffsets(1)
     val sStart = StopWatches.workerSchedulingTime.start()
     // We do not check if scheduler is null because it will just throw an NPE and the check might decrease performance on a hot path.
     //t.onSchedule()

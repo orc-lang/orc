@@ -14,8 +14,6 @@ package orc.run.porce;
 import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
-import orc.run.porce.runtime.CounterNested;
-import orc.run.porce.runtime.CounterWithHaltTokenOptimized;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
@@ -66,7 +64,7 @@ public class HaltToken extends Expression {
         public abstract PorcEUnit execute(VirtualFrame frame, final Counter counter);
 
         @Specialization(guards = { "SpecializeOnCounterStates" })
-        public PorcEUnit nested(VirtualFrame frame, final CounterWithHaltTokenOptimized counter,
+        public PorcEUnit nested(VirtualFrame frame, final Counter counter,
                 @Cached("createCall()") Dispatch call,
                 @Cached("create()") BranchProfile hasContinuationProfile) {
             PorcEClosure cont = counter.haltTokenOptimized();
@@ -80,12 +78,6 @@ public class HaltToken extends Expression {
                     SimpleWorkStealingSchedulerWrapper.exitSchedulable(counter, old);
                 }
             }
-            return PorcEUnit.SINGLETON;
-        }
-
-        @Specialization
-        public PorcEUnit any(final Counter counter) {
-            counter.haltToken();
             return PorcEUnit.SINGLETON;
         }
 

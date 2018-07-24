@@ -20,6 +20,7 @@ import orc.run.porce.runtime.Resolver;
 import orc.run.porce.runtime.Terminator;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
@@ -82,28 +83,41 @@ public class Resolve extends Expression {
     @NodeField(name = "execution", type = PorcEExecution.class)
     @ImportStatic(SpecializationConfiguration.class)
     public static abstract class Finish extends Expression {
-        @Child
-        Dispatch call = null;
+        protected static final boolean TRUE = true;
 
-        @Specialization(guards = { "InlineForceResolved", "join.isResolved()" })
+        @Child
+        protected Dispatch call = null;
+
+        @Specialization(guards = { "join.isBlocked()", "TRUE" })
+        public PorcEUnit blocked(final VirtualFrame frame,
+                final Resolver join,
+                @Cached("create(1, execution)") FlushAllCounters flushAllCounters) {
+            // Flush positive counters because this may trigger our continuation to execute in another thread.
+            flushAllCounters.execute(frame);
+            join.finishBlocked();
+            return PorcEUnit.SINGLETON;
+        }
+
+        @Specialization(guards = { "InlineForceResolved", "join.isResolved()" }, replaces = { "blocked" })
         public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecution execution, final Resolver join) {
-        	if (call == null) {
-        		CompilerDirectives.transferToInterpreterAndInvalidate();
-	        	computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
-	        		Dispatch n = insert(InternalCPSDispatch.create(false, execution, isTail));
-	        		n.setTail(isTail);
-				notifyInserted(n);
-	        		return n;
-	        	});
-        	}
+                if (call == null) {
+                        CompilerDirectives.transferToInterpreterAndInvalidate();
+                        computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
+                                Dispatch n = insert(InternalCPSDispatch.create(false, execution, isTail));
+                                n.setTail(isTail);
+                                notifyInserted(n);
+                                return n;
+                        });
+                }
             call.executeDispatch(frame, join.p(), new Object[] {});
             return PorcEUnit.SINGLETON;
         }
 
         @Specialization(guards = { "join.isBlocked()" })
-        public PorcEUnit blocked(final PorcEExecution execution, final Resolver join) {
-            join.finishBlocked();
-            return PorcEUnit.SINGLETON;
+        public PorcEUnit blockedAgain(final VirtualFrame frame,
+                final Resolver join,
+                @Cached("create(1, execution)") FlushAllCounters flushAllCounters) {
+            return blocked(frame, join, flushAllCounters);
         }
 
         @Specialization(guards = { "!InlineForceResolved" })

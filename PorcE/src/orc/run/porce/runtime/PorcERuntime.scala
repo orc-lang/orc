@@ -122,6 +122,21 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     }
   }
 
+  def stackDepth: Int = {
+    try {
+      val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
+      t.stackDepth
+    } catch {
+      case _: ClassCastException => {
+        if (allExecutionOnWorkers.isValid()) {
+          CompilerDirectives.transferToInterpreterAndInvalidate()
+          allExecutionOnWorkers.invalidate()
+        }
+        Int.MaxValue
+      }
+    }
+  }
+
   /** Increment the stack depth and return true if we can continue to extend the stack.
     *
     * If this returns true the caller must call decrementStackDepth() after it finishes.

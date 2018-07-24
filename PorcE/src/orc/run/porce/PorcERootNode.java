@@ -38,6 +38,7 @@ import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
@@ -201,8 +202,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         return ((Integer) ((ASTWithIndex) porcNode().get()).optionalIndex().get()).intValue();
     }
 
-    protected @Child Expression body;
-    protected @Child FlushAllCounters flushAllCounters;
+    @Child
+    protected Expression body;
+
+    @Child
+    protected FlushAllCounters flushAllCounters;
+
+    private final ConditionProfile isTopLevelProfile = ConditionProfile.createCountingProfile();
+
     private final int nArguments;
     private final int nCaptured;
 
@@ -229,11 +236,11 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     public PorcERootNode(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured, PorcEExecution execution) {
         super(language, descriptor);
-        this.body = body;
+        this.body = insert(body);
         this.nArguments = nArguments;
         this.nCaptured = nCaptured;
 	this.execution = execution;
-	this.flushAllCounters = FlushAllCounters.create(-1, execution);
+	this.flushAllCounters = insert(FlushAllCounters.create(-1, execution));
     }
 
     public Expression getBody() {
@@ -268,7 +275,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
         try {
             final Object ret = body.execute(frame);
-            if (CompilerDirectives.inInterpreter() || CompilerDirectives.inCompilationRoot()) {
+            //if (timePerCall < 0 || CompilerDirectives.inInterpreter() || CompilerDirectives.inCompilationRoot()) {
+            if (timePerCall < 0 || isTopLevelProfile.profile(execution.runtime().stackDepth() <= 1)) {
+                // Flush all negative counters to trigger halts quickly
                 flushAllCounters.execute(frame);
             }
             return ret;

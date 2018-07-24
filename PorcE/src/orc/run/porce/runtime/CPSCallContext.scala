@@ -63,9 +63,8 @@ abstract class VirtualCallContextBase(val execution: PorcEExecution, val callSit
 
   def materialize(): MaterializedCallContext = {
     assert(isClean, s"$this cannot be materialized because it is not clean.")
-    val r = new CPSCallContext(execution, p, c, t, callSiteId)
     close()
-    r.begin()
+    val r = new CPSCallContext(execution, p, c, t, callSiteId)
     r
   }
 
@@ -249,10 +248,10 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
 
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
-  def begin(): Unit = {
-    Counter.flushAllCounterOffsets(flushOnlyPositive = true)
-    t.addChild(this)
-  }
+  // Flush positive counter because p may execute in another thread.
+  Counter.flushAllCounterOffsets(1)
+  
+  t.addChild(this)
 
   final def publishNonterminal(v: AnyRef): Unit = {
     /* ROOTNODE-STATISTICS

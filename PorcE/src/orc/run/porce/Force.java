@@ -220,7 +220,11 @@ public class Force {
 	}
 
 	@Specialization(guards = { "join.isBlocked()", "TRUE" })
-	public PorcEUnit blocked(final Join join) {
+	public PorcEUnit blocked(final VirtualFrame frame,
+	        final Join join,
+	        @Cached("create(1, execution)") FlushAllCounters flushAllCounters) {
+	    // Flush positive counters because this may trigger our continuation to execute in another thread.
+	    flushAllCounters.execute(frame);
 	    join.finishBlocked();
 	    return PorcEUnit.SINGLETON;
 	}
@@ -244,8 +248,10 @@ public class Force {
 	}
 
 	@Specialization(guards = { "join.isBlocked()" })
-	public PorcEUnit blockedAgain(final Join join) {
-	    return blocked(join);
+	public PorcEUnit blockedAgain(final VirtualFrame frame,
+	        final Join join,
+	        @Cached("create(1, execution)") FlushAllCounters flushAllCounters) {
+	    return blocked(frame, join, flushAllCounters);
 	}
 
 	@Specialization(guards = { "!InlineForceResolved || !InlineForceHalted" })
@@ -269,7 +275,7 @@ public class Force {
 	@Child
 	protected Dispatch call;
 
-	private final PorcEExecution execution;
+	protected final PorcEExecution execution;
 
 	protected SingleFuture(final PorcEExecution execution) {
 	    super();
@@ -294,7 +300,8 @@ public class Force {
 		final Object _future,
 		@Cached("create()") HandleFuture handleFuture,
 		@Cached("createClassProfile()") ValueProfile futureTypeProfile,
-		@Cached("createHaltToken()") HaltToken haltToken) {
+		@Cached("createHaltToken()") HaltToken haltToken,
+		@Cached("create(1, execution)") FlushAllCounters flushAllCounters) {
 	    Object future = futureTypeProfile.profile(_future);
 	    Object v = handleFuture.handleFuture(this, future);
 
@@ -304,7 +311,7 @@ public class Force {
 	    } else if (v == orc.run.porce.runtime.FutureConstants.Unbound) {
 		handleFuture.unboundFuture.enter();
 		// Force flushes because p could be called in another thread at any time.
-		Counter.flushAllCounterOffsets(true);
+		flushAllCounters.execute(frame);
 		((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 		// ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 	    } else {
