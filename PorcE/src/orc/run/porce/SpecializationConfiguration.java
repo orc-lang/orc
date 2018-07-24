@@ -36,7 +36,7 @@ public abstract class SpecializationConfiguration {
 
     @CompilationFinal
     public static final int InternalCallMaxCacheSize = Integer
-            .parseInt(System.getProperty("orc.porce.cache.internalCallMaxCacheSize", "2"));
+            .parseInt(System.getProperty("orc.porce.cache.internalCallMaxCacheSize", "6"));
     @CompilationFinal
     public static final int ExternalDirectCallMaxCacheSize = Integer
             .parseInt(System.getProperty("orc.porce.cache.externalDirectCallMaxCacheSize", "4"));
@@ -99,7 +99,7 @@ public abstract class SpecializationConfiguration {
 
     @CompilationFinal
     public static final boolean KnownSiteSpecialization = Boolean
-            .parseBoolean(System.getProperty("orc.porce.optimizations.knownSiteSpecialization", "false"));
+            .parseBoolean(System.getProperty("orc.porce.optimizations.knownSiteSpecialization", "true"));
 
     @CompilationFinal
     public static final boolean EnvironmentCaching = Boolean
