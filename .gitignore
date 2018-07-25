@@ -10,3 +10,5 @@ Thumbs.db
 .metadata
 Mission Control/
 .Rproj.user
+
+.orcache
