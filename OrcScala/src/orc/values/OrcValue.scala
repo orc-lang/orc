@@ -54,7 +54,6 @@ object OrcValue {
 
 case object Signal extends OrcValue {
   override def toOrcSyntax() = "signal"
-  override val hashCode = super.hashCode() // Only need to compute this once for an immutable object
 }
 
 // TODO: PERFORMANCE: This should probably intern the strings and use reference equality on name. We could even consider doing instance caching on Field objects and then doing reference comparison directly on the Field object.
