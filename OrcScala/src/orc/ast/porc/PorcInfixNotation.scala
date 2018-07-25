@@ -18,7 +18,7 @@ package orc.ast.porc
 
 trait PorcInfixValue {
   this: Argument =>
-  def apply(arg: Argument*) = CallContinuation(this, arg.toSeq)
+  def apply(arg: Argument*) = CallContinuation(this, arg.toVector)
 }
 trait PorcInfixExpr {
   this: Expression =>
@@ -28,7 +28,7 @@ trait PorcInfixExpr {
 object PorcInfixNotation {
   implicit val reflectiveCalls = scala.language.reflectiveCalls
 
-  def let(defs: (Variable, Expression)*)(body: Expression): Expression = 
+  def let(defs: (Variable, Expression)*)(body: Expression): Expression =
     if (defs.isEmpty) body else Let(defs.head._1, defs.head._2, let(defs.tail: _*)(body))
-  def continuation(arg: Variable*)(body: Expression): Expression = Continuation(arg.toSeq, body)
+  def continuation(arg: Variable*)(body: Expression): Expression = Continuation(arg.toVector, body)
 }

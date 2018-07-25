@@ -97,6 +97,7 @@ object Constant {
 
 @leaf @transform
 final case class PorcUnit() extends Argument
+
 @leaf @transform
 final class Variable(val optionalName: Option[String]) extends Argument with hasOptionalVariableName with Serializable {
   optionalVariableName = optionalName
@@ -115,7 +116,7 @@ final class Variable(val optionalName: Option[String]) extends Argument with has
 
 @leaf @transform
 final case class CallContinuation(@subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression {
-  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+  require(arguments.isInstanceOf[collection.immutable.Vector[_]] || arguments.isInstanceOf[collection.immutable.List[_]], s"Bad collection type: arguments : ${arguments.getClass} (in $this)")
 }
 
 @leaf @transform
@@ -129,7 +130,7 @@ final case class Let(x: Variable, @subtree v: Expression, @subtree body: Express
 
 @leaf @transform
 final case class Sequence(@subtree es: Seq[Expression]) extends Expression {
-  require(!es.isInstanceOf[collection.TraversableView[_, _]])
+  require(es.isInstanceOf[collection.immutable.Vector[_]] || es.isInstanceOf[collection.immutable.List[_]], s"Bad collection type: es : ${es.getClass} (in $this)")
 }
 object Sequence {
   def apply(es: Seq[Expression]): Expression = {
@@ -152,21 +153,8 @@ object Sequence {
 
 @leaf @transform
 final case class Continuation(arguments: Seq[Variable], @subtree body: Expression) extends Expression with hasOptionalVariableName with ASTWithIndex {
-  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+  require(arguments.isInstanceOf[collection.immutable.Vector[_]] || arguments.isInstanceOf[collection.immutable.List[_]], s"Bad collection type: arguments : ${arguments.getClass} (in $this)")
   override def boundVars: Set[Variable] = arguments.toSet
-
-  @throws[IOException]
-  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
-    out.defaultWriteObject()
-    out.writeObject(optionalIndex)
-  }
-
-  @throws[IOException]
-  @throws[ClassNotFoundException]
-  private def readObject(in: java.io.ObjectInputStream): Unit = {
-    in.defaultReadObject()
-    optionalIndex = in.readObject().asInstanceOf[Option[Int]]
-  }
 }
 
 @leaf @transform
@@ -186,19 +174,6 @@ sealed abstract class Method extends PorcAST with hasOptionalVariableName with A
   override def boundVars: Set[Variable] = allArguments.toSet
 
   transferOptionalVariableName(name, this)
-
-  @throws[IOException]
-  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
-    out.defaultWriteObject()
-    out.writeObject(optionalIndex)
-  }
-
-  @throws[IOException]
-  @throws[ClassNotFoundException]
-  private def readObject(in: java.io.ObjectInputStream): Unit = {
-    in.defaultReadObject()
-    optionalIndex = in.readObject().asInstanceOf[Option[Int]]
-  }
 }
 
 object Method {
@@ -233,12 +208,12 @@ object Method {
 
 @leaf @transform
 final case class MethodCPS(name: Variable, pArg: Variable, cArg: Variable, tArg: Variable, isRoutine: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
-  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+  require(arguments.isInstanceOf[collection.immutable.Vector[_]] || arguments.isInstanceOf[collection.immutable.List[_]], s"Bad collection type: arguments : ${arguments.getClass} (in $this)")
   override def allArguments: Seq[Variable] = pArg +: cArg +: tArg +: arguments
 }
 @leaf @transform
 final case class MethodDirect(name: Variable, isRoutine: Boolean, arguments: Seq[Variable], @subtree body: Expression) extends Method {
-  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+  require(arguments.isInstanceOf[collection.immutable.Vector[_]] || arguments.isInstanceOf[collection.immutable.List[_]], s"Bad collection type: arguments : ${arguments.getClass} (in $this)")
   override def allArguments: Seq[Variable] = arguments
 }
 
@@ -250,24 +225,11 @@ final case class MethodDirect(name: Variable, isRoutine: Boolean, arguments: Seq
   */
 @leaf @transform
 final case class MethodCPSCall(isExternal: Ternary, @subtree target: Argument, @subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree arguments: Seq[Argument]) extends Expression with ASTWithIndex {
-  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
-
-  @throws[IOException]
-  private def writeObject(out: java.io.ObjectOutputStream): Unit = {
-    out.defaultWriteObject()
-    out.writeObject(optionalIndex)
-  }
-
-  @throws[IOException]
-  @throws[ClassNotFoundException]
-  private def readObject(in: java.io.ObjectInputStream): Unit = {
-    in.defaultReadObject()
-    optionalIndex = in.readObject().asInstanceOf[Option[Int]]
-  }
+  require(arguments.isInstanceOf[collection.immutable.Vector[_]] || arguments.isInstanceOf[collection.immutable.List[_]], s"Bad collection type: arguments : ${arguments.getClass} (in $this)")
 }
 @leaf @transform
 final case class MethodDirectCall(isExternal: Ternary, @subtree target: Argument, @subtree arguments: Seq[Argument]) extends Expression with ASTWithIndex {
-  require(!arguments.isInstanceOf[collection.TraversableView[_, _]])
+  require(arguments.isInstanceOf[collection.immutable.Vector[_]] || arguments.isInstanceOf[collection.immutable.List[_]], s"Bad collection type: arguments : ${arguments.getClass} (in $this)")
 }
 
 @leaf @transform
@@ -358,7 +320,7 @@ final case class Bind(@subtree future: Argument, @subtree v: Argument) extends E
 @leaf @transform
 final case class BindStop(@subtree future: Argument) extends Expression
 
-/** Spawn the v(P, C), where P is a future binding continuation and C is a counter 
+/** Spawn the v(P, C), where P is a future binding continuation and C is a counter
   * to use while computing the value, and execute k(f), where f is the future.
   *
   * The actual execution does NOT need to actually perform the spawn or build a future.
@@ -376,7 +338,7 @@ final case class Graft(@subtree p: Argument, @subtree c: Argument, @subtree t: A
   */
 @leaf @transform
 final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression {
-  require(!futures.isInstanceOf[collection.TraversableView[_, _]])
+  require(futures.isInstanceOf[collection.immutable.Vector[_]] || futures.isInstanceOf[collection.immutable.List[_]], s"Bad collection type: futures : ${futures.getClass} (in $this)")
 }
 
 /** Resolve a sequence of futures.
@@ -387,5 +349,5 @@ final case class Force(@subtree p: Argument, @subtree c: Argument, @subtree t: A
   */
 @leaf @transform
 final case class Resolve(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree futures: Seq[Argument]) extends Expression {
-  require(!futures.isInstanceOf[collection.TraversableView[_, _]])
+  require(futures.isInstanceOf[collection.immutable.Vector[_]] || futures.isInstanceOf[collection.immutable.List[_]], s"Bad collection type: futures : ${futures.getClass} (in $this)")
 }
