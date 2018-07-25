@@ -14,9 +14,24 @@ package orc.values
 import scala.math.BigDecimal
 
 object NumericsConfig {
+  final def toOrcIntegral(s: String) = {
+    if (NumericsConfig.preferLong)
+      s.toLong.asInstanceOf[AnyRef]
+    else
+      BigInt(s)
+  }
+
+  final def toOrcFloatingPoint(s: String) = {
+    if (NumericsConfig.preferDouble)
+      s.toDouble.asInstanceOf[AnyRef]
+    else
+      BigDecimal(s)
+  }
+
+
   @inline
   final def toOrcIntegral(v: Number) = {
-    if (NumericsConfig.preferLong) 
+    if (NumericsConfig.preferLong)
       v.longValue()
     else {
       v match {
@@ -38,9 +53,10 @@ object NumericsConfig {
       }
     }
   }
+
   @inline
   final def toOrcFloatingPoint(v: Number) = {
-    if (NumericsConfig.preferDouble) 
+    if (NumericsConfig.preferDouble)
       v.doubleValue()
     else {
       v match {
@@ -62,11 +78,11 @@ object NumericsConfig {
       }
     }
   }
-  
+
   @inline
-  final val preferLP = System.getProperty("orc.numerics.preferLP", "false").toBoolean  
+  final val preferLP = System.getProperty("orc.numerics.preferLP", "false").toBoolean
   @inline
-  final val preferDouble = Option(System.getProperty("orc.numerics.preferDouble")).map(_.toBoolean).getOrElse(preferLP)  
+  final val preferDouble = Option(System.getProperty("orc.numerics.preferDouble")).map(_.toBoolean).getOrElse(preferLP)
   @inline
   final val preferLong = Option(System.getProperty("orc.numerics.preferLong")).map(_.toBoolean).getOrElse(preferLP)
 }
