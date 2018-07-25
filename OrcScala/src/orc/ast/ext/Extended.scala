@@ -198,7 +198,7 @@ case class ClassVariable(name: String) extends ClassExpression {
   def toInterfaceString = name
   def containsLiteral = false
 }
-case class ClassLiteral(thisname: Option[String], decls: Seq[Declaration]) extends ClassExpression {
+case class ClassLiteral(thisname: Option[String], decls: List[Declaration]) extends ClassExpression {
   def toInterfaceString = "{ ... }"
   def toDetailedInterfaceString = decls.collect({
     case v: Val => v.p.toOrcSyntax
