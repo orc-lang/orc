@@ -81,6 +81,12 @@ public class HaltToken extends Expression {
             return PorcEUnit.SINGLETON;
         }
 
+        @Specialization
+        public PorcEUnit disabled(VirtualFrame frame, final Counter counter) {
+            counter.haltToken();
+            return PorcEUnit.SINGLETON;
+        }
+
         protected Dispatch createCall() {
             Dispatch n = InternalCPSDispatch.create(false, execution, isTail);
             n.setTail(isTail);
