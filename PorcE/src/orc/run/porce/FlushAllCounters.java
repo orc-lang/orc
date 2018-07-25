@@ -19,6 +19,9 @@ import orc.run.porce.runtime.Counter.CounterOffset;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -32,67 +35,107 @@ public class FlushAllCounters extends Expression {
     protected final PorcEExecution execution;
     protected final int flushPolarity;
 
+    @CompilationFinal
+    private int haltCount = 0;
+    @CompilationFinal
+    private int totalCount = 0;
+
     protected FlushAllCounters(final PorcEExecution execution, final int flushPolarity) {
         this.execution = execution;
         this.flushPolarity = flushPolarity;
     }
 
-    @SuppressWarnings("null")
-    @Specialization
+    protected boolean notDisabled() {
+        return flushPolarity >= 0 || SpecializationConfiguration.MinimumEarlyHaltProbability <= 1.0;
+    }
+
+    @SuppressWarnings({ "null", "boxing" })
+    @Specialization(guards = { "notDisabled()" })
     public PorcEUnit impl(VirtualFrame frame,
             @Cached("createCountingProfile()") LoopConditionProfile loopProfile,
             @Cached("createCountingProfile()") ConditionProfile isInterestingProfile,
             @Cached("createBinaryProfile()") ConditionProfile isInListProfile,
             @Cached("create(execution)") StackCheckingDispatch dispatch) {
-        final SimpleWorkStealingScheduler.Worker worker = (SimpleWorkStealingScheduler.Worker)Thread.currentThread();
-        Counter.incrFlushAllCount();
-        CounterOffset prev = null;
-        CounterOffset current = (CounterOffset)worker.counterOffsets();
+        final int tc = totalCount;
+        final int hc = haltCount;
+        final double prob = getProbability(hc, tc);
+        CompilerAsserts.compilationConstant(prob);
 
-        while (loopProfile.profile(current != null)) {
-            boolean isInteresting = (flushPolarity > 0 && current.value() >= 0) ||
-                    (flushPolarity == 0) ||
-                    (flushPolarity < 0 && current.value() <= 0);
-            if (isInterestingProfile.profile(isInteresting)) {
-                /*if (flushPolarity < 0) {
-                    final CounterOffset c = current;
-                    Logger.info(() -> "Flushing all " + Thread.currentThread() + ": flushing: " + c);
-                }*/
-                if (isInListProfile.profile(prev != null)) {
-                    Counter.removeNextCounterOffset(prev);
+        if (flushPolarity >= 0 ||
+                prob > SpecializationConfiguration.MinimumEarlyHaltProbability ||
+                CompilerDirectives.inInterpreter()) {
+            final SimpleWorkStealingScheduler.Worker worker = (SimpleWorkStealingScheduler.Worker)Thread.currentThread();
+            Counter.incrFlushAllCount();
+            CounterOffset prev = null;
+            CounterOffset current = (CounterOffset)worker.counterOffsets();
+
+            while (loopProfile.profile(current != null)) {
+                if (tc < Integer.MAX_VALUE && hc < Integer.MAX_VALUE && CompilerDirectives.inInterpreter()) {
+                    totalCount = tc + 1;
+                }
+
+                boolean isInteresting = (flushPolarity > 0 && current.value() >= 0) ||
+                        (flushPolarity == 0) ||
+                        (flushPolarity < 0 && current.value() <= 0);
+                if (isInterestingProfile.profile(isInteresting)) {
+                    if (isInListProfile.profile(prev != null)) {
+                        Counter.removeNextCounterOffset(prev);
+                    } else {
+                        Counter.removeNextCounterOffset(worker);
+                    }
+                    Counter.markCounterOffsetRemoved(current);
+
+                    PorcEClosure c = current.counter().flushCounterOffsetAndHandleOptimized(current);
+
+                    // Check flushPolarity here since if we are only flushing positive offsets then c can never be true.
+                    if (flushPolarity <= 0 && c != null) {
+                        if (tc < Integer.MAX_VALUE && hc < Integer.MAX_VALUE && CompilerDirectives.inInterpreter()) {
+                            haltCount = hc + 1;
+                        }
+
+                        // This compiles to deopt if it has never been reached, so no reason to profile here.
+                        dispatch.executeDispatch(frame, c);
+                    }
+
+                    // Step to the node that replaced this one.
+                    if (isInListProfile.profile(prev != null)) {
+                        current = prev.nextCounterOffset();
+                    } else {
+                        current = (CounterOffset)worker.counterOffsets();
+                    }
                 } else {
-                    Counter.removeNextCounterOffset(worker);
+                    prev = current;
+                    current = current.nextCounterOffset();
                 }
-                Counter.markCounterOffsetRemoved(current);
-
-                PorcEClosure c = current.counter().flushCounterOffsetAndHandleOptimized(current);
-
-                // Check flushPolarity here since if we are only flushing positive offsets then c can never be true.
-                if (flushPolarity <= 0 && c != null) {
-                    // This compiles to deopt if it has never been reached, so no reason to profile here.
-                    dispatch.executeDispatch(frame, c);
-                }
-
-                // Step to the node that replaced this one.
-                if (isInListProfile.profile(prev != null)) {
-                    current = prev.nextCounterOffset();
-                } else {
-                    current = (CounterOffset)worker.counterOffsets();
-                }
-            } else {
-                prev = current;
-                current = current.nextCounterOffset();
             }
         }
 
         return PorcEUnit.SINGLETON;
     }
 
+    @Specialization
+    public PorcEUnit disabled(VirtualFrame frame) {
+        return PorcEUnit.SINGLETON;
+    }
+
+
+    @SuppressWarnings("boxing")
     @Override
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
         properties.put("flushPolarity", flushPolarity);
+        properties.put("totalCount", totalCount);
+        properties.put("haltCount", haltCount);
+        properties.put("haltProbability", getProbability(haltCount, totalCount));
         return properties;
+    }
+
+    private static double getProbability(int haltCount, int totalCount) {
+        if (totalCount <= 0) {
+            return 0.0;
+        } else {
+            return (double)haltCount / totalCount;
+        }
     }
 
     public static FlushAllCounters create(final int flushPolarity, final PorcEExecution execution) {

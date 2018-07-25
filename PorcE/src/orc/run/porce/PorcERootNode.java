@@ -230,11 +230,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
         try {
             final Object ret = body.execute(frame);
-            //if (timePerCall < 0 || CompilerDirectives.inInterpreter() || CompilerDirectives.inCompilationRoot()) {
-            if (timePerCall < 0 || isTopLevelProfile.profile(execution.runtime().stackDepth() <= 1)) {
-                // Flush all negative counters to trigger halts quickly
-                flushAllCounters.execute(frame);
-            }
+            // Flush all negative counters to trigger halts quickly
+            flushAllCounters.execute(frame);
             return ret;
         } catch (KilledException | HaltException e) {
             transferToInterpreter();
