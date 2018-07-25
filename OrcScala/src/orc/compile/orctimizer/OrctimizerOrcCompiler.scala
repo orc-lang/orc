@@ -24,6 +24,7 @@ import orc.ast.porc.MethodDirect
 import orc.ast.porc.TryFinally
 import java.io.{ FileOutputStream, FileInputStream, ObjectOutputStream, ObjectInputStream, File }
 import java.util.zip.{ GZIPInputStream, GZIPOutputStream }
+import java.lang.ClassCastException
 
 /** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
   * and specifies that compilation will finish with named.
@@ -281,11 +282,12 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     var astHash = 0
     def setAst(ast: orc.ast.ext.Expression) = astHash = ast.##
 
-    val optionsHash = {
+    val options = {
+      import scala.collection.JavaConverters._
       val o = co.options
-      (o.usePrelude, o.additionalIncludes, o.includePath, o.classPath,
-          o.optimizationFlags, o.optimizationLevel, o.optimizationOptions,
-          o.backend).##
+      (o.usePrelude, o.additionalIncludes.asScala.toList, o.includePath.asScala.toList, o.classPath.asScala.toList,
+          o.optimizationLevel, o.optimizationOptions.asScala.toList,
+          o.backend)
     }
     val cacheFile = {
       val inFile = new File(co.options.filename)
@@ -312,7 +314,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       try {
         out.writeObject(helper.build)
         out.writeLong(helper.astHash)
-        out.writeLong(helper.optionsHash)
+        out.writeObject(helper.options)
         out.writeObject(ast)
       } finally {
         out.close()
@@ -331,16 +333,16 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         try {
           val build = in.readObject().asInstanceOf[String]
           val astHash = in.readLong()
-          val optionsHash = in.readLong()
-          if (build == helper.build && astHash == helper.astHash && optionsHash == helper.optionsHash) {
+          val options = in.readObject()
+          if (build == helper.build && astHash == helper.astHash && helper.options == options) {
             in.readObject().asInstanceOf[porc.MethodCPS]
           } else {
             def str =
-              (if (build != helper.build) "Build mismatch" else "") +
-              (if (astHash != helper.astHash) "AST mismatch" else "") +
-              (if (optionsHash != helper.optionsHash) "Option mismatch" else "")
+              (if (build != helper.build) s"Build mismatch: old=${build}, new=${helper.build}, " else "") +
+              (if (astHash != helper.astHash) "AST mismatch, " else "") +
+              (if (helper.options != options) s"Option mismatch: old=${options}, new=${helper.options}" else "")
 
-            co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Invalidated cached Porc: $str")
+            co.compileLogger.recordMessage(CompileLogger.Severity.INFO, 0, s"Invalidated cached Porc: $str")
 
             null
           }
@@ -350,8 +352,8 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       } catch {
         case _: java.io.FileNotFoundException =>
           null
-        case e: java.io.IOException =>
-          co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Failed to load cached Porc: $e")
+        case e @(_: java.io.IOException | _: ClassCastException) =>
+          co.compileLogger.recordMessage(CompileLogger.Severity.INFO, 0, s"Failed to load cached Porc: $e")
           null
       }
     }
