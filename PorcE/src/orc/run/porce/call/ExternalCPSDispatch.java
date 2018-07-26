@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 
+import orc.CallContext;
 import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.HaltException;
@@ -200,7 +201,7 @@ public class ExternalCPSDispatch extends Dispatch {
 
             try {
                 try {
-                    invoke.executeInvoke(frame, invoker, callContext, target, argumentClassesProfile.profile(arguments));
+                    invoke.executeInvoke(frame, invoker, maybeMaterialize(callContext), target, argumentClassesProfile.profile(arguments));
                 } finally {
                     if (SpecializationConfiguration.StopWatches.callsEnabled) {
                         orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
@@ -217,6 +218,14 @@ public class ExternalCPSDispatch extends Dispatch {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
                 handler.haltToken.execute(frame, counter);
+            }
+        }
+
+        private static CallContext maybeMaterialize(DirectVirtualCallContext callContext) {
+            if (SpecializationConfiguration.UseVirtualCallContexts) {
+                return callContext;
+            } else {
+                return callContext.materialize();
             }
         }
 
