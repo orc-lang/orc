@@ -162,16 +162,13 @@ public class InternalCPSDispatch extends Dispatch {
         // This is disabled since it's not likely to be useful and the trick with createVirtualFrame might be a problem.
         // This just guarentees that is cannot be an issue.
         // If you reenable it also add specificInline back into the replaces clause of universal.
-        /*
-        @Specialization(guards = { "TruffleASTInlining", "forceInline", "body != null",
-        	"matchesSpecific(target, expected)" }, limit = "InternalCallMaxCacheSize")
+        /*@Specialization(guards = { "TruffleASTInlining", "forceInline",  "target.body == expected" }, limit = "1")
         public void specificInline(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
-        	@Cached("target") PorcEClosure expected, @Cached("getPorcEBody(target)") Expression body,
+        	@Cached("target.body") RootCallTarget expected, @Cached("getPorcEBody(target)") Expression body,
         	@Cached("getPorcEFrameDescriptor(target)") FrameDescriptor fd) {
             final VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
             body.execute(nestedFrame);
-        }
-        */
+        }*/
 
         @Specialization(guards = { "target.body == expected" }, limit = "InternalCallMaxCacheSize")
         public void specific(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
