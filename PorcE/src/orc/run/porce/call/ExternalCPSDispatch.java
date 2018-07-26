@@ -118,14 +118,13 @@ public class ExternalCPSDispatch extends Dispatch {
         protected final ValueClassesProfile argumentClassesProfile = new ValueClassesProfile();
 
         @CompilerDirectives.CompilationFinal
-        protected StackCheckingDispatch dispatchP = null;
+        protected Dispatch dispatchP = null;
 
-        protected StackCheckingDispatch getDispatchP() {
+        protected Dispatch getDispatchP() {
             if (dispatchP == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
                 computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
-                    StackCheckingDispatch n = insert(StackCheckingDispatch.create(execution));
-                    n.setTail(isTail);
+                    Dispatch n = insert(InternalCPSDispatch.create(/*forceInline =*/ true, execution, isTail));
                     notifyInserted(n);
                     return n;
                 });
