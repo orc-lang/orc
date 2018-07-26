@@ -82,12 +82,12 @@ abstract class InvokerInvokeDirect extends NodeBase {
         if (orc.run.StopWatches.callsEnabled()) {
             long s = orc.run.StopWatches.implementationTime().start();
             try {
-                return callFunction1(invoker.implementation(), (T1) invoker.clsT1().cast(arguments[0]));
+                return callFunction1(invoker.implementation(), (T1) arguments[0]);
             } finally {
                 orc.run.StopWatches.implementationTime().stop(s);
             }
         } else {
-            return callFunction1(invoker.implementation(), (T1) invoker.clsT1().cast(arguments[0]));
+            return callFunction1(invoker.implementation(), (T1) arguments[0]);
         }
     }
 
@@ -103,14 +103,13 @@ abstract class InvokerInvokeDirect extends NodeBase {
         if (orc.run.StopWatches.callsEnabled()) {
             long s = orc.run.StopWatches.implementationTime().start();
             try {
-                return callFunction2(invoker.implementation(), (T1) invoker.clsT1().cast(arguments[0]),
-                        (T2) invoker.clsT2().cast(arguments[1]));
+                return callFunction2(invoker.implementation(), (T1) arguments[0], (T2) arguments[1]);
             } finally {
                 orc.run.StopWatches.implementationTime().stop(s);
             }
         } else {
-            return callFunction2(invoker.implementation(), (T1) invoker.clsT1().cast(arguments[0]),
-                    (T2) invoker.clsT2().cast(arguments[1]));
+            scala.Function2<T1, T2, Object> impl = invoker.implementation();
+            return callFunction2(impl, (T1) arguments[0], (T2) arguments[1]);
         }
     }
 
@@ -137,11 +136,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
             for (int i = 0; i < arguments.length; i++) {
                 final Object a = arguments[i];
                 final Class<?> cls = parameterTypes[i];
-                if (a instanceof scala.math.BigDecimal || a instanceof scala.math.BigInt || a instanceof java.math.BigDecimal || a instanceof java.math.BigInteger) {
-                    arguments[i] = orc2java(a, cls);
-                } else {
-                    arguments[i] = OrcJavaCompatibility.orc2javaAsFixedPrecision(a, cls);
-                }
+                arguments[i] = orc2javaOpt(a, cls);
             }
             long jis = 0;
             if (orc.run.StopWatches.callsEnabled()) {
@@ -155,11 +150,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
                     orc.run.StopWatches.javaImplTime().stop(jis);
                 }
             }
-            if ((!NumericsConfig.preferLong() || !NumericsConfig.preferDouble()) && r instanceof Number) {
-                return java2orc(r);
-            } else {
-                return OrcJavaCompatibility.java2orc(r);
-            }
+            return java2orcOpt(r);
         } catch (InvocationTargetException | ExceptionInInitializerError e) {
             throw new JavaException(e.getCause());
         } catch (Throwable e) {
@@ -284,69 +275,6 @@ abstract class InvokerInvokeDirect extends NodeBase {
 
     protected static boolean isPartiallyEvaluable(DirectInvoker invoker) {
         return invoker instanceof OrcAnnotation.Invoker;
-    }
-
-    private static final class GotValue {
-        final Object value;
-        final CPSCallContext r;
-        public GotValue(CPSCallContext r, Object value) {
-            this.r = r;
-            this.value = value;
-        }
-    }
-
-    //@Specialization(guards = { "isChannelPut(invoker)", "KnownSiteSpecialization" })
-    public Object channelPut(VirtualFrame frame, DirectSiteInvoker invoker, Object target, Object[] arguments,
-            @Cached("create(execution)") StackCheckingDispatch dispatch) {
-        orc.lib.state.Channel.ChannelInstance.PutSite putSite = (orc.lib.state.Channel.ChannelInstance.PutSite)target;
-        GotValue p = performChannelPut(arguments, putSite);
-        if (p != null) {
-            if (p.r.publishOptimized()) {
-                dispatch.executeDispatch(frame, p.r.p(), p.value);
-            }
-        } else {
-            throw orc.error.runtime.HaltException.SINGLETON();
-        }
-        // Since this is an asynchronous channel, a put call
-        // always returns.
-        return Signal$.MODULE$;
-    }
-
-    @TruffleBoundary(allowInlining = true)
-    private GotValue performChannelPut(Object[] arguments, orc.lib.state.Channel.ChannelInstance.PutSite putSite) {
-        synchronized (putSite.channel) {
-            final Object item = arguments[0];
-            if (putSite.channel.closed) {
-                return null;
-            }
-            while (true) { // Contains break. Loops until a live reader is removed or readers is empty.
-                if (putSite.channel.readers.isEmpty()) {
-                    // If there are no waiting callers, queue this item.
-                    putSite.channel.contents.addLast(item);
-                    break;
-                } else {
-                    // If there are callers waiting, give this item to
-                    // the top caller.
-                    CallContext receiver = putSite.channel.readers.removeFirst();
-                    if (receiver.isLive()) { // If the reader is live then publish into it.
-                        Object v = orc.values.sites.compatibility.SiteAdaptor.object2value(item);
-                        if (receiver instanceof CPSCallContext) {
-                            return new GotValue((CPSCallContext) receiver, v);
-                        } else {
-                            receiver.publish(v);
-                        }
-                        break;
-                    } else { // If the reader is dead then go through the loop again to get another reader.
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    protected static boolean isChannelPut(DirectSiteInvoker invoker) {
-        return invoker.siteCls() == orc.lib.state.Channel.ChannelInstance.PutSite.class;
-
     }
 
     @Specialization

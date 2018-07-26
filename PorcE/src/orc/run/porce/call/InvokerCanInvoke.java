@@ -47,19 +47,6 @@ abstract class InvokerCanInvoke extends NodeBase {
      */
     public abstract boolean executeCanInvoke(VirtualFrame frame, Invoker invoker, Object target, Object[] arguments);
 
-    /*
-    @Specialization(
-            guards = { "expectedInvoker == invoker || expectedInvoker.equals(invoker)" },
-            limit = "1")
-    public boolean overloadedDirectInvokerBase1(OverloadedDirectInvokerBase1<?> invoker, Object target, Object[] arguments,
-            @Cached("invoker") OverloadedDirectInvokerBase1<?> expectedInvoker) {
-        boolean argumentTypeCorrect = expectedInvoker.clsT1().isInstance(arguments[0]) ||
-                (expectedInvoker.clsT1() == expectedInvoker.clsBaseT1()) && arguments[0] == null;
-        return (expectedInvoker.method() == target || expectedInvoker.method().equals(target)) &&
-                arguments.length == 1 && argumentTypeCorrect;
-    }
-    */
-
     @Specialization(guards = { "isPartiallyEvaluable(invoker)" })
     public boolean partiallyEvaluable(Invoker invoker, Object target, Object[] arguments) {
         return invoker.canInvoke(target, arguments);

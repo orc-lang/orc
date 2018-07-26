@@ -301,22 +301,6 @@ public class ExternalCPSDispatch extends Dispatch {
                 final ArrayList<CPSCallContext> otherHaltedList = callContext.otherHaltedList();
                 callContext.close();
 
-                // FIXME: There is a race such that counters are failing to halt (and halting early in a few cases).
-                //    Adding logging here eliminates the issue. This is presumably due to the extra delay and synchronization.
-
-                // The sleep does not seem to solve the problem, but the logging does. WTF.
-//                try {
-//                  Thread.sleep(10);
-//                } catch (InterruptedException e) {
-//                }
-
-//                if (otherPublicationList != null || otherHaltedList != null) {
-//                  Logger.log(Level.INFO, () -> "Context with other operations: " + callContext +
-//                      " " + selfPublicationList +
-//                      " " + otherPublicationList +
-//                      " " + otherHaltedList);
-//                }
-
                 if (hasOtherPublicationsProfile.profile(otherPublicationList != null)) {
                     final int size = otherPublicationsListSizeProfile.profile(otherPublicationList.size());
                     for (int i = 0; i < size; i += 3) {
