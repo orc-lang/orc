@@ -73,7 +73,7 @@ public class HaltToken extends Expression {
                 Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
                 SimpleWorkStealingSchedulerWrapper.enterSchedulable(counter, SimpleWorkStealingSchedulerWrapper.InlineExecution);
                 try {
-                    call.executeDispatch(frame, cont, EMPTY_ARGS);
+                    call.dispatch(frame, cont);
                 } finally {
                     SimpleWorkStealingSchedulerWrapper.exitSchedulable(counter, old);
                 }

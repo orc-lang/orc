@@ -316,7 +316,7 @@ public class Force {
 		// ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 	    } else {
 		handleFuture.boundFuture.enter();
-		call.executeDispatchWithEnvironment(frame, p, new Object[] { null, v });
+		call.dispatch(frame, p, v );
 	    }
 
 	    return PorcEUnit.SINGLETON;

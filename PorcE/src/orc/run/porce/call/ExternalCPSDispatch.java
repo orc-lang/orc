@@ -157,7 +157,7 @@ public class ExternalCPSDispatch extends Dispatch {
                                 .stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
                     }
                 }
-                getDispatchP().executeDispatch(frame, pub, v);
+                getDispatchP().dispatch(frame, pub, v);
             } catch (final TailCallException e) {
                 throw e;
             } catch (final HaltException e) {
@@ -328,7 +328,7 @@ public class ExternalCPSDispatch extends Dispatch {
                             //throw new RuntimeException();
                             ctx.c().newToken();
                         }
-                        getDispatchP().executeDispatch(frame, ctx.p(), v);
+                        getDispatchP().dispatch(frame, ctx.p(), v);
                         if (otherPublicationsHaltProfile.profile(halt)) {
                             ctx.t().removeChild(ctx);
                         }
@@ -346,14 +346,14 @@ public class ExternalCPSDispatch extends Dispatch {
                 }
 
                 if (exactlyOneSelfPublicationProfile.profile(selfPublicationList != null && selfPublicationList.size() == 1 && halted)) {
-                    getDispatchP().executeDispatch(frame, pub, selfPublicationList.get(0));
+                    getDispatchP().dispatch(frame, pub, selfPublicationList.get(0));
                 } else {
                     if (hasSelfPublicationsProfile.profile(selfPublicationList != null)) {
                         final int size = selfPublicationsListSizeProfile.profile(selfPublicationList.size());
                         for (int i = 0; i < size; i++) {
                             //throw new RuntimeException();
                             counter.newToken();
-                            getDispatchP().executeDispatch(frame, pub, selfPublicationList.get(i));
+                            getDispatchP().dispatch(frame, pub, selfPublicationList.get(i));
                         }
                     }
                     if (haltedProfile.profile(halted)) {

@@ -109,7 +109,7 @@ public class Resolve extends Expression {
                                 return n;
                         });
                 }
-            call.executeDispatch(frame, join.p(), new Object[] {});
+            call.dispatch(frame, join.p());
             return PorcEUnit.SINGLETON;
         }
 

@@ -72,7 +72,7 @@ public abstract class Spawn extends Expression {
 	final PorcERuntime r = execution.runtime();
 
 	if (r.actuallySchedule()) {
-	    dispatch.executeDispatch(frame, computation);
+	    dispatch.dispatch(frame, computation);
 	} else {
 	    dispatch.executeInline(frame, computation, false);
 	}

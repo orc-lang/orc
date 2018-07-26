@@ -86,7 +86,7 @@ abstract class InvokerInvoke extends NodeBase {
         orc.lib.state.Channel.ChannelInstance.GetSite getSite = (orc.lib.state.Channel.ChannelInstance.GetSite)target;
         Object v = performChannelGet(callContext, getSite);
         if (v != this) {
-            dispatch.executeDispatch(frame, callContext.p(), v);
+            dispatch.dispatch(frame, callContext.p(), v);
         }
     }
 

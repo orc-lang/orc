@@ -38,7 +38,7 @@ public class Kill extends Expression {
     		@Cached("createCallNode(execution, isTail)") final Dispatch callNode) {
     	// Token: This passes a token on counter to the continuation if kill returns false.
         if (terminator.kill(counter, continuation)) {
-            callNode.executeDispatch(frame, continuation, new Object[] { });
+            callNode.dispatch(frame, continuation);
         }
 
         return PorcEUnit.SINGLETON;

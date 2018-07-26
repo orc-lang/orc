@@ -94,7 +94,7 @@ public class FlushAllCounters extends Expression {
                         }
 
                         // This compiles to deopt if it has never been reached, so no reason to profile here.
-                        dispatch.executeDispatch(frame, c);
+                        dispatch.dispatch(frame, c);
                     }
 
                     // Step to the node that replaced this one.

@@ -60,18 +60,6 @@ public class StackCheckingDispatch extends Dispatch {
 	executeDispatchWithEnvironment(frame, target, arguments);
     }
 
-    public void executeDispatch(final VirtualFrame frame, final PorcEClosure computation) {
-	executeDispatchWithEnvironment(frame, computation, new Object[] { null });
-    }
-
-    public void executeDispatch(final VirtualFrame frame, final PorcEClosure computation, Object arg1) {
-	executeDispatchWithEnvironment(frame, computation, new Object[] { null, arg1 });
-    }
-
-    public void executeDispatch(final VirtualFrame frame, final PorcEClosure computation, Object arg1, Object arg2) {
-	executeDispatchWithEnvironment(frame, computation, new Object[] { null, arg1, arg2 });
-    }
-
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] args) {
 	final PorcERuntime r = execution.runtime();
