@@ -124,7 +124,7 @@ public class ExternalCPSDispatch extends Dispatch {
             if (dispatchP == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
                 computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
-                    Dispatch n = insert(InternalCPSDispatch.create(/*forceInline =*/ true, execution, isTail));
+                    Dispatch n = insert(InternalCPSDispatch.create(/*forceInline =*/ false, execution, isTail));
                     notifyInserted(n);
                     return n;
                 });
@@ -207,7 +207,6 @@ public class ExternalCPSDispatch extends Dispatch {
                     }
                 }
                 //Logger.info(() -> target + "(" + Arrays.toString(arguments) + ") -> " + callContext.toString());
-                handler.execute(frame, pub, counter, term, callContext);
             } catch (final TailCallException e) {
                 throw e;
             } catch (final HaltException e) {
@@ -217,6 +216,8 @@ public class ExternalCPSDispatch extends Dispatch {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
                 handler.haltToken.execute(frame, counter);
+            } finally {
+                handler.execute(frame, pub, counter, term, callContext);
             }
         }
 

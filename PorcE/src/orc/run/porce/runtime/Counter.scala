@@ -134,7 +134,6 @@ object Counter {
       if (CompilerDirectives.injectBranchProbability(
         CompilerDirectives.SLOWPATH_PROBABILITY,
         !inThreadList)) {
-        // CompilerDirectives.transferToInterpreter()
         pushCounterOffset(worker, this) : @inline
       }
     }
@@ -344,8 +343,8 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   protected final def getCounterOffset(): CounterOffset = {
     Thread.currentThread() match {
       case worker: SimpleWorkStealingScheduler#Worker =>
-        if (counterOffsets(worker.workerID) == null) {
-          //CompilerDirectives.transferToInterpreter()
+        if (CompilerDirectives.injectBranchProbability(CompilerDirectives.SLOWPATH_PROBABILITY,
+            counterOffsets(worker.workerID) == null)) {
           val r = new CounterOffset(this)
           counterOffsets(worker.workerID) = r
         }
