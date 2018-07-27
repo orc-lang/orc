@@ -112,27 +112,15 @@ public abstract class Bind extends Expression {
 	private void porce(VirtualFrame frame, final PorcEFutureReader reader, final Object value,
 		ValueProfile readerClassProfile, Dispatch dispatch, ConditionProfile inlineProfile,
 		BranchProfile callProfile) {
-	    PorcERuntime r = execution.runtime();
-
             CallClosureSchedulable call = readerClassProfile.profile(reader).fastPublish(value);
             if (call != null) {
                 callProfile.enter();
-                if(inlineProfile.profile(!r.isWorkQueueUnderful(r.minQueueSize()) && r.incrementAndCheckStackDepth())) {
-                    Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
-                    SimpleWorkStealingSchedulerWrapper.enterSchedulable(call, SimpleWorkStealingSchedulerWrapper.InlineExecution);
-                    try {
-                        dispatch.executeDispatchWithEnvironment(frame, call.closure(), call.arguments() != null ? call.arguments() : new Object[] { null });
-                    } finally {
-                        SimpleWorkStealingSchedulerWrapper.exitSchedulable(call, old);
-                        r.decrementStackDepth();
-                    }
-                } else {
-                    execution.runtime().schedule(call);
-                }
+                dispatch.executeDispatchWithEnvironment(frame, call.closure(),
+                        call.arguments() != null ? call.arguments() : new Object[] { null });
             }
 	}
 
-        @Specialization(guards = {"index == cachedIndex"}, limit = "8")
+        @Specialization(guards = {"index == cachedIndex"}, limit = "4")
         public void porceSeparateCaches(VirtualFrame frame, int index, final PorcEFutureReader reader, final Object value,
             @Cached("index") int cachedIndex,
             @Cached("createClassProfile()") ValueProfile readerClassProfile,
@@ -157,7 +145,7 @@ public abstract class Bind extends Expression {
         }
 
         protected Dispatch createDispatch() {
-          return InternalCPSDispatch.create(execution, false);
+          return StackCheckingDispatch.create(execution);
         }
     }
 }

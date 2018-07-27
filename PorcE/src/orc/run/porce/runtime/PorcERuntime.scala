@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.LongAdder
 import orc.util.DumperRegistry
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.CompilerDirectives
+import com.oracle.truffle.api.CompilerDirectives.ValueType
 
 /** The base runtime for PorcE runtimes.
  *
@@ -75,21 +76,21 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
             s.closure.getTimePerCall() < SpecializationConfiguration.InlineAverageTimeLimit
         }
       }
-      if (allowSpawnInlining && occationallySchedule &&
-          isFast &&
-          incrementAndCheckStackDepth()) {
-        try {
-          val old = SimpleWorkStealingSchedulerWrapper.currentSchedulable
-          SimpleWorkStealingSchedulerWrapper.enterSchedulable(s, SimpleWorkStealingSchedulerWrapper.StackExecution)
-          s.run()
-          SimpleWorkStealingSchedulerWrapper.exitSchedulable(s, old)
-        } catch {
-          case e: StackOverflowError =>
-            // FIXME: Make this error fatal for the whole runtime and make sure the message describes how to fix it.
-            throw e //new RuntimeException(s"Allowed stack depth too deep: ${stackDepthThreadLocal.get()}", e)
-        } finally {
-          decrementStackDepth()
-        }
+      if (allowSpawnInlining && occationallySchedule && isFast) {
+        val PorcERuntime.StackDepthState(b, prev) = incrementAndCheckStackDepth()
+        if (b)
+          try {
+            val old = SimpleWorkStealingSchedulerWrapper.currentSchedulable
+            SimpleWorkStealingSchedulerWrapper.enterSchedulable(s, SimpleWorkStealingSchedulerWrapper.StackExecution)
+            s.run()
+            SimpleWorkStealingSchedulerWrapper.exitSchedulable(s, old)
+          } catch {
+            case e: StackOverflowError =>
+              // FIXME: Make this error fatal for the whole runtime and make sure the message describes how to fix it.
+              throw e //new RuntimeException(s"Allowed stack depth too deep: ${stackDepthThreadLocal.get()}", e)
+          } finally {
+            decrementStackDepth(prev)
+          }
       } else {
         //Logger.log(Level.INFO, s"Scheduling $s", new RuntimeException())
         schedule(s)
@@ -129,20 +130,22 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     *
     * If this returns true the caller must call decrementStackDepth() after it finishes.
     */
-  def incrementAndCheckStackDepth(): Boolean = {
+  def incrementAndCheckStackDepth(): PorcERuntime.StackDepthState = {
     if (maxStackDepth > 0) {
       @TruffleBoundary @noinline
       def incrementAndCheckStackDepthWithThreadLocal() = {
         val depth = stackDepthThreadLocal.get()
-        val r = depth.value < maxStackDepth
+        val prev = depth.value
+        val r = prev < maxStackDepth
         depth.value += (if (r) 1 else 0)
-        r
+        PorcERuntime.StackDepthState(r, prev)
       }
       try {
         val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
+        val prev = t.stackDepth
         val r = t.stackDepth < maxStackDepth
         t.stackDepth += (if (r) 1 else 0)
-        r
+        PorcERuntime.StackDepthState(r, prev)
       } catch {
         case _: ClassCastException => {
           if (allExecutionOnWorkers.isValid()) {
@@ -153,7 +156,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         }
       }
     } else {
-      false
+      PorcERuntime.StackDepthState(false, 0)
     }
   }
 
@@ -161,16 +164,16 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     *
     * @see incrementAndCheckStackDepth()
     */
-  def decrementStackDepth() = {
+  def decrementStackDepth(prev: Int) = {
     if (maxStackDepth > 0) {
       @TruffleBoundary @noinline
       def decrementStackDepthWithThreadLocal() = {
         val depth = stackDepthThreadLocal.get()
-        depth.value -= 1
+        depth.value = prev
       }
       try {
         val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
-        t.stackDepth -= 1
+        t.stackDepth = prev
       } catch {
         case _: ClassCastException => {
           if (allExecutionOnWorkers.isValid()) {
@@ -257,6 +260,9 @@ object PorcERuntime {
   @inline
   @CompilationFinal
   val allowSpawnInlining = System.getProperty("orc.porce.allowSpawnInlining", "true").toBoolean
+
+  @ValueType
+  final case class StackDepthState(growthAllowed: Boolean, previousDepth: Int)
 
   // HACK: Force loading of a few classes in Truffle. Without this the error handling code crashes and destroys the stack trace.
   Option(Class.forName("com.oracle.truffle.api.TruffleStackTrace")).foreach(_.getClassLoader())

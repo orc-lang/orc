@@ -56,9 +56,16 @@ public abstract class Spawn extends Expression {
     public PorcEUnit spawn(final VirtualFrame frame, final Counter c, final Terminator t, final PorcEClosure computation) {
 	final PorcERuntime r = execution.runtime();
         // The incrementAndCheckStackDepth call should not go in shouldInlineSpawn because it has side effects and I don't think we can guarantee that guards are not called multiple times.
-        if(!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize())) && dispatch.spawnProfile.profile(r.incrementAndCheckStackDepth())) {
-            dispatch.executeInline(frame, computation, true);
-        } else {
+	boolean done = false;
+        if(!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize()))) {
+            PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth();
+            final int prev = state.previousDepth();
+            if (dispatch.spawnProfile.profile(state.growthAllowed())) {
+                done = true;
+                dispatch.executeInline(frame, computation, prev);
+            }
+        }
+        if (!done) {
             t.checkLive();
             execution.runtime().schedule(CallClosureSchedulable.apply(computation, execution));
         }
@@ -74,7 +81,7 @@ public abstract class Spawn extends Expression {
 	if (r.actuallySchedule()) {
 	    dispatch.dispatch(frame, computation);
 	} else {
-	    dispatch.executeInline(frame, computation, false);
+	    dispatch.executeInline(frame, computation, -1);
 	}
 	return PorcEUnit.SINGLETON;
     }

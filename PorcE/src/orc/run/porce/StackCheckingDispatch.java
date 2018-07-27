@@ -64,9 +64,10 @@ public class StackCheckingDispatch extends Dispatch {
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] args) {
 	final PorcERuntime r = execution.runtime();
         final PorcEClosure computation = (PorcEClosure) target;
-        // CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
-	if (spawnProfile.profile(r.incrementAndCheckStackDepth())) {
-            executeInline(frame, computation, args, true);
+        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth();
+        final int prev = state.previousDepth();
+	if (spawnProfile.profile(state.growthAllowed())) {
+            executeInline(frame, computation, args, prev);
         } else {
             createSchedulableAndSchedule(args, computation);
         }
@@ -94,22 +95,22 @@ public class StackCheckingDispatch extends Dispatch {
 	return call;
     }
 
-    private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args, final boolean useStackDepth) {
+    private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args, final int previous) {
 	final PorcERuntime r = execution.runtime();
 	Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
 	long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
 	try {
 	    getCall().executeDispatchWithEnvironment(frame, computation, args);
 	} finally {
-	    if (useStackDepth) {
-            r.decrementStackDepth();
-        }
+	    if (previous >= 0) {
+                r.decrementStackDepth(previous);
+            }
 	    SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
 	}
     }
 
-    public void executeInline(final VirtualFrame frame, final PorcEClosure computation, final boolean useStackDepth) {
-	executeInline(frame, computation, new Object[] { null }, useStackDepth);
+    public void executeInline(final VirtualFrame frame, final PorcEClosure computation, final int previous) {
+	executeInline(frame, computation, new Object[] { null }, previous);
     }
 
     @Override
