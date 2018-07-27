@@ -56,14 +56,26 @@ case object Signal extends OrcValue {
   override def toOrcSyntax() = "signal"
 }
 
-// TODO: PERFORMANCE: This should probably intern the strings and use reference equality on name. We could even consider doing instance caching on Field objects and then doing reference comparison directly on the Field object.
-case class Field(name: String) extends OrcValue {
+class Field private (_name: String) extends OrcValue with Serializable {
+  val name = _name.intern()
+
   override def toOrcSyntax() = "." + name
+
   @deprecated("Use name instead.", "3.0")
   def field = name
+
+  override def equals(o: Any): Boolean = o match {
+    case Field(oname) => name eq oname
+    case _ => false
+  }
+
+  override def hashCode(): Int = name.hashCode()
 }
 
 object Field {
+  def apply(name: String) = new Field(name)
+  def unapply(f: Field): Option[String] = Some(f.name)
+
   /** Create a Field object.
     *
     * This exists for Java since apply is not wrapped in a static method.
