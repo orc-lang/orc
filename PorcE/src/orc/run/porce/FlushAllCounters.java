@@ -61,10 +61,16 @@ public class FlushAllCounters extends Expression {
         final double prob = getProbability(hc, tc);
         CompilerAsserts.compilationConstant(prob);
 
+        Thread thread = Thread.currentThread();
+
+        if (!(thread instanceof SimpleWorkStealingScheduler.Worker)) {
+            return PorcEUnit.SINGLETON;
+        }
+
         if (flushPolarity >= 0 ||
                 prob > SpecializationConfiguration.MinimumEarlyHaltProbability ||
                 CompilerDirectives.inInterpreter()) {
-            final SimpleWorkStealingScheduler.Worker worker = (SimpleWorkStealingScheduler.Worker)Thread.currentThread();
+            final SimpleWorkStealingScheduler.Worker worker = (SimpleWorkStealingScheduler.Worker)thread;
             Counter.incrFlushAllCount();
             CounterOffset prev = null;
             CounterOffset current = (CounterOffset)worker.counterOffsets();
