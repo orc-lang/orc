@@ -60,6 +60,7 @@ abstract class InvokerCanInvoke extends NodeBase {
                 invoker instanceof orc.values.sites.JavaArrayDerefSite.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayAssignSite.Invoker ||
                 invoker instanceof orc.run.extensions.SiteInvoker ||
+                invoker instanceof orc.values.sites.JavaArrayLengthPseudofield.Invoker ||
                 false;
     }
 

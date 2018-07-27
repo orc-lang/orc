@@ -178,6 +178,71 @@ abstract class InvokerInvokeDirect extends NodeBase {
         }
     }
 
+
+    @Specialization(guards = { "KnownSiteSpecialization" })
+    public Object javaFieldAssignSite(orc.values.sites.JavaFieldAssignSite.Invoker invoker, Object target, Object[] arguments) {
+        long jcs = 0;
+        if (orc.run.StopWatches.callsEnabled()) {
+            jcs = orc.run.StopWatches.javaCallTime().start();
+        }
+        try {
+            Object v = orc2javaOpt(arguments[0], invoker.componentType());
+            long jis = 0;
+            if (orc.run.StopWatches.callsEnabled()) {
+                jis = orc.run.StopWatches.javaImplTime().start();
+            }
+            try {
+                orc.values.sites.JavaFieldAssignSite self = (orc.values.sites.JavaFieldAssignSite)target;
+                callMethodHandleSetter(invoker.mh(), self.theObject(), v);
+                return orc.values.Signal$.MODULE$;
+            } finally {
+                if (orc.run.StopWatches.callsEnabled()) {
+                    orc.run.StopWatches.javaImplTime().stop(jis);
+                }
+            }
+        } catch (InvocationTargetException | ExceptionInInitializerError e) {
+            throw new JavaException(e.getCause());
+        } catch (Throwable e) {
+            throw new JavaException(e);
+        } finally {
+            if (orc.run.StopWatches.callsEnabled()) {
+                orc.run.StopWatches.javaCallTime().stop(jcs);
+            }
+        }
+    }
+
+    @Specialization(guards = { "KnownSiteSpecialization" })
+    public Object javaFieldDerefSite(orc.values.sites.JavaFieldDerefSite.Invoker invoker, Object target, Object[] arguments) {
+        long jcs = 0;
+        if (orc.run.StopWatches.callsEnabled()) {
+            jcs = orc.run.StopWatches.javaCallTime().start();
+        }
+        try {
+            Object r;
+            long jis = 0;
+            if (orc.run.StopWatches.callsEnabled()) {
+                jis = orc.run.StopWatches.javaImplTime().start();
+            }
+            try {
+                orc.values.sites.JavaFieldDerefSite self = (orc.values.sites.JavaFieldDerefSite) target;
+                r = callMethodHandleGetter(invoker.mh(), self.theObject());
+            } finally {
+                if (orc.run.StopWatches.callsEnabled()) {
+                    orc.run.StopWatches.javaImplTime().stop(jis);
+                }
+            }
+            return java2orcOpt(r);
+        } catch (InvocationTargetException | ExceptionInInitializerError e) {
+            throw new JavaException(e.getCause());
+        } catch (Throwable e) {
+            throw new JavaException(e);
+        } finally {
+            if (orc.run.StopWatches.callsEnabled()) {
+                orc.run.StopWatches.javaCallTime().stop(jcs);
+            }
+        }
+    }
+
     @Specialization(guards = { "KnownSiteSpecialization" })
     public Object javaArrayAssignSite(orc.values.sites.JavaArrayAssignSite.Invoker invoker, Object target, Object[] arguments) {
         long jcs = 0;
@@ -192,7 +257,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
             }
             try {
                 orc.values.sites.JavaArrayAssignSite self = (orc.values.sites.JavaArrayAssignSite)target;
-                callMethodHandleInt2(invoker.mh(), self.theArray(), self.index(), v);
+                callMethodHandleArraySetter(invoker.mh(), self.theArray(), self.index(), v);
                 return orc.values.Signal$.MODULE$;
             } finally {
                 if (orc.run.StopWatches.callsEnabled()) {
@@ -225,7 +290,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
             }
             try {
                 orc.values.sites.JavaArrayDerefSite self = (orc.values.sites.JavaArrayDerefSite) target;
-                r = callMethodHandleInt1(invoker.mh(), self.theArray(), self.index());
+                r = callMethodHandleArrayGetter(invoker.mh(), self.theArray(), self.index());
             } finally {
                 if (orc.run.StopWatches.callsEnabled()) {
                     orc.run.StopWatches.javaImplTime().stop(jis);
@@ -258,14 +323,24 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return mh.invokeExact(theObject, arguments);
     }
 
-    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-    private static Object callMethodHandleInt1(MethodHandle mh, Object theObject, int arg) throws Throwable {
+    //@TruffleBoundary(allowInlining = true)
+    private static void callMethodHandleSetter(MethodHandle mh, Object theObject, Object arg) throws Throwable {
+        mh.invokeExact(theObject, arg);
+    }
+
+    //@TruffleBoundary(allowInlining = true)
+    private static Object callMethodHandleGetter(MethodHandle mh, Object theObject) throws Throwable {
+        return mh.invokeExact(theObject);
+    }
+
+    //@TruffleBoundary(allowInlining = true)
+    private static Object callMethodHandleArrayGetter(MethodHandle mh, Object theObject, int arg) throws Throwable {
         return mh.invokeExact(theObject, arg);
     }
 
-    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-    private static Object callMethodHandleInt2(MethodHandle mh, Object theObject, int arg1, Object arg2) throws Throwable {
-        return mh.invokeExact(theObject, arg1, arg2);
+    //@TruffleBoundary(allowInlining = true)
+    private static void callMethodHandleArraySetter(MethodHandle mh, Object theObject, int arg1, Object arg2) throws Throwable {
+        mh.invokeExact(theObject, arg1, arg2);
     }
 
     @Specialization(guards = { "isPartiallyEvaluable(invoker)", "KnownSiteSpecialization" })
@@ -274,7 +349,8 @@ abstract class InvokerInvokeDirect extends NodeBase {
     }
 
     protected static boolean isPartiallyEvaluable(DirectInvoker invoker) {
-        return invoker instanceof OrcAnnotation.Invoker;
+        return invoker instanceof OrcAnnotation.Invoker ||
+                invoker instanceof orc.values.sites.JavaArrayLengthPseudofield.Invoker;
     }
 
     @Specialization
