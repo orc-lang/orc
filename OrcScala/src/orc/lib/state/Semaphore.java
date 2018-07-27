@@ -82,7 +82,7 @@ public class Semaphore extends EvalSite implements TypedSite {
                                 LinkedList<MaterializedCallContext> oldSnoopers = (LinkedList<MaterializedCallContext>) snoopers.clone();
                                 snoopers.clear();
                                 for (final CallContext snooper : oldSnoopers) {
-                                    waiter.virtualCallContextFor(snooper).publish(signal());
+                                    snooper.publish(signal());
                                 }
                             }
                         } else {

@@ -50,15 +50,14 @@ object Random extends InvokerMethod with SiteMetadata with FunctionalSite {
       }
     }
   }
-  
+
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     args.length match {
       case 0 => new NoArgInvoker()
       case 1 =>
         args(0) match {
-          case n: BigInt => new ArgInvoker()
-          case n: BigInteger => new ArgInvoker()
-          case n: Integer => new ArgInvoker()
+          case _: BigInt | _: BigInteger | _: Integer | _: java.lang.Long =>
+            new ArgInvoker()
           case _ =>
             IllegalArgumentInvoker(this, args)
         }
@@ -66,7 +65,7 @@ object Random extends InvokerMethod with SiteMetadata with FunctionalSite {
         IllegalArgumentInvoker(this, args)
     }
   }
-  
+
   override def publications: Range = Range(0, 1)
   override def isDirectCallable: Boolean = true
 }
@@ -83,7 +82,7 @@ object URandom extends InvokerMethod with SiteMetadata with FunctionalSite {
       }
     }
   }
-  
+
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     args.length match {
       case 0 => new NoArgInvoker()
@@ -91,7 +90,7 @@ object URandom extends InvokerMethod with SiteMetadata with FunctionalSite {
         IllegalArgumentInvoker(this, args)
     }
   }
-  
+
   override def publications: Range = Range(0, 1)
   override def isDirectCallable: Boolean = true
 }
