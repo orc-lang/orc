@@ -164,7 +164,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
 
     private static Object orc2javaOpt(Object a, Class<?> cls) {
         if (a instanceof scala.math.BigDecimal || a instanceof scala.math.BigInt || a instanceof java.math.BigDecimal || a instanceof java.math.BigInteger) {
-            return orc2java(a, cls);
+            return orc2javaWithBoundary(a, cls);
         } else {
             return OrcJavaCompatibility.orc2javaAsFixedPrecision(a, cls);
         }
@@ -172,7 +172,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
 
     private static Object java2orcOpt(Object r) {
         if ((!NumericsConfig.preferLong() || !NumericsConfig.preferDouble()) && r instanceof Number) {
-            return java2orc(r);
+            return java2orcWithBoundary(r);
         } else {
             return OrcJavaCompatibility.java2orc(r);
         }
@@ -275,7 +275,6 @@ abstract class InvokerInvokeDirect extends NodeBase {
         }
     }
 
-
     @Specialization(guards = { "KnownSiteSpecialization" })
     public Object javaArrayDerefSite(orc.values.sites.JavaArrayDerefSite.Invoker invoker, Object target, Object[] arguments) {
         long jcs = 0;
@@ -309,12 +308,12 @@ abstract class InvokerInvokeDirect extends NodeBase {
     }
 
     @TruffleBoundary(allowInlining = true)
-    private static Object orc2java(Object v, Class<?> cls) {
+    private static Object orc2javaWithBoundary(Object v, Class<?> cls) {
         return OrcJavaCompatibility.orc2java(v, cls);
     }
 
     @TruffleBoundary(allowInlining = true)
-    private static Object java2orc(Object v) {
+    private static Object java2orcWithBoundary(Object v) {
         return OrcJavaCompatibility.java2orc(v);
     }
 

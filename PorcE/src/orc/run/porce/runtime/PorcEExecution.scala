@@ -196,7 +196,7 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
       // Runs regardless of discorporation.
       Logger.fine("Top level context complete.")
       runtime.removeRoot(execution)
-      notifyOrc(HaltedOrKilledEvent)
+      notifyOrcWithBoundary(HaltedOrKilledEvent)
       execution.synchronized {
         execution._isDone = true
         execution.notifyAll()
