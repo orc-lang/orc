@@ -19,16 +19,19 @@ public abstract class SpecializationConfiguration {
         public static final boolean callsEnabled = orc.run.StopWatches.callsEnabled();
     }
 
-    static {
+    /*static {
         if (System.getProperty("orc.porce.truffleASTInlining") != null) {
             throw new Error("truffleASTInlining is disabled in the source code. See InternalCPSDispatch.java.");
         }
-    }
-    /*
+    }*/
+
     @CompilationFinal
     public static final boolean TruffleASTInlining = Boolean
-    		.parseBoolean(System.getProperty("orc.porce.truffleASTInlining", "false"));
-    */
+                .parseBoolean(System.getProperty("orc.porce.truffleASTInlining", "false"));
+
+    @CompilationFinal
+    public static final int TruffleASTInliningLimit = Integer
+                .parseInt(System.getProperty("orc.porce.truffleASTInliningLimit", "1000"));
 
     @CompilationFinal
     public static final int GetFieldMaxCacheSize = Integer

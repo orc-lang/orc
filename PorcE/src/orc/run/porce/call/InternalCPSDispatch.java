@@ -11,8 +11,11 @@
 
 package orc.run.porce.call;
 
+import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.HaltException;
+import orc.compiler.porce.PorcToPorcE;
 import orc.run.porce.Expression;
+import orc.run.porce.Logger;
 import orc.run.porce.PorcERootNode;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEClosure;
@@ -20,18 +23,29 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.SelfTailCallException;
 import orc.run.porce.runtime.TailCallException;
 
+import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreter;
+
+import scala.collection.Seq;
+import orc.ast.porc.Variable;
+
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.RootCallTarget;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
@@ -116,15 +130,19 @@ public class InternalCPSDispatch extends Dispatch {
         @CompilationFinal
         private RootNode rootNode;
 
-        protected final BranchProfile exceptionProfile = BranchProfile.create();
-        protected final BranchProfile haltProfile = BranchProfile.create();
-
         public RootNode getRootNodeCached() {
             if (CompilerDirectives.inInterpreter()) {
                 rootNode = getRootNode();
             }
             return rootNode;
         }
+
+        public int computeNodeCount() {
+            return NodeUtil.countNodes(getRootNodeCached());
+        }
+
+        protected final BranchProfile exceptionProfile = BranchProfile.create();
+        protected final BranchProfile haltProfile = BranchProfile.create();
 
         public abstract void execute(VirtualFrame frame, Object target, Object[] arguments);
 
@@ -137,6 +155,7 @@ public class InternalCPSDispatch extends Dispatch {
         public void selfTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
             Object[] frameArguments = frame.getArguments();
             System.arraycopy(arguments, 0, frameArguments, 0, arguments.length);
+            //Logger.log(java.util.logging.Level.INFO, () -> "Self tail call: " + target + ", " + java.util.Arrays.toString(frameArguments));
             throw new SelfTailCallException();
         }
 
@@ -159,29 +178,49 @@ public class InternalCPSDispatch extends Dispatch {
 
         // Non-tail calls
 
-        // This is disabled since it's not likely to be useful and the trick with createVirtualFrame might be a problem.
-        // This just guarentees that is cannot be an issue.
-        // If you reenable it also add specificInline back into the replaces clause of universal.
-        /*@Specialization(guards = { "TruffleASTInlining", "forceInline",  "target.body == expected" }, limit = "1")
-        public void specificInline(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
-        	@Cached("target.body") RootCallTarget expected, @Cached("getPorcEBody(target)") Expression body,
-        	@Cached("getPorcEFrameDescriptor(target)") FrameDescriptor fd) {
-            final VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
-            body.execute(nestedFrame);
-        }*/
+        protected boolean sameMethod(RootCallTarget expected) {
+            boolean sameMethod = getRootNodeCached() instanceof PorcERootNode &&
+                    expected.getRootNode() instanceof PorcERootNode &&
+                    ((PorcERootNode)getRootNodeCached()).getMethodKey() == ((PorcERootNode)expected.getRootNode()).getMethodKey();
+            return sameMethod;
+        }
 
-        @Specialization(guards = { "target.body == expected" }, limit = "InternalCallMaxCacheSize")
-        public void specific(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
-                @Cached("target.body") RootCallTarget expected, @Cached("create(expected)") DirectCallNode call) {
-            CompilerDirectives.interpreterOnly(() -> {
-                if (forceInline) {
-                    call.forceInlining();
-                }
-            });
-
+//        @Specialization(guards = { "TruffleASTInlining", "isTail", "nodeCount < TruffleASTInliningLimit",
+//                "target.body == expected", "forceInline", "body != null",
+//                "getRootNodeCached() != target.body.getRootNode()" }, limit = "3")
+        @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
+        public void specificInlineTail(final VirtualFrame frame,
+                final PorcEClosure target, final Object[] arguments,
+                @Cached("target.body") RootCallTarget expected,
+                @Cached("getPorcEBodyFrameArguments(target, frame)") Expression body,
+                @Cached(value = "getArgumentSlots(target)", dimensions = 1) FrameSlot[] argumentSlots,
+                @Cached(value = "getClosureSlots(target)", dimensions = 1) FrameSlot[] closureSlots,
+                @Cached("computeNodeCount()") int nodeCount) {
+            ensureTail(body);
+            CompilerDirectives.ensureVirtualized(arguments);
             try {
-                call.call(arguments);
+                if (arguments.length != argumentSlots.length + 1) {
+                    CompilerDirectives.transferToInterpreter();
+                    throw new ArityMismatchException(arguments.length - 1, argumentSlots.length);
+                }
+
+                for (int i = 0; i < argumentSlots.length; i++) {
+                    FrameSlot slot = argumentSlots[i];
+                    frame.setObject(slot, arguments[i+1]);
+                }
+
+                for (int i = 0; i < closureSlots.length; i++) {
+                    FrameSlot slot = closureSlots[i];
+                    frame.setObject(slot, ((Object[]) arguments[0])[i]);
+                }
+
+                body.execute(frame);
+            } catch (final SelfTailCallException e) {
+                throw e;
             } catch (final TailCallException e) {
+                if (!SpecializationConfiguration.UniversalTCO) {
+                    CompilerDirectives.transferToInterpreter();
+                }
                 throw e;
             } catch (final HaltException e) {
                 haltProfile.enter();
@@ -193,14 +232,85 @@ public class InternalCPSDispatch extends Dispatch {
             }
         }
 
-        @Specialization(replaces = { "specific" })
+        @Specialization(guards = { "TruffleASTInlining", "nodeCount < TruffleASTInliningLimit",
+                "target.body == expected", "sameMethod(expected)", "body != null",
+                "getRootNodeCached() != target.body.getRootNode()" }, limit = "3")
+        public void specificInline(final VirtualFrame frame,
+                final PorcEClosure target, final Object[] arguments,
+                @Cached("target.body") RootCallTarget expected,
+                @Cached("getPorcEBodyNewFrame(target)") Expression body,
+                @Cached("getPorcEFrameDescriptor(target)") FrameDescriptor fd,
+                @Cached("computeNodeCount()") int nodeCount) {
+            ensureTail(body);
+            CompilerDirectives.ensureVirtualized(arguments);
+            try {
+                final VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
+                body.execute(nestedFrame);
+            } catch(NullPointerException e) {
+                CompilerDirectives.transferToInterpreter();
+                Logger.log(java.util.logging.Level.WARNING, () -> "UGLY HACK: Creating virtual frame failed. Hopefully this is just as the program exits.", e);
+            } catch (final SelfTailCallException e) {
+                if (!isTail) {
+                    CompilerDirectives.transferToInterpreter();
+                    Logger.log(java.util.logging.Level.WARNING, () -> "Caught SelfTailCallException at non-tail specificInline", e);
+                }
+                throw e;
+            } catch (final TailCallException e) {
+                if (!SpecializationConfiguration.UniversalTCO) {
+                    CompilerDirectives.transferToInterpreter();
+                }
+                throw e;
+            } catch (final HaltException e) {
+                haltProfile.enter();
+                throw e;
+            } catch (final Throwable e) {
+                exceptionProfile.enter();
+                execution.notifyOfException(e, this);
+                throw HaltException.SINGLETON();
+            }
+        }
+
+        @Specialization(guards = { "target.body == expected" },
+                limit = "InternalCallMaxCacheSize")
+        public void specific(final VirtualFrame frame,
+                final PorcEClosure target, final Object[] arguments,
+                @Cached("target.body") RootCallTarget expected,
+                @Cached("create(expected)") DirectCallNode call) {
+            CompilerDirectives.interpreterOnly(() -> {
+                if (sameMethod(expected) || forceInline) {
+                    call.forceInlining();
+                }
+            });
+
+            try {
+                call.call(arguments);
+            } catch (final TailCallException e) {
+                if (!SpecializationConfiguration.UniversalTCO) {
+                    CompilerDirectives.transferToInterpreter();
+                }
+                throw e;
+            } catch (final HaltException e) {
+                haltProfile.enter();
+                throw e;
+            } catch (final Throwable e) {
+                exceptionProfile.enter();
+                execution.notifyOfException(e, this);
+                throw HaltException.SINGLETON();
+            }
+        }
+
+        @Specialization(replaces = { "specific", "specificInline" })
         public void universal(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
                 @Cached("create()") IndirectCallNode call) {
             try {
                 call.call(target.body, arguments);
             } catch (final TailCallException e) {
+                if (!SpecializationConfiguration.UniversalTCO) {
+                    CompilerDirectives.transferToInterpreter();
+                }
                 throw e;
             } catch (final HaltException e) {
+                haltProfile.enter();
                 throw e;
             } catch (final Throwable e) {
                 exceptionProfile.enter();
@@ -215,10 +325,98 @@ public class InternalCPSDispatch extends Dispatch {
 
         /* Utilties */
 
-        protected static Expression getPorcEBody(PorcEClosure target) {
+        protected FrameSlot[] getArgumentSlots(PorcEClosure target) {
+            CompilerAsserts.neverPartOfCompilation("Frame update");
+            RootNode r = target.body.getRootNode();
+            if (getRootNode() instanceof PorcERootNode && r instanceof PorcERootNode) {
+                PorcERootNode myRoot = (PorcERootNode) getRootNode();
+                PorcERootNode bodyRoot = (PorcERootNode) r;
+
+                Seq<Variable> argumentVariables = bodyRoot.getArgumentVariables();
+                FrameDescriptor descriptor = myRoot.getFrameDescriptor();
+                FrameSlot[] res = new FrameSlot[argumentVariables.size()];
+
+                for (int i = 0; i < res.length; i++) {
+                    Variable x = argumentVariables.apply(i);
+                    res[i] = descriptor.findOrAddFrameSlot(x, FrameSlotKind.Object);
+                }
+                return res;
+            } else {
+                return null;
+            }
+        }
+
+        protected FrameSlot[] getClosureSlots(PorcEClosure target) {
+            CompilerAsserts.neverPartOfCompilation("Frame update");
+            RootNode r = target.body.getRootNode();
+            if (getRootNode() instanceof PorcERootNode && r instanceof PorcERootNode) {
+                PorcERootNode myRoot = (PorcERootNode) getRootNode();
+                PorcERootNode bodyRoot = (PorcERootNode) r;
+
+                Seq<Variable> closureVariables = bodyRoot.getClosureVariables();
+                FrameDescriptor descriptor = myRoot.getFrameDescriptor();
+                FrameSlot[] res = new FrameSlot[closureVariables.size()];
+
+                for (int i = 0; i < res.length; i++) {
+                    Variable x = closureVariables.apply(i);
+                    res[i] = descriptor.findOrAddFrameSlot(x, FrameSlotKind.Object);
+                }
+                return res;
+            } else {
+                return null;
+            }
+        }
+
+        protected Expression getPorcEBodyNewFrame(PorcEClosure target) {
+            CompilerAsserts.neverPartOfCompilation("Reconvertion of code.");
             RootNode r = target.body.getRootNode();
             if (r instanceof PorcERootNode) {
-                return (Expression) ((PorcERootNode) r).getBody().copy();
+                PorcERootNode bodyRoot = (PorcERootNode) r;
+
+                Expression body = bodyRoot.getBody();
+                Expression newBody = NodeUtil.cloneNode(body);
+
+                newBody.setTail(isTail);
+
+                return newBody;
+            } else {
+                return null;
+            }
+        }
+
+        protected Expression getPorcEBodyFrameArguments(PorcEClosure target, VirtualFrame frame) {
+            CompilerAsserts.neverPartOfCompilation("Reconvertion of code.");
+            RootNode r = target.body.getRootNode();
+            if (getRootNode() instanceof PorcERootNode && r instanceof PorcERootNode) {
+                PorcERootNode myRoot = (PorcERootNode) getRootNode();
+                PorcERootNode bodyRoot = (PorcERootNode) r;
+                Expression body = bodyRoot.getBody();
+
+                if (body.porcNode().isEmpty() ||
+                        myRoot.getArgumentVariables() == null || bodyRoot.getArgumentVariables() == null) {
+                    return null;
+                }
+
+                // Now reconvert the original Porc code to PorcE in a new context.
+                Expression res = orc.compiler.porce.PorcToPorcE.expression(
+                        (orc.ast.porc.Expression)body.porcNode().get(),
+                        PorcToPorcE.variableSeq(),
+                        PorcToPorcE.variableSeq(),
+                        frame.getFrameDescriptor(),
+                        execution.callTargetMap(),
+                        scala.collection.immutable.Map$.MODULE$.empty(),
+                        execution,
+                        execution.runtime().language(),
+                        isTail
+                        );
+
+//                Logger.info(() -> {
+//                    String bodyStr = NodeUtil.printTreeToString(body);
+//                    String resStr = NodeUtil.printTreeToString(res);
+//                    return "AST inlining " + target + " at " + this + ":\n" + bodyStr + "===============\n" + resStr;
+//                });
+
+                return res;
             } else {
                 return null;
             }
