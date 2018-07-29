@@ -45,7 +45,7 @@ public abstract class GetField extends Expression {
             @Cached("create()") AccessorGet getNode,
             @Cached("getAccessorWithBoundary(obj)") final Accessor accessor) {
         try {
-            return accessWithBoundary(accessor, obj);
+            return getNode.executeGet(frame, accessor, obj);
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
             execution.notifyOfException(e, this);
