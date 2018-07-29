@@ -341,17 +341,27 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   }
 
   protected final def getCounterOffset(): CounterOffset = {
-    Thread.currentThread() match {
-      case worker: SimpleWorkStealingScheduler#Worker =>
-        if (CompilerDirectives.injectBranchProbability(CompilerDirectives.SLOWPATH_PROBABILITY,
-            counterOffsets(worker.workerID) == null)) {
+    val thread = Thread.currentThread()
+    if (CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
+        thread.isInstanceOf[SimpleWorkStealingScheduler#Worker])) {
+      val worker = thread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
+      if (CompilerDirectives.injectBranchProbability(CompilerDirectives.SLOWPATH_PROBABILITY,
+          counterOffsets(worker.workerID) == null)) {
+        @TruffleBoundary(allowInlining = false) @noinline
+        def newCOH() = {
           val r = new CounterOffset(this)
           counterOffsets(worker.workerID) = r
+          r.register(worker)
+          r
         }
+        newCOH()
+      } else {
         val offset = counterOffsets(worker.workerID)
         offset.register(worker)
         offset
-      case _ => null
+      }
+    } else {
+      null
     }
   }
 
@@ -418,6 +428,20 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     val coh = getCounterOffset()
     incrChanges()
 
+    @TruffleBoundary(allowInlining = false) @noinline
+    def decrGlobal(): PorcEClosure = {
+      val n = decrementAndGet()
+      handleHaltToken(n == 0)
+      if (tracingEnabled) {
+        assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
+      }
+      if (n == 0) {
+        onHaltOptimized()
+      } else {
+        null
+      }
+    }
+
     val r = if (CompilerDirectives.injectBranchProbability(
         CompilerDirectives.FASTPATH_PROBABILITY,
         coh != null)) {
@@ -429,19 +453,6 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     }
     stopTimer(s)
     r
-  }
-
-  protected final def decrGlobal(): PorcEClosure = {
-    val n = decrementAndGet()
-    handleHaltToken(n == 0)
-    if (tracingEnabled) {
-      assert(n >= 0, s"Halt is not allowed on already stopped Counters: $this")
-    }
-    if (n == 0) {
-      onHaltOptimized()
-    } else {
-      null
-    }
   }
 
   /** Increment the count.
@@ -457,8 +468,13 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     val coh = getCounterOffset()
     incrChanges()
 
-    @TruffleBoundary(allowInlining = true) @noinline
-    def incrGlobal() = {
+    @TruffleBoundary(allowInlining = false) @noinline
+    def incrGlobal(coh: CounterOffset) = {
+      if (coh != null) {
+        incrInitialIncrCount()
+        //Logger.info(s"First count $this ($coh) @ ${Thread.currentThread()}: global before = ${get()}")
+        coh.globalCountHeld = true
+      }
       val n = getAndIncrement()
       if (tracingEnabled) {
         assert(n >= 0, s"Spawning is not allowed once we go to zero count. $this")
@@ -466,22 +482,12 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
       n == 0
     }
 
-    val r = if (CompilerDirectives.injectBranchProbability(
-        CompilerDirectives.FASTPATH_PROBABILITY,
-        coh != null)) {
-      if (coh.globalCountHeld) {
-        coh.value += 1
-        false
-      } else {
-        //CompilerDirectives.transferToInterpreter()
-        incrInitialIncrCount()
-        //Logger.info(s"First count $this ($coh) @ ${Thread.currentThread()}: global before = ${get()}")
-        coh.globalCountHeld = true
-        incrGlobal()
-      }
+    val r = if (CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
+        coh != null && coh.globalCountHeld)) {
+      coh.value += 1
+      false
     } else {
-      //CompilerDirectives.transferToInterpreter()
-      incrGlobal()
+      incrGlobal(coh)
     }
     stopTimer(s)
     r
