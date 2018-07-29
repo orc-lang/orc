@@ -60,7 +60,7 @@ abstract class DOrcExecution(
   with RemoteObjectManager
   with RemoteRefIdManager {
 
-  val (programPorceAst, programCallTargetMap) = PorcToPorcE(programAst, this, true)
+  val (programPorceAst, programCallTargetMap) = PorcToPorcE.method(programAst, this)
 
   type ExecutionId = String
 
@@ -208,7 +208,7 @@ class DOrcFollowerExecution(
   }
 
   {
-    val (_, map) = PorcToPorcE(programAst, this, true)
+    val (_, map) = PorcToPorcE.method(programAst, this)
 
     setCallTargetMap(map)
 

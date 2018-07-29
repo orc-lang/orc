@@ -17,10 +17,10 @@ import orc.run.porce.runtime.PorcEExecution;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 
 /**
- * A Truffle root node calls an arbitrary PorcE value given as the first argument with 
+ * A Truffle root node calls an arbitrary PorcE value given as the first argument with
  * the rest of the arguments.
- * 
- * This root node handles any tail calls internally. The caller can treat this as a normal 
+ *
+ * This root node handles any tail calls internally. The caller can treat this as a normal
  * call with semantics similar to Java or Scala (other than all the spawning).
  *
  * @author amp
@@ -44,20 +44,20 @@ public class InvokeCallRecordRootNode extends PorcERootNode {
     }
 
     public InvokeCallRecordRootNode(final PorcELanguage language, final int nArguments, final int callSiteId, final PorcEExecution execution) {
-        super(language, new FrameDescriptor(), buildBody(nArguments, execution), nArguments + 1, 0, execution);
+        super(language, new FrameDescriptor(), buildBody(nArguments, execution), nArguments + 1, 0, InvokeCallRecordRootNode.class, execution);
         this.callSiteId = callSiteId;
     }
-    
+
     @Override
     public boolean isInternal() {
         return true;
     }
-    
+
     @Override
     public String getName() {
         return callSiteId + "<invokeCallRecord>";
     }
-    
+
     @Override
     public String toString() {
         return callSiteId + "<invokeCallRecord>";

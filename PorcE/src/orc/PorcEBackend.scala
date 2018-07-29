@@ -30,7 +30,7 @@ object PorcEBackend {
     if (System.getProperty(k) == null)
       System.setProperty(k, v.toString)
   }
-  
+
   def loadOptOpts(options: OrcCompilationOptions) = {
     // Allow inline some spawns into there spawn site instead of calling them:
     setSystemPropertyIfUnset(
@@ -72,13 +72,13 @@ case class PorcEBackend(language: PorcELanguage = null) extends PorcBackend {
     PorcEBackend.loadOptOpts(options)
     options
   }
-  
+
   def createRuntime(options: OrcExecutionOptions): Runtime[MethodCPS] = new PorcERuntime("PorcE on Truffles", language) with Runtime[MethodCPS] {
     startScheduler(options)
 
     private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecutionWithLaunch = synchronized {
       val execution = new PorcEExecution(this, k) with PorcEExecutionWithLaunch
-      val (porceAst, map) = PorcToPorcE(ast, execution, false, language)
+      val (porceAst, map) = PorcToPorcE.method(ast, execution, language)
       addRoot(execution)
       execution.scheduleProgram(porceAst, map)
       execution

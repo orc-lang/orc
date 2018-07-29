@@ -17,9 +17,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
 import scala.Option;
+import scala.collection.Seq;
 
 import orc.ast.ASTWithIndex;
 import orc.ast.porc.PorcAST;
+import orc.ast.porc.Variable;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.HaltException;
 import orc.run.porce.call.CatchSelfTailCall;
@@ -49,9 +51,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private final AtomicLong totalCalls = new AtomicLong(0);
 
     /*
-     *  The solution for a racy version is to use a volatile long and split it into two "fields" one for each value (as an int).
-     *  Writes to volatile longs are atomic and the volatile read/writes shouldn't be much more expensive than normal read/write
-     *  since they will not happen often enough to be combined.
+     *  The solution for a racy version is to use a long and split it into two "fields" one for each value (as an int).
+     *  To make sure the write is a single atomic 64-bit write I may need to use opaque writes from JRE 9. Volatile is
+     *  enough, but also includes a memory barrier that we don't need to want.
     private volatile long both = 0;
     private final int getTotalSpawnedTime(long both) {
 	return (int) (both & 0xffffffff);
@@ -103,17 +105,17 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
                 	return t / n;
     		}
     	}
-		return timePerCall;
+    	return timePerCall;
     }
 
     private Option<PorcAST> porcNode = Option.apply(null);
 
-	public void setPorcAST(final PorcAST ast) {
-		CompilerAsserts.neverPartOfCompilation();
-		porcNode = Option.apply(ast);
-		section = SourceSectionFromPorc.apply(ast);
-		internal = !(ast instanceof orc.ast.porc.Method);
-	}
+    public void setPorcAST(final PorcAST ast) {
+        CompilerAsserts.neverPartOfCompilation();
+        porcNode = Option.apply(ast);
+        section = SourceSectionFromPorc.apply(ast);
+        internal = !(ast instanceof orc.ast.porc.Method);
+    }
 
     @Override
     public boolean isInternal() {
@@ -163,7 +165,25 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     @Child
     protected FlushAllCounters flushAllCounters;
 
-    private final ConditionProfile isTopLevelProfile = ConditionProfile.createCountingProfile();
+    private Seq<Variable> argumentVariables = null;
+    private Seq<Variable> closureVariables = null;
+
+    public void setVariables(Seq<Variable> argumentVariables, Seq<Variable> closureVariables) {
+        assert this.argumentVariables == null;
+        assert this.closureVariables == null;
+        this.argumentVariables = argumentVariables;
+        this.closureVariables = closureVariables;
+    }
+
+    public Seq<Variable> getArgumentVariables() {
+        assert this.argumentVariables != null;
+        return this.argumentVariables;
+    }
+
+    public Seq<Variable> getClosureVariables() {
+        assert this.closureVariables != null;
+        return this.closureVariables;
+    }
 
     private final int nArguments;
     private final int nCaptured;
@@ -188,14 +208,22 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     }
 
     private final PorcEExecution execution;
+    private final Object methodKey;
 
-    public PorcERootNode(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured, PorcEExecution execution) {
+    public PorcERootNode(final PorcELanguage language, final FrameDescriptor descriptor,
+            final Expression body, final int nArguments, final int nCaptured, final Object methodKey,
+            PorcEExecution execution) {
         super(language, descriptor);
         this.body = insert(body);
         this.nArguments = nArguments;
         this.nCaptured = nCaptured;
 	this.execution = execution;
+        this.methodKey = methodKey;
 	this.flushAllCounters = insert(FlushAllCounters.create(-1, execution));
+    }
+
+    public Object getMethodKey() {
+        return methodKey;
     }
 
     public Expression getBody() {
@@ -212,12 +240,11 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             final Object[] arguments = frame.getArguments();
             if (arguments.length != nArguments + 1) {
                 transferToInterpreter();
-                throwArityException(arguments.length - 1, nArguments);
+                throw new ArityMismatchException(arguments.length - 1, nArguments);
             }
             final Object[] captureds = (Object[]) arguments[0];
             if (captureds.length != nCaptured) {
-                transferToInterpreter();
-                InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
+                throw InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
             }
 	}
 
@@ -246,20 +273,19 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         }
     }
 
-    @TruffleBoundary
-    private static void throwArityException(final int nReceived, final int nExpected) {
-        throw new ArityMismatchException(nExpected, nReceived);
-    }
-
-    public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor, final Expression body, final int nArguments, final int nCaptured, PorcEExecution execution) {
-    	// Add self tail call catcher to the body during construction.
-        PorcERootNode r = new PorcERootNode(language, descriptor, CatchSelfTailCall.create(body), nArguments, nCaptured, execution);
+    public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor,
+            final Expression body, final int nArguments, final int nCaptured, final Object methodKey,
+            PorcEExecution execution) {
+        // Add self tail call catcher to the body during construction.
+        PorcERootNode r = new PorcERootNode(language, descriptor,
+                CatchSelfTailCall.create(body), nArguments, nCaptured, methodKey,
+                execution);
         Truffle.getRuntime().createCallTarget(r);
         return r;
     }
 
     @Override
     public String toString() {
-        return String.format("PorcE.%s", getName());
+        return String.format("PorcE[%s%s].%s", isInternal() ? "<" : "", methodKey, getName());
     }
 }
