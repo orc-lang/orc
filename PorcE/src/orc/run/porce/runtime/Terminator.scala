@@ -30,10 +30,10 @@ trait Terminatable {
 object Terminator {
   @inline
   val maxTerminatorDepth = CounterConstants.maxCounterDepth;
-  
+
   val TerminatorAddChild = 150L
   Tracer.registerEventTypeId(TerminatorAddChild, "TrmAddCh", _.formatted("%016x"), _.formatted("%016x"))
-  
+
   val TerminatorRemoveChild = 151L
   Tracer.registerEventTypeId(TerminatorRemoveChild, "TrmRemCh", _.formatted("%016x"), _.formatted("%016x"))
 }
@@ -44,7 +44,7 @@ object Terminator {
   */
 class Terminator(val depth: Int) extends Terminatable {
   import Terminator._
-  
+
   if (depth > maxTerminatorDepth) {
     throw new StackOverflowError(s"The Orc stack is limited to $maxTerminatorDepth. Make sure your functions are actually tail recursive.")
   }
@@ -52,9 +52,10 @@ class Terminator(val depth: Int) extends Terminatable {
   def this() = this(0)
 
   // FIXME: This should be made into a var which uses Unsafe (and eventually VarHandles) for atomic access.
-  //         The overhead of the volitile reads seems to be small, but allowing the optimizer to merge 
+  //         The overhead of the volitile reads seems to be small, but allowing the optimizer to merge
   //         checks (which would be non-volitile reads) would be good.
   protected[this] val children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
+  private var _isLive = true
 
   /** Add a child to this terminator.
     *
@@ -115,7 +116,7 @@ class Terminator(val depth: Int) extends Terminatable {
     * naturally).
     */
   final def isLive(): Boolean = {
-    children.get() != null
+    _isLive // children.get() != null
   }
 
   /** Kill the expressions under this terminator.
@@ -126,10 +127,11 @@ class Terminator(val depth: Int) extends Terminatable {
     * This return value allows the caller to call `k` more efficient (allowing inlining).
     *
     * This needs to be thread-safe and idempotent.
-    * 
+    *
     * Token: This call consumes a token on c if it returns false.
     */
   def kill(c: Counter, k: PorcEClosure): Boolean = {
+    _isLive = false
     // First, swap in null as the children set.
     val cs = children.getAndSet(null)
     // Next, process cs if needed.
