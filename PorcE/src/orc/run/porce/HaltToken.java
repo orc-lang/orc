@@ -38,9 +38,7 @@ public class HaltToken extends Expression {
     @Specialization
     public PorcEUnit any(VirtualFrame frame, final Counter counter,
             @Cached("create(execution)") KnownCounter known) {
-        CompilerDirectives.interpreterOnly(() -> {
-            known.setTail(isTail);
-        });
+        ensureTail(known);
         known.execute(frame, counter);
         return PorcEUnit.SINGLETON;
     }
@@ -59,14 +57,13 @@ public class HaltToken extends Expression {
             this.execution = execution;
         }
 
-        private static Object[] EMPTY_ARGS = new Object[0];
-
         public abstract PorcEUnit execute(VirtualFrame frame, final Counter counter);
 
         @Specialization(guards = { "SpecializeOnCounterStates" })
         public PorcEUnit nested(VirtualFrame frame, final Counter counter,
                 @Cached("createCall()") Dispatch call,
                 @Cached("create()") BranchProfile hasContinuationProfile) {
+            ensureTail(call);
             PorcEClosure cont = counter.haltTokenOptimized();
             if (cont != null) {
                 hasContinuationProfile.enter();
@@ -89,7 +86,6 @@ public class HaltToken extends Expression {
 
         protected Dispatch createCall() {
             Dispatch n = InternalCPSDispatch.create(false, execution, isTail);
-            n.setTail(isTail);
             return n;
         }
 

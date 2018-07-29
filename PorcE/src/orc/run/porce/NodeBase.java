@@ -64,6 +64,9 @@ public abstract class NodeBase extends Node implements HasPorcNode {
     @Override
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
+        if (isTail) {
+            properties.put("tail", "");
+        }
         if (section != null) {
             properties.put("sourceSection", section);
         }
@@ -111,6 +114,14 @@ public abstract class NodeBase extends Node implements HasPorcNode {
 
     public void setTail(boolean v) {
         isTail = v;
+    }
+
+    protected void ensureTail(NodeBase n) {
+        CompilerDirectives.interpreterOnly(() -> {
+            if (n.isTail != isTail) {
+                n.setTail(isTail);
+            }
+        });
     }
 
     @CompilerDirectives.CompilationFinal

@@ -25,6 +25,12 @@ public class TryFinally extends Expression {
     }
 
     @Override
+    public void setTail(boolean b) {
+        super.setTail(b);
+        handler.setTail(b);
+    }
+
+    @Override
     public void executePorcEUnit(final VirtualFrame frame) {
         try {
             body.executePorcEUnit(frame);

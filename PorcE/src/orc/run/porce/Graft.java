@@ -13,6 +13,8 @@ package orc.run.porce;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import orc.compiler.porce.PorcToPorcE;
+import orc.ast.porc.Variable;
 import orc.error.runtime.HaltException;
 import orc.run.porce.call.Call;
 import orc.run.porce.runtime.Future;
@@ -22,6 +24,7 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.PorcERuntime$;
 
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -29,7 +32,6 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.BranchProfile;
@@ -38,11 +40,11 @@ import com.oracle.truffle.api.profiles.ValueProfile;
 @Introspectable
 public abstract class Graft extends Expression {
     protected static final boolean TRUE = true;
-  
+
     protected final PorcEExecution execution;
 
     protected final ValueProfile targetRoot = ValueProfile.createIdentityProfile();
-    
+
     @Child
     protected Expression p;
     @Child
@@ -61,7 +63,7 @@ public abstract class Graft extends Expression {
     }
 
     private static final boolean allowSpawnInlining = PorcERuntime$.MODULE$.allowSpawnInlining();
-    
+
     protected boolean shouldInlineSpawn(VirtualFrame frame) {
 	try {
 	    final PorcERuntime r = execution.runtime();
@@ -74,9 +76,9 @@ public abstract class Graft extends Expression {
 	}
     }
 
-    protected final Object compSlotID = new Object();
-    protected final Object futSlotID = new Object();
-    protected final Object newCSlotID = new Object();
+    protected final Variable compSlotID = new Variable("comp");
+    protected final Variable futSlotID = new Variable("fut");
+    protected final Variable newCSlotID = new Variable("newC");
 
     protected FrameSlot createFrameSlot(final VirtualFrame frame, Object id) {
 	FrameDescriptor descriptor = frame.getFrameDescriptor();
@@ -101,6 +103,12 @@ public abstract class Graft extends Expression {
 	@Child
 	protected Expression call;
 
+        @Override
+        public void setTail(boolean v) {
+            super.setTail(v);
+            call.setTail(v);
+        }
+
 	protected ProfilingCallNode(Expression target, Expression... args) {
 	    this.target = target;
 	    call = Call.CPS.create((Expression) target.copy(), args, execution, false);
@@ -114,8 +122,9 @@ public abstract class Graft extends Expression {
 	public void executePorcEUnit(final VirtualFrame frame) {
 	    PorcERootNode root = targetProfile.profile((PorcERootNode) ((PorcEClosure) target.execute(frame)).body.getRootNode());
 	    long startTime = 0;
-	    if (shouldTimeRoot(root))
-		startTime = System.nanoTime();
+	    if (shouldTimeRoot(root)) {
+            startTime = System.nanoTime();
+        }
 	    try {
 		call.execute(frame);
 	    } finally {
@@ -130,17 +139,17 @@ public abstract class Graft extends Expression {
 	return new FullFutureNodes(futSlot, compSlot);
     }
 
-    protected class FullFutureNodes extends Node {	
+    protected class FullFutureNodes extends NodeBase {
 	@Child
-	NewContinuation compClosureNode;
+	protected NewContinuation compClosureNode;
 	@Child
-	NewToken newToken;
+	protected NewToken newToken;
 	@Child
-	Spawn spawn;
+	protected Spawn spawn;
 	@Child
-	HaltToken haltToken;
+	protected HaltToken haltToken;
 	@Child
-	Expression callP;
+	protected Expression callP;
 
 	protected FullFutureNodes(FrameSlot futSlot, FrameSlot compSlot) {
 	    newToken = NewToken.create((Expression) c.copy());
@@ -154,10 +163,16 @@ public abstract class Graft extends Expression {
 		    isTail);
 	}
 
+        @Override
+        public void setTail(boolean v) {
+            super.setTail(v);
+            callP.setTail(v);
+        }
+
 	protected RootNode createComp() {
 	    FrameDescriptor descript = new FrameDescriptor();
 	    FrameSlot newCSlot = descript.findOrAddFrameSlot(newCSlotID, FrameSlotKind.Object);
-	    
+
 	    Expression cr = NewContinuation.create(new Expression[] { Read.Closure.create(0), Read.Closure.create(2) }, createCR(), false);
 	    Expression newC = NewCounter.Simple.create(execution, Read.Closure.create(0), cr);
 
@@ -167,7 +182,11 @@ public abstract class Graft extends Expression {
 		    Write.Local.create(newCSlot, newC),
 		    new ProfilingCallNode(Read.Closure.create(1), newP, Read.Local.create(newCSlot))
 	    });
-	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), descript, body, 0, 3, execution);
+            body.setTail(true);
+	    PorcERootNode r = PorcERootNode.create(getPorcERootNode().getLanguage(PorcELanguage.class), descript, body, 0, 3,
+	            getPorcERootNode().getMethodKey(), execution);
+            r.setVariables(PorcToPorcE.variableSeq(),
+                    PorcToPorcE.variableSeq(new Variable("C"), new Variable("target"), new Variable("fut")));
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
@@ -176,10 +195,14 @@ public abstract class Graft extends Expression {
 	}
 
 	protected RootNode createCR() {
-	    Expression body = Sequence.create(new Expression[] { 
-		    BindStop.create(Read.Closure.create(1)), 
+	    Expression body = Sequence.create(new Expression[] {
+		    BindStop.create(Read.Closure.create(1)),
 		    HaltToken.create(Read.Closure.create(0), execution) });
-	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, body, 0, 2, execution);
+	    body.setTail(true);
+	    PorcERootNode r = PorcERootNode.create(getPorcERootNode().getLanguage(PorcELanguage.class), null, body, 0, 2,
+	            getPorcERootNode().getMethodKey(), execution);
+	    r.setVariables(PorcToPorcE.variableSeq(),
+	            PorcToPorcE.variableSeq(new Variable("C"), new Variable("fut")));
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
@@ -188,10 +211,14 @@ public abstract class Graft extends Expression {
 	}
 
 	protected RootNode createNewP() {
-	    Expression body = Sequence.create(new Expression[] { 
+	    Expression body = Sequence.create(new Expression[] {
 		    Bind.create(Read.Closure.create(1), Read.Argument.create(0), execution),
 		    HaltToken.create(Read.Closure.create(0), execution) });
-	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, body, 1, 2, execution);
+            body.setTail(true);
+	    PorcERootNode r = PorcERootNode.create(getPorcERootNode().getLanguage(PorcELanguage.class), null, body, 1, 2,
+	            getPorcERootNode().getMethodKey(), execution);
+            r.setVariables(PorcToPorcE.variableSeq(new Variable("v")),
+                    PorcToPorcE.variableSeq(new Variable("C"), new Variable("fut")));
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
@@ -199,12 +226,13 @@ public abstract class Graft extends Expression {
 	    return r;
 	}
     }
-    
+
     @Specialization(guards = { "!shouldInlineSpawn(frame)", "TRUE" })
     public PorcEUnit fullFuture(final VirtualFrame frame,
         @Cached("createFrameSlot(frame, compSlotID)") FrameSlot compSlot,
         @Cached("createFrameSlot(frame, futSlotID)") FrameSlot futSlot,
         @Cached("createFullFutureNodes(futSlot, compSlot)") FullFutureNodes nodes) {
+        ensureTail(nodes);
         frame.setObject(futSlot, new Future(false));
         frame.setObject(compSlot, nodes.compClosureNode.execute(frame));
         nodes.newToken.executePorcEUnit(frame);
@@ -238,7 +266,13 @@ public abstract class Graft extends Expression {
 	protected NoFutureNodes(FrameSlot futSlot, FrameSlot newCSlot) {
 	    body = createComp(futSlot, newCSlot);
 	}
-	
+
+	@Override
+        public void setTail(boolean v) {
+	    super.setTail(v);
+            body.setTail(v);
+        }
+
 	@Override
 	public void executePorcEUnit(final VirtualFrame frame) {
 	    body.executePorcEUnit(frame);
@@ -246,14 +280,14 @@ public abstract class Graft extends Expression {
 
 	protected Expression createComp(FrameSlot futSlot, FrameSlot newCSlot) {
 	    Expression cr = NewContinuation.create(
-		    new Expression[] { (Expression) c.copy(), Read.Local.create(futSlot), (Expression) p.copy() }, 
+		    new Expression[] { (Expression) c.copy(), Read.Local.create(futSlot), (Expression) p.copy() },
 		    createCR(), false);
 	    Expression newC = NewCounter.Simple.create(execution, (Expression) c.copy(), cr);
 
 	    Expression newP = NewContinuation.create(
-		    new Expression[] { Read.Local.create(newCSlot), Read.Local.create(futSlot), (Expression) p.copy() }, 
+		    new Expression[] { Read.Local.create(newCSlot), Read.Local.create(futSlot), (Expression) p.copy() },
 		    createNewP(), false);
-	    
+
 	    Expression callV = new ProfilingCallNode((Expression) v.copy(), newP, Read.Local.create(newCSlot));
 	    Expression haltToken = HaltToken.create(Read.Local.create(newCSlot), execution);
 
@@ -282,9 +316,13 @@ public abstract class Graft extends Expression {
 				callP.executePorcEUnit(frame);
 			    }
 			}
-		    }, 
+		    },
 		    HaltToken.create(Read.Closure.create(0), execution) });
-	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, crBody, 0, 3, execution);
+	    crBody.setTail(true);
+	    PorcERootNode r = PorcERootNode.create(getPorcERootNode().getLanguage(PorcELanguage.class), null, crBody, 0, 3,
+	            getPorcERootNode().getMethodKey(), execution);
+            r.setVariables(PorcToPorcE.variableSeq(),
+                    PorcToPorcE.variableSeq(new Variable("C"), new Variable("flag"), new Variable("target")));
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
@@ -293,7 +331,7 @@ public abstract class Graft extends Expression {
 	}
 
 	protected RootNode createNewP() {
-	    Expression pBody = Sequence.create(new Expression[] { 
+	    Expression pBody = Sequence.create(new Expression[] {
 		    new Expression() {
 			@Child
 			protected Expression readFlag = Read.Closure.create(1);
@@ -312,7 +350,11 @@ public abstract class Graft extends Expression {
 			}
 		    },
 		    HaltToken.create(Read.Closure.create(0), execution) });
-	    PorcERootNode r = PorcERootNode.create(Graft.this.getRootNode().getLanguage(PorcELanguage.class), null, pBody, 1, 3, execution);
+            pBody.setTail(true);
+	    PorcERootNode r = PorcERootNode.create(getPorcERootNode().getLanguage(PorcELanguage.class), null, pBody, 1, 3,
+	            getPorcERootNode().getMethodKey(), execution);
+            r.setVariables(PorcToPorcE.variableSeq(new Variable("v")),
+                    PorcToPorcE.variableSeq(new Variable("C"), new Variable("flag"), new Variable("target")));
 	    if (porcNode().isDefined()) {
 		r.setPorcAST(porcNode().get());
 	    }
@@ -320,13 +362,14 @@ public abstract class Graft extends Expression {
 	    return r;
 	}
     }
-    
+
     @Specialization(guards = { "shouldInlineSpawn(frame)" }, replaces = { "fullFuture" })
     public PorcEUnit noFuture(final VirtualFrame frame,
 	    @Cached("createFrameSlot(frame, futSlotID)") FrameSlot futSlot,
 	    @Cached("createFrameSlot(frame, newCSlotID)") FrameSlot newCSlot,
 	    @Cached("createNoFutureNodes(futSlot, newCSlot)") NoFutureNodes nodes) {
-	// Abuse the fut slot for the already-done flag. This is set on publication and on halting.
+        ensureTail(nodes);
+        // Abuse the fut slot for the already-done flag. This is set on publication and on halting.
         frame.setObject(futSlot, new AtomicBoolean(false));
         nodes.executePorcEUnit(frame);
         return PorcEUnit.SINGLETON;
@@ -340,6 +383,11 @@ public abstract class Graft extends Expression {
         @Cached("createFullFutureNodes(futSlot, compSlot)") FullFutureNodes nodes) {
         return fullFuture(frame, compSlot, futSlot, nodes);
     }
+
+    protected PorcERootNode getPorcERootNode() {
+        return (PorcERootNode) Graft.this.getRootNode();
+    }
+
 
     public static Graft create(PorcEExecution execution, Expression p, Expression c, Expression t, Expression v) {
         return GraftNodeGen.create(execution, p, c, t, v);

@@ -25,6 +25,7 @@ import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.ValueClassesProfile;
 import orc.run.porce.HaltToken;
 import orc.run.porce.Logger;
+import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.CPSCallContext;
 import orc.run.porce.runtime.Counter;
@@ -112,24 +113,30 @@ public class ExternalCPSDispatch extends Dispatch {
             super(orig.execution);
         }
 
+        private static final Object SENTINAL = new Object();
+
         protected final BranchProfile exceptionProfile = BranchProfile.create();
         protected final BranchProfile haltProfile = BranchProfile.create();
 
         protected final ValueClassesProfile argumentClassesProfile = new ValueClassesProfile();
 
-        @CompilerDirectives.CompilationFinal
-        protected Dispatch dispatchP = null;
+//        @CompilerDirectives.CompilationFinal
+//        protected Dispatch dispatchP = null;
+//
+//        protected Dispatch getDispatchP() {
+//            if (dispatchP == null) {
+//                CompilerDirectives.transferToInterpreterAndInvalidate();
+//                computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
+//                    Dispatch n = insert();
+//                    notifyInserted(n);
+//                    return n;
+//                });
+//            }
+//            return dispatchP;
+//        }
 
-        protected Dispatch getDispatchP() {
-            if (dispatchP == null) {
-                CompilerDirectives.transferToInterpreterAndInvalidate();
-                computeAtomicallyIfNull(() -> dispatchP, (v) -> dispatchP = v, () -> {
-                    Dispatch n = insert(InternalCPSDispatch.create(/*forceInline =*/ false, execution, isTail));
-                    notifyInserted(n);
-                    return n;
-                });
-            }
-            return dispatchP;
+        protected Dispatch createDispatchP() {
+            return InternalCPSDispatch.create(/*forceInline =*/ true, execution, isTail);
         }
 
         public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter,
@@ -144,10 +151,13 @@ public class ExternalCPSDispatch extends Dispatch {
                 @Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker,
                 @Cached("create()") InvokerCanInvoke canInvoke,
                 @Cached("create(execution)") InvokerInvokeDirect invokeDirect,
+                @Cached("createDispatchP()") Dispatch dispatchP,
                 @Cached("create(execution)") HaltToken.KnownCounter haltToken) {
+            ensureTail(dispatchP);
+            ensureTail(haltToken);
             // DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
+            Object v = SENTINAL;
             try {
-                final Object v;
                 try {
                     v = invokeDirect.executeInvokeDirect(frame, invoker, target, argumentClassesProfile.profile(arguments));
                 } finally {
@@ -156,16 +166,20 @@ public class ExternalCPSDispatch extends Dispatch {
                                 .stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
                     }
                 }
-                getDispatchP().dispatch(frame, pub, v);
             } catch (final TailCallException e) {
                 throw e;
             } catch (final HaltException e) {
                 haltProfile.enter();
+                v = SENTINAL;
                 haltToken.execute(frame, counter);
             } catch (final Throwable e) {
                 exceptionProfile.enter();
+                v = SENTINAL;
                 execution.notifyOfException(e, this);
                 haltToken.execute(frame, counter);
+            }
+            if (v != SENTINAL) {
+                dispatchP.dispatch(frame, pub, v);
             }
             // Token: All exception handlers halt the token that was passed to this
             // call. Calls are not allowed to keep the token if they throw an
@@ -182,6 +196,7 @@ public class ExternalCPSDispatch extends Dispatch {
                 @Cached("create()") InvokerCanInvoke canInvoke,
                 @Cached("create(execution)") InvokerInvoke invoke,
                 @Cached("createVirtualContextHandler()") VirtualContextHandler handler) {
+            ensureTail(handler);
             // Token: Passed to callContext from arguments.
             final DirectVirtualCallContext callContext = new DirectVirtualCallContext(execution, getCallSiteId()) {
                 @Override
@@ -235,10 +250,12 @@ public class ExternalCPSDispatch extends Dispatch {
                 @Cached("createBinaryProfile()") ConditionProfile isDirectProfile,
                 @Cached("create(execution)") InvokerInvokeDirect invokeDirect,
                 @Cached("create(execution)") InvokerInvoke invoke,
-                @Cached("createVirtualContextHandler()") VirtualContextHandler handler) {
+                @Cached("createVirtualContextHandler()") VirtualContextHandler handler,
+                @Cached("createDispatchP()") Dispatch dispatchP,
+                @Cached("create(execution)") HaltToken.KnownCounter haltToken) {
             final Invoker invoker = getInvokerWithBoundary(target, arguments);
             if (ExternalCPSDirectSpecialization && isDirectProfile.profile(invoker instanceof DirectInvoker)) {
-                specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker, null, invokeDirect, handler.haltToken);
+                specificDirect(frame, target, pub, counter, term, arguments, (DirectInvoker) invoker, null, invokeDirect, dispatchP, haltToken);
             } else {
                 specific(frame, target, pub, counter, term, arguments, invoker, null, invoke, handler);
             }
@@ -278,7 +295,7 @@ public class ExternalCPSDispatch extends Dispatch {
          *
          * @author amp
          */
-        protected final class VirtualContextHandler extends Node {
+        protected final class VirtualContextHandler extends NodeBase {
             private final ConditionProfile exactlyOneSelfPublicationProfile = ConditionProfile.createBinaryProfile();
             private final ConditionProfile hasSelfPublicationsProfile = ConditionProfile.createBinaryProfile();
             private final IntValueProfile selfPublicationsListSizeProfile = IntValueProfile.createIdentityProfile();
@@ -292,7 +309,10 @@ public class ExternalCPSDispatch extends Dispatch {
             private final IntValueProfile otherHaltsListSizeProfile = IntValueProfile.createIdentityProfile();
 
             @Child
-            HaltToken.KnownCounter haltToken = HaltToken.KnownCounter.create(execution);
+            protected Dispatch dispatchP = InternalCPSDispatch.create(/*forceInline =*/ false, execution, false);
+
+            @Child
+            protected HaltToken.KnownCounter haltToken = HaltToken.KnownCounter.create(execution);
 
             @SuppressWarnings("null")
             public void execute(VirtualFrame frame, PorcEClosure pub, Counter counter, Terminator term, DirectVirtualCallContext callContext) {
@@ -312,7 +332,7 @@ public class ExternalCPSDispatch extends Dispatch {
                             //throw new RuntimeException();
                             ctx.c().newToken();
                         }
-                        getDispatchP().dispatch(frame, ctx.p(), v);
+                        dispatchP.dispatch(frame, ctx.p(), v);
                         if (otherPublicationsHaltProfile.profile(halt)) {
                             ctx.t().removeChild(ctx);
                         }
@@ -330,14 +350,14 @@ public class ExternalCPSDispatch extends Dispatch {
                 }
 
                 if (exactlyOneSelfPublicationProfile.profile(selfPublicationList != null && selfPublicationList.size() == 1 && halted)) {
-                    getDispatchP().dispatch(frame, pub, selfPublicationList.get(0));
+                    dispatchP.dispatch(frame, pub, selfPublicationList.get(0));
                 } else {
                     if (hasSelfPublicationsProfile.profile(selfPublicationList != null)) {
                         final int size = selfPublicationsListSizeProfile.profile(selfPublicationList.size());
                         for (int i = 0; i < size; i++) {
                             //throw new RuntimeException();
                             counter.newToken();
-                            getDispatchP().dispatch(frame, pub, selfPublicationList.get(i));
+                            dispatchP.dispatch(frame, pub, selfPublicationList.get(i));
                         }
                     }
                     if (haltedProfile.profile(halted)) {

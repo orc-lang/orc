@@ -88,6 +88,14 @@ public class Resolve extends Expression {
         @Child
         protected Dispatch call = null;
 
+        @Override
+        public void setTail(boolean b) {
+            super.setTail(b);
+            if (call != null) {
+                call.setTail(b);
+            }
+        }
+
         @Specialization(guards = { "join.isBlocked()", "TRUE" })
         public PorcEUnit blocked(final VirtualFrame frame,
                 final Resolver join,
@@ -103,7 +111,7 @@ public class Resolve extends Expression {
                 if (call == null) {
                         CompilerDirectives.transferToInterpreterAndInvalidate();
                         computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
-                                Dispatch n = insert(InternalCPSDispatch.create(false, execution, isTail));
+                                Dispatch n = insert(InternalCPSDispatch.create(true, execution, isTail));
                                 n.setTail(isTail);
                                 notifyInserted(n);
                                 return n;

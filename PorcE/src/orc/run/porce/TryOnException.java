@@ -22,13 +22,20 @@ public class TryOnException extends Expression {
     protected Expression body;
     @Child
     protected Expression handler;
-    
+
     private final BranchProfile haltCatchProfile = BranchProfile.create();
     private final BranchProfile killCatchProfile = BranchProfile.create();
 
     public TryOnException(final Expression body, final Expression handler) {
         this.body = body;
         this.handler = handler;
+    }
+
+    @Override
+    public void setTail(boolean b) {
+        super.setTail(b);
+        body.setTail(b);
+        handler.setTail(b);
     }
 
     @Override

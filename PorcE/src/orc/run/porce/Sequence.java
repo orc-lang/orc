@@ -27,6 +27,15 @@ public class Sequence extends Expression {
     }
 
     @Override
+    public void setTail(boolean b) {
+        super.setTail(b);
+        for(int i = 0; i < exprs.length - 1; i++) {
+            assert !exprs[i].isTail;
+        }
+        exprs[exprs.length - 1].setTail(b);
+    }
+
+    @Override
     @ExplodeLoop
     public Object execute(final VirtualFrame frame) {
         for (int i = 0; i < exprs.length - 1; i++) {
@@ -36,15 +45,15 @@ public class Sequence extends Expression {
         return exprs[exprs.length - 1].execute(frame);
     }
 
-//    private void addExprsToList(final List<Expression> l) {
-//        Arrays.asList(exprs).forEach((expr) -> {
-//            if (expr instanceof Sequence) {
-//                ((Sequence) expr).addExprsToList(l);
-//            } else {
-//                l.add(expr);
-//            }
-//        });
-//    }
+    private void addExprsToList(final List<Expression> l) {
+        Arrays.asList(exprs).forEach((expr) -> {
+            if (expr instanceof Sequence) {
+                ((Sequence) expr).addExprsToList(l);
+            } else {
+                l.add(expr);
+            }
+        });
+    }
 
     /**
      * Smart constructor for Sequence objects.
@@ -52,9 +61,9 @@ public class Sequence extends Expression {
     public static Expression create(final Expression[] exprs) {
         final List<Expression> l = new ArrayList<>(exprs.length);
         Arrays.asList(exprs).forEach((expr) -> {
-            /*if (expr instanceof Sequence) {
+            if (expr instanceof Sequence) {
                 ((Sequence) expr).addExprsToList(l);
-            } else*/ {
+            } else {
                 l.add(expr);
             }
         });

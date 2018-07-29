@@ -50,7 +50,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 
     public static FrameSlot getCallStartTimeSlot(Node n) {
         if (n instanceof Call) {
-            return ((Call) n).getCallStartTimeSlot();
+            return ((Call<?>) n).getCallStartTimeSlot();
         } else {
             return getCallStartTimeSlot(n.getParent());
         }

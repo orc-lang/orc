@@ -230,11 +230,12 @@ public class Force {
 	}
 
 	protected Dispatch createCall() {
-	    return InternalCPSDispatch.create(true, execution, false);
+	    return InternalCPSDispatch.create(true, execution, isTail);
 	}
 
 	@Specialization(guards = { "InlineForceResolved", "join.isResolved()" }, replaces = { "blocked" })
 	public PorcEUnit resolved(final VirtualFrame frame, final Join join, @Cached("createCall()") Dispatch call) {
+	    ensureTail(call);
 	    call.executeDispatchWithEnvironment(frame, join.p(), join.values());
 	    return PorcEUnit.SINGLETON;
 	}
@@ -280,7 +281,7 @@ public class Force {
 	protected SingleFuture(final PorcEExecution execution) {
 	    super();
 	    this.execution = execution;
-	    call = InternalCPSDispatch.create(true, execution, false);
+	    call = InternalCPSDispatch.create(true, execution, isTail);
 	}
 
 	protected abstract Expression getC();
