@@ -55,15 +55,16 @@ public class InternalCPSDispatch extends Dispatch {
     @Child
     protected InternalCPSDispatch.InternalCPSDispatchInternal internal;
 
-    protected InternalCPSDispatch(final boolean forceInline, final PorcEExecution execution) {
+    protected InternalCPSDispatch(final PorcEExecution execution) {
         super(execution);
-        internal = InternalCPSDispatch.InternalCPSDispatchInternal.createBare(forceInline, execution);
+        internal = InternalCPSDispatch.InternalCPSDispatchInternal.createBare(execution);
     }
 
     protected InternalCPSDispatch(final InternalCPSDispatch orig) {
         super(orig.internal.execution);
-        internal = InternalCPSDispatch.InternalCPSDispatchInternal.createBare(orig.internal.forceInline,
-                orig.internal.execution);
+        internal = InternalCPSDispatch.InternalCPSDispatchInternal.createBare(orig.internal.execution);
+        orig.ensureForceInline(this);
+        ensureForceInline(this);
     }
 
     @Override
@@ -91,23 +92,15 @@ public class InternalCPSDispatch extends Dispatch {
         return newArguments;
     }
 
-    static InternalCPSDispatch createBare(final boolean forceInline, PorcEExecution execution) {
-        return new InternalCPSDispatch(forceInline, execution);
-    }
-
     static InternalCPSDispatch createBare(PorcEExecution execution) {
-        return new InternalCPSDispatch(false, execution);
+        return new InternalCPSDispatch(execution);
     }
 
     public static Dispatch create(final PorcEExecution execution, boolean isTail) {
-        return create(false, execution, isTail);
-    }
-
-    public static Dispatch create(final boolean forceInline, final PorcEExecution execution, boolean isTail) {
         if (isTail) {
-            return createBare(forceInline, execution);
+            return createBare(execution);
         } else {
-            return CatchTailDispatch.create(createBare(forceInline, execution), execution);
+            return CatchTailDispatch.create(createBare(execution), execution);
         }
     }
 
@@ -115,16 +108,13 @@ public class InternalCPSDispatch extends Dispatch {
     @Introspectable
     @Instrumentable(factory = InternalCPSDispatchInternalWrapper.class)
     public static abstract class InternalCPSDispatchInternal extends DispatchBase {
-        protected final boolean forceInline;
-
-        protected InternalCPSDispatchInternal(final boolean forceInline, final PorcEExecution execution) {
+        protected InternalCPSDispatchInternal(final PorcEExecution execution) {
             super(execution);
-            this.forceInline = forceInline;
         }
 
         protected InternalCPSDispatchInternal(final InternalCPSDispatchInternal orig) {
             super(orig.execution);
-            this.forceInline = orig.forceInline;
+            orig.ensureForceInline(this);
         }
 
         @CompilationFinal
@@ -186,7 +176,7 @@ public class InternalCPSDispatch extends Dispatch {
         }
 
 //        @Specialization(guards = { "TruffleASTInlining", "isTail", "nodeCount < TruffleASTInliningLimit",
-//                "target.body == expected", "forceInline", "body != null",
+//                "target.body == expected", "inliningForced", "body != null",
 //                "getRootNodeCached() != target.body.getRootNode()" }, limit = "3")
         @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
         public void specificInlineTail(final VirtualFrame frame,
@@ -277,7 +267,7 @@ public class InternalCPSDispatch extends Dispatch {
                 @Cached("target.body") RootCallTarget expected,
                 @Cached("create(expected)") DirectCallNode call) {
             CompilerDirectives.interpreterOnly(() -> {
-                if (sameMethod(expected) || forceInline) {
+                if (sameMethod(expected) || inliningForced) {
                     call.forceInlining();
                 }
             });
@@ -319,8 +309,8 @@ public class InternalCPSDispatch extends Dispatch {
             }
         }
 
-        static InternalCPSDispatchInternal createBare(final boolean forceInline, final PorcEExecution execution) {
-            return InternalCPSDispatchFactory.InternalCPSDispatchInternalNodeGen.create(forceInline, execution);
+        static InternalCPSDispatchInternal createBare(final PorcEExecution execution) {
+            return InternalCPSDispatchFactory.InternalCPSDispatchInternalNodeGen.create(execution);
         }
 
         /* Utilties */

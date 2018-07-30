@@ -230,7 +230,9 @@ public class Force {
 	}
 
 	protected Dispatch createCall() {
-	    return InternalCPSDispatch.create(true, execution, isTail);
+	    Dispatch n = InternalCPSDispatch.create(execution, isTail);
+	    n.forceInline();
+            return n;
 	}
 
 	@Specialization(guards = { "InlineForceResolved", "join.isResolved()" }, replaces = { "blocked" })
@@ -281,7 +283,8 @@ public class Force {
 	protected SingleFuture(final PorcEExecution execution) {
 	    super();
 	    this.execution = execution;
-	    call = InternalCPSDispatch.create(true, execution, isTail);
+	    call = InternalCPSDispatch.create(execution, isTail);
+            call.forceInline();
 	}
 
 	protected abstract Expression getC();

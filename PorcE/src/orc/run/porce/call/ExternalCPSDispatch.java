@@ -136,7 +136,8 @@ public class ExternalCPSDispatch extends Dispatch {
 //        }
 
         protected Dispatch createDispatchP() {
-            return InternalCPSDispatch.create(/*forceInline =*/ true, execution, isTail);
+            return StackCheckingDispatch.create(execution);
+            // return InternalCPSDispatch.create(/*forceInline =*/ true, execution, isTail);
         }
 
         public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter,
@@ -154,6 +155,7 @@ public class ExternalCPSDispatch extends Dispatch {
                 @Cached("createDispatchP()") Dispatch dispatchP,
                 @Cached("create(execution)") HaltToken.KnownCounter haltToken) {
             ensureTail(dispatchP);
+            ensureForceInline(dispatchP);
             ensureTail(haltToken);
             // DUPLICATION: This code is duplicated (mostly) in ExternalDirectDispatch.specific.
             Object v = SENTINAL;
@@ -309,7 +311,7 @@ public class ExternalCPSDispatch extends Dispatch {
             private final IntValueProfile otherHaltsListSizeProfile = IntValueProfile.createIdentityProfile();
 
             @Child
-            protected Dispatch dispatchP = InternalCPSDispatch.create(/*forceInline =*/ false, execution, false);
+            protected Dispatch dispatchP = InternalCPSDispatch.create(execution, false);
 
             @Child
             protected HaltToken.KnownCounter haltToken = HaltToken.KnownCounter.create(execution);

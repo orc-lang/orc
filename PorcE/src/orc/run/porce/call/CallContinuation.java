@@ -46,7 +46,7 @@ public class CallContinuation<ExternalDispatch extends Dispatch> extends Express
     }
 
     protected InternalCPSDispatch makeInternalCall() {
-        return InternalCPSDispatch.createBare(false, execution);
+        return InternalCPSDispatch.createBare(execution);
     }
 
     protected InternalCPSDispatch getInternalCall() {
