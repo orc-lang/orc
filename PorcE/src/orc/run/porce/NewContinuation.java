@@ -33,7 +33,8 @@ public class NewContinuation extends Expression {
 	protected final RootCallTarget callTarget;
 	protected final boolean reuseClosure;
 
-	private volatile PorcEClosure closureCache = null;
+        @CompilerDirectives.CompilationFinal
+	private PorcEClosure closureCache = null;
 
 	@CompilerDirectives.CompilationFinal
 	private volatile long closureCacheChangeCount = 0;
@@ -70,7 +71,7 @@ public class NewContinuation extends Expression {
 		final Object[] capturedValues = (Object[]) frame.getArguments()[0];
 		return new PorcEClosure(capturedValues, callTarget, false);
 	}
-	
+
 	@Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
 	@ExplodeLoop
 	public Object cached(final VirtualFrame frame) throws StopCachingException {
@@ -99,6 +100,7 @@ public class NewContinuation extends Expression {
 		}
 
 		if (closure == null) {
+		        CompilerDirectives.transferToInterpreterAndInvalidate();
 			// If we don't have a cached closure build one and set the
 			// cache.
 			Object[] capturedValues = new Object[capturedVariables.length];
