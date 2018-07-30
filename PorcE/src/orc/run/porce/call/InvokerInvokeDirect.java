@@ -33,6 +33,7 @@ import orc.values.sites.OrcJavaCompatibility;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
@@ -118,8 +119,11 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return f.apply(a, b);
     }
 
-    @Specialization(guards = { "!invoker.invocable().isVarArgs()", "KnownSiteSpecialization" })
-    public Object invocableInvoker(InvocableInvoker invoker, Object target, Object[] arguments) {
+    @Specialization(guards = { "!invoker.invocable().isVarArgs()", "KnownSiteSpecialization",
+            "invoker.invocable().parameterTypes() == parameterTypes" })
+    public Object invocableInvoker(InvocableInvoker invoker, Object target, Object[] arguments,
+            @Cached(value = "invoker.invocable().parameterTypes()", dimensions = 1) final Class<?>[] parameterTypes) {
+        CompilerAsserts.compilationConstant(invoker);
         Object theObject = invoker.getRealTarget(target);
         OrcJavaCompatibility.Invocable invocable = invoker.invocable();
 
@@ -132,7 +136,6 @@ abstract class InvokerInvokeDirect extends NodeBase {
                 throw new NullPointerException(
                         "Instance method called without a target object (i.e. non-static method called on a class)");
             }
-            final Class<?>[] parameterTypes = invocable.parameterTypes();
             for (int i = 0; i < arguments.length; i++) {
                 final Object a = arguments[i];
                 final Class<?> cls = parameterTypes[i];

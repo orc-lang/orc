@@ -15,11 +15,16 @@ package orc.run.porce.call;
 
 import orc.Invoker;
 import orc.run.porce.NodeBase;
+import orc.run.porce.SpecializationConfiguration;
 import orc.values.sites.InvocableInvoker;
+import orc.values.sites.OrcJavaCompatibility;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -31,6 +36,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
  *
  * @author amp
  */
+@ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
 abstract class InvokerCanInvoke extends NodeBase {
     /**
@@ -47,14 +53,21 @@ abstract class InvokerCanInvoke extends NodeBase {
      */
     public abstract boolean executeCanInvoke(VirtualFrame frame, Invoker invoker, Object target, Object[] arguments);
 
+    @Specialization(guards = { "KnownSiteSpecialization", "invoker.argumentClss() == argumentClss" })
+    public boolean invocableInvoker(InvocableInvoker invoker, Object target, Object[] arguments,
+            @Cached(value = "invoker.argumentClss()", dimensions = 1) final Class<?>[] argumentClss) {
+
+        CompilerAsserts.compilationConstant(invoker);
+        return invoker.canInvokeTarget(target) && orc.InvocationBehaviorUtilities.valuesHaveType(arguments, argumentClss);
+    }
+
     @Specialization(guards = { "isPartiallyEvaluable(invoker)" })
     public boolean partiallyEvaluable(Invoker invoker, Object target, Object[] arguments) {
         return invoker.canInvoke(target, arguments);
     }
 
     protected static boolean isPartiallyEvaluable(Invoker invoker) {
-        return invoker instanceof InvocableInvoker ||
-                invoker instanceof OverloadedDirectInvokerBase1 ||
+        return  invoker instanceof OverloadedDirectInvokerBase1 ||
                 invoker instanceof OverloadedDirectInvokerBase2 ||
                 invoker instanceof orc.compile.orctimizer.OrcAnnotation.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayDerefSite.Invoker ||
