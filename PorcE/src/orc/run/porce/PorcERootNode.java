@@ -82,30 +82,37 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private boolean totalCallsDone = false;
 
     final public void addSpawnedCall(long time) {
-        totalSpawnedTime.getAndAdd(time);
-        totalSpawnedCalls.getAndIncrement();
+        if (timePerCall < 0) {
+            totalSpawnedTime.getAndAdd(time);
+            long v = totalSpawnedCalls.getAndIncrement();
+            if (v >= SpecializationConfiguration.MinCallsForTimePerCall) {
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+            }
+        }
     }
 
     final public boolean shouldTimeCall() {
-    	return timePerCall < 0 || CompilerDirectives.inInterpreter();
+    	return /*CompilerDirectives.inCompiledCode() &&*/ timePerCall < 0;
     }
 
     final public long getTimePerCall() {
-	//CompilerAsserts.compilationConstant(this);
-    	if (shouldTimeCall()) {
-        	long n = totalSpawnedCalls.get();
-            	long t = totalSpawnedTime.get();
+        if (shouldTimeCall()) {
+            long n = totalSpawnedCalls.get();
+            long t = totalSpawnedTime.get();
 
-    		if (n >= SpecializationConfiguration.MinCallsForTimePerCall) {
-        		CompilerDirectives.transferToInterpreterAndInvalidate();
-        		timePerCall = t / n;
-    		} else if (n < 2) {
-                	return Long.MAX_VALUE;
-    		} else {
-                	return t / n;
-    		}
-    	}
-    	return timePerCall;
+            if (n >= SpecializationConfiguration.MinCallsForTimePerCall) {
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+                timePerCall = t / n;
+            } else if (n >= 5) {
+                return t / n;
+            }
+        }
+
+        if (timePerCall < 0) {
+            return Long.MAX_VALUE;
+        } else {
+            return timePerCall;
+        }
     }
 
     private Option<PorcAST> porcNode = Option.apply(null);
