@@ -87,8 +87,8 @@ object JavaCall {
       val cls = this.cls
       val invocable = selectMethod(cls, methodName, argClss)
       new InvocableInvoker(invocable, cls, argClss) {
-        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-          cls == target.getClass() && valuesHaveType(arguments, argClss)
+        def canInvokeTarget(target: AnyRef): Boolean = {
+          cls == target.getClass()
         }
         override def toString() = s"<Member Invoker>($cls.$methodName)"
       }
@@ -99,8 +99,8 @@ object JavaCall {
       val cls = this.cls
       val invocable = selectMethod(cls, methodName, argClss)
       new InvocableInvoker(invocable, cls, argClss) {
-        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-          cls == target && valuesHaveType(arguments, argClss)
+        def canInvokeTarget(target: AnyRef): Boolean = {
+          cls == target
         }
         override def toString() = s"<Member Invoker>($cls.$methodName)"
       }
@@ -240,12 +240,17 @@ sealed abstract class InvocableInvoker(
     @inline final val targetCls: Class[_],
     @inline final val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
 
+  final def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    import orc.InvocationBehaviorUtilities._
+    canInvokeTarget(target) && valuesHaveType(arguments, argumentClss)
+  }
+
   /** As in Invoker, except that it must only contain constant length loops (with
    *  respect to invocable, etc) and cannot use recursion. This requirement applies
    *  to all transitively called functions as well. This rules out most of the
    *  Scala collections library and any calls to unknown code.
    */
-  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
+  def canInvokeTarget(target: AnyRef): Boolean
 
   final val mh = {
     val m = invocable.toMethodHandle
@@ -325,12 +330,11 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
       val argClss = args.map(valueType)
       val invocable = selectMethod(javaClass, memberName, argClss)
       new InvocableInvoker(invocable, javaClass, argClss) {
-        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+        def canInvokeTarget(target: AnyRef): Boolean = {
           target match {
             case p: JavaMemberProxy =>
               p.javaClass == javaClass &&
-                p.memberName == memberName &&
-                valuesHaveType(arguments, argumentClss)
+                (p.memberName eq memberName)
             case _ => false
           }
         }
