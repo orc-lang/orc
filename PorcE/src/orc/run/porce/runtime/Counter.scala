@@ -20,6 +20,7 @@ import orc.util.{ DumperRegistry, SummingStopWatch, Tracer }
 import com.oracle.truffle.api.CompilerDirectives.{ CompilationFinal, TruffleBoundary }
 import com.oracle.truffle.api.CompilerDirectives
 import java.util.logging.Level
+import com.oracle.truffle.api.profiles.ConditionProfile
 
 @CompilationFinal
 object Counter {
@@ -130,14 +131,6 @@ object Counter {
     var globalCountHeld: Boolean = false
     var nextCounterOffset: CounterOffset = null
 
-    def register(worker: SimpleWorkStealingScheduler#Worker) = {
-      if (CompilerDirectives.injectBranchProbability(
-        CompilerDirectives.SLOWPATH_PROBABILITY,
-        !inThreadList)) {
-        pushCounterOffset(worker, this) : @inline
-      }
-    }
-
     override def toString(): String = {
       f"CounterOffset@${hashCode()}%x(inThreadList=$inThreadList, value=$value, globalCountHeld=$globalCountHeld)"
     }
@@ -208,6 +201,62 @@ object Counter {
         }
       case _ => ()
     }
+  }
+
+  sealed trait GetCounterOffsetContext {
+    def enterOffWorker(): Unit
+    def profileCreateCounterOffset(b: Boolean): Boolean
+    def profileInThreadList(b: Boolean): Boolean
+  }
+
+  sealed trait FlushContext extends GetCounterOffsetContext {
+    def profileNonzeroOffset(b: Boolean): Boolean
+    def profileHalted(b: Boolean): Boolean
+  }
+
+  sealed trait NewTokenContext extends GetCounterOffsetContext {
+    def profileGlobalCountHeld(b: Boolean): Boolean
+  }
+
+  sealed class GetCounterOffsetContextImpl(runtime: PorcERuntime) extends GetCounterOffsetContext {
+    def enterOffWorker() = {
+      if (runtime.allExecutionOnWorkers.isValid()) {
+        CompilerDirectives.transferToInterpreterAndInvalidate()
+        runtime.allExecutionOnWorkers.invalidate()
+      }
+    }
+
+    val createCounterOffsetProfile = ConditionProfile.createCountingProfile()
+    val inThreadListProfile = ConditionProfile.createCountingProfile()
+
+    def profileCreateCounterOffset(b: Boolean): Boolean = createCounterOffsetProfile.profile(b)
+    def profileInThreadList(b: Boolean): Boolean = inThreadListProfile.profile(b)
+  }
+
+  final class NewTokenContextImpl(runtime: PorcERuntime) extends GetCounterOffsetContextImpl(runtime) with NewTokenContext {
+    val globalCountHeldProfile = ConditionProfile.createCountingProfile()
+
+    def profileGlobalCountHeld(b: Boolean): Boolean = globalCountHeldProfile.profile(b)
+  }
+
+  final class FlushContextImpl(runtime: PorcERuntime) extends GetCounterOffsetContextImpl(runtime) with FlushContext {
+    val nonzeroOffsetProfile = ConditionProfile.createCountingProfile()
+    val haltedProfile = ConditionProfile.createCountingProfile()
+
+    def profileNonzeroOffset(b: Boolean): Boolean = nonzeroOffsetProfile.profile(b)
+    def profileHalted(b: Boolean): Boolean = haltedProfile.profile(b)
+  }
+
+  object NoOpContext extends FlushContext with NewTokenContext {
+    def enterOffWorker() = ()
+
+    def profileCreateCounterOffset(b: Boolean): Boolean = b
+    def profileInThreadList(b: Boolean): Boolean = b
+
+    def profileNonzeroOffset(b: Boolean): Boolean = b
+    def profileHalted(b: Boolean): Boolean = b
+
+    def profileGlobalCountHeld(b: Boolean): Boolean = b
   }
 }
 
@@ -340,27 +389,28 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     }
   }
 
-  protected final def getCounterOffset(): CounterOffset = {
+  protected final def getCounterOffset()(implicit ctx: GetCounterOffsetContext): CounterOffset = {
     val thread = Thread.currentThread()
-    if (CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
-        thread.isInstanceOf[SimpleWorkStealingScheduler#Worker])) {
+    if (thread.isInstanceOf[SimpleWorkStealingScheduler#Worker]) {
       val worker = thread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
-      if (CompilerDirectives.injectBranchProbability(CompilerDirectives.SLOWPATH_PROBABILITY,
-          counterOffsets(worker.workerID) == null)) {
+      if (ctx.profileCreateCounterOffset(counterOffsets(worker.workerID) == null)) {
         @TruffleBoundary(allowInlining = false) @noinline
         def newCOH() = {
           val r = new CounterOffset(this)
           counterOffsets(worker.workerID) = r
-          r.register(worker)
+          pushCounterOffset(worker, r)
           r
         }
         newCOH()
       } else {
         val offset = counterOffsets(worker.workerID)
-        offset.register(worker)
+        if (!ctx.profileInThreadList(offset.inThreadList)) {
+          pushCounterOffset(worker, offset)
+        }
         offset
       }
     } else {
+      ctx.enterOffWorker();
       null
     }
   }
@@ -374,10 +424,10 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     n
   }
 
-  final def flushCounterOffsetAndHandleOptimized(coh: CounterOffset): PorcEClosure = {
-    if (coh.value != 0) {
+  final def flushCounterOffsetAndHandleOptimized(coh: CounterOffset)(implicit ctx: FlushContext): PorcEClosure = {
+    if (ctx.profileNonzeroOffset(coh.value != 0)) {
       val n = flushCounterOffsetAndGet(coh)
-      if (n == 0) {
+      if (ctx.profileHalted(n == 0)) {
         onHaltOptimized()
       } else {
         null
@@ -390,7 +440,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
 
   @TruffleBoundary(allowInlining = true) @noinline
   final def flushCounterOffsetAndHandle(coh: CounterOffset): Unit = {
-    scheduleHaltClosureIfNeeded(flushCounterOffsetAndHandleOptimized(coh))
+    scheduleHaltClosureIfNeeded(flushCounterOffsetAndHandleOptimized(coh)(NoOpContext))
   }
 
   private final def flushCounterOffsetIfLocalHalt(coh: CounterOffset): Boolean = {
@@ -420,10 +470,11 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     * If we did halt call onContextHalted().
     */
   final def haltToken(): Unit = {
-    scheduleHaltClosureIfNeeded(haltTokenOptimized())
+    scheduleHaltClosureIfNeeded(haltTokenOptimized(NoOpContext))
   }
 
-  final def haltTokenOptimized(): PorcEClosure = {
+  final def haltTokenOptimized(ctx: GetCounterOffsetContext): PorcEClosure = {
+    implicit val _ctx = ctx
     val s = startTimer()
     val coh = getCounterOffset()
     incrChanges()
@@ -442,9 +493,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
       }
     }
 
-    val r = if (CompilerDirectives.injectBranchProbability(
-        CompilerDirectives.FASTPATH_PROBABILITY,
-        coh != null)) {
+    val r = if (coh != null) {
       coh.value -= 1
       handleHaltToken(false)
       null
@@ -458,14 +507,14 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   /** Increment the count.
     */
   final def newToken(): Unit = {
-    if (newTokenOptimized()) {
+    if (newTokenOptimized(NoOpContext)) {
       doResurrect()
     }
   }
 
-  final def newTokenOptimized(): Boolean = {
+  final def newTokenOptimized(ctx: NewTokenContext): Boolean = {
     val s = startTimer()
-    val coh = getCounterOffset()
+    val coh = getCounterOffset()(ctx)
     incrChanges()
 
     @TruffleBoundary(allowInlining = false) @noinline
@@ -482,8 +531,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
       n == 0
     }
 
-    val r = if (CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
-        coh != null && coh.globalCountHeld)) {
+    val r = if (coh != null && ctx.profileGlobalCountHeld(coh.globalCountHeld)) {
       coh.value += 1
       false
     } else {
@@ -619,7 +667,7 @@ final class CounterService(execution: PorcEExecution, val parentCalling: Counter
       // Token: We were passed a token at creation
       parentCalling.haltToken()
       // Token: We created a new token in the constructor.
-      parentContaining.haltTokenOptimized()
+      parentContaining.haltTokenOptimized(Counter.NoOpContext)
     } else {
       null
     }
@@ -679,7 +727,7 @@ final class CounterTerminator(execution: PorcEExecution, val parent: Counter, te
       null
     } else {
       if (state.compareAndSet(CounterTerminator.HasTokens, CounterTerminator.WasKilled)) {
-        val r = parent.haltTokenOptimized()
+        val r = parent.haltTokenOptimized(Counter.NoOpContext)
         try {
           // Just make sure terminator is killed. If it already was ignore the exception.
           terminator.kill()

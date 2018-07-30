@@ -52,9 +52,11 @@ public class HaltToken extends Expression {
     public static abstract class KnownCounter extends NodeBase {
 
         private final PorcEExecution execution;
+        private final Counter.GetCounterOffsetContext ctx;
 
         protected KnownCounter(final PorcEExecution execution) {
             this.execution = execution;
+            this.ctx = new Counter.GetCounterOffsetContextImpl(execution.runtime());
         }
 
         public abstract PorcEUnit execute(VirtualFrame frame, final Counter counter);
@@ -64,7 +66,7 @@ public class HaltToken extends Expression {
                 @Cached("createCall()") Dispatch call,
                 @Cached("create()") BranchProfile hasContinuationProfile) {
             ensureTail(call);
-            PorcEClosure cont = counter.haltTokenOptimized();
+            PorcEClosure cont = counter.haltTokenOptimized(ctx);
             if (cont != null) {
                 hasContinuationProfile.enter();
                 Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();

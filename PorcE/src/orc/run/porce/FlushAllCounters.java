@@ -40,9 +40,12 @@ public class FlushAllCounters extends Expression {
     @CompilationFinal
     private int totalCount = 0;
 
+    private final Counter.FlushContext ctx;
+
     protected FlushAllCounters(final PorcEExecution execution, final int flushPolarity) {
         this.execution = execution;
         this.flushPolarity = flushPolarity;
+        this.ctx = new Counter.FlushContextImpl(execution.runtime());
     }
 
     protected boolean notDisabled() {
@@ -91,7 +94,7 @@ public class FlushAllCounters extends Expression {
                     }
                     Counter.markCounterOffsetRemoved(current);
 
-                    PorcEClosure c = current.counter().flushCounterOffsetAndHandleOptimized(current);
+                    PorcEClosure c = current.counter().flushCounterOffsetAndHandleOptimized(current, ctx);
 
                     // Check flushPolarity here since if we are only flushing positive offsets then c can never be true.
                     if (flushPolarity <= 0 && c != null) {

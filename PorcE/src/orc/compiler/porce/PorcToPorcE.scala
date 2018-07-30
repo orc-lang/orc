@@ -278,7 +278,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
         case porc.NewTerminator.Z(p) =>
           porce.NewTerminator.create(transform(p))
         case porc.NewToken.Z(c) =>
-          porce.NewToken.create(transform(c))
+          porce.NewToken.create(transform(c), ctx.execution)
         case porc.HaltToken.Z(c) =>
           porce.HaltToken.create(transform(c), ctx.execution)
         case porc.Kill.Z(c, t, k) =>

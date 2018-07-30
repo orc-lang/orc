@@ -12,6 +12,7 @@
 package orc.run.porce;
 
 import orc.run.porce.runtime.Counter;
+import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -22,10 +23,18 @@ import com.oracle.truffle.api.profiles.BranchProfile;
 @ImportStatic(SpecializationConfiguration.class)
 public class NewToken extends Expression {
     private final BranchProfile resurrectProfile = BranchProfile.create();
+    private final Counter.NewTokenContext ctx;
+
+    private final PorcEExecution execution;
+
+    protected NewToken(final PorcEExecution execution) {
+        this.execution = execution;
+        this.ctx = new Counter.NewTokenContextImpl(execution.runtime());
+    }
 
     @Specialization(guards = { "SpecializeOnCounterStates" })
     public PorcEUnit specialized(final Counter counter) {
-        if (counter.newTokenOptimized()) {
+        if (counter.newTokenOptimized(ctx)) {
             resurrectProfile.enter();
             counter.doResurrect();
         }
@@ -38,7 +47,7 @@ public class NewToken extends Expression {
         return PorcEUnit.SINGLETON;
     }
 
-    public static NewToken create(final Expression parent) {
-        return NewTokenNodeGen.create(parent);
+    public static NewToken create(final Expression parent, final PorcEExecution execution) {
+        return NewTokenNodeGen.create(execution, parent);
     }
 }

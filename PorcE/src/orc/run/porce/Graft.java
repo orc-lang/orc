@@ -152,7 +152,7 @@ public abstract class Graft extends Expression {
 	protected Expression callP;
 
 	protected FullFutureNodes(FrameSlot futSlot, FrameSlot compSlot) {
-	    newToken = NewToken.create((Expression) c.copy());
+	    newToken = NewToken.create((Expression) c.copy(), execution);
 	    spawn = Spawn.create((Expression) c.copy(), (Expression) t.copy(), false, Read.Local.create(compSlot),
 		    execution);
 	    haltToken = HaltToken.create((Expression) c.copy(), execution);
@@ -292,7 +292,7 @@ public abstract class Graft extends Expression {
 	    Expression haltToken = HaltToken.create(Read.Local.create(newCSlot), execution);
 
 	    return Sequence.create(new Expression[] {
-		    NewToken.create((Expression) c.copy()),
+		    NewToken.create((Expression) c.copy(), execution),
 		    Write.Local.create(newCSlot, newC),
 		    TryOnException.create(callV, haltToken)
 	    });
