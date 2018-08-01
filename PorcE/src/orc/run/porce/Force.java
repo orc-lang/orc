@@ -16,7 +16,6 @@ import static orc.run.porce.SpecializationConfiguration.InlineForceResolved;
 
 import orc.FutureState;
 import orc.run.porce.call.Dispatch;
-import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Join;
 import orc.run.porce.runtime.PorcEClosure;
@@ -37,6 +36,12 @@ import com.oracle.truffle.api.profiles.ValueProfile;
 public class Force {
     public static boolean isNonFuture(final Object v) {
 	return !(v instanceof orc.Future);
+    }
+
+    public static Dispatch createCall(PorcEExecution execution) {
+        Dispatch n = StackCheckingDispatch.create(execution);
+        n.forceInline();
+        return n;
     }
 
     @SuppressWarnings("serial")
@@ -209,7 +214,7 @@ public class Force {
 
     @NodeChild(value = "join", type = Expression.class)
     @Introspectable
-    @ImportStatic(SpecializationConfiguration.class)
+    @ImportStatic({ SpecializationConfiguration.class, Force.class })
     public static abstract class Finish extends Expression {
 	protected static final boolean TRUE = true;
 
@@ -229,14 +234,9 @@ public class Force {
 	    return PorcEUnit.SINGLETON;
 	}
 
-	protected Dispatch createCall() {
-	    Dispatch n = InternalCPSDispatch.create(execution, isTail);
-	    n.forceInline();
-            return n;
-	}
-
 	@Specialization(guards = { "InlineForceResolved", "join.isResolved()" }, replaces = { "blocked" })
-	public PorcEUnit resolved(final VirtualFrame frame, final Join join, @Cached("createCall()") Dispatch call) {
+	public PorcEUnit resolved(final VirtualFrame frame, final Join join,
+	        @Cached("createCall(execution)") Dispatch call) {
 	    ensureTail(call);
 	    call.executeDispatchWithEnvironment(frame, join.p(), join.values());
 	    return PorcEUnit.SINGLETON;
@@ -283,8 +283,7 @@ public class Force {
 	protected SingleFuture(final PorcEExecution execution) {
 	    super();
 	    this.execution = execution;
-	    call = InternalCPSDispatch.create(execution, isTail);
-            call.forceInline();
+	    this.call = createCall(execution);
 	}
 
 	protected abstract Expression getC();
