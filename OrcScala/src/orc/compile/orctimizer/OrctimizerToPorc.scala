@@ -62,7 +62,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
   /** Spawn if we are not in a sequentialized section.
     */
   def probablySpawn(scope: Expression.Z)(mustSpawn: Boolean, comp: porc.Argument)(implicit ctx: ConversionContext): porc.Expression = {
-    if (AnnotationHack.inAnnotation[Sequentialize](scope)) {
+    if (AnnotationHack.inAnnotation[Sequentialize](scope) && !mustSpawn) {
       comp()
     } else {
       porc.Spawn(ctx.c, ctx.t, mustSpawn, comp)
@@ -203,7 +203,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
           if (isNotRecursive) {
             killCheck :::
             catchExceptions(
-              porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).view.force)
+              porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).toVector)
             )
           } else {
             // For possibly recursive functions spawn before calling and spawn before passing on the publication.
