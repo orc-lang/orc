@@ -8,11 +8,13 @@ import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
 include "benchmark.inc"
 
+-- Lines: 4
 def orderedAnd(true, b) = b()
 def orderedAnd(false, b) = false
 def orderedOr(true, b) = true
 def orderedOr(false, b) = b()
 
+-- Lines: 13
 class ArraySlice {
   val array
   val start
@@ -29,6 +31,7 @@ class ArraySlice {
 }
 def ArraySlice(a, s, l) = a >a'> s >s'> l >l'> s + l >e'> new ArraySlice { val array = a' # val start = s' # val length = l' # val end = e' }
 
+-- Lines: 16
 def quicksort(slice) = Sequentialize() >> ( -- Inferable
   val a = slice.array
   def part(p, s, t) =
@@ -48,7 +51,7 @@ def quicksort(slice) = Sequentialize() >> ( -- Inferable
   sort(slice.start, slice.end - 1) >> slice
   )
 
-
+-- Lines: 15
 def mergeSorted(a :: ArraySlice, b :: ArraySlice) =
 	Sequentialize() >> (
     val outputLen = a.length + b.length
@@ -66,6 +69,8 @@ def mergeSorted(a :: ArraySlice, b :: ArraySlice) =
         Error("IPE")
     h(0, 0, 0)
 	)
+
+-- Lines: 7
 def splitSortMerge(input, sort) =
   val partitionSize = Floor(input.length? / nPartitions)
   val sortedPartitions = collect({
