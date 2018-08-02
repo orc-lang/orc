@@ -70,6 +70,16 @@ class Field private (_name: String) extends OrcValue with Serializable {
   }
 
   override def hashCode(): Int = name.hashCode()
+
+  @throws(classOf[java.io.ObjectStreamException])
+  protected def writeReplace(): AnyRef = {
+      new FieldSerializationReplacement(name)
+  }
+}
+
+protected case class FieldSerializationReplacement(val name: String) {
+  @throws(classOf[java.io.ObjectStreamException])
+  protected def readResolve(): AnyRef = Field(name)
 }
 
 object Field {
