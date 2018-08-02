@@ -22,10 +22,15 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 
 # dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
-dataDir <- file.path(localExperimentDataDir, "20180607-a002")
+dataDir <- file.path(localExperimentDataDir, "20180730-a010")
+scalaDataDir <- file.path(localExperimentDataDir, "20180718-a002")
 
 if(!exists("processedData")) {
-  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
+  scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = F) %>%
+    filter(language == "Scala")
+
+  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
+    bind_rows(scalaData) %>%
     addBenchmarkProblemName()
 
   prunedData <- data %>%
@@ -35,7 +40,7 @@ if(!exists("processedData")) {
 
   processedData <- prunedData %>%
     group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>%
-    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95) %>%
+    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95, R = 1) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
@@ -54,7 +59,7 @@ processedData <- processedData %>%
   addBenchmarkMetadata() %>%
   group_by(benchmarkProblemName) %>%
   addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T), baseline = elapsedTime_mean_problembaseline) %>%
-  mutate(elapsedTime_mean_problembaseline = replace_na(elapsedTime_mean_problembaseline, 60*10)) %>%
+  mutate(elapsedTime_mean_problembaseline = replace_na(elapsedTime_mean_problembaseline, 60*6)) %>%
   group_by(benchmarkName) %>%
   addBaseline(elapsedTime_mean, c(nCPUs=24), baseline = elapsedTime_mean_selfbaseline) %>%
   ungroup()
@@ -197,7 +202,7 @@ overallSelfScalingPlot <- processedData %>%
   ) +
   ggtitle("Self Scaling for each version (normalized to 24-core)")
 
-print(overallSelfScalingPlot + theme(legend.position = "bottom"))
+#print(overallSelfScalingPlot + theme(legend.position = "bottom"))
 
 # Visualize the distribution of implementations of a given problem.
 
@@ -310,7 +315,7 @@ overallScalingPlot <- processedData %>%
     group = benchmarkName
     #linetype = factor(if_else((language == "Orc") & scalaCompute, "Orc+Scala", as.character(language)), levels = c("Orc+Scala", "Orc", "Scala"))
     )) +
-  labs(y = "Speed Up", x = "Number of Cores", color = "Language") +
+  labs(y = "Speed Up (w.r.t. Scala single core)", x = "", color = "Language") +
   theme_minimal() +
   #scale_fill_brewer(palette="Set3") +
   #scale_color_brewer(palette="PuBuGn", direction = -1) +
@@ -318,6 +323,7 @@ overallScalingPlot <- processedData %>%
   # geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
   # geom_point(aes(shape = granularity), processedData, alpha = 0.7) +
   geom_line() +
+  geom_point() +
   geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
   scale_y_continuous(limits = c(0, NA)) +
   scale_x_continuous_breaks_from(breaks_from = processedData$nCPUs) +
@@ -344,3 +350,5 @@ print(overallScalingPlot + scale_y_log10() + theme(legend.position = "bottom"))
 # svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
 # print(overallScalingPlot + theme(legend.position = "bottom"))
 # dev.off()
+
+kable(processedData %>% select(benchmarkName, nCPUs, elapsedTime_mean) %>% spread(nCPUs, elapsedTime_mean), digits = 2)

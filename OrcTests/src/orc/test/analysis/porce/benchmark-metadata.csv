@@ -1,4 +1,5 @@
 benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline, implType, optimized, microbenchmark
+N-Queens (Orc),                                          Fine,        F,            Naïve,       F,          Orc,      F,        T
 BigSort-naive (Orc),                                     Fine,        F,            Naïve,       F,          Orc,      F,        F
 BigSort-opt (Orc),                                       Coarse,      F,            Naïve,       F,          Orc,      T,        F
 BigSort-scala-opt (Orc),                                 Coarse,      T,            Naïve,       F,          Orc+Scala,T,        F

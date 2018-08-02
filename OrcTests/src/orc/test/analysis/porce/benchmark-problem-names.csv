@@ -10,3 +10,4 @@ ThreadRing,  Thread Ring
 Threads,     Fork Bomb
 wordcount,   Word Count
 WordCount,   Word Count
+N,           N-Queens

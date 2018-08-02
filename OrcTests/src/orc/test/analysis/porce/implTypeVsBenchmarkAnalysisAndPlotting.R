@@ -20,13 +20,17 @@ source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 source(file.path(scriptDir, "porce", "utils.R"))
 
-dataDir <- file.path(experimentDataDir, "PorcE", "impltype-comparison", "20180415-a001")
-# dataDir <- file.path(localExperimentDataDir, "20180415-a001")
+#dataDir <- file.path(experimentDataDir, "PorcE", "impltype-comparison", "20180415-a001")
+dataDir <- file.path(localExperimentDataDir, "20180730-a010")
+scalaDataDir <- file.path(localExperimentDataDir, "20180718-a002")
 
 loadData <- function(dataDir) {
+  scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = F) %>%
+    filter(language == "Scala")
+
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
-    addBenchmarkProblemName() %>%
-    mutate(benchmarkName = factor(paste0(benchmarkName, " (", language, ")")))
+    bind_rows(scalaData) %>%
+    addBenchmarkProblemName()
 
   #d <<- data
 
@@ -64,7 +68,7 @@ loadCompensatedData <- function(dataDir) {
 #   rbind(loadData(file.path(localExperimentDataDir, "20180220-a002")) %>% mutate(experiment = "new"))
 #processedData <- processedData %>% mutate(experiment = factor(experiment, ordered = T, levels = c("old", "new")))
 processedData <- loadData(dataDir) %>% mutate(experiment = factor("only"))
-compensatedData <- loadCompensatedData(dataDir)
+#compensatedData <- loadCompensatedData(dataDir)
 
 print(levels(processedData$benchmarkName))
 
@@ -132,16 +136,18 @@ useOptLevel <- max(processedData$optLevel, na.rm = T)
 
 implTypes <- c("Orc -O0", paste0("Orc -O", useOptLevel), "Orc*", "Orc+Scala", "Scala")
 
-compensatedRows <- right_join(processedData, compensatedData, by = c("benchmarkProblemName", "benchmarkName", "nCPUs", "optLevel")) %>%
-  filter(implType == "Orc", optLevel == useOptLevel) %>%
-  mutate(implType = "Orc*",
-         elapsedTime_mean = compensatedElapsedTime_mean,
-         elapsedTime_mean_upperBound = compensatedElapsedTime_mean_upperBound,
-         elapsedTime_mean_lowerBound = compensatedElapsedTime_mean_lowerBound
-        ) %>%
-  select(colnames(processedData))
+# compensatedRows <- right_join(processedData, compensatedData, by = c("benchmarkProblemName", "benchmarkName", "nCPUs", "optLevel")) %>%
+#   filter(implType == "Orc", optLevel == useOptLevel) %>%
+#   mutate(implType = "Orc*",
+#          elapsedTime_mean = compensatedElapsedTime_mean,
+#          elapsedTime_mean_upperBound = compensatedElapsedTime_mean_upperBound,
+#          elapsedTime_mean_lowerBound = compensatedElapsedTime_mean_lowerBound
+#         ) %>%
+#   select(colnames(processedData))
 
-longT <- processedData %>% rbind(compensatedRows) %>% filter(nCPUs == useNCPUs) %>%
+#rbind(compensatedRows) %>%
+
+longT <- processedData %>%  filter(nCPUs == useNCPUs) %>%
   mutate(implType = factor(if_else(implType == "Orc", paste0("Orc -O", optLevel), as.character(implType)), levels = implTypes)) %>%
   mutate(implType = if_else(optimized, paste0(implType, " Opt"), as.character(implType)))
 
