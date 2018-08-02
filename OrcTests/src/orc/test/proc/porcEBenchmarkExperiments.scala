@@ -21,7 +21,7 @@ object PorcEShared {
             "test_data/performance/sieve/savina_sieve-opt.orc",
             "test_data/performance/sieve/savina_sieve-scala.orc",
             "test_data/performance/sieve/savina_sieve-scala-opt.orc",
-            //"test_data/performance/8-queens.orc",
+            "test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
@@ -101,8 +101,9 @@ object PorcEShared {
   val mainJvmOpts = Seq(
       "-javaagent:ScalaGraalAgent-0.1.jar",
       "-XX:-RestrictContended",
-      "-XX:+UseParallelGC",
-      "-Xms8g", "-Xmx64g", "-Xss8m")
+      //"-XX:+UseParallelGC",
+      "-XX:+UseG1GC",
+      "-Xms4g", "-Xmx4g", "-Xss8m")
 
   val mainOrcArgs = Seq(
       "-O", "3",
@@ -112,12 +113,24 @@ object PorcEShared {
   val mainSystemProperties = Map[String, Any](
         "graal.TruffleBackgroundCompilation" -> true,
         "graal.TraceTruffleCompilation" -> true,
+        "graal.TruffleCompilationThreshold" -> 300,
+        //"graal.TruffleMaximumRecursiveInlining" -> 10,
+        "graal.TruffleInliningMaxCallerSize" -> 500,
+        //"graal.MaximumInliningSize" -> 5000,
+        "graal.TrivialInliningSize" -> 500,
+        //"graal.MaximumDesiredSize" -> 30000,
+        //"graal.SmallCompiledLowLevelGraphSize" -> 1500,
+
         "orc.numerics.preferLP" -> true,
         "orc.porce.maxStackDepth" -> 512,
         "orc.porce.optimizations.knownSiteSpecialization" -> true,
-        "graal.TruffleCompilationThreshold" -> 300,
+        "orc.ast.generateUniqueVariableNames" -> true,
+        //"orc.porce.truffleASTInlining" -> true,
+        //"orc.porce.truffleASTInliningLimit" -> 2000,
         //"orc.porce.universalTCO" -> true,
         )
+
+
 
   trait HasRunNumber {
     def run: Int
@@ -168,7 +181,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = Set(1, 8, 16, 24)
+      val nCPUsValues = Set(1, 6, 12, 18, 24)
       val porce = for {
         run <- 0 until 1
         nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
@@ -180,13 +193,13 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       }
       val scala = for {
         run <- 0 until 1
-        nCPUs <- nCPUsValues
+        nCPUs <- nCPUsValues + 1
         benchmark <- mainScalaBenchmarks
       } yield {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      porce.sortBy(o => (o.run, -o.nCPUs, o.toString)) ++ scala.sortBy(o => (o.run, -o.nCPUs, o.toString))
+      (porce).sortBy(o => (-o.nCPUs, o.run, o.toString)) ++ scala
     }
     runExperiment(experimentalConditions)
   }

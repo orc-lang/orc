@@ -29,22 +29,23 @@ object RemoteCommand {
     mkdir(remoteHostname, remoteDirPath)
     rsyncToRemote(localFilename, remoteHostname, remoteFilename)
   }
-  
+
   @throws[RemoteCommandException]
   def mkdir(remoteHostname: String, remoteDirname: String): Unit = {
     checkExitValue(s"mkdir -p $remoteDirname on $remoteHostname", OsCommand.getResultFrom(Seq("ssh", remoteHostname, s"mkdir -p $remoteDirname")))
   }
-  
+
   @throws[RemoteCommandException]
   def deleteDirectory(remoteHostname: String, remoteDirname: String): Unit = {
     checkExitValue(s"rm -rf $remoteDirname on $remoteHostname", OsCommand.getResultFrom(Seq("ssh", remoteHostname, s"rm -rf $remoteDirname")))
   }
-  
+
   @throws[RemoteCommandException]
   def rsyncToRemote(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
     val localFile = new File(localFilename)
     val localFileCanonicalName = localFile.getCanonicalPath + (if (localFile.isDirectory) "/" else "")
-    checkExitValue(s"rsync of $localFileCanonicalName to $remoteHostname:$remoteFilename", OsCommand.getResultFrom(Seq("rsync", "-rlpt", localFileCanonicalName, s"${remoteHostname}:${remoteFilename}")))
+    checkExitValue(s"rsync of $localFileCanonicalName to $remoteHostname:$remoteFilename",
+        OsCommand.getResultFrom(Seq("rsync", "-rlpt", "--exclude=.orcache", localFileCanonicalName, s"${remoteHostname}:${remoteFilename}")))
   }
 
   @throws[RemoteCommandException]
@@ -54,7 +55,7 @@ object RemoteCommand {
     checkExitValue(s"rsync of $remoteHostname:$remoteFilename to $localFileCanonicalName", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"${remoteHostname}:${remoteFilename}", localFileCanonicalName)))
   }
 
-  
+
   @throws[RemoteCommandException]
   def checkExitValue(description: String, result: OsCommandResult): Unit = {
     if (result.exitStatus != 0) {
