@@ -108,16 +108,16 @@ object PorcEShared {
   val mainOrcArgs = Seq(
       "-O", "3",
       "--opt-opt", "orct:sequentialize-force",
-      "--max-site-threads=32")
+      "--max-site-threads=16")
 
   val mainSystemProperties = Map[String, Any](
         "graal.TruffleBackgroundCompilation" -> true,
         "graal.TraceTruffleCompilation" -> true,
         "graal.TruffleCompilationThreshold" -> 300,
         //"graal.TruffleMaximumRecursiveInlining" -> 10,
-        "graal.TruffleInliningMaxCallerSize" -> 500,
+        "graal.TruffleInliningMaxCallerSize" -> 200,
         //"graal.MaximumInliningSize" -> 5000,
-        "graal.TrivialInliningSize" -> 500,
+        "graal.TrivialInliningSize" -> 1000,
         //"graal.MaximumDesiredSize" -> 30000,
         //"graal.SmallCompiledLowLevelGraphSize" -> 1500,
 
@@ -125,8 +125,8 @@ object PorcEShared {
         "orc.porce.maxStackDepth" -> 512,
         "orc.porce.optimizations.knownSiteSpecialization" -> true,
         "orc.ast.generateUniqueVariableNames" -> true,
-        //"orc.porce.truffleASTInlining" -> true,
-        //"orc.porce.truffleASTInliningLimit" -> 2000,
+        "orc.porce.truffleASTInlining" -> true,
+        "orc.porce.truffleASTInliningLimit" -> 1000,
         //"orc.porce.universalTCO" -> true,
         )
 
@@ -141,7 +141,7 @@ object PorcEShared {
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   import PorcEShared._
 
-  def softTimeLimit: Double = 60 * 10
+  def softTimeLimit: Double = 60 * 14
 
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -181,9 +181,9 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = Set(1, 6, 12, 18, 24)
+      val nCPUsValues = Seq(24, 12, 1, 6, 18)
       val porce = for {
-        run <- 0 until 1
+        run <- 0 until 2
         nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
         optLevel <- Seq(3/*, 0*/)
         fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else onlyOpt(mainOrcBenchmarks)
@@ -193,13 +193,13 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       }
       val scala = for {
         run <- 0 until 1
-        nCPUs <- nCPUsValues + 1
+        nCPUs <- nCPUsValues
         benchmark <- mainScalaBenchmarks
       } yield {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      (porce).sortBy(o => (-o.nCPUs, o.run, o.toString)) ++ scala
+      (porce ++ scala).sortBy(v => (v.run, nCPUsValues.indexOf(v.nCPUs)))
     }
     runExperiment(experimentalConditions)
   }

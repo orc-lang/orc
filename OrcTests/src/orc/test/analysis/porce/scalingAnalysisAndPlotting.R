@@ -22,15 +22,16 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 
 # dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
-dataDir <- file.path(localExperimentDataDir, "20180730-a010")
+#dataDir <- file.path(localExperimentDataDir, "20180730-a010")
+dataDir <- file.path(localExperimentDataDir, "20180802-a001")
 scalaDataDir <- file.path(localExperimentDataDir, "20180718-a002")
 
 if(!exists("processedData")) {
-  scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = F) %>%
-    filter(language == "Scala")
+  # scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = F) %>%
+  #   filter(language == "Scala")
 
-  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
-    bind_rows(scalaData) %>%
+  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
+    #bind_rows(scalaData) %>%
     addBenchmarkProblemName()
 
   prunedData <- data %>%
@@ -315,7 +316,7 @@ overallScalingPlot <- processedData %>%
     group = benchmarkName
     #linetype = factor(if_else((language == "Orc") & scalaCompute, "Orc+Scala", as.character(language)), levels = c("Orc+Scala", "Orc", "Scala"))
     )) +
-  labs(y = "Speed Up (w.r.t. Scala single core)", x = "", color = "Language") +
+  labs(y = "Speed Up", x = "", color = "Language") +
   theme_minimal() +
   #scale_fill_brewer(palette="Set3") +
   #scale_color_brewer(palette="PuBuGn", direction = -1) +
@@ -323,16 +324,17 @@ overallScalingPlot <- processedData %>%
   # geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
   # geom_point(aes(shape = granularity), processedData, alpha = 0.7) +
   geom_line() +
-  geom_point() +
+  #geom_point() +
   geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
   scale_y_continuous(limits = c(0, NA)) +
-  scale_x_continuous_breaks_from(breaks_from = processedData$nCPUs) +
+  scale_x_continuous(breaks = c(1, 12, 24), minor_breaks = c(6, 18)) +
+  # scale_x_continuous_breaks_from(breaks_from = processedData$nCPUs) +
   # scale_shape_discrete(solid = F) +
   facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 1) +
   theme(
     #legend.justification = c("right", "top"),
     #legend.box.just = "top",
-    legend.margin = margin(-8, 0, 0, -30),
+    legend.margin = margin(-18, 0, 0, -30),
     legend.direction = "horizontal",
     #legend.box = "vertical",
     legend.box = "horizontal",
@@ -344,8 +346,9 @@ overallScalingPlot <- processedData %>%
 
 print(overallScalingPlot + theme(legend.position = "bottom"))
 
-print(overallScalingPlot + scale_y_log10() + theme(legend.position = "bottom"))
-#ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 7.5, height = 2, units = "in")
+#print(overallScalingPlot + scale_y_log10() + theme(legend.position = "bottom"))
+
+ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 9, height = 2, units = "in")
 
 # svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
 # print(overallScalingPlot + theme(legend.position = "bottom"))
