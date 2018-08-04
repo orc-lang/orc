@@ -23,7 +23,7 @@ case class BlackScholesStock(price: D, strike: D, maturity: D)
 case class BlackScholesResult(var call: D, var put: D) {
   override def hashCode(): Int = {
     val prec = 1e6
-    (call * prec).toLong.## * 37 ^ (put * prec).toLong.## 
+    (call * prec).toLong.## * 37 ^ (put * prec).toLong.##
   }
 }
 
@@ -50,12 +50,12 @@ object BlackScholesData extends ExpectedBenchmarkResult[Array[BlackScholesResult
       10  -> 0x62c42cc1,
       100 -> 0xb8277521,
       )
-  
+
 }
 
 object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array[BlackScholesResult]] with HashBenchmarkResult[Array[BlackScholesResult]] {
   val expected: ExpectedBenchmarkResult[Array[BlackScholesResult]] = BlackScholesData
-  
+
   type D = Double
 
   def log(x: D): D = Math.log(x.toDouble)
@@ -64,6 +64,7 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array
 
   def round(x: D): Double = x //.doubleValue()
 
+  // Lines: 6
   def compute(s: D, x: D, t: D, r: D, v: D): BlackScholesResult = {
     val d1 = round((log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t)))
     val d2 = round(d1 - v * sqrt(t))
@@ -76,6 +77,7 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array
     BlackScholesResult(call, put)
   }
 
+  // Lines: 6
   val a1: D = 0.31938153
   val a2: D = -0.356563782
   val a3: D = 1.781477937
@@ -83,6 +85,7 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array
   val a5: D = 1.330274429
   val rsqrt2pi: D = 1.0 / sqrt(2.0 * Math.PI)
 
+  // Lines: 8
   // The cumulative normal distribution function
   def cnd(x: D): D = {
     val l = math.abs(x)

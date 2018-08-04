@@ -11,6 +11,7 @@ import class BlackScholesResult = "orc.test.item.scalabenchmarks.blackscholes.Bl
 import class BlackScholesData = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesData"
 import class BlackScholes = "orc.test.item.scalabenchmarks.blackscholes.BlackScholes"
 
+-- Lines: 6
 val a1 = 0.31938153
 val a2 = -0.356563782
 val a3 = 1.781477937
@@ -22,6 +23,7 @@ def abs(x) = Abs(x)
 
 def round(x) = Sequentialize() >> x.doubleValue() -- Inferable
 
+-- Lines: 8
 -- The cumulative normal distribution function
 def cnd(x) = Sequentialize() >> ( -- Inferable
     abs(x) >l>
@@ -33,6 +35,7 @@ def cnd(x) = Sequentialize() >> ( -- Inferable
       w
     ))
 
+-- Lines: 6
 def compute(s, x, t, r, v) = Sequentialize() >> ( -- Inferable (propogation from cnd)
     round((Log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t))) >d1>
     round(d1 - v * sqrt(t)) >d2>
@@ -43,7 +46,8 @@ def compute(s, x, t, r, v) = Sequentialize() >> ( -- Inferable (propogation from
     BlackScholesResult(call, put)
     )
   
-  
+
+-- Lines: 9  
 def run(data) =
     val riskless = BlackScholesData.riskless()
     val volatility = BlackScholesData.volatility()
