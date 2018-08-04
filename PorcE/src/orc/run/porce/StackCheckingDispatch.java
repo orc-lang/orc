@@ -96,21 +96,33 @@ public class StackCheckingDispatch extends Dispatch {
     }
 
     private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args, final int previous) {
-	final PorcERuntime r = execution.runtime();
-	Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
-	long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
-	try {
-	    getCall().executeDispatchWithEnvironment(frame, computation, args);
-	} finally {
-	    if (previous >= 0) {
-                r.decrementStackDepth(previous);
-            }
-	    SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
-	}
+        final PorcERuntime r = execution.runtime();
+        Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
+        long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
+        try {
+            getCall().executeDispatchWithEnvironment(frame, computation, args);
+        } finally {
+            r.decrementStackDepth(previous);
+            SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
+        }
+    }
+
+    private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args) {
+        Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
+        long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
+        try {
+            getCall().executeDispatchWithEnvironment(frame, computation, args);
+        } finally {
+            SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
+        }
     }
 
     public void executeInline(final VirtualFrame frame, final PorcEClosure computation, final int previous) {
-	executeInline(frame, computation, new Object[] { null }, previous);
+        executeInline(frame, computation, new Object[] { null }, previous);
+    }
+
+    public void executeInline(final VirtualFrame frame, final PorcEClosure computation) {
+        executeInline(frame, computation, new Object[] { null });
     }
 
     @Override

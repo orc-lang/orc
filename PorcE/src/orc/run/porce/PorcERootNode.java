@@ -227,6 +227,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 	this.execution = execution;
         this.methodKey = methodKey;
 	this.flushAllCounters = insert(FlushAllCounters.create(-1, execution));
+	this.flushAllCounters.setTail(true);
     }
 
     public Object getMethodKey() {
@@ -256,7 +257,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 	}
 
 	if (!totalCallsDone) {
-	    if (totalCalls.incrementAndGet() >= 100) {
+	    if (totalCalls.incrementAndGet() >= 290) {
 		CompilerDirectives.transferToInterpreterAndInvalidate();
 		totalCallsDone = true;
 	    }

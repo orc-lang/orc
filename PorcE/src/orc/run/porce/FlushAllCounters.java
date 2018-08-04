@@ -59,6 +59,7 @@ public class FlushAllCounters extends Expression {
             @Cached("createCountingProfile()") ConditionProfile isInterestingProfile,
             @Cached("createBinaryProfile()") ConditionProfile isInListProfile,
             @Cached("create(execution)") StackCheckingDispatch dispatch) {
+        //ensureTail(dispatch);
         final int tc = totalCount;
         final int hc = haltCount;
         final double prob = getProbability(hc, tc);

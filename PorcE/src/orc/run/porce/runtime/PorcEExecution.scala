@@ -144,7 +144,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
       val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
       for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
-        DumpSpecializations(r, repNum + 5, out)
+        DumpSpecializations(r, repNum, out)
       }
       out.close()
     }

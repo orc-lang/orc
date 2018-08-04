@@ -44,6 +44,7 @@ public abstract class Spawn extends Expression {
 	this.mustSpawn = mustSpawn;
 	this.execution = execution;
 	this.dispatch = StackCheckingDispatch.create(execution);
+	this.dispatch.forceInline();
     }
 
     @Override
@@ -81,7 +82,7 @@ public abstract class Spawn extends Expression {
 	if (r.actuallySchedule()) {
 	    dispatch.dispatch(frame, computation);
 	} else {
-	    dispatch.executeInline(frame, computation, -1);
+	    dispatch.executeInline(frame, computation);
 	}
 	return PorcEUnit.SINGLETON;
     }
