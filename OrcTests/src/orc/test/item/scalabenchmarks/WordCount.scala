@@ -23,20 +23,21 @@ object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedB
   val inputDataDirPath = orcTestsPath + "test_data/performance/distrib/wordcount/wordcount-input-data/"
   val targetFileSize = 17895697 // {- bytes -} = 2 GiB / 120
   val numCopiesInputFiles = 120 // can be numInputFiles, if we delete and re-gen input files for every condition
-  
+
   def checkReadableFile(file: File): Unit = {
-    if (!file.canRead()) 
+    if (!file.canRead())
       throw new Error("Cannot read file: "+file+" in dir "+System.getProperty("user.dir"))
   }
-  
+
   def listFileNamesRecursively(dirPathName: String): List[String] = {
     orc.test.item.distrib.WordCount.listFileNamesRecursively(new File(dirPathName)).toList
   }
-  
+
   def createTestDataFiles() = {
     orc.test.item.distrib.WordCount.createTestFiles(holmesDataDirPath, inputDataDirPath, targetFileSize, numCopiesInputFiles)
   }
-  
+
+  // Lines: 6
   def countFile(file: File): Long = {
     checkReadableFile(file)
     val in = new BufferedReader(new FileReader(file))
@@ -44,23 +45,25 @@ object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedB
     in.close()
     count
   }
-  
+
+  // Lines: 4
   def repeatCountFilename(filename: String) = {
-    def sumN(n: Int, f: () => Long): Long = if (n > 0) f() + sumN(n-1, f) else 0  
+    def sumN(n: Int, f: () => Long): Long = if (n > 0) f() + sumN(n-1, f) else 0
     val file = new File(filename)
     sumN(repeatRead, () => countFile(file))
   }
-  
-  
+
+
+  // Lines: 3
   def benchmark(data: List[String]) = {
     val wordCountList = data.par.map(repeatCountFilename)
     wordCountList.sum
   }
-  
+
   def setup(): List[String] = {
     // Setup for all iterations.
     createTestDataFiles()
-    
+
     listFileNamesRecursively(inputDataDirPath).take(size)
   }
 
