@@ -175,9 +175,10 @@ public class InternalCPSDispatch extends Dispatch {
             return sameMethod;
         }
 
-//        @Specialization(guards = { "TruffleASTInlining", "isTail", "nodeCount < TruffleASTInliningLimit",
-//                "target.body == expected", "inliningForced", "body != null",
-//                "getRootNodeCached() != target.body.getRootNode()" }, limit = "3")
+        @Specialization(guards = { "TruffleASTInlining", "isTail",
+                "nodeCount < TruffleASTInliningLimit",
+                "target.body == expected", "body != null",
+                "getRootNodeCached() != target.body.getRootNode()" }, limit = "3")
         @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
         public void specificInlineTail(final VirtualFrame frame,
                 final PorcEClosure target, final Object[] arguments,
@@ -222,9 +223,9 @@ public class InternalCPSDispatch extends Dispatch {
             }
         }
 
-        @Specialization(guards = { "TruffleASTInlining", "nodeCount < TruffleASTInliningLimit",
-                "target.body == expected", "sameMethod(expected)", "body != null",
-                "getRootNodeCached() != target.body.getRootNode()" }, limit = "3")
+//        @Specialization(guards = { "TruffleASTInlining", "nodeCount < TruffleASTInliningLimit",
+//                "target.body == expected", "sameMethod(expected)", "body != null",
+//                "getRootNodeCached() != target.body.getRootNode()" }, limit = "3")
         public void specificInline(final VirtualFrame frame,
                 final PorcEClosure target, final Object[] arguments,
                 @Cached("target.body") RootCallTarget expected,
@@ -289,7 +290,7 @@ public class InternalCPSDispatch extends Dispatch {
             }
         }
 
-        @Specialization(replaces = { "specific", "specificInline" })
+        @Specialization(replaces = { "specific", "specificInlineTail" })
         public void universal(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
                 @Cached("create()") IndirectCallNode call) {
             try {
