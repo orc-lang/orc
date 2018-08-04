@@ -23,6 +23,7 @@ import class DataOutputStream = "java.io.DataOutputStream"
 import class MessageDigest = "java.security.MessageDigest"
 import class Integer = "java.lang.Integer" 
 
+-- Lines: 8
 class CompressedChunk {
   val compressedDataCell = Cell()
   
@@ -38,14 +39,18 @@ class CompressedChunk {
 def CompressedChunk(s, n) = s >> n >> new CompressedChunk { val uncompressedSHA1 = s # val uncompressedSize = n }
 
 val rabin = Rabin()
+
+-- Lines: 2
 val largeChunkMin = 2 * 1024 * 1024
 val readChunkSize = 128 * 1024 * 1024
 
+-- Lines: 4
 def sha1(chunk) = Sequentialize() >> ArrayKey( -- Inferable (type)
 	val m = MessageDigest.getInstance("SHA-1")
 	m.update(chunk.buffer(), chunk.start(), chunk.size()) >>
 	m.digest())
 
+-- Lines: 13
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
 def readSegements(minimumSegmentSize, in) =
@@ -65,6 +70,7 @@ def readSegements(minimumSegmentSize, in) =
 	process(Chunk.empty(), 0)
 
 	
+-- Lines: 7
 {-- Publish some number of subchunks of chunk where each chunk is at least minimumSegmentSize long.  
 -}
 def segment(minimumSegmentSize, chunk) =
@@ -76,6 +82,7 @@ def segment(minimumSegmentSize, chunk) =
 		)
 	process(chunk, 0)
 
+-- Lines: 7
 {-- Compress a chunk with deduplication by publishing an existing compressed chuck if an identical one exists.
 -} 
 def compress(chunk, dedupPool, id) = (
@@ -87,6 +94,7 @@ def compress(chunk, dedupPool, id) = (
 	compChunk
 	)
 
+-- Lines: 8
 def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> ( -- Inferable
 	if isAlreadyOutput then
 		--printLogLine("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
@@ -99,6 +107,7 @@ def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> ( -- Inferable
 		out.write(cchunk.compressedData())
 	)
 
+-- Lines: 20
 {-- Read sequential elements from the pool and write to the provided OutputStream.
 -}
 def write(out, outputPool) =
@@ -130,6 +139,7 @@ def write(out, outputPool) =
 	process((0, 0), 0) >> stop ;
 	printLogLine("Done: write")
 
+-- Lines: 8
 {-- Connect the various stages using branch combinators
 -}
 def dedup(in, out) =

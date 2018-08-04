@@ -24,6 +24,7 @@ val sieveFragementSize = 300
 
 val counter = Counter()
 
+-- Lines: 23
 def sieveFragment(outChan) =
 	val inChan = Channel() 
 	val list = ArrayList[Number](sieveFragementSize)
@@ -52,12 +53,14 @@ def sieveFragment(outChan) =
 		v >false> signal #
 	repeat({ (inChan.get() ; next.readD().close() >> stop) >x> filter(x) }) >> stop |
 	inChan
-	
+
+-- Lines: 4	
 def sforBy(low, high, step, f) =
   def h(i) if (i >= high) = signal
   def h(i) = f(i) >> h(i + step)
   h(low)
 
+-- Lines: 5
 def primes(Number) :: List[Number]
 def primes(n) =
 	val out = Channel() #
