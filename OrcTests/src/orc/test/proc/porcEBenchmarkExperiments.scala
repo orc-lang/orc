@@ -142,7 +142,7 @@ object PorcEShared {
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   import PorcEShared._
 
-  def softTimeLimit: Double = 60 * 14
+  def softTimeLimit: Double = 60 * 11
 
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -183,10 +183,11 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
       val nCPUsValues = Seq(24, 12, 1, 6, 18)
+      val nRuns = 2
       val porce = for {
-        run <- 0 until 2
-        nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
-        optLevel <- Seq(3/*, 0*/)
+        run <- 0 until nRuns
+        nCPUs <- nCPUsValues // if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
+        optLevel <- Seq(3, 0)
         fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else onlyOpt(mainOrcBenchmarks)
       } yield {
         assert(new File(fn).isFile(), fn)

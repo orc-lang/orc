@@ -43,7 +43,7 @@ import scala.concurrent.Channel
 import java.util.ArrayList
 
 object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBenchmarkResult[Iterable[Long]] {
-  val N = BenchmarkConfig.problemSizeScaledInt(10000)
+  val N = BenchmarkConfig.problemSizeScaledInt(5000)
 
   def primes(n: Long): List[Long] = {
     def candidates(n: Long) = 3L until (n + 1) by 2
