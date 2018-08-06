@@ -73,9 +73,9 @@ object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBen
   override def hash(results: Iterable[Long]): Int = results.toSet.##()
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0x5138c428,
-      10 -> 0xcd3323cb,
-      100 -> 0x6807cb31,
+      1 -> 0xad0c3633,
+      10 -> 0x348f29a9,
+      100 -> 0x10dba805,
       )
 }
 
