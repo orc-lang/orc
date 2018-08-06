@@ -12,7 +12,7 @@
 //
 package orc.lib.util
 
-import java.lang.Iterable
+import java.lang.{Iterable => JIterable}
 
 import orc.compile.typecheck.Typeloader
 import orc.error.runtime.ArgumentTypeMismatchException
@@ -23,18 +23,30 @@ import orc.values.sites.{ PartialSite0, TotalSite1, TypedSite }
   */
 object IterableToStream extends TotalSite1 with TypedSite {
 
+  final class IterableNext(iter: Iterator[_]) extends PartialSite0 {
+    def eval() =
+      if (iter.hasNext) {
+        Some(iter.next().asInstanceOf[AnyRef])
+      } else {
+        None
+      }
+  }
+
+
   def eval(arg: AnyRef) = {
     arg match {
+      case i: JIterable[_] => {
+        // Java Iterables
+        import scala.collection.JavaConverters._
+        new IterableNext(i.iterator.asScala)
+      }
       case i: Iterable[_] => {
-        val iter = i.iterator()
-        new PartialSite0 {
-          def eval() =
-            if (iter.hasNext()) {
-              Some(iter.next().asInstanceOf[AnyRef])
-            } else {
-              None
-            }
-        }
+        // Scala Iterables
+        new IterableNext(i.iterator)
+      }
+      case i: Array[_] => {
+        // Arrays
+        new IterableNext(i.iterator)
       }
       case a => throw new ArgumentTypeMismatchException(0, "Iterable", if (a != null) a.getClass().toString() else "null")
     }
@@ -42,6 +54,7 @@ object IterableToStream extends TotalSite1 with TypedSite {
 
   def orcType() = {
     val X = new TypeVariable()
+    // TODO: This type is more restrictive than the implementation.
     val Iterable = Typeloader.liftJavaTypeOperator(classOf[Iterable[_]])
     FunctionType(List(X), List(Iterable(X)), SimpleFunctionType(X))
   }
