@@ -56,9 +56,10 @@ object PorcEShared {
             "test_data/performance/map-reduce/wordcount-mixed-orc-java-opt.orc",
             "test_data/performance/map-reduce/wordcount-pure-orc.orc",
             "test_data/performance/map-reduce/wordcount-pure-orc-opt.orc",
+            "test_data/performance/n-queens/8-queens.orc",
+            "test_data/performance/n-queens/8-queens-opt.orc",
             )
   private val nonOpt = Seq(
-            "test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
