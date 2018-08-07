@@ -22,7 +22,7 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 #dataDir <- file.path(experimentDataDir, "PorcE", "impltype-comparison", "20180415-a001")
 #dataDir <- file.path(localExperimentDataDir, "20180730-a010")
-dataDir <- file.path(localExperimentDataDir, "20180802-a001")
+dataDir <- file.path(localExperimentDataDir, "20180805-a002")
 scalaDataDir <- file.path(localExperimentDataDir, "20180718-a002")
 
 loadData <- function(dataDir) {
@@ -165,61 +165,77 @@ print(kable(t, "latex"))
 filledInData <- processedData %>%
   full_join(processedData %>%
               filter(optLevel == 3, implType == "Orc") %>%
-              transmute(benchmarkProblemName, benchmarkName, optLevel = 0, elapsedTime_mean = 8 * 60),
-            by = c("benchmarkProblemName", "benchmarkName", "optLevel")) %>%
+              transmute(benchmarkProblemName, benchmarkName, nCPUs, optLevel = 0, elapsedTime_mean = 10 * 60),
+            by = c("benchmarkProblemName", "benchmarkName", "optLevel", "nCPUs")) %>%
   mutate(elapsedTime_mean = if_else(is.na(elapsedTime_mean.x), elapsedTime_mean.y, elapsedTime_mean.x), elapsedTime_mean.x = NULL, elapsedTime_mean.y = NULL)
 
 times2 <-
-  full_join(filledInData,
-            processedData %>%
-              filter(implType == "Orc", optLevel == 3, optimized == T) %>%
-              transmute(benchmarkProblemName, orc3Time = elapsedTime_mean)) %>%
+        processedData %>%
+          filter(implType == "Orc", optLevel == 3) %>%
+          transmute(benchmarkProblemName, nCPUs, microbenchmark, orc3Time = elapsedTime_mean) %>%
+  full_join(processedData %>%
+              filter(implType == "Orc", optLevel == 0) %>%
+              transmute(benchmarkProblemName, nCPUs, orc0Time = elapsedTime_mean),
+            by = c("benchmarkProblemName", "nCPUs")) %>%
   full_join(processedData %>%
               filter(implType == "Scala") %>%
-              transmute(benchmarkProblemName, scalaTime = elapsedTime_mean)) %>%
+              transmute(benchmarkProblemName, nCPUs, scalaTime = elapsedTime_mean),
+            by = c("benchmarkProblemName", "nCPUs")) %>%
   full_join(processedData %>%
               filter(implType == "Orc+Scala", optimized == T) %>%
-              transmute(benchmarkProblemName, orcScalaTime = elapsedTime_mean))
+              transmute(benchmarkProblemName, nCPUs, orcScalaTime = elapsedTime_mean),
+            by = c("benchmarkProblemName", "nCPUs")) %>%
+  dropBounds()
   #filter(implType == "Orc") %>%
   #mutate(normalizedTime = elapsedTime_mean / orc3Time)
 
 # print(geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / orc3Time) %>% filter(optLevel == 3))$normalizedTime))
 
-normalizedToScalaTimeAtMost <- times2 %>% mutate(normalizedTime = elapsedTime_mean / if_else(is.na(scalaTime), 8 * 60, scalaTime))
+times2 <- times2 %>% mutate(orcScalaTime = if_else(is.na(orcScalaTime), orc3Time, orcScalaTime))
 
-print(
-  geomean((normalizedToScalaTimeAtMost %>% filter(implType == "Orc", optLevel == 3, microbenchmark == F))$normalizedTime)
-)
-print(
-  geomean((normalizedToScalaTimeAtMost %>% filter(implType == "Orc", optLevel == 3, microbenchmark == T))$normalizedTime)
-)
-print(
-  geomean((normalizedToScalaTimeAtMost %>% filter(implType == "Orc+Scala", optLevel == 3, microbenchmark == F))$normalizedTime)
-)
+normalizedToScalaTimeAtMost <- times2 %>% mutate_at(vars(ends_with("Time")), funs(. / if_else(is.na(scalaTime), 10 * 60, scalaTime)))
 
-normalizedToOrcScalaTimeAtMost <- times2 %>% mutate(normalizedTime = elapsedTime_mean / orcScalaTime)
+print_expr <- function(expr) {
+  s <- deparse(substitute(expr))
+  cat(paste(s, "=", expr, "\n"))
+}
 
-print(
-  geomean((normalizedToOrcScalaTimeAtMost %>% filter(implType == "Orc", optLevel == 3, optimized == T, microbenchmark == F))$normalizedTime)
+print_expr(
+  geomean((normalizedToScalaTimeAtMost %>% filter(microbenchmark == F, nCPUs == 24))$orc3Time)
 )
-print(
-  geomean((normalizedToOrcScalaTimeAtMost %>% filter(implType == "Orc", optLevel == 0, optimized == T, microbenchmark == F))$normalizedTime)
+print_expr(
+  geomean((normalizedToScalaTimeAtMost %>% filter(microbenchmark == T, nCPUs == 24))$orc3Time)
 )
-print(
-  geomean((normalizedToOrcScalaTimeAtMost %>% filter(implType == "Scala", microbenchmark == F))$normalizedTime)
+print_expr(
+  geomean((normalizedToScalaTimeAtMost %>% filter(microbenchmark == F, nCPUs == 24))$orcScalaTime)
 )
 
-normalizedToOrc3Time <- times2 %>% mutate(normalizedTime = elapsedTime_mean / orc3Time)
+normalizedToOrcScalaTimeAtMost <- times2 %>% mutate_at(vars(ends_with("Time")), funs(. / if_else(is.na(orcScalaTime), 10 * 60, orcScalaTime)))
 
-print(
-  geomean((normalizedToOrc3Time %>% filter(implType == "Orc", optLevel == 3, optimized == T, microbenchmark == F))$normalizedTime)
+print_expr(
+  geomean((normalizedToOrcScalaTimeAtMost %>% filter(microbenchmark == F, nCPUs == 24))$orc3Time)
+)
+print_expr(
+  geomean((normalizedToOrcScalaTimeAtMost %>% filter(microbenchmark == F, nCPUs == 24))$orc0Time)
+)
+print_expr(
+  geomean((normalizedToOrcScalaTimeAtMost %>% filter(microbenchmark == F, nCPUs == 24))$scalaTime)
+)
+
+normalizedToOrc3TimeAtMost <- times2 %>% mutate_at(vars(ends_with("Time")), funs(. / if_else(is.na(orc3Time), 10 * 60, orc3Time)))
+
+print_expr(
+  geomean((normalizedToOrc3TimeAtMost %>% filter(microbenchmark == F, nCPUs == 24))$orc0Time)
+)
+print_expr(
+  geomean((normalizedToOrc3TimeAtMost %>% filter(microbenchmark == F, nCPUs == 24))$scalaTime)
 )
 
 
-# print(
+# print_expr(
 #   geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / scalaTime) %>% filter(implType == "Orc", optLevel == 3, normalizedTime > 1))$normalizedTime)
 # )
-# print(
+# print_expr(
 #   geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / scalaTime) %>% filter(implType == "Orc+Scala", optLevel == 3, normalizedTime > 1))$normalizedTime)
 # )
 
