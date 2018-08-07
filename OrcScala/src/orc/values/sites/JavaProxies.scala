@@ -480,7 +480,7 @@ object JavaFieldAssignSite {
         val v = orc2java(arguments(0), componentType)
         orc.run.StopWatches.javaImplementation {
           val self = target.asInstanceOf[JavaFieldAssignSite]
-          mh.invokeExact(self.theObject, v)
+          mh.invokeExact(self.theObject, v) : Unit
           Signal
         }
       }
@@ -591,7 +591,7 @@ object JavaArrayAssignSite {
         val v = orc2java(arguments(0), componentType)
         orc.run.StopWatches.javaImplementation {
           val self = target.asInstanceOf[JavaArrayAssignSite]
-          mh.invokeExact(self.theArray, self.index, v)
+          mh.invokeExact(self.theArray, self.index, v) : Unit
           Signal
         }
       }

@@ -326,13 +326,13 @@ abstract class InvokerInvokeDirect extends NodeBase {
     }
 
     //@TruffleBoundary(allowInlining = true)
-    private static void callMethodHandleSetter(MethodHandle mh, Object theObject, Object arg) throws Throwable {
-        mh.invokeExact(theObject, arg);
+    private static Object callMethodHandleGetter(MethodHandle mh, Object theObject) throws Throwable {
+        return mh.invokeExact(theObject);
     }
 
     //@TruffleBoundary(allowInlining = true)
-    private static Object callMethodHandleGetter(MethodHandle mh, Object theObject) throws Throwable {
-        return mh.invokeExact(theObject);
+    private static void callMethodHandleSetter(MethodHandle mh, Object theObject, Object arg) throws Throwable {
+        mh.invokeExact(theObject, arg);
     }
 
     //@TruffleBoundary(allowInlining = true)
