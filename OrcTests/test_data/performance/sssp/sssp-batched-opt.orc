@@ -45,7 +45,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Integer], source :: Integer) =
 		  )
 	)
 	
-	-- Lines: 7
+	-- Lines: 7 (1)
 	def processNode(index, outQ) = index >> outQ >> (
 		val node = nodes(index)?
 		val currentCost = result.get(index)

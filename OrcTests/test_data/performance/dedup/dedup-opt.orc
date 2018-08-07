@@ -23,7 +23,7 @@ import class DataOutputStream = "java.io.DataOutputStream"
 import class MessageDigest = "java.security.MessageDigest"
 import class Integer = "java.lang.Integer" 
 
--- Lines: 8
+-- Lines: 8 (4)
 class CompressedChunk {
   val compressedDataCell = Cell()
   
@@ -50,7 +50,7 @@ def sha1(chunk) = Sequentialize() >> ArrayKey( -- Inferable (type)
 	m.update(chunk.buffer(), chunk.start(), chunk.size()) >>
 	m.digest())
 
--- Lines: 13
+-- Lines: 13 (2)
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
 def readSegements(minimumSegmentSize, in) =
@@ -107,7 +107,7 @@ def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> ( -- Inferable
 		out.write(cchunk.compressedData())
 	)
 
--- Lines: 20
+-- Lines: 20 (3)
 {-- Read sequential elements from the pool and write to the provided OutputStream.
 -}
 def write(out, outputPool) =

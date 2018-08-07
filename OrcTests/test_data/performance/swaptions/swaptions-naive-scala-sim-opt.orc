@@ -1,4 +1,4 @@
-{- swaptions-naive-scala-sim.orc
+{- swaptions-naive-scala-sim-opt
 
 This uses a Scala implementation of the per trial simulation work.
 

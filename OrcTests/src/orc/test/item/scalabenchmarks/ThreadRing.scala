@@ -41,7 +41,7 @@ object ThreadRing extends BenchmarkApplication[Unit, Int] with ExpectedBenchmark
 
   val N = 503
 
-  // Lines: 14
+  // Lines: 14 (5)
   def threadRingRunner(p: Int) = {
     val ring = (0 until N).map(_ => new Channel[Int]()).toArray
     ring(0).write(0)

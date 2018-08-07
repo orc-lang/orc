@@ -15,7 +15,7 @@ include "wordcount.inc"
 
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
--- Lines: 10
+-- Lines: 10 (1)
 def countLine(line) =
   import class BreakIterator = "java.text.BreakIterator"
   import class Character = "java.lang.Character"
@@ -30,7 +30,7 @@ def countLine(line) =
   wordCount'(0, wb, 0)
   )
 
--- Lines: 9
+-- Lines: 9 (1)
 def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"

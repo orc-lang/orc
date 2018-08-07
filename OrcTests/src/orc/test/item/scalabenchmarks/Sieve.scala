@@ -89,7 +89,7 @@ object SavinaSieve extends BenchmarkApplication[Unit, Iterable[Long]] with HashB
 
   val sieveFragementSize = 300
 
-  // Lines: 27
+  // Lines: 27 (1)
   def sieveFragment(outChan: Channel[Long]): Channel[Long] = {
     val inChan = new Channel[Long]()
     val list = new ArrayList[Long](sieveFragementSize)

@@ -24,7 +24,7 @@ import orc.test.item.scalabenchmarks.BenchmarkApplication
 object Dedup extends BenchmarkApplication[Unit, Unit] {
   val threadPool = new ForkJoinPool()
 
-  // Lines: 7
+  // Lines: 7 (5)
   case class CompressedChunk(uncompressedSHA1: ArrayKey, uncompressedSize: Int) {
     var outputChunkID: Int = -1
     private val compressPromise = Promise[Array[Byte]]()

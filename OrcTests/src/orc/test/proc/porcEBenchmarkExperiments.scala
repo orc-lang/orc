@@ -40,8 +40,10 @@ object PorcEShared {
             //"test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-sim-opt.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            "test_data/performance/swaptions/swaptions-naive-opt.orc",
+            "test_data/performance/swaptions/swaptions-naive.orc",
+            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
+            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             "test_data/performance/sssp/sssp-batched-opt.orc",
             "test_data/performance/sssp/sssp-batched.orc",
             "test_data/performance/sssp/sssp-batched-scala-opt.orc",
@@ -65,17 +67,9 @@ object PorcEShared {
             //"test_data/performance/Wide.orc",
             )
   private val externalLanguages = Seq("scala", "java")
-  val mainPureOrcBenchmarks = mainOrcBenchmarks.filterNot(fn => externalLanguages.exists(fn contains _)) ++ Seq(
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            )
+  val mainPureOrcBenchmarks = mainOrcBenchmarks.filterNot(fn => externalLanguages.exists(fn contains _))
 
-  val mainOrcScalaBenchmarks = mainOrcBenchmarks.filter(fn => externalLanguages.exists(fn contains _) &&
-            !Seq(
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            ).contains(fn)
-            )
+  val mainOrcScalaBenchmarks = mainOrcBenchmarks.filter(fn => externalLanguages.exists(fn contains _))
 
   def onlyOpt(s: Seq[String]): Seq[String] = s.filter(fn => (fn contains "opt") || nonOpt.exists(fn contains _))
   def onlyNonOpt(s: Seq[String]): Seq[String] = s.filter(fn => !(fn contains "opt") || nonOpt.exists(fn contains _))
@@ -104,7 +98,7 @@ object PorcEShared {
       "-XX:-RestrictContended",
       //"-XX:+UseParallelGC",
       "-XX:+UseG1GC",
-      "-Xms4g", "-Xmx4g", "-Xss8m")
+      "-Xms4g", "-Xmx16g", "-Xss8m")
 
   val mainOrcArgs = Seq(
       "-O", "3",
@@ -142,7 +136,7 @@ object PorcEShared {
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   import PorcEShared._
 
-  def softTimeLimit: Double = 60 * 11
+  def softTimeLimit: Double = 60 * 10
 
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -183,11 +177,11 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
       val nCPUsValues = Seq(24, 12, 1, 6, 18)
-      val nRuns = 2
+      val nRuns = 1
       val porce = for {
         run <- 0 until nRuns
-        nCPUs <- nCPUsValues // if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
         optLevel <- Seq(3, 0)
+        nCPUs <- if (optLevel < 2) nCPUsValues.take(1) else nCPUsValues
         fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else onlyOpt(mainOrcBenchmarks)
       } yield {
         assert(new File(fn).isFile(), fn)
@@ -201,7 +195,13 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      (porce ++ scala).sortBy(v => (v.run, nCPUsValues.indexOf(v.nCPUs)))
+      (porce ++ scala).sortBy(v => (v.run,
+          (v match {
+            case v: MyPorcEExperimentalCondition => -v.optLevel
+            case _ => -0
+          }),
+          nCPUsValues.indexOf(v.nCPUs),
+          ))
     }
     runExperiment(experimentalConditions)
   }

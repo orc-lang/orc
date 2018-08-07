@@ -25,7 +25,7 @@ import orc.test.item.scalabenchmarks.Util.thread
 object DedupNestedPar extends BenchmarkApplication[Unit, Unit] {
   import Dedup._
 
-  // Lines: 33
+  // Lines: 33 (2)
   def dedup(inFn: String, outFn: String): Unit = {
     val dedupMap = new ConcurrentHashMap[ArrayKey, CompressedChunk]()
     val compressedChunks = new ArrayBlockingQueue[(CompressedChunk, Int, Int)](2 * 1024)

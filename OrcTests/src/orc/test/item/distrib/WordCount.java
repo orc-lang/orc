@@ -75,7 +75,7 @@ public class WordCount {
         return words;
     }
 
-    // Lines: 8
+    // Lines: 8 (2)
     public static int countReader(final BufferedReader in) throws IOException {
         int words = 0;
         for (;;) {
