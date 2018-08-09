@@ -61,11 +61,12 @@ public abstract class NodeBase extends Node implements HasPorcNode {
         return section;
     }
 
+    @SuppressWarnings("boxing")
     @Override
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
         if (isTail) {
-            properties.put("tail", "");
+            properties.put("tail", true);
         }
         if (section != null) {
             properties.put("sourceSection", section);

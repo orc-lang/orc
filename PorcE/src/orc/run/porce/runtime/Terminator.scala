@@ -62,7 +62,7 @@ class Terminator(val depth: Int) extends Terminatable {
     * All children are notified (with a kill() call) when the terminator is killed. child.kill may
     * be called during the call to addChild.
     */
-  @TruffleBoundary(allowInlining = true) @noinline
+  @TruffleBoundary(allowInlining = false) @noinline
   final def addChild(child: Terminatable): Unit = {
     val orig = children.get()
     if (orig == null) {
@@ -94,7 +94,7 @@ class Terminator(val depth: Int) extends Terminatable {
     *
     * This is important due to memory management.
     */
-  @TruffleBoundary(allowInlining = true) @noinline
+  @TruffleBoundary(allowInlining = false) @noinline
   final def removeChild(child: Terminatable): Unit = {
     //Logger.log(Level.INFO, "", new Exception)
     val orig = children.get()

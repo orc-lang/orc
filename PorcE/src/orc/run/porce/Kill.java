@@ -36,6 +36,7 @@ public class Kill extends Expression {
     @Specialization
     public PorcEUnit run(final VirtualFrame frame, final Counter counter, final Terminator terminator, final PorcEClosure continuation,
     		@Cached("createCallNode(execution, isTail)") final Dispatch callNode) {
+        ensureTail(callNode);
     	// Token: This passes a token on counter to the continuation if kill returns false.
         if (terminator.kill(counter, continuation)) {
             callNode.dispatch(frame, continuation);
