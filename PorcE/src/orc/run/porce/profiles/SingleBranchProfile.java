@@ -9,7 +9,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.porce;
+package orc.run.porce.profiles;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -20,34 +20,50 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
  *
  * @author amp
  */
-public final class MaximumValueProfile {
-    private MaximumValueProfile() {
+public final class SingleBranchProfile {
+    private SingleBranchProfile() {
     }
 
     @CompilationFinal
-    private int max = Integer.MIN_VALUE;
+    private long mask = 0;
+    @CompilationFinal
+    private boolean singleBranch = true;
+
+    /**
+     * @return true if this profile has only observed one branch, false otherwise.
+     */
+    public boolean isSingleBranch() {
+        return singleBranch;
+    }
 
     /**
      * Profile the value and return the maximum value observed.
      *
      * This will invalidate if v is greater than the compiled in maximum.
      */
-    public int max(int v) {
+    public void enter(int path) {
         CompilerAsserts.compilationConstant(this);
-        if (v > max) {
+        long pathMask = 1L << path;
+        if ((pathMask & mask) > 0) {
+            return;
+        } else {
             CompilerDirectives.transferToInterpreterAndInvalidate();
-            max = v;
-            return v;
+            if (pathMask <= 0 || Long.bitCount(pathMask) != 1) {
+                throw new IllegalArgumentException("SingleBranchProfile.enter must be passed a number between 0 and 63.");
+            }
+            if (mask != 0) {
+                singleBranch = false;
+            }
+            mask &= pathMask;
         }
-        return max;
     }
 
     @Override
     public String toString() {
-        return "MaximumValueProfile(max=" + max + ")@" + Integer.toHexString(this.hashCode());
+        return "SingleBranchProfile(mask=" + mask + ")@" + Integer.toHexString(this.hashCode());
     }
 
-    static public MaximumValueProfile create() {
-        return new MaximumValueProfile();
+    static public SingleBranchProfile create() {
+        return new SingleBranchProfile();
     }
 }

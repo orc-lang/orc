@@ -16,6 +16,7 @@ import static orc.run.porce.SpecializationConfiguration.InlineForceResolved;
 
 import orc.FutureState;
 import orc.run.porce.call.Dispatch;
+import orc.run.porce.profiles.ResettableBranchProfile;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Join;
 import orc.run.porce.runtime.PorcEClosure;

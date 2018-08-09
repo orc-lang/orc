@@ -15,7 +15,7 @@ import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.HaltException;
 import orc.run.porce.SpecializationConfiguration;
-import orc.run.porce.ValueClassesProfile;
+import orc.run.porce.profiles.ValueClassesProfile;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 
