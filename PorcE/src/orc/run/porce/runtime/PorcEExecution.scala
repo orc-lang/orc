@@ -15,7 +15,7 @@ import java.io.{ OutputStreamWriter, PrintWriter }
 import java.util.{ Timer, TimerTask }
 
 import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
-import orc.error.runtime.{ ExceptionHaltException, HaltException }
+import orc.error.runtime.HaltException
 import orc.run.core.EventHandler
 import orc.run.distrib.porce.CallTargetManager
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
@@ -53,7 +53,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
 
     e match {
-      case e: ExceptionHaltException => handle(e.getCause())
+      case e: HaltException if e.getCause != null => handle(e.getCause())
       case e: HaltException => ()
       case e: Throwable => handle(e)
     }

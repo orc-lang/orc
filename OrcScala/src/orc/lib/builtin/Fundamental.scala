@@ -22,13 +22,13 @@ import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1, Overlo
 
 case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Ift"
-  
+
   def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
     invoker(a)(a =>
       if (a)
         Signal
       else
-        throw HaltException.SINGLETON)
+        throw new HaltException)
   }
 
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
@@ -36,13 +36,13 @@ case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
 
 case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Iff"
-  
+
   def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
     invoker(a)(a =>
       if (!a)
         Signal
       else
-        throw HaltException.SINGLETON)
+        throw new HaltException)
   }
 
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
@@ -50,12 +50,12 @@ case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
 
 case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite {
   override def name = "Eq"
-  
+
   def getInvokerSpecialized(a: Any, b: Any): Invoker = {
     invokerStaticType(a, b)((a, b) => {
-      if (a == null) 
+      if (a == null)
         b == null
-      else 
+      else
         a == b
     })
   }

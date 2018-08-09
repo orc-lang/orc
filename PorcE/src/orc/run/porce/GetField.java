@@ -49,7 +49,7 @@ public abstract class GetField extends Expression {
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
             execution.notifyOfException(e, this);
-            throw HaltException.SINGLETON();
+            throw new HaltException();
         }
     }
 
@@ -61,7 +61,7 @@ public abstract class GetField extends Expression {
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
             execution.notifyOfException(e, this);
-            throw HaltException.SINGLETON();
+            throw new HaltException();
         }
     }
 

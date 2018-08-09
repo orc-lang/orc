@@ -374,7 +374,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
                 dispatch.dispatch(frame, p.r.p(), p.value);
             }
         } else {
-            throw orc.error.runtime.HaltException.SINGLETON();
+            throw new orc.error.runtime.HaltException();
         }
         // Since this is an asynchronous channel, a put call
         // always returns.

@@ -58,10 +58,10 @@ object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] 
         if (t.values.length == arity.intValue) {
           t
         } else {
-          throw HaltException.SINGLETON
+          throw new HaltException
         }
       case _ =>
-        throw HaltException.SINGLETON
+        throw new HaltException
       })
   }
 

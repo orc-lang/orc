@@ -16,7 +16,7 @@ package orc.values.sites
 import orc.CallContext
 import orc.error.{ NotYetImplementedException, OrcException }
 import orc.error.compiletime.typing.TypeException
-import orc.error.runtime.{ ArityMismatchException, ExceptionHaltException, HaltException, RightException }
+import orc.error.runtime.{ ArityMismatchException, HaltException, RightException }
 import orc.types.{ Bot, RecordType, Type }
 import orc.util.ArrayExtensions.{ Array0, Array1, Array2, Array3 }
 import orc.values.{ OrcRecord, OrcValue }
@@ -80,8 +80,7 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
       }
     } catch {
       case e: Exception =>
-        //throw HaltException.SINGLETON
-        throw new ExceptionHaltException(e)
+        throw new HaltException(e)
     }
   }
 
@@ -101,7 +100,7 @@ trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
       }
     }
   }
-  
+
   def calldirect(args: Array[AnyRef]): AnyRef = {
     //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     (try {
@@ -110,11 +109,10 @@ trait PartialSite extends DirectSite with EffectFreeAfterPubSite {
       }
     } catch {
       case e: Exception =>
-        //throw HaltException.SINGLETON
-        throw new ExceptionHaltException(e)
+        throw new HaltException(e)
     }) match {
       case Some(v) => v
-      case None => throw HaltException.SINGLETON
+      case None => throw new HaltException
     }
   }
 

@@ -85,7 +85,7 @@ public class Channel extends EvalSite implements TypedSite {
                 synchronized (channel) {
                     final Object item = args.getArg(0);
                     if (channel.closed) {
-                        throw orc.error.runtime.HaltException.SINGLETON();
+                        throw new orc.error.runtime.HaltException();
                     }
                     while (true) { // Contains break. Loops until a live reader is removed or readers is empty.
                         if (channel.readers.isEmpty()) {

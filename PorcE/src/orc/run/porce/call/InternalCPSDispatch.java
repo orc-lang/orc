@@ -219,7 +219,7 @@ public class InternalCPSDispatch extends Dispatch {
             } catch (final Throwable e) {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
-                throw HaltException.SINGLETON();
+                throw new HaltException();
             }
         }
 
@@ -257,7 +257,7 @@ public class InternalCPSDispatch extends Dispatch {
             } catch (final Throwable e) {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
-                throw HaltException.SINGLETON();
+                throw new HaltException();
             }
         }
 
@@ -286,7 +286,7 @@ public class InternalCPSDispatch extends Dispatch {
             } catch (final Throwable e) {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
-                throw HaltException.SINGLETON();
+                throw new HaltException();
             }
         }
 
@@ -306,7 +306,7 @@ public class InternalCPSDispatch extends Dispatch {
             } catch (final Throwable e) {
                 exceptionProfile.enter();
                 execution.notifyOfException(e, this);
-                throw HaltException.SINGLETON();
+                throw new HaltException();
             }
         }
 

@@ -14,7 +14,7 @@ package orc.run.extensions
 
 import orc.{ CallContext, DirectInvoker, ErrorAccessor, ErrorInvoker, InvocationBehavior, Invoker, OrcRuntime }
 import orc.error.OrcException
-import orc.error.runtime.{ ExceptionHaltException, HaltException, JavaException }
+import orc.error.runtime.{ HaltException, JavaException }
 import orc.values.Field
 import orc.values.sites.{ AccessorValue, DirectSite, InvokerMethod, Site }
 
@@ -83,8 +83,8 @@ class SiteInvoker(val siteCls: Class[_ <: Site]) extends Invoker {
       case e: Exception => callContext.halt(new JavaException(e))
     }
   }
-  
-  override def toString(): String = s"${getClass.getSimpleName}(${siteCls.getName})" 
+
+  override def toString(): String = s"${getClass.getSimpleName}(${siteCls.getName})"
 }
 
 class DirectSiteInvoker(override val siteCls: Class[_ <: DirectSite]) extends SiteInvoker(siteCls) with DirectInvoker {
@@ -93,7 +93,7 @@ class DirectSiteInvoker(override val siteCls: Class[_ <: DirectSite]) extends Si
       siteCls.cast(target).calldirect(arguments)
     } catch {
       case e: HaltException => throw e
-      case e: Exception => throw new ExceptionHaltException(e)
+      case e: Exception => throw new HaltException(e)
     }
   }
 }

@@ -13,25 +13,28 @@
 
 package orc.error.runtime
 
-/** Notify the enclosing code that a direct Orc call has halted
+/** Notify the enclosing code that a direct Orc call has halted.
+  *
+  * If cause is provided it is attached so the runtime can report it
+  * correctly. It should only be attached when actually meaningful.
+  * The default should be the zero argument constructor which does
+  * not attach a cause.
   */
-class HaltException() extends RuntimeException() {
-}
+final class HaltException(cause: Throwable) extends RuntimeException(null, cause) {
+  def this() = {
+    this(null)
+  }
 
-/** Notify the enclosing code that a direct Orc call has halted due to an expected exception in the Java code.
-  */
-class ExceptionHaltException(e: Throwable) extends HaltException {
-  initCause(e)
+  override def fillInStackTrace(): Throwable = {
+    if (HaltException.captureHaltStackTraces) {
+      super.fillInStackTrace()
+    } else {
+      null
+    }
+  }
 }
 
 object HaltException {
-  /** A singleton instance of HaltException to avoid allocation.
-    */
-  val SINGLETON = new HaltException()
-  /* NOTE: Using a singleton is the "right thing" for performance,
-   * however it makes the stacks wrong. You can change this to a def
-   * to get the stacks right.
-   */
-
-  final def throwIt() = throw SINGLETON
+  @inline
+  final val captureHaltStackTraces = false
 }
