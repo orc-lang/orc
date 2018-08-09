@@ -198,7 +198,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 
     public static class CPS {
         public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution, boolean isTail) {
-            if (isTail) {
+            if (isTail || !SpecializationConfiguration.UniversalTCO) {
                 return createTail(target, arguments, execution);
             } else {
                 return createNontail(target, arguments, execution);

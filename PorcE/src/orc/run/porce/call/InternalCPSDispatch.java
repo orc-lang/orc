@@ -97,7 +97,7 @@ public class InternalCPSDispatch extends Dispatch {
     }
 
     public static Dispatch create(final PorcEExecution execution, boolean isTail) {
-        if (isTail) {
+        if (isTail || !SpecializationConfiguration.UniversalTCO) {
             return createBare(execution);
         } else {
             return CatchTailDispatch.create(createBare(execution), execution);

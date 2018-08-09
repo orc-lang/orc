@@ -15,6 +15,7 @@ import orc.run.porce.Expression;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.TailCallException;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class CatchTailCall extends Expression {
@@ -39,12 +40,17 @@ public class CatchTailCall extends Expression {
 
     @Override
     public void executePorcEUnit(VirtualFrame frame) {
-        try {
+        CompilerAsserts.compilationConstant(isTail);
+        if (isTail) {
             body.executePorcEUnit(frame);
-        } catch (TailCallException e) {
-            // TODO: This does not add an initial target to the set. It probably should in some cases, but it would be
-            // almost impossible to do that here.
-            loop.executeTailCalls(frame, e);
+        } else {
+            try {
+                body.executePorcEUnit(frame);
+            } catch (TailCallException e) {
+                // TODO: This does not add an initial target to the set. It probably should in some cases, but it would be
+                // almost impossible to do that here.
+                loop.executeTailCalls(frame, e);
+            }
         }
     }
 

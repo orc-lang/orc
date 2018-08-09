@@ -14,6 +14,7 @@ package orc.run.porce.call;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.TailCallException;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class CatchTailDispatch extends Dispatch {
@@ -36,19 +37,29 @@ public class CatchTailDispatch extends Dispatch {
 
     @Override
     public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
-        try {
+        CompilerAsserts.compilationConstant(isTail);
+        if (isTail) {
             body.executeDispatch(frame, target, arguments);
-        } catch (TailCallException e) {
-            loop.executeTailCalls(frame, e);
+        } else {
+            try {
+                body.executeDispatch(frame, target, arguments);
+            } catch (TailCallException e) {
+                loop.executeTailCalls(frame, e);
+            }
         }
     }
 
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
-        try {
+        CompilerAsserts.compilationConstant(isTail);
+        if (isTail) {
             body.executeDispatchWithEnvironment(frame, target, arguments);
-        } catch (TailCallException e) {
-            loop.executeTailCalls(frame, e);
+        } else {
+            try {
+                body.executeDispatchWithEnvironment(frame, target, arguments);
+            } catch (TailCallException e) {
+                loop.executeTailCalls(frame, e);
+            }
         }
     }
 
