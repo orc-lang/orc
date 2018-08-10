@@ -1,9 +1,9 @@
 include "benchmark.inc"
 
 def doit() =
-	val c = Channel[Integer]()
-	c.get() + 1331 |
-	c.put(1331) >> stop
+	Channel[Integer]() >c>
+	(c.get() + 1331 |
+	c.put(1331) >> stop)
 
 def run(x) = x >> Let(upto(300) >> doit())
 
