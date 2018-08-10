@@ -110,9 +110,17 @@ final public class PorcEClosure {
         // FIXME: The recursion check will be SLOW. But it may not matter. However it may not even be good to have this
         // as a default.
         StringBuilder sb = new StringBuilder();
-        sb.append(body.getRootNode().getName());
-        sb.append(':');
-        sb.append(body.getRootNode().getClass().getSimpleName());
+        RootNode rootNode = body.getRootNode();
+        sb.append(rootNode.getName());
+        Class<? extends RootNode> rootNodeClass = rootNode.getClass();
+        scala.collection.Iterator<orc.ast.porc.Variable> closureVariablesIter = null;
+        if (rootNode instanceof PorcERootNode) {
+            PorcERootNode r = (PorcERootNode) rootNode;
+            closureVariablesIter = ((scala.collection.IterableLike<orc.ast.porc.Variable, ?>)r.getClosureVariables()).toIterator();
+        } else {
+            sb.append(':');
+            sb.append(rootNodeClass.getSimpleName());
+        }
         if (PorcERuntime.displayClosureValues() && !toStringRecursionCheck.get()) {
             toStringRecursionCheck.set(true);
             sb.append('[');
@@ -121,8 +129,13 @@ final public class PorcEClosure {
                 if (notFirst) {
                     sb.append(", ");
                 }
+                if (closureVariablesIter != null && closureVariablesIter.hasNext()) {
+                    orc.ast.porc.Variable var = closureVariablesIter.next();
+                    sb.append(var);
+                    sb.append("=");
+                }
                 String s = Format.formatValue(v);
-                sb.append(s.substring(0, s.length() < 50 ? s.length() - 1 : 48));
+                sb.append(s.substring(0, s.length() < 50 ? s.length() : 49));
                 notFirst = true;
             }
             sb.append(']');
