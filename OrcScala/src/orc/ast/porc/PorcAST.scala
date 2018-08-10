@@ -320,12 +320,12 @@ final case class Bind(@subtree future: Argument, @subtree v: Argument) extends E
 @leaf @transform
 final case class BindStop(@subtree future: Argument) extends Expression
 
-/** Spawn the v(P, C), where P is a future binding continuation and C is a counter
-  * to use while computing the value, and execute k(f), where f is the future.
+/** Spawn v(P, C), where P is a future binding continuation and C is a counter
+  * to use while computing the value, and execute p(f), where f is the future.
   *
   * The actual execution does NOT need to actually perform the spawn or build a future.
-  * For example, Graft can be executed as v(k) directly in cases where value is
-  * fast or k forces the future quickly.
+  * For example, Graft can be executed as v(p, c) directly in cases where value is
+  * fast or p forces the future quickly.
   */
 @leaf @transform
 final case class Graft(@subtree p: Argument, @subtree c: Argument, @subtree t: Argument, @subtree v: Argument) extends Expression
