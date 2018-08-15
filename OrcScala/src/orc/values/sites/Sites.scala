@@ -13,6 +13,9 @@
 
 package orc.values.sites
 
+import java.io.InvalidClassException
+import java.lang.reflect.Modifier
+
 import orc.CallContext
 import orc.error.{ NotYetImplementedException, OrcException }
 import orc.error.compiletime.typing.TypeException
@@ -319,3 +322,23 @@ trait TalkativeSite extends SiteMetadata {
 }
 
 trait FunctionalSite extends SiteMetadata with NonBlockingSite with EffectFreeSite
+
+/** A Site that is a Scala object (singleton), but only needs to be a
+  * singleton per JVM/Orc runtime, not globally for the program.  For example,
+  * a Site that is an object simply because it carries no state.
+  */
+trait LocalSingletonSite {
+  _: java.io.Serializable =>
+  @throws(classOf[java.io.ObjectStreamException])
+  protected def writeReplace(): AnyRef = {
+      if (!Modifier.isStatic(this.getClass.getField("MODULE$").getModifiers)) {
+        throw new InvalidClassException("A LocalSingletonSite must be a Scala object")
+      }
+      new LocalSingletonSiteMarshalingReplacement(this.getClass)
+  }
+}
+
+protected case class LocalSingletonSiteMarshalingReplacement(singletonClass: Class[_ <: java.lang.Object]) {
+  @throws(classOf[java.io.ObjectStreamException])
+  protected def readResolve(): AnyRef = singletonClass.getField("MODULE$").get(null)
+}
