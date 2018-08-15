@@ -118,10 +118,10 @@ public class InternalCPSDispatch extends Dispatch {
         }
 
         @CompilationFinal
-        private RootNode rootNode;
+        private RootNode rootNode = null;
 
         public RootNode getRootNodeCached() {
-            if (CompilerDirectives.inInterpreter()) {
+            if (rootNode == null || CompilerDirectives.inInterpreter()) {
                 rootNode = getRootNode();
             }
             return rootNode;
@@ -144,8 +144,18 @@ public class InternalCPSDispatch extends Dispatch {
         @Specialization(guards = { "SelfTCO", "isTail", "getRootNodeCached() == target.body.getRootNode()" })
         public void selfTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
             Object[] frameArguments = frame.getArguments();
-            System.arraycopy(arguments, 0, frameArguments, 0, arguments.length);
-            //Logger.log(java.util.logging.Level.INFO, () -> "Self tail call: " + target + ", " + java.util.Arrays.toString(frameArguments));
+            //CompilerAsserts.compilationConstant(frameArguments.length);
+            CompilerAsserts.compilationConstant(arguments.length);
+            if (frameArguments.length == arguments.length) {
+                for (int i = 0; i < arguments.length; i ++) {
+                    frameArguments[i] = arguments[i];
+                }
+                //System.arraycopy(arguments, 0, frameArguments, 0, arguments.length);
+            } else {
+                CompilerDirectives.transferToInterpreter();
+                throw new ArityMismatchException(arguments.length, frameArguments.length);
+            }
+            //Logger.log(java.util.logging.Level.INFO, () -> "Self tail call: " + target.toString() + " (" + java.util.Arrays.toString(arguments) + ")");
             throw new SelfTailCallException();
         }
 
@@ -177,7 +187,8 @@ public class InternalCPSDispatch extends Dispatch {
 
         @Specialization(guards = { "TruffleASTInlining", "isTail",
                 "nodeCount < TruffleASTInliningLimit",
-                "target.body == expected", "body != null",
+                "target.body == expected",
+                "body != null", "argumentSlots != null", "closureSlots != null",
                 "getRootNodeCached() != target.body.getRootNode()" }, limit = "3")
         @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
         public void specificInlineTail(final VirtualFrame frame,
@@ -310,10 +321,6 @@ public class InternalCPSDispatch extends Dispatch {
             }
         }
 
-        static InternalCPSDispatchInternal createBare(final PorcEExecution execution) {
-            return InternalCPSDispatchFactory.InternalCPSDispatchInternalNodeGen.create(execution);
-        }
-
         /* Utilties */
 
         protected FrameSlot[] getArgumentSlots(PorcEClosure target) {
@@ -359,7 +366,7 @@ public class InternalCPSDispatch extends Dispatch {
         }
 
         protected Expression getPorcEBodyNewFrame(PorcEClosure target) {
-            CompilerAsserts.neverPartOfCompilation("Reconvertion of code.");
+            CompilerAsserts.neverPartOfCompilation("Copying PorcE AST.");
             RootNode r = target.body.getRootNode();
             if (r instanceof PorcERootNode) {
                 PorcERootNode bodyRoot = (PorcERootNode) r;
@@ -421,5 +428,9 @@ public class InternalCPSDispatch extends Dispatch {
                 return null;
             }
         }
-    }
+
+        static InternalCPSDispatchInternal createBare(final PorcEExecution execution) {
+            return InternalCPSDispatchFactory.InternalCPSDispatchInternalNodeGen.create(execution);
+        }
+}
 }
