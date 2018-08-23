@@ -23,6 +23,7 @@ import orc.run.distrib.AbstractLocation;
 import orc.run.distrib.ClusterLocations;
 import orc.run.distrib.DOrcPlacementPolicy;
 import orc.types.Type;
+import orc.values.FastRecordFactory;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
@@ -39,7 +40,7 @@ public class Channel extends EvalSite implements TypedSite {
     @Override
     public Object evaluate(final Args args) throws TokenException {
         if (args.size() == 0) {
-            return new ChannelInstance();
+            return new ChannelInstance().toFastRecord(instanceFactory);
         } else {
             throw new ArityMismatchException(0, args.size());
         }
@@ -49,6 +50,11 @@ public class Channel extends EvalSite implements TypedSite {
     public Type orcType() {
         return ChannelType.getBuilder();
     }
+
+    private static FastRecordFactory instanceFactory = new FastRecordFactory(new String[] {
+            "get", "put", "getD", "getAll",
+            "isClosed", "close", "closeD"
+    });
 
     // @Override
     // public Type type() throws TypeException {
