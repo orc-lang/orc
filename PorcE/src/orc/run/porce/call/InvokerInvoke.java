@@ -27,6 +27,7 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.values.sites.InvocableInvoker;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
+import orc.values.sites.Site;
 import orc.values.sites.OrcJavaCompatibility;
 import orc.values.Signal$;
 
@@ -71,7 +72,8 @@ abstract class InvokerInvoke extends NodeBase {
     public abstract void executeInvoke(VirtualFrame frame, Invoker invoker, CallContext callContext, Object target, Object[] arguments);
 
     @Specialization(guards = { "isChannelGet(invoker)", "KnownSiteSpecialization" })
-    public void channelGet(VirtualFrame frame, SiteInvoker invoker, CPSCallContext callContext, Object target, Object[] arguments,
+    public void channelGet(VirtualFrame frame, SiteInvoker invoker, CPSCallContext callContext,
+            Object target, Object[] arguments,
             @Cached("create(execution)") StackCheckingDispatch dispatch) {
         orc.lib.state.Channel.ChannelInstance.GetSite getSite = (orc.lib.state.Channel.ChannelInstance.GetSite)target;
         Object v = performChannelGet(callContext, getSite);
@@ -110,6 +112,16 @@ abstract class InvokerInvoke extends NodeBase {
 
     protected static boolean isChannelGet(SiteInvoker invoker) {
         return invoker.siteCls() == orc.lib.state.Channel.ChannelInstance.GetSite.class;
+    }
+
+    @Specialization
+    public void siteInvoker(SiteInvoker invoker, CallContext callContext, Object target, Object[] arguments) {
+        callSite(callContext, invoker.siteCls().cast(target), arguments);
+    }
+
+    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
+    private static void callSite(CallContext callContext, Site target, Object[] arguments) {
+        target.call(arguments, callContext);
     }
 
     @Specialization

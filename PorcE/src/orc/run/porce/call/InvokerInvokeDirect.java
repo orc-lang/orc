@@ -25,6 +25,7 @@ import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.runtime.CPSCallContext;
 import orc.values.NumericsConfig;
 import orc.values.Signal$;
+import orc.values.sites.DirectSite;
 import orc.values.sites.InvocableInvoker;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
@@ -416,6 +417,16 @@ abstract class InvokerInvokeDirect extends NodeBase {
     protected static boolean isChannelPut(DirectSiteInvoker invoker) {
         return invoker.siteCls() == orc.lib.state.Channel.ChannelInstance.PutSite.class;
 
+    }
+
+    @Specialization
+    public Object directSiteInvoker(DirectSiteInvoker invoker, Object target, Object[] arguments) {
+        return calldirect(invoker.siteCls().cast(target), arguments);
+    }
+
+    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
+    private static Object calldirect(DirectSite target, Object[] arguments) {
+        return target.calldirect(arguments);
     }
 
     @Specialization
