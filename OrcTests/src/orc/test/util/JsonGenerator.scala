@@ -43,7 +43,6 @@ object JsonGenerator {
       case n: Number => out.append(n.toString)
       case o: scala.collection.Map[_,_] => serializeJsonObject(out)(o, currIndent, addlIndent)
       case o: java.util.Map[_,_] => serializeJsonObject(out)(o.asScala, currIndent, addlIndent)
-      case o: java.util.Dictionary[_,_] => serializeJsonObject(out)(o.asScala, currIndent, addlIndent)
       case a: TraversableOnce[_] => serializeJsonArray(out)(a, currIndent, addlIndent)
       case a: java.lang.Iterable[_] => serializeJsonArray(out)(a.asScala, currIndent, addlIndent)
       case a: java.util.Enumeration[_] => serializeJsonArray(out)(a.asScala, currIndent, addlIndent)
