@@ -15,16 +15,17 @@ import orc.values.sites.InvokerMethod
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.Invoker
 import orc.OrcRuntime
-import orc.run.porce.runtime.CPSCallContext
+import orc.run.porce.runtime.MaterializedCPSCallContext
 import orc.values.Signal
 import orc.DirectInvoker
+import orc.values.sites.Site
 
 object TraceOrcTask {
   final val Execute = 50L
   orc.util.Tracer.registerEventTypeId(Execute, "Execute ")
 
   @TruffleBoundary
-  def traceExecute(ctx: CPSCallContext, x: Long, y: Long): Unit = {
+  def traceExecute(ctx: MaterializedCPSCallContext, x: Long, y: Long): Unit = {
     orc.util.Tracer.trace(Execute, System.identityHashCode(ctx.p.environment), x, y)
   }
 
@@ -34,20 +35,14 @@ object TraceOrcTask {
   }
 }
 
-object TraceTask extends InvokerMethod {
+object TraceTask extends Site {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     // FIXME: Support 2 args and produce useful errors if called wrong.
     new DirectInvoker {
       def canInvoke(target: AnyRef,arguments: Array[AnyRef]): Boolean = {
         target == TraceTask && arguments(0).isInstanceOf[Number]
       }
-      
-      def invoke(callContext: orc.CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-        val ctx = callContext.asInstanceOf[CPSCallContext]
-        TraceOrcTask.traceExecute(ctx, arguments(0).asInstanceOf[Number].longValue(), 0)
-        callContext.publish(Signal)
-      }
-      
+
       def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
         TraceOrcTask.traceExecute(arguments(0).asInstanceOf[Number].longValue(), 0)
         Signal

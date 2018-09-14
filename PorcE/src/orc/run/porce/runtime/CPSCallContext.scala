@@ -1,5 +1,5 @@
 //
-// CPSCallContext.scala -- Scala class CPSCallContext
+// MaterializedCPSCallContext.scala -- Scala class MaterializedCPSCallContext
 // Project PorcE
 //
 // Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
@@ -18,22 +18,17 @@ import orc.compile.parse.OrcSourceRange
 import orc.error.OrcException
 import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 import orc.MaterializedCallContext
-import java.util.ArrayList
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import orc.SiteResponseSet
+import orc.VirtualCallContext
 
-sealed abstract class CallContextCommon(execution: PorcEExecution, callSiteId: Int) extends CallContext {
-  def t: Terminator
+sealed abstract class CallContextCommon(
+    val execution: PorcEExecution,
+    val p: PorcEClosure, val c: Counter, val t: Terminator,
+    val callSiteId: Int) extends CallContext {
 
   final def notifyOrc(event: OrcEvent): Unit = {
     execution.notifyOrcWithBoundary(event)
-  }
-
-  // TODO: Support VTime
-  final def setQuiescent(): Unit = {}
-
-  final def halt(e: OrcException): Unit = {
-    notifyOrc(CaughtEvent(e))
-    halt()
   }
 
   // TODO: Support rights.
@@ -45,182 +40,74 @@ sealed abstract class CallContextCommon(execution: PorcEExecution, callSiteId: I
 
   // TODO: Add a mapping from callSiteIds to ranges or just nodes, then use that to look up the data we need here.
   def callSitePosition: Option[OrcSourceRange] = None
+
+  def runtime = execution.runtime
 }
 
-abstract class VirtualCallContextBase(val execution: PorcEExecution, val callSiteId: Int)
-    extends CallContextCommon(execution, callSiteId) {
-  def p: PorcEClosure
-  def c: Counter
-  def t: Terminator
+class VirtualCPSCallContext(_execution: PorcEExecution, _p: PorcEClosure, _c: Counter, _t: Terminator, _callSiteId: Int)
+    extends CallContextCommon(_execution, _p, _c, _t, _callSiteId) with VirtualCallContext {
 
-  protected def isClean: Boolean
-
-  var isOpen = true
-
-  def close(): Unit = {
-    isOpen = false
-  }
+  /** Create an empty SiteResponseSet.
+    *
+    * This ResultDescriptor is optimized for receiving some unknown number of
+    * publications and other actions.
+    */
+  def empty(): SiteResponseSet = ResponseSet.Empty
 
   def materialize(): MaterializedCallContext = {
-    assert(isClean, s"$this cannot be materialized because it is not clean.")
-    close()
-    val r = new CPSCallContext(execution, p, c, t, callSiteId)
+    val r = new MaterializedCPSCallContext(execution, p, c, t, callSiteId)
     r
   }
 
-  def runtime = execution.runtime
-
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
-
-  final def discorporate(): Unit = {
-    c.setDiscorporate()
-    halt()
-  }
 }
 
-object DirectVirtualCallContext {
-  /** The size in *items* of each buffer when it is first used.
+sealed abstract class ResponseSet(val next: ResponseSet) extends SiteResponseSet {
+  protected[this] def selfAsNext: ResponseSet = this
+
+  /** Publish a value from ctx without halting the call.
     */
-  @inline
-  private val initialBufferSize = 2
-}
+  override def publishNonterminal(ctx: CallContext, v: AnyRef): ResponseSet =
+    new ResponseSet.PublishNonterminal(ctx, v, selfAsNext)
 
-abstract class DirectVirtualCallContext(execution: PorcEExecution, callSiteId: Int)
-    extends VirtualCallContextBase(execution, callSiteId) {
-  virtualCtx =>
-
-  var halted: Boolean = false
-  var selfPublicationList: ArrayList[AnyRef] = null
-  var otherPublicationList: ArrayList[AnyRef] = null
-  var otherHaltedList: ArrayList[CPSCallContext] = null
-
-  protected def isClean = isOpen && halted == false && selfPublicationList == null && otherPublicationList == null
-
-  override def close() = {
-    super.close()
-    selfPublicationList = null
-    otherPublicationList = null
-    otherHaltedList = null
-  }
-
-  @TruffleBoundary(allowInlining = true) @noinline
-  private def addSelfPublication(v: AnyRef) = {
-    assert(isOpen)
-    if (selfPublicationList == null) {
-      selfPublicationList = new ArrayList(DirectVirtualCallContext.initialBufferSize)
-    }
-    selfPublicationList.add(v)
-  }
-
-  @TruffleBoundary(allowInlining = true) @noinline
-  private def addOtherPublication(o: CPSCallContext, v: AnyRef, halt: Boolean) = {
-    assert(isOpen)
-    if (otherPublicationList == null) {
-      // Each other publication is 3 array elements.
-      otherPublicationList = new ArrayList(DirectVirtualCallContext.initialBufferSize * 3)
-    }
-    otherPublicationList.add(o)
-    otherPublicationList.add(v)
-    otherPublicationList.add(halt.asInstanceOf[AnyRef])
-  }
-
-  @TruffleBoundary(allowInlining = true) @noinline
-  private def addOtherHalt(o: CPSCallContext) = {
-    assert(isOpen)
-    if (otherHaltedList == null) {
-      otherHaltedList = new ArrayList(DirectVirtualCallContext.initialBufferSize)
-    }
-    otherHaltedList.add(o)
-  }
-
-  def virtualCallContextFor(ctx: CallContext): CallContext = {
-    assert(isOpen)
-    if (true)
-    ctx match {
-      case ctx: CPSCallContext => new VirtualCallContextBase(execution, callSiteId) {
-        def p = ctx.p
-        def c = ctx.c
-        def t = ctx.t
-
-        protected def isClean = virtualCtx.isClean
-
-        override def materialize(): MaterializedCallContext = {
-          assert(isClean, s"$this cannot be materialized because it is not clean.")
-          close()
-          ctx
-        }
-
-        def virtualCallContextFor(ctx: CallContext): CallContext = {
-          virtualCtx.virtualCallContextFor(ctx)
-        }
-
-        final def publishNonterminal(v: AnyRef): Unit = {
-          virtualCtx.addOtherPublication(ctx, v, false)
-        }
-
-        /** Handle a site call publication.
-          *
-          * The semantics of a publication for a handle include halting so add that.
-          */
-        override final def publish(v: AnyRef) = {
-          assert(isOpen)
-          // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
-          if (ctx.halted.compareAndSet(false, true)) {
-            virtualCtx.addOtherPublication(ctx, v, true)
-          }
-        }
-
-        final def halt(): Unit = {
-          assert(isOpen)
-          if (ctx.halted.compareAndSet(false, true)) {
-            virtualCtx.addOtherHalt(ctx)
-          }
-        }
-
-        override def toString() = {
-          s"VirtualCallContext(for ${ctx}, in ${virtualCtx})"
-        }
-      }
-      case ctx: VirtualCallContextBase => ctx
-      case ctx => ctx
-    }
-    else
-    ctx
-  }
-
-  final def publishNonterminal(v: AnyRef): Unit = {
-    addSelfPublication(v)
-  }
-
-  /** Handle a site call publication.
-    *
-    * The semantics of a publication for a handle include halting so add that.
+  /** Publish a value from ctx and halt ctx.
     */
-  override final def publish(v: AnyRef) = {
-    assert(isOpen)
-    // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
-    if (!halted) {
-      addSelfPublication(v)
-      halt()
-    }
-  }
+  override def publish(ctx: CallContext, v: AnyRef): ResponseSet =
+    new ResponseSet.PublishTerminal(ctx, v, selfAsNext)
 
-  final def halt(): Unit = {
-    halted = true
-  }
+  /** Halt ctx without publishing a value.
+    */
+  override def halt(ctx: CallContext): ResponseSet =
+    this.halt(ctx, null)
 
-  override def toString() = {
-    s"VirtualCallContext@${hashCode().formatted("%x")}($halted, $selfPublicationList, $otherPublicationList, $otherHaltedList)"
-  }
+  /** Halt ctx without publishing a value, providing an exception which caused the halt.
+    */
+  override def halt(ctx: CallContext, e: OrcException): ResponseSet =
+    new ResponseSet.Halt(ctx, e, selfAsNext)
+
+  /** Notify the runtime that ctx will never publish again, but will not halt.
+    */
+  override def discorporate(ctx: CallContext): ResponseSet =
+    new ResponseSet.Discorporate(ctx, selfAsNext)
 }
 
+object ResponseSet {
+  object Empty extends ResponseSet(null) {
+    protected[this] override def selfAsNext = null
+  }
+  final class PublishNonterminal(val ctx: CallContext, val v: AnyRef, _next: ResponseSet) extends ResponseSet(_next) {
+    override def halt(ctx: CallContext): ResponseSet =
+      new PublishTerminal(ctx, v, next)
+  }
+  final class PublishTerminal(val ctx: CallContext, val v: AnyRef, _next: ResponseSet) extends ResponseSet(_next)
+  final class Halt(val ctx: CallContext, val e: OrcException, _next: ResponseSet) extends ResponseSet(_next)
+  final class Discorporate(val ctx: CallContext, _next: ResponseSet) extends ResponseSet(_next)
+}
 
-class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator, val callSiteId: Int)
-    extends CallContextCommon(execution, callSiteId) with MaterializedCallContext with Terminatable {
+class MaterializedCPSCallContext(_execution: PorcEExecution, _p: PorcEClosure, _c: Counter, _t: Terminator, _callSiteId: Int)
+    extends CallContextCommon(_execution, _p, _c, _t, _callSiteId) with MaterializedCallContext with Terminatable {
   // A flag saying if we have already halted.
   val halted = new AtomicBoolean(false)
-
-  val runtime = execution.runtime
 
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
@@ -264,6 +151,14 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
 
   final def kill(): Unit = halt()
 
+  // TODO: Support VTime
+  final def setQuiescent(): Unit = {}
+
+  final def halt(e: OrcException): Unit = {
+    notifyOrc(CaughtEvent(e))
+    halt()
+  }
+
   final def halt(): Unit = {
     if (halted.compareAndSet(false, true)) {
       // Token: Taken from passed in c.
@@ -280,6 +175,6 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
   }
 
   override def toString() = {
-    s"CPSCallContext@${hashCode().formatted("%x")}(${halted.get()})"
+    s"MaterializedCPSCallContext@${hashCode().formatted("%x")}(${halted.get()})"
   }
 }

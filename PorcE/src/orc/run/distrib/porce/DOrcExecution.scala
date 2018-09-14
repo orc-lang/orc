@@ -22,7 +22,7 @@ import orc.compile.parse.OrcSourceRange
 import orc.compiler.porce.PorcToPorcE
 import orc.run.distrib.DOrcPlacementPolicy
 import orc.run.porce.{ HasId, PorcEUnit }
-import orc.run.porce.runtime.{ CPSCallContext, PorcEClosure, PorcEExecution, PorcEExecutionWithLaunch }
+import orc.run.porce.runtime.{ MaterializedCPSCallContext, PorcEClosure, PorcEExecution, PorcEExecutionWithLaunch }
 
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.frame.VirtualFrame
@@ -217,7 +217,7 @@ class DOrcFollowerExecution(
 }
 
 case class CallMemento(callSiteId: Int, callSitePosition: Option[OrcSourceRange], publicationContinuation: PorcEClosure, counterId: CounterProxyManager#DistributedCounterId, credit: Int, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) extends Serializable {
-  def this(callContext: CPSCallContext, counterId: CounterProxyManager#DistributedCounterId, credit: Int, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) {
+  def this(callContext: MaterializedCPSCallContext, counterId: CounterProxyManager#DistributedCounterId, credit: Int, terminatorProxyId: TerminatorProxyManager#TerminatorProxyId, target: AnyRef, arguments: Array[AnyRef]) {
     this(callSiteId = callContext.callSiteId, callSitePosition = callContext.callSitePosition, publicationContinuation = callContext.p, counterId = counterId, credit = credit, terminatorProxyId = terminatorProxyId, target = target, arguments = arguments)
   }
 }

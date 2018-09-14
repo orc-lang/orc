@@ -11,7 +11,7 @@
 
 package orc.run.porce.call;
 
-import orc.run.porce.runtime.CPSCallContext;
+import orc.run.porce.runtime.MaterializedCPSCallContext;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
@@ -39,13 +39,13 @@ public abstract class InterceptedDispatch extends Dispatch {
         final Terminator term = (Terminator) newArguments[2];
 
         // Token: Passed to callContext from arguments.
-        final CPSCallContext callContext = new CPSCallContext(execution, pub, counter, term, getCallSiteId());
+        final MaterializedCPSCallContext callContext = new MaterializedCPSCallContext(execution, pub, counter, term, getCallSiteId());
 
         invokeInterceptedWithBoundary(callContext, newTarget, newArguments);
     }
 
     @TruffleBoundary
-    private void invokeInterceptedWithBoundary(final CPSCallContext callContext, final Object newTarget,
+    private void invokeInterceptedWithBoundary(final MaterializedCPSCallContext callContext, final Object newTarget,
             final Object[] newArguments) {
         execution.invokeIntercepted(callContext, newTarget, buildArgumentValues(newArguments));
     }

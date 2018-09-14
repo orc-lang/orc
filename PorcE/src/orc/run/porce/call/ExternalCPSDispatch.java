@@ -20,6 +20,8 @@ import java.util.logging.Level;
 import orc.CallContext;
 import orc.DirectInvoker;
 import orc.Invoker;
+import orc.SiteResponseSet;
+import orc.ast.porc.NewToken;
 import orc.error.runtime.HaltException;
 import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.profiles.SingleBranchProfile;
@@ -28,14 +30,16 @@ import orc.run.porce.HaltToken;
 import orc.run.porce.Logger;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
-import orc.run.porce.runtime.CPSCallContext;
+import orc.run.porce.runtime.CallContextCommon;
+import orc.run.porce.runtime.MaterializedCPSCallContext;
 import orc.run.porce.runtime.Counter;
-import orc.run.porce.runtime.DirectVirtualCallContext;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
+import orc.run.porce.runtime.ResponseSet;
 import orc.run.porce.runtime.TailCallException;
 import orc.run.porce.runtime.Terminator;
+import orc.run.porce.runtime.VirtualCPSCallContext;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -141,6 +145,10 @@ public class ExternalCPSDispatch extends Dispatch {
             // return InternalCPSDispatch.create(/*forceInline =*/ true, execution, isTail);
         }
 
+        protected ResponseSetHandler createResponseSetHandler(final PorcEExecution execution) {
+            return ExternalCPSDispatchFactory.ResponseSetHandlerNodeGen.create(execution);
+        }
+
         public abstract void execute(VirtualFrame frame, Object target, PorcEClosure pub, Counter counter,
                 Terminator term, Object[] arguments);
 
@@ -198,27 +206,15 @@ public class ExternalCPSDispatch extends Dispatch {
                 @Cached("getInvokerWithBoundary(target, arguments)") Invoker invoker,
                 @Cached("create()") InvokerCanInvoke canInvoke,
                 @Cached("create(execution)") InvokerInvoke invoke,
-                @Cached("createVirtualContextHandler()") VirtualContextHandler handler) {
+                @Cached("createResponseSetHandler(execution)") ResponseSetHandler handler) {
             ensureTail(handler);
             // Token: Passed to callContext from arguments.
-            final DirectVirtualCallContext callContext = new DirectVirtualCallContext(execution, getCallSiteId()) {
-                @Override
-                public PorcEClosure p() {
-                    return pub;
-                }
-                @Override
-                public Counter c() {
-                    return counter;
-                }
-                @Override
-                public Terminator t() {
-                    return term;
-                }
-            };
+            final VirtualCPSCallContext callContext = new VirtualCPSCallContext(execution, pub, counter, term, getCallSiteId());
 
+            SiteResponseSet rs = null;
             try {
                 try {
-                    invoke.executeInvoke(frame, invoker, maybeMaterialize(callContext), target, argumentClassesProfile.profile(arguments));
+                    rs = invoke.executeInvoke(frame, invoker, callContext, target, argumentClassesProfile.profile(arguments));
                 } finally {
                     if (SpecializationConfiguration.StopWatches.callsEnabled) {
                         orc.run.StopWatches.callTime().stop(FrameUtil.getLongSafe(frame, Call.getCallStartTimeSlot(this)));
@@ -235,17 +231,19 @@ public class ExternalCPSDispatch extends Dispatch {
                 execution.notifyOfException(e, this);
                 handler.haltToken.execute(frame, counter);
             } finally {
-                handler.execute(frame, pub, counter, term, callContext);
+                if (rs != null) {
+                    handler.execute(frame, rs);
+                }
             }
         }
 
-        private static CallContext maybeMaterialize(DirectVirtualCallContext callContext) {
-            if (SpecializationConfiguration.UseVirtualCallContexts) {
-                return callContext;
-            } else {
-                return callContext.materialize();
-            }
-        }
+//        private static CallContext maybeMaterialize(VirtualCPSCallContext callContext) {
+//            if (SpecializationConfiguration.UseVirtualCallContexts) {
+//                return callContext;
+//            } else {
+//                return callContext.materialize();
+//            }
+//        }
 
         @Specialization(replaces = { "specific", "specificDirect" })
         public void universal(final VirtualFrame frame, final Object target, PorcEClosure pub, Counter counter,
@@ -253,7 +251,7 @@ public class ExternalCPSDispatch extends Dispatch {
                 @Cached("createBinaryProfile()") ConditionProfile isDirectProfile,
                 @Cached("create(execution)") InvokerInvokeDirect invokeDirect,
                 @Cached("create(execution)") InvokerInvoke invoke,
-                @Cached("createVirtualContextHandler()") VirtualContextHandler handler,
+                @Cached("createResponseSetHandler(execution)") ResponseSetHandler handler,
                 @Cached("createDispatchP()") Dispatch dispatchP,
                 @Cached("create(execution)") HaltToken.KnownCounter haltToken) {
             final Invoker invoker = getInvokerWithBoundary(target, arguments);
@@ -292,88 +290,98 @@ public class ExternalCPSDispatch extends Dispatch {
                 final Object[] arguments) {
             return runtime.getInvoker(target, arguments);
         }
+    }
 
-        /**
-         * Utility node to collect all DirectVirtualCallContext handling code and state.
-         *
-         * @author amp
-         */
-        protected final class VirtualContextHandler extends NodeBase {
-            private final ConditionProfile exactlyOneSelfPublicationProfile = ConditionProfile.createBinaryProfile();
-            private final ConditionProfile hasSelfPublicationsProfile = ConditionProfile.createBinaryProfile();
-            private final IntValueProfile selfPublicationsListSizeProfile = IntValueProfile.createIdentityProfile();
-            private final ConditionProfile haltedProfile = ConditionProfile.createBinaryProfile();
+    /**
+     * Utility node to collect all DirectVirtualCallContext handling code and state.
+     *
+     * @author amp
+     */
+    @ImportStatic({ ExternalCPSDispatch.class })
+    public static abstract class ResponseSetHandler extends NodeBase {
+        protected static final ResponseSet EMPTY = ResponseSet.Empty$.MODULE$;
 
-            private final ConditionProfile hasOtherPublicationsProfile = ConditionProfile.createBinaryProfile();
-            private final IntValueProfile otherPublicationsListSizeProfile = IntValueProfile.createIdentityProfile();
-            private final ConditionProfile otherPublicationsHaltProfile = ConditionProfile.createBinaryProfile();
+        protected final PorcEExecution execution;
 
-            private final ConditionProfile hasOtherHalts = ConditionProfile.createBinaryProfile();
-            private final IntValueProfile otherHaltsListSizeProfile = IntValueProfile.createIdentityProfile();
+        protected ResponseSetHandler(final PorcEExecution execution) {
+            this.execution = execution;
+            this.dispatchP = InternalCPSDispatch.create(execution, false);
+            this.haltToken = HaltToken.KnownCounter.create(execution);
+        }
 
-            @Child
-            protected Dispatch dispatchP = InternalCPSDispatch.create(execution, false);
+        @Child
+        protected Dispatch dispatchP;
 
-            @Child
-            protected HaltToken.KnownCounter haltToken = HaltToken.KnownCounter.create(execution);
+        @Child
+        protected HaltToken.KnownCounter haltToken;
 
-            @SuppressWarnings("null")
-            public void execute(VirtualFrame frame, PorcEClosure pub, Counter counter, Terminator term, DirectVirtualCallContext callContext) {
-                final boolean halted = callContext.halted();
-                final ArrayList<Object> selfPublicationList = callContext.selfPublicationList();
-                final ArrayList<Object> otherPublicationList = callContext.otherPublicationList();
-                final ArrayList<CPSCallContext> otherHaltedList = callContext.otherHaltedList();
-                callContext.close();
+        @Child
+        protected ResponseSetHandler next = null;
 
-                if (hasOtherPublicationsProfile.profile(otherPublicationList != null)) {
-                    final int size = otherPublicationsListSizeProfile.profile(otherPublicationList.size());
-                    for (int i = 0; i < size; i += 3) {
-                        CPSCallContext ctx = (CPSCallContext)otherPublicationList.get(i + 0);
-                        Object v = otherPublicationList.get(i + 1);
-                        boolean halt = ((Boolean)otherPublicationList.get(i + 2)).booleanValue();
-                        if (!otherPublicationsHaltProfile.profile(halt)) {
-                            //throw new RuntimeException();
-                            ctx.c().newToken();
-                        }
-                        dispatchP.dispatch(frame, ctx.p(), v);
-                        if (otherPublicationsHaltProfile.profile(halt)) {
-                            ctx.t().removeChild(ctx);
-                        }
-                    }
-                }
+        protected ResponseSetHandler getNext() {
+          if (next == null) {
+              CompilerDirectives.transferToInterpreterAndInvalidate();
+              computeAtomicallyIfNull(() -> next, (v) -> next = v, () -> {
+                  ResponseSetHandler n = insert(ExternalCPSDispatchFactory.ResponseSetHandlerNodeGen.create(execution));
+                  notifyInserted(n);
+                  return n;
+              });
+          }
+          return next;
+        }
 
-                if (hasOtherHalts.profile(otherHaltedList != null)) {
-                    //throw new RuntimeException();
-                    final int size = otherHaltsListSizeProfile.profile(otherHaltedList.size());
-                    for (int i = 0; i < size; i++) {
-                        CPSCallContext ctx = otherHaltedList.get(i);
-                        haltToken.execute(frame, ctx.c());
-                        ctx.t().removeChild(ctx);
-                    }
-                }
+        public abstract void execute(VirtualFrame frame, SiteResponseSet rs);
 
-                if (exactlyOneSelfPublicationProfile.profile(selfPublicationList != null && selfPublicationList.size() == 1 && halted)) {
-                    dispatchP.dispatch(frame, pub, selfPublicationList.get(0));
-                } else {
-                    if (hasSelfPublicationsProfile.profile(selfPublicationList != null)) {
-                        final int size = selfPublicationsListSizeProfile.profile(selfPublicationList.size());
-                        for (int i = 0; i < size; i++) {
-                            //throw new RuntimeException();
-                            counter.newToken();
-                            dispatchP.dispatch(frame, pub, selfPublicationList.get(i));
-                        }
-                    }
-                    if (haltedProfile.profile(halted)) {
-                        haltToken.execute(frame, counter);
-                    }
-                }
+        @Specialization(guards = { "rs == EMPTY" })
+        public void empty(VirtualFrame frame, ResponseSet rs) {
+            // Noop
+        }
 
+        @Specialization
+        public void publishNonterminal(VirtualFrame frame, ResponseSet.PublishNonterminal rs) {
+            CallContextCommon ctx = (CallContextCommon)rs.ctx();
+            ctx.c().newToken();
+            dispatchP.dispatch(frame, ctx.p(), rs.v());
+            if (rs.next() != null) {
+                getNext().execute(frame, rs.next());
             }
         }
 
-        protected VirtualContextHandler createVirtualContextHandler() {
-            return new VirtualContextHandler();
+        @Specialization
+        public void publishTerminal(VirtualFrame frame, ResponseSet.PublishTerminal rs) {
+            CallContextCommon ctx = (CallContextCommon)rs.ctx();
+            dispatchP.dispatch(frame, ctx.p(), rs.v());
+            if (ctx instanceof MaterializedCPSCallContext) {
+                ctx.t().removeChild((MaterializedCPSCallContext)ctx);
+            }
+            if (rs.next() != null) {
+                getNext().execute(frame, rs.next());
+            }
+        }
+
+        @Specialization
+        public void halt(VirtualFrame frame, ResponseSet.Halt rs) {
+            CallContextCommon ctx = (CallContextCommon)rs.ctx();
+            haltToken.execute(frame, ctx.c());
+            if (ctx instanceof MaterializedCPSCallContext) {
+                ctx.t().removeChild((MaterializedCPSCallContext)ctx);
+            }
+            if (rs.next() != null) {
+                getNext().execute(frame, rs.next());
+            }
+        }
+
+        @Specialization
+        public void discorporate(VirtualFrame frame, ResponseSet.Discorporate rs) {
+            CallContextCommon ctx = (CallContextCommon)rs.ctx();
+            ctx.c().setDiscorporate();
+            haltToken.execute(frame, ctx.c());
+            if (ctx instanceof MaterializedCPSCallContext) {
+                ctx.t().removeChild((MaterializedCPSCallContext)ctx);
+            }
+            if (rs.next() != null) {
+                getNext().execute(frame, rs.next());
+            }
         }
     }
-
 }

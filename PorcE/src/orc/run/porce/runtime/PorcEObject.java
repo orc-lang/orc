@@ -14,7 +14,7 @@ package orc.run.porce.runtime;
 import scala.Function1;
 
 import orc.Accessor;
-import orc.NoSuchMemberAccessor;
+import orc.values.NoSuchMemberAccessor;
 import orc.OrcRuntime;
 import orc.run.distrib.DOrcMarshalingReplacement;
 import orc.values.Field;

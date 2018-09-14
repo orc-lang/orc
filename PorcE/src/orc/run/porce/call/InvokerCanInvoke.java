@@ -58,7 +58,7 @@ abstract class InvokerCanInvoke extends NodeBase {
             @Cached(value = "invoker.argumentClss()", dimensions = 1) final Class<?>[] argumentClss) {
 
         CompilerAsserts.compilationConstant(invoker);
-        return invoker.canInvokeTarget(target) && orc.InvocationBehaviorUtilities.valuesHaveType(arguments, argumentClss);
+        return invoker.canInvokeTarget(target) && orc.values.sites.InvocationBehaviorUtilities.valuesHaveType(arguments, argumentClss);
     }
 
     @Specialization(guards = { "isPartiallyEvaluable(invoker)" })
@@ -72,7 +72,7 @@ abstract class InvokerCanInvoke extends NodeBase {
                 invoker instanceof orc.compile.orctimizer.OrcAnnotation.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayDerefSite.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayAssignSite.Invoker ||
-                invoker instanceof orc.run.extensions.SiteInvoker ||
+//                invoker instanceof orc.run.extensions.SiteInvoker ||
                 invoker instanceof orc.values.sites.JavaArrayLengthPseudofield.Invoker ||
                 false;
     }

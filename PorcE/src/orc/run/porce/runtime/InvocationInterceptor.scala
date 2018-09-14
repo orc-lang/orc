@@ -33,7 +33,7 @@ trait InvocationInterceptor {
     *
     * This will only be called if `shouldInterceptInvocation(target, arguments)` is true.
     */
-  def invokeIntercepted(callContext: CPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit
+  def invokeIntercepted(callContext: MaterializedCPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit
 }
 
 /** Intercept no external calls at all.
@@ -44,7 +44,7 @@ trait NoInvocationInterception extends InvocationInterceptor {
   this: PorcEExecution =>
 
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = false
-  override def invokeIntercepted(callContext: CPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  override def invokeIntercepted(callContext: MaterializedCPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     throw new AssertionError("invokeIntercepted called when shouldInterceptInvocation=false")
   }
 }
