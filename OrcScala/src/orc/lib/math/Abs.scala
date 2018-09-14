@@ -11,8 +11,9 @@
 
 package orc.lib.math
 
-import orc.{ IllegalArgumentInvoker, Invoker }
+import orc.{ Invoker }
 import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1 }
+import orc.values.sites.IllegalArgumentInvoker
 
 object Abs extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
   def getInvokerSpecialized(arg1: Number): Invoker = {
@@ -28,6 +29,6 @@ object Abs extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
         IllegalArgumentInvoker(this, Array(a))
     }
   }
-  
+
   override def toString = "Abs"
 }

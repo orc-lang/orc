@@ -12,9 +12,10 @@
 //
 package orc.lib.util
 
-import orc.CallContext
+import orc.values.sites.compatibility.CallContext
 import orc.types.Bot
-import orc.values.sites.{ Site0, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ Site0 }
 
 /** A site that just blocks forever. However it does so in a way that the interpreter knows
   * about so it is handled more efficiently and will not prevent hte interpreter from exiting.

@@ -13,7 +13,8 @@
 
 package orc.lib.builtin.structured
 
-import orc.{ Invoker, OnlyDirectInvoker, OrcRuntime }
+import orc.{ Invoker, OrcRuntime }
+import orc.values.sites.compatibility.OnlyDirectInvoker
 import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType, TupleSizeException }
 import orc.error.runtime.HaltException
 import orc.types.{ BinaryCallableType, IntegerConstantType, IntegerType, SimpleCallableType, StrictCallableType, TupleType, Type }
@@ -38,7 +39,7 @@ object TupleConstructor extends InvokerMethod with FunctionalSite with Talkative
     }
   }
 
-  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(args.toArray))
+  override def publicationMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(args.toArray))
 
   def orcType() = new SimpleCallableType with StrictCallableType {
     def call(argTypes: List[Type]) = { TupleType(argTypes) }
@@ -65,7 +66,7 @@ object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] 
       })
   }
 
-  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = args match {
+  override def publicationMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = args match {
     case List(_, Some(arity: BigInt)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toArray))
     case List(_, Some(arity: java.lang.Long)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toArray))
     case _ => None

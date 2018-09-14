@@ -18,6 +18,7 @@ import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.EvalSite;
+import orc.values.sites.compatibility.SiteAdaptor;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -54,7 +55,7 @@ class JSONSite extends EvalSite {
                 }
                 out.add(wrapJSON(e));
             }
-            return makeList(out);
+            return SiteAdaptor.makeList(out);
         } else {
             return o;
         }

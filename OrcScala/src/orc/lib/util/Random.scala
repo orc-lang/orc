@@ -16,10 +16,10 @@ import orc.values.sites.SiteMetadata
 import orc.OrcRuntime
 import orc.Invoker
 import java.math.BigInteger
-import orc.OnlyDirectInvoker
+import orc.values.sites.compatibility.OnlyDirectInvoker
 import java.util.concurrent.ThreadLocalRandom
 import orc.values.sites.Range
-import orc.IllegalArgumentInvoker
+import orc.values.sites.IllegalArgumentInvoker
 import java.lang.IllegalArgumentException
 import orc.values.sites.FunctionalSite
 
@@ -67,7 +67,6 @@ object Random extends InvokerMethod with SiteMetadata with FunctionalSite {
   }
 
   override def publications: Range = Range(0, 1)
-  override def isDirectCallable: Boolean = true
 }
 
 object URandom extends InvokerMethod with SiteMetadata with FunctionalSite {
@@ -92,6 +91,5 @@ object URandom extends InvokerMethod with SiteMetadata with FunctionalSite {
   }
 
   override def publications: Range = Range(0, 1)
-  override def isDirectCallable: Boolean = true
 }
 

@@ -17,7 +17,8 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.run.distrib.PinnedPlacementPolicy
 import orc.types.{ JavaObjectType, SignalType, SimpleFunctionType }
 import orc.values.Signal
-import orc.values.sites.{ EffectFreeSite, Effects, FunctionalSite, NonBlockingSite, PartialSite1, TalkativeSite, TotalSite0, TotalSite1, TypedSite }
+import orc.values.sites.{ EffectFreeSite, Effects, FunctionalSite, TalkativeSite, NonBlockingSite, TypedSite }
+import orc.values.sites.compatibility.{ PartialSite1, TotalSite0, TotalSite1 }
 
 final class Flag extends PinnedPlacementPolicy {
   @volatile

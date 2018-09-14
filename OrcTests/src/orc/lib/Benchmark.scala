@@ -13,9 +13,9 @@ package orc.lib
 
 import orc.values.sites.InvokerMethod
 import orc.Invoker
-import orc.IllegalArgumentInvoker
+import orc.values.sites.IllegalArgumentInvoker
 import java.lang.management.ManagementFactory
-import orc.OnlyDirectInvoker
+import orc.DirectInvoker
 import orc.OrcRuntime
 import collection.JavaConverters._
 
@@ -82,7 +82,7 @@ object Benchmark {
 object StartBenchmark extends InvokerMethod {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 0) {
-      new OnlyDirectInvoker {
+      new DirectInvoker {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
           target == StartBenchmark && arguments.length == 0
         }
@@ -104,7 +104,7 @@ case class BenchmarkTimes(iteration: Int, runTime: Double, cpuTime: Double, comp
 object EndBenchmark extends InvokerMethod {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 3) {
-      new OnlyDirectInvoker {
+      new DirectInvoker {
         def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
           target == EndBenchmark && arguments.length == 3
         }

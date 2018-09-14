@@ -19,12 +19,13 @@ import java.util.Properties
 import scala.io.Source
 
 import orc.types.FunctionType
-import orc.values.sites.{ PartialSite, SpecificArity, TypedSite }
+import orc.values.sites.{ TypedSite, SpecificArity }
+import orc.values.sites.compatibility.{ ScalaPartialSite }
 
 import org.codehaus.jettison.json.JSONObject
 import sun.misc.BASE64Encoder
 
-class BingSearchFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
+class BingSearchFactoryPropertyFile extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 2
 
   def orcType() = {
@@ -51,7 +52,7 @@ class BingSearchFactoryPropertyFile extends PartialSite with SpecificArity with 
   }
 }
 
-class BingSearchFactoryUsernameKey extends PartialSite with SpecificArity with TypedSite {
+class BingSearchFactoryUsernameKey extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 3
 
   def orcType() = {
@@ -74,7 +75,7 @@ object BingSearch {
 
 /** @author amp
   */
-class BingSearch(user: String, key: String, source: String) extends PartialSite with SpecificArity with TypedSite {
+class BingSearch(user: String, key: String, source: String) extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 1
 
   def orcType() = BingSearch.orcType

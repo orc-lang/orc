@@ -17,7 +17,8 @@ import scala.util.parsing.combinator.syntactical._
 import scala.util.parsing.combinator.lexical._
 import scala.util.parsing.input.StreamReader.EofCh
 import scala.util.parsing.input.CharSequenceReader
-import orc.values.sites.{ TotalSite, UntypedSite }
+import orc.values.sites.{ UntypedSite }
+import orc.values.sites.compatibility.{ TotalSite }
 import orc.values.OrcRecord
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, SiteException }
 import orc.util.ArrayExtensions.Array1
@@ -129,7 +130,7 @@ object OrcJSONParser extends StdTokenParsers {
     | "true" ^^^ java.lang.Boolean.TRUE
     | "false" ^^^ java.lang.Boolean.FALSE
     | "null" ^^^ null
-    | numericLit ^^ { s => 
+    | numericLit ^^ { s =>
       if (NumericsConfig.preferDouble)
         s.toDouble.asInstanceOf[AnyRef]
       else

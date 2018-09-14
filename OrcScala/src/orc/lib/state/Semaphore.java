@@ -13,7 +13,7 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
@@ -81,7 +81,7 @@ public class Semaphore extends EvalSite implements TypedSite {
                             if (!snoopers.isEmpty()) {
                                 LinkedList<MaterializedCallContext> oldSnoopers = (LinkedList<MaterializedCallContext>) snoopers.clone();
                                 snoopers.clear();
-                                for (final CallContext snooper : oldSnoopers) {
+                                for (final MaterializedCallContext snooper : oldSnoopers) {
                                     snooper.publish(signal());
                                 }
                             }
@@ -117,7 +117,7 @@ public class Semaphore extends EvalSite implements TypedSite {
                         if (waiters.isEmpty()) {
                             ++n;
                         } else {
-                            final CallContext waiter = sender.virtualCallContextFor(waiters.poll());
+                            final MaterializedCallContext waiter = waiters.poll();
                             waiter.publish(signal());
                         }
                         sender.publish(signal());

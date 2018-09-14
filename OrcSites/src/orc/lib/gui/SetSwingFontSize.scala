@@ -15,7 +15,8 @@ import scala.collection.JavaConverters.asScalaSetConverter
 
 import orc.util.ArrayExtensions.Array1
 import orc.values.Signal
-import orc.values.sites.{ SpecificArity, TotalSite }
+import orc.values.sites.SpecificArity
+import orc.values.sites.compatibility.{ TotalSite }
 
 import ScalaSwingUtils.onEDTNow
 import javax.swing.UIManager

@@ -14,7 +14,7 @@ package orc.lib.state;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;

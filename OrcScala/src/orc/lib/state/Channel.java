@@ -14,7 +14,7 @@ package orc.lib.state;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
@@ -101,7 +101,7 @@ public class Channel extends EvalSite implements TypedSite {
                         } else {
                             // If there are callers waiting, give this item to
                             // the top caller.
-                            CallContext receiver = reader.virtualCallContextFor(channel.readers.removeFirst());
+                            final MaterializedCallContext receiver = channel.readers.removeFirst();
                             if (receiver.isLive()) { // If the reader is live then publish into it.
                                 receiver.publish(object2value(item));
                                 break;
@@ -142,7 +142,7 @@ public class Channel extends EvalSite implements TypedSite {
                         // it.
                         reader.publish(object2value(channel.contents.removeFirst()));
                         if (channel.closer != null && channel.contents.isEmpty()) {
-                            reader.virtualCallContextFor(channel.closer).publish(signal());
+                            reader.publish(signal());
                             channel.closer = null;
                         }
                     }
@@ -213,8 +213,8 @@ public class Channel extends EvalSite implements TypedSite {
                 public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final CallContext reader : readers) {
-                            caller.virtualCallContextFor(reader).halt();
+                        for (final MaterializedCallContext reader : readers) {
+                            caller.halt();
                         }
                         if (contents.isEmpty()) {
                             caller.publish(signal());
@@ -235,8 +235,8 @@ public class Channel extends EvalSite implements TypedSite {
                 public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final CallContext reader : readers) {
-                            caller.virtualCallContextFor(reader).halt();
+                        for (final MaterializedCallContext reader : readers) {
+                            caller.halt();
                         }
                         caller.publish(signal());
                     }

@@ -18,7 +18,7 @@ import java.util.Properties
 import orc.error.runtime.{ ArgumentTypeMismatchException, SiteException }
 import orc.lib.web.HTTP
 import orc.values.OrcRecord
-import orc.values.sites.{ Site, TotalSite2 }
+import orc.values.sites.compatibility.{ Site, TotalSite2 }
 
 /** An Orchard-specific factory for specializations of the HTTP site.
   * It is intended to provide REST-style access to web services using

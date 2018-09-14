@@ -18,7 +18,7 @@ import java.net.URLClassLoader;
 import java.util.List;
 import java.util.UUID;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;

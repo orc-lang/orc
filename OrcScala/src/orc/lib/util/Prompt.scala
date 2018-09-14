@@ -12,10 +12,11 @@
 //
 package orc.lib.util
 
-import orc.{ CallContext, OrcEvent }
+import orc.{ OrcEvent }
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ SimpleFunctionType, StringType }
-import orc.values.sites.{ Site1, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ Site1, CallContext }
 
 /** Generic site for presenting the user with a prompt for input.
   * Different runtimes will present different prompts depending

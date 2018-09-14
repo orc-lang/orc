@@ -17,7 +17,8 @@ import java.lang.{Iterable => JIterable}
 import orc.compile.typecheck.Typeloader
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ FunctionType, SimpleFunctionType, TypeVariable }
-import orc.values.sites.{ PartialSite0, TotalSite1, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ PartialSite0, TotalSite1 }
 
 /** @author dkitchin
   */

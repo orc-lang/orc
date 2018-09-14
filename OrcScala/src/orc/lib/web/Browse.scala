@@ -14,11 +14,13 @@ package orc.lib.web
 
 import java.net.URL
 
-import orc.{ CallContext, OrcEvent }
+import orc.{ OrcEvent }
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ JavaObjectType, OverloadedType, SignalType, SimpleFunctionType, StringType }
 import orc.values.Signal
-import orc.values.sites.{ Site1, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ Site1 }
+import orc.values.sites.compatibility.CallContext
 
 /** Open a new browser window or tab for the specified URL.
   *
@@ -28,7 +30,7 @@ case class BrowseEvent(val url: URL) extends OrcEvent
 
 object Browse extends Site1 with TypedSite {
 
-  def call(v: AnyRef, callContext: CallContext) = {
+  def call(v: AnyRef, callContext: CallContext): Unit = {
     v match {
       case url: URL => {
         callContext.notifyOrc(BrowseEvent(url))

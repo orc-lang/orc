@@ -13,7 +13,7 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.MaterializedCallContext;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.SyncChannelType;
@@ -85,7 +85,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
                 // If there is a waiting sender, both sender and receiver return
                 else {
                     final SenderItem si = senderQueue.removeFirst();
-                    final CallContext sender = si.sender;
+                    final MaterializedCallContext sender = si.sender;
                     final Object item = si.sent;
 
                     receiver.publish(object2value(item));
@@ -111,7 +111,7 @@ public class SyncChannel extends EvalSite implements TypedSite {
                 // If there is a waiting receiver, both receiver and sender
                 // return
                 else {
-                    final CallContext receiver = receiverQueue.removeFirst();
+                    final MaterializedCallContext receiver = receiverQueue.removeFirst();
 
                     receiver.publish(object2value(item));
                     sender.publish(signal());

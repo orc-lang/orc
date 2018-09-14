@@ -18,7 +18,8 @@ import orc.types.{ BooleanType, FunctionType, SignalType, SimpleCallableType, Si
 import orc.util.ArrayExtensions.{ Array0, Array1 }
 import orc.util.TypeListEnrichment.enrichTypeList
 import orc.values.{ OrcTuple, Signal }
-import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2, TalkativeSite, TotalSite, TypedSite }
+import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2, TalkativeSite, TypedSite }
+import orc.values.sites.compatibility.{ TotalSite }
 
 case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Ift"

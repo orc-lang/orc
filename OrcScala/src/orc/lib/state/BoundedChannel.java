@@ -17,7 +17,7 @@ import java.util.LinkedList;
 
 import scala.collection.JavaConversions;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
@@ -89,7 +89,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                             if (writers.isEmpty()) {
                                 ++open;
                             } else {
-                                final CallContext writer = writers.removeFirst();
+                                final MaterializedCallContext writer = writers.removeFirst();
                                 writer.publish(signal());
                             }
                             if (closer != null && contents.isEmpty()) {
@@ -111,7 +111,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                             if (writers.isEmpty()) {
                                 ++open;
                             } else {
-                                final CallContext writer = writers.removeFirst();
+                                final MaterializedCallContext writer = writers.removeFirst();
                                 writer.publish(signal());
                             }
                             if (closer != null && contents.isEmpty()) {
@@ -135,7 +135,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         if (closed) {
                             writer.halt();
                         } else if (!readers.isEmpty()) {
-                            final CallContext reader = readers.removeFirst();
+                            final MaterializedCallContext reader = readers.removeFirst();
                             reader.publish(object2value(item));
                             writer.publish(signal());
                         } else if (open == 0) {
@@ -158,7 +158,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         if (closed) {
                             writer.halt();
                         } else if (!readers.isEmpty()) {
-                            final CallContext reader = readers.removeFirst();
+                            final MaterializedCallContext reader = readers.removeFirst();
                             reader.publish(object2value(item));
                             writer.publish(signal());
                         } else if (open == 0) {
@@ -186,10 +186,10 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         final Object out = JavaConversions.collectionAsScalaIterable(contents).toList();
                         contents.clear();
 
-                        ArrayList<CallContext> oldWriters = new ArrayList<>(writers);
+                        ArrayList<MaterializedCallContext> oldWriters = new ArrayList<>(writers);
                         writers.clear();
                         // resume all writers
-                        for (final CallContext writer : oldWriters) {
+                        for (final MaterializedCallContext writer : oldWriters) {
                             writer.publish(signal());
                         }
                         // notify closer if necessary
@@ -224,7 +224,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                 public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final CallContext reader : readers) {
+                        for (final MaterializedCallContext reader : readers) {
                             reader.halt();
                         }
                         if (contents.isEmpty()) {
@@ -241,7 +241,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                 public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final CallContext reader : readers) {
+                        for (final MaterializedCallContext reader : readers) {
                             reader.halt();
                         }
                         caller.publish(signal());

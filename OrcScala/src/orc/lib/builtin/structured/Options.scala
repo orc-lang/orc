@@ -15,7 +15,8 @@ package orc.lib.builtin.structured
 
 import orc.types._
 import orc.values._
-import orc.values.sites._
+import orc.values.sites.{ FunctionalSite, TypedSite }
+import orc.values.sites.compatibility.{ TotalSite0, TotalSite1, PartialSite1, StructurePairSite }
 
 object OptionType extends SimpleTypeConstructor("Option", Covariant)
 

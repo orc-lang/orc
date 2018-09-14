@@ -14,7 +14,7 @@ package orc.lib.state;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
@@ -158,8 +158,8 @@ public class Ref extends EvalSite implements TypedSite {
                          * Wake up all queued readers and report the written
                          * value to them.
                          */
-                        for (final CallContext reader : rq) {
-                            writer.virtualCallContextFor(reader).publish(object2value(val));
+                        for (final MaterializedCallContext reader : rq) {
+                            writer.publish(object2value(val));
                         }
                     }
 

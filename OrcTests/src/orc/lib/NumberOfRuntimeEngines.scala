@@ -13,32 +13,26 @@
 
 package orc.lib
 
-import orc.CallContext
-import orc.run.core.CallController
 import orc.run.distrib.ClusterLocations
-import orc.run.porce.runtime.CPSCallContext
 import orc.types.IntegerType
-import orc.values.sites.{ FunctionalSite, Range, Site0, TypedSite }
+import orc.values.NumericsConfig
+import orc.values.sites.{ TypedSite, FunctionalSite, Range, Site0Base }
+import orc.{ OrcRuntime, Invoker }
 
 /** Orc site that returns the number of runtime engines in the current cluster.
   *
   * @author jthywiss
   */
-object NumberOfRuntimeEngines extends Site0 with FunctionalSite with TypedSite {
+object NumberOfRuntimeEngines extends Site0Base with FunctionalSite with TypedSite {
 
-  def call(callContext: CallContext): Unit = {
-    val numRE = callContext match {
-      case cc: CallController => cc.caller.runtime match {
+  def getInvoker(runtime: OrcRuntime): Invoker = {
+    invoker(this) { (ctx, target) =>
+      val numRE: Int = ctx.runtime match {
         case cl: ClusterLocations[_] => cl.allLocations.size
         case _ => 1
       }
-      case cc: CPSCallContext => cc.runtime match {
-        case cl: ClusterLocations[_] => cl.allLocations.size
-        case _ => 1
-      }
-      case _ => 0
+      ctx.publish(NumericsConfig.toOrcIntegral(numRE))
     }
-    callContext.publish(BigDecimal.valueOf(numRE))
   }
 
   override def orcType() = IntegerType

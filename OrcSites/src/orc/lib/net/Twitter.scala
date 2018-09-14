@@ -19,7 +19,8 @@ import java.util.Properties
 import orc.types.{ FunctionType, JavaObjectType }
 import orc.util.ArrayExtensions.{ Array0, Array1, Array2 }
 import orc.values.OrcRecord
-import orc.values.sites.{ PartialSite, SpecificArity, TotalSite, TypedSite }
+import orc.values.sites.{ TypedSite, SpecificArity }
+import orc.values.sites.compatibility.{ ScalaPartialSite, TotalSite }
 
 import TwitterUtil.OAuthAdd
 import twitter4j.{ StallWarning, Status, StatusDeletionNotice, StatusListener, Twitter, TwitterFactory, TwitterStream, TwitterStreamFactory }
@@ -61,7 +62,7 @@ object TwitterUtil {
   }
 }
 
-class TwitterFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
+class TwitterFactoryPropertyFile extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 1
 
   def orcType() = {
@@ -77,7 +78,7 @@ class TwitterFactoryPropertyFile extends PartialSite with SpecificArity with Typ
   }
 }
 
-class TwitterFactoryKeySecret extends PartialSite with SpecificArity with TypedSite {
+class TwitterFactoryKeySecret extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 2
 
   def orcType() = {
@@ -93,7 +94,7 @@ class TwitterFactoryKeySecret extends PartialSite with SpecificArity with TypedS
   }
 }
 
-class TwitterStreamFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
+class TwitterStreamFactoryPropertyFile extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 1
 
   def orcType() = {
@@ -109,7 +110,7 @@ class TwitterStreamFactoryPropertyFile extends PartialSite with SpecificArity wi
   }
 }
 
-class TwitterStreamFactoryKeySecret extends PartialSite with SpecificArity with TypedSite {
+class TwitterStreamFactoryKeySecret extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 2
 
   def orcType() = {
@@ -126,7 +127,7 @@ class TwitterStreamFactoryKeySecret extends PartialSite with SpecificArity with 
 }
 
 // TODO: Implement channels so threads are not blocked. Should only be one thread per repeat(getter), so not too bad.
-private class EventGetterSite extends PartialSite with SpecificArity {
+private class EventGetterSite extends ScalaPartialSite with SpecificArity {
   val arity = 0
 
   val channel = new scala.concurrent.Channel[AnyRef]()

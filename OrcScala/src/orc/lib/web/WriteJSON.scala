@@ -14,7 +14,8 @@ package orc.lib.web
 
 import orc.error.runtime.SiteException
 import orc.values.OrcRecord
-import orc.values.sites.{ TotalSite1, UntypedSite }
+import orc.values.sites.{ UntypedSite }
+import orc.values.sites.compatibility.{ TotalSite1 }
 
 /**
   * @author dkitchin

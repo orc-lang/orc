@@ -14,7 +14,7 @@ package orc.lib.net;
 import java.io.IOException;
 import java.util.LinkedList;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.JavaException;
@@ -173,7 +173,7 @@ public class XMPPConnection extends EvalSite {
                 if (receivers.isEmpty()) {
                     received.add(v);
                 } else {
-                    final CallContext receiver = receivers.removeFirst();
+                    final MaterializedCallContext receiver = receivers.removeFirst();
                     receiver.publish(v);
                 }
             }

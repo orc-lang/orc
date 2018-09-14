@@ -17,11 +17,11 @@ import java.net.{ URL, URLEncoder }
 
 import scala.io.Source
 
-import orc.CallContext
+import orc.values.sites.compatibility.CallContext
 import orc.error.runtime.{ JavaException, SiteException }
 import orc.util.ArrayExtensions.{ Array1, Array2 }
 import orc.values.OrcRecord
-import orc.values.sites.{ Site0, Site2, TotalSite }
+import orc.values.sites.compatibility.{ Site0, Site2, TotalSite }
 
 /** The HTTP site provides a simple mechanism to send GET and POST requests to a URL.
   *
@@ -139,7 +139,7 @@ object HTTP extends TotalSite {
               callContext.publish(result)
             } catch {
               case ie: InterruptedException => { callContext.halt; throw ie }
-              case e: Exception => { callContext !! new JavaException(e) }
+              case e: Exception => { callContext.halt(new JavaException(e)) }
             }
 
           }

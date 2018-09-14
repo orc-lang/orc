@@ -14,12 +14,13 @@ package orc.lib.util
 
 import java.util.concurrent.Callable
 
-import orc.CallContext
+import orc.values.sites.compatibility.CallContext
 import orc.compile.typecheck.Typeloader
 import orc.run.core.ExternalSiteCallController
 import orc.run.extensions.SupportForCallsIntoOrc
 import orc.types.{ Bot, FunctionType, SimpleFunctionType, TypeVariable }
-import orc.values.sites.{ Site1, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ Site1 }
 
 /** Convert an Orc callable into a Java Runnable instance.
   * @author amp
