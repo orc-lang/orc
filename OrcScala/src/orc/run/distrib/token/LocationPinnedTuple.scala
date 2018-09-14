@@ -13,30 +13,37 @@
 
 package orc.run.distrib.token
 
-import orc.CallContext
+import orc.VirtualCallContext
 import orc.error.OrcException
 import orc.run.core.ExternalSiteCallController
 import orc.values.OrcTuple
-import orc.values.sites.Site
+import orc.values.sites.SiteBase
 import orc.run.distrib.DOrcPlacementPolicy
 import orc.run.distrib.ClusterLocations
 import orc.run.distrib.AbstractLocation
+import orc.OrcRuntime
 
 /** Superclass of Orc sites to construct LocationPinnedTuples
   *
   * @author jthywiss
   */
-abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with DOrcPlacementPolicy {
-  override def call(args: Array[AnyRef], callContext: CallContext) {
+abstract class LocationPinnedTupleConstructor(locationNum: Int) extends SiteBase with DOrcPlacementPolicy {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
+    invoker(this, Array.fill(args.length)(classOf[AnyRef])) { (ctx, self, args) =>
+      self.call(ctx, args)
+    }
+  }
+
+  def call(callContext: VirtualCallContext, args: Array[AnyRef]) = {
     Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
     try {
-      callContext.publish(evaluate(args, callContext))
+      callContext.publish(evaluate(callContext, args))
     } catch {
       case (e: OrcException) => callContext.halt(e)
     }
   }
 
-  private def evaluate(args: Array[AnyRef], callContext: CallContext) = {
+  private def evaluate(callContext: VirtualCallContext, args: Array[AnyRef]) = {
     val loc = callContext.asInstanceOf[ExternalSiteCallController].caller.execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
     new LocationPinnedTuple(loc, args)
   }

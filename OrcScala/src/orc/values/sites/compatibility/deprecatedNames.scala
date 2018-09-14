@@ -1,6 +1,8 @@
 //
-// InvokerMethod.scala -- Scala traits InvokerMethod and AccessorValue
+// deprecatedNames.scala -- Temporary forwarding names for moved APIs
 // Project OrcScala
+//
+// Created by amp on July 12, 2017.
 //
 // Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
 //
@@ -9,16 +11,9 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.values.sites
+package orc.values.sites.compatibility
 
-import orc.values.HasMembers
-import scala.deprecated
+import orc.DirectInvoker
 
-@deprecated("Use Site", "now")
-trait InvokerMethod extends Site {
-}
-
-
-@deprecated("Use HasMembers", "now")
-trait AccessorValue extends HasMembers {
-}
+@deprecated("Use DirectInvoker", "now")
+trait OnlyDirectInvoker extends DirectInvoker

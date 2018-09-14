@@ -1,5 +1,5 @@
 //
-// HasFields.scala -- Scala trait HasFields
+// HasMembers.scala -- Scala trait HasMembers
 // Project OrcScala
 //
 // Created by amp on Jan 16, 2017.
@@ -14,64 +14,21 @@
 package orc.values
 
 import orc.{ Accessor, OrcRuntime }
-import orc.error.runtime.NoSuchMemberException
-import orc.values.sites.AccessorValue
-
-// TODO: This should replace OrcObjectInterface and HasFields
+import orc.values.HasMembersMetadata
 
 /** The common interface for all Orc values that have members (fields).
   *
-  * This supports leniently computed members. However, there are several
-  * implicit assumptions that users of this interface can make:
-  * # Members are monotonic (once they are resolved they stay resolved)
-  * # Members are immutable (they will never change once resolved)
-  * # The set of members on a value is will not change once the object is created,
-  * so the `hasMember(f)` will always return the same value for a given `f`.
-  *
   * @author amp
   */
-@deprecated("Implement AccessorValue", "3.0")
-trait HasMembers extends OrcValue with AccessorValue {
-  /** Get the binding of a member.
+trait HasMembers extends OrcValue with HasMembersMetadata {
+  /** Get an accessor which extracts a given field value from this target.
     *
-    * The returned value may be an orc.Future.
+    * This method is slow and the results should be cached if possible.
+    *
+    * @return An Accessor for the given classes or an
+    *         instance of AccessorError if there is no accessor.
+    *
+    * @see NoSuchMemberAccessor, DoesNotHaveMembersAccessor
     */
-  @throws[NoSuchMemberException]("If member does not exist")
-  def getMember(f: Field): AnyRef
-
-  /** Return true iff this object has the field `f`.
-    *
-    * If `hasMember(f)` is true, then `getMember(f)` will never throw NoSuchMemberException.
-    *
-    * This method should be overriden, if possible, to improve performance and avoid exception handling during the check.
-    */
-  def hasMember(f: Field): Boolean = {
-    try {
-      getMember(f)
-      true
-    } catch {
-      case _: NoSuchMemberException =>
-        false
-    }
-  }
-  
-  @throws[NoSuchMemberException]
-  def getAccessor(runtime: OrcRuntime, field: Field): Accessor = {
-    if(hasMember(field)) {
-      new HasMemberAccessor(field)
-    } else {
-      throw new NoSuchMemberException(this, field.name)
-    }
-  }
-}
-
-final class HasMemberAccessor(field: Field) extends Accessor {
-  def canGet(target: AnyRef): Boolean = {
-    target.isInstanceOf[HasMembers]
-  }
-
-  @throws[NoSuchMemberException]
-  def get(target: AnyRef): AnyRef = {
-    target.asInstanceOf[HasMembers].getMember(field)
-  }
+  def getAccessor(runtime: OrcRuntime, field: Field): Accessor
 }

@@ -12,16 +12,16 @@
 //
 package orc.values
 
-import orc.{ ClassDoesNotHaveMembersAccessor, IllegalArgumentInvoker, OnlyDirectInvoker, OrcRuntime }
+import orc.{ DirectInvoker, OrcRuntime }
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, TupleIndexOutOfBoundsException }
 import orc.run.distrib.DOrcMarshalingReplacement
 import orc.util.ArrayExtensions.Array1
-import orc.values.sites.{ AccessorValue, InvokerMethod, NonBlockingSite, PartialSite, UntypedSite }
+import orc.values.sites.{ IllegalArgumentInvoker, UntypedSite, NonBlockingSite, PartialSite }
 import java.util.Arrays
 
 /** @author dkitchin
   */
-case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorValue with PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement with Product {
+case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement with Product {
   assert(values.length > 1)
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
@@ -29,7 +29,7 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
       case Array1(bi: BigInt) => {
         val size = values.length
 
-        new OnlyDirectInvoker {
+        new DirectInvoker {
           def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
             (target, args) match {
               case (t: OrcTuple, Array1(bi: BigInt)) =>
@@ -49,7 +49,7 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
       case Array1(i: java.lang.Long) => {
         val size = values.length
 
-        new OnlyDirectInvoker {
+        new DirectInvoker {
           def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
             (target, args) match {
               case (t: OrcTuple, Array1(bi: java.lang.Long)) =>
@@ -69,10 +69,6 @@ case class OrcTuple(values: Array[AnyRef]) extends InvokerMethod with AccessorVa
       case _ =>
         IllegalArgumentInvoker(this, args)
     }
-  }
-
-  def getAccessor(runtime: OrcRuntime, f: Field) = {
-    ClassDoesNotHaveMembersAccessor(classOf[OrcTuple])
   }
 
   def evaluate(args: Array[AnyRef]) =

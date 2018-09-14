@@ -11,7 +11,7 @@
 
 package orc.values.sites.compatibility;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.error.runtime.TokenException;
 
 /**

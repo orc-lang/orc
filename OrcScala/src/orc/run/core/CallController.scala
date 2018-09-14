@@ -13,9 +13,68 @@
 
 package orc.run.core
 
-import orc.CallContext
 import orc.error.OrcException
-import orc.MaterializedCallContext
+import orc.{ MaterializedCallContext, VirtualCallContext, CallContext, SiteResponseSet }
+
+abstract class VirtualCallController extends VirtualCallContext with Blocker {
+  val materialized: CallController
+
+  def materialize() = materialized
+
+  def callSitePosition = materialized.callSitePosition
+  def hasRight(rightName: String) = materialized.hasRight(rightName)
+  def isLive = materialized.isLive
+  def notifyOrc(event: orc.OrcEvent) = materialized.notifyOrc(event)
+
+  def check(t: Blockable): Unit = materialized.check(t)
+
+  def empty(): SiteResponseSet = new SiteResponseSet {
+    // FIXME: These casts will fail if the functions are called with VirtualCallController as ctx.
+    def publishNonterminal(ctx: CallContext, v: AnyRef): SiteResponseSet = {
+      ctx.asInstanceOf[CallController].publishNonterminal(v)
+      this
+    }
+    override def publish(ctx: CallContext, v: AnyRef): SiteResponseSet =  {
+      ctx.asInstanceOf[CallController].publish(v)
+      this
+    }
+
+    def halt(ctx: CallContext): SiteResponseSet = {
+      ctx.asInstanceOf[CallController].halt()
+      this
+    }
+
+    def halt(ctx: CallContext, e: OrcException): SiteResponseSet = {
+      ctx.asInstanceOf[CallController].halt(e)
+      this
+    }
+
+    def discorporate(ctx: CallContext): SiteResponseSet = {
+      ctx.asInstanceOf[CallController].discorporate()
+      this
+    }
+  }
+
+  override def publish(v: AnyRef): SiteResponseSet = {
+    materialized.publish(v)
+    empty()
+  }
+  override def halt(): SiteResponseSet = {
+    materialized.halt()
+    empty()
+  }
+  override def halt(e: OrcException): SiteResponseSet = {
+    materialized.halt(e)
+    empty()
+  }
+  override def discorporate(): SiteResponseSet = {
+    materialized.discorporate()
+    empty()
+  }
+
+  def execution = materialized.execution
+  def runtime = materialized.runtime
+}
 
 /** An abstract call controller for any call made by a token.
   *
@@ -30,7 +89,7 @@ import orc.MaterializedCallContext
   * its governing clock from becoming quiescent until the token itself becomes
   * quiescent in its onComplete method.
   *
-  * @author dkitchin
+  * @author dkitchin, amp
   */
 abstract class CallController(val caller: Token) extends MaterializedCallContext with Blocker {
   // This is the only Blocker that can produce exceptions.
@@ -169,7 +228,10 @@ abstract class CallController(val caller: Token) extends MaterializedCallContext
     super.toString + s"($state)"
   }
 
+  def execution = caller.execution
+  def runtime = caller.execution.runtime
 }
+
 
 /** Possible states of a CallController */
 protected abstract sealed class CallState() {

@@ -12,11 +12,9 @@
 //
 package orc.run.extensions
 
-import orc.{ CallContext, DirectInvoker, ErrorAccessor, ErrorInvoker, InvocationBehavior, Invoker, OrcRuntime }
-import orc.error.OrcException
-import orc.error.runtime.{ HaltException, JavaException }
-import orc.values.Field
-import orc.values.sites.{ AccessorValue, DirectSite, InvokerMethod, Site }
+import orc.{ DirectInvoker, ErrorAccessor, ErrorInvoker, InvocationBehavior, Invoker, OrcRuntime }
+import orc.values.{ HasMembers, Field }
+import orc.values.sites.{ Site }
 
 /** @author dkitchin
   */
@@ -24,7 +22,7 @@ trait SupportForSiteInvocation extends InvocationBehavior {
   this: OrcRuntime =>
   abstract override def getInvoker(target: AnyRef, arguments: Array[AnyRef]) = {
     target match {
-      case m: InvokerMethod =>
+      case m: Site =>
         m.getInvoker(this, arguments) match {
           case ei: ErrorInvoker =>
             val i = super.getInvoker(target, arguments)
@@ -38,10 +36,6 @@ trait SupportForSiteInvocation extends InvocationBehavior {
           case i =>
             i
         }
-      case ds: DirectSite =>
-        new DirectSiteInvoker(ds.getClass())
-      case s: Site =>
-        new SiteInvoker(s.getClass())
       case _ =>
         super.getInvoker(target, arguments)
     }
@@ -49,7 +43,7 @@ trait SupportForSiteInvocation extends InvocationBehavior {
 
   abstract override def getAccessor(target: AnyRef, field: Field) = {
     target match {
-      case m: AccessorValue =>
+      case m: HasMembers =>
         m.getAccessor(this, field) match {
           case ea: ErrorAccessor =>
             val a = super.getAccessor(target, field)
@@ -65,35 +59,6 @@ trait SupportForSiteInvocation extends InvocationBehavior {
         }
       case _ =>
         super.getAccessor(target, field)
-    }
-  }
-}
-
-class SiteInvoker(val siteCls: Class[_ <: Site]) extends Invoker {
-  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    siteCls.isInstance(target)
-  }
-
-  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]) = {
-    try {
-      siteCls.cast(target).call(arguments, callContext)
-    } catch {
-      case e: OrcException => callContext.halt(e)
-      case e: InterruptedException => throw e
-      case e: Exception => callContext.halt(new JavaException(e))
-    }
-  }
-
-  override def toString(): String = s"${getClass.getSimpleName}(${siteCls.getName})"
-}
-
-class DirectSiteInvoker(override val siteCls: Class[_ <: DirectSite]) extends SiteInvoker(siteCls) with DirectInvoker {
-  def invokeDirect(target: AnyRef, arguments: Array[AnyRef]) = {
-    try {
-      siteCls.cast(target).calldirect(arguments)
-    } catch {
-      case e: HaltException => throw e
-      case e: Exception => throw new HaltException(e)
     }
   }
 }

@@ -15,10 +15,10 @@ package orc.values.sites
 import java.lang.invoke.{ MethodHandles, MethodHandle, MethodType }
 import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTargetException }
 
-import orc.{ Accessor, ErrorAccessor, IllegalArgumentInvoker, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, OrcRuntime, TargetArgsThrowsInvoker, TargetThrowsInvoker }
+import orc.{ Accessor, ErrorAccessor, Invoker, DirectInvoker, OrcRuntime }
 import orc.error.runtime.{ HaltException, JavaException, MalformedArrayAccessException, MethodTypeMismatchException, NoSuchMemberException, RuntimeTypeException }
 import orc.util.ArrayExtensions.Array1
-import orc.values.{ Field => OrcField, Signal }
+import orc.values.{ Field => OrcField, Signal, NoSuchMemberAccessor }
 import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocation, java2orc, orc2java }
 
 /** Due to the way dispatch is handled we cannot pass true wrappers back into Orc. They
@@ -80,7 +80,7 @@ object JavaCall {
       }
     }
 
-    import orc.InvocationBehaviorUtilities._
+    import orc.values.sites.InvocationBehaviorUtilities._
 
     @throws[NoSuchMethodException]
     def getMemberInvokerTypeDirected(methodName: String, argClss: Array[Class[_]]): Invoker = {
@@ -146,7 +146,7 @@ object JavaCall {
 
         // ARRAYS
         case (_, Array1(l: java.lang.Long)) if targetCls.isArray() => {
-          Some(new OnlyDirectInvoker {
+          Some(new DirectInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
               target.getClass().isArray() && arguments.length == 1 && arguments(0).isInstanceOf[java.lang.Long]
             }
@@ -160,7 +160,7 @@ object JavaCall {
           })
         }
         case (_, Array1(_: BigInt | _: java.lang.Integer)) if targetCls.isArray() => {
-          Some(new OnlyDirectInvoker {
+          Some(new DirectInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
               target.getClass().isArray() && arguments.length == 1 &&
               (arguments(0).isInstanceOf[BigInt] || arguments(0).isInstanceOf[java.lang.Long] || arguments(0).isInstanceOf[java.lang.Integer])
@@ -176,7 +176,7 @@ object JavaCall {
         }
         // We should have boxed any java.lang.Integer, java.lang.Short, or java.lang.Byte value into BigInt
         case _ if targetCls.isArray() =>
-          Some(TargetArgsThrowsInvoker(target, args, new MalformedArrayAccessException(args)))
+          Some(new ThrowsInvoker(target, args, new MalformedArrayAccessException(args)))
 
         // CLASSES (Constructors)
         case (target: Class[_], _) => {
@@ -200,7 +200,7 @@ object JavaCall {
       }
     } catch {
       case e: RuntimeTypeException =>
-        Some(TargetThrowsInvoker(target, e))
+        Some(new ThrowsInvoker(target, args, e))
     }
   }
 
@@ -238,10 +238,10 @@ trait SimpleAccessor extends Accessor
 sealed abstract class InvocableInvoker(
     @inline final val invocable: Invocable,
     @inline final val targetCls: Class[_],
-    @inline final val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
+    @inline final val argumentClss: Array[Class[_]]) extends DirectInvoker {
 
   final def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    import orc.InvocationBehaviorUtilities._
+    import orc.values.sites.InvocationBehaviorUtilities._
     canInvokeTarget(target) && valuesHaveType(arguments, argumentClss)
   }
 
@@ -323,7 +323,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     import JavaCall._
-    import orc.InvocationBehaviorUtilities._
+    import orc.values.sites.InvocationBehaviorUtilities._
     try {
       val memberName = this.memberName
       val javaClass = this.javaClass
@@ -344,8 +344,8 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
         override def toString() = s"<Member Invoker>($javaClass.$memberName)"
       }
     } catch {
-      case nsme: NoSuchMethodException => TargetThrowsInvoker(this, nsme)
-      case mtme: MethodTypeMismatchException => TargetThrowsInvoker(this, mtme)
+      case nsme: NoSuchMethodException => new ThrowsInvoker(this, args, nsme)
+      case mtme: MethodTypeMismatchException => new ThrowsInvoker(this, args, mtme)
     }
   }
 
@@ -427,7 +427,7 @@ class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], _membe
 }
 
 object JavaFieldDerefSite {
-  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends OnlyDirectInvoker {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaFieldDerefSite] &&
       arguments.length == 0 &&
@@ -468,7 +468,7 @@ case class JavaFieldDerefSite(@inline val theObject: Object, @inline val javaFie
 }
 
 object JavaFieldAssignSite {
-  final class Invoker(val cls: Class[_], val mh: MethodHandle, val componentType: Class[_]) extends OnlyDirectInvoker {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle, val componentType: Class[_]) extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaFieldAssignSite] &&
       arguments.length == 1 &&
@@ -549,7 +549,7 @@ abstract class ArrayAccessor extends SimpleAccessor {
 
 
 object JavaArrayDerefSite {
-  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends OnlyDirectInvoker {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaArrayDerefSite] && arguments.length == 0 && cls.isInstance(target.asInstanceOf[JavaArrayDerefSite].theArray)
     }
@@ -582,7 +582,7 @@ case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: I
 }
 
 object JavaArrayAssignSite {
-  final class Invoker(val cls: Class[_], val mh: MethodHandle, val componentType: Class[_]) extends OnlyDirectInvoker {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle, val componentType: Class[_]) extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaArrayAssignSite] && arguments.length == 1 && cls.isInstance(target.asInstanceOf[JavaArrayAssignSite].theArray)
     }
@@ -632,7 +632,7 @@ case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends InvokerMetho
 }
 
 object JavaArrayLengthPseudofield {
-  final class Invoker(val cls: Class[_]) extends OnlyDirectInvoker {
+  final class Invoker(val cls: Class[_]) extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaArrayLengthPseudofield] &&
       arguments.length == 0 &&

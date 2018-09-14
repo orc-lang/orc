@@ -31,6 +31,7 @@ trait OrcRuntimeProvides {
 /** The interface from an Orc runtime to its environment
   */
 trait OrcRuntimeRequires extends InvocationBehavior
+
 /** An interface for objects which can receive future results.
   *
   * Elements of Orc runtimes should implement this interface to support
@@ -111,42 +112,50 @@ case class BoundFuture(v: AnyRef) extends Future {
   }
 }
 
-/** The interface through which the environment response to site calls.
-  *
-  * Unlike the super class, MaterializedCallContext may be stored and used in
-  * other threads. MaterializedCallContexts are thread safe.
+/** The super-interface through which the environment response to site calls.
   */
-trait MaterializedCallContext extends CallContext {
-  final def materialize(): MaterializedCallContext = this
-  final def virtualCallContextFor(ctx: CallContext): CallContext = ctx
+trait CallContext {
+  def materialize(): MaterializedCallContext
+
+  // TODO: Consider making this a separate API that is not core to the Orc JVM API.
+  /** Submit an event to the Orc runtime.
+    */
+  def notifyOrc(event: OrcEvent): Unit
+
+  /** Provide a source position from which this call was made.
+    *
+    * Some runtimes may always return None.
+    */
+  def callSitePosition: Option[OrcSourceRange]
+
+  /** Return true iff the caller has the right named.
+    */
+  def hasRight(rightName: String): Boolean
+
+  /** Return true iff the call is still live (not killed).
+    */
+  def isLive: Boolean
+
+  /** Get the execution in which this call context exists.
+    *
+    * The lifetime of the returned execution is undefined.
+    */
+  def execution: ExecutionRoot
+
+  /** Get the Orc runtime in which this call context is running.
+    */
+  def runtime: OrcRuntime
 }
 
 /** The interface through which the environment response to site calls.
   *
   * Published values passed to publish and publishNonterminal may not be futures.
   *
-  * Contexts which are not an instance of MaterializedCallContext are
-  * "virtual". Virtual contexts may not be stored or passed to another thread.
-  * It's implementation may rely on code executed in the site calling thread
-  * after the site call returns.
+  * Unlike the super class, MaterializedCallContext may be stored and used in
+  * other threads. MaterializedCallContexts are thread safe.
   */
-trait CallContext {
-  /** Return a reified instance of this context that can be stored or.
-    */
-  def materialize(): MaterializedCallContext
-
-  /** Return a CallContext which publishes as if it were `ctx`, but
-    * is virtual if possible.
-    *
-    * The returned VirtualCallContext maybe optimized to make use of the
-    * enclosing call context on the stack.
-    */
-  def virtualCallContextFor(ctx: CallContext): CallContext
-
-  // TODO: Consider making this a separate API that is not core to the Orc JVM API.
-  /** Submit an event to the Orc runtime.
-    */
-  def notifyOrc(event: OrcEvent): Unit
+trait MaterializedCallContext extends CallContext {
+  final def materialize(): MaterializedCallContext = this
 
   // TODO: Replace with onidle API.
   /** Specify that the call is quiescent and will remain so until it halts or is killed.
@@ -164,15 +173,9 @@ trait CallContext {
     halt()
   }
 
-  @deprecated("Use publish(Signal) explicitly.", "3.0")
-  final def publish() { publish(Signal) }
-
   /** Halt this call without publishing a value.
     */
   def halt(): Unit
-
-  @deprecated("Use halt(e).", "3.0")
-  final def !!(e: OrcException): Unit = halt(e)
 
   /** Halt this call without publishing a value, providing an exception which caused the halt.
     */
@@ -181,20 +184,92 @@ trait CallContext {
   /** Notify the runtime that the call will never publish again, but will not halt.
     */
   def discorporate(): Unit
+}
 
-  /** Provide a source position from which this call was made.
+/** The interface through which the environment response to site calls.
+  *
+  * Published values passed to publish and publishNonterminal may not be futures.
+  *
+  * VirtualCallContext object should never be stored for later use, or used in
+  * any way after the initial site call returns to the Orc interpreter.
+  */
+trait VirtualCallContext extends CallContext {
+  /** Return a reified instance of this context that can be stored.
+    */
+  def materialize(): MaterializedCallContext
+
+  /** Create an empty SiteResponseSet.
     *
-    * Some runtimes may always return None.
+    * This ResultDescriptor is optimized for receiving some unknown number of
+    * publications and other actions.
     */
-  def callSitePosition: Option[OrcSourceRange]
+  def empty(): SiteResponseSet
 
-  /** Return true iff the caller has the right named.
+  /** Publish a value from this call and halt the call.
+    *
+    * This ResultDescriptor is not optimized to be changed after creation.
+    * If you need to add a large number of other actions to the
+    * ResultDescriptor, start with a empty() instance.
     */
-  def hasRight(rightName: String): Boolean
+  def publish(v: AnyRef): SiteResponseSet = empty().publish(this, v)
 
-  /** Return true iff the call is still live (not killed).
+  /** Halt this call without publishing a value.
+    *
+    * This ResultDescriptor is not optimized to be changed after creation.
+    * If you need to add a large number of other actions to the
+    * ResultDescriptor, start with a empty() instance.
     */
-  def isLive: Boolean
+  def halt(): SiteResponseSet = empty().halt(this)
+
+  /** Halt this call without publishing a value, providing an exception which caused the halt.
+    *
+    * This ResultDescriptor is not optimized to be changed after creation.
+    * If you need to add a large number of other actions to the
+    * ResultDescriptor, start with a empty() instance.
+    */
+  def halt(e: OrcException): SiteResponseSet = empty().halt(this, e)
+
+  /** Notify the runtime that the call will never publish again, but will not halt.
+    *
+    * This ResultDescriptor is not optimized to be changed after creation.
+    * If you need to add a large number of other actions to the
+    * ResultDescriptor, start with a empty() instance.
+    */
+  def discorporate(): SiteResponseSet = empty().discorporate(this)
+}
+
+/** SiteResponseSet represents a set of responses from a site call.
+  *
+  * A new site response can be added by calling one of the methods
+  * which returns a new SiteResponseSet to return from a site call.
+  *
+  * Responses in a SiteResponseSet are not ordered. They may be
+  * processed in any order by the Orc Runtime (though any
+  * publication in a ctx, will be processed before a halt of
+  * the same ctx).
+  *
+  * No response can be added for a halted context.
+  */
+trait SiteResponseSet {
+  /** Publish a value from ctx without halting the call.
+    */
+  def publishNonterminal(ctx: CallContext, v: AnyRef): SiteResponseSet
+
+  /** Publish a value from ctx and halt ctx.
+    */
+  def publish(ctx: CallContext, v: AnyRef): SiteResponseSet = publishNonterminal(ctx, v).halt(ctx)
+
+  /** Halt ctx without publishing a value.
+    */
+  def halt(ctx: CallContext): SiteResponseSet
+
+  /** Halt ctx without publishing a value, providing an exception which caused the halt.
+    */
+  def halt(ctx: CallContext, e: OrcException): SiteResponseSet
+
+  /** Notify the runtime that ctx will never publish again, but will not halt.
+    */
+  def discorporate(ctx: CallContext): SiteResponseSet
 }
 
 /** An event reported by an Orc execution

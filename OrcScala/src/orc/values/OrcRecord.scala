@@ -14,11 +14,14 @@ package orc.values
 
 import scala.collection.immutable.Map
 
+import orc.{ OrcRuntime, Accessor }
 import orc.error.runtime.NoSuchMemberException
 import orc.run.distrib.DOrcMarshalingReplacement
+import scala.deprecated
 
 /** @author dkitchin
   */
+@deprecated("Use FastRecord or OrcObject instead", "3.0")
 case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcMarshalingReplacement {
 
   def this(entries: (String, AnyRef)*) = {
@@ -58,7 +61,7 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcM
     }
   }
 
-  override def hasMember(field: Field): Boolean = {
+  def hasMember(field: Field): Boolean = {
     entries.contains(field.name)
   }
 
@@ -74,4 +77,23 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcM
   override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef =
     OrcRecord(entries.map( { kv: (String, AnyRef) => (kv._1, unmarshaler(kv._2)) } ))
 
+  @throws[NoSuchMemberException]
+  def getAccessor(runtime: OrcRuntime, field: Field): Accessor = {
+    if(hasMember(field)) {
+      new OrcRecordAccessor(field)
+    } else {
+      throw new NoSuchMemberException(this, field.name)
+    }
+  }
+}
+
+final class OrcRecordAccessor(field: Field) extends Accessor {
+  def canGet(target: AnyRef): Boolean = {
+    target.isInstanceOf[OrcRecord]
+  }
+
+  @throws[NoSuchMemberException]
+  def get(target: AnyRef): AnyRef = {
+    target.asInstanceOf[OrcRecord].getMember(field)
+  }
 }

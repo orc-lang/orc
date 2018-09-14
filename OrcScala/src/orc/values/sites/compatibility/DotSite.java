@@ -17,14 +17,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.error.runtime.NoSuchMemberException;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
 import orc.values.FastRecord;
 import orc.values.FastRecordFactory;
 import orc.values.Field;
-import orc.values.HasMembers;
 
 /**
  * Dot-accessible sites should extend this class and declare their Orc-available

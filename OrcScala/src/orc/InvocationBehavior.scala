@@ -21,18 +21,21 @@ import orc.values.Field
   * The fundamental difference between an Invoker and Accessor is that an accessor can return a future
   * for later forcing, where as an Invoker allows blocking during the call itself. These APIs are
   * mutually encodable, however this encoding would have a significant performance cost.
-  * 
+  *
   * Invoker.canInvoke must only depend on immutable information in targets and the invoker. This means
-  * canInvoke(v) will always return the same value for a specific value v. Similarly, if getInvoker(v) returns 
-  * invoker, then invoker.canInvoke(v) must always be true.
+  * canInvoke(v) will always return the same value for a specific value v.
   */
 trait Invoker {
   /** Return true if InvocationBehavior#getInvoker would return an equivalent
     * instance for these argument types. Equivalent means that for these values
     * invoke would behave the same.
     *
-    * This should be as fast as possible. Returning false erroneously is allowed,
-    * but may dramatically effect performance on some backends.
+    * This should be as fast as possible. Additionally, this should not transitively:
+    * * Make recursive calls.
+    * *
+    *
+    * Returning false erroneously is allowed, but may dramatically effect
+    * performance on some backends.
     */
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
 
@@ -45,7 +48,7 @@ trait Invoker {
     * This could occur for sites which have mutable values which may stop being callable.
     */
   @throws[UncallableValueException]
-  def invoke(callContext: CallContext, target: AnyRef, arguments: Array[AnyRef]): Unit
+  def invoke(callContext: VirtualCallContext, target: AnyRef, arguments: Array[AnyRef]): SiteResponseSet
 }
 
 /** Implement direct invocation for calls with do not block and do not need runtime access.
@@ -56,9 +59,9 @@ trait DirectInvoker extends Invoker {
     * the invocation does not publish.
     *
     * This call may not block on external events, but may use locks as needed as long as the locks will
-    * be available with relatively low-latency. Any delay in this call may delay the execution of unrelated
-    * tasks or threads.
-    * 
+    * be available with low-latency. Any delay in this call may delay the execution of unrelated tasks
+    * or threads.
+    *
     * This call may still throw UncallableValueException even if canInvoke returns true.
     * This could occur for sites which have mutable values which may stop being callable.
     *
@@ -67,11 +70,18 @@ trait DirectInvoker extends Invoker {
   @throws[HaltException]
   @throws[UncallableValueException]
   def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef
+
+  final def invoke(callContext: VirtualCallContext, target: AnyRef, arguments: Array[AnyRef]): SiteResponseSet = {
+    try {
+      callContext.publish(invokeDirect(target, arguments))
+    } catch {
+      case _: HaltException =>
+        callContext.halt()
+    }
+  }
 }
 
 /** Type of error sentinels returned by InvocationBehavior.getInvoker.
-  *
-  * These invokers must NEVER be cached.
   */
 trait ErrorInvoker extends Invoker
 
@@ -80,9 +90,9 @@ trait ErrorInvoker extends Invoker
   * The fundamental difference between an Invoker and Accessor is that an accessor can return a future
   * for later forcing, where as an Invoker allows blocking during the call itself. These APIs are
   * mutually encodable, however this encoding would have a significant performance cost.
-  * 
+  *
   * Accessor.canGet must only depend on immutable information in targets and the accessor. This means
-  * canGet(v) will always return the same value for a specific value v. Similarly, if getAccessor(v) returns 
+  * canGet(v) will always return the same value for a specific value v. Similarly, if getAccessor(v) returns
   * accessor, then accessor.canGet(v) must always be true.
   */
 trait Accessor {
@@ -113,21 +123,19 @@ trait Accessor {
 }
 
 /** Type of error sentinels returned by InvocationBehavior.getAccessor.
-  *
-  * These accessors must NEVER be cached.
   */
 trait ErrorAccessor extends Accessor
 
 /** Define invocation behaviors for a runtime
   */
 trait InvocationBehavior {
-  /** Get an invoker for a specific target type and argment types.
+  /** Get an invoker for a specific target type and argument types.
     *
     * This method is slow and the results should be cached if possible.
     *
-    * @return An Invoker or DirectInvoker for the given values or an 
-    * 			  instance of InvokerError if there is no invoker.
-    * 
+    * @return An Invoker or DirectInvoker for the given values or an
+    *         instance of InvokerError if there is no invoker.
+    *
     * @see UncallableValueInvoker
     */
   def getInvoker(target: AnyRef, arguments: Array[AnyRef]): Invoker
@@ -136,9 +144,9 @@ trait InvocationBehavior {
     *
     * This method is slow and the results should be cached if possible.
     *
-    * @return An Accessor for the given classes or an 
-    * 			  instance of AccessorError if there is no accessor.
-    * 
+    * @return An Accessor for the given classes or an
+    *         instance of AccessorError if there is no accessor.
+    *
     * @see NoSuchMemberAccessor, DoesNotHaveMembersAccessor
     */
   def getAccessor(target: AnyRef, field: Field): Accessor

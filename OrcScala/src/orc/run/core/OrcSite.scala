@@ -119,7 +119,7 @@ class OrcSite(val code: Site,
   */
 class OrcSiteCallGroup(parent: Group, controller: OrcSiteCallController) extends Subgroup(parent) {
   def publish(t: Token, v: Option[AnyRef]) = synchronized {
-    // This should never receive a stop. Just let it throw if it does. 
+    // This should never receive a stop. Just let it throw if it does.
     controller.publishNonterminal(v.get)
     // Halt the token which sent this publication. It cannot do anything else.
     t.halt()
@@ -137,6 +137,10 @@ class OrcSiteCallGroup(parent: Group, controller: OrcSiteCallController) extends
 
   // Note: discorporate is a no-op in this because this group needs to stay alive to controller kills.
   def onDiscorporate() = ()
+}
+
+class VirtualOrcSiteCallController(caller: Token) extends VirtualCallController {
+  val materialized = new OrcSiteCallController(caller)
 }
 
 /** A call controller specific to Orc site calls.
