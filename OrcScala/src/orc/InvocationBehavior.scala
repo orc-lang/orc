@@ -15,6 +15,8 @@ package orc
 
 import orc.error.runtime.{ DoesNotHaveMembersException, HaltException, NoSuchMemberException, UncallableValueException }
 import orc.values.Field
+import orc.error.OrcException
+import orc.error.runtime.JavaException
 
 /** An action class implementing invocation for specific target and argument types.
   *
@@ -75,8 +77,15 @@ trait DirectInvoker extends Invoker {
     try {
       callContext.publish(invokeDirect(target, arguments))
     } catch {
-      case _: HaltException =>
+      case e: HaltException if e.getCause == null =>
         callContext.halt()
+      case e: HaltException =>
+        e.getCause match {
+          case e: OrcException =>
+            callContext.halt(e)
+          case e =>
+            callContext.halt(new JavaException(e))
+        }
     }
   }
 }
