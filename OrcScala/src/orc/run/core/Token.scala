@@ -579,7 +579,7 @@ class Token protected (
 
   def newVclock(orderingArg: AnyRef, body: Expression) = {
     orderingArg match {
-      case orderingSite: TotalSite => {
+      case orderingSite: orc.values.sites.compatibility.TotalSite => {
         def ordering(x: AnyRef, y: AnyRef) = {
           // TODO: Add error handling, either here or in the scheduler.
           // A comparator error should kill the engine.

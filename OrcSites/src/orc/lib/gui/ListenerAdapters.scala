@@ -36,7 +36,7 @@ abstract class ListenerAdapter {
 // TODO: Make this typed once we have object types.
 abstract class ListenerAdapterSite extends Site1 {
   def call(arg: AnyRef, callContext: CallContext) = {
-    val execution = callContext.asInstanceOf[ExternalSiteCallController].caller.execution match {
+    val execution = callContext.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }

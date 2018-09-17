@@ -23,7 +23,7 @@ import orc.ast.oil.nameless.Site
   * deleted. Think of this as an approximation of semantics up to the limitations
   * of a machine with finite memory.
   *
-  * For this to catch unused OrcSites the JVM GC must run occationally. So this
+  * For this to catch unused OrcSites the JVM GC must run occasionally. So this
   * object runs a thread that forces a GC every 2 seconds and continuously waits
   * for OrcSites to be collected.
   */
