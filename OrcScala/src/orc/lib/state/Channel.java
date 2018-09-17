@@ -142,7 +142,7 @@ public class Channel extends EvalSite implements TypedSite {
                         // it.
                         reader.publish(object2value(channel.contents.removeFirst()));
                         if (channel.closer != null && channel.contents.isEmpty()) {
-                            reader.publish(signal());
+                            channel.closer.publish(signal());
                             channel.closer = null;
                         }
                     }
@@ -214,7 +214,7 @@ public class Channel extends EvalSite implements TypedSite {
                     synchronized (ChannelInstance.this) {
                         closed = true;
                         for (final MaterializedCallContext reader : readers) {
-                            caller.halt();
+                            reader.halt();
                         }
                         if (contents.isEmpty()) {
                             caller.publish(signal());
@@ -236,7 +236,7 @@ public class Channel extends EvalSite implements TypedSite {
                     synchronized (ChannelInstance.this) {
                         closed = true;
                         for (final MaterializedCallContext reader : readers) {
-                            caller.halt();
+                            reader.halt();
                         }
                         caller.publish(signal());
                     }

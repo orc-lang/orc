@@ -147,7 +147,7 @@ public class Cell extends EvalSite implements TypedSite {
                          * value to them.
                          */
                         for (final MaterializedCallContext reader : rq) {
-                            writer.publish(object2value(val));
+                            reader.publish(object2value(val));
                         }
 
                         /* A successful write publishes a signal. */
