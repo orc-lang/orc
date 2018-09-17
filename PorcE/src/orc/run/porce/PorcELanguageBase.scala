@@ -33,10 +33,14 @@ import java.io.PrintStream
 import orc.PorcEPolyglotLauncher
 import orc.OrcOptions
 import orc.run.porce.runtime.PorcERuntime
+import com.oracle.truffle.api.Scope
+import orc.values.Signal
+import com.oracle.truffle.api.interop.TruffleObject
+import com.oracle.truffle.api.interop.ForeignAccess
 
 class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
     this: PorcELanguage =>
-  
+
   val options: OrcOptions = PorcEPolyglotLauncher.orcOptions.getOrElse(new OrcBindings())
   val backend = PorcEBackend(this)
   val compiler = backend.compiler
@@ -65,16 +69,16 @@ class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
   override def createContext(env: com.oracle.truffle.api.TruffleLanguage.Env): PorcEContext = {
     new PorcEContext(runtime)
   }
-  
+
   override def initializeThread(ctx: PorcEContext, thread: Thread) = {
     assert(ctx.thread == null)
-    println(s"initializeThread: $thread $ctx")
+    // println(s"initializeThread: $thread $ctx")
     ctx.thread = thread
     ctx.depth = 0
   }
   override def disposeThread(ctx: PorcEContext, thread: Thread) = {
     assert(ctx.thread == thread)
-    println(s"disposeThread: $thread $ctx")
+    //println(s"disposeThread: $thread $ctx")
     ctx.thread = null
     ctx.depth = 0
   }
@@ -98,19 +102,23 @@ class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
     val launchNode = new RootNode(this) {
       def execute(frame: VirtualFrame): Object = {
         runtime.runSynchronous(code, eventHandler.asFunction)
-        null
+        // Create an object which cannot do anything as the "Signal" return value.
+        new TruffleObject {
+          self =>
+          def getForeignAccess(): ForeignAccess = {
+            ForeignAccess.create(new ForeignAccess.Factory {
+              def accessMessage(tree: com.oracle.truffle.api.interop.Message): CallTarget = null
+              def canHandle(obj: TruffleObject): Boolean = obj == self
+            })
+          }
+        }
       }
     }
     Truffle.getRuntime().createCallTarget(launchNode)
   }
 
-  override def findExportedSymbol(context: PorcEContext, globalName: String,
-    onlyExplicit: Boolean): AnyRef = {
-    return null;
-  }
-
-  override def getLanguageGlobal(context: PorcEContext): AnyRef = {
-    return null;
+  override def findTopScopes(context: PorcEContext): java.lang.Iterable[Scope] = {
+    java.util.Collections.emptyList()
   }
 
   override def isObjectOfLanguage(obj: AnyRef): Boolean = {
