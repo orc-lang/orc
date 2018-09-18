@@ -15,6 +15,10 @@ package orc.values.sites
 
 import scala.reflect.ClassTag
 
+import java.io.InvalidClassException
+import java.lang.reflect.Modifier
+
+import orc.CallContext
 import orc.error.{ NotYetImplementedException, OrcException }
 import orc.error.compiletime.typing.TypeException
 import orc.error.runtime.{ ArityMismatchException, HaltException, RightException }
@@ -592,104 +596,22 @@ trait TalkativeSite extends SiteMetadata {
 
 trait FunctionalSite extends SiteMetadata with NonBlockingSite with EffectFreeSite
 
-
-/*
-abstract class HasGetInvoker0 {
-  final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
-    if (args.length == 0) {
-      getInvoker(runtime)
-    } else {
-      IllegalArgumentInvoker(this, args)
-    }
+/** A Site that is a Scala object (singleton), but only needs to be a
+  * singleton per JVM/Orc runtime, not globally for the program.  For example,
+  * a Site that is an object simply because it carries no state.
+  */
+trait LocalSingletonSite {
+  _: java.io.Serializable =>
+  @throws(classOf[java.io.ObjectStreamException])
+  protected def writeReplace(): AnyRef = {
+      if (!Modifier.isStatic(this.getClass.getField("MODULE$").getModifiers)) {
+        throw new InvalidClassException("A LocalSingletonSite must be a Scala object")
+      }
+      new LocalSingletonSiteMarshalingReplacement(this.getClass)
   }
-
-  def getInvoker(runtime: OrcRuntime): Invoker
 }
 
-abstract class HasGetInvoker1[A1 : ClassTag] {
-  final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
-    if (args.length == 1 && valueHasTypeByTag[A1](args(0))) {
-      getInvoker(runtime, args(0).asInstanceOf[A1])
-    } else {
-      IllegalArgumentInvoker(this, args)
-    }
-  }
-
-  def getInvoker(runtime: OrcRuntime, argument1: A1): Invoker
+protected case class LocalSingletonSiteMarshalingReplacement(singletonClass: Class[_ <: java.lang.Object]) {
+  @throws(classOf[java.io.ObjectStreamException])
+  protected def readResolve(): AnyRef = singletonClass.getField("MODULE$").get(null)
 }
-
-abstract class HasGetInvoker2[A1 : ClassTag, A2 : ClassTag] {
-  final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
-    if (args.length == 2 && valueHasTypeByTag[A1](args(0)) && valueHasTypeByTag[A2](args(1))) {
-      getInvoker(runtime, args(0).asInstanceOf[A1], args(1).asInstanceOf[A2])
-    } else {
-      IllegalArgumentInvoker(this, args)
-    }
-  }
-
-  def getInvoker(runtime: OrcRuntime, argument1: A1, argument2: A2): Invoker
-}
-
-abstract class HasGetInvoker3[A1 : ClassTag, A2 : ClassTag, A3 : ClassTag] {
-  final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
-    if (args.length == 3 && valueHasTypeByTag[A1](args(0)) && valueHasTypeByTag[A2](args(1)) && valueHasTypeByTag[A3](args(2))) {
-      getInvoker(runtime, args(0).asInstanceOf[A1], args(1).asInstanceOf[A2], args(2).asInstanceOf[A3])
-    } else {
-      IllegalArgumentInvoker(this, args)
-    }
-  }
-
-  def getInvoker(runtime: OrcRuntime, argument1: A1, argument2: A2, argument3: A3): Invoker
-}
-
-
-
-
-abstract class HasGetDirectInvoker0 {
-  final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
-    if (args.length == 0) {
-      getInvoker(runtime)
-    } else {
-      IllegalArgumentInvoker(this, args)
-    }
-  }
-
-  def getInvoker(runtime: OrcRuntime): DirectInvoker
-}
-
-abstract class HasGetDirectInvoker1[A1 : ClassTag] {
-  final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
-    if (args.length == 1 && valueHasTypeByTag[A1](args(0))) {
-      getInvoker(runtime, args(0).asInstanceOf[A1])
-    } else {
-      IllegalArgumentInvoker(this, args)
-    }
-  }
-
-  def getInvoker(runtime: OrcRuntime, argument1: A1): DirectInvoker
-}
-
-abstract class HasGetDirectInvoker2[A1 : ClassTag, A2 : ClassTag] {
-  final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
-    if (args.length == 2 && valueHasTypeByTag[A1](args(0)) && valueHasTypeByTag[A2](args(1))) {
-      getInvoker(runtime, args(0).asInstanceOf[A1], args(1).asInstanceOf[A2])
-    } else {
-      IllegalArgumentInvoker(this, args)
-    }
-  }
-
-  def getInvoker(runtime: OrcRuntime, argument1: A1, argument2: A2): DirectInvoker
-}
-
-abstract class HasGetDirectInvoker3[A1 : ClassTag, A2 : ClassTag, A3 : ClassTag] {
-  final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
-    if (args.length == 3 && valueHasTypeByTag[A1](args(0)) && valueHasTypeByTag[A2](args(1)) && valueHasTypeByTag[A3](args(2))) {
-      getInvoker(runtime, args(0).asInstanceOf[A1], args(1).asInstanceOf[A2], args(2).asInstanceOf[A3])
-    } else {
-      IllegalArgumentInvoker(this, args)
-    }
-  }
-
-  def getInvoker(runtime: OrcRuntime, argument1: A1, argument2: A2, argument3: A3): DirectInvoker
-}
-*/

@@ -422,9 +422,20 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
   *
   * @author jthywiss, amp
   */
-class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], _memberName: String, javaField: Option[JavaField]) extends JavaMemberProxy(null, _memberName, javaField) {
+class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], _memberName: String, javaField: Option[JavaField]) extends JavaMemberProxy(null, _memberName, javaField) with Serializable {
   override def javaClass = declaringClass
   override def toString() = s"JavaStaticMemberProxy($javaClass.$memberName)"
+
+  @throws(classOf[java.io.ObjectStreamException])
+  protected def writeReplace(): AnyRef = {
+      new JavaStaticMemberProxyMarshalingReplacement(declaringClass, memberName, javaField)
+  }
+
+}
+
+protected case class JavaStaticMemberProxyMarshalingReplacement(declaringClass: Class[_ <: java.lang.Object], memberName: String, javaField: Option[JavaField]) {
+  @throws(classOf[java.io.ObjectStreamException])
+  protected def readResolve(): AnyRef = new JavaStaticMemberProxy(declaringClass, memberName, javaField)
 }
 
 object JavaFieldDerefSite {
