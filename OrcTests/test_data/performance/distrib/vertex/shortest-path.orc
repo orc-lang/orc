@@ -10,6 +10,8 @@ include "vertex.inc"
  - Single source shortest path
  --------}
 
+val verticesRef = Ref[Vertex]()
+
 def swapIf[A](ref :: Ref[A], sem :: Semaphore, newVal :: A, test :: lambda(A, A) :: Boolean) :: Boolean  =
   withLock(sem, {
     -- Swap if test is true, or if Ref is unbound
@@ -25,28 +27,28 @@ def gt(i :: EdgeWeight, j :: EdgeWeight) :: Boolean = i :> j
 
 def updatePathLenFor(v :: Vertex, newPathLen :: EdgeWeight) :: Bot =
   if swapIf(v.pathLen(), v.pathLenSemaphore(), newPathLen, gt) then
-    each(v.outEdges()) >e> updatePathLenFor(vertices(e.tail())?, newPathLen + e.weight())
+    each(v.outEdges()) >e> updatePathLenFor(vertexNamed(e.tail(), verticesRef?), newPathLen + e.weight())
   else
     stop
-
 
 {--------
  - Test Procedure
  --------}
 
 def setUpTest() =
-  randomGraph(numVertices, probEdge, 40)
+  verticesRef := randomGraph(numVertices, probEdge, 40)
+
 
 def setUpTestRep() =
-  resetGraph()
+  verticesRef := freshGraph(verticesRef?)
 
 def runTestRep() :: Signal =
   -- start at startVertex with path len 0
-  updatePathLenFor(vertices(0)?, 0) >> stop;
+  updatePathLenFor(vertexNamed(0, verticesRef?), 0) >> stop;
   signal
 
 def tearDownTestRep() =
-  dumpGraph()
+  dumpGraph(verticesRef?)
 
 def tearDownTest() =
   signal

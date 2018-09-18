@@ -21,15 +21,15 @@ import orc.util.ArrayExtensions.Array1
 import orc.values.{ Field => OrcField, Signal, NoSuchMemberAccessor }
 import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocation, java2orc, orc2java }
 
-/** Due to the way dispatch is handled we cannot pass true wrappers back into Orc. They
-  * would interfere with any call to which they were passed as an argument.
-  *
-  * Instead any object needs to be passed back bare and then handled again in getInvoker
-  * and getAccessor.
-  *
-  * This does not apply to objects which "wrap" members and similar since those are not
-  * values with types in Java and hence cannot appear as argument in other calls.
-  */
+/* Due to the way dispatch is handled we cannot pass true wrappers back into Orc. They
+ * would interfere with any call to which they were passed as an argument.
+ *
+ * Instead any object needs to be passed back bare and then handled again in getInvoker
+ * and getAccessor.
+ *
+ * This does not apply to objects which "wrap" members and similar since those are not
+ * values with types in Java and hence cannot appear as argument in other calls.
+ */
 
 /** Transforms an Orc site call to an appropriate Java invocation
   *
@@ -296,7 +296,7 @@ sealed abstract class InvocableInvoker(
           }
           arguments
         }
-        //Logger.finer(s"Invoking Java method ${classNameAndSignature(targetCls, invocable.getName, invocable.parameterTypes.toList)} with (${finalArgs.map(valueAndType).mkString(", ")})")
+        //Logger.finer(s"Invoking Java method ${JavaCall.classNameAndSignature(targetCls, invocable.getName, invocable.parameterTypes.toList)} with (${finalArgs.map(JavaCall.valueAndType).mkString(", ")})")
         val r = orc.run.StopWatches.javaImplementation {
           // The returnType cast does not add any static information, but it enables runtime optimizations in Graal.
           boxedReturnType.cast(mh.invokeExact(theObject, finalArgs)).asInstanceOf[AnyRef]
@@ -424,6 +424,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
   */
 class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], _memberName: String, javaField: Option[JavaField]) extends JavaMemberProxy(null, _memberName, javaField) {
   override def javaClass = declaringClass
+  override def toString() = s"JavaStaticMemberProxy($javaClass.$memberName)"
 }
 
 object JavaFieldDerefSite {
