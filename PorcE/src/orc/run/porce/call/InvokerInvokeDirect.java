@@ -165,8 +165,13 @@ abstract class InvokerInvokeDirect extends NodeBase {
         }
     }
 
+    private static boolean isNonevaluableNumber(Object a) {
+        return a instanceof scala.math.BigDecimal || a instanceof scala.math.BigInt ||
+                a instanceof java.math.BigDecimal || a instanceof java.math.BigInteger;
+    }
+
     private static Object orc2javaOpt(Object a, Class<?> cls) {
-        if (a instanceof scala.math.BigDecimal || a instanceof scala.math.BigInt || a instanceof java.math.BigDecimal || a instanceof java.math.BigInteger) {
+        if (isNonevaluableNumber(a)) {
             return orc2javaWithBoundary(a, cls);
         } else {
             return OrcJavaCompatibility.orc2javaAsFixedPrecision(a, cls);
@@ -174,7 +179,8 @@ abstract class InvokerInvokeDirect extends NodeBase {
     }
 
     private static Object java2orcOpt(Object r) {
-        if ((!NumericsConfig.preferLong() || !NumericsConfig.preferDouble()) && r instanceof Number) {
+        if ((!NumericsConfig.preferLong() || !NumericsConfig.preferDouble() ||
+                isNonevaluableNumber(r))) {
             return java2orcWithBoundary(r);
         } else {
             return OrcJavaCompatibility.java2orc(r);
