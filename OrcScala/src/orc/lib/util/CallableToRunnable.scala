@@ -16,18 +16,18 @@ import java.util.concurrent.Callable
 
 import orc.values.sites.compatibility.CallContext
 import orc.compile.typecheck.Typeloader
-import orc.run.core.ExternalSiteCallController
 import orc.run.extensions.SupportForCallsIntoOrc
 import orc.types.{ Bot, FunctionType, SimpleFunctionType, TypeVariable }
 import orc.values.sites.{ TypedSite }
 import orc.values.sites.compatibility.{ Site1 }
+import orc.run.core.CallController
 
 /** Convert an Orc callable into a Java Runnable instance.
   * @author amp
   */
 object CallableToRunnable extends Site1 with TypedSite {
   def call(arg: AnyRef, callContext: CallContext) = {
-    val runtime = callContext.execution match {
+    val runtime = callContext.underlying.asInstanceOf[CallController].caller.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
@@ -50,7 +50,7 @@ object CallableToRunnable extends Site1 with TypedSite {
   */
 object CallableToCallable extends Site1 with TypedSite {
   def call(arg: AnyRef, callContext: CallContext) = {
-    val runtime = callContext.execution match {
+    val runtime = callContext.underlying.asInstanceOf[CallController].caller.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }

@@ -135,16 +135,6 @@ trait CallContext {
   /** Return true iff the call is still live (not killed).
     */
   def isLive: Boolean
-
-  /** Get the execution in which this call context exists.
-    *
-    * The lifetime of the returned execution is undefined.
-    */
-  def execution: ExecutionRoot
-
-  /** Get the Orc runtime in which this call context is running.
-    */
-  def runtime: OrcRuntime
 }
 
 /** The interface through which the environment response to site calls.

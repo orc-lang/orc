@@ -22,7 +22,7 @@ import orc.compile.parse.OrcSourceRange
   *
   * Published values passed to publish and publishNonterminal may not be futures.
   */
-class CallContext(underlying: orc.MaterializedCallContext) extends orc.MaterializedCallContext {
+class CallContext(val underlying: orc.MaterializedCallContext) extends orc.MaterializedCallContext {
 
   def this(c: orc.VirtualCallContext) = {
     this(c.materialize())
@@ -75,8 +75,5 @@ class CallContext(underlying: orc.MaterializedCallContext) extends orc.Materiali
   /** Return true iff the call is still live (not killed).
     */
   def isLive: Boolean = underlying.isLive
-
-  def execution = underlying.execution
-  def runtime = underlying.runtime
 }
 

@@ -71,9 +71,6 @@ abstract class VirtualCallController extends VirtualCallContext with Blocker {
     materialized.discorporate()
     empty()
   }
-
-  def execution = materialized.execution
-  def runtime = materialized.runtime
 }
 
 /** An abstract call controller for any call made by a token.
@@ -227,9 +224,6 @@ abstract class CallController(val caller: Token) extends MaterializedCallContext
   override def toString = synchronized {
     super.toString + s"($state)"
   }
-
-  def execution = caller.execution
-  def runtime = caller.execution.runtime
 }
 
 

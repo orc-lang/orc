@@ -23,6 +23,7 @@ import orc.run.distrib.AbstractLocation
 import orc.OrcRuntime
 import orc.Invoker
 import orc.SiteResponseSet
+import orc.run.porce.runtime.VirtualCPSCallContext
 
 /** Superclass of Orc sites to construct LocationPinnedTuples
   *
@@ -41,7 +42,7 @@ sealed abstract class LocationPinnedTupleConstructor(locationNum: Int) extends S
           orc.run.StopWatches.implementation {
             Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "invoke", args)
             val res = try {
-              val loc = ctx.execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
+              val loc = ctx.asInstanceOf[VirtualCPSCallContext].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
               new LocationPinnedTuple(loc, args)
             } catch {
               case _: ClassCastException =>

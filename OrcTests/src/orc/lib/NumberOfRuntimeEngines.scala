@@ -18,6 +18,8 @@ import orc.types.IntegerType
 import orc.values.NumericsConfig
 import orc.values.sites.{ TypedSite, FunctionalSite, Range, Site0Base }
 import orc.{ OrcRuntime, Invoker }
+import orc.run.core.VirtualCallController
+import orc.run.porce.runtime.VirtualCPSCallContext
 
 /** Orc site that returns the number of runtime engines in the current cluster.
   *
@@ -27,9 +29,16 @@ object NumberOfRuntimeEngines extends Site0Base with FunctionalSite with TypedSi
 
   def getInvoker(runtime: OrcRuntime): Invoker = {
     invoker(this) { (ctx, target) =>
-      val numRE: Int = ctx.runtime match {
-        case cl: ClusterLocations[_] => cl.allLocations.size
-        case _ => 1
+      val numRE = ctx match {
+        case cc: VirtualCallController => cc.materialized.caller.runtime match {
+          case cl: ClusterLocations[_] => cl.allLocations.size
+          case _ => 1
+        }
+        case cc: VirtualCPSCallContext => cc.runtime match {
+          case cl: ClusterLocations[_] => cl.allLocations.size
+          case _ => 1
+        }
+        case _ => 0
       }
       ctx.publish(NumericsConfig.toOrcIntegral(numRE))
     }

@@ -15,7 +15,7 @@ package orc.run.distrib.token
 
 import orc.VirtualCallContext
 import orc.error.OrcException
-import orc.run.core.ExternalSiteCallController
+import orc.run.core.VirtualCallController
 import orc.values.OrcTuple
 import orc.values.sites.SiteBase
 import orc.run.distrib.DOrcPlacementPolicy
@@ -44,7 +44,7 @@ abstract class LocationPinnedTupleConstructor(locationNum: Int) extends SiteBase
   }
 
   private def evaluate(callContext: VirtualCallContext, args: Array[AnyRef]) = {
-    val loc = callContext.asInstanceOf[ExternalSiteCallController].caller.execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
+    val loc = callContext.asInstanceOf[VirtualCallController].materialized.caller.execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
     new LocationPinnedTuple(loc, args)
   }
 
