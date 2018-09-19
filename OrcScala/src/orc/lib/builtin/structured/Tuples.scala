@@ -13,21 +13,20 @@
 
 package orc.lib.builtin.structured
 
-import orc.{ Invoker, OrcRuntime }
-import orc.values.sites.compatibility.OnlyDirectInvoker
+import orc.{ Invoker, OrcRuntime, DirectInvoker }
 import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType, TupleSizeException }
 import orc.error.runtime.HaltException
 import orc.types.{ BinaryCallableType, IntegerConstantType, IntegerType, SimpleCallableType, StrictCallableType, TupleType, Type }
 import orc.values.OrcTuple
-import orc.values.sites.{ FunctionalSite, InvokerMethod, OverloadedDirectInvokerMethod2, SiteMetadata, TalkativeSite }
+import orc.values.sites.{ FunctionalSite, Site, OverloadedDirectInvokerMethod2, SiteMetadata, TalkativeSite }
 
 // TODO: Replace current tuple values with object and _n fields.
 
-object TupleConstructor extends InvokerMethod with FunctionalSite with TalkativeSite {
+object TupleConstructor extends Site with FunctionalSite with TalkativeSite {
   override def name = "Tuple"
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
-    new OnlyDirectInvoker {
+    new DirectInvoker {
       def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
         target eq TupleConstructor
       }
