@@ -43,7 +43,7 @@ import scala.concurrent.Channel
 import java.util.ArrayList
 
 object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBenchmarkResult[Iterable[Long]] {
-  val N = BenchmarkConfig.problemSizeScaledInt(10000)
+  val N = BenchmarkConfig.problemSizeScaledInt(5000)
 
   def primes(n: Long): List[Long] = {
     def candidates(n: Long) = 3L until (n + 1) by 2
@@ -73,9 +73,9 @@ object Sieve extends BenchmarkApplication[Unit, Iterable[Long]] with ExpectedBen
   override def hash(results: Iterable[Long]): Int = results.toSet.##()
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0x5138c428,
-      10 -> 0xcd3323cb,
-      100 -> 0x6807cb31,
+      1 -> 0xad0c3633,
+      10 -> 0x348f29a9,
+      100 -> 0x10dba805,
       )
 }
 
@@ -84,48 +84,51 @@ object SavinaSieve extends BenchmarkApplication[Unit, Iterable[Long]] with HashB
   import Util._
   import collection.JavaConverters._
 
+  // Lines: 1
   def check(list: ArrayList[Long], x: Long) = !list.asScala.exists(x % _ == 0)
 
   val sieveFragementSize = 300
-  
+
+  // Lines: 27 (1)
   def sieveFragment(outChan: Channel[Long]): Channel[Long] = {
-  	val inChan = new Channel[Long]() 
-	  val list = new ArrayList[Long](sieveFragementSize)
-  	var next: Channel[Long] = null
-  	def filter(x: Long) = {
-  		val v = check(list, x)
-  		if (v) {
-  			if (list.size() < sieveFragementSize) {
-  				list.add(x)
-  				outChan.write(x)
-  			} else {
-  				// create a new fragment
-  			  if (next == null) {
-  			    next = sieveFragment(outChan)
-  			  }
-  				next.write(x)
-  			}
-  		}
+    val inChan = new Channel[Long]()
+    val list = new ArrayList[Long](sieveFragementSize)
+    var next: Channel[Long] = null
+    def filter(x: Long) = {
+      val v = check(list, x)
+      if (v) {
+        if (list.size() < sieveFragementSize) {
+          list.add(x)
+          outChan.write(x)
+        } else {
+          // create a new fragment
+          if (next == null) {
+            next = sieveFragment(outChan)
+          }
+          next.write(x)
+        }
+      }
     }
-  	//println("Creating new fragment: " + inChan)
+    //println("Creating new fragment: " + inChan)
     thread {
       var isDone = false
       while (!isDone) {
         val x = inChan.read
-        if (x >= 0) 
+        if (x >= 0)
           filter(x)
         else {
           isDone = true
           if (next != null)
             next.write(x)
           else
-            outChan.write(x)  
-        }        
+            outChan.write(x)
+        }
       }
     }
-  	inChan
+    inChan
   }
-	
+
+  // Lines: 7
   def primes(n: Long): List[Long] = {
     def candidates(n: Long) = 3L until (n + 1) by 2
     val out = new Channel[Long]()

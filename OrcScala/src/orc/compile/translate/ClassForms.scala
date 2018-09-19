@@ -79,7 +79,9 @@ class ClassInfo private (
 
   override def toString(): String = s"ClassInfo($name, $superclasses, ..., $capturedVariables)"
 
-  override def hashCode(): Int = name.## ^ superclasses.## ^ abstractMembers.## ^ concreteMembers.## ^ classLiteral.## ^ capturedVariables.##
+  override def hashCode(): Int = {
+    (name.##, superclasses.##, abstractMembers.##, concreteMembers.##, classLiteral.##, capturedVariables.##).hashCode()
+  }
   override def equals(o: Any) = o match {
     case ClassInfo(`name`, `superclasses`, `abstractMembers`, `concreteMembers`, `classLiteral`, `capturedVariables`) => true
     case _ => false

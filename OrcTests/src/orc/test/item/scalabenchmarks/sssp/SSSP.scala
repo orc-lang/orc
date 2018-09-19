@@ -56,7 +56,7 @@ object SSSPSeq extends SSSPBase {
     val (nodes, edges, source) = ctx
     ssspSeq(nodes, edges, source)
   }
-  
+
   def ssspSeq(nodes: Array[SSSPNode], edges: Array[Int], source: Int): Array[Int] = {
     val visited = Array.fill(nodes.size)(false)
     val result = Array.fill(nodes.size)(Int.MaxValue)
@@ -77,7 +77,7 @@ object SSSPSeq extends SSSPBase {
     result
   }
 }
-  
+
 object SSSPBatched extends SSSPBase {
   val name: String = "SSSP-batched"
 
@@ -91,17 +91,17 @@ object SSSPBatched extends SSSPBase {
     val result = Array.fill(nodes.size)(Int.MaxValue)
     val batches = (0 until 2).map(_ => new ArrayList[Int]()).toArray
     var batchNumber = 0
-    
+
     result(source) = 0
     batches(batchNumber).add(source)
-    
+
     while (! batches(batchNumber).isEmpty()) {
       val inQueue = batches(batchNumber)
       val outQueue = batches((batchNumber + 1) % 2)
-      
+
       for (index <- inQueue.asScala) {
         @inline def currentCost = result(index)
-  
+
         for (to <- nodes(index).edges(edges)) {
           if (!visited(to)) {
             result(to) = currentCost + 1
@@ -110,16 +110,16 @@ object SSSPBatched extends SSSPBase {
           }
         }
       }
-      
+
       inQueue.clear()
 
       batchNumber = (batchNumber + 1) % 2
     }
     result
   }
-  
+
 }
- 
+
 // FIXME: Has contention issue. See line 186.
 
 object SSSPBatchedPar extends SSSPBase {
@@ -130,53 +130,56 @@ object SSSPBatchedPar extends SSSPBase {
     ssspBatchedPar(nodes, edges, source)
   }
 
+  // Lines: 17
   def ssspBatchedPar(nodes: Array[SSSPNode], edges: Array[Int], source: Int): Array[Int] = {
     val visited = Array.fill(nodes.size)(false)
     val result = Array.fill(nodes.size)(Int.MaxValue)
-    
+
     val batches = (0 until 2).map(_ => new ArrayList[Int]()).toArray
     var batchNumber = 0
-    
+
     result(source) = 0
     batches(batchNumber).add(source)
-    
+
     while (! batches(batchNumber).isEmpty()) {
       val inQueue = batches(batchNumber)
       val outQueue = batches((batchNumber + 1) % 2)
-      
+
       for (queueIndex <- (0 until inQueue.size).par) {
         val index = inQueue.get(queueIndex)
- 
+
         for (edgeIndex <- nodes(index).initialEdge until nodes(index).initialEdge + nodes(index).nEdges) {
           processEdge(edges, visited, result, edgeIndex, result(index), outQueue)
         }
       }
-      
+
       inQueue.clear()
 
       batchNumber = (batchNumber + 1) % 2
     }
     result
   }
-  
+
+  // Lines: 7
   def processEdge(edges: Array[Int], visited: Array[Boolean], result: Array[Int], edgeIndex: Int, currentCost: Int, outQueue: ArrayList[Int]) = {
     val to = edges(edgeIndex)
     if (!visited(to)) {
       visited(to) = true
       result(to) = currentCost + 1
-      
+
       outQueue synchronized {
         outQueue.add(to)
       }
     }
   }
-  
+
+  // Lines: 7
   def processEdge(edges: Array[Int], visited: ArrayList[Object], result: ArrayList[Object], edgeIndex: Int, currentCost: Int, outQueue: ArrayList[Object]) = {
     val to = edges(edgeIndex)
     if (!visited.get(to).asInstanceOf[Boolean]) {
       visited.set(to, true.asInstanceOf[AnyRef])
       result.set(to, (currentCost.asInstanceOf[Number].longValue() + 1).asInstanceOf[AnyRef])
-      
+
       outQueue synchronized {
         outQueue.add(to.asInstanceOf[AnyRef])
       }
@@ -191,40 +194,40 @@ object SSSPBatchedParManual extends SSSPBase {
     val (nodes, edges, source) = ctx
     ssspBatchedPar(nodes, edges, source)
   }
-  
+
   def ssspBatchedPar(nodes: Array[SSSPNode], edges: Array[Int], source: Int): Array[Int] = {
     val visited = Array.fill(nodes.size)(false)
     val result = Array.fill(nodes.size)(Int.MaxValue)
-    
+
     val batches = (0 until 2).map(_ => new ArrayList[Int]()).toArray
     var batchNumber = 0
-    
+
     result(source) = 0
     batches(batchNumber).add(source)
-    
+
     while (! batches(batchNumber).isEmpty()) {
       val inQueue = batches(batchNumber)
       val outQueue = batches((batchNumber + 1) % 2)
-      
+
       val stride = (inQueue.size / 8) max 256
-      
+
       for (qindexStart <- (0 until inQueue.size by stride).par) {
         val qindexEnd = (qindexStart + stride) min inQueue.size
         val localQ = new ArrayList[Int]()
-        
+
         for (queueIndex <- qindexStart until qindexEnd) {
           val index = inQueue.get(queueIndex)
-          
+
           for (edgeIndex <- nodes(index).initialEdge until nodes(index).initialEdge + nodes(index).nEdges) {
             SSSPBatchedPar.processEdge(edges, visited, result, edgeIndex, result(index), localQ)
           }
         }
-        
+
         outQueue synchronized {
           outQueue.addAll(localQ)
         }
       }
-      
+
       inQueue.clear()
 
       batchNumber = (batchNumber + 1) % 2

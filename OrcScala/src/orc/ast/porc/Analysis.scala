@@ -14,13 +14,13 @@ package orc.ast.porc
 
 import scala.collection.mutable
 
-import orc.values.sites.SiteMetadata
+import orc.values.ValueMetadata
 
 case class AnalysisResults(
   isNotFuture: Boolean,
   doesNotThrowHalt: Boolean,
   fastTerminating: Boolean,
-  siteMetadata: Option[SiteMetadata]) {
+  siteMetadata: Option[ValueMetadata]) {
 }
 
 sealed trait AnalysisProvider[E <: PorcAST] {
@@ -75,7 +75,7 @@ class Analyzer extends AnalysisProvider[PorcAST] {
     ???
   }
 
-  def siteMetadata(e: PorcAST.Z): Option[SiteMetadata] = {
+  def siteMetadata(e: PorcAST.Z): Option[ValueMetadata] = {
     ???
   }
 

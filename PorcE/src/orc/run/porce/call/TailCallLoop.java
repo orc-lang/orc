@@ -77,9 +77,6 @@ public class TailCallLoop extends NodeBase {
         protected TailCallNode(PorcEExecution execution) {
             this.execution = execution;
         }
-
-        // public abstract boolean executeDispatch(VirtualFrame frame, Object target,
-        // Object[] arguments, boolean isFirstCallInChain);
     }
 
     protected final static class TailCallSpecializationNode extends TailCallNode {
@@ -162,8 +159,7 @@ public class TailCallLoop extends NodeBase {
         private Object[] getArguments(VirtualFrame frame) {
             Object[] arguments = (Object[]) FrameUtil.getObjectSafe(frame, argumentsSlot);
             // TODO: Evaluate in depth if this is good or bad. It showed up on a profile and
-            // probably will not
-            // help much because arguments will still be stored in the frame.
+            // probably will not help much because arguments will still be stored in the frame.
             frame.setObject(argumentsSlot, null); // Clear it to avoid leaking during the call
             return arguments;
         }
@@ -173,7 +169,6 @@ public class TailCallLoop extends NodeBase {
             try {
                 Object target = getTarget(frame);
                 Object[] arguments = getArguments(frame);
-                // call.executeDispatch(frame, target, arguments, true);
                 invokeCalls(call, frame, (PorcEClosure) target, arguments);
                 returnProfile.enter();
                 return false;

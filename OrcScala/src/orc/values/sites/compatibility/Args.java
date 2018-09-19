@@ -27,7 +27,7 @@ import orc.values.Field;
  *
  * @author dkitchin
  */
-@Deprecated
+//@Deprecated
 public class Args implements Serializable {
     private static final long serialVersionUID = -5096125972360848153L;
 
@@ -35,7 +35,7 @@ public class Args implements Serializable {
 
     /**
      * Constructs an object of class Args using given array.
-     * 
+     *
      * Note that this class takes ownership of the array and assumes it is not changed further.
      *
      * @param values
@@ -45,9 +45,9 @@ public class Args implements Serializable {
     }
 
     /**
-     * 
+     *
      * Constructs an object of class Args using given arguments.
-     * 
+     *
      * The arguments are internally copied into an array so the collection can be reused.
      *
      * @param values

@@ -13,20 +13,20 @@
 
 package orc.lib.builtin.structured
 
-import orc.{ Invoker, OnlyDirectInvoker, OrcRuntime }
+import orc.{ Invoker, OrcRuntime, DirectInvoker }
 import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType, TupleSizeException }
 import orc.error.runtime.HaltException
 import orc.types.{ BinaryCallableType, IntegerConstantType, IntegerType, SimpleCallableType, StrictCallableType, TupleType, Type }
 import orc.values.OrcTuple
-import orc.values.sites.{ FunctionalSite, InvokerMethod, OverloadedDirectInvokerMethod2, SiteMetadata, TalkativeSite }
+import orc.values.sites.{ FunctionalSite, Site, OverloadedDirectInvokerMethod2, SiteMetadata, TalkativeSite }
 
 // TODO: Replace current tuple values with object and _n fields.
 
-object TupleConstructor extends InvokerMethod with FunctionalSite with TalkativeSite {
+object TupleConstructor extends Site with FunctionalSite with TalkativeSite {
   override def name = "Tuple"
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
-    new OnlyDirectInvoker {
+    new DirectInvoker {
       def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
         target eq TupleConstructor
       }
@@ -38,7 +38,7 @@ object TupleConstructor extends InvokerMethod with FunctionalSite with Talkative
     }
   }
 
-  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(args.toArray))
+  override def publicationMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(args.toArray))
 
   def orcType() = new SimpleCallableType with StrictCallableType {
     def call(argTypes: List[Type]) = { TupleType(argTypes) }
@@ -50,18 +50,22 @@ object TupleConstructor extends InvokerMethod with FunctionalSite with Talkative
  * If the check succeeds, the Some(t) is returned,
  * else None.
  */
-object TupleArityChecker extends OverloadedDirectInvokerMethod2[OrcTuple, Number] with FunctionalSite {
+object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] with FunctionalSite {
   override def name = "TupleArityChecker"
-  def getInvokerSpecialized(t: OrcTuple, arity: Number): Invoker = {
-    invoker(t, arity)((t, arity) =>
-      if (t.values.length == arity.intValue) {
-        t
-      } else {
-        throw HaltException.SINGLETON
+  def getInvokerSpecialized(t: AnyRef, arity: Number): Invoker = {
+    invoker(t, arity)((t, arity) => t match {
+      case t: OrcTuple =>
+        if (t.values.length == arity.intValue) {
+          t
+        } else {
+          throw new HaltException
+        }
+      case _ =>
+        throw new HaltException
       })
   }
 
-  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = args match {
+  override def publicationMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = args match {
     case List(_, Some(arity: BigInt)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toArray))
     case List(_, Some(arity: java.lang.Long)) => Some(OrcTuple((0 until arity.toInt).map(_ => null).toArray))
     case _ => None

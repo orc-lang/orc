@@ -14,7 +14,6 @@ package orc.run.porce;
 import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
-import orc.run.porce.runtime.CounterNested;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
@@ -39,9 +38,7 @@ public class HaltToken extends Expression {
     @Specialization
     public PorcEUnit any(VirtualFrame frame, final Counter counter,
             @Cached("create(execution)") KnownCounter known) {
-        CompilerDirectives.interpreterOnly(() -> {
-            known.setTail(isTail);
-        });
+        ensureTail(known);
         known.execute(frame, counter);
         return PorcEUnit.SINGLETON;
     }
@@ -55,26 +52,27 @@ public class HaltToken extends Expression {
     public static abstract class KnownCounter extends NodeBase {
 
         private final PorcEExecution execution;
+        private final Counter.GetCounterOffsetContext ctx;
 
         protected KnownCounter(final PorcEExecution execution) {
             this.execution = execution;
+            this.ctx = new Counter.GetCounterOffsetContextImpl(execution.runtime());
         }
-
-        private static Object[] EMPTY_ARGS = new Object[0];
 
         public abstract PorcEUnit execute(VirtualFrame frame, final Counter counter);
 
         @Specialization(guards = { "SpecializeOnCounterStates" })
-        public PorcEUnit nested(VirtualFrame frame, final CounterNested counter,
+        public PorcEUnit nested(VirtualFrame frame, final Counter counter,
                 @Cached("createCall()") Dispatch call,
                 @Cached("create()") BranchProfile hasContinuationProfile) {
-            PorcEClosure cont = counter.haltTokenOptimized();
+            ensureTail(call);
+            PorcEClosure cont = counter.haltTokenOptimized(ctx);
             if (cont != null) {
                 hasContinuationProfile.enter();
                 Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
                 SimpleWorkStealingSchedulerWrapper.enterSchedulable(counter, SimpleWorkStealingSchedulerWrapper.InlineExecution);
                 try {
-                    call.executeDispatch(frame, cont, EMPTY_ARGS);
+                    call.dispatch(frame, cont);
                 } finally {
                     SimpleWorkStealingSchedulerWrapper.exitSchedulable(counter, old);
                 }
@@ -83,14 +81,13 @@ public class HaltToken extends Expression {
         }
 
         @Specialization
-        public PorcEUnit any(final Counter counter) {
+        public PorcEUnit disabled(VirtualFrame frame, final Counter counter) {
             counter.haltToken();
             return PorcEUnit.SINGLETON;
         }
 
         protected Dispatch createCall() {
-            Dispatch n = InternalCPSDispatch.create(false, execution, isTail);
-            n.setTail(isTail);
+            Dispatch n = InternalCPSDispatch.create(execution, isTail);
             return n;
         }
 

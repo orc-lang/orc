@@ -12,7 +12,7 @@
 //
 package orc.values.sites
 
-import orc.values.Field
+import orc.values.ValueMetadata
 
 sealed trait Delay {
   def max(o: Delay): Delay
@@ -68,26 +68,24 @@ object Effects {
   }
 }
 
-trait SiteMetadata {
+trait SiteMetadata extends ValueMetadata {
   def name: String = Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName)
 
   def publications: Range = Range(0, None)
   def timeToPublish: Delay = Delay.Blocking
   def timeToHalt: Delay = Delay.Blocking
   def effects: Effects = Effects.Anytime
-  def isDirectCallable: Boolean = false
-
-  /** Return a metadata about a site in a field.
-    *
-    * A None return value means that this field may not return a site (or other callable value).
-    */
-  def fieldMetadata(f: Field): Option[SiteMetadata] = None
 
   /** Return a metadata about a site returned from a call to this site with args.
     *
     * A None argument says that any value may be passed in this position at runtime.
     *
-    * A None return value means that this call may not return a site (or other callable value).
+    * A None return value means that this call will not return a method
+    * or value with fields.
     */
-  def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = None
+  def publicationMetadata(args: List[Option[AnyRef]]): Option[ValueMetadata] = None
 }
+
+trait DirectSiteMetadata extends SiteMetadata {
+}
+

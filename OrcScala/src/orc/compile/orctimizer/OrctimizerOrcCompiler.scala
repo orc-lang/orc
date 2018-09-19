@@ -22,6 +22,9 @@ import java.io.OutputStreamWriter
 import orc.ast.porc.CallContinuation
 import orc.ast.porc.MethodDirect
 import orc.ast.porc.TryFinally
+import java.io.{ FileOutputStream, FileInputStream, ObjectOutputStream, ObjectInputStream, File }
+import java.util.zip.{ GZIPInputStream, GZIPOutputStream }
+import java.lang.ClassCastException
 
 /** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
   * and specifies that compilation will finish with named.
@@ -41,7 +44,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
   }
   def clearCache() = currentAnalysisCache = None
 
-  def clearCachePhase[T] = new CompilerPhase[CompilerOptions, T, T] {
+  def clearCachePhase[T >: Null] = new CompilerPhase[CompilerOptions, T, T] {
     val phaseName = "clearCache"
     override def apply(co: CompilerOptions) =
       { ast =>
@@ -83,7 +86,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
         (new CsvWriter(traceCsv.append(_)), traceCsv)
       }
-      
+
       val statisticsOut = statisticsOutputs map { _._1 }
 
       statisticsOut foreach {
@@ -112,7 +115,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1}=${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Orctimizer after pass $pass/$maxPasses: $optimizationCountsStr")
-        
+
         statisticsOut foreach {
           _.writeRow(
             Seq(pass, maxPasses) ++
@@ -135,7 +138,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         opt(ast, 1)
       else
         ast
-        
+
       statisticsOutputs foreach { _._2.close() }
 
       e
@@ -169,10 +172,10 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         classOf[MethodCPS], classOf[MethodDirect], classOf[MethodCPSCall], classOf[MethodDirectCall], classOf[IfLenientMethod],
         classOf[Force], classOf[GetField], classOf[Resolve], classOf[GetMethod],
         classOf[New], classOf[NewFuture], classOf[Bind], classOf[BindStop], classOf[Graft],
-        classOf[Spawn], classOf[NewTerminator], classOf[Kill], classOf[CheckKilled], 
+        classOf[Spawn], classOf[NewTerminator], classOf[Kill], classOf[CheckKilled],
         classOf[NewSimpleCounter], classOf[NewServiceCounter], classOf[NewTerminatorCounter],
-        classOf[NewToken], classOf[HaltToken], classOf[SetDiscorporate], 
-        classOf[TryOnException], classOf[TryFinally], 
+        classOf[NewToken], classOf[HaltToken], classOf[SetDiscorporate],
+        classOf[TryOnException], classOf[TryFinally],
         )
       val optimizationsToOutput = optimizer.allOpts.map(_.name)
 
@@ -180,7 +183,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
         (new CsvWriter(traceCsv.append(_)), traceCsv)
       }
-      
+
       val statisticsOut = statisticsOutputs map { _._1 }
 
       statisticsOut foreach {
@@ -189,7 +192,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
             nodeTypesToOutput.map(c => s"Nodes of Type ${c.getSimpleName} before Pass [${c.getSimpleName}]") ++
             optimizationsToOutput.map(n => s"# of Applications of $n in Pass [${n.replaceAll(raw"-", raw"_")}]"))
       }
-      
+
       def opt(prog: MethodCPS, pass: Int): MethodCPS = {
         lazy val typeCounts: collection.Map[Class[_], Int] = {
           val counts = new collection.mutable.HashMap[Class[_], Int]()
@@ -203,13 +206,13 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
           process(prog)
           counts
         }
-        
+
         optimizer.resetOptimizationCounts()
         val prog1 = optimizer(prog, analyzer).asInstanceOf[MethodCPS]
 
         def optimizationCountsStr = optimizer.optimizationCounts.map(p => s"${p._1} = ${p._2}").mkString(", ")
         co.compileLogger.recordMessage(CompileLogger.Severity.DEBUG, 0, s"Porc optimization pass $pass/$maxPasses: $optimizationCountsStr")
-                
+
         statisticsOut foreach {
           _.writeRow(
             Seq(pass, maxPasses) ++
@@ -248,9 +251,9 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       ExecutionLogOutputStream("porc-ast-indicies", "csv", "Porc AST index dump") foreach { out =>
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
         val statisticsOut = new CsvWriter(traceCsv.append(_))
-        
+
         statisticsOut.writeHeader(Seq("AST Index [i]", "Source Position [position]", "Porc AST truncated [porc]"))
-            
+
         def process(ast: PorcAST): Unit = {
           ast match {
             case a: ASTWithIndex if a.optionalIndex.isDefined =>
@@ -262,14 +265,97 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
           }
           ast.subtrees.foreach(process)
         }
-        
+
         process(ast)
-        
+
         out.close()
       }
-      
-      
+
+
       ast
+    }
+  }
+
+  private class CachedPorcHelper(val co: CompilerOptions) {
+    val build = orc.Main.orcVersion
+
+    var astHash = 0
+    def setAst(ast: orc.ast.ext.Expression) = astHash = ast.##
+
+    val options = {
+      import scala.collection.JavaConverters._
+      val o = co.options
+      (o.usePrelude, o.additionalIncludes.asScala.toList, o.includePath.asScala.toList, o.classPath.asScala.toList,
+          o.optimizationLevel, o.optimizationOptions.asScala.toList,
+          o.backend)
+    }
+    val cacheFile = {
+      val inFile = new File(co.options.filename)
+      val dir = inFile.getParentFile
+      new File(dir, s".orcache${File.separator}${inFile.getName}.porc")
+    }
+  }
+
+  private[this] var currentCachedPorcHelper: CachedPorcHelper = null
+  private def cachedPorcHelper(co: CompilerOptions) = {
+    if (currentCachedPorcHelper == null) {
+      currentCachedPorcHelper = new CachedPorcHelper(co)
+    }
+    require(currentCachedPorcHelper.co == co)
+    currentCachedPorcHelper
+  }
+
+  val saveCachedPorc = new CompilerPhase[CompilerOptions, porc.MethodCPS, porc.MethodCPS] {
+    val phaseName = "save-cached-porc"
+    override def apply(co: CompilerOptions) = { ast =>
+      val helper = cachedPorcHelper(co)
+      helper.cacheFile.getParentFile.mkdirs()
+      val out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(helper.cacheFile)))
+      try {
+        out.writeObject(helper.build)
+        out.writeLong(helper.astHash)
+        out.writeObject(helper.options)
+        out.writeObject(ast)
+      } finally {
+        out.close()
+      }
+      ast
+    }
+  }
+
+  val loadCachedPorc = new CompilerPhase[CompilerOptions, orc.ast.ext.Expression, porc.MethodCPS] {
+    val phaseName = "load-cached-porc"
+    override def apply(co: CompilerOptions) = { ast =>
+      val helper = cachedPorcHelper(co)
+      helper.setAst(ast)
+      try {
+        val in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(helper.cacheFile)))
+        try {
+          val build = in.readObject().asInstanceOf[String]
+          val astHash = in.readLong()
+          val options = in.readObject()
+          if (build == helper.build && astHash == helper.astHash && helper.options == options) {
+            in.readObject().asInstanceOf[porc.MethodCPS]
+          } else {
+            def str =
+              (if (build != helper.build) s"Build mismatch: old=${build}, new=${helper.build}, " else "") +
+              (if (astHash != helper.astHash) "AST mismatch, " else "") +
+              (if (helper.options != options) s"Option mismatch: old=${options}, new=${helper.options}" else "")
+
+            co.compileLogger.recordMessage(CompileLogger.Severity.INFO, 0, s"Invalidated cached Porc: $str")
+
+            null
+          }
+        } finally {
+          in.close()
+        }
+      } catch {
+        case _: java.io.FileNotFoundException =>
+          null
+        case e @(_: java.io.IOException | _: ClassCastException) =>
+          co.compileLogger.recordMessage(CompileLogger.Severity.INFO, 0, s"Failed to load cached Porc: $e")
+          null
+      }
     }
   }
 
@@ -287,25 +373,28 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
   val phases =
     parse.timePhase >>>
       outputIR(1, "ext") >>>
-      translate.timePhase >>>
-      vClockTrans.timePhase >>>
-      noUnboundVars.timePhase >>>
-      fractionDefs.timePhase >>>
-      typeCheck.timePhase >>>
-      noUnguardedRecursion.timePhase >>>
-      outputIR(2, "oil-complete") >>>
-      removeUnusedDefs.timePhase >>>
-      removeUnusedTypes.timePhase >>>
-      outputIR(3, "oil-pruned") >>>
-      abortOnError >>>
-      toOrctimizer.timePhase >>>
-      outputIR(4, "orct") >>>
-      optimize().timePhase >>>
-      outputIR(5, "orct-opt") >>>
-      toPorc.timePhase >>>
-      clearCachePhase >>>
-      outputIR(8, "porc") >>>
-      optimizePorc.timePhase >>>
-      indexPorc.timePhase >>>
+      (loadCachedPorc.timePhase).orElse(
+          translate.timePhase >>>
+          vClockTrans.timePhase >>>
+          noUnboundVars.timePhase >>>
+          fractionDefs.timePhase >>>
+          typeCheck.timePhase >>>
+          noUnguardedRecursion.timePhase >>>
+          outputIR(2, "oil-complete") >>>
+          removeUnusedDefs.timePhase >>>
+          removeUnusedTypes.timePhase >>>
+          outputIR(3, "oil-pruned") >>>
+          abortOnError >>>
+          toOrctimizer.timePhase >>>
+          outputIR(4, "orct") >>>
+          optimize().timePhase >>>
+          outputIR(5, "orct-opt") >>>
+          toPorc.timePhase >>>
+          clearCachePhase >>>
+          outputIR(8, "porc") >>>
+          optimizePorc.timePhase >>>
+          indexPorc.timePhase >>>
+          saveCachedPorc.timePhase
+          ) >>>
       outputIR(9, "porc-opt")
 }

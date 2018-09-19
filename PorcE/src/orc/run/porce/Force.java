@@ -16,7 +16,7 @@ import static orc.run.porce.SpecializationConfiguration.InlineForceResolved;
 
 import orc.FutureState;
 import orc.run.porce.call.Dispatch;
-import orc.run.porce.call.InternalCPSDispatch;
+import orc.run.porce.profiles.ResettableBranchProfile;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Join;
 import orc.run.porce.runtime.PorcEClosure;
@@ -37,6 +37,12 @@ import com.oracle.truffle.api.profiles.ValueProfile;
 public class Force {
     public static boolean isNonFuture(final Object v) {
 	return !(v instanceof orc.Future);
+    }
+
+    public static Dispatch createCall(PorcEExecution execution) {
+        Dispatch n = StackCheckingDispatch.create(execution);
+        n.forceInline();
+        return n;
     }
 
     @SuppressWarnings("serial")
@@ -209,7 +215,7 @@ public class Force {
 
     @NodeChild(value = "join", type = Expression.class)
     @Introspectable
-    @ImportStatic(SpecializationConfiguration.class)
+    @ImportStatic({ SpecializationConfiguration.class, Force.class })
     public static abstract class Finish extends Expression {
 	protected static final boolean TRUE = true;
 
@@ -220,17 +226,19 @@ public class Force {
 	}
 
 	@Specialization(guards = { "join.isBlocked()", "TRUE" })
-	public PorcEUnit blocked(final Join join) {
+	public PorcEUnit blocked(final VirtualFrame frame,
+	        final Join join,
+	        @Cached("create(1, execution)") FlushAllCounters flushAllCounters) {
+	    // Flush positive counters because this may trigger our continuation to execute in another thread.
+	    flushAllCounters.execute(frame);
 	    join.finishBlocked();
 	    return PorcEUnit.SINGLETON;
 	}
 
-	protected Dispatch createCall() {
-	    return StackCheckingDispatch.create(execution);
-	}
-
 	@Specialization(guards = { "InlineForceResolved", "join.isResolved()" }, replaces = { "blocked" })
-	public PorcEUnit resolved(final VirtualFrame frame, final Join join, @Cached("createCall()") Dispatch call) {
+	public PorcEUnit resolved(final VirtualFrame frame, final Join join,
+	        @Cached("createCall(execution)") Dispatch call) {
+	    ensureTail(call);
 	    call.executeDispatchWithEnvironment(frame, join.p(), join.values());
 	    return PorcEUnit.SINGLETON;
 	}
@@ -244,8 +252,10 @@ public class Force {
 	}
 
 	@Specialization(guards = { "join.isBlocked()" })
-	public PorcEUnit blockedAgain(final Join join) {
-	    return blocked(join);
+	public PorcEUnit blockedAgain(final VirtualFrame frame,
+	        final Join join,
+	        @Cached("create(1, execution)") FlushAllCounters flushAllCounters) {
+	    return blocked(frame, join, flushAllCounters);
 	}
 
 	@Specialization(guards = { "!InlineForceResolved || !InlineForceHalted" })
@@ -269,12 +279,12 @@ public class Force {
 	@Child
 	protected Dispatch call;
 
-	private final PorcEExecution execution;
+	protected final PorcEExecution execution;
 
 	protected SingleFuture(final PorcEExecution execution) {
 	    super();
 	    this.execution = execution;
-	    call = StackCheckingDispatch.create(execution);
+	    this.call = createCall(execution);
 	}
 
 	protected abstract Expression getC();
@@ -294,7 +304,8 @@ public class Force {
 		final Object _future,
 		@Cached("create()") HandleFuture handleFuture,
 		@Cached("createClassProfile()") ValueProfile futureTypeProfile,
-		@Cached("createHaltToken()") HaltToken haltToken) {
+		@Cached("createHaltToken()") HaltToken haltToken,
+		@Cached("create(1, execution)") FlushAllCounters flushAllCounters) {
 	    Object future = futureTypeProfile.profile(_future);
 	    Object v = handleFuture.handleFuture(this, future);
 
@@ -304,12 +315,12 @@ public class Force {
 	    } else if (v == orc.run.porce.runtime.FutureConstants.Unbound) {
 		handleFuture.unboundFuture.enter();
 		// Force flushes because p could be called in another thread at any time.
-		Counter.flushAllCounterOffsets(true);
+		flushAllCounters.execute(frame);
 		((orc.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 		// ((orc.run.porce.runtime.Future) future).read(new orc.run.porce.runtime.SingleFutureReader(p, c, t, execution));
 	    } else {
 		handleFuture.boundFuture.enter();
-		call.executeDispatchWithEnvironment(frame, p, new Object[] { null, v });
+		call.dispatch(frame, p, v );
 	    }
 
 	    return PorcEUnit.SINGLETON;

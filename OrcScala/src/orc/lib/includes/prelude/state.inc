@@ -719,57 +719,6 @@ import site Counter = "orc.lib.state.Counter"
 import type Counter = "orc.lib.state.types.CounterType"
 
 {--
-@site Dictionary() :: Dictionary
-Create a new dictionary (a mutable map from field names to values), initially
-empty.  The first time a field of the dictionary is accessed (using a <link linkend="ref.expressions.dot">dot access</link>),
-the dictionary creates and returns a new empty
-<link linkend="ref.stdlib.state.Ref">Ref</link> which will also be returned on
-subsequent accesses of the same field. A dictionary differs from a record in that
-it is both mutable and dynamically extensible.
-
-Example:
-<programlisting language="orc-demo"><![CDATA[
--- Prints: 1 2
-val d = Dictionary()
-  Println(d.one.read()) >>
-  Println(d.two.read()) >>
-  stop
-| d.one.write(1) >>
-  d.two.write(2) >>
-  stop]]></programlisting>
-
-Here is the same example rewritten using Orc's reference syntax to improve
-clarity:
-<programlisting language="orc-demo"><![CDATA[
--- Prints: 1 2
-val d = Dictionary()
-  Println(d.one?) >>
-  Println(d.two?) >>
-  stop
-| d.one := 1 >>
-  d.two := 2 >>
-  stop]]></programlisting>
-
-To create a multi-level dictionary, one must explicitly create sub-dictionaries
-for each field. For example:
-<programlisting language="orc-demo"><![CDATA[
--- Prints: 2
-val d = Dictionary()
-d.one := Dictionary() >>
-d.one?.two := 2 >>
-Println(d.one?.two?) >>
-stop]]></programlisting>
-
-Note that <code>d.one.two</code> is not valid: because <code>d.one</code>
-is a reference to a dictionary, and not simply a dictionary, a dereference
-step is needed before accessing a field, as in <code>d.one? >x> x.two</code>.
-For readers familiar with the C language, this is the same reason one must
-write <code language="c">s->field</code> instead of <code>s.field</code> when
-<code>s</code> is a pointer to a struct.
---}
-import site Dictionary = "orc.lib.state.Dictionary"
-
-{--
 @def fst[A,B]((A,B)) :: A
 Return the first element of a <link linkend="ref.data.tuple">pair</link>.
 

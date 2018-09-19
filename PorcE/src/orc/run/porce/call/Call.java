@@ -17,6 +17,7 @@ import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.frame.FrameSlot;
@@ -49,13 +50,14 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 
     public static FrameSlot getCallStartTimeSlot(Node n) {
         if (n instanceof Call) {
-            return ((Call) n).getCallStartTimeSlot();
+            return ((Call<?>) n).getCallStartTimeSlot();
         } else {
             return getCallStartTimeSlot(n.getParent());
         }
     }
 
     public FrameSlot getCallStartTimeSlot() {
+        CompilerAsserts.compilationConstant(this);
         if (externalCallStartTimeSlot == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             computeAtomicallyIfNull(() -> externalCallStartTimeSlot, (v) -> this.externalCallStartTimeSlot = v, () -> {
@@ -196,7 +198,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
 
     public static class CPS {
         public static Expression create(final Expression target, final Expression[] arguments, final PorcEExecution execution, boolean isTail) {
-            if (isTail) {
+            if (isTail || !SpecializationConfiguration.UniversalTCO) {
                 return createTail(target, arguments, execution);
             } else {
                 return createNontail(target, arguments, execution);

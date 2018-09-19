@@ -12,7 +12,7 @@
 //
 package orc.lib.xml
 
-import orc.values.sites.TotalSite1
+import orc.values.sites.compatibility.TotalSite1
 import orc.values.sites.TypedSite
 import orc.types.StringType
 import orc.types.SimpleFunctionType

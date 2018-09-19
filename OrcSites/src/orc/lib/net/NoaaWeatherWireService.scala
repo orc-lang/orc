@@ -19,11 +19,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.util.control.NonFatal
 
-import orc.CallContext
+import orc.values.sites.compatibility.CallContext
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, JavaException }
 import orc.types.{ FunctionType, StringType, Type }
 import orc.util.ArrayExtensions.Array2
-import orc.values.sites.{ Site, SpecificArity, TalkativeSite, TypedSite }
+import orc.values.sites.{ TypedSite, SpecificArity }
+import orc.values.sites.compatibility.{ Site, TalkativeSite }
 
 import javax.net.ssl.SSLSocketFactory
 import org.jivesoftware.smack.{ SmackConfiguration, StanzaListener }
@@ -36,6 +37,7 @@ import org.jivesoftware.smackx.caps.packet.CapsExtension
 import org.jivesoftware.smackx.muc.MultiUserChatManager
 import org.xmlpull.mxp1_serializer.MXSerializer
 import org.xmlpull.v1.{ XmlPullParser, XmlSerializer }
+import orc.MaterializedCallContext
 
 /** Stream weather bulletins from the US National Weather Service.  The
   * stream includes all textual products from US weather offices and centers.
@@ -64,14 +66,14 @@ class NoaaWeatherWireService extends Site with SpecificArity with TypedSite with
   protected def streamMessages(userId: String, password: String, callContext: CallContext): Unit = {
     try {
       val r = new NwwsReceiver(userId, password)
-      r.run(processMessage(callContext)(_))
+      r.run(processMessage(callContext.materialize())(_))
     } catch {
       case ie: InterruptedException => { callContext.halt; throw ie }
       case e: Exception if NonFatal(e) => { callContext.halt(new JavaException(e)) }
     }
   }
 
-  protected def processMessage(callContext: CallContext)(message: NwwsOiExtensionElement): Unit = {
+  protected def processMessage(callContext: MaterializedCallContext)(message: NwwsOiExtensionElement): Unit = {
     //TODO: Publish a record with the fields of NwwsOiExtensionElement
     val bulletin = message.content
     callContext.publishNonterminal(bulletin)

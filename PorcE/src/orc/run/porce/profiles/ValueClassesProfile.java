@@ -11,7 +11,7 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.porce;
+package orc.run.porce.profiles;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -31,6 +31,7 @@ public final class ValueClassesProfile {
     @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
     public Object[] profile(Object[] arguments) {
         CompilerAsserts.compilationConstant(arguments.length);
+        CompilerAsserts.compilationConstant(this);
 
         if (argumentTypeProfiles == null) {
             CompilerDirectives.transferToInterpreterAndInvalidate();

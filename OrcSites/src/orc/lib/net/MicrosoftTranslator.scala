@@ -20,11 +20,12 @@ import scala.io.Source
 
 import orc.types.FunctionType
 import orc.util.ArrayExtensions.{ Array1, Array2 }
-import orc.values.sites.{ PartialSite, SpecificArity, TypedSite }
+import orc.values.sites.{ TypedSite, SpecificArity }
+import orc.values.sites.compatibility.{ ScalaPartialSite }
 
 import org.codehaus.jettison.json.{ JSONArray, JSONObject }
 
-class MicrosoftTranslatorFactoryPropertyFile extends PartialSite with SpecificArity with TypedSite {
+class MicrosoftTranslatorFactoryPropertyFile extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 1
 
   def orcType() = {
@@ -51,7 +52,7 @@ class MicrosoftTranslatorFactoryPropertyFile extends PartialSite with SpecificAr
   }
 }
 
-class MicrosoftTranslatorFactoryUsernameKey extends PartialSite with SpecificArity with TypedSite {
+class MicrosoftTranslatorFactoryUsernameKey extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 2
 
   def orcType() = {
@@ -73,7 +74,7 @@ object MicrosoftTranslator {
 
 /** @author amp
   */
-class MicrosoftTranslator(user: String, key: String) extends PartialSite with SpecificArity with TypedSite {
+class MicrosoftTranslator(user: String, key: String) extends ScalaPartialSite with SpecificArity with TypedSite {
   val arity = 2
 
   def orcType() = MicrosoftTranslator.orcType

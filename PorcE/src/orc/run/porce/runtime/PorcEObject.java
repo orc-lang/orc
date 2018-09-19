@@ -14,12 +14,14 @@ package orc.run.porce.runtime;
 import scala.Function1;
 
 import orc.Accessor;
-import orc.NoSuchMemberAccessor;
+import orc.values.NoSuchMemberAccessor;
 import orc.OrcRuntime;
 import orc.run.distrib.DOrcMarshalingReplacement;
 import orc.values.Field;
 import orc.values.Format;
 import orc.values.sites.AccessorValue;
+
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 
 /**
  * This represents Orc objects inside the PorcE runtime.
@@ -30,16 +32,13 @@ public final class PorcEObject implements AccessorValue, DOrcMarshalingReplaceme
     public final Field[] fieldNames;
     public final Object[] fieldValues;
 
-    // TODO: PERFORMANCE: Using a frame instead of an array for field values may
-    // perform better. Though that will mainly be true when we start using
-    // native values.
     public PorcEObject(final Field[] fieldNames, final Object[] fieldValues) {
         assert fieldNames.length == fieldValues.length;
 
         this.fieldNames = fieldNames;
         this.fieldValues = fieldValues;
     }
-    
+
     private final ThreadLocal<Boolean> toStringRecursionCheck = new ThreadLocal<Boolean>() {
         @Override
         @SuppressWarnings("boxing")
@@ -47,7 +46,7 @@ public final class PorcEObject implements AccessorValue, DOrcMarshalingReplaceme
             return false;
         }
     };
-    
+
     @Override
     @SuppressWarnings("boxing")
     public String toString() {
@@ -74,23 +73,34 @@ public final class PorcEObject implements AccessorValue, DOrcMarshalingReplaceme
         }
     }
 
+    private static class ObjectAccessor implements orc.values.sites.SimpleAccessor {
+        @CompilationFinal(dimensions = 1)
+        private final Field[] theseFieldNames;
+        private final int index;
+
+        public ObjectAccessor(Field[] theseFieldNames, int index) {
+            super();
+            this.theseFieldNames = theseFieldNames;
+            this.index = index;
+        }
+
+        @Override
+        public boolean canGet(final Object target) {
+            return target instanceof PorcEObject && theseFieldNames == ((PorcEObject) target).fieldNames;
+        }
+
+        @Override
+        public Object get(final Object target) {
+            return ((PorcEObject) target).fieldValues[index];
+        }
+    }
+
+
     @Override
     public Accessor getAccessor(final OrcRuntime runtime, final Field field) {
         for (int i = 0; i < fieldNames.length; i++) {
             if (field.equals(fieldNames[i])) {
-                final int index = i;
-                final Field[] theseFieldNames = fieldNames;
-                return new Accessor() {
-                    @Override
-                    public boolean canGet(final Object target) {
-                        return target instanceof PorcEObject && theseFieldNames == ((PorcEObject) target).fieldNames;
-                    }
-
-                    @Override
-                    public Object get(final Object target) {
-                        return ((PorcEObject) target).fieldValues[index];
-                    }
-                };
+                return new ObjectAccessor(fieldNames, i);
             }
         }
         return new NoSuchMemberAccessor(this, field.name());

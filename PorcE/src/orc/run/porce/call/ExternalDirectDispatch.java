@@ -15,7 +15,7 @@ import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.HaltException;
 import orc.run.porce.SpecializationConfiguration;
-import orc.run.porce.ValueClassesProfile;
+import orc.run.porce.profiles.ValueClassesProfile;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 
@@ -58,7 +58,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
         } catch (final Throwable e) {
             exceptionProfile.enter();
             execution.notifyOfException(e, this);
-            throw HaltException.SINGLETON();
+            throw new HaltException();
         }
     }
 

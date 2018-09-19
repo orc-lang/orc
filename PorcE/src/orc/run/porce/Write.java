@@ -29,6 +29,12 @@ public class Write {
         }
 
         @Override
+        public void setTail(boolean v) {
+            super.setTail(v);
+            value.setTail(v);
+        }
+
+        @Override
         public Object execute(final VirtualFrame frame) {
             frame.setObject(slot, value.execute(frame));
             return value;

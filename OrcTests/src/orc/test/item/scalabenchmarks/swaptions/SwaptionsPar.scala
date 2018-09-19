@@ -15,7 +15,8 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, HashBenchmarkResult
 
 object SwaptionsParSwaption extends BenchmarkApplication[Array[Swaption], Array[Swaption]] with HashBenchmarkResult[Array[Swaption]] {
   val expected = SwaptionData
-  
+
+  // Lines: 4
   def benchmark(data: Array[Swaption]) = {
     val processor = new Processor(SwaptionData.nTrials)
     data.par.foreach(processor(_))
@@ -34,7 +35,8 @@ object SwaptionsParSwaption extends BenchmarkApplication[Array[Swaption], Array[
 
 object SwaptionsParTrial extends BenchmarkApplication[Array[Swaption], Array[Swaption]] with HashBenchmarkResult[Array[Swaption]] {
   val expected = SwaptionData
-  
+
+  // Lines: 10
   def benchmark(data: Array[Swaption]) = {
     val processor = new Processor(SwaptionData.nTrials) {
       import SwaptionData._

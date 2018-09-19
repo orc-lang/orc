@@ -110,7 +110,7 @@ class VirtualClock(ordering: (AnyRef, AnyRef) => Int, runtime: OrcRuntime)
     val h = new AwaitCallController(caller)
     val timeOrder = synchronized {
       if (readyCount <= 0) {
-        h !! new VirtualClockError("Virtual clock internal failure: await when readyCount = " + readyCount)
+        h.halt(new VirtualClockError("Virtual clock internal failure: await when readyCount = " + readyCount))
       }
       val order = currentTime map { ordering(t, _) } getOrElse 1
       if (order == 1) waiterQueue += ((h, t))

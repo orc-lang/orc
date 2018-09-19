@@ -19,16 +19,19 @@ public abstract class SpecializationConfiguration {
         public static final boolean callsEnabled = orc.run.StopWatches.callsEnabled();
     }
 
-    static {
+    /*static {
         if (System.getProperty("orc.porce.truffleASTInlining") != null) {
             throw new Error("truffleASTInlining is disabled in the source code. See InternalCPSDispatch.java.");
         }
-    }
-    /*
+    }*/
+
     @CompilationFinal
     public static final boolean TruffleASTInlining = Boolean
-    		.parseBoolean(System.getProperty("orc.porce.truffleASTInlining", "false"));
-    */
+                .parseBoolean(System.getProperty("orc.porce.truffleASTInlining", "false"));
+
+    @CompilationFinal
+    public static final int TruffleASTInliningLimit = Integer
+                .parseInt(System.getProperty("orc.porce.truffleASTInliningLimit", "1000"));
 
     @CompilationFinal
     public static final int GetFieldMaxCacheSize = Integer
@@ -36,7 +39,7 @@ public abstract class SpecializationConfiguration {
 
     @CompilationFinal
     public static final int InternalCallMaxCacheSize = Integer
-            .parseInt(System.getProperty("orc.porce.cache.internalCallMaxCacheSize", "2"));
+            .parseInt(System.getProperty("orc.porce.cache.internalCallMaxCacheSize", "6"));
     @CompilationFinal
     public static final int ExternalDirectCallMaxCacheSize = Integer
             .parseInt(System.getProperty("orc.porce.cache.externalDirectCallMaxCacheSize", "4"));
@@ -99,9 +102,17 @@ public abstract class SpecializationConfiguration {
 
     @CompilationFinal
     public static final boolean KnownSiteSpecialization = Boolean
-            .parseBoolean(System.getProperty("orc.porce.optimizations.knownSiteSpecialization", "false"));
+            .parseBoolean(System.getProperty("orc.porce.optimizations.knownSiteSpecialization", "true"));
 
     @CompilationFinal
     public static final boolean EnvironmentCaching = Boolean
             .parseBoolean(System.getProperty("orc.porce.optimizations.environmentCaching", "true"));
+
+    @CompilationFinal
+    public static final double MinimumEarlyHaltProbability = Double
+            .parseDouble(System.getProperty("orc.porce.minimumEarlyHaltProbability", "0.5"));
+
+    @CompilationFinal
+    public static final boolean UseVirtualCallContexts = Boolean
+            .parseBoolean(System.getProperty("orc.porce.optimizations.useVirtualCallContexts", "true"));
 }

@@ -16,7 +16,7 @@ package orc.run.distrib.porce
 import java.util.concurrent.atomic.AtomicLong
 
 import orc.{ CaughtEvent, Schedulable }
-import orc.run.porce.runtime.{ CPSCallContext, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
+import orc.run.porce.runtime.{ MaterializedCPSCallContext, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
@@ -58,7 +58,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     }
   }
 
-  override def invokeIntercepted(callContext: CPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
+  override def invokeIntercepted(callContext: MaterializedCPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     //Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target) ++ arguments)
 
     /* Case 1: If there's a call location override, use it */
@@ -98,7 +98,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   /* Since we don't have token IDs in PorcE: */
   private val callCorrelationCounter = new AtomicLong(execution.followerExecutionNum.toLong << 32)
 
-  def sendCall(callContext: CPSCallContext, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
+  def sendCall(callContext: MaterializedCPSCallContext, callTarget: AnyRef, callArguments: Array[AnyRef], destination: PeerLocation): Unit = {
     Logger.Invoke.entering(getClass.getName, "sendCall", Seq(callContext, callTarget) ++ callArguments :+ destination)
 
     val distributedCounter = execution.getDistributedCounterForCounter(callContext.c)

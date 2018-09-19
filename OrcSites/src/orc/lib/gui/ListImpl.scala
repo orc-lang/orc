@@ -12,11 +12,11 @@
 //
 package orc.lib.gui
 
-import orc.CallContext
+import orc.values.sites.compatibility.CallContext
 import orc.run.core.ExternalSiteCallController
 import orc.run.extensions.SupportForCallsIntoOrc
-import orc.values.{ Field, HasMembers }
-import orc.values.sites.Site1
+import orc.values.{ Field }
+import orc.values.sites.compatibility.{ Site1, HasMembers }
 
 import javax.swing.DefaultListModel
 

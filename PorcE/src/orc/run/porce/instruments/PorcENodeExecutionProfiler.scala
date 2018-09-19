@@ -23,7 +23,7 @@ import orc.util.{ CsvWriter, ExecutionLogOutputStream }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Env
 import com.oracle.truffle.api.nodes.Node
-import com.oracle.truffle.api.vm.PolyglotEngine
+import org.graalvm.polyglot.Engine
 
 class PorcENodeExecutionProfiler(env: Env) extends ProfilerBase {
   import ProfilerUtils._
@@ -36,15 +36,15 @@ class PorcENodeExecutionProfiler(env: Env) extends ProfilerBase {
       dump(pout)
     }
   }
-  
-  
+
+
   @TruffleBoundary @noinline
   def dump(out: PrintWriter): Unit = synchronized {
     //val out = new PrintWriter(env.out())
     val csv = new CsvWriter(out.write(_))
     csv.writeHeader(Seq(
-        "Type", "PorcE Node ID", 
-        "PorcE Node", "Porc Node", "Source Range", 
+        "Type", "PorcE Node ID",
+        "PorcE Node", "Porc Node", "Source Range",
         "PorcE Specialization Dump",
         "Hits", "Self Time", "Total Time"))
     for (entry <- nodeCounts.entrySet().asScala) {
@@ -59,7 +59,7 @@ class PorcENodeExecutionProfiler(env: Env) extends ProfilerBase {
             k match {
               case n: HasPorcNode => n.porcNode() map { _.toString().truncateTo(200).stripNewLines } getOrElse "NULL"
               case _ => "NA"
-            }, 
+            },
             s"${srcLoc.getSource.getName}:${srcLoc.getStartLine}:${srcLoc.getStartColumn}-${srcLoc.getEndColumn}",
             DumpSpecializations.specializationsAsString(k).stripNewLines,
             count.getHits(), count.getSelfTime(), count.getTime()))
@@ -87,8 +87,8 @@ object PorcENodeExecutionProfiler {
   /** Finds profiler associated with given engine. There is at most one profiler associated with
     * any {@link PolyglotEngine}. One can access it by calling this static method.
     */
-  def get(engine: PolyglotEngine): PorcENodeExecutionProfiler = {
-    val instrument = engine.getRuntime().getInstruments().get(PorcENodeExecutionProfilerInstrument.ID);
+  def get(engine: Engine): PorcENodeExecutionProfiler = {
+    val instrument = engine.getInstruments().get(PorcENodeExecutionProfilerInstrument.ID);
     if (instrument == null) {
       throw new IllegalStateException();
     }

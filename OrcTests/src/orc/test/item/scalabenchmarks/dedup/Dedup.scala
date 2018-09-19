@@ -23,7 +23,8 @@ import orc.test.item.scalabenchmarks.BenchmarkApplication
 
 object Dedup extends BenchmarkApplication[Unit, Unit] {
   val threadPool = new ForkJoinPool()
-  
+
+  // Lines: 7 (5)
   case class CompressedChunk(uncompressedSHA1: ArrayKey, uncompressedSize: Int) {
     var outputChunkID: Int = -1
     private val compressPromise = Promise[Array[Byte]]()
@@ -34,93 +35,102 @@ object Dedup extends BenchmarkApplication[Unit, Unit] {
       })
     }
   }
-  
+
   val rabin = new Rabin()
+
+  // Lines: 2
   val largeChunkMin = 2 * 1024 * 1024
   val readChunkSize = 128 * 1024 * 1024
 
-	val sha1Instance = new ThreadLocal[MessageDigest]() {
+  val sha1Instance = new ThreadLocal[MessageDigest]() {
     override def initialValue() = MessageDigest.getInstance("SHA-1")
   }
 
+  // Lines: 4
   def sha1(chunk: Chunk): ArrayKey = new ArrayKey({
     val m = sha1Instance.get()
-  	m.update(chunk.buffer, chunk.start, chunk.size)
-  	m.digest()
-	})
+    m.update(chunk.buffer, chunk.start, chunk.size)
+    m.digest()
+  })
 
+  // Lines: 14
   def readSegments(minimumSegmentSize: Int, in: FileInputStream): Stream[(Chunk, Int)] = {
     //@tailrec
-  	def process(currentChunk: Chunk, i: Int): Stream[(Chunk, Int)] = {
-  		val splitPoint = rabin.segment(currentChunk, minimumSegmentSize)
-  		if (splitPoint == currentChunk.size) {
-  		  try {
-    			val data = Chunk.readFromInputStream(in, readChunkSize)
-    			// TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
-    			process(currentChunk.append(data), i)
-  		  } catch {
-  		    case _: IOException =>
-  			    Stream((currentChunk, i), (Chunk.empty, i + 1))
-  		  }
-  		} else {
-  			(currentChunk.slice(0, splitPoint), i) #::
-    			process(currentChunk.slice(splitPoint, currentChunk.size), i+1)
-  		}
+    def process(currentChunk: Chunk, i: Int): Stream[(Chunk, Int)] = {
+      val splitPoint = rabin.segment(currentChunk, minimumSegmentSize)
+      if (splitPoint == currentChunk.size) {
+        try {
+          val data = Chunk.readFromInputStream(in, readChunkSize)
+          // TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
+          process(currentChunk.append(data), i)
+        } catch {
+          case _: IOException =>
+            Stream((currentChunk, i), (Chunk.empty, i + 1))
+        }
+      } else {
+        (currentChunk.slice(0, splitPoint), i) #::
+          process(currentChunk.slice(splitPoint, currentChunk.size), i+1)
+      }
     }
     process(Chunk.empty, 0)
   }
-  
+
+  // Lines: 9
   def segment(minimumSegmentSize: Int, chunk: Chunk): Stream[(Chunk, Int)] = {
     //@tailrec
-  	def process(chunk: Chunk, i: Int): Stream[(Chunk, Int)] = {
-  	  if (chunk.size == 0) {
-  	    Stream((Chunk.empty, i))
-  	  } else {
-    		val splitPoint = rabin.segment(chunk, minimumSegmentSize)
-    		(chunk.slice(0, splitPoint), i) #::
-      		process(chunk.slice(splitPoint, chunk.size), i + 1)
-  	  }
-  	}
-  	process(chunk, 0)
+    def process(chunk: Chunk, i: Int): Stream[(Chunk, Int)] = {
+      if (chunk.size == 0) {
+        Stream((Chunk.empty, i))
+      } else {
+        val splitPoint = rabin.segment(chunk, minimumSegmentSize)
+        (chunk.slice(0, splitPoint), i) #::
+          process(chunk.slice(splitPoint, chunk.size), i + 1)
+      }
+    }
+    process(chunk, 0)
   }
-  
+
+  // Lines: 7
   def compress(chunk: Chunk, dedupPool: ConcurrentHashMap[ArrayKey, CompressedChunk]) = {
-  	val hash = sha1(chunk)
-  	val old = dedupPool.putIfAbsent(hash, CompressedChunk(hash, chunk.size))
-  	val compChunk = dedupPool.get(hash)
-  	if (old == null)
-  		compChunk.compress(chunk)
-  	compChunk
+    val hash = sha1(chunk)
+    val old = dedupPool.putIfAbsent(hash, CompressedChunk(hash, chunk.size))
+    val compChunk = dedupPool.get(hash)
+    if (old == null)
+      compChunk.compress(chunk)
+    compChunk
   }
+
+  // Lines: 8
   def writeChunk(out: DataOutputStream, cchunk: CompressedChunk, isAlreadyOutput: Boolean) = {
-  	if (isAlreadyOutput) {
-  		out.writeBytes("R")
-  		out.writeLong(cchunk.outputChunkID)
-  	} else {
-  		out.writeBytes("D")
-  		out.writeLong(cchunk.compressedData().length)
-  		out.write(cchunk.compressedData())
-  	}
+    if (isAlreadyOutput) {
+      out.writeBytes("R")
+      out.writeLong(cchunk.outputChunkID)
+    } else {
+      out.writeBytes("D")
+      out.writeLong(cchunk.compressedData().length)
+      out.write(cchunk.compressedData())
+    }
   }
-  
+
+  // Lines: 15
   def dedup(inFn: String, outFn: String): Unit = {
     val dedupMap = new ConcurrentHashMap[ArrayKey, CompressedChunk]()
     val alreadyOutput = new ConcurrentHashMap[ArrayKey, Boolean]()
     var id = 0
-    
+
     val in = new FileInputStream(inFn)
     val out = new DataOutputStream(new FileOutputStream(outFn))
-    val cchunks = for { 
-      (roughChunk, roughID) <- readSegments(largeChunkMin, in) 
+    val cchunks = for {
+      (roughChunk, roughID) <- readSegments(largeChunkMin, in)
       (fineChunk, fineID) <- segment(0, roughChunk)
     } yield (roughChunk, roughID, fineChunk, fineID, compress(fineChunk, dedupMap))
-    
+
     for ((roughChunk, roughID, fineChunk, fineID, cchunk) <- cchunks if cchunk.uncompressedSize != 0) {
       cchunk.outputChunkID = id
       id += 1
-			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1))
-			alreadyOutput.put(cchunk.uncompressedSHA1, true)
-			//print(s"$id: ($roughID, $fineID) $roughChunk (${roughChunk.size}), $fineChunk (${fineChunk.size})\r")
+      writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1))
+      alreadyOutput.put(cchunk.uncompressedSHA1, true)
+      //print(s"$id: ($roughID, $fineID) $roughChunk (${roughChunk.size}), $fineChunk (${fineChunk.size})\r")
     }
 
     in.close()
@@ -132,7 +142,7 @@ object Dedup extends BenchmarkApplication[Unit, Unit] {
   }
 
   def setup(): Unit = ()
-  
+
   def check(u: Unit) = DedupData.check()
 
   val name: String = "Dedup"

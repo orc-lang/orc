@@ -13,7 +13,8 @@
 package orc.lib.time
 
 import orc.types.{ FunctionType, IntegerType, StrictCallableType }
-import orc.values.sites.{ TotalSite2, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ TotalSite2 }
 
 /** @author dkitchin
   */

@@ -17,7 +17,6 @@ import java.net.URI
 
 import scala.collection.immutable.HashMap
 import scala.language.implicitConversions
-import scala.math.{ BigDecimal, BigInt }
 import scala.xml.{ Elem, MinimizeMode, Node }
 import scala.xml.{ Text, UnprefixedAttribute, Utility, XML }
 import scala.xml.NodeSeq.seqToNodeSeq
@@ -26,7 +25,7 @@ import orc.ast.hasOptionalVariableName
 import orc.ast.oil.nameless.{ Argument, AssertedType, Bot, Call, Callable, ClassType, Constant, DeclareCallables, DeclareType, Def, Expression, FieldAccess, FunctionType, Graft, HasType, Hole, ImportedType, IntersectionType, NamelessAST, New, NominalType, Otherwise, Parallel, RecordType, Sequence, Site, Stop, StructuralType, Top, Trim, TupleType, Type, TypeAbstraction, TypeApplication, TypeVar, UnionType, Variable, VariantType, VtimeZone }
 import orc.compile.parse.{ OrcInputContext, OrcSourcePosition, OrcSourceRange }
 import orc.error.loadtime.OilParsingException
-import orc.values.Field
+import orc.values.{ Field, NumericsConfig }
 
 object OrcXML {
 
@@ -398,8 +397,8 @@ object OrcXML {
   @throws(classOf[OilParsingException])
   def anyRefFromXML(inxml: scala.xml.Node): AnyRef = {
     inxml match {
-      case <integer>{ i @ _* }</integer> => BigInt(i.text.trim)
-      case <number>{ n @ _* }</number> => BigDecimal(n.text.trim)
+      case <integer>{ i @ _* }</integer> => NumericsConfig.toOrcIntegral(i.text.trim)
+      case <number>{ n @ _* }</number> => NumericsConfig.toOrcFloatingPoint(n.text.trim)
       case <string>{ s @ _* }</string> => new String(s.text)
       case <true/> => java.lang.Boolean.TRUE
       case <false/> => java.lang.Boolean.FALSE
@@ -443,7 +442,7 @@ object OrcXML {
     override protected def getLineCol() = (line, column)
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
-    
+
     @throws(classOf[java.io.ObjectStreamException])
     protected def writeReplace(): AnyRef = {
         new PlaceholderPositionMarshalingReplacement(resource.descr, line, column)
@@ -462,7 +461,7 @@ object OrcXML {
       ) with Serializable {
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
-    
+
     @throws(classOf[java.io.ObjectStreamException])
     protected def writeReplace(): AnyRef = {
         new PlaceholderSourceRangeMarshalingReplacement(start.resource.descr, start.line, start.column, end.resource.descr, end.line, end.column)

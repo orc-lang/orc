@@ -15,6 +15,7 @@ include "wordcount.inc"
 
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
+-- Lines: 10 (1)
 def countLine(line) =
   import class BreakIterator = "java.text.BreakIterator"
   import class Character = "java.lang.Character"
@@ -29,6 +30,7 @@ def countLine(line) =
   wordCount'(0, wb, 0)
   )
 
+-- Lines: 9 (1)
 def countFile(file) =
   import class BufferedReader = "java.io.BufferedReader"
   import class FileReader = "java.io.FileReader"
@@ -43,6 +45,7 @@ def countFile(file) =
   count
   )
 
+-- Lines: 5
 def repeatCountFilename(filename) =
   import class File = "java.io.File"
   def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0
@@ -62,6 +65,7 @@ def setUpTest() =
 def setUpTestRep() =
   signal
 
+-- Lines: 3
 def runTestRep(inputList) =
   map(repeatCountFilename, inputList)  >wordCountList>
   afold((+), wordCountList)

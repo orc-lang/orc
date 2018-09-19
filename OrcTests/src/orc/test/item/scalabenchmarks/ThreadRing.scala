@@ -28,6 +28,7 @@ http://shootout.alioth.debian.org/u32q/benchmark.php?test=threadring&lang=all
 object ThreadRing extends BenchmarkApplication[Unit, Int] with ExpectedBenchmarkResult[Int] {
   import Util._
 
+  // Lines: 7
   def threadRing(id: Int, m: Int, in: Channel[Int], next: Channel[Int]): Int = {
     val x = in.read
     if (m == x)
@@ -40,6 +41,7 @@ object ThreadRing extends BenchmarkApplication[Unit, Int] with ExpectedBenchmark
 
   val N = 503
 
+  // Lines: 14 (5)
   def threadRingRunner(p: Int) = {
     val ring = (0 until N).map(_ => new Channel[Int]()).toArray
     ring(0).write(0)
@@ -63,7 +65,7 @@ object ThreadRing extends BenchmarkApplication[Unit, Int] with ExpectedBenchmark
     }
 
     println(result)
-    
+
     result
   }
 

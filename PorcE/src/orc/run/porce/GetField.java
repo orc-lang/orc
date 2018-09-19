@@ -20,12 +20,15 @@ import orc.values.Field;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.VirtualFrame;
 
 @NodeChild(value = "object", type = Expression.class)
 @Introspectable
+@ImportStatic({ SpecializationConfiguration.class })
 public abstract class GetField extends Expression {
     protected final Field field;
     protected final PorcEExecution execution;
@@ -35,14 +38,18 @@ public abstract class GetField extends Expression {
         this.execution = execution;
     }
 
-    @Specialization(guards = { "isNotError(accessor)", "canGetWithBoundary(accessor, obj)" }, limit = "getMaxCacheSize()")
-    public Object cachedAccessor(final Object obj, @Cached("getAccessorWithBoundary(obj)") final Accessor accessor) {
+    @Specialization(guards = { "isNotError(accessor)", "canGetNode.executeCanGet(frame, accessor, obj)" },
+            limit = "GetFieldMaxCacheSize")
+    public Object cachedAccessor(final VirtualFrame frame, final Object obj,
+            @Cached("create()") AccessorCanGet canGetNode,
+            @Cached("create()") AccessorGet getNode,
+            @Cached("getAccessorWithBoundary(obj)") final Accessor accessor) {
         try {
-            return accessWithBoundary(accessor, obj);
+            return getNode.executeGet(frame, accessor, obj);
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
             execution.notifyOfException(e, this);
-            throw HaltException.SINGLETON();
+            throw new HaltException();
         }
     }
 
@@ -54,7 +61,7 @@ public abstract class GetField extends Expression {
         } catch (final Exception e) {
             CompilerDirectives.transferToInterpreter();
             execution.notifyOfException(e, this);
-            throw HaltException.SINGLETON();
+            throw new HaltException();
         }
     }
 
@@ -63,22 +70,18 @@ public abstract class GetField extends Expression {
         return execution.runtime().getAccessor(t, field);
     }
 
-    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-    protected static Object accessWithBoundary(final Accessor accessor, final Object obj) {
+    @TruffleBoundary(allowInlining = true)
+    public static Object accessWithBoundary(final Accessor accessor, final Object obj) {
         return accessor.get(obj);
     }
 
     @TruffleBoundary(allowInlining = true)
-    protected static boolean canGetWithBoundary(final Accessor accessor, final Object obj) {
+    public static boolean canGetWithBoundary(final Accessor accessor, final Object obj) {
         return accessor.canGet(obj);
     }
 
-    protected static boolean isNotError(final Accessor accessor) {
+    public static boolean isNotError(final Accessor accessor) {
         return !(accessor instanceof ErrorAccessor);
-    }
-
-    protected static int getMaxCacheSize() {
-        return SpecializationConfiguration.GetFieldMaxCacheSize;
     }
 
     public static GetField create(final Expression object, final Field field, final PorcEExecution execution) {

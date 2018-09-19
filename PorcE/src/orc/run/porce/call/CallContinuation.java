@@ -13,6 +13,7 @@ package orc.run.porce.call;
 
 import orc.run.porce.Expression;
 import orc.run.porce.PorcEUnit;
+import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
@@ -46,7 +47,7 @@ public class CallContinuation<ExternalDispatch extends Dispatch> extends Express
     }
 
     protected InternalCPSDispatch makeInternalCall() {
-        return InternalCPSDispatch.createBare(false, execution);
+        return InternalCPSDispatch.createBare(execution);
     }
 
     protected InternalCPSDispatch getInternalCall() {
@@ -76,7 +77,7 @@ public class CallContinuation<ExternalDispatch extends Dispatch> extends Express
     public static class CPS {
         public static Expression create(final Expression target, final Expression[] arguments,
                 final PorcEExecution execution, boolean isTail) {
-            if (isTail) {
+            if (isTail || !SpecializationConfiguration.UniversalTCO) {
                 return createTail(target, arguments, execution);
             } else {
                 return createNontail(target, arguments, execution);

@@ -13,16 +13,15 @@
 
 package orc.values.sites.compatibility
 
-import orc.CallContext
 import orc.error.runtime.TokenException
 import orc.values.{ OrcTuple, Signal }
-import orc.values.sites.{ Delay, DirectSite, Effects, FunctionalSite, Range, Site }
+import orc.values.sites.{ Delay, Effects, Range }
 
 /** Adapts old OrcJava sites to the new OrcScala site interface
   *
   * @author jthywiss
   */
-@deprecated("Use Invoker API.", "3.0")
+//@deprecated("Use Invoker API.", "3.0")
 abstract class SiteAdaptor extends Site {
   import SiteAdaptor._
 
@@ -53,7 +52,7 @@ abstract class SiteAdaptor extends Site {
   override def effects: Effects = if (effectFree()) Effects.None else Effects.Anytime
 }
 
-@deprecated("Use Invoker API.", "3.0")
+//@deprecated("Use Invoker API.", "3.0")
 object SiteAdaptor {
   import scala.collection.JavaConverters._
 
@@ -94,17 +93,12 @@ object SiteAdaptor {
   }
 }
 
-@deprecated("Use Invoker API.", "3.0")
+//@deprecated("Use Invoker API.", "3.0")
 abstract class SiteAdaptorFunctional extends SiteAdaptor with FunctionalSite
 
-@deprecated("Use Invoker API.", "3.0")
-abstract class EvalSite extends SiteAdaptor with DirectSite {
+//@deprecated("Use Invoker API.", "3.0")
+abstract class EvalSite extends DirectSite {
   import SiteAdaptor._
-
-  @throws(classOf[TokenException])
-  def callSite(args: Args, callContext: CallContext): Unit = {
-    callContext.publish(object2value(evaluate(args)))
-  }
 
   @throws(classOf[TokenException])
   def evaluate(args: Args): Object
@@ -114,4 +108,17 @@ abstract class EvalSite extends SiteAdaptor with DirectSite {
       object2value(evaluate(convertArgs(args)))
     }
   }
+
+  def nonBlocking() = true
+  def minPublications() = 0
+  def maxPublications() = -1
+  def effectFree() = false
+
+  override def publications: Range = {
+    val maxP = maxPublications()
+    Range(minPublications(), if (maxP >= 0) Some(maxP) else None)
+  }
+  override def timeToPublish: Delay = if (nonBlocking()) Delay.NonBlocking else Delay.Blocking
+  override def timeToHalt: Delay = if (nonBlocking()) Delay.NonBlocking else Delay.Blocking
+  override def effects: Effects = if (effectFree()) Effects.None else Effects.Anytime
 }

@@ -17,12 +17,16 @@ import orc.error.OrcException
 import orc.error.runtime.JavaException
 import orc.values.sites.{ Delay, Site }
 
+class VirtualExternalSiteCallController(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends VirtualCallController {
+  val materialized = new ExternalSiteCallController(caller, calledSite, actuals, this)
+}
+
 /** A call controller specific to site calls.
   * Scheduling this call controller will invoke the site.
   *
   * @author dkitchin
   */
-class ExternalSiteCallController(caller: Token, calledSite: AnyRef, actuals: List[AnyRef]) extends CallController(caller) with Schedulable {
+class ExternalSiteCallController(caller: Token, calledSite: AnyRef, actuals: List[AnyRef], virtualized: VirtualExternalSiteCallController) extends CallController(caller) with Schedulable {
   override val nonblocking = calledSite match {
     case s: Site =>
       s.timeToHalt == Delay.NonBlocking
@@ -42,7 +46,7 @@ class ExternalSiteCallController(caller: Token, calledSite: AnyRef, actuals: Lis
       }) {
         val args = actuals.toArray
         try {
-          caller.runtime.getInvoker(calledSite, args).invoke(this, calledSite, args)
+          caller.runtime.getInvoker(calledSite, args).invoke(virtualized, calledSite, args)
         } catch {
           // FIXME: What is this check doing here and how will it handle OrcExceptions correctly.
           case e: Exception => { notifyOrc(CaughtEvent(new JavaException(e))); halt() }

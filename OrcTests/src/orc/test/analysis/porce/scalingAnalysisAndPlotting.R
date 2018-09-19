@@ -10,6 +10,7 @@
 library(knitr)
 library(tidyr)
 library(stringr)
+library(svglite)
 
 scriptDir <- normalizePath(".") # dirname(dirname(sys.frame(1)$ofile))
 experimentDataDir <- file.path(dirname(dirname(dirname(dirname(dirname(scriptDir))))), "experiment-data")
@@ -22,10 +23,16 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 
 # dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
-dataDir <- file.path(localExperimentDataDir, "20180607-a002")
+#dataDir <- file.path(localExperimentDataDir, "20180730-a010")
+dataDir <- file.path(localExperimentDataDir, "20180805-a002")
+scalaDataDir <- file.path(localExperimentDataDir, "20180718-a002")
 
 if(!exists("processedData")) {
+  # scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = F) %>%
+  #   filter(language == "Scala")
+
   data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
+    #bind_rows(scalaData) %>%
     addBenchmarkProblemName()
 
   prunedData <- data %>%
@@ -35,7 +42,7 @@ if(!exists("processedData")) {
 
   processedData <- prunedData %>%
     group_by(benchmarkProblemName, language, benchmarkName, nCPUs) %>%
-    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95) %>%
+    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95, R = 1) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
@@ -197,7 +204,7 @@ overallSelfScalingPlot <- processedData %>%
   ) +
   ggtitle("Self Scaling for each version (normalized to 24-core)")
 
-print(overallSelfScalingPlot + theme(legend.position = "bottom"))
+#print(overallSelfScalingPlot + theme(legend.position = "bottom"))
 
 # Visualize the distribution of implementations of a given problem.
 
@@ -306,41 +313,54 @@ overallScalingPlot <- processedData %>%
     y = elapsedTime_mean_problembaseline / elapsedTime_mean,
     #ymin = elapsedTime_mean_problembaseline / elapsedTime_mean_lowerBound,
     #ymax = elapsedTime_mean_problembaseline / elapsedTime_mean_upperBound,
+    shape = implType,
     color = implType,
     group = benchmarkName
     #linetype = factor(if_else((language == "Orc") & scalaCompute, "Orc+Scala", as.character(language)), levels = c("Orc+Scala", "Orc", "Scala"))
     )) +
-  labs(y = "Speed Up", x = "Number of Cores", color = "Language") +
+  labs(y = "Speed Up", x = "", color = "Language") +
   theme_minimal() +
   #scale_fill_brewer(palette="Set3") +
   #scale_color_brewer(palette="PuBuGn", direction = -1) +
-  scale_color_manual(values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
-  # geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
+  scale_color_manual(name = "Language",
+                     labels = c("Orc", "Orc+Scala", "Scala"),
+                     values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
+  scale_shape_manual(name = "Language",
+                     labels = c("Orc", "Orc+Scala", "Scala"),
+                     values = c(0, 1, 2)) +
+# geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
   # geom_point(aes(shape = granularity), processedData, alpha = 0.7) +
+  #geom_line(aes(y = gcTime_mean), linetype = "dotted") +
   geom_line() +
+  geom_point() +
   geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
   scale_y_continuous(limits = c(0, NA)) +
-  scale_x_continuous_breaks_from(breaks_from = processedData$nCPUs) +
-  # scale_shape_discrete(solid = F) +
+  scale_x_continuous(breaks = c(1, 12, 24), minor_breaks = c(6, 18)) +
+  # scale_x_continuous_breaks_from(breaks_from = processedData$nCPUs) +
   facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 1) +
   theme(
     #legend.justification = c("right", "top"),
     #legend.box.just = "top",
-    legend.margin = margin(-8, 0, 0, -30),
+    legend.margin = margin(-18, 0, 0, -30),
     legend.direction = "horizontal",
     #legend.box = "vertical",
     legend.box = "horizontal",
     legend.spacing = grid::unit(45, "points"),
     text = element_text(size=9),
     legend.text = element_text(size=8),
-    strip.text = element_text(size=9)
+    strip.text = element_text(size=9, angle = 10)
   )
 
 print(overallScalingPlot + theme(legend.position = "bottom"))
 
-print(overallScalingPlot + scale_y_log10() + theme(legend.position = "bottom"))
-#ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 7.5, height = 2, units = "in")
+#print(overallScalingPlot + scale_y_log10() + theme(legend.position = "bottom"))
+
+ggsave(file.path(outputDir, "allScalingPlot.svg"), device = "svg", overallScalingPlot + theme(legend.position = "bottom"), width = 10, height = 1.9, units = "in")
+
+#ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 12, height = 2.1, units = "in")
 
 # svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
 # print(overallScalingPlot + theme(legend.position = "bottom"))
 # dev.off()
+
+kable(processedData %>% select(benchmarkName, nCPUs, elapsedTime_mean) %>% spread(nCPUs, elapsedTime_mean), digits = 2)

@@ -48,6 +48,7 @@ public class WordCount {
     private WordCount() {
     }
 
+    // Lines: 5
     public static boolean containsAlphabetic(final String s, final int startPos, final int endPos) {
         for (int currPos = startPos; currPos < endPos; currPos++) {
             if (Character.isAlphabetic(s.codePointAt(currPos))) {
@@ -57,6 +58,7 @@ public class WordCount {
         return false;
     }
 
+    // Lines: 12
     public static int countLine(final String line) {
         final BreakIterator wb = BreakIterator.getWordInstance();
         wb.setText(line);
@@ -73,6 +75,7 @@ public class WordCount {
         return words;
     }
 
+    // Lines: 8 (2)
     public static int countReader(final BufferedReader in) throws IOException {
         int words = 0;
         for (;;) {

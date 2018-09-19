@@ -16,7 +16,9 @@ package orc.lib.builtin.structured
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ Bot, Covariant, FunctionType, SignalType, SimpleFunctionType, SimpleTypeConstructor, Top, TupleType, TypeVariable }
 import orc.values.{ OrcTuple, Signal }
-import orc.values.sites.{ FunctionalSite, PartialSite1, SiteMetadata, StructurePairSite, TotalSite0, TotalSite2, TypedSite }
+import orc.values.sites.SiteMetadata
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ FunctionalSite, PartialSite1, StructurePairSite, TotalSite0, TotalSite2 }
 
 object ListType extends SimpleTypeConstructor("List", Covariant)
 
@@ -64,5 +66,5 @@ object ConsExtractor extends PartialSite1 with TypedSite with FunctionalSite {
     new FunctionType(List(X), List(ListType(X)), TupleType(List(X, ListType(X))))
   }
 
-  override def returnMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(Array(null, null)))
+  override def publicationMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = Some(OrcTuple(Array(null, null)))
 }

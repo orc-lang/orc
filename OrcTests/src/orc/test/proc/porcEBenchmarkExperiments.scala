@@ -21,7 +21,7 @@ object PorcEShared {
             "test_data/performance/sieve/savina_sieve-opt.orc",
             "test_data/performance/sieve/savina_sieve-scala.orc",
             "test_data/performance/sieve/savina_sieve-scala-opt.orc",
-            //"test_data/performance/8-queens.orc",
+            "test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
@@ -40,8 +40,10 @@ object PorcEShared {
             //"test_data/performance/swaptions/swaptions-naive-scala-swaption.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-sim-opt.orc",
             "test_data/performance/swaptions/swaptions-naive-scala-sim.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
+            "test_data/performance/swaptions/swaptions-naive-opt.orc",
+            "test_data/performance/swaptions/swaptions-naive.orc",
+            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
+            //"test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
             "test_data/performance/sssp/sssp-batched-opt.orc",
             "test_data/performance/sssp/sssp-batched.orc",
             "test_data/performance/sssp/sssp-batched-scala-opt.orc",
@@ -56,25 +58,18 @@ object PorcEShared {
             "test_data/performance/map-reduce/wordcount-mixed-orc-java-opt.orc",
             "test_data/performance/map-reduce/wordcount-pure-orc.orc",
             "test_data/performance/map-reduce/wordcount-pure-orc-opt.orc",
+            "test_data/performance/n-queens/8-queens.orc",
+            "test_data/performance/n-queens/8-queens-opt.orc",
             )
   private val nonOpt = Seq(
-            "test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
             )
   private val externalLanguages = Seq("scala", "java")
-  val mainPureOrcBenchmarks = mainOrcBenchmarks.filterNot(fn => externalLanguages.exists(fn contains _)) ++ Seq(
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            )
+  val mainPureOrcBenchmarks = mainOrcBenchmarks.filterNot(fn => externalLanguages.exists(fn contains _))
 
-  val mainOrcScalaBenchmarks = mainOrcBenchmarks.filter(fn => externalLanguages.exists(fn contains _) &&
-            !Seq(
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
-            "test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            ).contains(fn)
-            )
+  val mainOrcScalaBenchmarks = mainOrcBenchmarks.filter(fn => externalLanguages.exists(fn contains _))
 
   def onlyOpt(s: Seq[String]): Seq[String] = s.filter(fn => (fn contains "opt") || nonOpt.exists(fn contains _))
   def onlyNonOpt(s: Seq[String]): Seq[String] = s.filter(fn => !(fn contains "opt") || nonOpt.exists(fn contains _))
@@ -101,23 +96,36 @@ object PorcEShared {
   val mainJvmOpts = Seq(
       "-javaagent:ScalaGraalAgent-0.1.jar",
       "-XX:-RestrictContended",
-      "-XX:+UseParallelGC",
-      "-Xms8g", "-Xmx64g", "-Xss8m")
+      //"-XX:+UseParallelGC",
+      "-XX:+UseG1GC",
+      "-Xms4g", "-Xmx16g", "-Xss8m")
 
   val mainOrcArgs = Seq(
       "-O", "3",
       "--opt-opt", "orct:sequentialize-force",
-      "--max-site-threads=32")
+      "--max-site-threads=16")
 
   val mainSystemProperties = Map[String, Any](
         "graal.TruffleBackgroundCompilation" -> true,
         "graal.TraceTruffleCompilation" -> true,
+        "graal.TruffleCompilationThreshold" -> 300,
+        //"graal.TruffleMaximumRecursiveInlining" -> 10,
+        "graal.TruffleInliningMaxCallerSize" -> 200,
+        //"graal.MaximumInliningSize" -> 5000,
+        "graal.TrivialInliningSize" -> 1000,
+        //"graal.MaximumDesiredSize" -> 30000,
+        //"graal.SmallCompiledLowLevelGraphSize" -> 1500,
+
         "orc.numerics.preferLP" -> true,
         "orc.porce.maxStackDepth" -> 512,
         "orc.porce.optimizations.knownSiteSpecialization" -> true,
-        "graal.TruffleCompilationThreshold" -> 300,
+        "orc.ast.generateUniqueVariableNames" -> true,
+        "orc.porce.truffleASTInlining" -> true,
+        "orc.porce.truffleASTInliningLimit" -> 1000,
         //"orc.porce.universalTCO" -> true,
         )
+
+
 
   trait HasRunNumber {
     def run: Int
@@ -168,11 +176,12 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = Set(1, 8, 16, 24)
+      val nCPUsValues = Seq(24, 12, 1, 6, 18)
+      val nRuns = 1
       val porce = for {
-        run <- 0 until 1
-        nCPUs <- if (run < 1) nCPUsValues else nCPUsValues.filterNot(_ < 12)
-        optLevel <- Seq(3/*, 0*/)
+        run <- 0 until nRuns
+        optLevel <- Seq(3, 0)
+        nCPUs <- if (optLevel < 2) nCPUsValues.take(1) else nCPUsValues
         fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else onlyOpt(mainOrcBenchmarks)
       } yield {
         assert(new File(fn).isFile(), fn)
@@ -186,7 +195,13 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         val cls = Class.forName(benchmark.getClass.getCanonicalName.stripSuffix("$"))
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
-      porce.sortBy(o => (o.run, -o.nCPUs, o.toString)) ++ scala.sortBy(o => (o.run, -o.nCPUs, o.toString))
+      (porce ++ scala).sortBy(v => (v.run,
+          (v match {
+            case v: MyPorcEExperimentalCondition => -v.optLevel
+            case _ => -0
+          }),
+          nCPUsValues.indexOf(v.nCPUs),
+          ))
     }
     runExperiment(experimentalConditions)
   }

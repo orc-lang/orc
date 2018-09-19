@@ -24,7 +24,7 @@ import net.oauth.OAuth.Parameter;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.oauth.OAuthProvider;

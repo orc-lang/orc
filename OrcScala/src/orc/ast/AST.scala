@@ -48,7 +48,7 @@ trait ASTForSwivel extends Positioned {
   }
 
   def subtrees: Iterable[ASTForSwivel]
-  
+
   /** If the argument has an earlier file position than
     * this AST node, reassign this node's position.
     *
@@ -160,7 +160,7 @@ object hasOptionalVariableName {
     import sc._
     import scala.StringContext._
     import orc.util.StringExtension._
-    
+
     def id(args: Any*): String = {
       checkLengths(args)
       val pi = parts.iterator
@@ -182,25 +182,25 @@ object hasOptionalVariableName {
           //case p: Positioned if p.sourceTextRange.isDefined => p.sourceTextRange.get.content
           case o => o
         }
-        val s = cleanIdentifierString(v.toString)
+        val s = cleanIdentifierString(if (v == null) "null" else v.toString)
         bldr append (if (truncate) s.removeMiddleTo(40, "…") else s)
         bldr append treatEscapes(p1)
       }
       getNextVariableName(bldr.toString)
     }
-    
+
   }
-  
+
   def unusedVariable = id"_"
-  
+
   private val BAD_CHARACTERS = new Regex("[^`a-zA-Z0-9'…]+(?=[`a-zA-Z0-9'…])")
   private val BAD_CHARACTERS_ENDS = new Regex("^[^`a-zA-Z0-9'…]+|[^`a-zA-Z0-9'…]+$")
-  
+
   private def cleanIdentifierString(s: String) = BAD_CHARACTERS_ENDS.replaceAllIn(BAD_CHARACTERS.replaceAllIn(s, "_"), "")
-  
+
   private val nextVarMap: collection.mutable.Map[String, Int] = collection.mutable.Map()
   private val generateUniqueVariableNames = System.getProperty("orc.ast.generateUniqueVariableNames", "false").toBoolean
-  
+
   private def getNextVariableName(s: String): String = {
     if (generateUniqueVariableNames) synchronized {
       val nextVar = nextVarMap.getOrElse(s, 0)

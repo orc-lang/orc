@@ -501,9 +501,9 @@ class Token protected (
         orcSiteCall(s, actuals)
       }
       case _ => {
-        val scc = new ExternalSiteCallController(this, s, actuals)
-        blockOn(scc)
-        runtime.stage(scc)
+        val scc = new VirtualExternalSiteCallController(this, s, actuals)
+        blockOn(scc.materialized)
+        runtime.stage(scc.materialized)
       }
     }
   }
@@ -579,11 +579,11 @@ class Token protected (
 
   def newVclock(orderingArg: AnyRef, body: Expression) = {
     orderingArg match {
-      case orderingSite: TotalSite => {
+      case orderingSite: orc.values.sites.compatibility.TotalSite => {
         def ordering(x: AnyRef, y: AnyRef) = {
           // TODO: Add error handling, either here or in the scheduler.
           // A comparator error should kill the engine.
-          val i = orderingSite.evaluate(Array(x, y)).asInstanceOf[Int]
+          val i = orderingSite.getInvoker(execution.runtime, Array(x, y)).invokeDirect(orderingSite, Array(x, y)).asInstanceOf[Int]
           assert(i == -1 || i == 0 || i == 1, "Vclock time comparator " + orderingSite.name + " did not return -1/0/1")
           i
         }

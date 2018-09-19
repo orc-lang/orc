@@ -224,6 +224,8 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     */
   def finish() = {
     if(isBlocked()) {
+      // Force flushes because p could be called in another thread at any time.
+      Counter.flushAllCounterOffsets(1)
       finishBlocked()
     } else {
       unsafe.fullFence()
@@ -244,9 +246,6 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     // This fence is needed because we are doing non-atomic accesses before this call, but
     // after this we may have updates or reads from other threads.
     unsafe.fullFence()
-
-    // Force flushes because p could be called in another thread at any time.
-    Counter.flushAllCounterOffsets(flushOnlyPositive = true)
 
     t.addChild(this)
 
@@ -297,12 +296,6 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
   def fastDone(): CallClosureSchedulable = {
     //Logger.finer(s"Done for $this with: $state ${values.mkString(", ")}")
     t.removeChild(this)
-    /* ROOTNODE-STATISTICS
-    p.body.getRootNode() match {
-      case n: PorcERootNode => n.incrementBindJoin()
-      case _ => ()
-    }
-    */
     // Token: Pass to p.
     val s = CallClosureSchedulable.varArgs(p, values, execution)
     SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)

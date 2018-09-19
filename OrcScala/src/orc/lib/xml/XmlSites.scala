@@ -18,7 +18,8 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.lib.builtin.structured.ListType
 import orc.types.{ EmptyRecordType, JavaObjectType, SimpleFunctionType, StringType, Top, TupleType }
 import orc.values.{ OrcRecord, OrcTuple }
-import orc.values.sites.{ PartialSite1, StructurePairSite, TotalSite1, TotalSite3, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ PartialSite1, StructurePairSite, TotalSite1, TotalSite3 }
 
 /** XML elements. These sites are not namespace aware. Construction defaults
   * to the empty namespace, and matching discards namespace information.

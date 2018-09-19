@@ -13,36 +13,48 @@
 
 package orc.run.distrib.porce
 
-import orc.CallContext
+import orc.VirtualCallContext
 import orc.error.OrcException
-import orc.run.porce.runtime.CPSCallContext
 import orc.values.OrcTuple
 import orc.values.sites.Site
 import orc.run.distrib.DOrcPlacementPolicy
 import orc.run.distrib.ClusterLocations
 import orc.run.distrib.AbstractLocation
+import orc.OrcRuntime
+import orc.Invoker
+import orc.SiteResponseSet
+import orc.run.porce.runtime.VirtualCPSCallContext
 
 /** Superclass of Orc sites to construct LocationPinnedTuples
   *
   * @author jthywiss
   */
-abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with DOrcPlacementPolicy with Serializable {
-  override def call(args: Array[AnyRef], callContext: CallContext): Unit = {
-    Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
-    try {
-      callContext.publish(evaluate(args, callContext))
-    } catch {
-      case (e: OrcException) => callContext.halt(e)
-    }
-  }
+sealed abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site with DOrcPlacementPolicy with Serializable {
+  self =>
 
-  private def evaluate(args: Array[AnyRef], callContext: CallContext) = {
-    try {
-      val loc = callContext.asInstanceOf[CPSCallContext].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
-      new LocationPinnedTuple(loc, args)
-    } catch {
-      case _: ClassCastException =>
-        new OrcTuple(args)
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+    new Invoker {
+      def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+        target == self
+      }
+      def invoke(ctx: VirtualCallContext, target: AnyRef, arguments: Array[AnyRef]): SiteResponseSet = {
+        try {
+          orc.run.StopWatches.implementation {
+            Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "invoke", args)
+            val res = try {
+              val loc = ctx.asInstanceOf[VirtualCPSCallContext].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
+              new LocationPinnedTuple(loc, args)
+            } catch {
+              case _: ClassCastException =>
+                new OrcTuple(args)
+            }
+            ctx.publish(res)
+          }
+        } catch {
+          case e: OrcException =>
+            ctx.halt(e)
+        }
+      }
     }
   }
 
@@ -53,19 +65,19 @@ abstract class LocationPinnedTupleConstructor(locationNum: Int) extends Site wit
   }
 }
 
-class Location0PinnedTupleConstructor extends LocationPinnedTupleConstructor(0) {}
-class Location1PinnedTupleConstructor extends LocationPinnedTupleConstructor(1) {}
-class Location2PinnedTupleConstructor extends LocationPinnedTupleConstructor(2) {}
-class Location3PinnedTupleConstructor extends LocationPinnedTupleConstructor(3) {}
-class Location4PinnedTupleConstructor extends LocationPinnedTupleConstructor(4) {}
-class Location5PinnedTupleConstructor extends LocationPinnedTupleConstructor(5) {}
-class Location6PinnedTupleConstructor extends LocationPinnedTupleConstructor(6) {}
-class Location7PinnedTupleConstructor extends LocationPinnedTupleConstructor(7) {}
-class Location8PinnedTupleConstructor extends LocationPinnedTupleConstructor(8) {}
-class Location9PinnedTupleConstructor extends LocationPinnedTupleConstructor(9) {}
-class Location10PinnedTupleConstructor extends LocationPinnedTupleConstructor(10) {}
-class Location11PinnedTupleConstructor extends LocationPinnedTupleConstructor(11) {}
-class Location12PinnedTupleConstructor extends LocationPinnedTupleConstructor(12) {}
+object Location0PinnedTupleConstructor extends LocationPinnedTupleConstructor(0) {}
+object Location1PinnedTupleConstructor extends LocationPinnedTupleConstructor(1) {}
+object Location2PinnedTupleConstructor extends LocationPinnedTupleConstructor(2) {}
+object Location3PinnedTupleConstructor extends LocationPinnedTupleConstructor(3) {}
+object Location4PinnedTupleConstructor extends LocationPinnedTupleConstructor(4) {}
+object Location5PinnedTupleConstructor extends LocationPinnedTupleConstructor(5) {}
+object Location6PinnedTupleConstructor extends LocationPinnedTupleConstructor(6) {}
+object Location7PinnedTupleConstructor extends LocationPinnedTupleConstructor(7) {}
+object Location8PinnedTupleConstructor extends LocationPinnedTupleConstructor(8) {}
+object Location9PinnedTupleConstructor extends LocationPinnedTupleConstructor(9) {}
+object Location10PinnedTupleConstructor extends LocationPinnedTupleConstructor(10) {}
+object Location11PinnedTupleConstructor extends LocationPinnedTupleConstructor(11) {}
+object Location12PinnedTupleConstructor extends LocationPinnedTupleConstructor(12) {}
 
 /** An Orc tuple which has a location policy that only permits a given
   * location.

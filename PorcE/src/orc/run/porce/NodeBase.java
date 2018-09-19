@@ -61,9 +61,13 @@ public abstract class NodeBase extends Node implements HasPorcNode {
         return section;
     }
 
+    @SuppressWarnings("boxing")
     @Override
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
+        if (isTail) {
+            properties.put("tail", true);
+        }
         if (section != null) {
             properties.put("sourceSection", section);
         }
@@ -113,10 +117,19 @@ public abstract class NodeBase extends Node implements HasPorcNode {
         isTail = v;
     }
 
+    protected void ensureTail(NodeBase n) {
+        CompilerDirectives.interpreterOnly(() -> {
+            if (n.isTail != isTail) {
+                n.setTail(isTail);
+            }
+        });
+    }
+
     @CompilerDirectives.CompilationFinal
     private int callSiteId = -1;
 
     protected int getCallSiteId() {
+        CompilerAsserts.compilationConstant(this);
         if (callSiteId >= 0) {
             return callSiteId;
         } else {

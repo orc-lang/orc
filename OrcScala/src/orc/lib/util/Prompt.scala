@@ -12,10 +12,11 @@
 //
 package orc.lib.util
 
-import orc.{ CallContext, OrcEvent }
+import orc.{ OrcEvent }
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ SimpleFunctionType, StringType }
-import orc.values.sites.{ Site1, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ Site1, CallContext }
 
 /** Generic site for presenting the user with a prompt for input.
   * Different runtimes will present different prompts depending
@@ -35,9 +36,10 @@ object Prompt extends Site1 with TypedSite {
   def call(arg: AnyRef, callContext: CallContext) {
     arg match {
       case prompt: String => {
+        val ctx = callContext.materialize()
         val callback = new PromptCallback() {
-          def respondToPrompt(response: String) = callContext.publish(response)
-          def cancelPrompt() = callContext.halt()
+          def respondToPrompt(response: String) = ctx.publish(response)
+          def cancelPrompt() = ctx.halt()
         }
         callContext.notifyOrc(PromptEvent(prompt, callback))
       }

@@ -11,36 +11,14 @@
 
 package orc.values.sites
 
-import orc.values.Field
-import orc.{Invoker, Accessor, OrcRuntime}
+import orc.values.HasMembers
+import scala.deprecated
 
-/** An external method interface in which the method provides Invokers directly.
-  */
-trait InvokerMethod {
-  /** Get an invoker for this target type and argument types.
-    *
-    * This method is slow and the results should be cached if possible.
-    *
-    * @return An Invoker or DirectInvoker for the given values or an
-    *         instance of InvokerError if there is no invoker.
-    *
-    * @see UncallableValueInvoker
-    */
-  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker
+@deprecated("Use Site", "now")
+trait InvokerMethod extends Site {
 }
 
 
-/** An external value interface in which the value provides Accessors directly.
-  */
-trait AccessorValue {
-  /** Get an accessor which extracts a given field value from this target.
-    *
-    * This method is slow and the results should be cached if possible.
-    *
-    * @return An Accessor for the given classes or an
-    *         instance of AccessorError if there is no accessor.
-    *
-    * @see NoSuchMemberAccessor, DoesNotHaveMembersAccessor
-    */
-  def getAccessor(runtime: OrcRuntime, field: Field): Accessor
+@deprecated("Use HasMembers", "now")
+trait AccessorValue extends HasMembers {
 }

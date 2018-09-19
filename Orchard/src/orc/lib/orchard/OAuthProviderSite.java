@@ -20,12 +20,12 @@ import net.oauth.OAuth.Parameter;
 import net.oauth.OAuthAccessor;
 import net.oauth.OAuthException;
 
-import orc.CallContext;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.oauth.OAuthProvider;
 import orc.orchard.Job;
 import orc.orchard.OrchardOAuthServlet;
+import orc.values.sites.compatibility.CallContext;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.SiteAdaptor;
 

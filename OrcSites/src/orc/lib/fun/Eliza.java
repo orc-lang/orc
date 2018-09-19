@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.SiteException;
 import orc.error.runtime.TokenException;

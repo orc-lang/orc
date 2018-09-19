@@ -19,6 +19,7 @@ object Threads extends BenchmarkApplication[Unit, Unit] {
 
   val N = BenchmarkConfig.problemSizeLogScaledInt(10000, 2)
 
+  // Lines: 6
   def threads(n: Int): Unit = {
     if (n != 0) {
       val t = Future {

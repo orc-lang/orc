@@ -23,6 +23,7 @@ import class Collections = "java.util.Collections"
 
 def eachArrayList(a) = upto(a.size()) >i> a.get(i)
 
+-- Lines: 7
 def sssp(nodes :: Array[Node], edges :: Array[Integer], source :: Integer) =
 	val outQLock = Semaphore(1)
 	val q1 = ArrayList()
@@ -32,6 +33,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Integer], source :: Integer) =
     
     result >> q1 >> q2 >> visited >> outQLock >> (
     
+    -- Lines: 5
 	def processEdge(edgeIndex, outQ, currentCost) = edges(edgeIndex)? >to> (
 		--Println("Processing edge to " + to) >>
 		Iff(visited.get(to)) >> 
@@ -43,6 +45,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Integer], source :: Integer) =
 		  )
 	)
 	
+	-- Lines: 7 (1)
 	def processNode(index, outQ) = index >> outQ >> (
 		val node = nodes(index)?
 		val currentCost = result.get(index)
@@ -53,6 +56,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Integer], source :: Integer) =
 		signal
 	)
 	
+	-- Lines: 7
 	def h(inQ, outQ) =
 		eachArrayList(inQ) >i> processNode(i, outQ) >> stop ;
 		inQ.clear() >> (
@@ -62,6 +66,7 @@ def sssp(nodes :: Array[Node], edges :: Array[Integer], source :: Integer) =
 			signal
 		)
 	
+	-- Lines: 4
     result.set(source, 0) >>
 	q1.add(source) >>
 	h(q1, q2) >>

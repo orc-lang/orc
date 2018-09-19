@@ -17,7 +17,8 @@ import orc.error.runtime.ArityMismatchException
 import orc.types._
 import orc.util.TypeListEnrichment._
 import orc.values._
-import orc.values.sites.{ FunctionalSite, PartialSite1, TotalSite, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ FunctionalSite, PartialSite1, TotalSite }
 
 object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite {
 

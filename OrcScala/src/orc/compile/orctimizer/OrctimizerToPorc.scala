@@ -56,13 +56,13 @@ class OrctimizerToPorc(co: CompilerOptions) {
 
   val vars: mutable.Map[BoundVar, porc.Variable] = new mutable.HashMap()
   def lookup(temp: BoundVar) = vars.getOrElseUpdate(temp, Variable(temp.optionalVariableName.getOrElse(id"v")))
-  
+
   def Variable(s: String) = new porc.Variable(Some(s))
 
   /** Spawn if we are not in a sequentialized section.
     */
   def probablySpawn(scope: Expression.Z)(mustSpawn: Boolean, comp: porc.Argument)(implicit ctx: ConversionContext): porc.Expression = {
-    if (AnnotationHack.inAnnotation[Sequentialize](scope)) {
+    if (AnnotationHack.inAnnotation[Sequentialize](scope) && !mustSpawn) {
       comp()
     } else {
       porc.Spawn(ctx.c, ctx.t, mustSpawn, comp)
@@ -78,7 +78,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
       porc.HaltToken(ctx.c)
     })
   }
-  
+
   def buildGraft(v: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
     import orc.ast.porc.PorcInfixNotation._
     val oldCtx = ctx
@@ -135,7 +135,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
           }
       }))) {
         porc.NewToken(ctx.c) :::
-        	// TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
+          // TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
           catchExceptions {
             probablySpawn(f)(false, comp)
           }
@@ -150,7 +150,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
     import CallGraphValues._
     import FlowGraph._
     import orc.ast.porc.PorcInfixNotation._
-    
+
     val cf = s"_${ctx.containingFunction}"
 
     val oldCtx = ctx
@@ -168,7 +168,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         // TODO: Handle internal direct callables.
         val isDirect = {
           potentialTargets.forall({
-            case NodeValue(ConstantNode(Constant(s: orc.values.sites.SiteMetadata), _)) if s.isDirectCallable =>
+            case NodeValue(ConstantNode(Constant(s: orc.values.sites.DirectSiteMetadata), _)) =>
               true
             case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), _, _))) =>
               true
@@ -203,7 +203,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
           if (isNotRecursive) {
             killCheck :::
             catchExceptions(
-              porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).view.force)
+              porc.MethodCPSCall(isExternal, argument(target), ctx.p, ctx.c, ctx.t, args.map(argument(_)).toVector)
             )
           } else {
             // For possibly recursive functions spawn before calling and spawn before passing on the publication.
@@ -244,7 +244,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
             }
           }))) {
             porc.NewToken(ctx.c) :::
-            	// TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
+              // TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
               catchExceptions { probablySpawn(expr)(false, comp) } :::
               expression(right)
           }
@@ -291,18 +291,18 @@ class OrctimizerToPorc(co: CompilerOptions) {
         }
       }
       case Force.Z(xs, vs, e) => {
-        val porcXs = xs.map(lookup)
+        val porcXs = xs.map(lookup).toVector
         val newP = Variable(id"P${cf}")
         val body = expression(e)
         let((newP, porc.Continuation(porcXs, catchExceptions(body)))) {
-          porc.Force(newP, ctx.c, ctx.t, vs.map(argument).view.force)
+          porc.Force(newP, ctx.c, ctx.t, vs.map(argument).toVector)
         }
       }
       case Resolve.Z(futures, e) => {
         val newP = Variable(id"P${cf}")
         val v = argument(e)
         let((newP, porc.Continuation(Seq(), ctx.p(v)))) {
-          porc.Resolve(newP, ctx.c, ctx.t, futures.map(argument).view.force)
+          porc.Resolve(newP, ctx.c, ctx.t, futures.map(argument).toVector)
         }
       }
       case Otherwise.Z(left, right) => {
@@ -366,11 +366,11 @@ class OrctimizerToPorc(co: CompilerOptions) {
           SetDiscorporate(ctx.c) ::: expression(body)
         else
           expression(body)
-        porc.MethodDeclaration(ctx.t, defs.map(callable(defs.map(_.name), _)).view.force, b)
+        porc.MethodDeclaration(ctx.t, defs.map(callable(defs.map(_.name), _)).toVector, b)
       }
       case New.Z(self, _, bindings, _) if usePorcGraft => {
         Logger.warning(s"Fast futures are not used in objects yet. ($self)")
-        
+
         val selfV = lookup(self)
 
         val fieldInfos = for ((f, b) <- bindings) yield {
@@ -390,7 +390,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         }
 
         let(fieldVars :+ ((selfV, porc.New(fields))): _*) {
-          binders.foldRight(ctx.p(selfV): porc.Expression)((a, b) => porc.Sequence(Seq(a, b)))
+          binders.foldRight(ctx.p(selfV): porc.Expression)((a, b) => porc.Sequence(Vector(a, b)))
         }
       }
       case New.Z(self, _, bindings, _) => {
@@ -413,7 +413,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         }
 
         let(fieldVars :+ ((selfV, porc.New(fields))): _*) {
-          binders.foldRight(ctx.p(selfV): porc.Expression)((a, b) => porc.Sequence(Seq(a, b)))
+          binders.foldRight(ctx.p(selfV): porc.Expression)((a, b) => porc.Sequence(Vector(a, b)))
         }
       }
       case GetField.Z(o, f) => {
@@ -463,7 +463,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
     val argP = Variable(id"P_$f")
     val argC = Variable(id"C_$f")
     val argT = Variable(id"T_$f")
-    val args = formals.map(lookup)
+    val args = formals.map(lookup).toVector
     val name = lookup(f)
 
     val newBody = {

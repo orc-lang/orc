@@ -17,7 +17,8 @@ import java.util.LinkedList;
 
 import scala.collection.JavaConversions;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.BoundedChannelType;
@@ -56,9 +57,9 @@ public class BoundedChannel extends EvalSite implements TypedSite {
     protected class ChannelInstance extends DotSite implements DOrcPlacementPolicy {
 
         protected final LinkedList<Object> contents;
-        protected final LinkedList<CallContext> readers;
-        protected final LinkedList<CallContext> writers;
-        protected CallContext closer;
+        protected final LinkedList<MaterializedCallContext> readers;
+        protected final LinkedList<MaterializedCallContext> writers;
+        protected MaterializedCallContext closer;
         /** The number of open slots in the channel. */
         protected int open;
         protected boolean closed = false;
@@ -66,8 +67,8 @@ public class BoundedChannel extends EvalSite implements TypedSite {
         ChannelInstance(final int bound) {
             open = bound;
             contents = new LinkedList<>();
-            readers = new LinkedList<CallContext>();
-            writers = new LinkedList<CallContext>();
+            readers = new LinkedList<MaterializedCallContext>();
+            writers = new LinkedList<MaterializedCallContext>();
         }
 
         @Override
@@ -81,14 +82,14 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                                 reader.halt();
                             } else {
                                 reader.setQuiescent();
-                                readers.addLast(reader);
+                                readers.addLast(reader.materialize());
                             }
                         } else {
                             reader.publish(object2value(contents.removeFirst()));
                             if (writers.isEmpty()) {
                                 ++open;
                             } else {
-                                final CallContext writer = writers.removeFirst();
+                                final MaterializedCallContext writer = writers.removeFirst();
                                 writer.publish(signal());
                             }
                             if (closer != null && contents.isEmpty()) {
@@ -110,7 +111,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                             if (writers.isEmpty()) {
                                 ++open;
                             } else {
-                                final CallContext writer = writers.removeFirst();
+                                final MaterializedCallContext writer = writers.removeFirst();
                                 writer.publish(signal());
                             }
                             if (closer != null && contents.isEmpty()) {
@@ -134,13 +135,13 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         if (closed) {
                             writer.halt();
                         } else if (!readers.isEmpty()) {
-                            final CallContext reader = readers.removeFirst();
+                            final MaterializedCallContext reader = readers.removeFirst();
                             reader.publish(object2value(item));
                             writer.publish(signal());
                         } else if (open == 0) {
                             contents.addLast(item);
                             writer.setQuiescent();
-                            writers.addLast(writer);
+                            writers.addLast(writer.materialize());
                         } else {
                             contents.addLast(item);
                             --open;
@@ -157,7 +158,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         if (closed) {
                             writer.halt();
                         } else if (!readers.isEmpty()) {
-                            final CallContext reader = readers.removeFirst();
+                            final MaterializedCallContext reader = readers.removeFirst();
                             reader.publish(object2value(item));
                             writer.publish(signal());
                         } else if (open == 0) {
@@ -184,11 +185,11 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                         // collect all values in a list
                         final Object out = JavaConversions.collectionAsScalaIterable(contents).toList();
                         contents.clear();
-                        
-                        ArrayList<CallContext> oldWriters = new ArrayList<>(writers);
+
+                        ArrayList<MaterializedCallContext> oldWriters = new ArrayList<>(writers);
                         writers.clear();
                         // resume all writers
-                        for (final CallContext writer : oldWriters) {
+                        for (final MaterializedCallContext writer : oldWriters) {
                             writer.publish(signal());
                         }
                         // notify closer if necessary
@@ -223,13 +224,13 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                 public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final CallContext reader : readers) {
+                        for (final MaterializedCallContext reader : readers) {
                             reader.halt();
                         }
                         if (contents.isEmpty()) {
                             caller.publish(signal());
                         } else {
-                            closer = caller;
+                            closer = caller.materialize();
                             closer.setQuiescent();
                         }
                     }
@@ -240,7 +241,7 @@ public class BoundedChannel extends EvalSite implements TypedSite {
                 public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final CallContext reader : readers) {
+                        for (final MaterializedCallContext reader : readers) {
                             reader.halt();
                         }
                         caller.publish(signal());

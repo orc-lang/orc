@@ -23,13 +23,20 @@ public class IfLenientMethod extends Expression {
     protected Expression left;
     @Child
     protected Expression right;
-    
-    protected final ConditionProfile profile = ConditionProfile.createBinaryProfile(); 
+
+    protected final ConditionProfile profile = ConditionProfile.createBinaryProfile();
 
     public IfLenientMethod(final Expression argument, final Expression left, final Expression right) {
         this.argument = argument;
         this.left = left;
         this.right = right;
+    }
+
+    @Override
+    public void setTail(boolean b) {
+        super.setTail(b);
+        left.setTail(b);
+        right.setTail(b);
     }
 
     @Override

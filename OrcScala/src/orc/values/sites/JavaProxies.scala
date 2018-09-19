@@ -15,10 +15,10 @@ package orc.values.sites
 import java.lang.invoke.{ MethodHandles, MethodHandle, MethodType }
 import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTargetException }
 
-import orc.{ Accessor, ErrorAccessor, IllegalArgumentInvoker, InvocationBehaviorUtilities, Invoker, NoSuchMemberAccessor, OnlyDirectInvoker, OrcRuntime, TargetArgsThrowsInvoker, TargetThrowsInvoker }
+import orc.{ Accessor, ErrorAccessor, Invoker, DirectInvoker, OrcRuntime }
 import orc.error.runtime.{ HaltException, JavaException, MalformedArrayAccessException, MethodTypeMismatchException, NoSuchMemberException, RuntimeTypeException }
 import orc.util.ArrayExtensions.Array1
-import orc.values.{ Field => OrcField, Signal }
+import orc.values.{ Field => OrcField, Signal, NoSuchMemberAccessor, HasMembers }
 import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocation, java2orc, orc2java }
 
 /* Due to the way dispatch is handled we cannot pass true wrappers back into Orc. They
@@ -36,6 +36,8 @@ import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocat
   * @author jthywiss, amp
   */
 object JavaCall {
+  val mhLookup = MethodHandles.publicLookup()
+
   def valueAndType(v: AnyRef): String = {
     val str = v match {
       case a: Array[_] => a.map(x => valueAndType(x.asInstanceOf[AnyRef])).mkString("Array(", ", ", ")")
@@ -78,15 +80,13 @@ object JavaCall {
       }
     }
 
-    import orc.InvocationBehaviorUtilities._
-
     @throws[NoSuchMethodException]
     def getMemberInvokerTypeDirected(methodName: String, argClss: Array[Class[_]]): Invoker = {
       val cls = this.cls
       val invocable = selectMethod(cls, methodName, argClss)
       new InvocableInvoker(invocable, cls, argClss) {
-        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-          cls == target.getClass() && valuesHaveType(arguments, argClss)
+        def canInvokeTarget(target: AnyRef): Boolean = {
+          cls == target.getClass()
         }
         override def toString() = s"<Member Invoker>($cls.$methodName)"
       }
@@ -97,17 +97,18 @@ object JavaCall {
       val cls = this.cls
       val invocable = selectMethod(cls, methodName, argClss)
       new InvocableInvoker(invocable, cls, argClss) {
-        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-          cls == target && valuesHaveType(arguments, argClss)
+        def canInvokeTarget(target: AnyRef): Boolean = {
+          cls == target
         }
         override def toString() = s"<Member Invoker>($cls.$methodName)"
       }
     }
 
-    def getMemberAccessor(memberName: String): Accessor = {
+    def getMemberAccessor(_memberName: String): Accessor = {
+      val memberName = _memberName.intern()
       val cls = this.cls
       val javaField = cls.getFieldOption(memberName)
-      new Accessor {
+      new SimpleAccessor {
         def canGet(target: AnyRef): Boolean = {
           cls.isInstance(target)
         }
@@ -121,7 +122,7 @@ object JavaCall {
     def getStaticMemberAccessor(memberName: String): Accessor = {
       val cls = this.cls
       val javaField = cls.getFieldOption(memberName)
-      new Accessor {
+      new SimpleAccessor {
         def canGet(target: AnyRef): Boolean = {
           cls == target
         }
@@ -143,7 +144,7 @@ object JavaCall {
 
         // ARRAYS
         case (_, Array1(l: java.lang.Long)) if targetCls.isArray() => {
-          Some(new OnlyDirectInvoker {
+          Some(new DirectInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
               target.getClass().isArray() && arguments.length == 1 && arguments(0).isInstanceOf[java.lang.Long]
             }
@@ -157,7 +158,7 @@ object JavaCall {
           })
         }
         case (_, Array1(_: BigInt | _: java.lang.Integer)) if targetCls.isArray() => {
-          Some(new OnlyDirectInvoker {
+          Some(new DirectInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
               target.getClass().isArray() && arguments.length == 1 &&
               (arguments(0).isInstanceOf[BigInt] || arguments(0).isInstanceOf[java.lang.Long] || arguments(0).isInstanceOf[java.lang.Integer])
@@ -173,7 +174,7 @@ object JavaCall {
         }
         // We should have boxed any java.lang.Integer, java.lang.Short, or java.lang.Byte value into BigInt
         case _ if targetCls.isArray() =>
-          Some(TargetArgsThrowsInvoker(target, args, new MalformedArrayAccessException(args)))
+          Some(new ThrowsInvoker(target, args, new MalformedArrayAccessException(args)))
 
         // CLASSES (Constructors)
         case (target: Class[_], _) => {
@@ -197,7 +198,7 @@ object JavaCall {
       }
     } catch {
       case e: RuntimeTypeException =>
-        Some(TargetThrowsInvoker(target, e))
+        Some(new ThrowsInvoker(target, args, e))
     }
   }
 
@@ -227,42 +228,50 @@ object JavaCall {
   }
 }
 
+trait SimpleAccessor extends Accessor
+
 /**
   * @author jthywiss, amp
   */
 sealed abstract class InvocableInvoker(
     @inline final val invocable: Invocable,
     @inline final val targetCls: Class[_],
-    @inline final val argumentClss: Array[Class[_]]) extends OnlyDirectInvoker {
-  
-  /** As in Invoker, except that it must only contain constant length loops (with 
+    @inline final val argumentClss: Array[Class[_]]) extends DirectInvoker {
+
+  final def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+    import orc.values.sites.InvocationBehaviorUtilities._
+    canInvokeTarget(target) && valuesHaveType(arguments, argumentClss)
+  }
+
+  /** As in Invoker, except that it must only contain constant length loops (with
    *  respect to invocable, etc) and cannot use recursion. This requirement applies
-   *  to all transitively called functions as well. This rules out most of the 
+   *  to all transitively called functions as well. This rules out most of the
    *  Scala collections library and any calls to unknown code.
    */
-  def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean
-  
+  def canInvokeTarget(target: AnyRef): Boolean
+
   final val mh = {
     val m = invocable.toMethodHandle
     m.asSpreader(classOf[Array[Object]], m.`type`().parameterCount() - 1).
       asType(MethodType.methodType(classOf[Object], classOf[Object], classOf[Array[Object]]))
   }
-  
+
   final val boxedReturnType = OrcJavaCompatibility.box(invocable.returnType)
-  
+
   def getRealTarget(theObject: AnyRef) = theObject
 
   final def invokeDirect(inputObject: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     val theObject = getRealTarget(inputObject)
-    
+
     orc.run.StopWatches.javaCall {
       try {
         if (theObject == null && !invocable.isStatic) {
           throw new NullPointerException("Instance method called without a target object (i.e. non-static method called on a class)")
         }
         val finalArgs = if (invocable.isVarArgs) {
-          // TODO: PERFORMANCE: It may be worth it to replace all these scala collections calls with some optimized loops. Hot path, mumble, mumble.
+          // FIXME: Var args appear to be broken in PorcE. Not sure why. Not needed for papers. Need to get back and fix it.
 
+          // TODO: PERFORMANCE: Optimize this like the else block.
           // Group var args into nested array argument.
           val nNormalArgs = invocable.parameterTypes.length - 1
           val (normalArgs, varArgs) = (arguments.take(nNormalArgs), arguments.drop(nNormalArgs))
@@ -307,35 +316,34 @@ sealed abstract class InvocableInvoker(
   *
   * @author jthywiss, amp
   */
-class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: String, @inline val javaField: Option[JavaField]) extends InvokerMethod with AccessorValue {
+class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: String, @inline val javaField: Option[JavaField]) extends Site with HasMembers {
   def javaClass = theObject.getClass()
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     import JavaCall._
-    import orc.InvocationBehaviorUtilities._
+    import orc.values.sites.InvocationBehaviorUtilities._
     try {
       val memberName = this.memberName
       val javaClass = this.javaClass
       val argClss = args.map(valueType)
       val invocable = selectMethod(javaClass, memberName, argClss)
       new InvocableInvoker(invocable, javaClass, argClss) {
-        def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+        def canInvokeTarget(target: AnyRef): Boolean = {
           target match {
             case p: JavaMemberProxy =>
               p.javaClass == javaClass &&
-                p.memberName == memberName &&
-                valuesHaveType(arguments, argumentClss)
+                (p.memberName eq memberName)
             case _ => false
           }
         }
 
         override def getRealTarget(target: AnyRef) = target.asInstanceOf[JavaMemberProxy].theObject
-  
+
         override def toString() = s"<Member Invoker>($javaClass.$memberName)"
       }
     } catch {
-      case nsme: NoSuchMethodException => TargetThrowsInvoker(this, nsme)
-      case mtme: MethodTypeMismatchException => TargetThrowsInvoker(this, mtme)
+      case nsme: NoSuchMethodException => new ThrowsInvoker(this, args, nsme)
+      case mtme: MethodTypeMismatchException => new ThrowsInvoker(this, args, mtme)
     }
   }
 
@@ -344,10 +352,10 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
 
     // In violation of JLS §10.7, arrays don't really have a length field!  Java bug 5047859
     if (memberName == "length" && submemberName == "read" && javaClass.isArray()) {
-      new Accessor {
+      new SimpleAccessor {
         def canGet(target: AnyRef): Boolean = {
           target match {
-            case p: JavaMemberProxy if p.memberName == "length" && p.javaClass.isArray() => true
+            case p: JavaMemberProxy if (p.memberName eq "length") && p.javaClass.isArray() => true
             case _ => false
           }
         }
@@ -359,7 +367,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
     } else if (javaField.isEmpty) {
       val memberName = this.memberName
       val javaClass = this.javaClass
-      new ErrorAccessor {
+      new ErrorAccessor with SimpleAccessor {
         @throws[NoSuchMemberException]
         def get(target: AnyRef): AnyRef = {
           throw new NoSuchMemberException(javaClass, memberName)
@@ -368,7 +376,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
         def canGet(target: AnyRef): Boolean = {
           if (target.isInstanceOf[JavaMemberProxy]) {
             val p = target.asInstanceOf[JavaMemberProxy]
-            p.memberName == memberName && p.javaClass == javaClass
+            (p.memberName eq memberName) && p.javaClass == javaClass
           } else {
             false
           }
@@ -381,25 +389,24 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
       new Accessor {
         def canGet(target: AnyRef): Boolean = {
           target match {
-            case p: JavaMemberProxy if p.memberName == memberName && p.javaClass == javaClass => true
+            case p: JavaMemberProxy if (p.memberName eq memberName) && p.javaClass == javaClass => true
             case _ => false
           }
         }
         def get(target: AnyRef): AnyRef = {
           val value = jf.get(target.asInstanceOf[JavaMemberProxy].theObject)
-          val valueCls = value.getClass()
+          def valueCls = value.getClass()
           //Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
           import JavaCall._
           // TODO:PERFORMANCE: The has*Member checks on value will actually be quite expensive. However for these semantics they are required. Maybe we could change the semantics. Or maybe I've missed a way to implement it so that all reflection is JIT time constant.
-          submemberName match {
-            case "read" if value == null || !valueCls.hasInstanceMember("read") =>
-              new JavaFieldDerefSite(target.asInstanceOf[JavaMemberProxy].theObject, jf)
-            case "write" if value == null || !valueCls.hasInstanceMember("write") =>
-              new JavaFieldAssignSite(target.asInstanceOf[JavaMemberProxy].theObject, jf)
-            case _ if value == null =>
-              throw new NoSuchMemberException(value, submemberName)
-            case _ =>
-              new JavaMemberProxy(value, submemberName, valueCls.getFieldOption(submemberName))
+          if ((submemberName eq "read") && (value == null || !valueCls.hasInstanceMember("read"))) {
+            new JavaFieldDerefSite(target.asInstanceOf[JavaMemberProxy].theObject, jf)
+          } else if ((submemberName eq "write") && (value == null || !valueCls.hasInstanceMember("write"))) {
+            new JavaFieldAssignSite(target.asInstanceOf[JavaMemberProxy].theObject, jf)
+          } else if (value == null) {
+            throw new NoSuchMemberException(value, submemberName)
+          } else {
+            new JavaMemberProxy(value, submemberName, valueCls.getFieldOption(submemberName))
           }
         }
       }
@@ -413,7 +420,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
   *
   * @author jthywiss, amp
   */
-class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], memberName: String, javaField: Option[JavaField]) extends JavaMemberProxy(null, memberName, javaField) with Serializable {
+class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], _memberName: String, javaField: Option[JavaField]) extends JavaMemberProxy(null, _memberName, javaField) with Serializable {
   override def javaClass = declaringClass
   override def toString() = s"JavaStaticMemberProxy($javaClass.$memberName)"
 
@@ -421,7 +428,7 @@ class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], member
   protected def writeReplace(): AnyRef = {
       new JavaStaticMemberProxyMarshalingReplacement(declaringClass, memberName, javaField)
   }
- 
+
 }
 
 protected case class JavaStaticMemberProxyMarshalingReplacement(declaringClass: Class[_ <: java.lang.Object], memberName: String, javaField: Option[JavaField]) {
@@ -429,13 +436,65 @@ protected case class JavaStaticMemberProxyMarshalingReplacement(declaringClass: 
   protected def readResolve(): AnyRef = new JavaStaticMemberProxy(declaringClass, memberName, javaField)
 }
 
+object JavaFieldDerefSite {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends DirectInvoker {
+    def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+      target.isInstanceOf[JavaFieldDerefSite] &&
+      arguments.length == 0 &&
+      (cls == null ||
+      cls.isInstance(target.asInstanceOf[JavaFieldDerefSite].theObject))
+    }
+    def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+      orc.run.StopWatches.javaCall {
+        val r = orc.run.StopWatches.javaImplementation {
+          val self = target.asInstanceOf[JavaFieldDerefSite]
+          mh.invokeExact(self.theObject)
+        }
+        java2orc(r)
+      }
+    }
+  }
+}
+
 /** A site that will dereference a Java object's field when called
   *
   * @author jthywiss, amp
   */
-case class JavaFieldDerefSite(val theObject: Object, val javaField: JavaField) extends TotalSite0 {
-  def eval(): AnyRef = {
-    java2orc(javaField.get(theObject))
+case class JavaFieldDerefSite(@inline val theObject: Object, @inline val javaField: JavaField) extends Site with FunctionalSite {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+    import MethodHandles._
+    if (args.length == 0) {
+      val cls = if (theObject == null) null else theObject.getClass
+      val mhRaw = JavaCall.mhLookup.unreflectGetter(javaField)
+      val mh = if (theObject == null)
+        dropArguments(mhRaw.asType(MethodType.methodType(classOf[Object])), 0, classOf[Object])
+      else
+        mhRaw.asType(MethodType.methodType(classOf[Object], classOf[Object]))
+      new JavaFieldDerefSite.Invoker(cls, mh)
+    } else {
+      IllegalArgumentInvoker(this, args)
+    }
+  }
+}
+
+object JavaFieldAssignSite {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle, val componentType: Class[_]) extends DirectInvoker {
+    def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+      target.isInstanceOf[JavaFieldAssignSite] &&
+      arguments.length == 1 &&
+      (cls == null ||
+      cls.isInstance(target.asInstanceOf[JavaFieldAssignSite].theObject))
+    }
+    def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+      orc.run.StopWatches.javaCall {
+        val v = orc2java(arguments(0), componentType)
+        orc.run.StopWatches.javaImplementation {
+          val self = target.asInstanceOf[JavaFieldAssignSite]
+          mh.invokeExact(self.theObject, v) : Unit
+          Signal
+        }
+      }
+    }
   }
 }
 
@@ -443,10 +502,20 @@ case class JavaFieldDerefSite(val theObject: Object, val javaField: JavaField) e
   *
   * @author jthywiss, amp
   */
-case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) extends TotalSite1 {
-  def eval(a: AnyRef): AnyRef = {
-    javaField.set(theObject, orc2java(a))
-    Signal
+case class JavaFieldAssignSite(@inline val theObject: Object, @inline val javaField: JavaField) extends Site with NonBlockingSite {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+    import MethodHandles._
+    if (args.length == 1) {
+      val cls = if (theObject == null) null else theObject.getClass
+      val mhRaw = JavaCall.mhLookup.unreflectSetter(javaField)
+      val mh = if (theObject == null)
+        dropArguments(mhRaw.asType(MethodType.methodType(Void.TYPE, classOf[Object])), 0, classOf[Object])
+      else
+        mhRaw.asType(MethodType.methodType(Void.TYPE, classOf[Object], classOf[Object]))
+      new JavaFieldAssignSite.Invoker(cls, mh, javaField.getType)
+    } else {
+      IllegalArgumentInvoker(this, args)
+    }
   }
 }
 
@@ -454,7 +523,7 @@ case class JavaFieldAssignSite(val theObject: Object, val javaField: JavaField) 
   *
   * @author jthywiss, amp
   */
-case class JavaArrayElementProxy(@inline val theArray: AnyRef, @inline val index: Int) extends AccessorValue {
+case class JavaArrayElementProxy(@inline val theArray: AnyRef, @inline val index: Int) extends HasMembers {
   def getAccessor(runtime: OrcRuntime, field: OrcField): Accessor = {
     field match {
       case OrcField("read") =>
@@ -475,7 +544,7 @@ case class JavaArrayElementProxy(@inline val theArray: AnyRef, @inline val index
   }
 }
 
-abstract class ArrayAccessor extends Accessor {
+abstract class ArrayAccessor extends SimpleAccessor {
   def methodInstance(theArray: AnyRef, index: Int): AnyRef
 
   def canGet(target: AnyRef): Boolean = {
@@ -490,7 +559,7 @@ abstract class ArrayAccessor extends Accessor {
 
 
 object JavaArrayDerefSite {
-  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends OnlyDirectInvoker {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaArrayDerefSite] && arguments.length == 0 && cls.isInstance(target.asInstanceOf[JavaArrayDerefSite].theArray)
     }
@@ -510,7 +579,7 @@ object JavaArrayDerefSite {
   *
   * @author jthywiss, amp
   */
-case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: Int) extends InvokerMethod with FunctionalSite {
+case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: Int) extends Site with FunctionalSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 0) {
       val cls = theArray.getClass
@@ -523,7 +592,7 @@ case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: I
 }
 
 object JavaArrayAssignSite {
-  final class Invoker(val cls: Class[_], val mh: MethodHandle, val componentType: Class[_]) extends OnlyDirectInvoker {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle, val componentType: Class[_]) extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaArrayAssignSite] && arguments.length == 1 && cls.isInstance(target.asInstanceOf[JavaArrayAssignSite].theArray)
     }
@@ -532,7 +601,8 @@ object JavaArrayAssignSite {
         val v = orc2java(arguments(0), componentType)
         orc.run.StopWatches.javaImplementation {
           val self = target.asInstanceOf[JavaArrayAssignSite]
-          mh.invokeExact(self.theArray, self.index, v)
+          mh.invokeExact(self.theArray, self.index, v) : Unit
+          Signal
         }
       }
     }
@@ -543,11 +613,11 @@ object JavaArrayAssignSite {
   *
   * @author jthywiss, amp
   */
-case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: Int) extends InvokerMethod with NonBlockingSite {
+case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: Int) extends Site with NonBlockingSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 1) {
       val cls = theArray.getClass
-      val mh = MethodHandles.arrayElementSetter(cls).asType(MethodType.methodType(classOf[Object], classOf[Object], Integer.TYPE, classOf[Object]))
+      val mh = MethodHandles.arrayElementSetter(cls).asType(MethodType.methodType(Void.TYPE, classOf[Object], Integer.TYPE, classOf[Object]))
       val componentType = Option(cls.getComponentType).getOrElse[Class[_]](classOf[AnyRef])
       new JavaArrayAssignSite.Invoker(cls, mh, componentType)
     } else {
@@ -560,8 +630,32 @@ case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: 
   *
   * @author jthywiss, amp
   */
-case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends TotalSite0 {
-  def eval(): AnyRef = {
-    java2orc(JavaArray.getLength(theArray).asInstanceOf[AnyRef])
+case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends Site with FunctionalSite {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+    if (args.length == 0) {
+      val cls = theArray.getClass
+      new JavaArrayLengthPseudofield.Invoker(cls)
+    } else {
+      IllegalArgumentInvoker(this, args)
+    }
+  }
+}
+
+object JavaArrayLengthPseudofield {
+  final class Invoker(val cls: Class[_]) extends DirectInvoker {
+    def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+      target.isInstanceOf[JavaArrayLengthPseudofield] &&
+      arguments.length == 0 &&
+      cls.isInstance(target.asInstanceOf[JavaArrayLengthPseudofield].theArray)
+    }
+    def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+      orc.run.StopWatches.javaCall {
+        val r = orc.run.StopWatches.javaImplementation {
+          val self = target.asInstanceOf[JavaArrayLengthPseudofield]
+          JavaArray.getLength(self.theArray).asInstanceOf[AnyRef]
+        }
+        java2orc(r)
+      }
+    }
   }
 }

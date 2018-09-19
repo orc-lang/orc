@@ -15,7 +15,7 @@ package orc.lib.math
 
 import orc.values.sites._
 import orc.Invoker
-import orc.IllegalArgumentInvoker
+import orc.values.sites.IllegalArgumentInvoker
 
 object Mult extends OverloadedDirectInvokerMethod2[Number, Number] with FunctionalSite {
   def getInvokerSpecialized(arg1: Number, arg2: Number): Invoker = {

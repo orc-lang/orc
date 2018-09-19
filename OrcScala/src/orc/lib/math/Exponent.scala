@@ -15,7 +15,7 @@ package orc.lib.math
 
 import orc.values.sites._
 import orc.Invoker
-import orc.IllegalArgumentInvoker
+import orc.values.sites.IllegalArgumentInvoker
 
 object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with FunctionalSite {
   def lpow(a: Long, b: Long) = {

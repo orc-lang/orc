@@ -13,7 +13,8 @@ package orc.lib.state;
 
 import java.util.LinkedList;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.SyncChannelType;
 import orc.run.distrib.AbstractLocation;
@@ -46,10 +47,10 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
     private class SenderItem {
 
-        CallContext sender;
+        MaterializedCallContext sender;
         Object sent;
 
-        SenderItem(final CallContext sender, final Object sent) {
+        SenderItem(final MaterializedCallContext sender, final Object sent) {
             this.sender = sender;
             this.sent = sent;
         }
@@ -59,11 +60,11 @@ public class SyncChannel extends EvalSite implements TypedSite {
 
         // Invariant: senderQueue is empty or receiverQueue is empty
         protected final LinkedList<SenderItem> senderQueue;
-        protected final LinkedList<CallContext> receiverQueue;
+        protected final LinkedList<MaterializedCallContext> receiverQueue;
 
         SyncChannelInstance() {
             senderQueue = new LinkedList<>();
-            receiverQueue = new LinkedList<CallContext>();
+            receiverQueue = new LinkedList<MaterializedCallContext>();
         }
 
         @Override
@@ -79,12 +80,12 @@ public class SyncChannel extends EvalSite implements TypedSite {
                 // If there are no waiting senders, put this caller on the queue
                 if (senderQueue.isEmpty()) {
                     receiver.setQuiescent();
-                    receiverQueue.addLast(receiver);
+                    receiverQueue.addLast(receiver.materialize());
                 }
                 // If there is a waiting sender, both sender and receiver return
                 else {
                     final SenderItem si = senderQueue.removeFirst();
-                    final CallContext sender = si.sender;
+                    final MaterializedCallContext sender = si.sender;
                     final Object item = si.sent;
 
                     receiver.publish(object2value(item));
@@ -104,13 +105,13 @@ public class SyncChannel extends EvalSite implements TypedSite {
                 // queue
                 if (receiverQueue.isEmpty()) {
                     sender.setQuiescent();
-                    senderQueue.addLast(new SenderItem(sender, item));
+                    senderQueue.addLast(new SenderItem(sender.materialize(), item));
                 }
 
                 // If there is a waiting receiver, both receiver and sender
                 // return
                 else {
-                    final CallContext receiver = receiverQueue.removeFirst();
+                    final MaterializedCallContext receiver = receiverQueue.removeFirst();
 
                     receiver.publish(object2value(item));
                     sender.publish(signal());

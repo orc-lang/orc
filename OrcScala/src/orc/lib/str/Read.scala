@@ -18,7 +18,8 @@ import orc.error.compiletime.ParsingException
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
 import orc.types.{ SimpleFunctionType, StringType, Top, Type }
 import orc.values.{ OrcRecord, OrcTuple }
-import orc.values.sites.{ TotalSite, TypedSite }
+import orc.values.sites.{ TypedSite }
+import orc.values.sites.compatibility.{ TotalSite }
 import orc.util.ArrayExtensions.Array1
 
 object Read extends TotalSite with TypedSite {

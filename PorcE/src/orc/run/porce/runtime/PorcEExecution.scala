@@ -15,7 +15,7 @@ import java.io.{ OutputStreamWriter, PrintWriter }
 import java.util.{ Timer, TimerTask }
 
 import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
-import orc.error.runtime.{ ExceptionHaltException, HaltException }
+import orc.error.runtime.HaltException
 import orc.run.core.EventHandler
 import orc.run.distrib.porce.CallTargetManager
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
@@ -53,7 +53,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
 
     e match {
-      case e: ExceptionHaltException => handle(e.getCause())
+      case e: HaltException if e.getCause != null => handle(e.getCause())
       case e: HaltException => ()
       case e: Throwable => handle(e)
     }
@@ -84,6 +84,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   private val callSiteMap = new java.util.concurrent.ConcurrentHashMap[Int, RootCallTarget]()
 
+  @TruffleBoundary(allowInlining = true) @noinline
   def invokeCallTarget(callSiteId: Int, p: PorcEClosure, c: Counter, t: Terminator, target: AnyRef, arguments: Array[AnyRef]): Unit = {
     val callTarget = {
       val v = callSiteMap.get(callSiteId)
@@ -99,6 +100,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   private val trampolineMap = new java.util.concurrent.ConcurrentHashMap[RootNode, RootCallTarget]()
 
+  @TruffleBoundary(allowInlining = true) @noinline
   def invokeClosure(target: PorcEClosure, args: Array[AnyRef]): Unit = {
     val callTarget = {
       val key = target.body.getRootNode()
@@ -142,7 +144,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
       val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
       for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
-        DumpSpecializations(r, repNum + 5, out)
+        DumpSpecializations(r, repNum, out)
       }
       out.close()
     }
@@ -150,34 +152,6 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
 
   def onProgramHalted() = {
-    /* ROOTNODE-STATISTICS
-    import scala.collection.JavaConverters._
-    {
-      val csvOut = ExecutionLogOutputStream("rootnode-statistics", "csv", "RootNode run times data")
-      if (csvOut.isDefined) {
-        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-        val csvWriter = new CsvWriter(traceCsv.append(_))
-        val tableColumnTitles = Seq(
-            "RootNode Name [name]", "Total Spawns [spawns]",
-            "Total Bind Single Future [bindSingle]", "Total Bind Multiple Futures [bindJoin]",
-            "Total Halt Continuation [halt]", "Total Publication Callbacks [publish]",
-            "Total Spawned Time (ns) [totalSpawnedTime]", "Total Spawned Calls [spawnedCalls]")
-        csvWriter.writeHeader(tableColumnTitles)
-        for (t <- callTargetMap.values) {
-          t.getRootNode match {
-            case n: PorcERootNode =>
-              val (nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime) = n.getCollectedCallInformation()
-              csvWriter.writeRow(Seq(n.getName, nSpawns, nBindSingle, nBindJoin, nHalt, nPublish, nSpawnedCalls, spawnedTime,
-                  n.porcNode.map(_.sourceTextRange.toString).getOrElse("")))
-            case _ =>
-              ()
-          }
-        }
-        traceCsv.close()
-      }
-    }
-    */
-
   }
 }
 
@@ -218,16 +192,17 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
       throw new AssertionError("The top-level counter can never be resurrected.")
     }
 
-    def onHalt(): Unit = {
+    def onHaltOptimized(): PorcEClosure = {
       // Runs regardless of discorporation.
       Logger.fine("Top level context complete.")
       runtime.removeRoot(execution)
-      notifyOrc(HaltedOrKilledEvent)
+      notifyOrcWithBoundary(HaltedOrKilledEvent)
       execution.synchronized {
         execution._isDone = true
         execution.notifyAll()
       }
       execution.onProgramHalted()
+      null
     }
   }
 

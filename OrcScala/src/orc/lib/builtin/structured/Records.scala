@@ -25,7 +25,8 @@ import orc.types._
 import orc.util.OptionMapExtension._
 import orc.util.ArrayExtensions.ArrayN
 import orc.values._
-import orc.values.sites._
+import orc.values.sites.{ FunctionalSite, TypedSite }
+import orc.values.sites.compatibility.{ TotalSite, ScalaPartialSite, CallContext }
 
 object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
   override def name = "Record"
@@ -55,7 +56,7 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
   }
 }
 
-object RecordMatcher extends PartialSite with TypedSite with FunctionalSite {
+object RecordMatcher extends ScalaPartialSite with TypedSite with FunctionalSite {
   override def name = "RecordMatcher"
 
   override def evaluate(args: Array[AnyRef]): Option[AnyRef] =

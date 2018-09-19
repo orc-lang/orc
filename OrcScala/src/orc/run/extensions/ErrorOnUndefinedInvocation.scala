@@ -12,8 +12,9 @@
 //
 package orc.run.extensions
 
-import orc.{ Accessor, ClassDoesNotHaveMembersAccessor, InvocationBehavior, Invoker, UncallableValueInvoker }
-import orc.values.Field
+import orc.{ Accessor, InvocationBehavior, Invoker }
+import orc.values.sites.UncallableValueInvoker
+import orc.values.{ Field, ClassDoesNotHaveMembersAccessor }
 
 /** @author dkitchin
   */
@@ -21,7 +22,7 @@ trait ErrorOnUndefinedInvocation extends InvocationBehavior {
   def getInvoker(target: AnyRef, arguments: Array[AnyRef]): Invoker = {
     UncallableValueInvoker(target)
   }
-  
+
   def getAccessor(target: AnyRef, field: Field): Accessor = {
     ClassDoesNotHaveMembersAccessor(if (target == null) classOf[Null] else target.getClass())
   }

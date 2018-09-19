@@ -30,12 +30,6 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execu
   def publish(v: AnyRef): Unit = {
     if (compareAndSet(false, true)) {
       t.removeChild(this)
-      /* ROOTNODE-STATISTICS
-      p.body.getRootNode() match {
-        case n: PorcERootNode => n.incrementBindSingle()
-        case _ => ()
-      }
-      */
       val s = CallClosureSchedulable(p, v, execution)
       SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
       // Token: pass to p
@@ -67,12 +61,6 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execu
   def fastPublish(v: AnyRef): CallClosureSchedulable = {
     if (compareAndSet(false, true)) {
       t.removeChild(this)
-      /* ROOTNODE-STATISTICS
-      p.body.getRootNode() match {
-        case n: PorcERootNode => n.incrementBindSingle()
-        case _ => ()
-      }
-      */
       CallClosureSchedulable(p, v, execution)
     } else {
       null

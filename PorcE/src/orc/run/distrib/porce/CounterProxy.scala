@@ -19,6 +19,7 @@ import orc.util.SparseBinaryFraction
 import scala.annotation.tailrec
 import java.lang.ref.WeakReference
 import java.lang.ref.ReferenceQueue
+import orc.run.porce.runtime.PorcEClosure
 
 /** A DOrcExecution mix-in to create and communicate among distributed counters.
   *
@@ -87,7 +88,7 @@ trait CounterProxyManager {
     
     override def toString: String = f"DistributedCounterFragment(id=$id, credits=$credits, waitingForCredit=$waitingForCredit)"    
     
-    override def onHalt(): Unit = synchronized {
+    override def onHaltOptimized(): PorcEClosure = synchronized {
       Logger.Proxy.entering(getClass.getName, "onHalt")
       /*
        * Concurrency: We can reach here with credits == -1 and waitingForCredit = false.
@@ -104,6 +105,7 @@ trait CounterProxyManager {
         // We are waiting for credit, so we cannot return our credits yet.
         // Or we have no credits and then we still cannot return our credits.
       }
+      null
     }
 
     override def onResurrect(): Unit = synchronized {

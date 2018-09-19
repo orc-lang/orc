@@ -82,11 +82,11 @@ trait CmdLineParser {
   ////////
   // Command line operand and option definitions
   ////////
-      
+
   val HexLiteral = raw"0x([0-f]+)".r
   val BinLiteral = raw"0b([0-f]+)".r
   val OctLiteral = raw"0([0-f]+)".r
-      
+
   def parseIntWithPossibleRadix(value: String): Int = {
     value match {
       case HexLiteral(s) =>
@@ -96,10 +96,10 @@ trait CmdLineParser {
       case OctLiteral(s) =>
         Integer.parseInt(s, 8)
       case _ =>
-        value.toInt          
+        value.toInt
     }
   }
-  
+
   abstract class CmdLineOprdOpt(val argName: String, val usage: String, val required: Boolean, val hidden: Boolean) extends Serializable {
     def getValue: String
     def setValue(s: String): Unit
@@ -293,8 +293,16 @@ trait CmdLineParser {
 
   case class SocketOpt(val getter: Function0[InetSocketAddress], val setter: (InetSocketAddress => Unit), override val shortName: Char, override val longName: String, override val argName: String = "SOCKET", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
-    def getValue: String = { getter().getHostString + ":" + getter().getPort }
-    def setValue(value: String): Unit = { setter(optString2socket(value, longName)) }
+    def getValue: String = {
+      val v = getter()
+      if(v != null)
+        v.getHostString + ":" + v.getPort
+      else
+        null
+    }
+    def setValue(value: String): Unit = {
+      setter(optString2socket(value, longName))
+    }
   }
 
   case class SocketListOpt(val getter: Function0[Seq[InetSocketAddress]], val setter: (Seq[InetSocketAddress] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "SOCKET-LIST", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
@@ -387,10 +395,20 @@ trait CmdLineParser {
   def composeCmdLine(): Array[String] = {
     ((recognizedOpts.toList.sortBy(o => (o.longName, o.shortName)).flatMap({ opt: CmdLineOpt =>
       if (!opt.isInstanceOf[UnitOpt]) {
-        if (opt.shortName != 0 && opt.shortName != ' ') List("-" + opt.shortName, opt.getValue) else List("--" + opt.longName + "=" + opt.getValue)
+        if (opt.getValue != null) {
+          if (opt.shortName != 0 && opt.shortName != ' ')
+            List("-" + opt.shortName, opt.getValue)
+          else
+            List("--" + opt.longName + "=" + opt.getValue)
+        } else {
+          Nil
+        }
       } else {
         if (opt.asInstanceOf[UnitOpt].getter()) {
-          if (opt.shortName != 0 && opt.shortName != ' ') List("-" + opt.shortName) else List("--" + opt.longName)
+          if (opt.shortName != 0 && opt.shortName != ' ')
+            List("-" + opt.shortName)
+          else
+            List("--" + opt.longName)
         } else {
           Nil
         }

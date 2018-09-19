@@ -19,11 +19,12 @@ import java.util.Properties
 import scala.io.Source
 
 import orc.util.ArrayExtensions.{ Array1, Array2 }
-import orc.values.sites.{ PartialSite, SpecificArity }
+import orc.values.sites.{ SpecificArity }
+import orc.values.sites.compatibility.{ ScalaPartialSite }
 
 import org.codehaus.jettison.json.JSONObject
 
-class YandexTranslateFactory extends PartialSite with SpecificArity {
+class YandexTranslateFactory extends ScalaPartialSite with SpecificArity {
   val arity = 1
 
   def loadProperties(file: String): String = {
@@ -50,7 +51,7 @@ class YandexTranslateFactory extends PartialSite with SpecificArity {
 
 /** @author amp
   */
-class YandexTranslate(key: String) extends PartialSite with SpecificArity {
+class YandexTranslate(key: String) extends ScalaPartialSite with SpecificArity {
   val arity = 2
 
   val url = new URL(

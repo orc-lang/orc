@@ -18,10 +18,11 @@ import orc.{ CallContext, OrcEvent }
 import orc.run.Orc
 import orc.run.core.EventHandler
 import orc.values.Signal
+import orc.MaterializedCallContext
 
 /** @author dkitchin
   */
-case class RwaitEvent(delay: BigInt, callContext: CallContext) extends OrcEvent
+case class RwaitEvent(delay: BigInt, callContext: MaterializedCallContext) extends OrcEvent
 
 trait SupportForRwait extends Orc {
 

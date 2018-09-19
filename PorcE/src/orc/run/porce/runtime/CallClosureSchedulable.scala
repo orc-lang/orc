@@ -47,12 +47,12 @@ object CallClosureSchedulable {
     */
   def varArgs(closure: PorcEClosure, arguments: Array[AnyRef], execution: PorcEExecution): CallClosureSchedulable = {
     new CallClosureSchedulable(closure, arguments, execution)
-  } 
+  }
 }
 
 final class CallClosureSchedulable private (private var _closure: PorcEClosure, private var _arguments: Array[AnyRef], execution: PorcEExecution) extends Schedulable {
   override val nonblocking: Boolean = true
-  
+
   /*override val priority: Int = {
     val t = closure.getTimePerCall
     if (t < Long.MaxValue) {
@@ -61,11 +61,11 @@ final class CallClosureSchedulable private (private var _closure: PorcEClosure, 
       100
     }
   }*/
- 
+
   def closure = _closure
-  
+
   def arguments = _arguments
-  
+
   def run(): Unit = {
     val (t, a) = (_closure, _arguments)
     _closure = null
@@ -75,12 +75,16 @@ final class CallClosureSchedulable private (private var _closure: PorcEClosure, 
     else
       execution.invokeClosure(t, a)
   }
-  
+
   override def toString(): String = {
-    val a = if (arguments == null) "null" else {
-      arguments.map(Format.formatValue).mkString(", ")
+    val a = if (PorcERuntime.displayClosureValues) {
+      if (arguments == null) "" else {
+        arguments.map(v => Format.formatValue(v).take(48)).mkString(", ")
+      }
+    } else {
+      ""
     }
-      
+
     s"$closure($a)" // %$priority
   }
 }

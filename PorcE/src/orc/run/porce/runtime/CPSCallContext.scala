@@ -1,5 +1,5 @@
 //
-// CPSCallContext.scala -- Scala class CPSCallContext
+// MaterializedCPSCallContext.scala -- Scala class MaterializedCPSCallContext
 // Project PorcE
 //
 // Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
@@ -17,26 +17,106 @@ import orc.{ CallContext, CaughtEvent, OrcEvent }
 import orc.compile.parse.OrcSourceRange
 import orc.error.OrcException
 import orc.run.porce.SimpleWorkStealingSchedulerWrapper
+import orc.MaterializedCallContext
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import orc.SiteResponseSet
+import orc.VirtualCallContext
 
-class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: Counter, val t: Terminator, val callSiteId: Int) extends AtomicBoolean with CallContext with Terminatable {
-  // The value stored in the AtomicBoolean is a flag saying if we have already halted.
+sealed abstract class CallContextCommon(
+    val execution: PorcEExecution,
+    val p: PorcEClosure, val c: Counter, val t: Terminator,
+    val callSiteId: Int) extends CallContext {
 
-  val runtime = execution.runtime
+  final def notifyOrc(event: OrcEvent): Unit = {
+    execution.notifyOrcWithBoundary(event)
+  }
+
+  // TODO: Support rights.
+  final def hasRight(rightName: String): Boolean = false
+
+  final def isLive: Boolean = {
+    t.isLive()
+  }
+
+  // TODO: Add a mapping from callSiteIds to ranges or just nodes, then use that to look up the data we need here.
+  def callSitePosition: Option[OrcSourceRange] = None
+
+  def runtime = execution.runtime
+}
+
+class VirtualCPSCallContext(_execution: PorcEExecution, _p: PorcEClosure, _c: Counter, _t: Terminator, _callSiteId: Int)
+    extends CallContextCommon(_execution, _p, _c, _t, _callSiteId) with VirtualCallContext {
+
+  /** Create an empty SiteResponseSet.
+    *
+    * This ResultDescriptor is optimized for receiving some unknown number of
+    * publications and other actions.
+    */
+  def empty(): SiteResponseSet = ResponseSet.Empty
+
+  def materialize(): MaterializedCallContext = {
+    val r = new MaterializedCPSCallContext(execution, p, c, t, callSiteId)
+    r
+  }
+
+  SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
+}
+
+sealed abstract class ResponseSet(val next: ResponseSet) extends SiteResponseSet {
+  protected[this] def selfAsNext: ResponseSet = this
+
+  /** Publish a value from ctx without halting the call.
+    */
+  override def publishNonterminal(ctx: CallContext, v: AnyRef): ResponseSet =
+    new ResponseSet.PublishNonterminal(ctx, v, selfAsNext)
+
+  /** Publish a value from ctx and halt ctx.
+    */
+  override def publish(ctx: CallContext, v: AnyRef): ResponseSet =
+    new ResponseSet.PublishTerminal(ctx, v, selfAsNext)
+
+  /** Halt ctx without publishing a value.
+    */
+  override def halt(ctx: CallContext): ResponseSet =
+    this.halt(ctx, null)
+
+  /** Halt ctx without publishing a value, providing an exception which caused the halt.
+    */
+  override def halt(ctx: CallContext, e: OrcException): ResponseSet =
+    new ResponseSet.Halt(ctx, e, selfAsNext)
+
+  /** Notify the runtime that ctx will never publish again, but will not halt.
+    */
+  override def discorporate(ctx: CallContext): ResponseSet =
+    new ResponseSet.Discorporate(ctx, selfAsNext)
+}
+
+object ResponseSet {
+  object Empty extends ResponseSet(null) {
+    protected[this] override def selfAsNext = null
+  }
+  final class PublishNonterminal(val ctx: CallContext, val v: AnyRef, _next: ResponseSet) extends ResponseSet(_next) {
+    override def halt(ctx: CallContext): ResponseSet =
+      new PublishTerminal(ctx, v, next)
+  }
+  final class PublishTerminal(val ctx: CallContext, val v: AnyRef, _next: ResponseSet) extends ResponseSet(_next)
+  final class Halt(val ctx: CallContext, val e: OrcException, _next: ResponseSet) extends ResponseSet(_next)
+  final class Discorporate(val ctx: CallContext, _next: ResponseSet) extends ResponseSet(_next)
+}
+
+class MaterializedCPSCallContext(_execution: PorcEExecution, _p: PorcEClosure, _c: Counter, _t: Terminator, _callSiteId: Int)
+    extends CallContextCommon(_execution, _p, _c, _t, _callSiteId) with MaterializedCallContext with Terminatable {
+  // A flag saying if we have already halted.
+  val halted = new AtomicBoolean(false)
 
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
-  def begin(): Unit = {
-    Counter.flushAllCounterOffsets(flushOnlyPositive = true)
-    t.addChild(this)
-  }
+  // Flush positive counter because p may execute in another thread.
+  Counter.flushAllCounterOffsets(1)
+
+  t.addChild(this)
 
   final def publishNonterminal(v: AnyRef): Unit = {
-    /* ROOTNODE-STATISTICS
-    p.body.getRootNode() match {
-      case n: PorcERootNode => n.incrementPublication()
-      case _ => ()
-    }
-    */
     c.newToken() // Token: Passed to p.
     val s = CallClosureSchedulable(p, v, execution)
     SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
@@ -50,13 +130,7 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
     */
   override final def publish(v: AnyRef) = {
     // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
-    if (compareAndSet(false, true)) {
-      /* ROOTNODE-STATISTICS
-      p.body.getRootNode() match {
-        case n: PorcERootNode => n.incrementPublication()
-        case _ => ()
-      }
-      */
+    if (halted.compareAndSet(false, true)) {
       val s = CallClosureSchedulable(p, v, execution)
       SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)
       // Token: pass to p
@@ -67,13 +141,7 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
 
   final def publishOptimized() = {
     // This is an optimization of publishNonterminal then halt. We pass the token directly to p instead of creating a new one and then halting it.
-    if (compareAndSet(false, true)) {
-      /* ROOTNODE-STATISTICS
-      p.body.getRootNode() match {
-        case n: PorcERootNode => n.incrementPublication()
-        case _ => ()
-      }
-      */
+    if (halted.compareAndSet(false, true)) {
       t.removeChild(this)
       true
     } else {
@@ -83,18 +151,6 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
 
   final def kill(): Unit = halt()
 
-  final def halt(): Unit = {
-    if (compareAndSet(false, true)) {
-      // Token: Taken from passed in c.
-      c.haltToken()
-      t.removeChild(this)
-    }
-  }
-
-  final def notifyOrc(event: OrcEvent): Unit = {
-    execution.notifyOrcWithBoundary(event)
-  }
-
   // TODO: Support VTime
   final def setQuiescent(): Unit = {}
 
@@ -103,24 +159,22 @@ class CPSCallContext(val execution: PorcEExecution, val p: PorcEClosure, val c: 
     halt()
   }
 
-  // TODO: Support rights.
-  final def hasRight(rightName: String): Boolean = false
-
-  final def isLive: Boolean = {
-    t.isLive()
+  final def halt(): Unit = {
+    if (halted.compareAndSet(false, true)) {
+      // Token: Taken from passed in c.
+      c.haltToken()
+      t.removeChild(this)
+    }
   }
 
   final def discorporate(): Unit = {
-    if (compareAndSet(false, true)) {
+    if (halted.compareAndSet(false, true)) {
       c.discorporateToken() // Token: Taken from passed in c.
       t.removeChild(this)
     }
   }
 
-  // TODO: Add a mapping from callSiteIds to ranges or just nodes, then use that to look up the data we need here.
-  def callSitePosition: Option[OrcSourceRange] = None
-
   override def toString() = {
-    s"CPSCallContext@${hashCode().formatted("%x")}(${get()})"
+    s"MaterializedCPSCallContext@${hashCode().formatted("%x")}(${halted.get()})"
   }
 }

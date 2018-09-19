@@ -14,12 +14,12 @@ package orc.lib.gui
 
 import java.awt.event.{ ActionEvent, ActionListener, MouseEvent, MouseListener, WindowFocusListener, WindowListener, WindowStateListener }
 
-import orc.CallContext
+import orc.values.sites.compatibility.CallContext
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.run.core.ExternalSiteCallController
+import orc.run.core.CallController
 import orc.run.extensions.SupportForCallsIntoOrc
-import orc.values.{ Field, HasMembers }
-import orc.values.sites.Site1
+import orc.values.{ Field }
+import orc.values.sites.compatibility.{ Site1, HasMembers }
 
 abstract class ListenerAdapter {
   val deligate: HasMembers
@@ -36,7 +36,7 @@ abstract class ListenerAdapter {
 // TODO: Make this typed once we have object types.
 abstract class ListenerAdapterSite extends Site1 {
   def call(arg: AnyRef, callContext: CallContext) = {
-    val execution = callContext.asInstanceOf[ExternalSiteCallController].caller.execution match {
+    val execution = callContext.underlying.asInstanceOf[CallController].caller.execution match {
       case r: SupportForCallsIntoOrc => r
       case _ => throw new AssertionError("CallableToRunnable only works with a runtime that includes SupportForCallsIntoOrc.")
     }
@@ -63,10 +63,10 @@ object ActionListenerAdapter extends ListenerAdapterSite {
 
 class WindowListenerAdapter(val deligate: HasMembers, val execution: SupportForCallsIntoOrc)
   extends ListenerAdapter with WindowListener with WindowFocusListener with WindowStateListener {
-  // Members declared in java.awt.event.WindowFocusListener   
+  // Members declared in java.awt.event.WindowFocusListener
   def windowGainedFocus(e: java.awt.event.WindowEvent): Unit = call(Field("windowGainedFocus"), List(e))
   def windowLostFocus(e: java.awt.event.WindowEvent): Unit = call(Field("windowLostFocus"), List(e))
-  // Members declared in java.awt.event.WindowListener   
+  // Members declared in java.awt.event.WindowListener
   def windowActivated(e: java.awt.event.WindowEvent): Unit = call(Field("windowActivated"), List(e))
   def windowClosed(e: java.awt.event.WindowEvent): Unit = call(Field("windowClosed"), List(e))
   def windowClosing(e: java.awt.event.WindowEvent): Unit = call(Field("windowClosing"), List(e))
@@ -74,7 +74,7 @@ class WindowListenerAdapter(val deligate: HasMembers, val execution: SupportForC
   def windowDeiconified(e: java.awt.event.WindowEvent): Unit = call(Field("windowDeiconified"), List(e))
   def windowIconified(e: java.awt.event.WindowEvent): Unit = call(Field("windowIconified"), List(e))
   def windowOpened(e: java.awt.event.WindowEvent): Unit = call(Field("windowOpened"), List(e))
-  // Members declared in java.awt.event.WindowStateListener   
+  // Members declared in java.awt.event.WindowStateListener
   def windowStateChanged(e: java.awt.event.WindowEvent): Unit = call(Field("windowStateChanged"), List(e))
 }
 object WindowListenerAdapter extends ListenerAdapterSite {

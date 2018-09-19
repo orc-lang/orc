@@ -14,7 +14,10 @@ package orc.values
 
 import scala.collection.immutable.Map
 
+import orc.{ OrcRuntime, Accessor }
 import orc.error.runtime.NoSuchMemberException
+
+// FIXME: PERFORMANCE: This is a very slow implementation of objects because of the need for hash look ups for every field. Something like FastRecord should be used.
 
 /** The runtime object representing Orc objects.
   *
@@ -29,7 +32,7 @@ case class OrcObject(private var entries: Map[Field, AnyRef] = null) extends Has
     entries = _entries
   }
 
-  override def hasMember(f: Field) = entries contains f
+  def hasMember(f: Field) = entries contains f
 
   @throws(classOf[NoSuchMemberException])
   def getMember(f: Field): AnyRef = {
@@ -49,5 +52,25 @@ case class OrcObject(private var entries: Map[Field, AnyRef] = null) extends Has
         case l => l reduceRight { _ + " # " + _ }
       }
     "{ " + contents + " }"
+  }
+
+  @throws[NoSuchMemberException]
+  def getAccessor(runtime: OrcRuntime, field: Field): Accessor = {
+    if(hasMember(field)) {
+      new OrcObjectAccessor(field)
+    } else {
+      throw new NoSuchMemberException(this, field.name)
+    }
+  }
+}
+
+final class OrcObjectAccessor(field: Field) extends Accessor {
+  def canGet(target: AnyRef): Boolean = {
+    target.isInstanceOf[OrcObject]
+  }
+
+  @throws[NoSuchMemberException]
+  def get(target: AnyRef): AnyRef = {
+    target.asInstanceOf[OrcObject].getMember(field)
   }
 }

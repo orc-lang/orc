@@ -11,15 +11,19 @@
 
 package orc.values.sites.compatibility;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
 import orc.error.runtime.NoSuchMemberException;
 import orc.error.runtime.TokenException;
 import orc.error.runtime.UncallableValueException;
+import orc.values.FastRecord;
+import orc.values.FastRecordFactory;
 import orc.values.Field;
-import orc.values.HasMembers;
 
 /**
  * Dot-accessible sites should extend this class and declare their Orc-available
@@ -31,7 +35,7 @@ import orc.values.HasMembers;
  *
  * @author dkitchin
  */
-@Deprecated
+//@Deprecated
 public abstract class DotSite extends SiteAdaptor implements HasMembers {
 
     Map<String, Object> methodMap;
@@ -39,6 +43,25 @@ public abstract class DotSite extends SiteAdaptor implements HasMembers {
     public DotSite() {
         methodMap = new TreeMap<String, Object>();
         this.addMembers();
+    }
+
+    public static final boolean UseFastRecord = Boolean
+                .parseBoolean(System.getProperty("orc.values.useFastRecord", "false"));
+
+    public Object toFastRecord(FastRecordFactory factory) {
+        if (!UseFastRecord) {
+            return this;
+        }
+        ArrayList<Object> values = new ArrayList<>(methodMap.size());
+        List<Field> expectedFields = Arrays.asList(factory.members());
+        for (Field f : expectedFields) {
+            Object v = methodMap.get(f.name());
+            if (v == null) {
+                throw new IllegalArgumentException("All factory fields must be in DotSite: " + f);
+            }
+            values.add(v);
+        }
+        return factory.apply(values.toArray());
     }
 
     @Override

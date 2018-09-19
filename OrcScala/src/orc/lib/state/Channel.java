@@ -14,7 +14,8 @@ package orc.lib.state;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import orc.CallContext;
+import orc.values.sites.compatibility.CallContext;
+import orc.MaterializedCallContext;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.TokenException;
 import orc.lib.state.types.ChannelType;
@@ -22,6 +23,7 @@ import orc.run.distrib.AbstractLocation;
 import orc.run.distrib.ClusterLocations;
 import orc.run.distrib.DOrcPlacementPolicy;
 import orc.types.Type;
+import orc.values.FastRecordFactory;
 import orc.values.sites.TypedSite;
 import orc.values.sites.compatibility.Args;
 import orc.values.sites.compatibility.DotSite;
@@ -38,7 +40,7 @@ public class Channel extends EvalSite implements TypedSite {
     @Override
     public Object evaluate(final Args args) throws TokenException {
         if (args.size() == 0) {
-            return new ChannelInstance();
+            return new ChannelInstance().toFastRecord(instanceFactory);
         } else {
             throw new ArityMismatchException(0, args.size());
         }
@@ -48,6 +50,11 @@ public class Channel extends EvalSite implements TypedSite {
     public Type orcType() {
         return ChannelType.getBuilder();
     }
+
+    private static FastRecordFactory instanceFactory = new FastRecordFactory(new String[] {
+            "get", "put", "getD", "getAll",
+            "isClosed", "close", "closeD"
+    });
 
     // @Override
     // public Type type() throws TypeException {
@@ -59,8 +66,8 @@ public class Channel extends EvalSite implements TypedSite {
     public static class ChannelInstance extends DotSite implements DOrcPlacementPolicy {
 
         public final LinkedList<Object> contents;
-        public final LinkedList<CallContext> readers;
-        public CallContext closer;
+        public final LinkedList<MaterializedCallContext> readers;
+        public MaterializedCallContext closer;
         /**
          * Once this becomes true, no new items may be put, and gets on an empty
          * channel die rather than blocking.
@@ -69,21 +76,22 @@ public class Channel extends EvalSite implements TypedSite {
 
         ChannelInstance() {
             contents = new LinkedList<>();
-            readers = new LinkedList<CallContext>();
+            readers = new LinkedList<MaterializedCallContext>();
         }
 
-        public static class PutSite extends EvalSite {
+        public static class PutSite extends SiteAdaptor {
             public final ChannelInstance channel;
 
             PutSite(ChannelInstance channel) {
                 this.channel = channel;
             }
 
-            public Object evaluate(final Args args) throws TokenException {
+            @Override
+            public void callSite(final Args args, final CallContext reader) {
                 synchronized (channel) {
                     final Object item = args.getArg(0);
                     if (channel.closed) {
-                        throw orc.error.runtime.HaltException.SINGLETON();
+                        throw new orc.error.runtime.HaltException();
                     }
                     while (true) { // Contains break. Loops until a live reader is removed or readers is empty.
                         if (channel.readers.isEmpty()) {
@@ -93,7 +101,7 @@ public class Channel extends EvalSite implements TypedSite {
                         } else {
                             // If there are callers waiting, give this item to
                             // the top caller.
-                            CallContext receiver = channel.readers.removeFirst();
+                            final MaterializedCallContext receiver = channel.readers.removeFirst();
                             if (receiver.isLive()) { // If the reader is live then publish into it.
                                 receiver.publish(object2value(item));
                                 break;
@@ -103,7 +111,7 @@ public class Channel extends EvalSite implements TypedSite {
                     }
                     // Since this is an asynchronous channel, a put call
                     // always returns.
-                    return signal();
+                    reader.publish(signal());
                 }
             }
 
@@ -127,7 +135,7 @@ public class Channel extends EvalSite implements TypedSite {
                             reader.halt();
                         } else {
                             reader.setQuiescent();
-                            channel.readers.addLast(reader);
+                            channel.readers.addLast(reader.materialize());
                         }
                     } else {
                         // If there is an item available, pop it and return
@@ -205,13 +213,13 @@ public class Channel extends EvalSite implements TypedSite {
                 public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final CallContext reader : readers) {
+                        for (final MaterializedCallContext reader : readers) {
                             reader.halt();
                         }
                         if (contents.isEmpty()) {
                             caller.publish(signal());
                         } else {
-                            closer = caller;
+                            closer = caller.materialize();
                             closer.setQuiescent();
                         }
                     }
@@ -227,7 +235,7 @@ public class Channel extends EvalSite implements TypedSite {
                 public void callSite(final Args args, final CallContext caller) {
                     synchronized (ChannelInstance.this) {
                         closed = true;
-                        for (final CallContext reader : readers) {
+                        for (final MaterializedCallContext reader : readers) {
                             reader.halt();
                         }
                         caller.publish(signal());

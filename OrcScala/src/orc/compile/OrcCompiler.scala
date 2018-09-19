@@ -51,8 +51,9 @@ class CompilerOptions(val options: OrcCompilationOptions, val compileLogger: Com
   *
   * @author jthywiss
   */
-trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
+trait CompilerPhase[O, A, B >: Null] extends (O => A => B) { self =>
   val phaseName: String
+
   def >>>[C >: Null](that: CompilerPhase[O, B, C]) = new CompilerPhase[O, A, C] {
     val phaseName = self.phaseName + " >>> " + that.phaseName
     override def apply(o: O) = { a: A =>
@@ -64,6 +65,17 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
       }
     }
   }
+
+  def orElse(that: CompilerPhase[O, A, B]) = new CompilerPhase[O, A, B] {
+    val phaseName = self.phaseName + " >>> " + that.phaseName
+    override def apply(o: O) = { a: A =>
+      if (a == null) null else {
+        val b = self.apply(o)(a)
+        if (b == null) that(o)(a) else b
+      }
+    }
+  }
+
   def timePhase: CompilerPhase[O, A, B] = new CompilerPhase[O, A, B] {
     val phaseName = self.phaseName
     override def apply(o: O) = { a: A =>
@@ -74,6 +86,7 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
       b
     }
   }
+
   def printOut: CompilerPhase[O, A, B] = new CompilerPhase[O, A, B] {
     val phaseName = self.phaseName
     override def apply(o: O) = { a: A =>
@@ -92,10 +105,10 @@ trait CompilerPhase[O, A, B] extends (O => A => B) { self =>
   */
 trait CoreOrcCompilerPhases {
   this: OrcCompilerRequires =>
-  
+
   def abortOnError[A >: Null] = new CompilerPhase[CompilerOptions, A, A] {
     val phaseName = "abortOnError"
-    override def apply(co: CompilerOptions) = { v => 
+    override def apply(co: CompilerOptions) = { v =>
       if (co.compileLogger.getMaxSeverity().ordinal() >= Severity.ERROR.ordinal())
         // If there has been an error return null to abort the compilation.
         null
@@ -215,7 +228,7 @@ trait CoreOrcCompilerPhases {
     override def apply(co: CompilerOptions) = { ast => ast.withoutNames }
   }
 
-  def outputIR[A](irNumber: Int, name: String, pred: (CompilerOptions) => Boolean = (co) => true) = new CompilerPhase[CompilerOptions, A, A] {
+  def outputIR[A >: Null](irNumber: Int, name: String, pred: (CompilerOptions) => Boolean = (co) => true) = new CompilerPhase[CompilerOptions, A, A] {
     val phaseName = s"Output IR #$irNumber"
     override def apply(co: CompilerOptions) = { ast =>
       val irMask = 1 << (irNumber - 1)
@@ -227,7 +240,7 @@ trait CoreOrcCompilerPhases {
           println(astStr)
           println(s"============ End dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============")
         }
-        
+
         ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
         ExecutionLogOutputStream(s"ir-$name", "txt", s"$name dump") foreach { out =>
           val wr = new OutputStreamWriter(out, "UTF-8")
@@ -343,7 +356,7 @@ class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expre
 trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassLoading {
   @throws(classOf[IOException])
   abstract override def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E = {
-    // FIXME: This will break cases where the compiler is used to compile code that needs different class paths. 
+    // FIXME: This will break cases where the compiler is used to compile code that needs different class paths.
     SiteClassLoading.initWithClassPathStrings(options.classPath)
     super.apply(source, options, compileLogger, progress) // This will call apply in the subCLASS of OrcCompiler
   }

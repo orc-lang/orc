@@ -16,6 +16,7 @@ import orc.values.Format
 import orc.values.Field
 import orc.util.PrettyPrintInterpolator
 import orc.util.FragmentAppender
+import orc.ast.ASTWithIndex
 
 /** @author amp
   */
@@ -41,6 +42,8 @@ class PrettyPrint(includeNestedCode: Boolean = true) {
       pp"[...]"
   }
 
+  private def formatIndex(n: ASTWithIndex) = n.optionalIndex.map("#" + _).getOrElse("")
+
   def reduce(ast: PorcAST): FragmentAppender = {
     tag(ast,
       ast match {
@@ -49,14 +52,14 @@ class PrettyPrint(includeNestedCode: Boolean = true) {
 
         case Let(x, v, b) => pp"let $x = $StartIndent$v$EndIndent in\n$b"
         case MethodDeclaration(t, l, b) => pp"def($t) $StartIndent${FragmentAppender.mkString(l.map(reduce), ";\n")}$EndIndent in\n$b"
-        case MethodCPS(name, p, c, t, isDef, args, body) => pp"cps${if (isDef) "_d" else "_s"} $name ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n${nestedCode(body)}$EndIndent"
-        case MethodDirect(name, isDef, args, body) => pp"direct${if (isDef) "_d" else "_s"} $name (${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n${nestedCode(body)}$EndIndent"
+        case n@MethodCPS(name, p, c, t, isDef, args, body) => pp"cps${if (isDef) "_d" else "_s"} $name${formatIndex(n)} ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n${nestedCode(body)}$EndIndent"
+        case n@MethodDirect(name, isDef, args, body) => pp"direct${if (isDef) "_d" else "_s"} $name${formatIndex(n)} (${args.map(reduce(_)).mkString(", ")}) =$StartIndent\n${nestedCode(body)}$EndIndent"
 
-        case Continuation(args, b) => pp"\u03BB(${args.map(reduce(_)).mkString(", ")}).$StartIndent\n${nestedCode(b)}$EndIndent"
+        case n@Continuation(args, b) => pp"\u03BB${formatIndex(n)}(${args.map(reduce(_)).mkString(", ")}).$StartIndent\n${nestedCode(b)}$EndIndent"
 
         case CallContinuation(t, args) => pp"$t (${args.map(reduce(_)).mkString(", ")})"
-        case MethodCPSCall(isExt, target, p, c, t, args) => pp"call cps $isExt $target ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")})"
-        case MethodDirectCall(isExt, target, args) => pp"call direct $isExt $target (${args.map(reduce(_)).mkString(", ")})"
+        case n@MethodCPSCall(isExt, target, p, c, t, args) => pp"call${formatIndex(n)} cps $isExt $target ($p, $c, $t)(${args.map(reduce(_)).mkString(", ")})"
+        case n@MethodDirectCall(isExt, target, args) => pp"call${formatIndex(n)} direct $isExt $target (${args.map(reduce(_)).mkString(", ")})"
         case IfLenientMethod(arg, f, g) => pp"iflenient $arg then$StartIndent\n$f$EndIndent\nelse$StartIndent\n$g$EndIndent"
 
         case Sequence(es) => FragmentAppender.mkString(es.map(reduce(_)), ";\n")

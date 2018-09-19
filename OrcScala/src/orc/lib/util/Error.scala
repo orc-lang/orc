@@ -12,8 +12,8 @@
 //
 package orc.lib.util
 
-import orc.values.sites.TotalSite
-import orc.values.sites.TotalSite1
+import orc.values.sites.compatibility.TotalSite
+import orc.values.sites.compatibility.TotalSite1
 import orc.values.sites.TypedSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ProgramSignalledError

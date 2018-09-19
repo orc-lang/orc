@@ -1,4 +1,4 @@
-{- swaptions-naive-scala-subroutines-seq.orc
+{- swaptions-naive-scala-subroutines-opt
 
 This implementation uses Scala versions of simulation SUBroutines but not for
 the simulation control. This allow concurrency between a number of components

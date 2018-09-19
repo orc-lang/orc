@@ -60,25 +60,14 @@ public class StackCheckingDispatch extends Dispatch {
 	executeDispatchWithEnvironment(frame, target, arguments);
     }
 
-    public void executeDispatch(final VirtualFrame frame, final PorcEClosure computation) {
-	executeDispatchWithEnvironment(frame, computation, new Object[] { null });
-    }
-
-    public void executeDispatch(final VirtualFrame frame, final PorcEClosure computation, Object arg1) {
-	executeDispatchWithEnvironment(frame, computation, new Object[] { null, arg1 });
-    }
-
-    public void executeDispatch(final VirtualFrame frame, final PorcEClosure computation, Object arg1, Object arg2) {
-	executeDispatchWithEnvironment(frame, computation, new Object[] { null, arg1, arg2 });
-    }
-
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] args) {
 	final PorcERuntime r = execution.runtime();
         final PorcEClosure computation = (PorcEClosure) target;
-        // CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
-	if (spawnProfile.profile(r.incrementAndCheckStackDepth())) {
-            executeInline(frame, computation, args, true);
+        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth();
+        final int prev = state.previousDepth();
+	if (spawnProfile.profile(state.growthAllowed())) {
+            executeInline(frame, computation, args, prev);
         } else {
             createSchedulableAndSchedule(args, computation);
         }
@@ -97,7 +86,7 @@ public class StackCheckingDispatch extends Dispatch {
 	if (call == null) {
 	    CompilerDirectives.transferToInterpreterAndInvalidate();
 	    computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
-		Dispatch n = insert(InternalCPSDispatch.create(false, execution, isTail));
+		Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
 		n.setTail(isTail);
 		notifyInserted(n);
 		return n;
@@ -106,22 +95,34 @@ public class StackCheckingDispatch extends Dispatch {
 	return call;
     }
 
-    private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args, final boolean useStackDepth) {
-	final PorcERuntime r = execution.runtime();
-	Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
-	long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
-	try {
-	    getCall().executeDispatchWithEnvironment(frame, computation, args);
-	} finally {
-	    if (useStackDepth) {
-            r.decrementStackDepth();
+    private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args, final int previous) {
+        final PorcERuntime r = execution.runtime();
+        Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
+        long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
+        try {
+            getCall().executeDispatchWithEnvironment(frame, computation, args);
+        } finally {
+            r.decrementStackDepth(previous);
+            SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
         }
-	    SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
-	}
     }
 
-    public void executeInline(final VirtualFrame frame, final PorcEClosure computation, final boolean useStackDepth) {
-	executeInline(frame, computation, new Object[] { null }, useStackDepth);
+    private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args) {
+        Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
+        long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
+        try {
+            getCall().executeDispatchWithEnvironment(frame, computation, args);
+        } finally {
+            SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
+        }
+    }
+
+    public void executeInline(final VirtualFrame frame, final PorcEClosure computation, final int previous) {
+        executeInline(frame, computation, new Object[] { null }, previous);
+    }
+
+    public void executeInline(final VirtualFrame frame, final PorcEClosure computation) {
+        executeInline(frame, computation, new Object[] { null });
     }
 
     @Override

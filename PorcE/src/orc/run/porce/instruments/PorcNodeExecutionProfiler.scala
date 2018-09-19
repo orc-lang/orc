@@ -22,7 +22,7 @@ import orc.util.{ CsvWriter, ExecutionLogOutputStream }
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Env
-import com.oracle.truffle.api.vm.PolyglotEngine
+import org.graalvm.polyglot.Engine
 
 class PorcNodeExecutionProfiler(env: Env) extends ProfilerBase {
   import ProfilerUtils._
@@ -35,8 +35,8 @@ class PorcNodeExecutionProfiler(env: Env) extends ProfilerBase {
       dump(pout)
     }
   }
-  
-  
+
+
   @TruffleBoundary @noinline
   def dump(out: PrintWriter): Unit = synchronized {
     //val out = new PrintWriter(env.out())
@@ -72,8 +72,8 @@ object PorcNodeExecutionProfiler {
   /** Finds profiler associated with given engine. There is at most one profiler associated with
     * any {@link PolyglotEngine}. One can access it by calling this static method.
     */
-  def get(engine: PolyglotEngine): PorcNodeExecutionProfiler = {
-    val instrument = engine.getRuntime().getInstruments().get(PorcNodeExecutionProfilerInstrument.ID);
+  def get(engine: Engine): PorcNodeExecutionProfiler = {
+    val instrument = engine.getInstruments().get(PorcNodeExecutionProfilerInstrument.ID);
     if (instrument == null) {
       throw new IllegalStateException();
     }

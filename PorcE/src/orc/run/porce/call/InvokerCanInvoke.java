@@ -15,11 +15,16 @@ package orc.run.porce.call;
 
 import orc.Invoker;
 import orc.run.porce.NodeBase;
+import orc.run.porce.SpecializationConfiguration;
 import orc.values.sites.InvocableInvoker;
+import orc.values.sites.OrcJavaCompatibility;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -31,6 +36,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
  *
  * @author amp
  */
+@ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
 abstract class InvokerCanInvoke extends NodeBase {
     /**
@@ -47,18 +53,13 @@ abstract class InvokerCanInvoke extends NodeBase {
      */
     public abstract boolean executeCanInvoke(VirtualFrame frame, Invoker invoker, Object target, Object[] arguments);
 
-    /*
-    @Specialization(
-            guards = { "expectedInvoker == invoker || expectedInvoker.equals(invoker)" },
-            limit = "1")
-    public boolean overloadedDirectInvokerBase1(OverloadedDirectInvokerBase1<?> invoker, Object target, Object[] arguments,
-            @Cached("invoker") OverloadedDirectInvokerBase1<?> expectedInvoker) {
-        boolean argumentTypeCorrect = expectedInvoker.clsT1().isInstance(arguments[0]) ||
-                (expectedInvoker.clsT1() == expectedInvoker.clsBaseT1()) && arguments[0] == null;
-        return (expectedInvoker.method() == target || expectedInvoker.method().equals(target)) &&
-                arguments.length == 1 && argumentTypeCorrect;
+    @Specialization(guards = { "KnownSiteSpecialization", "invoker.argumentClss() == argumentClss" })
+    public boolean invocableInvoker(InvocableInvoker invoker, Object target, Object[] arguments,
+            @Cached(value = "invoker.argumentClss()", dimensions = 1) final Class<?>[] argumentClss) {
+
+        CompilerAsserts.compilationConstant(invoker);
+        return invoker.canInvokeTarget(target) && orc.values.sites.InvocationBehaviorUtilities.valuesHaveType(arguments, argumentClss);
     }
-    */
 
     @Specialization(guards = { "isPartiallyEvaluable(invoker)" })
     public boolean partiallyEvaluable(Invoker invoker, Object target, Object[] arguments) {
@@ -66,12 +67,13 @@ abstract class InvokerCanInvoke extends NodeBase {
     }
 
     protected static boolean isPartiallyEvaluable(Invoker invoker) {
-        return invoker instanceof InvocableInvoker ||
-                invoker instanceof OverloadedDirectInvokerBase1 ||
+        return  invoker instanceof OverloadedDirectInvokerBase1 ||
                 invoker instanceof OverloadedDirectInvokerBase2 ||
                 invoker instanceof orc.compile.orctimizer.OrcAnnotation.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayDerefSite.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayAssignSite.Invoker ||
+//                invoker instanceof orc.run.extensions.SiteInvoker ||
+                invoker instanceof orc.values.sites.JavaArrayLengthPseudofield.Invoker ||
                 false;
     }
 

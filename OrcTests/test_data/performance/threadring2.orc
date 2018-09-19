@@ -16,6 +16,7 @@ include "benchmark.inc"
 
 import class ThreadRing = "orc.test.item.scalabenchmarks.ThreadRing"
 
+-- Lines: 6
 def threadRing(Integer, Integer, Channel[Integer], Channel[Integer]) :: Integer
 def threadRing(id, m, in, next) =
     repeat(in.get) >x>
@@ -26,6 +27,7 @@ def threadRing(id, m, in, next) =
 
 val N = 503
 
+-- Lines: 6
 def threadRingRunner(Integer) :: Signal
 def threadRingRunner(p) =
   val ring = Table(N, lambda(_ :: Integer) = Channel[Integer]())

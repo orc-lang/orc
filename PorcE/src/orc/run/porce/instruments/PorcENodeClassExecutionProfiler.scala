@@ -22,11 +22,11 @@ import orc.util.{ CsvWriter, ExecutionLogOutputStream }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.instrumentation.TruffleInstrument.Env
 import com.oracle.truffle.api.nodes.Node
-import com.oracle.truffle.api.vm.PolyglotEngine
+import org.graalvm.polyglot.Engine
 
 class PorcENodeClassExecutionProfiler(env: Env) extends ProfilerBase {
   import ProfilerUtils._
-  
+
   @TruffleBoundary @noinline
   def dispose(): Unit = {
     val out = ExecutionLogOutputStream("porce-class-profile-dispose", "csv", "PorcE profile dump")
@@ -35,8 +35,8 @@ class PorcENodeClassExecutionProfiler(env: Env) extends ProfilerBase {
       dump(pout)
     }
   }
-  
-  
+
+
   @TruffleBoundary @noinline
   def dump(out: PrintWriter): Unit = synchronized {
     //val out = new PrintWriter(env.out())
@@ -71,8 +71,8 @@ object PorcENodeClassExecutionProfiler {
   /** Finds profiler associated with given engine. There is at most one profiler associated with
     * any {@link PolyglotEngine}. One can access it by calling this static method.
     */
-  def get(engine: PolyglotEngine): PorcENodeClassExecutionProfiler = {
-    val instrument = engine.getRuntime().getInstruments().get(PorcENodeClassExecutionProfilerInstrument.ID);
+  def get(engine: Engine): PorcENodeClassExecutionProfiler = {
+    val instrument = engine.getInstruments().get(PorcENodeClassExecutionProfilerInstrument.ID);
     if (instrument == null) {
       throw new IllegalStateException();
     }
@@ -80,7 +80,7 @@ object PorcENodeClassExecutionProfiler {
   }
 
   val KEY = PorcENodeClassExecutionProfiler;
-  
+
   def nonTrivialNode(n: Node): Boolean = {
     n match {
       case _: orc.run.porce.Read.Argument => false

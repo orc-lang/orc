@@ -19,7 +19,8 @@ import orc.test.item.scalabenchmarks.{ BenchmarkApplication, HashBenchmarkResult
 
 object BlackScholesPar extends BenchmarkApplication[Array[BlackScholesStock], Array[BlackScholesResult]] with HashBenchmarkResult[Array[BlackScholesResult]] {
   val expected = BlackScholesData
-  
+
+  // Lines: 4
   def benchmark(data: Array[BlackScholesStock]) = {
     //val out = Array.ofDim[BlackScholesResult](data.length)
     val res = for (BlackScholesStock(s, x, t) <- data.par) yield {

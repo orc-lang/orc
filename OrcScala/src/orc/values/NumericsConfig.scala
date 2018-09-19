@@ -14,23 +14,36 @@ package orc.values
 import scala.math.BigDecimal
 
 object NumericsConfig {
-  @inline
-  final def toOrcIntegral(v: Number) = {
-    if (NumericsConfig.preferLong) 
+  final def toOrcIntegral(s: String): Number = {
+    if (NumericsConfig.preferLong)
+      s.toLong
+    else
+      BigInt(s)
+  }
+
+  final def toOrcFloatingPoint(s: String): Number = {
+    if (NumericsConfig.preferDouble)
+      s.toDouble
+    else
+      BigDecimal(s)
+  }
+
+  final def toOrcIntegral(v: Number): Number = {
+    if (NumericsConfig.preferLong)
       v.longValue()
     else {
-      v match {
-        case d: BigInt =>
-          d
-        case d: BigDecimal =>
-          d.toBigInt()
-        case d: java.lang.Double =>
-          BigDecimal(d).toBigInt()
-        case _ if v.longValue() == v =>
-          BigInt(v.longValue())
-        case _ =>
-          BigInt(v.toString)
-      }
+//      v match {
+//        case d: BigInt =>
+//          d
+//        case d: BigDecimal =>
+//          d.toBigInt()
+//        case d: java.lang.Double =>
+//          BigDecimal(d).toBigInt()
+//        case _ if v.longValue() == v =>
+//          BigInt(v.longValue())
+//        case _ =>
+//          BigInt(v.toString)
+//      }
       if (v.longValue() == v) {
         BigInt(v.longValue())
       } else {
@@ -38,23 +51,23 @@ object NumericsConfig {
       }
     }
   }
-  @inline
-  final def toOrcFloatingPoint(v: Number) = {
-    if (NumericsConfig.preferDouble) 
+
+  final def toOrcFloatingPoint(v: Number): Number = {
+    if (NumericsConfig.preferDouble)
       v.doubleValue()
     else {
-      v match {
-        case d: BigInt =>
-          BigDecimal(d)
-        case d: BigDecimal =>
-          d
-        case d: java.lang.Double =>
-          BigDecimal(d)
-        case _ if v.doubleValue() == v =>
-          BigDecimal(v.doubleValue())
-        case _ =>
-          BigDecimal(v.toString)
-      }
+//      v match {
+//        case d: BigInt =>
+//          BigDecimal(d)
+//        case d: BigDecimal =>
+//          d
+//        case d: java.lang.Double =>
+//          BigDecimal(d)
+//        case _ if v.doubleValue() == v =>
+//          BigDecimal(v.doubleValue())
+//        case _ =>
+//          BigDecimal(v.toString)
+//      }
       if (v.longValue() == v) {
         BigInt(v.longValue())
       } else {
@@ -62,11 +75,11 @@ object NumericsConfig {
       }
     }
   }
-  
+
   @inline
-  final val preferLP = System.getProperty("orc.numerics.preferLP", "false").toBoolean  
+  final val preferLP = System.getProperty("orc.numerics.preferLP", "false").toBoolean
   @inline
-  final val preferDouble = Option(System.getProperty("orc.numerics.preferDouble")).map(_.toBoolean).getOrElse(preferLP)  
+  final val preferDouble = Option(System.getProperty("orc.numerics.preferDouble")).map(_.toBoolean).getOrElse(preferLP)
   @inline
   final val preferLong = Option(System.getProperty("orc.numerics.preferLong")).map(_.toBoolean).getOrElse(preferLP)
 }

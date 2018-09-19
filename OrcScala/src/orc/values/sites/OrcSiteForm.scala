@@ -60,7 +60,7 @@ object OrcSiteForm extends SiteForm {
         case e: InterruptedException => throw e
         case _: Exception => {} //Ignore -- It's not a Scala object, then.
       }
-      throw new SiteResolutionException(loadedClass.getName, new ClassCastException(loadedClass.getClass.getName + " cannot be cast to " + classOf[Site].getName))
+      throw new SiteResolutionException(loadedClass.getName, new ClassCastException(loadedClass.getName + " cannot be cast to " + classOf[Site].getName))
     }
   }
 }

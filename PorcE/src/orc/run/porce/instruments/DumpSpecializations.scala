@@ -13,7 +13,7 @@ package orc.run.porce.instruments
 
 import java.io.{ PrintWriter, StringWriter }
 
-import scala.collection.JavaConverters.asScalaBufferConverter
+import scala.collection.JavaConverters._
 
 import orc.run.porce.HasPorcNode
 
@@ -30,17 +30,18 @@ object DumpSpecializations {
       case r: PorcERootNode if r.getTotalCalls >= callsRequired =>
         out.println(s"    timePerCall = ${r.getTimePerCall}, totalSpawnedCalls = ${r.getTotalSpawnedCalls}, totalSpawnedTime = ${r.getTotalSpawnedTime}")
         true
-      case _ => false 
+      case _ => false
     }
     if (calledEnough) {
       def doVisiting(node: Node): Unit =
         node.accept(new NodeVisitor {
           def visit(node: Node): Boolean = {
             node match {
-              case l: LoopNode =>
+              /*case l: LoopNode =>
                 // Skip loop nodes because they actually have two children which duplicate the body of the loop.
-                doVisiting(l.getRepeatingNode.asInstanceOf[Node])
-                false
+                val children = l.getChildren.asScala
+                doVisiting(if (children.size == 1) children.head else children.find(_ != l.getRepeatingNode).getOrElse(children.head))
+                false*/
               case _ =>
                 printSpecializations(node, out, true, "  ")
                 true
@@ -89,13 +90,13 @@ object DumpSpecializations {
     }
 
   }
-  
+
   def specializationsAsString(n: Node): String = {
     val strWriter = new StringWriter()
     printSpecializations(n, new PrintWriter(strWriter), false, "")
     strWriter.toString()
   }
-  
+
   def findNodeWithSource(node: Node): Node = {
     node match {
       case p: HasPorcNode if p.porcNode.isDefined =>
