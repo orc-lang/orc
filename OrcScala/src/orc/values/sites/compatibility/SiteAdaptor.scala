@@ -13,10 +13,9 @@
 
 package orc.values.sites.compatibility
 
-import orc.values.sites.compatibility.CallContext
 import orc.error.runtime.TokenException
 import orc.values.{ OrcTuple, Signal }
-import orc.values.sites.{ Delay, DirectSite, Effects, FunctionalSite, Range, Site }
+import orc.values.sites.{ Delay, Effects, Range }
 
 /** Adapts old OrcJava sites to the new OrcScala site interface
   *

@@ -14,7 +14,6 @@
 package orc.values
 
 import orc.{ Accessor, OrcRuntime }
-import orc.values.HasMembersMetadata
 
 /** The common interface for all Orc values that have members (fields).
   *

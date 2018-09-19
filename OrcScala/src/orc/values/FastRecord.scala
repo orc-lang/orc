@@ -16,7 +16,6 @@ package orc.values
 import orc.{ OrcRuntime, Accessor }
 import orc.values.sites.AccessorValue
 import orc.run.distrib.DOrcMarshalingReplacement
-import orc.values.FastRecord
 
 class FastRecordFactory(_members: Seq[String]) {
   def this(_members: Array[String]) = this(_members.toSeq)
