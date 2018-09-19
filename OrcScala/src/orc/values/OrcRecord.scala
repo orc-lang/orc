@@ -21,7 +21,7 @@ import scala.deprecated
 
 /** @author dkitchin
   */
-@deprecated("Use FastRecord or OrcObject instead", "3.0")
+//@deprecated("Use FastRecord or OrcObject instead", "3.0")
 case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcMarshalingReplacement {
 
   def this(entries: (String, AnyRef)*) = {
@@ -87,6 +87,7 @@ case class OrcRecord(entries: Map[String, AnyRef]) extends HasMembers with DOrcM
   }
 }
 
+//@deprecated("Use FastRecord or OrcObject instead", "3.0")
 final class OrcRecordAccessor(field: Field) extends Accessor {
   def canGet(target: AnyRef): Boolean = {
     target.isInstanceOf[OrcRecord]

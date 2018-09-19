@@ -24,7 +24,7 @@ import orc.error.runtime.TokenException;
  *
  * @author dkitchin
  */
-@Deprecated
+//@Deprecated
 public abstract class PartialSite extends SiteAdaptor {
 
     @Override

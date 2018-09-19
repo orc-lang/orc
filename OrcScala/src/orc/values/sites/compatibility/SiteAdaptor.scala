@@ -21,7 +21,7 @@ import orc.values.sites.{ Delay, Effects, Range }
   *
   * @author jthywiss
   */
-@deprecated("Use Invoker API.", "3.0")
+//@deprecated("Use Invoker API.", "3.0")
 abstract class SiteAdaptor extends Site {
   import SiteAdaptor._
 
@@ -52,7 +52,7 @@ abstract class SiteAdaptor extends Site {
   override def effects: Effects = if (effectFree()) Effects.None else Effects.Anytime
 }
 
-@deprecated("Use Invoker API.", "3.0")
+//@deprecated("Use Invoker API.", "3.0")
 object SiteAdaptor {
   import scala.collection.JavaConverters._
 
@@ -93,10 +93,10 @@ object SiteAdaptor {
   }
 }
 
-@deprecated("Use Invoker API.", "3.0")
+//@deprecated("Use Invoker API.", "3.0")
 abstract class SiteAdaptorFunctional extends SiteAdaptor with FunctionalSite
 
-@deprecated("Use Invoker API.", "3.0")
+//@deprecated("Use Invoker API.", "3.0")
 abstract class EvalSite extends DirectSite {
   import SiteAdaptor._
 

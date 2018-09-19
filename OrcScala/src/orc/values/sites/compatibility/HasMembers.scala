@@ -31,7 +31,7 @@ import orc.values.OrcValue
   *
   * @author amp
   */
-@deprecated("Implement orc.values.HasMembers", "3.0")
+//@deprecated("Implement orc.values.HasMembers", "3.0")
 trait HasMembers extends OrcValue with orc.values.HasMembers {
   /** Get the binding of a member.
     *
@@ -66,6 +66,7 @@ trait HasMembers extends OrcValue with orc.values.HasMembers {
   }
 }
 
+//@deprecated("Implement orc.values.HasMembers", "3.0")
 final class HasMemberAccessor(field: Field) extends Accessor {
   def canGet(target: AnyRef): Boolean = {
     target.isInstanceOf[HasMembers]
