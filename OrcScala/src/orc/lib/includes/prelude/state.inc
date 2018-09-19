@@ -735,3 +735,53 @@ Return the second element of a <link linkend="ref.data.tuple">pair</link>.
 --}
 def snd[A,B]((A,B)) :: B
 def snd((_,y)) = y
+
+{--
+@site Interval[A](A, A) :: Interval[A]
+<code>Interval(a,b)</code> returns an object representing the half-open
+interval [<code>a</code>,<code>b</code>).
+
+@method interval[A].isEmpty() :: Boolean
+Return true if this interval is empty.
+
+@method interval[A].spans(A) :: Boolean
+Return true if the interval spans the given point, false otherwise.
+
+@method interval[A].intersects(Interval[A]) :: Boolean
+Return true if the given interval has a non-empty intersection with this one,
+and false otherwise.
+
+@method interval[A].intersect(Interval[A]) :: Interval[A]
+Return the intersection of this interval with another. If
+the two intervals do not intersect, returns an empty interval.
+
+@method interval[A].contiguous(Interval[A]) :: Boolean
+Return true if the given interval is contiguous with this one
+(overlaps or abuts), and false otherwise.
+
+@method interval[A].union(Interval[A]) :: Interval[A]
+Return the union of this interval with another. <link linkend="ref.concepts.states.halt">Halts</link> with an error if
+the two intervals are not contiguous.
+--}
+import class Interval = "orc.lib.state.Interval"
+
+{--
+@site Intervals[A]() :: Intervals[A]
+Return an empty set of intervals. An Intervals object is iterable;
+iterating over the set returns disjoint intervals in increasing order.
+
+@method intervals[A].isEmpty() :: Boolean
+Return true if this set of intervals is empty.
+
+@method intervals[A].spans(A) :: Boolean
+Return true if this set of intervals spans the given point, and false otherwise.
+
+@method intervals[A].intersect(Intervals[A]) :: Intervals[A]
+Return the intersection of this set of intervals with another.
+
+@method intervals[A].union(Interval[A]) :: Intervals[A]
+Return the union of this set of intervals with the given interval.
+This method is most efficient when the given interval is before
+most of the intervals in the set.
+--}
+import class Intervals = "orc.lib.state.Intervals"
