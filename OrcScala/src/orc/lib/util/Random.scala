@@ -11,7 +11,7 @@
 
 package orc.lib.util
 
-import orc.values.sites.InvokerMethod
+import orc.values.sites.Site
 import orc.values.sites.SiteMetadata
 import orc.OrcRuntime
 import orc.Invoker
@@ -23,7 +23,7 @@ import orc.values.sites.IllegalArgumentInvoker
 import java.lang.IllegalArgumentException
 import orc.values.sites.FunctionalSite
 
-object Random extends InvokerMethod with SiteMetadata with FunctionalSite {
+object Random extends Site with SiteMetadata with FunctionalSite {
   class ArgInvoker extends OnlyDirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == Random && arguments.length == 1 && arguments(0).isInstanceOf[Number]
@@ -69,7 +69,7 @@ object Random extends InvokerMethod with SiteMetadata with FunctionalSite {
   override def publications: Range = Range(0, 1)
 }
 
-object URandom extends InvokerMethod with SiteMetadata with FunctionalSite {
+object URandom extends Site with SiteMetadata with FunctionalSite {
   class NoArgInvoker extends OnlyDirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == URandom && arguments.length == 0

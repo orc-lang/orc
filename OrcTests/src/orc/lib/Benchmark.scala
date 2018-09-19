@@ -11,13 +11,13 @@
 
 package orc.lib
 
-import orc.values.sites.InvokerMethod
 import orc.Invoker
 import orc.values.sites.IllegalArgumentInvoker
 import java.lang.management.ManagementFactory
 import orc.DirectInvoker
 import orc.OrcRuntime
 import collection.JavaConverters._
+import orc.values.sites.Site
 
 object Benchmark {
   val osmxbean = ManagementFactory.getOperatingSystemMXBean() match {
@@ -79,7 +79,7 @@ object Benchmark {
   }
 }
 
-object StartBenchmark extends InvokerMethod {
+object StartBenchmark extends Site {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 0) {
       new DirectInvoker {
@@ -101,7 +101,7 @@ object StartBenchmark extends InvokerMethod {
 
 case class BenchmarkTimes(iteration: Int, runTime: Double, cpuTime: Double, compilationTime: Double, gcTime: Double, problemSize: Double)
 
-object EndBenchmark extends InvokerMethod {
+object EndBenchmark extends Site {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 3) {
       new DirectInvoker {

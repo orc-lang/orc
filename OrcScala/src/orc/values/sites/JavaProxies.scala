@@ -18,7 +18,7 @@ import java.lang.reflect.{ Array => JavaArray, Field => JavaField, InvocationTar
 import orc.{ Accessor, ErrorAccessor, Invoker, DirectInvoker, OrcRuntime }
 import orc.error.runtime.{ HaltException, JavaException, MalformedArrayAccessException, MethodTypeMismatchException, NoSuchMemberException, RuntimeTypeException }
 import orc.util.ArrayExtensions.Array1
-import orc.values.{ Field => OrcField, Signal, NoSuchMemberAccessor }
+import orc.values.{ Field => OrcField, Signal, NoSuchMemberAccessor, HasMembers }
 import orc.values.sites.OrcJavaCompatibility.{ Invocable, chooseMethodForInvocation, java2orc, orc2java }
 
 /* Due to the way dispatch is handled we cannot pass true wrappers back into Orc. They
@@ -79,8 +79,6 @@ object JavaCall {
         case _: NoSuchFieldException => None
       }
     }
-
-    import orc.values.sites.InvocationBehaviorUtilities._
 
     @throws[NoSuchMethodException]
     def getMemberInvokerTypeDirected(methodName: String, argClss: Array[Class[_]]): Invoker = {
@@ -318,7 +316,7 @@ sealed abstract class InvocableInvoker(
   *
   * @author jthywiss, amp
   */
-class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: String, @inline val javaField: Option[JavaField]) extends InvokerMethod with AccessorValue {
+class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: String, @inline val javaField: Option[JavaField]) extends Site with HasMembers {
   def javaClass = theObject.getClass()
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
@@ -462,7 +460,7 @@ object JavaFieldDerefSite {
   *
   * @author jthywiss, amp
   */
-case class JavaFieldDerefSite(@inline val theObject: Object, @inline val javaField: JavaField) extends InvokerMethod with FunctionalSite {
+case class JavaFieldDerefSite(@inline val theObject: Object, @inline val javaField: JavaField) extends Site with FunctionalSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     import MethodHandles._
     if (args.length == 0) {
@@ -504,7 +502,7 @@ object JavaFieldAssignSite {
   *
   * @author jthywiss, amp
   */
-case class JavaFieldAssignSite(@inline val theObject: Object, @inline val javaField: JavaField) extends InvokerMethod with NonBlockingSite {
+case class JavaFieldAssignSite(@inline val theObject: Object, @inline val javaField: JavaField) extends Site with NonBlockingSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     import MethodHandles._
     if (args.length == 1) {
@@ -525,7 +523,7 @@ case class JavaFieldAssignSite(@inline val theObject: Object, @inline val javaFi
   *
   * @author jthywiss, amp
   */
-case class JavaArrayElementProxy(@inline val theArray: AnyRef, @inline val index: Int) extends AccessorValue {
+case class JavaArrayElementProxy(@inline val theArray: AnyRef, @inline val index: Int) extends HasMembers {
   def getAccessor(runtime: OrcRuntime, field: OrcField): Accessor = {
     field match {
       case OrcField("read") =>
@@ -581,7 +579,7 @@ object JavaArrayDerefSite {
   *
   * @author jthywiss, amp
   */
-case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: Int) extends InvokerMethod with FunctionalSite {
+case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: Int) extends Site with FunctionalSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 0) {
       val cls = theArray.getClass
@@ -615,7 +613,7 @@ object JavaArrayAssignSite {
   *
   * @author jthywiss, amp
   */
-case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: Int) extends InvokerMethod with NonBlockingSite {
+case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: Int) extends Site with NonBlockingSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 1) {
       val cls = theArray.getClass
@@ -632,7 +630,7 @@ case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: 
   *
   * @author jthywiss, amp
   */
-case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends InvokerMethod with FunctionalSite {
+case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends Site with FunctionalSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 0) {
       val cls = theArray.getClass

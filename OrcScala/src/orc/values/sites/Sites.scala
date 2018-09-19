@@ -13,23 +13,15 @@
 
 package orc.values.sites
 
-import scala.reflect.ClassTag
-
 import java.io.InvalidClassException
 import java.lang.reflect.Modifier
 
-import orc.CallContext
-import orc.error.{ NotYetImplementedException, OrcException }
+import orc.{ DirectInvoker, Invoker, OrcRuntime, SiteResponseSet, VirtualCallContext }
+import orc.error.OrcException
 import orc.error.compiletime.typing.TypeException
-import orc.error.runtime.{ ArityMismatchException, HaltException, RightException }
+import orc.error.runtime.HaltException
 import orc.types.{ Bot, RecordType, Type }
-import orc.util.ArrayExtensions.{ Array0, Array1, Array2, Array3 }
-import orc.values.{ OrcRecord, OrcValue }
-import orc.{ OrcRuntime, Invoker, DirectInvoker, VirtualCallContext }
-import orc.SiteResponseSet
-
-import InvocationBehaviorUtilities._
-import orc.values.{ FastRecord, FastRecordFactory }
+import orc.values.{ FastRecord, FastRecordFactory, OrcValue }
 
 //FIXME:XXX: "Serializable" here is a temporary hack.  Sites are not all Serializable.
 trait Site extends OrcValue with SiteMetadata with Serializable {
