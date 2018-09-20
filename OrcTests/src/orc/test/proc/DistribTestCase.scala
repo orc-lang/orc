@@ -46,8 +46,8 @@ class DistribTestCase(
     if (testContext != null) println("  " + (for ((k, v) <- testContext) yield s"$k=$v").mkString(", "))
     try {
       startFollowers()
-      val result = runLeader()
-      evaluateResult(result.exitStatus, result.stdout);
+      val exitStatus = runLeader()
+      evaluateResult(exitStatus, ""); /* stdout not saved */
     } catch {
       case fnse: FeatureNotSupportedException => Assume.assumeNoException(fnse)
       case ce: CompilationException => throw new AssertionError(ce.getMessageAndDiagnostics())
@@ -70,9 +70,9 @@ class DistribTestCase(
     val leaderErrFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_0.err"
 
     if (leaderSpec.isLocal) {
-      OsCommand.getResultFrom(Seq(leaderSpec.javaCmd, "-cp", leaderSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--listen=${leaderSpec.hostname}:${leaderSpec.port}", s"--follower-count=${bindings.followerCount}", orcFile.getPath), directory = new File(leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
+      OsCommand.getStatusFrom(Seq(leaderSpec.javaCmd, "-cp", leaderSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--listen=${leaderSpec.hostname}:${leaderSpec.port}", s"--follower-count=${bindings.followerCount}", orcFile.getPath), directory = new File(leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
     } else {
-      OsCommand.getResultFrom(Seq("ssh", leaderSpec.hostname, s"cd '${leaderSpec.workingDir}'; { { '${leaderSpec.javaCmd}' -cp '${leaderSpec.classPath}' ${jvmOptions.map("'" + _ + "'").mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_0 ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --listen=${leaderSpec.hostname}:${leaderSpec.port} --follower-count=${bindings.followerCount} '$orcFile' | tee '$leaderOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee '$leaderErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"), teeStdOutErr = true)
+      OsCommand.getStatusFrom(Seq("ssh", leaderSpec.hostname, s"cd '${leaderSpec.workingDir}'; { { '${leaderSpec.javaCmd}' -cp '${leaderSpec.classPath}' ${jvmOptions.map("'" + _ + "'").mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_0 ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --listen=${leaderSpec.hostname}:${leaderSpec.port} --follower-count=${bindings.followerCount} '$orcFile' | tee '$leaderOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee '$leaderErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"), teeStdOutErr = true)
     }
   }
 

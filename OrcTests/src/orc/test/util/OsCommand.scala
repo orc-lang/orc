@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 18, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -26,7 +26,7 @@ object OsCommand {
 
   /** Run the given command, either with the given string as stdin, or an
     * empty stdin; and using this process' stdout and stderr, or to the
-    * given Files.  Returns the command's exit value.
+    * given Files.  Return the command's exit value.
     */
   def run(command: Seq[String], directory: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8) = {
     val p = runNoWait(command, directory, stdin, stdout, stderr, charset)
@@ -38,7 +38,7 @@ object OsCommand {
 
   /** Run the given command, either with the given string as stdin, or an
     * empty stdin; and using this process' stdout and stderr, or to the
-    * given Files.  Returns the command's Process instance.
+    * given Files.  Return the command's Process instance.
     */
   def runNoWait(command: Seq[String], directory: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8) = {
     val pb = new ProcessBuilder(command.asJava)
@@ -54,27 +54,26 @@ object OsCommand {
     p
   }
 
-  /** Run the given command, saving stdout and stderr, and either with the
-    * given string as stdin, or an empty stdin.
+  /** Run the given command, either with the given string as stdin, or
+    * an empty stdin.  Return the command's exit value.
     */
-  def getResultFrom(command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)) = {
+  def getStatusFrom(command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)) = {
     val pb = new ProcessBuilder(command.asJava)
     if (directory != null) pb.directory(directory)
+    /* Lead pb's output & error redirect set as Redirect.PIPE */
     val p = pb.start()
 
     val stdinStream = p.getOutputStream /* sic. yes, confusing naming */
     stdinStream.write(stdin.getBytes(charset.name))
     stdinStream.close()
 
-    val outBAOS = new ByteArrayOutputStream()
-    val outs = (if (teeStdOutErr) stdoutTee else Seq()) ++ Seq(outBAOS)
-    /* Copy process stdout to outBAOS and optionally our stdout */
+    val outs = (if (teeStdOutErr) stdoutTee else Seq())
+    /* Copy process stdout to given destinations */
     val outDrainThread = new StreamDrainThread(p.getInputStream, outs, "Subprocess stdout reader")
     outDrainThread.start()
 
-    val errBAOS = new ByteArrayOutputStream()
-    val errs = (if (teeStdOutErr) stderrTee else Seq()) ++ Seq(errBAOS)
-    /* Copy process stderr to errBAOS and optionally our stderr */
+    val errs = (if (teeStdOutErr) stderrTee else Seq())
+    /* Copy process stderr to given destinations */
     val errDrainThread = new StreamDrainThread(p.getErrorStream, errs, "Subprocess stderr reader")
     errDrainThread.start()
 
@@ -84,6 +83,21 @@ object OsCommand {
     errDrainThread.join(400 /*ms*/)
     if (outDrainThread.isAlive) Logger.warning("outDrainThread should be dead for "+command)
     if (errDrainThread.isAlive) Logger.warning("errDrainThread should be dead for "+command)
+
+    exitStatus
+  }
+
+  /** Run the given command, saving stdout and stderr, and either with the
+    * given string as stdin, or an empty stdin.
+    */
+  def getResultFrom(command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)) = {
+
+    val outBAOS = new ByteArrayOutputStream()
+    val errBAOS = new ByteArrayOutputStream()
+
+    val outs = (if (teeStdOutErr) stdoutTee else Seq()) ++ Seq(outBAOS)
+    val errs = (if (teeStdOutErr) stderrTee else Seq()) ++ Seq(errBAOS)
+    val exitStatus = getStatusFrom(command, directory, stdin, charset, true, outs, errs)
 
     val stdoutString = outBAOS.toString(charset.name)
     val stderrString = errBAOS.toString(charset.name)
