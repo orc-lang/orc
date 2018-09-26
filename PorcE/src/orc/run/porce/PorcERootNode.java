@@ -14,6 +14,7 @@ package orc.run.porce;
 import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreter;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.logging.Level;
 
 import scala.Option;
@@ -41,52 +42,120 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.utilities.AssumedValue;
 
-public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
+public class PorcERootNode extends RootNode implements HasPorcNode, HasId, ProfilingScope {
 
     // TODO: PERFORMANCE: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters).
     // The challenge of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
     private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
-    private final AtomicLong totalCalls = new AtomicLong(0);
 
-    /*
-     *  The solution for a racy version is to use a long and split it into two "fields" one for each value (as an int).
-     *  To make sure the write is a single atomic 64-bit write I may need to use opaque writes from JRE 9. Volatile is
-     *  enough, but also includes a memory barrier that we don't need to want.
-    private volatile long both = 0;
-    private final int getTotalSpawnedTime(long both) {
-	return (int) (both & 0xffffffff);
-    }
-    private final int getTotalSpawnedCalls(long both) {
-	return (int) (both >> 32);
-    }
-    */
+    private final LongAdder totalTime = new LongAdder();
+    private final LongAdder totalSiteCalls = new LongAdder();
+    private final LongAdder totalContinuationSpawns = new LongAdder();
+    private final LongAdder totalCalls = new LongAdder();
 
+    @SuppressWarnings("boxing")
+    private final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<Boolean>(false);
+
+    @Override
     public final long getTotalSpawnedTime() {
-	return totalSpawnedTime.get();
+        return totalSpawnedTime.get();
     }
+
+    @Override
     public final long getTotalSpawnedCalls() {
-	return totalSpawnedCalls.get();
+        return totalSpawnedCalls.get();
     }
+
+    @Override
+    @TruffleBoundary(allowInlining = true)
+    public final long getTotalTime() {
+        return totalTime.sum();
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = true)
     public final long getTotalCalls() {
-	return totalCalls.get();
+        return totalCalls.sum();
     }
+
+    @Override
+    @TruffleBoundary(allowInlining = true)
+    public long getSiteCalls() {
+        return totalSiteCalls.sum();
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = true)
+    public long getContinuationSpawns() {
+        return totalContinuationSpawns.sum();
+    }
+
+    @Override
+    @SuppressWarnings("boxing")
+    public final boolean isProfiling() {
+        return /*CompilerDirectives.inCompiledCode() &&*/ isProfilingFlag.get();
+    }
+
+    @Override
+    public long getTime() {
+        if (isProfiling()) {
+            return System.nanoTime();
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = true)
+    public void removeTime(long start) {
+        if (isProfiling()) {
+            totalTime.add(-(getTime() - start));
+        }
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = true)
+    final public void addTime(long start) {
+        if (isProfiling()) {
+            totalCalls.increment();
+            totalTime.add(getTime() - start);
+        }
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = true)
+    final public void incrSiteCall() {
+        if (isProfiling()) {
+            totalSiteCalls.increment();
+        }
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = true)
+    final public void incrContinuationSpawn() {
+        if (isProfiling()) {
+            totalContinuationSpawns.increment();
+        }
+    }
+
 
     @CompilationFinal
     private boolean internal = false;
 
     @CompilationFinal
     private long timePerCall = -1;
-    @CompilationFinal
-    private boolean totalCallsDone = false;
 
+    @Override
     final public void addSpawnedCall(long time) {
         if (timePerCall < 0) {
             totalSpawnedTime.getAndAdd(time);
             long v = totalSpawnedCalls.getAndIncrement();
             if (v >= SpecializationConfiguration.MinCallsForTimePerCall) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
+                getTimePerCall();
             }
         }
     }
@@ -199,19 +268,20 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private RootCallTarget trampolineCallTarget;
 
     public RootCallTarget getTrampolineCallTarget() {
-	if (trampolineCallTarget == null) {
-	    CompilerDirectives.transferToInterpreterAndInvalidate();
-	    atomic(() -> {
-		if (trampolineCallTarget == null) {
-		    RootCallTarget v = Truffle.getRuntime().createCallTarget(new InvokeWithTrampolineRootNode(getLanguage(PorcELanguage.class), this, execution));
-		    // TODO: Use the new Java 9 fence when we start requiring Java 9
-		    // for PorcE.
-		    NodeBase.UNSAFE.fullFence();
-		    trampolineCallTarget = v;
-		}
-	    });
-	}
-	return trampolineCallTarget;
+        if (trampolineCallTarget == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            atomic(() -> {
+                if (trampolineCallTarget == null) {
+                    RootCallTarget v = Truffle.getRuntime().createCallTarget(
+                            new InvokeWithTrampolineRootNode(getLanguage(PorcELanguage.class), this, execution));
+                    // TODO: Use the new Java 9 fence when we start requiring Java 9
+                    // for PorcE.
+                    NodeBase.UNSAFE.fullFence();
+                    trampolineCallTarget = v;
+                }
+            });
+        }
+        return trampolineCallTarget;
     }
 
     private final PorcEExecution execution;
@@ -224,10 +294,10 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         this.body = insert(body);
         this.nArguments = nArguments;
         this.nCaptured = nCaptured;
-	this.execution = execution;
+        this.execution = execution;
         this.methodKey = methodKey;
-	this.flushAllCounters = insert(FlushAllCounters.create(-1, execution));
-	this.flushAllCounters.setTail(true);
+        this.flushAllCounters = insert(FlushAllCounters.create(-1, execution));
+        this.flushAllCounters.setTail(true);
     }
 
     public Object getMethodKey() {
@@ -244,7 +314,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     @Override
     public Object execute(final VirtualFrame frame) {
-	if (!SpecializationConfiguration.UniversalTCO) {
+        if (!SpecializationConfiguration.UniversalTCO) {
             final Object[] arguments = frame.getArguments();
             if (arguments.length != nArguments + 1) {
                 transferToInterpreter();
@@ -254,19 +324,15 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             if (captureds.length != nCaptured) {
                 throw InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
             }
-	}
+        }
 
-	if (!totalCallsDone) {
-	    if (totalCalls.incrementAndGet() >= 290) {
-		CompilerDirectives.transferToInterpreterAndInvalidate();
-		totalCallsDone = true;
-	    }
-	}
+        long startTime = getTime();
 
         try {
             final Object ret = body.execute(frame);
             // Flush all negative counters to trigger halts quickly
             flushAllCounters.execute(frame);
+            addTime(startTime);
             return ret;
         } catch (KilledException | HaltException e) {
             transferToInterpreter();

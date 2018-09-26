@@ -146,6 +146,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
         DumpSpecializations(r, repNum, out)
       }
+      // TODO: Generate GraphViz output to visualize the simplified dynamic callgraph.
       out.close()
     }
   }

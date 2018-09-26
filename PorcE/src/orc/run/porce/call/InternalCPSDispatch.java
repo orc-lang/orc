@@ -75,13 +75,17 @@ public class InternalCPSDispatch extends Dispatch {
 
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
+        long startTime = getProfilingScope().getTime();
         arguments[0] = ((PorcEClosure) target).environment;
         internal.execute(frame, target, arguments);
+        getProfilingScope().removeTime(startTime);
     }
 
     @Override
     public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
+        long startTime = getProfilingScope().getTime();
         internal.execute(frame, target, buildArguments((PorcEClosure) target, arguments));
+        getProfilingScope().removeTime(startTime);
     }
 
     protected static Object[] buildArguments(PorcEClosure target, Object[] arguments) {
@@ -199,6 +203,7 @@ public class InternalCPSDispatch extends Dispatch {
                 @Cached(value = "getClosureSlots(target)", dimensions = 1) FrameSlot[] closureSlots,
                 @Cached("computeNodeCount()") int nodeCount) {
             ensureTail(body);
+            addCalledRoot(expected);
             CompilerDirectives.ensureVirtualized(arguments);
             try {
                 if (arguments.length != argumentSlots.length + 1) {
@@ -244,6 +249,7 @@ public class InternalCPSDispatch extends Dispatch {
                 @Cached("getPorcEFrameDescriptor(target)") FrameDescriptor fd,
                 @Cached("computeNodeCount()") int nodeCount) {
             ensureTail(body);
+            addCalledRoot(expected);
             CompilerDirectives.ensureVirtualized(arguments);
             try {
                 final VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
@@ -278,6 +284,7 @@ public class InternalCPSDispatch extends Dispatch {
                 final PorcEClosure target, final Object[] arguments,
                 @Cached("target.body") RootCallTarget expected,
                 @Cached("create(expected)") DirectCallNode call) {
+            addCalledRoot(expected);
             CompilerDirectives.interpreterOnly(() -> {
                 if (sameMethod(expected) || inliningForced) {
                     call.forceInlining();
@@ -304,6 +311,7 @@ public class InternalCPSDispatch extends Dispatch {
         @Specialization(replaces = { "specific", "specificInlineTail" })
         public void universal(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
                 @Cached("create()") IndirectCallNode call) {
+            addCalledRoot(target.body);
             try {
                 call.call(target.body, arguments);
             } catch (final TailCallException e) {

@@ -14,6 +14,7 @@ package orc.run.porce.call;
 import orc.DirectInvoker;
 import orc.Invoker;
 import orc.error.runtime.HaltException;
+import orc.run.porce.PorcERootNode;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.profiles.ValueClassesProfile;
 import orc.run.porce.runtime.PorcEExecution;
@@ -50,6 +51,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
             @Cached("getInvokerWithBoundary(target, arguments)") DirectInvoker invoker,
             @Cached("create()") InvokerCanInvoke canInvoke,
             @Cached("create(execution)") InvokerInvokeDirect invokeDirect) {
+        getProfilingScope().incrSiteCall();
         // DUPLICATION: This code is duplicated (mostly) in ExternalCPSDispatch.specificDirect.
         try {
             return invokeDirect.executeInvokeDirect(frame, invoker, target, argumentClassesProfile.profile(arguments));

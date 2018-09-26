@@ -29,6 +29,7 @@ import orc.run.porce.profiles.ValueClassesProfile;
 import orc.run.porce.HaltToken;
 import orc.run.porce.Logger;
 import orc.run.porce.NodeBase;
+import orc.run.porce.PorcERootNode;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.CallContextCommon;
 import orc.run.porce.runtime.MaterializedCPSCallContext;
@@ -80,6 +81,7 @@ public class ExternalCPSDispatch extends Dispatch {
 
     @Override
     public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
+        getProfilingScope().incrSiteCall();
         PorcEClosure pub = (PorcEClosure) arguments[0];
         Counter counter = (Counter) arguments[1];
         Terminator term = (Terminator) arguments[2];
@@ -88,6 +90,7 @@ public class ExternalCPSDispatch extends Dispatch {
 
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
+        getProfilingScope().incrSiteCall();
         PorcEClosure pub = (PorcEClosure) arguments[1];
         Counter counter = (Counter) arguments[2];
         Terminator term = (Terminator) arguments[3];

@@ -28,9 +28,22 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
 public abstract class NodeBase extends Node implements HasPorcNode {
+    /**
+     * @return The PorcE root node containing this node.
+     */
+    public ProfilingScope getProfilingScope() {
+        RootNode r = getRootNode();
+        if (r instanceof ProfilingScope) {
+            return (PorcERootNode) r;
+        } else {
+            return ProfilingScope.DISABLED;
+        }
+    }
+
     @CompilationFinal
     private Option<PorcAST> porcNode = Option.apply(null);
 

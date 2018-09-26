@@ -22,13 +22,29 @@ import com.oracle.truffle.api.nodes.{ Node, NodeVisitor }
 import orc.run.porce.PorcERootNode
 import com.oracle.truffle.api.dsl.Introspectable
 import com.oracle.truffle.api.nodes.LoopNode
+import orc.run.porce.call.DispatchBase
+import orc.run.porce.HasCalledRoots
+import orc.run.porce.CalledRootsProfile
 
 object DumpSpecializations {
+  def formatNumWOMax(v: Long): String = {
+    if (v == Long.MaxValue) {
+      "(n/a)"
+    } else {
+      v.toString
+    }
+  }
+
   def apply(node: Node, callsRequired: Int, out: PrintWriter): Unit = {
-    out.println(s"=== ${node}:")
     val calledEnough = node match {
       case r: PorcERootNode if r.getTotalCalls >= callsRequired =>
-        out.println(s"    timePerCall = ${r.getTimePerCall}, totalSpawnedCalls = ${r.getTotalSpawnedCalls}, totalSpawnedTime = ${r.getTotalSpawnedTime}")
+        out.println(s"=== ${node}:")
+        out.println("    " +
+          f"timePerCall (spawned) = ${formatNumWOMax(r.getTimePerCall)}ns " +
+          f"(${r.getTotalSpawnedTime.toDouble / r.getTotalSpawnedCalls}%.1f = ${r.getTotalSpawnedTime}/${r.getTotalSpawnedCalls}), " +
+          f"timePerCall (all) = ${r.getTotalTime.toDouble / r.getTotalCalls}%.1fns (${r.getTotalTime}/${r.getTotalCalls}), " +
+          f"siteCalls = ${r.getSiteCalls.toDouble / r.getTotalCalls}%.1f (${r.getSiteCalls}/${r.getTotalCalls})")
+        out.println(s"    All Called Roots = {${CalledRootsProfile.getAllCalledRoots(r).asScala.mkString(", ")}}")
         true
       case _ => false
     }
@@ -50,7 +66,7 @@ object DumpSpecializations {
         })
       doVisiting(node)
     } else {
-      out.println(s"   Omitted due to not enough calls.")
+      //      out.println(s"   Omitted due to not enough calls.")
     }
   }
 
@@ -68,6 +84,11 @@ object DumpSpecializations {
             out.println(s"$prefix${node.getClass} ${ss.getSource.getName}:${ss.getStartLine} (${ss}) $specsStr")
           case _ =>
             out.println(s"$prefix${node.getClass} $specsStr")
+        }
+        node match {
+          case d: HasCalledRoots if !d.getAllCalledRoots.isEmpty =>
+            out.println(s"${prefix}Called Roots = {${d.getAllCalledRoots.asScala.mkString(", ")}}")
+          case _ => ()
         }
         out.println(s"$prefix$prefix| $node")
       }

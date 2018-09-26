@@ -11,15 +11,22 @@
 
 package orc.run.porce.call;
 
+import java.util.Set;
+
+import orc.run.porce.CalledRootsProfile;
+import orc.run.porce.HasCalledRoots;
 import orc.run.porce.NodeBase;
+import orc.run.porce.PorcERootNode;
 import orc.run.porce.runtime.PorcEExecution;
 
+import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.Node;
+import org.graalvm.collections.Pair;
 
-public abstract class DispatchBase extends NodeBase {
+public abstract class DispatchBase extends NodeBase implements HasCalledRoots {
     protected final PorcEExecution execution;
 
     @CompilationFinal
@@ -29,6 +36,23 @@ public abstract class DispatchBase extends NodeBase {
         this.execution = execution;
     }
 
+    private final CalledRootsProfile calledRootsProfile = new CalledRootsProfile();
+
+    @Override
+    public void addCalledRoot(CallTarget t) {
+        calledRootsProfile.addCalledRoot(this, t);
+    }
+
+    @Override
+    public CalledRootsProfile getCalledRootsProfile() {
+        return calledRootsProfile;
+    }
+
+    @Override
+    public Set<Pair<NodeBase, PorcERootNode>> getAllCalledRoots() {
+        return CalledRootsProfile.getAllCalledRoots(this);
+    }
+
     @SuppressWarnings("boxing")
     public void forceInline() {
         CompilerAsserts.compilationConstant(inliningForced);
@@ -36,8 +60,8 @@ public abstract class DispatchBase extends NodeBase {
             CompilerDirectives.transferToInterpreterAndInvalidate();
             inliningForced = true;
             Iterable<Node> children = getChildren();
-            for(Node c : children) {
-                if(c instanceof DispatchBase) {
+            for (Node c : children) {
+                if (c instanceof DispatchBase) {
                     ((DispatchBase) c).forceInline();
                 }
             }
