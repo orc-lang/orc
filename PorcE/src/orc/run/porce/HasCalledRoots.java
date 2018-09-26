@@ -21,6 +21,7 @@ import org.graalvm.collections.Pair;
 public interface HasCalledRoots {
     public CalledRootsProfile getCalledRootsProfile();
     public ProfilingScope getProfilingScope();
-    public Set<Pair<NodeBase, PorcERootNode>> getAllCalledRoots();
+    public Set<Pair<HasCalledRoots, PorcERootNode>> getAllCalledRoots();
+    public long getTotalCalls();
     public void addCalledRoot(CallTarget t);
 }

@@ -20,9 +20,19 @@ package orc.run.porce;
  */
 public interface ProfilingScope {
     /**
-     * @return true, if this scope has profiling enabled.
+     * @return true, if this scope should capture the profile.
+     *
+     * Do not use this in specialization choices!!! The returned value may
+     * depend on whether code is compiled.
      */
     boolean isProfiling();
+
+    /**
+     * @return true, if this scope has completed profiling for the moment and optimization which would invalidate profiling can be applied.
+     *
+     * The returned value may not depend on whether the code is compiled.
+     */
+    boolean isProfilingComplete();
 
     // Get profiling results:
 
@@ -101,6 +111,11 @@ public interface ProfilingScope {
         @Override
         public boolean isProfiling() {
             return false;
+        }
+
+        @Override
+        public boolean isProfilingComplete() {
+            return true;
         }
 
         @Override

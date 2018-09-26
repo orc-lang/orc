@@ -44,7 +44,11 @@ object DumpSpecializations {
           f"(${r.getTotalSpawnedTime.toDouble / r.getTotalSpawnedCalls}%.1f = ${r.getTotalSpawnedTime}/${r.getTotalSpawnedCalls}), " +
           f"timePerCall (all) = ${r.getTotalTime.toDouble / r.getTotalCalls}%.1fns (${r.getTotalTime}/${r.getTotalCalls}), " +
           f"siteCalls = ${r.getSiteCalls.toDouble / r.getTotalCalls}%.1f (${r.getSiteCalls}/${r.getTotalCalls})")
-        out.println(s"    All Called Roots = {${CalledRootsProfile.getAllCalledRoots(r).asScala.mkString(", ")}}")
+        out.println(s"    All Called Roots = {${CalledRootsProfile.getAllCalledRoots(r).asScala.map(p => {
+          val n = p.getLeft
+          val r = p.getRight
+          s"<${n}*${n.getTotalCalls} - $r>"
+        }).mkString(", ")}}")
         true
       case _ => false
     }

@@ -46,7 +46,7 @@ import com.oracle.truffle.api.utilities.AssumedValue;
 
 public class PorcERootNode extends RootNode implements HasPorcNode, HasId, ProfilingScope {
 
-    // TODO: PERFORMANCE: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters).
+    // TODO: PERFORMANCE: Replace these with CountSumValue.
     // The challenge of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
     private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
@@ -57,7 +57,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     private final LongAdder totalCalls = new LongAdder();
 
     @SuppressWarnings("boxing")
-    private final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<Boolean>(false);
+    private final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<Boolean>(true);
 
     @Override
     public final long getTotalSpawnedTime() {
@@ -95,8 +95,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     @Override
     @SuppressWarnings("boxing")
+    public final boolean isProfilingComplete() {
+        return !isProfilingFlag.get();
+    }
+
+    @Override
+    @SuppressWarnings("boxing")
     public final boolean isProfiling() {
-        return /*CompilerDirectives.inCompiledCode() &&*/ isProfilingFlag.get();
+        return CompilerDirectives.inCompiledCode() && isProfilingFlag.get();
     }
 
     @Override
@@ -108,36 +114,38 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
         }
     }
 
-    @Override
     @TruffleBoundary(allowInlining = true)
+    private static void longAdderAdd(LongAdder adder, long n) {
+        adder.add(n);
+    }
+
+
+    @Override
     public void removeTime(long start) {
         if (isProfiling()) {
-            totalTime.add(-(getTime() - start));
+            longAdderAdd(totalTime, -(getTime() - start));
         }
     }
 
     @Override
-    @TruffleBoundary(allowInlining = true)
     final public void addTime(long start) {
         if (isProfiling()) {
-            totalCalls.increment();
-            totalTime.add(getTime() - start);
+            longAdderAdd(totalCalls, 1);
+            longAdderAdd(totalTime, getTime() - start);
         }
     }
 
     @Override
-    @TruffleBoundary(allowInlining = true)
     final public void incrSiteCall() {
         if (isProfiling()) {
-            totalSiteCalls.increment();
+            longAdderAdd(totalSiteCalls, 1);
         }
     }
 
     @Override
-    @TruffleBoundary(allowInlining = true)
     final public void incrContinuationSpawn() {
         if (isProfiling()) {
-            totalContinuationSpawns.increment();
+            longAdderAdd(totalContinuationSpawns, 1);
         }
     }
 

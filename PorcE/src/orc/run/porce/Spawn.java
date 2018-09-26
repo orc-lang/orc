@@ -57,8 +57,13 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     }
 
     @Override
-    public Set<Pair<NodeBase, PorcERootNode>> getAllCalledRoots() {
+    public Set<Pair<HasCalledRoots, PorcERootNode>> getAllCalledRoots() {
         return CalledRootsProfile.getAllCalledRoots(this);
+    }
+
+    @Override
+    public long getTotalCalls() {
+        return calledRootsProfile.getTotalCalls();
     }
 
     protected Spawn(boolean mustSpawn, PorcEExecution execution) {
@@ -124,7 +129,7 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     private static final boolean allowAllSpawnInlining = PorcERuntime$.MODULE$.allowAllSpawnInlining();
 
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
-        return !getProfilingScope().isProfiling() && allowSpawnInlining &&
+        return getProfilingScope().isProfilingComplete() && allowSpawnInlining &&
                 (!mustSpawn || allowAllSpawnInlining) &&
                 computation.getTimePerCall(targetRoot) < SpecializationConfiguration.InlineAverageTimeLimit;
     }

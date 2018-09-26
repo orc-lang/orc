@@ -147,6 +147,7 @@ public class InternalCPSDispatch extends Dispatch {
 
         @Specialization(guards = { "SelfTCO", "isTail", "getRootNodeCached() == target.body.getRootNode()" })
         public void selfTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
+            addCalledRoot(target.body);
             Object[] frameArguments = frame.getArguments();
             //CompilerAsserts.compilationConstant(frameArguments.length);
             CompilerAsserts.compilationConstant(arguments.length);
@@ -168,6 +169,7 @@ public class InternalCPSDispatch extends Dispatch {
         @Specialization(guards = { "UniversalTCO", "isTail", "getRootNodeCached() != target.body.getRootNode()" })
         public void tail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
                 @Cached("createBinaryProfile()") ConditionProfile reuseTCE) {
+            addCalledRoot(target.body);
             Object[] thisArguments = frame.getArguments();
             if (reuseTCE.profile(/* arguments.length <= 16 && */ thisArguments.length == 17
                     && thisArguments[16] instanceof TailCallException)) {

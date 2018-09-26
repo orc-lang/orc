@@ -49,8 +49,13 @@ public abstract class DispatchBase extends NodeBase implements HasCalledRoots {
     }
 
     @Override
-    public Set<Pair<NodeBase, PorcERootNode>> getAllCalledRoots() {
+    public Set<Pair<HasCalledRoots, PorcERootNode>> getAllCalledRoots() {
         return CalledRootsProfile.getAllCalledRoots(this);
+    }
+
+    @Override
+    public long getTotalCalls() {
+        return calledRootsProfile.getTotalCalls();
     }
 
     @SuppressWarnings("boxing")

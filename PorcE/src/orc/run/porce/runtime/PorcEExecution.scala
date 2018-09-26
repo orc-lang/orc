@@ -19,7 +19,7 @@ import orc.error.runtime.HaltException
 import orc.run.core.EventHandler
 import orc.run.distrib.porce.CallTargetManager
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
-import orc.run.porce.instruments.DumpSpecializations
+import orc.run.porce.instruments.{ DumpSpecializations, DumpRuntimeProfile}
 import orc.util.{ CsvWriter, ExecutionLogOutputStream }
 
 import com.oracle.truffle.api.{ RootCallTarget, Truffle }
@@ -127,6 +127,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
   }
 
   private val specializationsFile = ExecutionLogOutputStream.getFile(s"truffle-node-specializations", "txt")
+  private val profileResultsFile = ExecutionLogOutputStream.getFile(s"profile-results", "dot").get
   private var lastGoodRepNumber = 0
 
   specializationsFile foreach { specializationsFile =>
@@ -139,15 +140,24 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       }
       lastGoodRepNumber = repNum
       import scala.collection.JavaConverters._
-      specializationsFile.delete()
-      val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
-      val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
-      val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
-      for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
-        DumpSpecializations(r, repNum, out)
+      {
+        specializationsFile.delete()
+        val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
+        val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
+        val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
+        for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
+          DumpSpecializations(r, repNum, out)
+        }
+        out.close()
       }
-      // TODO: Generate GraphViz output to visualize the simplified dynamic callgraph.
-      out.close()
+      {
+        profileResultsFile.delete()
+        val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(profileResultsFile)))
+        val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
+        val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
+        DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), repNum, out)
+        out.close()
+      }
     }
   }
 

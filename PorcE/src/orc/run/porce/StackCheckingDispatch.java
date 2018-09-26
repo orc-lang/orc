@@ -58,7 +58,7 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     }
 
     @Override
-    public Set<Pair<NodeBase, PorcERootNode>> getAllCalledRoots() {
+    public Set<Pair<HasCalledRoots, PorcERootNode>> getAllCalledRoots() {
         return CalledRootsProfile.getAllCalledRoots(this);
     }
 
@@ -90,6 +90,7 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
 	if (spawnProfile.profile(state.growthAllowed())) {
             executeInline(frame, computation, args, prev);
         } else {
+            addCalledRoot(computation.body);
             createSchedulableAndSchedule(args, computation);
         }
     }
@@ -100,7 +101,6 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
      */
     @TruffleBoundary(allowInlining = false)
     private void createSchedulableAndSchedule(final Object[] args, final PorcEClosure computation) {
-        addCalledRoot(computation.body);
         execution.runtime().schedule(CallClosureSchedulable.varArgs(computation, args, execution));
     }
 
