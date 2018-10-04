@@ -6,6 +6,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path=".apt_generated">
 		<attributes>
+			<attribute name="ignore_optional_problems" value="true"/>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
