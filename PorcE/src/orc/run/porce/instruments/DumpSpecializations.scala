@@ -13,18 +13,12 @@ package orc.run.porce.instruments
 
 import java.io.{ PrintWriter, StringWriter }
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.{ asScalaBufferConverter, asScalaSetConverter }
 
-import orc.run.porce.HasPorcNode
+import orc.run.porce.{ CalledRootsProfile, HasCalledRoots, HasPorcNode, PorcERootNode }
 
 import com.oracle.truffle.api.dsl.Introspection
 import com.oracle.truffle.api.nodes.{ Node, NodeVisitor }
-import orc.run.porce.PorcERootNode
-import com.oracle.truffle.api.dsl.Introspectable
-import com.oracle.truffle.api.nodes.LoopNode
-import orc.run.porce.call.DispatchBase
-import orc.run.porce.HasCalledRoots
-import orc.run.porce.CalledRootsProfile
 
 object DumpSpecializations {
   def formatNumWOMax(v: Long): String = {
@@ -47,7 +41,7 @@ object DumpSpecializations {
         out.println(s"    All Called Roots = {${CalledRootsProfile.getAllCalledRoots(r).asScala.map(p => {
           val n = p.getLeft
           val r = p.getRight
-          s"<${n}*${n.getTotalCalls} - $r>"
+          s"<${n}*${n.getTotalCalls} -> $r>"
         }).mkString(", ")}}")
         true
       case _ => false
@@ -82,7 +76,7 @@ object DumpSpecializations {
           case p: HasPorcNode if p.porcNode.isDefined && p.porcNode.get.sourceTextRange.isDefined =>
             out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.sourceTextRange.get.lineContentWithCaret}")
           case p: HasPorcNode if p.porcNode.isDefined =>
-            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get}")
+            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.toString.takeWhile(_ != '\n')}")
           case _ if node.getSourceSection != null =>
             val ss = node.getSourceSection
             out.println(s"$prefix${node.getClass} ${ss.getSource.getName}:${ss.getStartLine} (${ss}) $specsStr")
@@ -94,7 +88,7 @@ object DumpSpecializations {
             out.println(s"${prefix}Called Roots = {${d.getAllCalledRoots.asScala.mkString(", ")}}")
           case _ => ()
         }
-        out.println(s"$prefix$prefix| $node")
+        out.println(s"$prefix$prefix| ${node}")
       }
     }
 

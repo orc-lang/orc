@@ -11,28 +11,23 @@
 
 package orc.run.porce.runtime
 
-import java.io.{ OutputStreamWriter, PrintWriter }
-import java.util.{ Timer, TimerTask }
+import java.io.{ FileOutputStream, OutputStreamWriter, PrintWriter }
+import java.util.{ ArrayList, Collections }
+
+import scala.ref.WeakReference
 
 import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
 import orc.error.runtime.HaltException
 import orc.run.core.EventHandler
 import orc.run.distrib.porce.CallTargetManager
-import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
-import orc.run.porce.instruments.{ DumpSpecializations, DumpRuntimeProfile}
-import orc.util.{ CsvWriter, ExecutionLogOutputStream }
+import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcERootNode, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
+import orc.run.porce.instruments.{ DumpRuntimeProfile, DumpSpecializations }
+import orc.util.{ DumperRegistry, ExecutionLogOutputStream }
 
 import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
-import com.oracle.truffle.api.nodes.RootNode
-import com.oracle.truffle.api.nodes.Node
-import java.util.Collections
-import java.util.ArrayList
-import orc.run.porce.PorcERootNode
-import orc.util.DumperRegistry
-import java.io.FileOutputStream
-import scala.ref.WeakReference
+import com.oracle.truffle.api.nodes.{ Node, RootNode }
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -122,42 +117,41 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
 
   private val extraRegisteredRootNodes = Collections.synchronizedList(new ArrayList[WeakReference[RootNode]]())
 
+  @TruffleBoundary(allowInlining = true) @noinline
   def registerRootNode(root: RootNode): Unit = {
     extraRegisteredRootNodes.add(WeakReference(root))
   }
 
   private val specializationsFile = ExecutionLogOutputStream.getFile(s"truffle-node-specializations", "txt")
-  private val profileResultsFile = ExecutionLogOutputStream.getFile(s"profile-results", "dot").get
+  private val profileResultsFile = ExecutionLogOutputStream.getFile(s"profile-results", "dot")
   private var lastGoodRepNumber = 0
 
-  specializationsFile foreach { specializationsFile =>
-    DumperRegistry.register { name =>
-      val repNum = try {
-        name.drop(3).toInt + 1
-      } catch {
-        case _: NumberFormatException =>
-          lastGoodRepNumber + 1
-      }
-      lastGoodRepNumber = repNum
-      import scala.collection.JavaConverters._
-      {
-        specializationsFile.delete()
-        val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
-        val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
+  DumperRegistry.register { name =>
+    val repNum = try {
+      name.drop(3).toInt + 1
+    } catch {
+      case _: NumberFormatException =>
+        lastGoodRepNumber + 1
+    }
+    lastGoodRepNumber = repNum
+    import scala.collection.JavaConverters._
+    specializationsFile foreach { specializationsFile =>
+      specializationsFile.delete()
+      val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
+      val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
         val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
-        for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
-          DumpSpecializations(r, repNum, out)
-        }
-        out.close()
+      for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
+        DumpSpecializations(r, repNum, out)
       }
-      {
-        profileResultsFile.delete()
-        val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(profileResultsFile)))
-        val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
+      out.close()
+    }
+    profileResultsFile foreach { profileResultsFile =>
+      profileResultsFile.delete()
+      val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(profileResultsFile)))
+      val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
         val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
-        DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), repNum, out)
-        out.close()
-      }
+      DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), repNum, out)
+      out.close()
     }
   }
 

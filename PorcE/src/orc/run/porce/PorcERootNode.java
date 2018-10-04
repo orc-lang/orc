@@ -151,7 +151,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
 
     @CompilationFinal
-    private boolean internal = false;
+    private boolean internal = true;
 
     @CompilationFinal
     private long timePerCall = -1;
@@ -260,12 +260,12 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     }
 
     public Seq<Variable> getArgumentVariables() {
-        assert this.argumentVariables != null;
+        assert this.argumentVariables != null : this;
         return this.argumentVariables;
     }
 
     public Seq<Variable> getClosureVariables() {
-        assert this.closureVariables != null;
+        assert this.closureVariables != null : this;
         return this.closureVariables;
     }
 
@@ -308,6 +308,11 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
         this.flushAllCounters.setTail(true);
     }
 
+    /**
+     * @return An object which is unique to the Orc method containing this root node.
+     *
+     * The returned object is generally the Porc method name as a porc.Var.
+     */
     public Object getMethodKey() {
         return methodKey;
     }

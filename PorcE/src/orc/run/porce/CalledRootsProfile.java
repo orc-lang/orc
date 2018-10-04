@@ -79,12 +79,12 @@ public class CalledRootsProfile {
 
     public void addCalledRoot(HasCalledRoots self, RootNode r) {
         if (self.getProfilingScope().isProfiling() && r instanceof PorcERootNode) {
-            addCallRootImpl((PorcERootNode) r);
+            addCallRootImpl(self, (PorcERootNode) r);
         }
     }
 
     @TruffleBoundary
-    public void addCallRootImpl(PorcERootNode r) {
+    public void addCallRootImpl(HasCalledRoots self, PorcERootNode r) {
         if (calledRoots == null) {
             initCalledRoots();
         }

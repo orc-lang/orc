@@ -133,6 +133,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
       substs = Map(),
       isTail = true)
     val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, 3, 0, m.name, execution)
+    rootNode.setVariables(Seq(m.pArg, m.cArg, m.tArg), Seq())
     rootNode.setPorcAST(m)
     val callTarget = makeCallTarget(rootNode)
     val closure = new PorcEClosure(Array(), callTarget, true)
