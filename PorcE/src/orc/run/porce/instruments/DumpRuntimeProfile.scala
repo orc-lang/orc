@@ -67,15 +67,40 @@ object DumpRuntimeProfile {
 
     out.println("digraph G {")
     val methods = nodes.collect({ case r: PorcERootNode => r.getMethodKey }).toSet
+    val displayedNodes = collection.mutable.Set[PorcERootNode]()
+    val inEdgeCounts = collection.mutable.Map[PorcERootNode, Int]().withDefaultValue(0)
+
+    for (n <- nodes) {
+      n match {
+        case r: PorcERootNode =>
+          val edges = CalledRootsProfile.getAllCalledRoots(r).asScala
+          for (p <- edges if !p.getLeft.isScheduled()) {
+            val to = p.getRight
+            inEdgeCounts(to) = inEdgeCounts(to) + 1
+          }
+        case _ => ()
+      }
+    }
+
+    /** Render a node to the output dot if it has not yet been rendered.
+      */
+    def displayNode(r: PorcERootNode): Unit = {
+      if (displayedNodes contains r)
+        return
+      displayedNodes += r
+      out.println(s"    ${idFor("n", r)} [" +
+          s"""label="${quote(r.getName)}\n${(r.getTotalTime.toDouble / r.getTotalCalls / 1000000000.0) unit "s"}, """ +
+          s"""${(r.getSiteCalls.toDouble / r.getTotalCalls) unit " site calls"}\n${r.getTotalCalls unit " calls"}", """ +
+          s"""penwidth=${0.1+10*math.log(1+r.getTotalTime.toDouble / r.getTotalCalls / 1000.0) max 0.1 min 20}, """ +
+          s"""color=${if (inEdgeCounts(r) > 1) "firebrick" else "black" }];""")
+    }
+
     for ((m, i) <- methods.zipWithIndex) {
       out.println(s"""  subgraph cluster_$i {\n    label = "${quote(m.toString)}"; """)
       for (n <- nodes) {
         n match {
-          case r: PorcERootNode if /*r.getTotalCalls > 0 &&*/ r.getMethodKey == m =>
-            out.println(s"    ${idFor("n", r)} [" +
-                s"""label="${quote(r.getName)}\n${(r.getTotalTime.toDouble / r.getTotalCalls / 1000000000.0) unit "s"}, """ +
-                s"""${(r.getSiteCalls.toDouble / r.getTotalCalls) unit " site calls"}\n${r.getTotalCalls unit " calls"}", """ +
-                s"""penwidth=${0.1+10*math.log(1+r.getTotalTime.toDouble / r.getTotalCalls / 1000.0) max 0.1 min 20}];""")
+          case r: PorcERootNode if r.getTotalCalls > 0 && r.getMethodKey == m =>
+            displayNode(r)
           case _ => ()
         }
       }
@@ -84,22 +109,25 @@ object DumpRuntimeProfile {
     for (n <- nodes) {
       n match {
         case r: PorcERootNode => //if r.getTotalCalls > 0 =>
-          for (p <- CalledRootsProfile.getAllCalledRoots(r).asScala) {
-            val node = p.getLeft
+          val edges = CalledRootsProfile.getAllCalledRoots(r).asScala
+          if (edges.nonEmpty)
+            displayNode(r)
+          for (p <- edges) {
+            val callnode = p.getLeft
             val to = p.getRight
+            displayNode(to)
 
-            /*if (to.getTotalCalls > 0)*/ {
-              // node.getTotalCalls > r.getTotalCalls/1000 &&
-              val proportion = node.getTotalCalls.toDouble / r.getTotalCalls
-              out.println(f"  ${idFor("n", r)} -> ${idFor("n", to)} [" +
-                f"""label="${quote(node.getClass.getSimpleName.toString.take(16))}\n@${node.##}%08x\n* ${node.getTotalCalls unit ""}", fontsize=8, """ +
-                f"""penwidth=${10*math.log(1 + proportion) max 0.1 min 2}];""")
-            }
+            val proportion = callnode.getTotalCalls.toDouble / r.getTotalCalls
+            out.println(f"  ${idFor("n", r)} -> ${idFor("n", to)} [" +
+              f"""label="${quote(callnode.getClass.getSimpleName.toString.take(16))}\n@${callnode.##}%08x\n* ${callnode.getTotalCalls unit ""}", fontsize=8, """ +
+              f"""penwidth=${10*math.log(1 + proportion) max 0.1 min 2}, color=${if (callnode.isScheduled()) "blue" else "black"}];""")
           }
         case _ => ()
       }
     }
     out.println("}")
+
+    println(inEdgeCounts.filter({ case (n, c) => c > 1 }).mkString("\n"))
   }
 
 }

@@ -24,4 +24,8 @@ public interface HasCalledRoots {
     public Set<Pair<HasCalledRoots, PorcERootNode>> getAllCalledRoots();
     public long getTotalCalls();
     public void addCalledRoot(CallTarget t);
+
+    public default boolean isScheduled() {
+        return false;
+    }
 }

@@ -45,49 +45,35 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
 
     public final ConditionProfile spawnProfile = ConditionProfile.createCountingProfile();
 
-    private final CalledRootsProfile calledRootsProfile = new CalledRootsProfile();
-
-    @Override
-    public void addCalledRoot(CallTarget t) {
-        calledRootsProfile.addCalledRoot(this, t);
+    public boolean isScheduled() {
+        return true;
     }
-
-    @Override
-    public CalledRootsProfile getCalledRootsProfile() {
-        return calledRootsProfile;
-    }
-
-    @Override
-    public Set<Pair<HasCalledRoots, PorcERootNode>> getAllCalledRoots() {
-        return CalledRootsProfile.getAllCalledRoots(this);
-    }
-
 
     private StackCheckingDispatch(PorcEExecution execution) {
-	super(execution);
+        super(execution);
     }
 
     StackCheckingDispatch(StackCheckingDispatch orig) {
-	super(orig.execution);
+        super(orig.execution);
     }
 
     @Override
     public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
-	//CompilerAsserts.compilationConstant(arguments.length);
+        // CompilerAsserts.compilationConstant(arguments.length);
         final PorcEClosure computation = (PorcEClosure) target;
-	Object[] newArguments = new Object[arguments.length + 1];
-	newArguments[0] = computation.environment;
-	System.arraycopy(arguments, 0, newArguments, 1, arguments.length);
-	executeDispatchWithEnvironment(frame, target, arguments);
+        Object[] newArguments = new Object[arguments.length + 1];
+        newArguments[0] = computation.environment;
+        System.arraycopy(arguments, 0, newArguments, 1, arguments.length);
+        executeDispatchWithEnvironment(frame, target, arguments);
     }
 
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] args) {
-	final PorcERuntime r = execution.runtime();
+        final PorcERuntime r = execution.runtime();
         final PorcEClosure computation = (PorcEClosure) target;
         PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth();
         final int prev = state.previousDepth();
-	if (spawnProfile.profile(state.growthAllowed())) {
+        if (spawnProfile.profile(state.growthAllowed())) {
             executeInline(frame, computation, args, prev);
         } else {
             addCalledRoot(computation.body);
@@ -105,16 +91,16 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     }
 
     protected Dispatch getCall() {
-	if (call == null) {
-	    CompilerDirectives.transferToInterpreterAndInvalidate();
-	    computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
-		Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
-		n.setTail(isTail);
-		notifyInserted(n);
-		return n;
-	    });
-	}
-	return call;
+        if (call == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
+                Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
+                n.setTail(isTail);
+                notifyInserted(n);
+                return n;
+            });
+        }
+        return call;
     }
 
     private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args, final int previous) {
@@ -163,6 +149,6 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     }
 
     public static StackCheckingDispatch create(PorcEExecution execution) {
-	return new StackCheckingDispatch(execution);
+        return new StackCheckingDispatch(execution);
     }
 }

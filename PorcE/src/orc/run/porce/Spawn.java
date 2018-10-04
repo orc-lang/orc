@@ -66,6 +66,10 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
         return calledRootsProfile.getTotalCalls();
     }
 
+    public boolean isScheduled() {
+        return true;
+    }
+
     protected Spawn(boolean mustSpawn, PorcEExecution execution) {
         this.mustSpawn = mustSpawn;
         this.execution = execution;
