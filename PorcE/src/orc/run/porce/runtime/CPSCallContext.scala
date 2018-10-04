@@ -18,7 +18,6 @@ import orc.compile.parse.OrcSourceRange
 import orc.error.OrcException
 import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 import orc.MaterializedCallContext
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.SiteResponseSet
 import orc.VirtualCallContext
 

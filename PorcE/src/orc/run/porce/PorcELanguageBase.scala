@@ -34,7 +34,6 @@ import orc.PorcEPolyglotLauncher
 import orc.OrcOptions
 import orc.run.porce.runtime.PorcERuntime
 import com.oracle.truffle.api.Scope
-import orc.values.Signal
 import com.oracle.truffle.api.interop.TruffleObject
 import com.oracle.truffle.api.interop.ForeignAccess
 

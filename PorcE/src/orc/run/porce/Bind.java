@@ -13,13 +13,11 @@ package orc.run.porce;
 
 import orc.FutureReader;
 import orc.run.porce.call.Dispatch;
-import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.profiles.MaximumValueProfile;
 import orc.run.porce.runtime.CallClosureSchedulable;
 import orc.run.porce.runtime.Future;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcEFutureReader;
-import orc.run.porce.runtime.PorcERuntime;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.dsl.Cached;

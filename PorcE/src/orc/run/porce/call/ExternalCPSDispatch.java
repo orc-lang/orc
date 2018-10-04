@@ -13,18 +13,11 @@ package orc.run.porce.call;
 
 import static orc.run.porce.SpecializationConfiguration.ExternalCPSDirectSpecialization;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.logging.Level;
-
-import orc.CallContext;
 import orc.DirectInvoker;
 import orc.Invoker;
 import orc.SiteResponseSet;
-import orc.ast.porc.NewToken;
 import orc.error.runtime.HaltException;
 import orc.run.porce.StackCheckingDispatch;
-import orc.run.porce.profiles.SingleBranchProfile;
 import orc.run.porce.profiles.ValueClassesProfile;
 import orc.run.porce.HaltToken;
 import orc.run.porce.Logger;
@@ -52,12 +45,8 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import com.oracle.truffle.api.profiles.IntValueProfile;
-import com.oracle.truffle.api.profiles.ValueProfile;
 
 public class ExternalCPSDispatch extends Dispatch {
     @Child

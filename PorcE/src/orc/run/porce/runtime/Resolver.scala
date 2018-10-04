@@ -14,7 +14,6 @@ package orc.run.porce.runtime
 import java.util.ArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
-import orc.FutureReader
 import orc.run.porce.SimpleWorkStealingSchedulerWrapper
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary

@@ -11,7 +11,6 @@
 
 package orc.util
 
-import orc.values.sites.InvokerMethod
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.Invoker
 import orc.OrcRuntime

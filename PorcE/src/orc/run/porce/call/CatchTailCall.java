@@ -38,6 +38,7 @@ public class CatchTailCall extends Expression {
         this.loop = TailCallLoop.create(execution);
     }
 
+    @SuppressWarnings("boxing")
     @Override
     public void executePorcEUnit(VirtualFrame frame) {
         CompilerAsserts.compilationConstant(isTail);
