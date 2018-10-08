@@ -87,7 +87,7 @@ class Typechecker(val reportProblem: CompilationException with ContinuableSeveri
           }
           case FieldAccess(target, f) => {
             val (newTarget, typeTarget) = typeSynthExpr(target)
-            val typeField = FieldType(f.field)
+            val typeField = FieldType(f.name)
             val tpe = typeTarget match {
               case t: HasMembersType =>
                 t.getMember(typeField)

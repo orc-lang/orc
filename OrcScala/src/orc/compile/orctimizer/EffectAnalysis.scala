@@ -44,7 +44,7 @@ class EffectAnalysis(
         EffectAnalysis.worstState
     }
   }
-  
+
   def effects(e: Expression.Z): Boolean = {
     effectsInfoOf(e).effects
   }
@@ -77,14 +77,10 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
     val res = a()
 
     val delay = new EffectAnalysis(res collect { case (ExitNode(e), r) => (e, r) }, cg)
-    
-    def shortString(o: AnyRef) = s"'${o.toString().replace('\n', ' ').take(30)}'"
-    //println("=============== delay results ---")
-    //println(delay.results.par.map(p => s"${shortString(p._1.value)}\t----=========--> ${p._2}").seq.mkString("\n"))
-    
-    delay    
+
+    delay
   }
-  
+
   val worstState: EffectInfo = EffectInfo(true, true)
 
   case class EffectInfo(effects: Boolean, effected: Boolean) {
@@ -92,14 +88,14 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
       EffectInfo(effects || o.effects, effected || o.effected)
     }
     def lessThan(o: EffectInfo): Boolean = {
-      effects >= o.effects && effected >= o.effected 
+      effects >= o.effects && effected >= o.effected
     }
   }
 
   class DelayAnalyzer(graph: CallGraph, local: LocalNodeAnalysis) extends Analyzer with AnalyzerEdgeCache {
     import graph._
     import graph.NodeInformation._
-    
+
     type NodeT = Node
     type EdgeT = Edge
     type StateT = EffectInfo
@@ -118,7 +114,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
       node match {
         case n: ExitNode =>
           node.inEdgesOf[HappensBeforeEdge].toSeq.filter(_.to.isInstanceOf[ExitNode]).map(e => ConnectedNode(e, e.from)) ++
-            node.inEdgesOf[ValueEdge].toSeq.filter(n => n.to.ast.isInstanceOf[New] || n.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.from)) ++        
+            node.inEdgesOf[ValueEdge].toSeq.filter(n => n.to.ast.isInstanceOf[New] || n.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.from)) ++
             node.inEdgesOf[AfterEdge].toSeq.filter(n => n.to.ast.isInstanceOf[Branch]).map(e => ConnectedNode(e, e.from))
         case _ =>
           Seq()
@@ -128,8 +124,8 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
     def outputsCompute(node: Node): collection.Seq[ConnectedNode] = {
       node match {
         case n: ExitNode =>
-          node.outEdgesOf[HappensBeforeEdge].toSeq.filter(_.to.isInstanceOf[ExitNode]).map(e => ConnectedNode(e, e.to)) ++        
-            node.outEdgesOf[ValueEdge].toSeq.filter(n => n.to.ast.isInstanceOf[New] ||n.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.to)) ++        
+          node.outEdgesOf[HappensBeforeEdge].toSeq.filter(_.to.isInstanceOf[ExitNode]).map(e => ConnectedNode(e, e.to)) ++
+            node.outEdgesOf[ValueEdge].toSeq.filter(n => n.to.ast.isInstanceOf[New] ||n.to.ast.isInstanceOf[Future]).map(e => ConnectedNode(e, e.to)) ++
             node.outEdgesOf[AfterEdge].toSeq.filter(n => n.to.ast.isInstanceOf[Branch]).map(e => ConnectedNode(e, e.to))
         case _ =>
           Seq()
@@ -146,7 +142,7 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
 
     def transfer(node: Node, old: EffectInfo, states: States): (EffectInfo, Seq[Node]) = {
       lazy val inState = states.inStateReduced[Edge](_ combine _)
-      
+
       val state: StateT = node match {
         case node @ ExitNode(ast) =>
           import orc.ast.orctimizer.named._
@@ -154,15 +150,15 @@ object EffectAnalysis extends AnalysisRunner[(Expression.Z, Option[Method.Z]), E
             case Future.Z(_) =>
               inState
             case Call.Z(target, args, _) => {
-              val (extPubs, intPubs, otherPubs) = target.byCallTargetCases( 
+              val (extPubs, intPubs, otherPubs) = target.byCallTargetCases(
                 externals = { vs =>
                   EffectInfo(local.effects(node), local.effected(node))
-                }, internals = { vs => 
-                  inState 
-                }, others = { vs => 
-                  worstState 
-                }) 
-              applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combine _))(_ combine _).getOrElse(worstState) 
+                }, internals = { vs =>
+                  inState
+                }, others = { vs =>
+                  worstState
+                })
+              applyOrOverride(extPubs, applyOrOverride(intPubs, otherPubs)(_ combine _))(_ combine _).getOrElse(worstState)
             }
             case IfLenientMethod.Z(v, l, r) => {
               v.byIfLenientCases(

@@ -316,7 +316,6 @@ object CallGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), CallGr
       // Add edges we don't actually use in this analysis but do use in later analyses. These don't need to be reported to the analyzer framework.
       node match {
         case entry @ EntryNode(n @ (Force.Z(_, _, _) | Resolve.Z(_, _))) =>
-          val exit = ExitNode(n)
           // ASSUMPTION: This assumes that there are no futures created outside Orc.
           val sources = states.inStateProcessed[ValueEdge, Set[Node]](
               Set(), 
