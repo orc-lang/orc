@@ -172,7 +172,6 @@ case class ClassForms(val translator: Translator) {
       case cl @ ext.ClassLiteral(thisname, decls) => {
         var abstractMembers = List[Field]()
         var concreteMembers = List[Field]()
-        var freeVars = List[BoundVar]()
         def processDecls(ds: Seq[ext.Declaration]): Unit = ds match {
           // NOTE: The first two cases are optimizations. The third case also covers them, but also introduces extra fields.
           case ext.Val(ext.VariablePattern(x), f) +: rest => {
@@ -312,7 +311,6 @@ case class ClassForms(val translator: Translator) {
           val finalState = lin.foldRight(ChainConstructionState(Map(), List(partialObject), Set(StructuralType(Map())))) { (cls, state) =>
             import state._
 
-            val (prev, _) +: _ = partials
             val x = new BoundVar(Some(id"super_${cls.name}"))
             // TODO: In cases where the super type of the partial we are calling only needs values from one other type we could
             //       optimize this to just be a field reference instead of a complete new object.
@@ -326,7 +324,6 @@ case class ClassForms(val translator: Translator) {
               partials = (clsPartialField, partialConstructorCall) +: partials,
               types = types + cls.typeName)
           }
-          val ChainConstructionState(_, (finalPartial, _) +: _, _) = finalState
 
           generateForwardingObject(self, Some(cls.typeName), finalState.partials.reverse, finalState.concreteFields, Some(cls.typeName))
         }

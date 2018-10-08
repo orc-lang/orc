@@ -212,7 +212,7 @@ object OrcXML {
           <right>{ toXML(right) }</right>
         </otherwise>
       case FieldAccess(o, f) =>
-        <fieldaccess name={ f.field }>
+        <fieldaccess name={ f.name }>
           <expr>{ toXML(o) }</expr>
         </fieldaccess>
       case New(st, bindings, t) =>
@@ -230,7 +230,7 @@ object OrcXML {
             }
           }
           {
-            for ((n, e) <- bindings) yield <binding name={ n.field }><expr>{ toXML(e) }</expr></binding>
+            for ((n, e) <- bindings) yield <binding name={ n.name }><expr>{ toXML(e) }</expr></binding>
           }
         </new>
       case DeclareCallables(unclosedVars, defs, body: Expression) =>
@@ -332,7 +332,7 @@ object OrcXML {
       case StructuralType(members) =>
         <structuraltype>
           {
-            for ((n, t) <- members) yield <entry name={ n.field }>{ toXML(t) }</entry>
+            for ((n, t) <- members) yield <entry name={ n.name }>{ toXML(t) }</entry>
           }
         </structuraltype>
       case Def(typeFormalArity: Int, arity: Int, body: Expression, argTypes, returnType) =>
