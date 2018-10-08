@@ -15,7 +15,7 @@ package orc.values.sites
 
 import orc.error.compiletime.SiteResolutionException
 import orc.compile.Logger
-import orc.values.OrcValue
+import orc.values.HasMembers
 
 /** Services (such as name resolution) for normal Orc sites.
   *
@@ -37,7 +37,7 @@ object OrcSiteForm extends SiteForm {
       case e: Error =>
         throw new SiteResolutionException(name, e)
     }
-    if (classOf[Site].isAssignableFrom(loadedClass) || classOf[OrcValue].isAssignableFrom(loadedClass)) {
+    if (classOf[Site].isAssignableFrom(loadedClass) || classOf[HasMembers].isAssignableFrom(loadedClass)) {
       try {
         return loadedClass.asInstanceOf[Class[_ <: AnyRef]].newInstance()
       } catch {
@@ -54,7 +54,7 @@ object OrcSiteForm extends SiteForm {
         val loadedClassCompanion = loadClass(name + "$")
         val instance = loadedClassCompanion.getField("MODULE$").get(null)
         loadedClass = instance.getClass()
-        if(classOf[Site].isAssignableFrom(loadedClass) || classOf[OrcValue].isAssignableFrom(loadedClass)) {
+        if(classOf[Site].isAssignableFrom(loadedClass) || classOf[HasMembers].isAssignableFrom(loadedClass)) {
           return instance
         }
       } catch {

@@ -16,9 +16,9 @@ package orc.lib.builtin
 import orc.{ Accessor, VirtualCallContext, MaterializedCallContext, ErrorAccessor, FutureReader, Invoker, DirectInvoker, OrcRuntime }
 import orc.util.ArrayExtensions.{ Array1, Array2 }
 import orc.values.Field
-import orc.values.sites.InvokerMethod
+import orc.values.sites.Site
 
-object GetFieldSite extends InvokerMethod with Serializable {
+object GetFieldSite extends Site with Serializable {
   val arity = 2
   override def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     args match {
@@ -53,7 +53,7 @@ class GetFieldInvoker(accessor: Accessor, f: Field) extends Invoker {
   }
 }
 
-object GetMethodSite extends InvokerMethod with Serializable {
+object GetMethodSite extends Site with Serializable {
   val arity = 2
   override def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     args match {
