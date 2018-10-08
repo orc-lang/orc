@@ -11,58 +11,54 @@
 
 package orc.lib.state
 
-import java.util.LinkedList
+import java.util.{LinkedList, Queue}
 
-import java.util.Queue
+import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
-import orc.CallContext
-
-import orc.MaterializedCallContext
-
+import orc.{
+  DirectInvoker,
+  MaterializedCallContext,
+  OrcRuntime,
+  VirtualCallContext
+}
 import orc.error.runtime.ArityMismatchException
-
-import orc.error.runtime.TokenException
-
 import orc.lib.state.types.RefType
-
-import orc.run.distrib.AbstractLocation
-
-import orc.run.distrib.ClusterLocations
-
-import orc.run.distrib.DOrcPlacementPolicy
-
+import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
 import orc.types.Type
+import orc.values.{FastObject, Signal}
+import orc.values.sites.{
+  FunctionalSite,
+  NonBlockingSite,
+  PartialSite0Simple,
+  Site0Simple,
+  Site1Simple,
+  SiteMetadata,
+  TargetClassAndArgumentClassSpecializedInvoker,
+  TotalSiteBase,
+  TypedSite
+}
 
-import orc.values.sites.TypedSite
-
-
-
-
-
-
-
-import orc._
-import orc.values._
-import orc.values.sites._
-import scala.collection.JavaConverters._
-
-/**
-  * Rewritable mutable reference. The reference can be initialized with a value,
+/** Rewritable mutable reference. The reference can be initialized with a value,
   * or left initially empty. Read operations block if the reference is empty.
   * Write operations always succeed.
   *
   * @author dkitchin
   */
-object Ref extends TotalSiteBase with TypedSite with SiteMetadata with FunctionalSite {
+object Ref
+    extends TotalSiteBase
+    with TypedSite
+    with SiteMetadata
+    with FunctionalSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
     args.size match {
-      case 1 => invoker(this, args:_*)((_, args) => new Ref.Instance(args(0)))
-      case 0 => invoker(this, args:_*)((_, args) => new Ref.Instance())
+      case 1 => invoker(this, args: _*)((_, args) => new Ref.Instance(args(0)))
+      case 0 => invoker(this, args: _*)((_, args) => new Ref.Instance())
       case _ =>
-        new TargetClassAndArgumentClassSpecializedInvoker(this, args) with DirectInvoker {
+        new TargetClassAndArgumentClassSpecializedInvoker(this, args)
+        with DirectInvoker {
           @throws[Throwable]
           def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              throw new ArityMismatchException(1, args.size)
+            throw new ArityMismatchException(1, args.size)
           }
         }
     }
@@ -89,19 +85,22 @@ object Ref extends TotalSiteBase with TypedSite with SiteMetadata with Functiona
       this.readQueue = null
     }
 
-    protected val values = Array(new readMethod(), new writeMethod(),
-        new PartialSite0Simple with NonBlockingSite {
-      // readD
-      override def eval() = {
-            Instance.this.synchronized {
-              if (readQueue != null) {
-                None
-              } else {
-                Some(contents)
-              }
+    protected val values = Array(
+      new readMethod(),
+      new writeMethod(),
+      new PartialSite0Simple with NonBlockingSite {
+        // readD
+        override def eval() = {
+          Instance.this.synchronized {
+            if (readQueue != null) {
+              None
+            } else {
+              Some(contents)
             }
           }
-        })
+        }
+      }
+    )
 
     protected class readMethod extends Site0Simple {
 
@@ -162,7 +161,5 @@ object Ref extends TotalSiteBase with TypedSite with SiteMetadata with Functiona
     override def permittedLocations[L <: AbstractLocation](
         locations: ClusterLocations[L]): scala.collection.immutable.Set[L] =
       locations.hereSet
-
   }
-
 }

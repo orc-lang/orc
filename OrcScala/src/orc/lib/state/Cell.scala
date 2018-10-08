@@ -11,34 +11,26 @@
 
 package orc.lib.state
 
-import java.util.LinkedList
+import java.util.{LinkedList, Queue}
 
-import java.util.Queue
+import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 
-import orc.VirtualCallContext
-
-import orc.MaterializedCallContext
-
-import orc.error.runtime.ArityMismatchException
-
+import orc.{MaterializedCallContext, VirtualCallContext}
 import orc.lib.state.types.CellType
-
-import orc.run.distrib.AbstractLocation
-
-import orc.run.distrib.ClusterLocations
-
-import orc.run.distrib.DOrcPlacementPolicy
-
+import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
 import orc.types.Type
+import orc.values.{FastObject, Signal}
+import orc.values.sites.{
+  FunctionalSite,
+  NonBlockingSite,
+  PartialSite0Simple,
+  Site0Simple,
+  Site1Simple,
+  TotalSite0Simple,
+  TypedSite
+}
 
-import orc.values.sites.TypedSite
-
-import orc.values._
-import orc.values.sites._
-import scala.collection.JavaConversions._
-
-/**
-  * Write-once cell. Read operations block while the cell is empty. Write
+/** Write-once cell. Read operations block while the cell is empty. Write
   * operatons fail once the cell is full.
   *
   * @author dkitchin
@@ -57,19 +49,22 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
 
     var contents: AnyRef = null
 
-    protected val values = Array(new readMethod(), new writeMethod(),
-        new PartialSite0Simple with NonBlockingSite {
-      // readD
-      override def eval() = {
-            Instance.this.synchronized {
-              if (readQueue != null) {
-                None
-              } else {
-                Some(contents)
-              }
+    protected val values = Array(
+      new readMethod(),
+      new writeMethod(),
+      new PartialSite0Simple with NonBlockingSite {
+        // readD
+        override def eval() = {
+          Instance.this.synchronized {
+            if (readQueue != null) {
+              None
+            } else {
+              Some(contents)
             }
           }
-        })
+        }
+      }
+    )
 
     protected class readMethod extends Site0Simple {
 
@@ -94,7 +89,9 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
 
     }
 
-    protected class writeMethod extends Site1Simple[AnyRef] with NonBlockingSite {
+    protected class writeMethod
+        extends Site1Simple[AnyRef]
+        with NonBlockingSite {
 
       override def eval(writer: VirtualCallContext, v: AnyRef) = {
         Instance.this.synchronized {
@@ -120,7 +117,7 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
              * value to them.
              */
 
-            rq.foldLeft(writer.publish(Signal))(_.publish(_, v))
+            rq.asScala.foldLeft(writer.publish(Signal))(_.publish(_, v))
             /* A successful write publishes a signal. */
           } else {
             /* A failed write kills the writer. */

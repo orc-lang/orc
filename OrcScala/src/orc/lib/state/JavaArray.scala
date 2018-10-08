@@ -11,55 +11,40 @@
 
 package orc.lib.state
 
-import java.lang.reflect.{ Array => JArray }
+import java.lang.reflect.{Array => JArray}
 
-import java.util.HashMap
-
-import orc.error.runtime.ArityMismatchException
-
-import orc.error.runtime.BadArrayElementTypeException
-
-import orc.error.runtime.TokenException
-
+import orc.{DirectInvoker, OrcRuntime}
+import orc.error.runtime.{ArityMismatchException, BadArrayElementTypeException}
 import orc.lib.state.types.ArrayType
-
 import orc.types.Type
-
-import orc.values.sites._
-import orc.values._
-import orc._
-
-import orc.util.ArrayExtensions._
+import orc.util.ArrayExtensions.{Array1, Array2}
+import orc.values.sites.{
+  TargetClassAndArgumentClassSpecializedInvoker,
+  TotalSiteBase,
+  TypedSite
+}
 
 object JavaArray extends TotalSiteBase with TypedSite {
-
-  private var types: Map[String, Class[_]] = Map(
+  private val types: Map[String, Class[_]] = Map(
     ("double", java.lang.Double.TYPE),
-
     ("float", java.lang.Float.TYPE),
-
     ("long", java.lang.Long.TYPE),
-
     ("int", java.lang.Integer.TYPE),
-
     ("short", java.lang.Short.TYPE),
-
     ("byte", java.lang.Byte.TYPE),
-
     ("char", java.lang.Character.TYPE),
-
     ("boolean", java.lang.Boolean.TYPE),
   )
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
     args.size match {
       case 1 =>
-        invoker(this, args:_*){ (_, args) =>
+        invoker(this, args: _*) { (_, args) =>
           val Array1(i: Number) = args
           JArray.newInstance(classOf[AnyRef], i.intValue())
         }
       case 2 =>
-        invoker(this, args:_*){ (_, args) =>
+        invoker(this, args: _*) { (_, args) =>
           val Array2(i: Number, s: String) = args
           val tpe: Class[_] = types.getOrElse(s, {
             throw new BadArrayElementTypeException(s)
@@ -67,15 +52,15 @@ object JavaArray extends TotalSiteBase with TypedSite {
           JArray.newInstance(tpe, i.intValue())
         }
       case _ =>
-        new TargetClassAndArgumentClassSpecializedInvoker(this, args) with DirectInvoker {
+        new TargetClassAndArgumentClassSpecializedInvoker(this, args)
+        with DirectInvoker {
           @throws[Throwable]
           def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              throw new ArityMismatchException(2, args.size)
+            throw new ArityMismatchException(2, args.size)
           }
         }
     }
   }
 
   override def orcType(): Type = ArrayType.getBuilder
-
 }

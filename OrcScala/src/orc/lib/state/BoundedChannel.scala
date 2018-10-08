@@ -11,52 +11,48 @@
 
 package orc.lib.state
 
-import java.util.ArrayList
+import java.util.{ArrayList, LinkedList}
 
-import java.util.LinkedList
-
-import orc.MaterializedCallContext
-
-import orc.error.runtime.ArityMismatchException
-
-import orc.error.runtime.TokenException
-
+import orc.{MaterializedCallContext, SiteResponseSet, VirtualCallContext}
 import orc.lib.state.types.BoundedChannelType
-
-import orc.run.distrib.AbstractLocation
-
-import orc.run.distrib.ClusterLocations
-
-import orc.run.distrib.DOrcPlacementPolicy
-
+import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
 import orc.types.Type
+import orc.values.{FastObject, NumericsConfig, Signal}
+import orc.values.sites.{
+  NonBlockingSite,
+  Site0Simple,
+  Site1Simple,
+  SiteMetadata,
+  TotalSite0Simple,
+  TotalSite1Simple,
+  TypedSite
+}
 
-import orc.values.sites.{ TypedSite, Site0Simple, Site1Simple, TotalSite0Simple }
-
-import orc.values.sites.TotalSite1Simple
-import orc.values.{Signal, FastObject, Field, NumericsConfig}
-import orc.{VirtualCallContext, SiteResponseSet}
-import orc.values.sites.SiteMetadata
-import orc.values.sites.NonBlockingSite
-
-/**
-  * A bounded channel. With a bound of zero, behaves as a synchronous channel.
+/** A bounded channel. With a bound of zero, behaves as a synchronous channel.
   *
   * @author quark
   */
 object BoundedChannel extends TotalSite1Simple[Number] with TypedSite {
   override def eval(bound: Number): AnyRef = {
-      new BoundedChannel.Instance(bound.intValue)
+    new BoundedChannel.Instance(bound.intValue)
   }
 
   override def orcType(): Type = BoundedChannelType.getBuilder
 
-
   private val members =
-    FastObject.members("get", "getD", "put", "putD", "getAll", "getOpen", "getBound", "close", "closeD")
+    FastObject.members("get",
+                       "getD",
+                       "put",
+                       "putD",
+                       "getAll",
+                       "getOpen",
+                       "getBound",
+                       "close",
+                       "closeD")
 
   class Instance(private var open: Int)
-      extends FastObject(members) with DOrcPlacementPolicy {
+      extends FastObject(members)
+      with DOrcPlacementPolicy {
     val contents = new LinkedList[AnyRef]()
     val readers = new LinkedList[MaterializedCallContext]()
     val writers = new LinkedList[MaterializedCallContext]()
@@ -111,21 +107,23 @@ object BoundedChannel extends TotalSite1Simple[Number] with TypedSite {
     }
 
     abstract class PutSiteBase extends Site1Simple[AnyRef] {
-      def eval(writer: VirtualCallContext, item: AnyRef) = Instance.this synchronized {
-        if (closed) {
-          writer.halt()
-        } else if (!readers.isEmpty) {
-          val reader = readers.removeFirst()
-          writer.publish(Signal).publish(reader, item)
-        } else if (open == 0) {
-          handleNoSlot(writer, item)
-        } else {
-          contents.addLast(item)
-          open -= 1
-          writer.publish(Signal)
+      def eval(writer: VirtualCallContext, item: AnyRef) =
+        Instance.this synchronized {
+          if (closed) {
+            writer.halt()
+          } else if (!readers.isEmpty) {
+            val reader = readers.removeFirst()
+            writer.publish(Signal).publish(reader, item)
+          } else if (open == 0) {
+            handleNoSlot(writer, item)
+          } else {
+            contents.addLast(item)
+            open -= 1
+            writer.publish(Signal)
+          }
         }
-      }
-      def handleNoSlot(writer: VirtualCallContext, item: AnyRef): SiteResponseSet
+      def handleNoSlot(writer: VirtualCallContext,
+                       item: AnyRef): SiteResponseSet
     }
 
     val putSite = new PutSiteBase {
@@ -144,20 +142,20 @@ object BoundedChannel extends TotalSite1Simple[Number] with TypedSite {
       }
     }
 
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
     val getAllSite = new Site0Simple {
       def eval(ctx: VirtualCallContext) = Instance.this synchronized {
         // restore open slots
         open += contents.size - writers.size
         // collect all values in a list
-        val out: AnyRef = contents.toList
+        val out: AnyRef = contents.asScala.toList
         contents.clear()
         val r0 = ctx.publish(out)
         val oldWriters = new ArrayList[MaterializedCallContext](writers)
         writers.clear()
         // resume all writers
-        val r1 = oldWriters.foldLeft(r0)(_.publish(_, Signal))
+        val r1 = oldWriters.asScala.foldLeft(r0)(_.publish(_, Signal))
         // notify closer if necessary
         val r2 = if (closer != null) {
           val mctx = closer
@@ -195,7 +193,7 @@ object BoundedChannel extends TotalSite1Simple[Number] with TypedSite {
           ctx.empty
         }
         // resume all writers
-        val r1 = readers.foldLeft(r0)(_.publish(_, Signal))
+        val r1 = readers.asScala.foldLeft(r0)(_.publish(_, Signal))
         r1
       }
     }
@@ -205,18 +203,23 @@ object BoundedChannel extends TotalSite1Simple[Number] with TypedSite {
         closed = true
         val r0 = ctx.publish(Signal)
         // resume all writers
-        val r1 = readers.foldLeft(r0)(_.publish(_, Signal))
+        val r1 = readers.asScala.foldLeft(r0)(_.publish(_, Signal))
         r1
       }
     }
 
-    protected val values: Array[AnyRef] = Array(getSite, getDSite, putSite, putDSite, getAllSite, getOpenSite, getBoundSite, closeSite, closeDSite)
-
+    protected val values: Array[AnyRef] = Array(getSite,
+                                                getDSite,
+                                                putSite,
+                                                putDSite,
+                                                getAllSite,
+                                                getOpenSite,
+                                                getBoundSite,
+                                                closeSite,
+                                                closeDSite)
 
     override def permittedLocations[L <: AbstractLocation](
         locations: ClusterLocations[L]): scala.collection.immutable.Set[L] =
       locations.hereSet
-
   }
-
 }

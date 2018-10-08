@@ -11,125 +11,126 @@
 
 package orc.lib.state;
 
-import java.util.LinkedList;
 import scala.collection.mutable.Queue
 
 import orc.{MaterializedCallContext, VirtualCallContext}
-import orc.error.runtime.ArityMismatchException
-import orc.error.runtime.TokenException
 import orc.lib.state.types.SemaphoreType
-import orc.run.distrib.AbstractLocation
-import orc.run.distrib.ClusterLocations
-import orc.run.distrib.DOrcPlacementPolicy
-import orc.types.Type
-import orc.values.sites.{TypedSite, FunctionalSite}
-import orc.values.sites.{ TotalSite1Simple, Site0Simple }
-import orc.values.FastObject
-import orc.values.Signal
+import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
+import orc.values.{FastObject, Signal}
+import orc.values.sites.{
+  FunctionalSite,
+  NonBlockingSite,
+  Site0Simple,
+  TotalSite1Simple,
+  TypedSite
+}
 
-/**
- * @author quark
- * @author dkitchin
- */
-object Semaphore extends TotalSite1Simple[Number] with TypedSite with FunctionalSite {
-
+/** @author quark
+  * @author dkitchin
+  */
+object Semaphore
+    extends TotalSite1Simple[Number]
+    with TypedSite
+    with FunctionalSite {
   def eval(arg: Number) = {
     val initialValue = arg.intValue
     if (initialValue >= 0) {
-        new Semaphore.Instance(initialValue);
+      new Semaphore.Instance(initialValue);
     } else {
-        throw new IllegalArgumentException("Semaphore requires a non-negative argument");
+      throw new IllegalArgumentException(
+        "Semaphore requires a non-negative argument");
     }
   }
 
   def orcType() = {
-      SemaphoreType.getBuilder
+    SemaphoreType.getBuilder
   }
 
-  private val members = FastObject.members("acquire", "acquireD", "release", "snoop", "snoopD")
+  private val members =
+    FastObject.members("acquire", "acquireD", "release", "snoop", "snoopD")
 
-  class Instance(protected var n: Int) extends FastObject(members) with DOrcPlacementPolicy {
+  class Instance(protected var n: Int)
+      extends FastObject(members)
+      with DOrcPlacementPolicy {
     instance =>
 
-      require(n >= 0)
+    require(n >= 0)
 
-      val waiters = Queue[MaterializedCallContext]()
-      var snoopers = Queue[MaterializedCallContext]()
+    val waiters = Queue[MaterializedCallContext]()
+    var snoopers = Queue[MaterializedCallContext]()
 
-      protected val values = Array(
-          // "acquire" ->
-          new Site0Simple() {
-            def eval(ctx: VirtualCallContext) = instance synchronized {
-                        if (0 == n) {
-                          val mat = ctx.materialize()
-                          mat.setQuiescent()
-                          waiters += mat
-                          if (snoopers.nonEmpty) {
-                            val oldSnoopers = snoopers.clone()
-                            snoopers.clear()
-                            oldSnoopers.foreach(_.publish(Signal))
-                          }
-                          ctx.empty
-                        } else {
-                          n -= 1
-                          ctx.publish(Signal)
-                        }
-                }
-            },
-            // "acquireD" ->
-            new Site0Simple() {
-              def eval(ctx: VirtualCallContext) = instance synchronized {
-                        if (0 == n) {
-                            ctx.halt();
-                        } else {
-                          n -= 1
-                          ctx.publish(Signal);
-                        }
-                }
-              val nonBlocking = true
-            },
-            // "release" ->
-            new Site0Simple() {
-              def eval(ctx: VirtualCallContext) = instance synchronized {
-                        val r = if (waiters.isEmpty) {
-                          n += 1
-                            ctx.empty
-                        } else {
-                            val waiter = waiters.dequeue()
-                            ctx.empty.publish(waiter, Signal)
-                        }
-                        r.publish(ctx, Signal)
-                    }
-              val nonBlocking = true
-            },
-            // "snoop" ->
-            new Site0Simple() {
-              def eval(ctx: VirtualCallContext) = instance synchronized {
-                        if (waiters.isEmpty) {
-                          val mat = ctx.materialize()
-                          mat.setQuiescent()
-                          snoopers += mat
-                          ctx.empty
-                        } else {
-                            ctx.publish(Signal)
-                        }
-                }
-            },
-            // "snoopD" ->
-            new Site0Simple() {
-              def eval(ctx: VirtualCallContext) = instance synchronized {
-                        if (waiters.isEmpty) {
-                            ctx.halt();
-                        } else {
-                            ctx.publish(Signal);
-                        }
-                }
-              val nonBlocking = true
+    protected val values = Array(
+      // "acquire" ->
+      new Site0Simple {
+        def eval(ctx: VirtualCallContext) = instance synchronized {
+          if (0 == n) {
+            val mat = ctx.materialize()
+            mat.setQuiescent()
+            waiters += mat
+            if (snoopers.nonEmpty) {
+              val oldSnoopers = snoopers.clone()
+              snoopers.clear()
+              oldSnoopers.foreach(_.publish(Signal))
             }
-            )
-
-      def permittedLocations[L <: AbstractLocation](locations: ClusterLocations[L]): collection.immutable.Set[L] = {
-          locations.hereSet
+            ctx.empty
+          } else {
+            n -= 1
+            ctx.publish(Signal)
+          }
+        }
+      },
+      // "acquireD" ->
+      new Site0Simple with NonBlockingSite {
+        def eval(ctx: VirtualCallContext) = instance synchronized {
+          if (0 == n) {
+            ctx.halt();
+          } else {
+            n -= 1
+            ctx.publish(Signal);
+          }
+        }
+      },
+      // "release" ->
+      new Site0Simple with NonBlockingSite {
+        def eval(ctx: VirtualCallContext) = instance synchronized {
+          val r = if (waiters.isEmpty) {
+            n += 1
+            ctx.empty
+          } else {
+            val waiter = waiters.dequeue()
+            ctx.empty.publish(waiter, Signal)
+          }
+          r.publish(ctx, Signal)
+        }
+      },
+      // "snoop" ->
+      new Site0Simple {
+        def eval(ctx: VirtualCallContext) = instance synchronized {
+          if (waiters.isEmpty) {
+            val mat = ctx.materialize()
+            mat.setQuiescent()
+            snoopers += mat
+            ctx.empty
+          } else {
+            ctx.publish(Signal)
+          }
+        }
+      },
+      // "snoopD" ->
+      new Site0Simple with NonBlockingSite {
+        def eval(ctx: VirtualCallContext) = instance synchronized {
+          if (waiters.isEmpty) {
+            ctx.halt();
+          } else {
+            ctx.publish(Signal);
+          }
+        }
       }
+    )
+
+    def permittedLocations[L <: AbstractLocation](
+        locations: ClusterLocations[L]): collection.immutable.Set[L] = {
+      locations.hereSet
     }
+  }
 }

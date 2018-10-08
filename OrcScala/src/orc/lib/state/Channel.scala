@@ -11,42 +11,22 @@
 
 package orc.lib.state
 
-import java.util.ArrayList
-
 import java.util.LinkedList
 
-import orc.VirtualCallContext
+import scala.collection.JavaConverters.asScalaBufferConverter
 
-import orc.MaterializedCallContext
-
-import orc.error.runtime.ArityMismatchException
-
-import orc.error.runtime.TokenException
-
+import orc.{MaterializedCallContext, SiteResponseSet, VirtualCallContext}
 import orc.lib.state.types.ChannelType
-
-import orc.run.distrib.AbstractLocation
-
-import orc.run.distrib.ClusterLocations
-
-import orc.run.distrib.DOrcPlacementPolicy
-
-import orc.types.Type
-
-import orc.values.sites.TypedSite
-
-
-
-
-
-
-
-
-
-import orc.values._
-import orc.values.sites._
-import orc._
-import scala.collection.JavaConverters._
+import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
+import orc.values.{FastObject, Signal}
+import orc.values.sites.{
+  FunctionalSite,
+  NonBlockingSite,
+  Site0Simple,
+  Site1Simple,
+  TotalSite0Simple,
+  TypedSite
+}
 
 /**
   * Implements the local site Channel, which creates asynchronous channels.
@@ -58,63 +38,71 @@ object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
 
   def orcType() = ChannelType.getBuilder
 
-  class PutSite(val channel: Instance) extends Site1Simple[AnyRef] with NonBlockingSite {
+  class PutSite(val channel: Instance)
+      extends Site1Simple[AnyRef]
+      with NonBlockingSite {
 
-    def eval(ctx: VirtualCallContext, item: AnyRef): SiteResponseSet = channel.synchronized {
+    def eval(ctx: VirtualCallContext, item: AnyRef): SiteResponseSet =
+      channel.synchronized {
         if (channel.closed) {
           return ctx.empty
         }
-// Since this is an asynchronous channel, a put call
-// always returns.
+        // Since this is an asynchronous channel, a put call
+        // always returns.
         val r1 = ctx.publish(Signal)
-        while (true)
-        if (channel.readers.isEmpty) {
-// If there are no waiting callers, queue this item.
+        while (true) if (channel.readers.isEmpty) {
+          // If there are no waiting callers, queue this item.
           channel.contents.addLast(item)
           return r1
         } else {
-// If there are callers waiting, give this item to
-// the top caller.
+          // If there are callers waiting, give this item to
+          // the top caller.
           val receiver = channel.readers.removeFirst()
           if (receiver.isLive) {
-// If the reader is live then publish into it.
+            // If the reader is live then publish into it.
             return r1.publish(receiver, item)
           } else {}
-// If the reader is dead then go through the loop again to get another reader.
+          // If the reader is dead then go through the loop again to get another reader.
         }
         throw new AssertionError("Unreachable")
-    }
+      }
 
   }
 
   class GetSite(val channel: Instance) extends Site0Simple {
 
     def eval(reader: VirtualCallContext) = channel.synchronized {
-        if (channel.contents.isEmpty) {
-          if (channel.closed) {
-            reader.halt()
-          } else {
-            val mat = reader.materialize()
-            mat.setQuiescent()
-            channel.readers.addLast(mat)
-            reader.empty
-          }
+      if (channel.contents.isEmpty) {
+        if (channel.closed) {
+          reader.halt()
         } else {
-          // If there is an item available, pop it and return
-          // it.
-          val v = channel.contents.removeFirst()
-          val r1 = if (channel.closer != null && channel.contents.isEmpty) {
-            val closer = channel.closer
-            channel.closer = null
-            reader.empty.publish(closer, Signal)
-          } else reader.empty
-          r1.publish(reader, v)
+          val mat = reader.materialize()
+          mat.setQuiescent()
+          channel.readers.addLast(mat)
+          reader.empty
+        }
+      } else {
+        // If there is an item available, pop it and return
+        // it.
+        val v = channel.contents.removeFirst()
+        val r1 = if (channel.closer != null && channel.contents.isEmpty) {
+          val closer = channel.closer
+          channel.closer = null
+          reader.empty.publish(closer, Signal)
+        } else reader.empty
+        r1.publish(reader, v)
       }
     }
 
   }
 
-  private val members = FastObject.members("get", "put", "getD", "getAll", "isClosed", "close", "closeD")
+  private val members = FastObject.members("get",
+                                           "put",
+                                           "getD",
+                                           "getAll",
+                                           "isClosed",
+                                           "close",
+                                           "closeD")
 
   class Instance() extends FastObject(members) with DOrcPlacementPolicy {
 
@@ -132,64 +120,64 @@ object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
     var closed: Boolean = false
 
     val values = Array(
-        new GetSite(Instance.this),
-        new PutSite(Instance.this),
-        // "getD",
-        new Site0Simple with NonBlockingSite {
-            def eval(reader: VirtualCallContext) = Instance.this.synchronized {
-              if (contents.isEmpty) {
-                reader.halt()
-              } else {
-                val r0 = reader.empty
-                val r1 = if (closer != null && contents.isEmpty) {
-                  closer = null
-                  r0.publish(closer, Signal)
-                } else {
-                  r0
-                }
-                r1.publish(reader, contents.removeFirst())
-              }
+      new GetSite(Instance.this),
+      new PutSite(Instance.this),
+      // "getD",
+      new Site0Simple with NonBlockingSite {
+        def eval(reader: VirtualCallContext) = Instance.this.synchronized {
+          if (contents.isEmpty) {
+            reader.halt()
+          } else {
+            val r0 = reader.empty
+            val r1 = if (closer != null && contents.isEmpty) {
+              closer = null
+              r0.publish(closer, Signal)
+            } else {
+              r0
+            }
+            r1.publish(reader, contents.removeFirst())
           }
-        },
-        // "getAll",
-        new Site0Simple {
-            def eval(ctx: VirtualCallContext) = Instance.this.synchronized {
-              val out: AnyRef = contents.asScala.toList
-              contents.clear()
-              val r1 = if (closer != null) {
-                closer = null
-                ctx.empty.publish(closer, Signal)
-              } else ctx.empty
-              r1.publish(ctx, out)
-            }
-        },
-      // "isClosed",
-        new TotalSite0Simple with NonBlockingSite {
-            def eval() = Instance.this.synchronized { closed }
+        }
       },
-  // "close",
-        new Site0Simple {
-            def eval(ctx: VirtualCallContext) = Instance.this.synchronized {
-              closed = true
-              val r1 = readers.asScala.foldLeft(ctx.empty)(_.halt(_))
-              if (contents.isEmpty) {
-                r1.publish(ctx, Signal)
-              } else {
-                closer = ctx.materialize()
-                closer.setQuiescent()
-                r1
-              }
-            }
-        },
-        // "closeD",
-        new Site0Simple with NonBlockingSite {
-            def eval(ctx: VirtualCallContext) = Instance.this.synchronized {
-              closed = true
-              val r1 = readers.asScala.foldLeft(ctx.empty)(_.halt(_))
-              r1.publish(ctx, Signal)
-            }
-        },
-      )
+      // "getAll",
+      new Site0Simple {
+        def eval(ctx: VirtualCallContext) = Instance.this.synchronized {
+          val out: AnyRef = contents.asScala.toList
+          contents.clear()
+          val r1 = if (closer != null) {
+            closer = null
+            ctx.empty.publish(closer, Signal)
+          } else ctx.empty
+          r1.publish(ctx, out)
+        }
+      },
+      // "isClosed",
+      new TotalSite0Simple with NonBlockingSite {
+        def eval() = Instance.this.synchronized { closed }
+      },
+      // "close",
+      new Site0Simple {
+        def eval(ctx: VirtualCallContext) = Instance.this.synchronized {
+          closed = true
+          val r1 = readers.asScala.foldLeft(ctx.empty)(_.halt(_))
+          if (contents.isEmpty) {
+            r1.publish(ctx, Signal)
+          } else {
+            closer = ctx.materialize()
+            closer.setQuiescent()
+            r1
+          }
+        }
+      },
+      // "closeD",
+      new Site0Simple with NonBlockingSite {
+        def eval(ctx: VirtualCallContext) = Instance.this.synchronized {
+          closed = true
+          val r1 = readers.asScala.foldLeft(ctx.empty)(_.halt(_))
+          r1.publish(ctx, Signal)
+        }
+      },
+    )
 
     override def toString(): String = Instance.this.synchronized {
       super.toString + contents.toString
@@ -200,5 +188,4 @@ object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
       locations.hereSet
 
   }
-
 }

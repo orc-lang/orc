@@ -13,15 +13,20 @@
 
 package orc.lib.state
 
-import orc.error.runtime.ArgumentTypeMismatchException
 import orc.run.distrib.PinnedPlacementPolicy
-import orc.types.{ JavaObjectType, SignalType, SimpleFunctionType }
+import orc.types.{JavaObjectType, SignalType, SimpleFunctionType}
 import orc.values.Signal
-import orc.values.sites.{ EffectFreeSite, Effects, FunctionalSite, TalkativeSite, NonBlockingSite, TypedSite }
-import orc.values.sites.TotalSite0Simple
-import orc.values.sites.TotalSite1Simple
-import orc.values.sites.PartialSite1Simple
-
+import orc.values.sites.{
+  EffectFreeSite,
+  Effects,
+  FunctionalSite,
+  NonBlockingSite,
+  PartialSite1Simple,
+  TalkativeSite,
+  TotalSite0Simple,
+  TotalSite1Simple,
+  TypedSite
+}
 
 final class Flag extends PinnedPlacementPolicy {
   @volatile
@@ -38,10 +43,13 @@ final class Flag extends PinnedPlacementPolicy {
   override def toString = s"<Flag: ${get()}>"
 }
 
-/**
-  * @author amp
+/** @author amp
   */
-object NewFlag extends TotalSite0Simple with TypedSite with FunctionalSite with TalkativeSite {
+object NewFlag
+    extends TotalSite0Simple
+    with TypedSite
+    with FunctionalSite
+    with TalkativeSite {
   def eval() = {
     new Flag()
   }
@@ -51,10 +59,13 @@ object NewFlag extends TotalSite0Simple with TypedSite with FunctionalSite with 
   }
 }
 
-/**
-  * @author amp
+/** @author amp
   */
-object SetFlag extends TotalSite1Simple[Flag] with TypedSite with TalkativeSite with NonBlockingSite {
+object SetFlag
+    extends TotalSite1Simple[Flag]
+    with TypedSite
+    with TalkativeSite
+    with NonBlockingSite {
   def eval(flag: Flag) = {
     flag.set()
     Signal
@@ -67,7 +78,11 @@ object SetFlag extends TotalSite1Simple[Flag] with TypedSite with TalkativeSite 
   override def effects = Effects.BeforePub
 }
 
-object PublishIfNotSet extends PartialSite1Simple[Flag] with TypedSite with NonBlockingSite with EffectFreeSite {
+object PublishIfNotSet
+    extends PartialSite1Simple[Flag]
+    with TypedSite
+    with NonBlockingSite
+    with EffectFreeSite {
   def eval(flag: Flag) = {
     if (flag.get())
       None
