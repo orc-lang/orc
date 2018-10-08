@@ -17,7 +17,6 @@ import orc.ast.oil.nameless.Expression
 import orc.compile.parse.OrcSourceRange
 import orc.error.OrcException
 import orc.error.runtime.ExecutionException
-import orc.values.Signal
 
 // TODO: OrcRuntimeProvides is a duplicate of the abilities provided by Backend's Runtime. This should probably be removed and reorganized as a utility class for backends.
 /** The interface from a caller to an Orc runtime

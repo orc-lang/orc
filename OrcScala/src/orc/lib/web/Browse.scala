@@ -14,14 +14,11 @@ package orc.lib.web
 
 import java.net.URL
 
-import orc.{ OrcEvent }
+import orc.{ OrcEvent, VirtualCallContext }
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ JavaObjectType, OverloadedType, SignalType, SimpleFunctionType, StringType }
 import orc.values.Signal
-import orc.values.sites.{ TypedSite }
-import orc.values.sites.Site1
-import orc.values.sites.Site1Simple
-import orc.VirtualCallContext
+import orc.values.sites.{ Site1Simple, TypedSite }
 
 
 

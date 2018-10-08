@@ -12,12 +12,12 @@
 //
 package orc.values
 
+import java.util.Arrays
+
 import orc.{ DirectInvoker, OrcRuntime }
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, TupleIndexOutOfBoundsException }
 import orc.run.distrib.DOrcMarshalingReplacement
 import orc.util.ArrayExtensions.Array1
-import orc.values.sites.{ IllegalArgumentInvoker, UntypedSite, NonBlockingSite, PartialSite }
-import java.util.Arrays
+import orc.values.sites.{ NonBlockingSite, PartialSite, UntypedSite, IllegalArgumentInvoker }
 
 /** @author dkitchin
   */

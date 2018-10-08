@@ -11,11 +11,8 @@
 
 package orc.lib.util
 
-import orc.error.runtime.TokenException;
-import orc.types.Type;
-import orc.values.sites.TypedSite;
-import orc.types.{ SimpleFunctionType, StringType }
-import orc.values.sites.TotalSite0Simple
+import orc.types.{ SimpleFunctionType, StringType, Type }
+import orc.values.sites.{ TotalSite0Simple, TypedSite }
 
 /**
   * Generate random UUIDs.

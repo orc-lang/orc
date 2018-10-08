@@ -12,10 +12,10 @@
 //
 package orc.lib.util
 
-import orc.{ VirtualCallContext, OrcRuntime }
+import orc.OrcRuntime
 import orc.types.SignalType
-import orc.values.sites.{ Site0Base, TypedSite }
 import orc.values.Signal
+import orc.values.sites.{ Site0Base, TypedSite }
 
 /** Cause the execution to dump the token state.
   *

@@ -13,7 +13,7 @@
 
 package orc.test.util
 
-import scala.collection.JavaConverters.{ dictionaryAsScalaMapConverter, enumerationAsScalaIteratorConverter, iterableAsScalaIterableConverter, mapAsScalaMapConverter }
+import scala.collection.JavaConverters._
 
 /** Generates JavaScript Object Notation (JSON) per RFC 7159 and ECMA-262.
   *

@@ -12,7 +12,7 @@
 //
 package orc.lib.util
 
-import orc.{ VirtualCallContext, OrcRuntime }
+import orc.OrcRuntime
 import orc.types.Bot
 import orc.values.sites.{ Site0Base, TypedSite }
 

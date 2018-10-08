@@ -11,18 +11,11 @@
 
 package orc.lib.util
 
-import orc.values.sites.DirectSite
-import orc.OrcRuntime
-import orc.Invoker
 import java.math.BigInteger
-import orc.DirectInvoker
 import java.util.concurrent.ThreadLocalRandom
-import orc.values.sites.Range
-import orc.values.sites.IllegalArgumentInvoker
-import java.lang.IllegalArgumentException
-import orc.values.sites.FunctionalSite
-import orc.DirectInvoker
-import orc.values.sites.SiteMetadata
+
+import orc.{ DirectInvoker, OrcRuntime }
+import orc.values.sites.{ DirectSite, FunctionalSite, Range, SiteMetadata, IllegalArgumentInvoker }
 
 object Random extends DirectSite with SiteMetadata with FunctionalSite {
   class ArgInvoker extends DirectInvoker {

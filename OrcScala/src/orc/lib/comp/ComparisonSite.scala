@@ -13,10 +13,8 @@
 
 package orc.lib.comp
 
-import orc.values.sites._
-import orc.Invoker
-import orc.values.sites.IllegalArgumentInvoker
 import orc.types.{ BooleanType, SimpleFunctionType, Top }
+import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod2, TalkativeSite, IllegalArgumentInvoker }
 
 abstract class ComparisonSite extends OverloadedDirectInvokerMethod2[AnyRef, AnyRef] with FunctionalSite {
   def getInvokerSpecialized(arg1: AnyRef, arg2: AnyRef) = {

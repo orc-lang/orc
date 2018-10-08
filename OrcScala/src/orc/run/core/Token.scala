@@ -21,7 +21,6 @@ import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
 import orc.run.distrib.token.{ DOrcExecution, NoLocationAvailable, PeerLocation }
 import orc.values.{ Field, OrcObject, Signal }
-import orc.values.sites.TotalSite
 
 /** Token represents a "process" executing in the Orc program.
   *

@@ -12,19 +12,11 @@
 //
 package orc.lib.str
 
-import orc.{ OrcEvent }
-import orc.types.{ SignalType, SimpleFunctionType, Top }
+import orc.{ OrcEvent, OrcRuntime, SiteResponseSet, VirtualCallContext }
+import orc.types.{ SignalType, SimpleFunctionType, StringType, Top }
 import orc.values.Format.formatValue
-import orc.values.sites.{ Range, TypedSite }
-
 import orc.values.Signal
-import orc.values.sites.Site1Base
-import orc.OrcRuntime
-import orc.VirtualCallContext
-import orc.SiteResponseSet
-import orc.values.sites.TotalSite1Base
-import orc.types.StringType
-import orc.values.sites.TotalSite1Simple
+import orc.values.sites.{ Range, Site1Base, TotalSite1Simple, TypedSite }
 
 
 /** Display a value on the console or equivalent output device.

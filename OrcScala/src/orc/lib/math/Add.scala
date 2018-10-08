@@ -13,10 +13,8 @@
 
 package orc.lib.math
 
-import orc.values.sites._
 import orc.values.OrcRecord
-import orc.Invoker
-import orc.values.sites.IllegalArgumentInvoker
+import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod2, IllegalArgumentInvoker }
 
 object Add extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite {
   def getInvokerSpecialized(arg1: Any, arg2: Any) = {
@@ -69,6 +67,6 @@ object Add extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite 
         IllegalArgumentInvoker(this, Array(a.asInstanceOf[AnyRef], b.asInstanceOf[AnyRef]))
     }
   }
-  
+
   override def toString = "Add"
 }

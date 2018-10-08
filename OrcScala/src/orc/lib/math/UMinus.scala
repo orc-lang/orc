@@ -11,7 +11,6 @@
 
 package orc.lib.math
 
-import orc.Invoker
 import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1 }
 import java.math.{ BigDecimal => JBigDecimal, BigInteger => JBigInteger }
 

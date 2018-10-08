@@ -11,8 +11,7 @@
 
 package orc.lib.math
 
-import orc.values.sites._
-import orc.Invoker
+import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1 }
 
 
 object Log extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {

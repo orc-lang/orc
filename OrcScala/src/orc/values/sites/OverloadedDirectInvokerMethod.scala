@@ -14,9 +14,8 @@
 package orc.values.sites
 
 import scala.reflect.ClassTag
-import orc.DirectInvoker
-import orc.OrcRuntime
-import orc.Invoker
+
+import orc.{ DirectInvoker, OrcRuntime }
 
 // FIXME: This semi-duplicates TotalSite{1,2}
 

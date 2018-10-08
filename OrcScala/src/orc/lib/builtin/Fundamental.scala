@@ -12,7 +12,7 @@
 //
 package orc.lib.builtin
 
-import orc.{ Invoker, OrcRuntime }
+import orc.OrcRuntime
 import orc.error.runtime.HaltException
 import orc.types.{ BooleanType, FunctionType, SignalType, SimpleCallableType, SimpleFunctionType, StrictCallableType, Top, TupleType, Type }
 import orc.util.ArrayExtensions.{ Array0, Array1 }

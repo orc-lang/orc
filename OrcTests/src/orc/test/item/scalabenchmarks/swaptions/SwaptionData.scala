@@ -16,7 +16,6 @@ import java.util.{ Arrays, Random }
 import scala.beans.BeanProperty
 
 import orc.test.item.scalabenchmarks.{ BenchmarkConfig, ExpectedBenchmarkResult }
-import scala.runtime.ScalaRunTime
 
 case class Swaption(
     id: Int, factors: Array[Array[Double]], yields: Array[Double],  years: Double, strike: Double,

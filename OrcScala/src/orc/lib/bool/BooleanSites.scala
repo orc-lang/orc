@@ -13,7 +13,6 @@ package orc.lib.bool
 
 import orc.types.{ BooleanType, SimpleFunctionType }
 import orc.values.sites.{ FunctionalSite, TalkativeSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2 }
-import orc.Invoker
 
 /** Logical negation site
   */

@@ -12,11 +12,10 @@
 //
 package orc.lib.util
 
-import java.lang.{Iterable => JIterable}
+import java.lang.{ Iterable => JIterable }
 
-import orc.{ OrcRuntime }
+import orc.OrcRuntime
 import orc.compile.typecheck.Typeloader
-import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ FunctionType, SimpleFunctionType, TypeVariable }
 import orc.values.sites.{ PartialSite0Simple, TotalSite1Base, TypedSite }
 

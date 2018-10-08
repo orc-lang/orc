@@ -11,13 +11,9 @@
 
 package orc.lib.util;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.{ IOException, InputStreamReader }
 
-import orc.error.runtime.ArgumentTypeMismatchException;
-import orc.error.runtime.JavaException;
-import orc.error.runtime.TokenException;
-
+import orc.error.runtime.JavaException
 import orc.values.sites.TotalSite1Simple
 
 /**

@@ -12,7 +12,7 @@
 //
 package orc.lib.util
 
-import orc.{ VirtualCallContext, OrcEvent, OrcRuntime }
+import orc.{ OrcEvent, OrcRuntime }
 import orc.types.{ SimpleFunctionType, StringType }
 import orc.values.sites.{ Site1Base, TypedSite }
 

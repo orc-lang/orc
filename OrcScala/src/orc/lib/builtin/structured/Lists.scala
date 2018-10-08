@@ -14,8 +14,8 @@
 package orc.lib.builtin.structured
 
 import orc.types.{ Bot, Covariant, FunctionType, SignalType, SimpleFunctionType, SimpleTypeConstructor, Top, TupleType, TypeVariable }
-import orc.values.{ OrcTuple, Signal, ValueMetadata }
-import orc.values.sites.{ FunctionalSite, PartialSite1Simple, StructurePairSite, TotalSite0Simple, TotalSite2Simple, TypedSite, SiteMetadata }
+import orc.values.{ OrcTuple, Signal }
+import orc.values.sites.{ FunctionalSite, PartialSite1Simple, SiteMetadata, StructurePairSite, TotalSite0Simple, TotalSite2Simple, TypedSite }
 
 object ListType extends SimpleTypeConstructor("List", Covariant)
 

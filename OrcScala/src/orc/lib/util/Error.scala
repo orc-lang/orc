@@ -12,13 +12,9 @@
 //
 package orc.lib.util
 
-import orc.values.sites.TotalSite1Simple
-import orc.values.sites.TypedSite
-import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ProgramSignalledError
-import orc.types.Bot
-import orc.types.SimpleFunctionType
-import orc.types.StringType
+import orc.types.{ Bot, SimpleFunctionType, StringType }
+import orc.values.sites.{ TotalSite1Simple, TypedSite }
 
 /** The Error site throws an Orc runtime exception with a program supplied message.
   *

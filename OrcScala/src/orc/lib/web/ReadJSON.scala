@@ -13,17 +13,14 @@
 package orc.lib.web
 
 import scala.util.parsing.combinator.RegexParsers
-import scala.util.parsing.combinator.syntactical._
-import scala.util.parsing.combinator.lexical._
-import scala.util.parsing.input.StreamReader.EofCh
+import scala.util.parsing.combinator.lexical.StdLexical
+import scala.util.parsing.combinator.syntactical.StdTokenParsers
 import scala.util.parsing.input.CharSequenceReader
-import orc.values.sites.{ UntypedSite }
+import scala.util.parsing.input.StreamReader.EofCh
 
-import orc.values.OrcRecord
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, SiteException }
-import orc.util.ArrayExtensions.Array1
-import orc.values.NumericsConfig
-import orc.values.sites.TotalSite1Simple
+import orc.error.runtime.SiteException
+import orc.values.{ NumericsConfig, OrcRecord }
+import orc.values.sites.{ TotalSite1Simple, UntypedSite }
 
 /** JSON reader, converting a JSON string to an Orc value.
   *
@@ -36,7 +33,7 @@ object ReadJSON extends TotalSite1Simple[String] with UntypedSite {
   }
 
   /** A simple wrapper for the JSON parser to make it easier to call from Scala.
-  	*/
+    */
   def apply(s: String): AnyRef = {
     OrcJSONParser.parse(s)
   }

@@ -16,10 +16,10 @@ package orc.values.sites.compatibility
 import orc.error.{ NotYetImplementedException, OrcException }
 import orc.error.compiletime.typing.TypeException
 import orc.error.runtime.{ ArityMismatchException, HaltException, RightException }
-import orc.types.{ Bot, RecordType, Type }
+import orc.types.{ RecordType, Type }
 import orc.util.ArrayExtensions.{ Array0, Array1, Array2, Array3 }
-import orc.values.{ OrcRecord, OrcValue }
-import orc.values.sites.{ SiteMetadata, Range, SpecificArity, TypedSite }
+import orc.values.OrcRecord
+import orc.values.sites.{ Range, SpecificArity, TypedSite }
 
 trait Site extends orc.values.sites.Site {
     self =>

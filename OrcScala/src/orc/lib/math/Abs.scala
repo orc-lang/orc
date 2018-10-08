@@ -11,9 +11,7 @@
 
 package orc.lib.math
 
-import orc.{ Invoker }
-import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1 }
-import orc.values.sites.IllegalArgumentInvoker
+import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1, IllegalArgumentInvoker }
 
 object Abs extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
   def getInvokerSpecialized(arg1: Number) = {

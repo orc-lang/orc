@@ -19,16 +19,14 @@
 
 package orc.lib.builtin.structured
 
-import orc.error.compiletime.typing._
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.types._
-import orc.util.OptionMapExtension._
-import orc.util.ArrayExtensions.{ ArrayN, Array2 }
-import orc.values._
-import orc.values.sites._
-import orc.values.sites.ThrowsInvoker
+import orc.{ DirectInvoker, OrcRuntime }
+import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType, RecordShapeMismatchException }
 import orc.error.runtime.HaltException
-import orc.{ OrcRuntime, DirectInvoker }
+import orc.types.{ RecordType, SimpleCallableType, StrictCallableType, Top, TupleType, Type, FieldType }
+import orc.util.ArrayExtensions.{ Array2, ArrayN }
+import orc.util.OptionMapExtension.addOptionMapToList
+import orc.values.{ Field, OrcRecord, OrcTuple, OrcValue }
+import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, PartialSite, TotalSite, TypedSite }
 
 object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
   override def name = "Record"
