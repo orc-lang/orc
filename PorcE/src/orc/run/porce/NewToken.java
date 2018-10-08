@@ -25,7 +25,7 @@ public class NewToken extends Expression {
     private final BranchProfile resurrectProfile = BranchProfile.create();
     private final Counter.NewTokenContext ctx;
 
-    private final PorcEExecution execution;
+    protected final PorcEExecution execution;
 
     protected NewToken(final PorcEExecution execution) {
         this.execution = execution;

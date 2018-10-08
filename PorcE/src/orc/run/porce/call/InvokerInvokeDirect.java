@@ -13,25 +13,20 @@
 
 package orc.run.porce.call;
 
-import orc.CallContext;
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.InvocationTargetException;
+
 import orc.DirectInvoker;
 import orc.compile.orctimizer.OrcAnnotation;
 import orc.error.runtime.JavaException;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEExecution;
-import orc.run.porce.StackCheckingDispatch;
-import orc.run.porce.runtime.MaterializedCPSCallContext;
 import orc.values.NumericsConfig;
-import orc.values.Signal$;
-import orc.values.sites.DirectSite;
 import orc.values.sites.InvocableInvoker;
+import orc.values.sites.OrcJavaCompatibility;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
-import orc.values.sites.OrcJavaCompatibility;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.InvocationTargetException;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
@@ -40,7 +35,6 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ControlFlowException;
 
 /**
  * A node to call canInvoke on invokers.

@@ -14,7 +14,6 @@
 package orc.run.porce;
 
 import java.util.Map;
-import java.util.Set;
 
 import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
@@ -24,13 +23,12 @@ import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 
-import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import org.graalvm.collections.Pair;
 
 /**
  *

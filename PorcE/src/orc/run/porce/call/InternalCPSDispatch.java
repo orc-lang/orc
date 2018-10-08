@@ -12,7 +12,6 @@
 package orc.run.porce.call;
 
 import orc.error.runtime.ArityMismatchException;
-import orc.error.runtime.HaltException;
 import orc.run.porce.Expression;
 import orc.run.porce.Logger;
 import orc.run.porce.PorcERootNode;
@@ -36,9 +35,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.nodes.DirectCallNode;
-import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeUtil;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.BranchProfile;

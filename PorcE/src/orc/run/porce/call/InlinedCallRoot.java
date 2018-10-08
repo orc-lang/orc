@@ -19,16 +19,14 @@ import orc.ast.porc.Variable;
 import orc.compiler.porce.PorcToPorcE;
 import orc.error.runtime.ArityMismatchException;
 import orc.run.porce.Expression;
-import orc.run.porce.NodeBase;
 import orc.run.porce.Logger;
+import orc.run.porce.NodeBase;
 import orc.run.porce.PorcERootNode;
 import orc.run.porce.runtime.InlinedTailCallException;
-import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -36,8 +34,8 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RootNode;
 
 /**
  *

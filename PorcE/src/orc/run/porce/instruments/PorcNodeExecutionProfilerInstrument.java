@@ -64,7 +64,8 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 	}
 
 	protected class EventFactory implements ExecutionEventNodeFactory {
-		private final Env env;
+		@SuppressWarnings("unused")
+        private final Env env;
 
 		EventFactory(final Env env) {
 			this.env = env;
@@ -74,7 +75,8 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 		public ExecutionEventNode create(final EventContext ec) {
 			com.oracle.truffle.api.nodes.Node n = ec.getInstrumentedNode();
 			RootNode rootNode = n.getRootNode();
-			final PorcNodeExecutionProfiler profiler = PorcNodeExecutionProfilerInstrument.this.profiler;
+			@SuppressWarnings("hiding")
+            final PorcNodeExecutionProfiler profiler = PorcNodeExecutionProfilerInstrument.this.profiler;
 			return rootNode.atomic(() -> {
 				PorcAST ast = null;
 				if (n instanceof HasPorcNode)

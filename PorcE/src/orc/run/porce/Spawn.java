@@ -66,6 +66,7 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
         return calledRootsProfile.getTotalCalls();
     }
 
+    @Override
     public boolean isScheduled() {
         return true;
     }
