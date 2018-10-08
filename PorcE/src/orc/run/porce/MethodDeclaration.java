@@ -64,7 +64,8 @@ public class MethodDeclaration {
 			}
 		}
 
-		@Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
+		@SuppressWarnings("boxing")
+        @Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
 		@ExplodeLoop
 		public Object cached(final VirtualFrame frame) throws StopCachingException {
 			final int len = capturedExprs.length + nMethods;
@@ -144,7 +145,7 @@ public class MethodDeclaration {
     	final int index;
     	final RootCallTarget callTarget;
     	final boolean isRoutine;
-    	
+
 		protected NewMethod(final int index, final RootCallTarget callTarget, final boolean isRoutine) {
 			this.index = index;
 			this.callTarget = callTarget;

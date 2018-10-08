@@ -206,6 +206,7 @@ public class InternalCPSDispatch extends Dispatch {
             inlinedCall.execute(frame, arguments);
         }
 
+        @SuppressWarnings("hiding")
         protected InlinedCallRoot createInlinedCallRoot(final RootNode targetRootNode, final PorcEExecution execution) {
             return InlinedCallRoot.create(targetRootNode, execution);
         }
