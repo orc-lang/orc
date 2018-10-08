@@ -55,15 +55,13 @@ import orc.values.sites.SiteMetadata
   *
   * @author quark
   */
-class Counter extends TotalSite1Simple[Number] with TypedSite with FunctionalSite {
+object Counter extends TotalSite1Simple[Number] with TypedSite with FunctionalSite {
   override def eval(init: Number): AnyRef = {
     new Counter.Instance(init.intValue)
   }
 
   override def orcType(): Type = CounterType.getBuilder
-}
 
-object Counter {
   private val members = FastObject.members("inc", "dec", "onZero", "value")
 
   class Instance(protected var count: Int)

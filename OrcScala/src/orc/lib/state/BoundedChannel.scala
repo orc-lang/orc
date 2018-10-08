@@ -44,15 +44,14 @@ import orc.values.sites.NonBlockingSite
   *
   * @author quark
   */
-class BoundedChannel extends TotalSite1Simple[Number] with TypedSite {
+object BoundedChannel extends TotalSite1Simple[Number] with TypedSite {
   override def eval(bound: Number): AnyRef = {
       new BoundedChannel.Instance(bound.intValue)
   }
 
   override def orcType(): Type = BoundedChannelType.getBuilder
-}
 
-object BoundedChannel {
+
   private val members =
     FastObject.members("get", "getD", "put", "putD", "getAll", "getOpen", "getBound", "close", "closeD")
 

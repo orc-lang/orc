@@ -46,7 +46,30 @@ import orc.values._
 import orc.values.sites._
 import scala.collection.JavaConverters._
 
-object Ref {
+/**
+  * Rewritable mutable reference. The reference can be initialized with a value,
+  * or left initially empty. Read operations block if the reference is empty.
+  * Write operations always succeed.
+  *
+  * @author dkitchin
+  */
+object Ref extends TotalSiteBase with TypedSite with SiteMetadata with FunctionalSite {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
+    args.size match {
+      case 1 => invoker(this, args:_*)((_, args) => new Ref.Instance(args(0)))
+      case 0 => invoker(this, args:_*)((_, args) => new Ref.Instance())
+      case _ =>
+        new TargetClassAndArgumentClassSpecializedInvoker(this, args) with DirectInvoker {
+          @throws[Throwable]
+          def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+              throw new ArityMismatchException(1, args.size)
+          }
+        }
+    }
+  }
+
+  override def orcType(): Type = RefType.getBuilder
+
   private val members = FastObject.members("read", "write", "readD")
 
   class Instance() extends FastObject(members) with DOrcPlacementPolicy {
@@ -141,32 +164,5 @@ object Ref {
       locations.hereSet
 
   }
-
-}
-
-/**
-  * Rewritable mutable reference. The reference can be initialized with a value,
-  * or left initially empty. Read operations block if the reference is empty.
-  * Write operations always succeed.
-  *
-  * @author dkitchin
-  */
-class Ref extends TotalSiteBase with TypedSite with SiteMetadata with FunctionalSite {
-
-  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
-    args.size match {
-      case 1 => invoker(this, args:_*)((_, args) => new Ref.Instance(args(0)))
-      case 0 => invoker(this, args:_*)((_, args) => new Ref.Instance())
-      case _ =>
-        new TargetClassAndArgumentClassSpecializedInvoker(this, args) with DirectInvoker {
-          @throws[Throwable]
-          def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-              throw new ArityMismatchException(1, args.size)
-          }
-        }
-    }
-  }
-
-  override def orcType(): Type = RefType.getBuilder
 
 }

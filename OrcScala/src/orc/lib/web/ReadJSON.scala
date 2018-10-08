@@ -29,17 +29,14 @@ import orc.values.sites.TotalSite1Simple
   *
   * @author dkitchin
   */
-class ReadJSON extends TotalSite1Simple[String] with UntypedSite {
+object ReadJSON extends TotalSite1Simple[String] with UntypedSite {
 
   def eval(s: String): AnyRef = {
     OrcJSONParser.parse(s)
   }
 
-}
-
-/** A simple wrapper for the JSON parser to make it easier to call from Scala.
-  */
-object ReadJSON {
+  /** A simple wrapper for the JSON parser to make it easier to call from Scala.
+  	*/
   def apply(s: String): AnyRef = {
     OrcJSONParser.parse(s)
   }

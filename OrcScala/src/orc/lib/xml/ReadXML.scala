@@ -25,7 +25,7 @@ import orc.values.sites.TotalSite1Simple
 /**
   * @author dkitchin
   */
-class ReadXML extends TotalSite1Simple[String] with TypedSite {
+object ReadXML extends TotalSite1Simple[String] with TypedSite {
 
   def eval(s: String): AnyRef = {
     try {

@@ -50,15 +50,12 @@ import orc.values.sites.TotalSite1Simple
   *
   * @author dkitchin
   */
-class SyncChannel extends TotalSite0Simple with TypedSite {
+object SyncChannel extends TotalSite0Simple with TypedSite {
 
   override def eval(): AnyRef = new SyncChannel.Instance()
 
   override def orcType(): Type = SyncChannelType.getBuilder
 
-}
-
-object SyncChannel {
   protected case class SenderItem(sender: MaterializedCallContext,
                            sent: AnyRef)
 

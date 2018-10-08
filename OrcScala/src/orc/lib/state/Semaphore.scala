@@ -31,7 +31,7 @@ import orc.values.Signal
  * @author quark
  * @author dkitchin
  */
-class Semaphore extends TotalSite1Simple[Number] with TypedSite with FunctionalSite {
+object Semaphore extends TotalSite1Simple[Number] with TypedSite with FunctionalSite {
 
   def eval(arg: Number) = {
     val initialValue = arg.intValue
@@ -45,9 +45,7 @@ class Semaphore extends TotalSite1Simple[Number] with TypedSite with FunctionalS
   def orcType() = {
       SemaphoreType.getBuilder
   }
-}
 
-object Semaphore {
   private val members = FastObject.members("acquire", "acquireD", "release", "snoop", "snoopD")
 
   class Instance(protected var n: Int) extends FastObject(members) with DOrcPlacementPolicy {

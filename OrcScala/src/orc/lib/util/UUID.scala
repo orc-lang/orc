@@ -22,7 +22,7 @@ import orc.values.sites.TotalSite0Simple
   *
   * @author quark
   */
-class UUID extends TotalSite0Simple with TypedSite {
+object UUID extends TotalSite0Simple with TypedSite {
 
   override def eval() =
     java.util.UUID.randomUUID().toString

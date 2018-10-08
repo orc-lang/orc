@@ -31,7 +31,7 @@ import orc._
 
 import orc.util.ArrayExtensions._
 
-object JavaArray {
+object JavaArray extends TotalSiteBase with TypedSite {
 
   private var types: Map[String, Class[_]] = Map(
     ("double", java.lang.Double.TYPE),
@@ -50,11 +50,6 @@ object JavaArray {
 
     ("boolean", java.lang.Boolean.TYPE),
   )
-
-}
-
-class JavaArray extends TotalSiteBase with TypedSite {
-  import JavaArray._
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
     args.size match {

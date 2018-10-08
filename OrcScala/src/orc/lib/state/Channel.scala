@@ -43,14 +43,20 @@ import orc.values.sites.TypedSite
 
 
 
-import Channel._
-
 import orc.values._
 import orc.values.sites._
 import orc._
 import scala.collection.JavaConverters._
 
-object Channel {
+/**
+  * Implements the local site Channel, which creates asynchronous channels.
+  *
+  * @author cawellington, dkitchin
+  */
+object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
+  override def eval(): AnyRef = new Channel.Instance()
+
+  def orcType() = ChannelType.getBuilder
 
   class PutSite(val channel: Instance) extends Site1Simple[AnyRef] with NonBlockingSite {
 
@@ -195,15 +201,4 @@ object Channel {
 
   }
 
-}
-
-/**
-  * Implements the local site Channel, which creates asynchronous channels.
-  *
-  * @author cawellington, dkitchin
-  */
-class Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
-  override def eval(): AnyRef = new Channel.Instance()
-
-  def orcType() = ChannelType.getBuilder
 }

@@ -43,13 +43,11 @@ import scala.collection.JavaConversions._
   *
   * @author dkitchin
   */
-class Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
+object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
   override def eval(): AnyRef = new Cell.Instance()
 
   override def orcType(): Type = CellType.getBuilder
-}
 
-object Cell {
   private val members = FastObject.members("read", "write", "readD")
 
   class Instance() extends FastObject(members) with DOrcPlacementPolicy {

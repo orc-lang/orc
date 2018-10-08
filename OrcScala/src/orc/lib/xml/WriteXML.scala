@@ -23,7 +23,7 @@ import orc.values.sites.TotalSite1Simple
 /**
   * @author dkitchin
   */
-class WriteXML extends TotalSite1Simple[Node] with TypedSite {
+object WriteXML extends TotalSite1Simple[Node] with TypedSite {
 
   def eval(xml: Node): AnyRef = {
     xml.toString
