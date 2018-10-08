@@ -48,7 +48,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   def addRoot(root: ExecutionRoot) = roots.add(root)
 
   def beforeExecute(): Unit = {
-    //PorcERuntime.resetStackDepth()
+    resetStackDepth()
   }
 
   def afterExecute(): Unit = {
@@ -77,7 +77,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         }
       }
       if (allowSpawnInlining && occationallySchedule && isFast) {
-        val PorcERuntime.StackDepthState(b, prev) = incrementAndCheckStackDepth()
+        val PorcERuntime.StackDepthState(b, prev) = incrementAndCheckStackDepth(true)
         if (b)
           try {
             val old = SimpleWorkStealingSchedulerWrapper.currentSchedulable
@@ -126,25 +126,36 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     }
   }
 
+  @inline
+  private final def incrementDepthValue(hasAlreadySpawnedHere: Boolean, prev: Int): (Boolean, Int) = {
+    if (unrollOnLargeStack) {
+      val r = prev >= 0 && (if (!hasAlreadySpawnedHere) prev < maxStackDepth else prev < minSpawnStackDepth)
+      (r, if (r) prev + 1 else -1)
+    } else {
+      val r = if (!hasAlreadySpawnedHere) prev < maxStackDepth else prev < minSpawnStackDepth
+      (r, prev + (if (r) 1 else 0))
+    }
+  }
+
   /** Increment the stack depth and return true if we can continue to extend the stack.
     *
     * If this returns true the caller must call decrementStackDepth() after it finishes.
     */
-  def incrementAndCheckStackDepth(): PorcERuntime.StackDepthState = {
+  def incrementAndCheckStackDepth(hasAlreadySpawnedHere: Boolean): PorcERuntime.StackDepthState = {
     if (maxStackDepth > 0) {
       @TruffleBoundary @noinline
       def incrementAndCheckStackDepthWithThreadLocal() = {
         val depth = stackDepthThreadLocal.get()
         val prev = depth.value
-        val r = prev < maxStackDepth
-        depth.value += (if (r) 1 else 0)
+        val (r, n) = incrementDepthValue(hasAlreadySpawnedHere, prev)
+        depth.value = n
         PorcERuntime.StackDepthState(r, prev)
       }
       try {
         val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
         val prev = t.stackDepth
-        val r = t.stackDepth < maxStackDepth
-        t.stackDepth += (if (r) 1 else 0)
+        val (r, n) = incrementDepthValue(hasAlreadySpawnedHere, prev)
+        t.stackDepth = n
         PorcERuntime.StackDepthState(r, prev)
       } catch {
         case _: ClassCastException => {
@@ -160,6 +171,15 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     }
   }
 
+  @inline
+  private final def replaceDepthValue(curr: => Int, rep: Int): Int = {
+    if (unrollOnLargeStack) {
+      if (curr < 0 && rep > 0) curr else rep
+    } else {
+      rep
+    }
+  }
+
   /** Decrement stack depth.
     *
     * @see incrementAndCheckStackDepth()
@@ -169,11 +189,11 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       @TruffleBoundary @noinline
       def decrementStackDepthWithThreadLocal() = {
         val depth = stackDepthThreadLocal.get()
-        depth.value = prev
+        depth.value = replaceDepthValue(depth.value, prev)
       }
       try {
         val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
-        t.stackDepth = prev
+        t.stackDepth = replaceDepthValue(t.stackDepth, prev)
       } catch {
         case _: ClassCastException => {
           if (allExecutionOnWorkers.isValid()) {
@@ -226,6 +246,14 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
 
   @inline
   @CompilationFinal
+  final val minSpawnStackDepth = (maxStackDepth * 95) / 100
+
+  @inline
+  @CompilationFinal
+  final val unrollOnLargeStack = System.getProperty("orc.porce.unrollOnLargeStack", "true").toBoolean
+
+  @inline
+  @CompilationFinal
   final val actuallySchedule = PorcERuntime.actuallySchedule
 
   @inline
@@ -247,19 +275,19 @@ object PorcERuntime {
 
   @inline
   @CompilationFinal
-  val actuallySchedule = System.getProperty("orc.porce.actuallySchedule", "true").toBoolean
+  final val actuallySchedule = System.getProperty("orc.porce.actuallySchedule", "true").toBoolean
 
   @inline
   @CompilationFinal
-  val occationallySchedule = System.getProperty("orc.porce.occationallySchedule", "true").toBoolean
+  final val occationallySchedule = System.getProperty("orc.porce.occationallySchedule", "true").toBoolean
 
   @inline
   @CompilationFinal
-  val allowAllSpawnInlining = System.getProperty("orc.porce.allowAllSpawnInlining", "true").toBoolean
+  final val allowAllSpawnInlining = System.getProperty("orc.porce.allowAllSpawnInlining", "true").toBoolean
 
   @inline
   @CompilationFinal
-  val allowSpawnInlining = System.getProperty("orc.porce.allowSpawnInlining", "true").toBoolean
+  final val allowSpawnInlining = System.getProperty("orc.porce.allowSpawnInlining", "true").toBoolean
 
   @ValueType
   final case class StackDepthState(growthAllowed: Boolean, previousDepth: Int)

@@ -88,11 +88,11 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     public PorcEUnit spawn(final VirtualFrame frame, final Counter c, final Terminator t,
             final PorcEClosure computation) {
         final PorcERuntime r = execution.runtime();
-        // The incrementAndCheckStackDepth call should not go in shouldInlineSpawn because it has side effects and I
-        // don't think we can guarantee that guards are not called multiple times.
+        // The incrementAndCheckStackDepth call should not go in shouldInlineSpawn because it has side effects and
+        // we can't guarantee that guards are not called multiple times.
         boolean done = false;
         if (!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize()))) {
-            PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth();
+            PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth(dispatch.spawnProfile.wasFalse());
             final int prev = state.previousDepth();
             if (dispatch.spawnProfile.profile(state.growthAllowed())) {
                 done = true;

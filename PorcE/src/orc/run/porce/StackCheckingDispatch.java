@@ -18,17 +18,16 @@ import java.util.Map;
 import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.instruments.AdhocIntrospectable;
+import orc.run.porce.profiles.VisibleConditionProfile;
 import orc.run.porce.runtime.CallClosureSchedulable;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
-import com.oracle.truffle.api.profiles.ConditionProfile;
 
 /**
  *
@@ -41,8 +40,9 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     @Child
     protected Dispatch call = null;
 
-    public final ConditionProfile spawnProfile = ConditionProfile.createCountingProfile();
+    public final VisibleConditionProfile spawnProfile = VisibleConditionProfile.createBinaryProfile();
 
+    @Override
     public boolean isScheduled() {
         return true;
     }
@@ -69,7 +69,7 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] args) {
         final PorcERuntime r = execution.runtime();
         final PorcEClosure computation = (PorcEClosure) target;
-        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth();
+        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth(spawnProfile.wasFalse());
         final int prev = state.previousDepth();
         if (spawnProfile.profile(state.growthAllowed())) {
             executeInline(frame, computation, args, prev);
