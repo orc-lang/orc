@@ -174,6 +174,7 @@ public class ExternalCPSDispatch extends Dispatch {
             } catch (final HaltException e) {
                 haltProfile.enter();
                 v = SENTINAL;
+                execution.notifyOfException(e, this);
                 haltToken.execute(frame, counter);
             } catch (final Throwable e) {
                 exceptionProfile.enter();
@@ -217,6 +218,7 @@ public class ExternalCPSDispatch extends Dispatch {
                 throw e;
             } catch (final HaltException e) {
                 haltProfile.enter();
+                execution.notifyOfException(e, this);
                 handler.haltToken.execute(frame, counter);
             } catch (final Throwable e) {
                 exceptionProfile.enter();

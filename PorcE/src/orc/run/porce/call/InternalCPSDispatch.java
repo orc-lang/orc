@@ -253,13 +253,6 @@ public class InternalCPSDispatch extends Dispatch {
                     CompilerDirectives.transferToInterpreter();
                 }
                 throw e;
-            } catch (final HaltException e) {
-                haltProfile.enter();
-                throw e;
-            } catch (final Throwable e) {
-                exceptionProfile.enter();
-                execution.notifyOfException(e, this);
-                throw new HaltException();
             }
         }
 
@@ -283,13 +276,6 @@ public class InternalCPSDispatch extends Dispatch {
                     CompilerDirectives.transferToInterpreter();
                 }
                 throw e;
-            } catch (final HaltException e) {
-                haltProfile.enter();
-                throw e;
-            } catch (final Throwable e) {
-                exceptionProfile.enter();
-                execution.notifyOfException(e, this);
-                throw new HaltException();
             }
         }
 
@@ -304,13 +290,6 @@ public class InternalCPSDispatch extends Dispatch {
                     CompilerDirectives.transferToInterpreter();
                 }
                 throw e;
-            } catch (final HaltException e) {
-                haltProfile.enter();
-                throw e;
-            } catch (final Throwable e) {
-                exceptionProfile.enter();
-                execution.notifyOfException(e, this);
-                throw new HaltException();
             }
         }
 
