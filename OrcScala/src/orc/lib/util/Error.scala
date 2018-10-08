@@ -12,8 +12,7 @@
 //
 package orc.lib.util
 
-import orc.values.sites.compatibility.TotalSite
-import orc.values.sites.compatibility.TotalSite1
+import orc.values.sites.TotalSite1Simple
 import orc.values.sites.TypedSite
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.ProgramSignalledError
@@ -25,12 +24,9 @@ import orc.types.StringType
   *
   * @author jthywiss
   */
-object Error extends TotalSite with TotalSite1 with TypedSite {
-  def eval(x: AnyRef) = {
-    x match {
-      case s: String => throw new ProgramSignalledError(s)
-      case _ => throw new ArgumentTypeMismatchException(0, "String", if (x != null) Option(x.getClass.getCanonicalName).getOrElse(x.getClass.getName) else "null")
-    }
+object Error extends TotalSite1Simple[String] with TypedSite {
+  def eval(s: String) = {
+    throw new ProgramSignalledError(s)
   }
 
   def orcType = SimpleFunctionType(StringType, Bot)

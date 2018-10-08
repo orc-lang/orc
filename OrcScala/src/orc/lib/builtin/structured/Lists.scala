@@ -13,22 +13,19 @@
 
 package orc.lib.builtin.structured
 
-import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ Bot, Covariant, FunctionType, SignalType, SimpleFunctionType, SimpleTypeConstructor, Top, TupleType, TypeVariable }
-import orc.values.{ OrcTuple, Signal }
-import orc.values.sites.SiteMetadata
-import orc.values.sites.{ TypedSite }
-import orc.values.sites.compatibility.{ FunctionalSite, PartialSite1, StructurePairSite, TotalSite0, TotalSite2 }
+import orc.values.{ OrcTuple, Signal, ValueMetadata }
+import orc.values.sites.{ FunctionalSite, PartialSite1Simple, StructurePairSite, TotalSite0Simple, TotalSite2Simple, TypedSite, SiteMetadata }
 
 object ListType extends SimpleTypeConstructor("List", Covariant)
 
 object NilSite extends StructurePairSite(NilConstructor, NilExtractor)
-object NilConstructor extends TotalSite0 with TypedSite with FunctionalSite {
+object NilConstructor extends TotalSite0Simple with TypedSite with FunctionalSite {
   override def name = "Nil"
   def eval() = Nil
   def orcType() = SimpleFunctionType(ListType(Bot))
 }
-object NilExtractor extends PartialSite1 with TypedSite with FunctionalSite {
+object NilExtractor extends PartialSite1Simple[AnyRef] with TypedSite with FunctionalSite {
   override def name = "Nil.unapply"
   def eval(arg: AnyRef) = {
     arg match {
@@ -40,20 +37,17 @@ object NilExtractor extends PartialSite1 with TypedSite with FunctionalSite {
 }
 
 object ConsSite extends StructurePairSite(ConsConstructor, ConsExtractor)
-object ConsConstructor extends TotalSite2 with TypedSite with FunctionalSite {
+object ConsConstructor extends TotalSite2Simple[AnyRef, List[AnyRef]] with TypedSite with FunctionalSite {
   override def name = "Cons"
-  def eval(h: AnyRef, t: AnyRef) = {
-    t match {
-      case tl: List[_] => h :: tl
-      case _ => throw new ArgumentTypeMismatchException(1, "List", if (t != null) t.getClass().toString() else "null")
-    }
+  def eval(h: AnyRef, t: List[AnyRef]) = {
+    h :: t
   }
   def orcType() = {
     val X = new TypeVariable()
     FunctionType(List(X), List(X, ListType(X)), ListType(X))
   }
 }
-object ConsExtractor extends PartialSite1 with TypedSite with FunctionalSite {
+object ConsExtractor extends PartialSite1Simple[AnyRef] with TypedSite with FunctionalSite {
   override def name = "Cons.unapply"
   def eval(arg: AnyRef) =
     arg match {

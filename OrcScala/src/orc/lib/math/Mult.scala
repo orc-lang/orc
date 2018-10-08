@@ -18,39 +18,39 @@ import orc.Invoker
 import orc.values.sites.IllegalArgumentInvoker
 
 object Mult extends OverloadedDirectInvokerMethod2[Number, Number] with FunctionalSite {
-  def getInvokerSpecialized(arg1: Number, arg2: Number): Invoker = {
+  def getInvokerSpecialized(arg1: Number, arg2: Number) = {
     // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
     (arg1, arg2) match {
       case (a: BigDecimal, b: BigDecimal) =>
         invoker(a, b)(_ * _)
-      case (a: java.lang.Double, b: java.lang.Double) => 
+      case (a: java.lang.Double, b: java.lang.Double) =>
         invoker(a, b)(_.doubleValue() * _.doubleValue())
-      case (a: java.math.BigDecimal, b: java.math.BigDecimal) => 
+      case (a: java.math.BigDecimal, b: java.math.BigDecimal) =>
         invoker(a, b)(_.multiply(_))
-      case (a: java.lang.Long, b: java.lang.Long) => 
+      case (a: java.lang.Long, b: java.lang.Long) =>
         invoker(a, b)(_.longValue() * _.longValue())
-      case (a: java.lang.Integer, b: java.lang.Integer) => 
+      case (a: java.lang.Integer, b: java.lang.Integer) =>
         invoker(a, b)(_.intValue() * _.intValue())
-      case (a: BigInt, b: BigInt) => 
+      case (a: BigInt, b: BigInt) =>
         invoker(a, b)(_ * _)
-      case (a: java.math.BigInteger, b: java.math.BigInteger) => 
+      case (a: java.math.BigInteger, b: java.math.BigInteger) =>
         invoker(a, b)(_.multiply(_))
-      case (a: BigDecimal, b: Number) => 
+      case (a: BigDecimal, b: Number) =>
         invoker(a, b)(_ * _.doubleValue())
-      case (a: Number, b: BigDecimal) => 
+      case (a: Number, b: BigDecimal) =>
         invoker(a, b)(_.doubleValue() * _)
-      case (a: BigInt, b: Number) => 
+      case (a: BigInt, b: Number) =>
         invoker(a, b)(_ * _.longValue())
-      case (a: Number, b: BigInt) => 
+      case (a: Number, b: BigInt) =>
         invoker(a, b)(_.longValue() * _)
       case (a: java.lang.Double, b: Number) =>
         invoker(a, b)(_.doubleValue() * _.doubleValue())
-      case (a: Number, b: java.lang.Double) => 
+      case (a: Number, b: java.lang.Double) =>
         invoker(a, b)(_.doubleValue() * _.doubleValue())
       case (a: Number, b: Number) =>
         IllegalArgumentInvoker(this, Array(a, b))
     }
   }
-  
+
   override def toString = "Mult"
 }

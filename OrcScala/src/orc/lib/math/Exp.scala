@@ -15,7 +15,7 @@ import orc.values.sites._
 import orc.Invoker
 
 object Exp extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
-  def getInvokerSpecialized(arg1: Number): Invoker = {
+  def getInvokerSpecialized(arg1: Number) = {
     invoker(arg1)(a => Math.exp(a.doubleValue()))
   }
   override def toString = "Exp"

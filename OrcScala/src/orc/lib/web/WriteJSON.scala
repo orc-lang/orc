@@ -15,12 +15,13 @@ package orc.lib.web
 import orc.error.runtime.SiteException
 import orc.values.OrcRecord
 import orc.values.sites.{ UntypedSite }
-import orc.values.sites.compatibility.{ TotalSite1 }
+import orc.values.sites.TotalSite1Simple
+
 
 /**
   * @author dkitchin
   */
-object WriteJSON extends TotalSite1 with UntypedSite {
+object WriteJSON extends TotalSite1Simple[AnyRef] with UntypedSite {
 
   def eval(a: AnyRef): AnyRef = {
     convertToJson(a)

@@ -12,7 +12,6 @@
 package orc.values.sites
 
 import orc.values.HasMembers
-import scala.deprecated
 
 @deprecated("Use Site", "now")
 trait InvokerMethod extends Site {

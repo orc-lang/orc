@@ -16,7 +16,7 @@ import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1 }
 import orc.values.sites.IllegalArgumentInvoker
 
 object Abs extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
-  def getInvokerSpecialized(arg1: Number): Invoker = {
+  def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
       case a: java.lang.Double => invoker(a)(a => Math.abs(a.doubleValue()))
       case a: java.lang.Integer => invoker(a)(a => Math.abs(a.intValue()))

@@ -12,12 +12,14 @@
 //
 package orc.lib.time
 
-import orc.values.sites.compatibility.CallContext
+
 import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
 import orc.types.{ FunctionType, SignalType, StrictCallableType, Top }
 import orc.values.sites.{ TypedSite }
-import orc.values.sites.compatibility.{ Site1 }
+import orc.values.sites.compatibility.Site1
+import orc.values.sites.compatibility.CallContext
+
 
 /** @author dkitchin
   */

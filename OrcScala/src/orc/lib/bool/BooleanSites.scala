@@ -19,26 +19,26 @@ import orc.Invoker
   */
 object Not extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite with TalkativeSite {
   override def name = "Not"
-  
-  def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
+
+  def getInvokerSpecialized(a: java.lang.Boolean) = {
     invoker(a)(a => !a)
   }
-  
+
   def orcType() = SimpleFunctionType(BooleanType, BooleanType)
 }
 
 object Or extends OverloadedDirectInvokerMethod2[java.lang.Boolean, java.lang.Boolean] with FunctionalSite with TalkativeSite {
   override def name = "Or"
-  
-  def getInvokerSpecialized(a: java.lang.Boolean, b: java.lang.Boolean): Invoker = {
+
+  def getInvokerSpecialized(a: java.lang.Boolean, b: java.lang.Boolean) = {
     invoker(a, b)((a, b) => a || b)
   }
 }
 
 object And extends OverloadedDirectInvokerMethod2[java.lang.Boolean, java.lang.Boolean] with FunctionalSite with TalkativeSite {
   override def name = "And"
-  
-  def getInvokerSpecialized(a: java.lang.Boolean, b: java.lang.Boolean): Invoker = {
+
+  def getInvokerSpecialized(a: java.lang.Boolean, b: java.lang.Boolean) = {
     invoker(a, b)((a, b) => a && b)
   }
 }

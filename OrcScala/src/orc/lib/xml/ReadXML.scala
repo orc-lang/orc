@@ -12,7 +12,7 @@
 //
 package orc.lib.xml
 
-import orc.values.sites.compatibility.TotalSite1
+
 import orc.values.sites.TypedSite
 import orc.types.StringType
 import orc.types.SimpleFunctionType
@@ -20,24 +20,20 @@ import scala.xml.XML
 import org.xml.sax.SAXException
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.SiteException
+import orc.values.sites.TotalSite1Simple
 
 /**
   * @author dkitchin
   */
-class ReadXML extends TotalSite1 with TypedSite {
+class ReadXML extends TotalSite1Simple[String] with TypedSite {
 
-  def eval(arg: AnyRef): AnyRef = {
-    arg match {
-      case s: String => {
-        try {
-          XML.loadString(s)
-        } catch {
-          case e: SAXException => {
-            throw new SiteException("XML parsing failed: " + e.getMessage)
-          }
-        }
+  def eval(s: String): AnyRef = {
+    try {
+      XML.loadString(s)
+    } catch {
+      case e: SAXException => {
+        throw new SiteException("XML parsing failed: " + e.getMessage)
       }
-      case z => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
     }
   }
 

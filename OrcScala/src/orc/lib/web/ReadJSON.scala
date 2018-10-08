@@ -18,24 +18,21 @@ import scala.util.parsing.combinator.lexical._
 import scala.util.parsing.input.StreamReader.EofCh
 import scala.util.parsing.input.CharSequenceReader
 import orc.values.sites.{ UntypedSite }
-import orc.values.sites.compatibility.{ TotalSite }
+
 import orc.values.OrcRecord
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, SiteException }
 import orc.util.ArrayExtensions.Array1
 import orc.values.NumericsConfig
+import orc.values.sites.TotalSite1Simple
 
 /** JSON reader, converting a JSON string to an Orc value.
   *
   * @author dkitchin
   */
-class ReadJSON extends TotalSite with UntypedSite {
+class ReadJSON extends TotalSite1Simple[String] with UntypedSite {
 
-  def evaluate(args: Array[AnyRef]): AnyRef = {
-    args match {
-      case Array1(s: String) => OrcJSONParser.parse(s)
-      case Array1(z) => throw new ArgumentTypeMismatchException(0, "String", z.getClass().toString())
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
+  def eval(s: String): AnyRef = {
+    OrcJSONParser.parse(s)
   }
 
 }

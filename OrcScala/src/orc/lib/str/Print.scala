@@ -16,9 +16,16 @@ import orc.{ OrcEvent }
 import orc.types.{ SignalType, SimpleFunctionType, Top }
 import orc.values.Format.formatValue
 import orc.values.sites.{ Range, TypedSite }
-import orc.values.sites.compatibility.{ Site1 }
+
 import orc.values.Signal
-import orc.values.sites.compatibility.CallContext
+import orc.values.sites.Site1Base
+import orc.OrcRuntime
+import orc.VirtualCallContext
+import orc.SiteResponseSet
+import orc.values.sites.TotalSite1Base
+import orc.types.StringType
+import orc.values.sites.TotalSite1Simple
+
 
 /** Display a value on the console or equivalent output device.
   *
@@ -26,12 +33,18 @@ import orc.values.sites.compatibility.CallContext
   */
 case class PrintEvent(val text: String) extends OrcEvent
 
-abstract class PrintSite extends Site1 with TypedSite {
+abstract class PrintSite extends Site1Base[AnyRef] with TypedSite {
   def formatToPrint(v: AnyRef): String =
     v match {
       case s: String => s
       case t => formatValue(t)
     }
+
+  def getInvoker(runtime: OrcRuntime, arg1: AnyRef) = {
+    invoker(this, arg1)((ctx, _, a) => call(ctx, a))
+  }
+
+  def call(callContext: VirtualCallContext, a: AnyRef): SiteResponseSet
 
   def orcType = SimpleFunctionType(Top, SignalType)
 
@@ -39,15 +52,24 @@ abstract class PrintSite extends Site1 with TypedSite {
 }
 
 object Print extends PrintSite {
-  def call(a: AnyRef, callContext: CallContext) = {
+  def call(callContext: VirtualCallContext, a: AnyRef) = {
     callContext.notifyOrc(PrintEvent(formatToPrint(a)))
     callContext.publish(Signal)
   }
 }
 
 object Println extends PrintSite {
-  def call(a: AnyRef, callContext: CallContext) = {
+  def call(callContext: VirtualCallContext, a: AnyRef) = {
     callContext.notifyOrc(PrintEvent(formatToPrint(a) + "\n"))
     callContext.publish(Signal)
   }
 }
+
+object Write extends TotalSite1Simple[AnyRef] {
+  def eval(e: AnyRef) = {
+    formatValue(e)
+  }
+
+  def orcType = SimpleFunctionType(Top, StringType)
+}
+

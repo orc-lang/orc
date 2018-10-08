@@ -11,19 +11,20 @@
 
 package orc.lib.util
 
-import orc.values.sites.Site
-import orc.values.sites.SiteMetadata
+import orc.values.sites.DirectSite
 import orc.OrcRuntime
 import orc.Invoker
 import java.math.BigInteger
+import orc.DirectInvoker
 import java.util.concurrent.ThreadLocalRandom
 import orc.values.sites.Range
 import orc.values.sites.IllegalArgumentInvoker
 import java.lang.IllegalArgumentException
 import orc.values.sites.FunctionalSite
 import orc.DirectInvoker
+import orc.values.sites.SiteMetadata
 
-object Random extends Site with SiteMetadata with FunctionalSite {
+object Random extends DirectSite with SiteMetadata with FunctionalSite {
   class ArgInvoker extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == Random && arguments.length == 1 && arguments(0).isInstanceOf[Number]
@@ -51,7 +52,7 @@ object Random extends Site with SiteMetadata with FunctionalSite {
     }
   }
 
-  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
     args.length match {
       case 0 => new NoArgInvoker()
       case 1 =>
@@ -69,7 +70,7 @@ object Random extends Site with SiteMetadata with FunctionalSite {
   override def publications: Range = Range(0, 1)
 }
 
-object URandom extends Site with SiteMetadata with FunctionalSite {
+object URandom extends DirectSite with SiteMetadata with FunctionalSite {
   class NoArgInvoker extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == URandom && arguments.length == 0
@@ -82,7 +83,7 @@ object URandom extends Site with SiteMetadata with FunctionalSite {
     }
   }
 
-  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
     args.length match {
       case 0 => new NoArgInvoker()
       case _ =>

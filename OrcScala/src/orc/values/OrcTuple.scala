@@ -71,24 +71,6 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
     }
   }
 
-  def evaluate(args: Array[AnyRef]) =
-    args match {
-      case Array1(bi: BigInt) => {
-        val i: Int = bi.intValue
-        // TODO: PERFORMANCE: It would probably be faster to let the array reference throw IndexOutOfBounds. The JVM will guess better branch probabilities.
-        if (0 <= i && i < values.size) { Some(values(i)) }
-        else { throw new TupleIndexOutOfBoundsException(i) }
-      }
-      case Array1(l: java.lang.Long) => {
-        val i: Int = l.intValue
-        // TODO: PERFORMANCE: It would probably be faster to let the array reference throw IndexOutOfBounds. The JVM will guess better branch probabilities.
-        if (0 <= i && i < values.size) { Some(values(i)) }
-        else { throw new TupleIndexOutOfBoundsException(i) }
-      }
-      case Array1(a) => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
-
   override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean =
     values exists marshalValueWouldReplace
 

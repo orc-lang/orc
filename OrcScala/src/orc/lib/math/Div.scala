@@ -18,7 +18,7 @@ import orc.Invoker
 import orc.values.sites.IllegalArgumentInvoker
 
 object Div extends OverloadedDirectInvokerMethod2[Number, Number] with FunctionalSite {
-  def getInvokerSpecialized(arg1: Number, arg2: Number): Invoker = {
+  def getInvokerSpecialized(arg1: Number, arg2: Number) = {
     // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
     (arg1, arg2) match {
       case (a: BigDecimal, b: BigDecimal) =>
@@ -73,6 +73,6 @@ object Div extends OverloadedDirectInvokerMethod2[Number, Number] with Functiona
         IllegalArgumentInvoker(this, Array(a, b))
     }
   }
-  
+
   override def toString = "Div"
 }

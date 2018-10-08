@@ -18,7 +18,10 @@ import orc.run.distrib.PinnedPlacementPolicy
 import orc.types.{ JavaObjectType, SignalType, SimpleFunctionType }
 import orc.values.Signal
 import orc.values.sites.{ EffectFreeSite, Effects, FunctionalSite, TalkativeSite, NonBlockingSite, TypedSite }
-import orc.values.sites.compatibility.{ PartialSite1, TotalSite0, TotalSite1 }
+import orc.values.sites.TotalSite0Simple
+import orc.values.sites.TotalSite1Simple
+import orc.values.sites.PartialSite1Simple
+
 
 final class Flag extends PinnedPlacementPolicy {
   @volatile
@@ -38,7 +41,7 @@ final class Flag extends PinnedPlacementPolicy {
 /**
   * @author amp
   */
-object NewFlag extends TotalSite0 with TypedSite with FunctionalSite with TalkativeSite {
+object NewFlag extends TotalSite0Simple with TypedSite with FunctionalSite with TalkativeSite {
   def eval() = {
     new Flag()
   }
@@ -51,14 +54,9 @@ object NewFlag extends TotalSite0 with TypedSite with FunctionalSite with Talkat
 /**
   * @author amp
   */
-object SetFlag extends TotalSite1 with TypedSite with TalkativeSite with NonBlockingSite {
-  def eval(arg: AnyRef) = {
-    arg match {
-      case flag: Flag => {
-        flag.set()
-      }
-      case a => throw new ArgumentTypeMismatchException(0, "Flag", if (a != null) a.getClass().toString() else "null")
-    }
+object SetFlag extends TotalSite1Simple[Flag] with TypedSite with TalkativeSite with NonBlockingSite {
+  def eval(flag: Flag) = {
+    flag.set()
     Signal
   }
 
@@ -69,17 +67,12 @@ object SetFlag extends TotalSite1 with TypedSite with TalkativeSite with NonBloc
   override def effects = Effects.BeforePub
 }
 
-object PublishIfNotSet extends PartialSite1 with TypedSite with NonBlockingSite with EffectFreeSite {
-  def eval(arg: AnyRef) = {
-    arg match {
-      case flag: Flag => {
-        if (flag.get())
-          None
-        else
-          Some(Signal)
-      }
-      case a => throw new ArgumentTypeMismatchException(0, "Flag", if (a != null) a.getClass().toString() else "null")
-    }
+object PublishIfNotSet extends PartialSite1Simple[Flag] with TypedSite with NonBlockingSite with EffectFreeSite {
+  def eval(flag: Flag) = {
+    if (flag.get())
+      None
+    else
+      Some(Signal)
   }
 
   def orcType() = {

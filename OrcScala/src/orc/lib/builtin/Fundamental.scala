@@ -12,19 +12,18 @@
 //
 package orc.lib.builtin
 
-import orc.Invoker
+import orc.{ Invoker, OrcRuntime }
 import orc.error.runtime.HaltException
 import orc.types.{ BooleanType, FunctionType, SignalType, SimpleCallableType, SimpleFunctionType, StrictCallableType, Top, TupleType, Type }
 import orc.util.ArrayExtensions.{ Array0, Array1 }
 import orc.util.TypeListEnrichment.enrichTypeList
 import orc.values.{ OrcTuple, Signal }
-import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2, TalkativeSite, TypedSite }
-import orc.values.sites.compatibility.{ TotalSite }
+import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2, TalkativeSite, TotalSiteBase, TypedSite }
 
 case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Ift"
 
-  def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
+  def getInvokerSpecialized(a: java.lang.Boolean) = {
     invoker(a)(a =>
       if (a)
         Signal
@@ -38,7 +37,7 @@ case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
 case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
   override def name = "Iff"
 
-  def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
+  def getInvokerSpecialized(a: java.lang.Boolean) = {
     invoker(a)(a =>
       if (!a)
         Signal
@@ -52,7 +51,7 @@ case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
 case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite {
   override def name = "Eq"
 
-  def getInvokerSpecialized(a: Any, b: Any): Invoker = {
+  def getInvokerSpecialized(a: Any, b: Any) = {
     invokerStaticType(a, b)((a, b) => {
       if (a == null)
         b == null
@@ -64,13 +63,13 @@ case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalS
   def orcType() = SimpleFunctionType(Top, Top, BooleanType)
 }
 
-object Let extends TotalSite with TypedSite with FunctionalSite {
+object Let extends TotalSiteBase with TypedSite with FunctionalSite {
   override def name = "let"
-  def evaluate(args: Array[AnyRef]) =
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) =
     args match {
-      case Array0() => Signal
-      case Array1(v) => v
-      case vs => OrcTuple(vs)
+      case Array0() => invoker(this)((_, _) => Signal)
+      case Array1(v) => invoker(this)((_, vs) => vs(0))
+      case vs => invoker(this)((_, vs) => OrcTuple(vs))
     }
 
   def orcType() = LetType

@@ -13,47 +13,48 @@
 
 package orc.lib.builtin.structured
 
+import orc.OrcRuntime
 import orc.types._
 import orc.values._
 import orc.values.sites.{ FunctionalSite, TypedSite }
-import orc.values.sites.compatibility.{ TotalSite0, TotalSite1, PartialSite1, StructurePairSite }
+import orc.values.sites.{ TotalSite0Base, TotalSite1Base, PartialSite1Base, StructurePairSite }
 
 object OptionType extends SimpleTypeConstructor("Option", Covariant)
 
 object NoneSite extends StructurePairSite(NoneConstructor, NoneExtractor)
-object NoneConstructor extends TotalSite0 with TypedSite with FunctionalSite {
+object NoneConstructor extends TotalSite0Base with TypedSite with FunctionalSite {
   override def name = "None"
-  def eval() = None
+  def getInvoker(runtime: OrcRuntime) = invoker(this) { _ => None }
   def orcType() = SimpleFunctionType(OptionType(Bot))
 }
-object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite {
+object NoneExtractor extends PartialSite1Base[Option[AnyRef]] with TypedSite with FunctionalSite {
   override def name = "None.unapply"
-  def eval(a: AnyRef) = {
+  def getInvoker(runtime: OrcRuntime, arg: Option[AnyRef]) = invoker(this, arg) { (_, a) =>
     a match {
       case None => Some(Signal)
       case Some(_) => None
-      case _ => None
     }
   }
   def orcType() = SimpleFunctionType(OptionType(Top), SignalType)
 }
 
 object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor)
-object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite {
+object SomeConstructor extends TotalSite1Base[AnyRef] with TypedSite with FunctionalSite {
   override def name = "Some"
-  def eval(a: AnyRef) = Some(a)
+  def getInvoker(runtime: OrcRuntime, arg: AnyRef) = invoker(this, arg) { (_, a) =>
+    Some(a)
+  }
   def orcType() = {
     val X = new TypeVariable()
     new FunctionType(List(X), List(X), OptionType(X))
   }
 }
-object SomeExtractor extends PartialSite1 with TypedSite with FunctionalSite {
+object SomeExtractor extends PartialSite1Base[Option[AnyRef]] with TypedSite with FunctionalSite {
   override def name = "Some.unapply"
-  def eval(arg: AnyRef) = {
-    arg match {
+  def getInvoker(runtime: OrcRuntime, arg: Option[AnyRef]) = invoker(this, arg) { (_, a) =>
+    a match {
       case Some(v: AnyRef) => Some(v)
       case None => None
-      case _ => None
     }
   }
   def orcType() = {

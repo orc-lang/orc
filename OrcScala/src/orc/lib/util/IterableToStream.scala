@@ -14,17 +14,17 @@ package orc.lib.util
 
 import java.lang.{Iterable => JIterable}
 
+import orc.{ OrcRuntime }
 import orc.compile.typecheck.Typeloader
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ FunctionType, SimpleFunctionType, TypeVariable }
-import orc.values.sites.{ TypedSite }
-import orc.values.sites.compatibility.{ PartialSite0, TotalSite1 }
+import orc.values.sites.{ PartialSite0Simple, TotalSite1Base, TypedSite }
 
 /** @author dkitchin
   */
-object IterableToStream extends TotalSite1 with TypedSite {
+object IterableToStream extends TotalSite1Base[AnyRef] with TypedSite {
 
-  final class IterableNext(iter: Iterator[_]) extends PartialSite0 {
+  final class IterableNext(iter: Iterator[_]) extends PartialSite0Simple {
     def eval() =
       if (iter.hasNext) {
         Some(iter.next().asInstanceOf[AnyRef])
@@ -34,22 +34,21 @@ object IterableToStream extends TotalSite1 with TypedSite {
   }
 
 
-  def eval(arg: AnyRef) = {
+  def getInvoker(runtime: OrcRuntime, arg: AnyRef) = {
     arg match {
       case i: JIterable[_] => {
         // Java Iterables
         import scala.collection.JavaConverters._
-        new IterableNext(i.iterator.asScala)
+        invoker(this, i) { (_, i) => new IterableNext(i.iterator.asScala) }
       }
       case i: Iterable[_] => {
         // Scala Iterables
-        new IterableNext(i.iterator)
+        invoker(this, i) { (_, i) => new IterableNext(i.iterator) }
       }
       case i: Array[_] => {
         // Arrays
-        new IterableNext(i.iterator)
+        invoker(this, i) { (_, i) => new IterableNext(i.iterator) }
       }
-      case a => throw new ArgumentTypeMismatchException(0, "Iterable", if (a != null) a.getClass().toString() else "null")
     }
   }
 

@@ -52,7 +52,7 @@ object TupleConstructor extends Site with FunctionalSite with TalkativeSite {
  */
 object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] with FunctionalSite {
   override def name = "TupleArityChecker"
-  def getInvokerSpecialized(t: AnyRef, arity: Number): Invoker = {
+  def getInvokerSpecialized(t: AnyRef, arity: Number) = {
     invoker(t, arity)((t, arity) => t match {
       case t: OrcTuple =>
         if (t.values.length == arity.intValue) {

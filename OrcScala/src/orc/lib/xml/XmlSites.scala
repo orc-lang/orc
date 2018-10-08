@@ -18,44 +18,28 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.lib.builtin.structured.ListType
 import orc.types.{ EmptyRecordType, JavaObjectType, SimpleFunctionType, StringType, Top, TupleType }
 import orc.values.{ OrcRecord, OrcTuple }
-import orc.values.sites.{ TypedSite }
-import orc.values.sites.compatibility.{ PartialSite1, StructurePairSite, TotalSite1, TotalSite3 }
+import orc.values.sites._
+
 
 /** XML elements. These sites are not namespace aware. Construction defaults
   * to the empty namespace, and matching discards namespace information.
   *
   * @author dkitchin
   */
-/* Template for building values which act as constructor-extractor sites,
- * such as the Some site.
- */
 
 /* We use Scala's Node class as the underlying type of Orc XML trees */
 object XMLType extends JavaObjectType(classOf[scala.xml.Node])
 
 object XMLElementSite extends StructurePairSite(XMLElementConstructor, XMLElementExtractor)
 
-object XMLElementConstructor extends TotalSite3 with TypedSite {
+object XMLElementConstructor extends TotalSite3Simple[String, OrcRecord, List[_]] with TypedSite {
 
   override def name = "XMLElement"
 
-  def eval(x: AnyRef, y: AnyRef, z: AnyRef): AnyRef = {
-    (x, y, z) match {
-      case (tag: String, attr: OrcRecord, children: List[_]) => {
-        val metadata = attr.entries.foldRight[MetaData](Null) { case ((k, v), rest) => new UnprefixedAttribute(k, v.toString, rest) }
-        val childNodes = for (c <- children) yield c.asInstanceOf[Node]
-        new Elem(null, tag, metadata, TopScope, true, childNodes: _*)
-      }
-      case (tag: String, attr: OrcRecord, a) => {
-        throw new ArgumentTypeMismatchException(2, "List[Node]", a.getClass().toString())
-      }
-      case (tag: String, a, _) => {
-        throw new ArgumentTypeMismatchException(1, "Record", a.getClass().toString())
-      }
-      case (a, _, _) => {
-        throw new ArgumentTypeMismatchException(0, "String", a.getClass().toString())
-      }
-    }
+  def eval(tag: String, attr: OrcRecord, children: List[_]): AnyRef = {
+    val metadata = attr.entries.foldRight[MetaData](Null) { case ((k, v), rest) => new UnprefixedAttribute(k, v.toString, rest) }
+    val childNodes = for (c <- children) yield c.asInstanceOf[Node]
+    new Elem(null, tag, metadata, TopScope, true, childNodes: _*)
   }
 
   def orcType() =
@@ -65,7 +49,7 @@ object XMLElementConstructor extends TotalSite3 with TypedSite {
 
 }
 
-object XMLElementExtractor extends PartialSite1 with TypedSite {
+object XMLElementExtractor extends PartialSite1Simple[AnyRef] with TypedSite {
 
   override def name = "XMLElement.unapply"
 
@@ -90,7 +74,7 @@ object XMLElementExtractor extends PartialSite1 with TypedSite {
 
 object XMLTextSite extends StructurePairSite(XMLTextConstructor, XMLTextExtractor)
 
-object XMLTextConstructor extends TotalSite1 with TypedSite {
+object XMLTextConstructor extends TotalSite1Simple[AnyRef] with TypedSite {
 
   override def name = "XMLText"
 
@@ -105,7 +89,7 @@ object XMLTextConstructor extends TotalSite1 with TypedSite {
 
 }
 
-object XMLTextExtractor extends PartialSite1 with TypedSite {
+object XMLTextExtractor extends PartialSite1Simple[AnyRef] with TypedSite {
 
   override def name = "XMLText.unapply"
 
@@ -121,7 +105,7 @@ object XMLTextExtractor extends PartialSite1 with TypedSite {
 
 object XMLCDataSite extends StructurePairSite(XMLCDataConstructor, XMLCDataExtractor)
 
-object XMLCDataConstructor extends TotalSite1 with TypedSite {
+object XMLCDataConstructor extends TotalSite1Simple[AnyRef] with TypedSite {
 
   override def name = "XMLCData"
 
@@ -136,7 +120,7 @@ object XMLCDataConstructor extends TotalSite1 with TypedSite {
 
 }
 
-object XMLCDataExtractor extends PartialSite1 with TypedSite {
+object XMLCDataExtractor extends PartialSite1Simple[AnyRef] with TypedSite {
 
   override def name = "XMLCData.unapply"
 
@@ -151,7 +135,7 @@ object XMLCDataExtractor extends PartialSite1 with TypedSite {
 
 }
 
-object IsXMLSite extends PartialSite1 with TypedSite {
+object IsXMLSite extends PartialSite1Simple[AnyRef] with TypedSite {
 
   override def name = "IsXML"
 

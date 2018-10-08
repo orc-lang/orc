@@ -12,20 +12,21 @@
 //
 package orc.lib.util
 
-import orc.values.sites.compatibility.CallContext
+import orc.{ VirtualCallContext, OrcRuntime }
 import orc.types.SignalType
-import orc.values.sites.{ TypedSite }
-import orc.values.sites.compatibility.{ Site0 }
+import orc.values.sites.{ Site0Base, TypedSite }
 import orc.values.Signal
 
 /** Cause the execution to dump the token state.
   *
   * @author amp
   */
-object DumpState extends Site0 with TypedSite {
-  def call(callContext: CallContext) {
-    callContext.notifyOrc(orc.run.core.DumpState)
-    callContext.publish(Signal)
+object DumpState extends Site0Base with TypedSite {
+  def getInvoker(runtime: OrcRuntime) = {
+    invoker(this) {  (callContext, _) =>
+      callContext.notifyOrc(orc.run.core.DumpState)
+      callContext.publish(Signal)
+    }
   }
 
   def orcType() = SignalType

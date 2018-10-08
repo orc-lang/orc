@@ -17,7 +17,7 @@ import java.math.{ BigDecimal => JBigDecimal }
 import orc.values.NumericsConfig
 
 object Ceil extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
-  def getInvokerSpecialized(arg1: Number): Invoker = {
+  def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
       case a: java.lang.Double => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.ceil(a)))
       case a: java.lang.Float => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.ceil(a.toDouble)))
@@ -34,7 +34,7 @@ object Ceil extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
 }
 
 object Floor extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
-  def getInvokerSpecialized(arg1: Number): Invoker = {
+  def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
       case a: java.lang.Double => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.floor(a)))
       case a: java.lang.Float => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.floor(a.toDouble)))

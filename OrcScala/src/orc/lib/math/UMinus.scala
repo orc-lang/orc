@@ -16,7 +16,7 @@ import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1 }
 import java.math.{ BigDecimal => JBigDecimal, BigInteger => JBigInteger }
 
 object UMinus extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
-  def getInvokerSpecialized(arg1: Number): Invoker = {
+  def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
       case a: java.lang.Double => invoker(a)(a => -a.doubleValue())
       case a: java.lang.Float => invoker(a)(a => -a.floatValue())
