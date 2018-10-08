@@ -252,7 +252,8 @@ sealed abstract class InvocableInvoker(
 
   final val mh = {
     val m = invocable.toMethodHandle
-    m.asSpreader(classOf[Array[Object]], m.`type`().parameterCount() - 1).
+    m.asFixedArity().
+      asSpreader(classOf[Array[Object]], m.`type`().parameterCount() - 1).
       asType(MethodType.methodType(classOf[Object], classOf[Object], classOf[Array[Object]]))
   }
 
