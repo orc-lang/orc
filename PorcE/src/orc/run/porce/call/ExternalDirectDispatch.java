@@ -41,6 +41,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
     }
 
     protected final BranchProfile exceptionProfile = BranchProfile.create();
+    protected final BranchProfile haltProfile = BranchProfile.create();
     protected final ValueClassesProfile argumentClassesProfile = new ValueClassesProfile();
 
     @Specialization(guards = {
@@ -54,7 +55,9 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
         try {
             return invokeDirect.executeInvokeDirect(frame, invoker, target, argumentClassesProfile.profile(arguments));
         } catch (final HaltException e) {
-            throw e;
+            haltProfile.enter();
+            execution.notifyOfException(e, this);
+            throw new HaltException();
         } catch (final Throwable e) {
             exceptionProfile.enter();
             execution.notifyOfException(e, this);

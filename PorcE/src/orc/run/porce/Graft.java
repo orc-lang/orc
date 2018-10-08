@@ -239,6 +239,7 @@ public abstract class Graft extends Expression {
             nodes.spawn.executePorcEUnit(frame);
         } catch (HaltException e) {
             haltCatchProfile.enter();
+            execution.notifyOfException(e, this);
             nodes.haltToken.executePorcEUnit(frame);
         } catch (KilledException e) {
             killCatchProfile.enter();
