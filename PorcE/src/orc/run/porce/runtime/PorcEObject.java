@@ -19,7 +19,7 @@ import orc.OrcRuntime;
 import orc.run.distrib.DOrcMarshalingReplacement;
 import orc.values.Field;
 import orc.values.Format;
-import orc.values.sites.AccessorValue;
+import orc.values.HasMembers;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 
@@ -28,7 +28,7 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
  *
  * @author amp
  */
-public final class PorcEObject implements AccessorValue, DOrcMarshalingReplacement {
+public final class PorcEObject implements HasMembers, DOrcMarshalingReplacement {
     public final Field[] fieldNames;
     public final Object[] fieldValues;
 
