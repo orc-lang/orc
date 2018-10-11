@@ -1,10 +1,10 @@
 //
-// Mult.scala -- Scala class Mult
+// ComparisonSite.scala -- Scala class ComparisonSite and objects Greater, Greq, Leq, Less, and Inequal
 // Project OrcScala
 //
 // Created by amp on Sept 25, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -67,7 +67,7 @@ abstract class ComparisonSite extends OverloadedDirectInvokerMethod2[AnyRef, Any
   def orcType() = SimpleFunctionType(Top, Top, BooleanType)
 }
 
-case object Greater extends ComparisonSite {
+case object Greater extends ComparisonSite with LocalSingletonSite {
   override def getInvokerSpecialized(arg1: AnyRef, arg2: AnyRef): Invoker = {
     // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
     (arg1, arg2) match {
@@ -90,7 +90,7 @@ case object Greater extends ComparisonSite {
   override def toString = "Greater"
 }
 
-case object Greq extends ComparisonSite {
+case object Greq extends ComparisonSite with LocalSingletonSite {
   override def getInvokerSpecialized(arg1: AnyRef, arg2: AnyRef): Invoker = {
     // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
     (arg1, arg2) match {
@@ -113,7 +113,7 @@ case object Greq extends ComparisonSite {
   override def toString = "Greq"
 }
 
-case object Leq extends ComparisonSite {
+case object Leq extends ComparisonSite with LocalSingletonSite {
   override def getInvokerSpecialized(arg1: AnyRef, arg2: AnyRef): Invoker = {
     // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
     (arg1, arg2) match {
@@ -136,7 +136,7 @@ case object Leq extends ComparisonSite {
   override def toString = "Leq"
 }
 
-case object Less extends ComparisonSite {
+case object Less extends ComparisonSite with LocalSingletonSite {
   override def getInvokerSpecialized(arg1: AnyRef, arg2: AnyRef): Invoker = {
     // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
     (arg1, arg2) match {
@@ -159,7 +159,7 @@ case object Less extends ComparisonSite {
   override def toString = "Less"
 }
 
-case object Inequal extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite {
+case object Inequal extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite with LocalSingletonSite {
   override def name = "Inequal"
   
   def getInvokerSpecialized(a: Any, b: Any): Invoker = {
