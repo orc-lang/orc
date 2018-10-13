@@ -217,11 +217,11 @@ case class FeatureNotSupportedException(feature: String)
 
 /** Internal errors in the compiler
   */
-case class InternalCompilerError(s: String) extends CompilationException(s"ICE: $s") with SeverityError
+case class InternalCompilerError(s: String) extends CompilationException(s"Compiler bug: $s") with SeverityError
 
 /** Internal warning for the compiler writers
   */
-case class InternalCompilerWarning(s: String) extends CompilationException(s"ICE: $s") with SeverityDebug
+case class InternalCompilerWarning(s: String) extends CompilationException(s"Compiler bug: $s") with SeverityDebug
 
 
 /** Many errors occured during compilation and we want to report them all.

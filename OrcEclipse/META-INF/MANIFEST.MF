@@ -36,7 +36,8 @@ Bundle-ClassPath: .,
  lib/scala-library.jar,
  lib/scala-reflect.jar,
  lib/scala-parser-combinators_2.12-1.0.6.jar,
- lib/scala-xml_2.12-1.0.6.jar
+ lib/scala-xml_2.12-1.0.6.jar,
+ lib/swivel_2.12-0.0.2.jar
 Export-Package: edu.utexas.cs.orc.orceclipse,
  edu.utexas.cs.orc.orceclipse.build,
  edu.utexas.cs.orc.orceclipse.edit,

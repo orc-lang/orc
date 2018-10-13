@@ -13,10 +13,10 @@
 
 package orc.compile
 
-import java.io.{ BufferedReader, File, FileNotFoundException, FileOutputStream, OutputStreamWriter, IOException }
+import java.io.{ BufferedReader, File, FileNotFoundException, FileOutputStream, IOException, OutputStreamWriter }
 import java.net.{ MalformedURLException, URI, URISyntaxException }
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.compat.Platform.currentTime
 
 import orc.{ OrcCompilationOptions, OrcCompiler, OrcCompilerRequires }
@@ -32,8 +32,8 @@ import orc.error.compiletime.{ CompilationException, CompileLogger }
 import orc.error.compiletime.{ ContinuableSeverity, ParsingException, UnboundTypeVariableException, UnboundVariableException, UnguardedRecursionException }
 import orc.error.compiletime.CompileLogger.Severity
 import orc.progress.ProgressMonitor
-import orc.values.sites.SiteClassLoading
 import orc.util.ExecutionLogOutputStream
+import orc.values.sites.SiteClassLoading
 
 /** Represents a configuration state for a compiler.
   */
@@ -329,25 +329,26 @@ abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
 class StandardOrcCompiler() extends PhasedOrcCompiler[orc.ast.oil.nameless.Expression]
   with StandardOrcCompilerEnvInterface[orc.ast.oil.nameless.Expression]
   with CoreOrcCompilerPhases {
+
   ////////
   // Compose phases into a compiler
   ////////
 
   val phases =
     parse.timePhase >>>
-      outputIR(1, "ext") >>>
-      translate.timePhase >>>
-      vClockTrans.timePhase >>>
-      noUnboundVars.timePhase >>>
-      fractionDefs.timePhase >>>
-      typeCheck.timePhase >>>
-      noUnguardedRecursion.timePhase >>>
-      outputIR(2, "oil-complete") >>>
-      removeUnusedDefs.timePhase >>>
-      removeUnusedTypes.timePhase >>>
-      outputIR(3, "oil-pruned") >>>
-      deBruijn.timePhase >>>
-      outputOil
+    outputIR(1, "ext") >>>
+    translate.timePhase >>>
+    vClockTrans.timePhase >>>
+    noUnboundVars.timePhase >>>
+    fractionDefs.timePhase >>>
+    typeCheck.timePhase >>>
+    noUnguardedRecursion.timePhase >>>
+    outputIR(2, "oil-complete") >>>
+    removeUnusedDefs.timePhase >>>
+    removeUnusedTypes.timePhase >>>
+    outputIR(3, "oil-pruned") >>>
+    deBruijn.timePhase >>>
+    outputOil
 }
 
 /** A mix-in for OrcCompiler that provides "standard" environment interfaces (via classloaders

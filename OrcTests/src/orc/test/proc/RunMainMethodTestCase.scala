@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Oct 6, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -63,9 +63,9 @@ class RunMainMethodTestCase(
       Seq(testItem.getName()) ++
       mainArgs
 
-    val result = OsCommand.getResultFrom(javaRunCommand, directory = new File("."), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(testOutFile)), stderrTee = Seq(System.err, new FileOutputStream(testErrFile)))
-    if (result.exitStatus != 0) {
-      throw new AssertionError(s"${getName} failed: exitStatus=${result.exitStatus}")
+    val exitStatus = OsCommand.getStatusFrom(javaRunCommand, directory = new File("."), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(testOutFile)), stderrTee = Seq(System.err, new FileOutputStream(testErrFile)))
+    if (exitStatus != 0) {
+      throw new AssertionError(s"${getName} failed: exitStatus=${exitStatus}")
     }
 
     println()
