@@ -39,12 +39,12 @@ public interface ProfilingScope {
     /**
      * @return The total time spent in spawned calls.
      */
-    long getTotalSpawnedTime();
+//    long getTotalSpawnedTime();
 
     /**
      * @return The total number of spawned calls.
      */
-    long getTotalSpawnedCalls();
+//    long getTotalSpawnedCalls();
 
     /**
      * @return The total time spent in this root node (excluding callees).
@@ -73,7 +73,7 @@ public interface ProfilingScope {
      * @param start
      *            The start time of the range
      */
-    void addSpawnedCall(long start);
+//    void addSpawnedCall(long start);
 
     /**
      * Add time to the total time and increment the number of calls.
@@ -119,16 +119,6 @@ public interface ProfilingScope {
         }
 
         @Override
-        public long getTotalSpawnedTime() {
-            return 0;
-        }
-
-        @Override
-        public long getTotalSpawnedCalls() {
-            return 0;
-        }
-
-        @Override
         public long getTotalCalls() {
             return 0;
         }
@@ -136,10 +126,6 @@ public interface ProfilingScope {
         @Override
         public long getTime() {
             return 0;
-        }
-
-        @Override
-        public void addSpawnedCall(long start) {
         }
 
         @Override

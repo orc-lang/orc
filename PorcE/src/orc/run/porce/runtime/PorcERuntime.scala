@@ -63,7 +63,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
       Logger.fine(s"PERFORMANCE: $name nonInlinableScheduleCount=$n")
   })
 
-  @TruffleBoundary(allowInlining = true) @noinline
+  @TruffleBoundary(allowInlining = false) @noinline
   def potentiallySchedule(s: Schedulable) = {
     if (logNoninlinableSchedules) {
       Logger.log(Level.WARNING, s"nonInlinableSchedule: $s", new Exception)

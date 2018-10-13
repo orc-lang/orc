@@ -13,7 +13,7 @@ package orc.run.porce.instruments
 
 import java.io.PrintWriter
 
-import scala.collection.JavaConverters.asScalaSetConverter
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 import orc.run.porce.{ CalledRootsProfile, PorcERootNode }
@@ -21,9 +21,11 @@ import orc.run.porce.{ CalledRootsProfile, PorcERootNode }
 import com.oracle.truffle.api.nodes.Node
 import scala.collection.immutable.SortedMap
 import orc.util.DotUtils
+import com.oracle.truffle.api.dsl.Introspection
+import orc.run.porce.NodeBase
 
 object DumpRuntimeProfile {
-  import DotUtils.quote
+  import DotUtils._
 
   val metricPrefixMap = SortedMap(
     1.0e18 -> "E",
@@ -88,11 +90,22 @@ object DumpRuntimeProfile {
       if (displayedNodes contains r)
         return
       displayedNodes += r
-      out.println(s"    ${idFor("n", r)} [" +
-          s"""label="${quote(r.getName)}\n${(r.getTotalTime.toDouble / r.getTotalCalls / 1000000000.0) unit "s"}, """ +
-          s"""${(r.getSiteCalls.toDouble / r.getTotalCalls) unit " site calls"}\n${r.getTotalCalls unit " calls"}", """ +
-          s"""penwidth=${0.1+10*math.log(1+r.getTotalTime.toDouble / r.getTotalCalls / 1000.0) max 0.1 min 20}, """ +
-          s"""color=${if (inEdgeCounts(r) > 1) "firebrick" else "black" }];""")
+      val timeLine = if (r.getTotalTime > 0)
+        ((r.getTotalTime.toDouble / r.getTotalCalls / 1000000000.0) unit "s") + "\n"
+      else
+        ""
+      val attrs: Map[String, Any] = Map(
+          "label" -> s"""
+          |${r.getName}
+          |$timeLine${(r.getSiteCalls.toDouble / r.getTotalCalls) unit " site calls"}
+          |${r.getTotalCalls unit " calls"}
+            """.stripMargin.trim,
+          "penwidth" -> (if (r.getTotalTime > 0)
+            0.1+10*math.log(1+r.getTotalTime.toDouble / r.getTotalCalls / 1000.0) max 0.1 min 20
+          else 1),
+          "color" -> (if (inEdgeCounts(r) > 1) "firebrick" else "black"),
+          )
+      out.println(s"    ${idFor("n", r)} ${attrs.dotAttributeString};")
     }
 
     for ((m, i) <- methods.zipWithIndex) {
@@ -108,26 +121,56 @@ object DumpRuntimeProfile {
     }
     for (n <- nodes) {
       n match {
-        case r: PorcERootNode => //if r.getTotalCalls > 0 =>
-          val edges = CalledRootsProfile.getAllCalledRoots(r).asScala
-          if (edges.nonEmpty)
-            displayNode(r)
+        case root: PorcERootNode => //if r.getTotalCalls > 0 =>
+          val edges = CalledRootsProfile.getAllCalledRoots(root).asScala
           for (p <- edges) {
             val callnode = p.getLeft
+            val from = callnode.getProfilingScope.asInstanceOf[PorcERootNode]
             val to = p.getRight
-            displayNode(to)
+            if (to.getTotalCalls > 0) {
+              displayNode(from)
+              displayNode(to)
 
-            val proportion = callnode.getTotalCalls.toDouble / r.getTotalCalls
-            out.println(f"  ${idFor("n", r)} -> ${idFor("n", to)} [" +
-              f"""label="${quote(callnode.getClass.getSimpleName.toString.take(16))}\n@${callnode.##}%08x\n* ${callnode.getTotalCalls unit ""}", fontsize=8, """ +
-              f"""penwidth=${10*math.log(1 + proportion) max 0.1 min 2}, color=${if (callnode.isScheduled()) "blue" else "black"}];""")
+              val specs = Introspection.getSpecializations(callnode.asInstanceOf[Node]).asScala
+              val specNames = specs.filter(_.isActive()).map(_.getMethodName())
+
+              val proportion = callnode.getTotalCalls.toDouble / from.getTotalCalls
+              val attrs: Map[String, Any] = Map(
+                "label" -> f"""
+                |${specNames.mkString("; ")}
+                |${callnode.getClass.getSimpleName.toString.take(16)}
+                |@${callnode.##}%08x
+                |* ${callnode.getTotalCalls unit ""}
+                  """.stripMargin.trim,
+                "fontsize" -> 8,
+                "penwidth" -> (10*math.log(1 + proportion) max 0.1 min 2),
+                "color" -> (if (callnode.isScheduled()) "blue" else "black"),
+                "style" -> (specNames.head match {
+                  case "specificInlineAST" => "dashed"
+                  case "selfTail" | "inlinedTail" => "dotted"
+                  case _ => "solid"
+                }),
+                "weight" -> (specNames.head match {
+                  case "specificInlineAST" => 100
+                  case _ => 1
+                })
+                )
+
+              out.println(s"  ${idFor("n", from)} -> ${idFor("n", to)} ${attrs.dotAttributeString};")
+            }
           }
         case _ => ()
       }
     }
+    val txt = inEdgeCounts.toSeq.sortBy(_._1.getTotalCalls).map({ case (n, ins) =>
+      val outs = CalledRootsProfile.getAllCalledRoots(n).asScala.count(!_.getLeft.isScheduled())
+      if (ins > 1 || outs > 1)
+        s"$n*${n.getTotalCalls unit " calls"} ins=$ins outs=$outs\\l"
+      else
+        ""
+    }).mkString("")
+    out.println(s"""  label = "$txt(not including scheduled)\\l";\n  labelloc = "t";""")
     out.println("}")
-
-    println(inEdgeCounts.filter({ case (n, c) => c > 1 }).mkString("\n"))
   }
 
 }

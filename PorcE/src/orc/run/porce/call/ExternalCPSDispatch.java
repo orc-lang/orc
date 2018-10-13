@@ -291,6 +291,7 @@ public class ExternalCPSDispatch extends Dispatch {
      * @author amp
      */
     @ImportStatic({ ExternalCPSDispatch.class })
+    @Introspectable
     public static abstract class ResponseSetHandler extends NodeBase {
         protected static final ResponseSet EMPTY = ResponseSet.Empty$.MODULE$;
 

@@ -18,6 +18,7 @@ import java.util.function.Supplier;
 import scala.Option;
 
 import orc.ast.ASTWithIndex;
+import orc.ast.hasOptionalVariableName;
 import orc.ast.porc.PorcAST;
 import orc.run.porce.instruments.ProfiledPorcENodeTag;
 import orc.run.porce.instruments.ProfiledPorcNodeTag;
@@ -27,26 +28,64 @@ import orc.run.porce.runtime.SourceSectionFromPorc;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
-public abstract class NodeBase extends Node implements HasPorcNode {
+public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInterface {
+    @CompilationFinal
+    private RootNode rootNode = null;
+
+    public RootNode getCachedRootNode() {
+        if (rootNode == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            rootNode = getRootNode();
+        }
+        return rootNode;
+    }
+
     /**
      * @return The PorcE root node containing this node.
      */
+    @Override
     public ProfilingScope getProfilingScope() {
-        RootNode r = getRootNode();
-        if (r instanceof ProfilingScope) {
-            return (PorcERootNode) r;
+        if (this instanceof ProfilingScope) {
+            return (ProfilingScope) this;
         } else {
+            return getProfilingScopeHelper(this.getParent());
+        }
+    }
+
+    private static ProfilingScope getProfilingScopeHelper(Node n) {
+        if (n == null) {
             return ProfilingScope.DISABLED;
+        } else if (n instanceof NodeBaseInterface) {
+            return ((NodeBaseInterface) n).getProfilingScope();
+        } else {
+            Node parent = n.getParent();
+            return getProfilingScopeHelper(parent);
+        }
+    }
+
+    @Override
+    public String getContainingPorcCallableName() {
+        return getContainingPorcCallableNameHelper(this);
+    }
+
+    private static String getContainingPorcCallableNameHelper(Node n) {
+        Node parent = n.getParent();
+        if(parent instanceof NodeBaseInterface) {
+            return ((NodeBaseInterface)parent).getContainingPorcCallableName();
+        } else {
+            return getContainingPorcCallableNameHelper(parent);
         }
     }
 
     @CompilationFinal
     private Option<PorcAST> porcNode = Option.apply(null);
 
+    @Override
     public void setPorcAST(final PorcAST ast) {
         CompilerAsserts.neverPartOfCompilation();
         porcNode = Option.apply(ast);
@@ -172,6 +211,23 @@ public abstract class NodeBase extends Node implements HasPorcNode {
             return findCallSiteId(p);
         }
         return -1;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        Map<String, Object> properties = getDebugProperties();
+        boolean hasProperties = false;
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            sb.append(hasProperties ? "," : "<");
+            hasProperties = true;
+            sb.append(entry.getKey()).append("=").append(entry.getValue());
+        }
+        if (hasProperties) {
+            sb.append(">");
+        }
+        sb.append("@").append(String.format("%08x", hashCode()));
+        return sb.toString();
     }
 
     /**

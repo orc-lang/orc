@@ -13,8 +13,11 @@
 
 package orc.run.porce.call;
 
+import java.util.concurrent.atomic.LongAdder;
+
 import scala.collection.Seq;
 
+import orc.ast.hasOptionalVariableName;
 import orc.ast.porc.Variable;
 import orc.compiler.porce.PorcToPorcE;
 import orc.error.runtime.ArityMismatchException;
@@ -22,11 +25,13 @@ import orc.run.porce.Expression;
 import orc.run.porce.Logger;
 import orc.run.porce.NodeBase;
 import orc.run.porce.PorcERootNode;
+import orc.run.porce.ProfilingScope;
 import orc.run.porce.runtime.InlinedTailCallException;
 import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -36,6 +41,8 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.utilities.AssumedValue;
 
 /**
  *
@@ -52,7 +59,17 @@ public abstract class InlinedCallRoot extends NodeBase {
         this.execution = execution;
     }
 
+    @Override
+    public ProfilingScope getProfilingScope() {
+        return targetRootNode.getProfilingScope();
+    }
+
     abstract void execute(final VirtualFrame frame, Object[] arguments);
+
+    @Override
+    public String getContainingPorcCallableName() {
+        return targetRootNode.getContainingPorcCallableName();
+    }
 
     @Specialization(guards = {
             "body != null", "argumentSlots != null", "closureSlots != null"
@@ -61,11 +78,13 @@ public abstract class InlinedCallRoot extends NodeBase {
             final Object[] _arguments,
             @Cached("getPorcEBodyFrameArguments(frame)") Expression body,
             @Cached(value = "getArgumentSlots(frame)", dimensions = 1) FrameSlot[] argumentSlots,
-            @Cached(value = "getClosureSlots(frame)", dimensions = 1) FrameSlot[] closureSlots) {
+            @Cached(value = "getClosureSlots(frame)", dimensions = 1) FrameSlot[] closureSlots,
+            @Cached("createCountingProfile()") ConditionProfile inlinedTailCallProfile) {
         ensureTail(body);
         Object[] arguments = _arguments;
-        CompilerDirectives.ensureVirtualized(arguments);
+        // CompilerDirectives.ensureVirtualized(arguments);
         while(true) {
+            long startTime = getProfilingScope().getTime();
             try {
                 copyArgumentsToFrame(frame, arguments, argumentSlots, closureSlots);
 
@@ -74,7 +93,7 @@ public abstract class InlinedCallRoot extends NodeBase {
                 // No tail call so break out of the loop.
                 break;
             } catch (final InlinedTailCallException e) {
-                if (e.target != targetRootNode) {
+                if (inlinedTailCallProfile.profile(e.target != targetRootNode)) {
                     //Logger.info(() ->
                     //    "Rethrowing InlinedTailCall to " + e.target + System.identityHashCode(e.target) +
                     //    " at inlined copy of " + targetRootNode + System.identityHashCode(e.target));
@@ -82,6 +101,8 @@ public abstract class InlinedCallRoot extends NodeBase {
                 }
                 // Set the new arguments and fall through to go through the loop again.
                 arguments = e.arguments;
+            } finally {
+                getProfilingScope().addTime(startTime);
             }
         }
     }
@@ -126,7 +147,7 @@ public abstract class InlinedCallRoot extends NodeBase {
     protected FrameSlot[] getArgumentSlots(VirtualFrame frame) {
         CompilerAsserts.neverPartOfCompilation("Frame update");
         Seq<Variable> argumentVariables = targetRootNode.getArgumentVariables();
-        FrameDescriptor descriptor = getRootNode().getFrameDescriptor();
+        FrameDescriptor descriptor = getCachedRootNode().getFrameDescriptor();
         FrameSlot[] res = new FrameSlot[argumentVariables.size()];
 
         for (int i = 0; i < res.length; i++) {
@@ -139,7 +160,7 @@ public abstract class InlinedCallRoot extends NodeBase {
     protected FrameSlot[] getClosureSlots(VirtualFrame frame) {
         CompilerAsserts.neverPartOfCompilation("Frame update");
         Seq<Variable> closureVariables = targetRootNode.getClosureVariables();
-        FrameDescriptor descriptor = getRootNode().getFrameDescriptor();
+        FrameDescriptor descriptor = getCachedRootNode().getFrameDescriptor();
         FrameSlot[] res = new FrameSlot[closureVariables.size()];
 
         for (int i = 0; i < res.length; i++) {
@@ -149,15 +170,14 @@ public abstract class InlinedCallRoot extends NodeBase {
         return res;
     }
 
-    @SuppressWarnings("boxing")
     protected Expression getPorcEBodyFrameArguments(VirtualFrame frame) {
         CompilerAsserts.neverPartOfCompilation("Reconversion of code.");
-        Logger.info(() ->
-            String.format("%s@%08x: AST inlining %s@%08x (at %s)",
-                    getRootNode(), System.identityHashCode(getRootNode()),
-                    targetRootNode, System.identityHashCode(targetRootNode),
-                    this
-                    ));
+//        Logger.info(() ->
+//            String.format("%s@%08x: AST inlining %s@%08x (at %s)",
+//                    getRootNode(), System.identityHashCode(getRootNode()),
+//                    targetRootNode, System.identityHashCode(targetRootNode),
+//                    this
+//                    ));
         Expression body = targetRootNode.getBody();
 
         assert body.porcNode().isDefined();
@@ -176,12 +196,6 @@ public abstract class InlinedCallRoot extends NodeBase {
                 isTail
                 );
 
-//            Logger.info(() -> {
-//                String bodyStr = NodeUtil.printTreeToString(body);
-//                String resStr = NodeUtil.printTreeToString(res);
-//                return "AST inlining " + target + " at " + this + ":\n" + bodyStr + "===============\n" + resStr;
-//            });
-
         return res;
     }
 
@@ -190,8 +204,6 @@ public abstract class InlinedCallRoot extends NodeBase {
             if (((InlinedCallRoot)node).targetRootNode == targetRootNode) {
                 return true;
             }
-//            Logger.info(() -> String.format("%s != %s",
-//                    ((InlinedCallRoot)node).targetRootNode, targetRootNode));
         }
         if (node.getParent() != null) {
             return isAbove(node.getParent(), targetRootNode);

@@ -384,7 +384,7 @@ public abstract class Graft extends Expression {
     }
 
     protected PorcERootNode getPorcERootNode() {
-        return (PorcERootNode) Graft.this.getRootNode();
+        return (PorcERootNode) Graft.this.getCachedRootNode();
     }
 
 

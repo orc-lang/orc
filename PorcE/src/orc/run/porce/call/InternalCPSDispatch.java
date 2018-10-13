@@ -16,6 +16,7 @@ import orc.run.porce.Expression;
 import orc.run.porce.Logger;
 import orc.run.porce.PorcERootNode;
 import orc.run.porce.SpecializationConfiguration;
+import orc.run.porce.runtime.CallKindDecision;
 import orc.run.porce.runtime.InlinedTailCallException;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
@@ -112,17 +113,8 @@ public class InternalCPSDispatch extends Dispatch {
             orig.ensureForceInline(this);
         }
 
-        @CompilationFinal
-        private RootNode rootNode = null;
-
-//        public RootNode getRootNodeCached() {
-//            if (rootNode == null || CompilerDirectives.inInterpreter()) {
-//                rootNode = getRootNode();
-//            }
-//            return rootNode;
-//        }
-
         public int computeNodeCount() {
+            CompilerAsserts.neverPartOfCompilation();
             return NodeUtil.countNodes(getRootNode());
         }
 
@@ -144,7 +136,6 @@ public class InternalCPSDispatch extends Dispatch {
                 for (int i = 0; i < arguments.length; i ++) {
                     frameArguments[i] = arguments[i];
                 }
-                //System.arraycopy(arguments, 0, frameArguments, 0, arguments.length);
             } else {
                 CompilerDirectives.transferToInterpreter();
                 throw new ArityMismatchException(arguments.length, frameArguments.length);
@@ -153,7 +144,7 @@ public class InternalCPSDispatch extends Dispatch {
             throw new SelfTailCallException();
         }
 
-        @Specialization(guards = { "isTail", "isAbove(expected)", "getRootNode() != target.body.getRootNode()" })
+        @Specialization(guards = { "isTail", "isAbove(expected)", "getCachedRootNode() != target.body.getRootNode()" })
         public void inlinedTail(final VirtualFrame frame,
                 final PorcEClosure target, final Object[] arguments,
                 @Cached("target.body") RootCallTarget expected) {
@@ -163,7 +154,7 @@ public class InternalCPSDispatch extends Dispatch {
 
         // The RootNode guard is required so that selfTail can be activated even
         // after tail has activated.
-        @Specialization(guards = { "UniversalTCO", "isTail", "getRootNode() != target.body.getRootNode()" })
+        @Specialization(guards = { "UniversalTCO", "isTail", "getCachedRootNode() != target.body.getRootNode()" })
         public void universalTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
                 @Cached("createBinaryProfile()") ConditionProfile reuseTCE) {
             addCalledRoot(target.body);
@@ -188,70 +179,57 @@ public class InternalCPSDispatch extends Dispatch {
             return sameMethod;
         }
 
-        @Specialization(guards = { "TruffleASTInlining", "isTail",
-                "nodeCount < TruffleASTInliningLimit",
-                "target.body == expected", "!isAbove(expected)", "sameMethod(expected)",
-                "getRootNode() != target.body.getRootNode()",
-                "canSpecificInlineAST()",
-                "isApplicable"}, limit = "3")
-        public void specificInlineAST(final VirtualFrame frame,
-                final PorcEClosure target, final Object[] arguments,
-                @Cached("target.body") RootCallTarget expected,
-                @Cached("computeNodeCount()") int nodeCount,
-                @Cached("createInlinedCallRoot(expected.getRootNode(), execution)") InlinedCallRoot inlinedCall,
-                @Cached("inlinedCall.isApplicable(frame)") boolean isApplicable) {
-            ensureTail(inlinedCall);
-            addCalledRoot(expected);
-            CompilerDirectives.ensureVirtualized(arguments);
-            inlinedCall.execute(frame, arguments);
+
+        protected boolean canSpecificInlineAST(RootCallTarget target) {
+            return (getCachedRootNode() instanceof PorcERootNode);
+        }
+
+        protected boolean oneTimeGuard_SpecificInlineAST(VirtualFrame frame, RootCallTarget target, InlinedCallRoot inlinedCall) {
+            CompilerAsserts.neverPartOfCompilation();
+            if (inlinedCall == null || !(target.getRootNode() instanceof PorcERootNode)) {
+                return false;
+            }
+            CallKindDecision decision = CallKindDecision.get(this, (PorcERootNode)target.getRootNode());
+            int nodeCount = computeNodeCount();
+            boolean inlineGuess = sameMethod(target) &&
+                    nodeCount < SpecializationConfiguration.TruffleASTInliningLimit;
+//            if (decision == CallKindDecision.ANY && !inlineGuess) {
+//                Logger.info(() -> String.format("Didn't inline AST %s -> %s",
+//                        this.getContainingPorcCallableName(),
+//                        ((PorcERootNode)target.getRootNode()).getContainingPorcCallableName()));
+//            }
+            return inlinedCall.isApplicable(frame) &&
+                    (decision == CallKindDecision.INLINE ||
+                        decision == CallKindDecision.ANY && inlineGuess);
+        }
+
+        protected boolean isAbove(final RootCallTarget target) {
+            boolean b = InlinedCallRoot.isAbove(this, target.getRootNode());
+            return b;
         }
 
         @SuppressWarnings("hiding")
         protected InlinedCallRoot createInlinedCallRoot(final RootNode targetRootNode, final PorcEExecution execution) {
-            return InlinedCallRoot.create(targetRootNode, execution);
+            if (targetRootNode instanceof PorcERootNode) {
+                return InlinedCallRoot.create(targetRootNode, execution);
+            } else {
+                return null;
+            }
         }
 
-        protected boolean canSpecificInlineAST() {
-            return (getRootNode() instanceof PorcERootNode) &&
-                    !getRootNode().isInternal();
-        }
-        protected boolean isAbove(final RootCallTarget target) {
-            boolean b = InlinedCallRoot.isAbove(this, target.getRootNode());
-//            Logger.info(() -> String.format("%s, %b",
-//                    target.getRootNode(), b));
-            return b;
-        }
-
-//        @Specialization(guards = { "TruffleASTInlining", "nodeCount < TruffleASTInliningLimit",
-//                "target.body == expected", "sameMethod(expected)", "body != null",
-//                "getRootNode() != target.body.getRootNode()" }, limit = "3")
-        public void specificInline(final VirtualFrame frame,
+        @Specialization(guards = { "TruffleASTInlining", //"isTail",
+                "target.body == expected", "!isAbove(expected)",
+                "getCachedRootNode() != target.body.getRootNode()",
+                "canSpecificInlineAST(expected)",
+                "oneTimeGuard"}, limit = "3")
+        public void specificInlineAST(final VirtualFrame frame,
                 final PorcEClosure target, final Object[] arguments,
                 @Cached("target.body") RootCallTarget expected,
-                @Cached("getPorcEBodyNewFrame(target)") Expression body,
-                @Cached("getPorcEFrameDescriptor(target)") FrameDescriptor fd,
-                @Cached("computeNodeCount()") int nodeCount) {
-            ensureTail(body);
+                @Cached("createInlinedCallRoot(expected.getRootNode(), execution)") InlinedCallRoot inlinedCall,
+                @Cached("oneTimeGuard_SpecificInlineAST(frame, expected, inlinedCall)") boolean oneTimeGuard) {
+            ensureTail(inlinedCall);
             addCalledRoot(expected);
-            CompilerDirectives.ensureVirtualized(arguments);
-            try {
-                final VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
-                body.execute(nestedFrame);
-//            } catch(NullPointerException e) {
-//                CompilerDirectives.transferToInterpreter();
-//                Logger.log(java.util.logging.Level.WARNING, () -> "UGLY HACK: Creating virtual frame failed. Hopefully this is just as the program exits.", e);
-            } catch (final SelfTailCallException e) {
-                if (!isTail) {
-                    CompilerDirectives.transferToInterpreter();
-                    Logger.log(java.util.logging.Level.WARNING, () -> "Caught SelfTailCallException at non-tail specificInline", e);
-                }
-                throw e;
-            } catch (final TailCallException e) {
-                if (!SpecializationConfiguration.UniversalTCO) {
-                    CompilerDirectives.transferToInterpreter();
-                }
-                throw e;
-            }
+            inlinedCall.execute(frame, arguments);
         }
 
         @Specialization(guards = { "target.body == expected" },
@@ -288,34 +266,6 @@ public class InternalCPSDispatch extends Dispatch {
                     CompilerDirectives.transferToInterpreter();
                 }
                 throw e;
-            }
-        }
-
-        /* Utilties */
-
-        protected Expression getPorcEBodyNewFrame(PorcEClosure target) {
-            CompilerAsserts.neverPartOfCompilation("Copying PorcE AST.");
-            RootNode r = target.body.getRootNode();
-            if (r instanceof PorcERootNode) {
-                PorcERootNode bodyRoot = (PorcERootNode) r;
-
-                Expression body = bodyRoot.getBody();
-                Expression newBody = NodeUtil.cloneNode(body);
-
-                newBody.setTail(isTail);
-
-                return newBody;
-            } else {
-                return null;
-            }
-        }
-
-        protected static FrameDescriptor getPorcEFrameDescriptor(PorcEClosure target) {
-            RootNode r = target.body.getRootNode();
-            if (r instanceof PorcERootNode) {
-                return r.getFrameDescriptor();
-            } else {
-                return null;
             }
         }
 

@@ -14,6 +14,7 @@ package orc.run.porce;
 import java.util.Set;
 
 import orc.run.porce.runtime.CallClosureSchedulable;
+import orc.run.porce.runtime.CallKindDecision;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
@@ -22,6 +23,8 @@ import orc.run.porce.runtime.PorcERuntime$;
 import orc.run.porce.runtime.Terminator;
 
 import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -84,9 +87,10 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
         dispatch.setTail(v);
     }
 
-    @Specialization(guards = { "!shouldInlineSpawn(computation)" })
+    @Specialization(guards = { "!shouldInline" })
     public PorcEUnit spawn(final VirtualFrame frame, final Counter c, final Terminator t,
-            final PorcEClosure computation) {
+            final PorcEClosure computation,
+            @Cached("shouldInlineSpawn(computation)") boolean shouldInline) {
         final PorcERuntime r = execution.runtime();
         // The incrementAndCheckStackDepth call should not go in shouldInlineSpawn because it has side effects and
         // we can't guarantee that guards are not called multiple times.
@@ -107,9 +111,10 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
         return PorcEUnit.SINGLETON;
     }
 
-    @Specialization(guards = { "shouldInlineSpawn(computation)" }, replaces = { "spawn" })
+    @Specialization(guards = { "shouldInline" }, replaces = { "spawn" })
     public PorcEUnit inline(final VirtualFrame frame, final Counter c, final Terminator t,
-            final PorcEClosure computation) {
+            final PorcEClosure computation,
+            @Cached("shouldInlineSpawn(computation)") boolean shouldInline) {
         // Here we can inline spawns speculatively if we have not done that too much on this stack.
         // This is very heuristic and may cause load imbalance problems in some cases.
         final PorcERuntime r = execution.runtime();
@@ -127,16 +132,19 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     @Specialization()
     public PorcEUnit spawnAfterInline(final VirtualFrame frame, final Object c, final Terminator t,
             final PorcEClosure computation) {
-        return spawn(frame, (Counter) c, t, computation);
+        return spawn(frame, (Counter) c, t, computation, false);
     }
 
     private static final boolean allowSpawnInlining = PorcERuntime$.MODULE$.allowSpawnInlining();
     private static final boolean allowAllSpawnInlining = PorcERuntime$.MODULE$.allowAllSpawnInlining();
 
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
-        return getProfilingScope().isProfilingComplete() && allowSpawnInlining &&
+        CompilerAsserts.neverPartOfCompilation();
+        CallKindDecision decision = CallKindDecision.get(this, (PorcERootNode) computation.body.getRootNode());
+        return allowSpawnInlining &&
                 (!mustSpawn || allowAllSpawnInlining) &&
-                computation.getTimePerCall(targetRoot) < SpecializationConfiguration.InlineAverageTimeLimit;
+                decision != CallKindDecision.SPAWN;
+//                computation.getTimePerCall(targetRoot) < SpecializationConfiguration.InlineAverageTimeLimit;
     }
 
     public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn,

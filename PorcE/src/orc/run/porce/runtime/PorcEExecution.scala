@@ -141,7 +141,7 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
         val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
       for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
-        DumpSpecializations(r, repNum, out)
+        DumpSpecializations(r, 1, out)
       }
       out.close()
     }
@@ -150,14 +150,23 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(profileResultsFile)))
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
         val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
-      DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), repNum, out)
+      DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), 1, out)
       out.close()
     }
   }
 
-
   def onProgramHalted() = {
   }
+
+  import CallKindDecision._
+  final val callKindTable: CallKindDecision.Table = new CallKindDecision.Table(
+      ("seqPhase", "`compseqPhase_seqPhase_1") -> INLINE,
+
+      ("parPhase", "`compparPhase_0") -> SPAWN,
+      ("parPhase", "`compparPhase_1") -> INLINE,
+      ("parPhase", "`compparPhase_parPhase_3") -> INLINE,
+      ("`compparPhase_1", "`compparPhase_parPhase_1") -> INLINE,
+      )
 }
 
 trait PorcEExecutionWithLaunch extends PorcEExecution {

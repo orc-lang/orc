@@ -20,6 +20,7 @@ import java.util.logging.Level;
 import scala.Option;
 import scala.collection.Seq;
 
+import orc.ast.hasOptionalVariableName;
 import orc.ast.ASTWithIndex;
 import orc.ast.porc.PorcAST;
 import orc.ast.porc.Variable;
@@ -43,7 +44,7 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.utilities.AssumedValue;
 
-public class PorcERootNode extends RootNode implements HasPorcNode, HasId, ProfilingScope {
+public class PorcERootNode extends RootNode implements HasPorcNode, HasId, ProfilingScope, NodeBaseInterface {
 
     // TODO: PERFORMANCE: Replace these with CountSumValue.
     // The challenge of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
@@ -56,38 +57,42 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     private final LongAdder totalCalls = new LongAdder();
 
     @SuppressWarnings("boxing")
-    private final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<Boolean>(true);
+    private final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<Boolean>(false);
+    public static final boolean profileTime = false;
 
     @Override
+    public ProfilingScope getProfilingScope() {
+        return this;
+    }
+
     public final long getTotalSpawnedTime() {
         return totalSpawnedTime.get();
     }
 
-    @Override
     public final long getTotalSpawnedCalls() {
         return totalSpawnedCalls.get();
     }
 
     @Override
-    @TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = false)
     public final long getTotalTime() {
         return totalTime.sum();
     }
 
     @Override
-    @TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = false)
     public final long getTotalCalls() {
         return totalCalls.sum();
     }
 
     @Override
-    @TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = false)
     public long getSiteCalls() {
         return totalSiteCalls.sum();
     }
 
     @Override
-    @TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = false)
     public long getContinuationSpawns() {
         return totalContinuationSpawns.sum();
     }
@@ -106,14 +111,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     @Override
     public long getTime() {
-        if (isProfiling()) {
+        if (profileTime && isProfiling()) {
             return System.nanoTime();
         } else {
             return 0;
         }
     }
 
-    @TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = false)
     private static void longAdderAdd(LongAdder adder, long n) {
         adder.add(n);
     }
@@ -121,7 +126,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     @Override
     public void removeTime(long start) {
-        if (isProfiling()) {
+        if (profileTime && isProfiling()) {
             longAdderAdd(totalTime, -(getTime() - start));
         }
     }
@@ -130,7 +135,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     final public void addTime(long start) {
         if (isProfiling()) {
             longAdderAdd(totalCalls, 1);
-            longAdderAdd(totalTime, getTime() - start);
+            if (profileTime) {
+                longAdderAdd(totalTime, getTime() - start);
+            }
         }
     }
 
@@ -155,7 +162,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     @CompilationFinal
     private long timePerCall = -1;
 
-    @Override
     final public void addSpawnedCall(long time) {
         if (timePerCall < 0) {
             totalSpawnedTime.getAndAdd(time);
@@ -198,6 +204,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
         porcNode = Option.apply(ast);
         section = SourceSectionFromPorc.apply(ast);
         internal = !(ast instanceof orc.ast.porc.Method);
+        internedName = getName().intern();
     }
 
     @Override
@@ -208,6 +215,13 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     @Override
     public Option<PorcAST> porcNode() {
         return porcNode;
+    }
+
+    @CompilationFinal
+    private String internedName;
+    @Override
+    public String getContainingPorcCallableName() {
+        return internedName;
     }
 
     @CompilationFinal
@@ -314,6 +328,10 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
      */
     public Object getMethodKey() {
         return methodKey;
+    }
+
+    public PorcEExecution getExecution() {
+        return execution;
     }
 
     public Expression getBody() {
