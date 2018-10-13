@@ -32,7 +32,6 @@ import orc.values.sites.compatibility.SiteAdaptor;
  * @author quark
  * @author dkitchin
  */
-@SuppressWarnings("hiding")
 public class Semaphore extends EvalSite implements TypedSite {
 
     @Override

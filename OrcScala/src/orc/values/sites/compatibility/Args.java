@@ -2,7 +2,7 @@
 // Args.java -- Java class Args
 // Project OrcScala
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -40,7 +40,7 @@ public class Args implements Serializable {
      *
      * @param values
      */
-    public Args(@SuppressWarnings("hiding") final Object[] values) {
+    public Args(final Object[] values) {
         this.values = values;
     }
 
@@ -52,7 +52,7 @@ public class Args implements Serializable {
      *
      * @param values
      */
-    public Args(@SuppressWarnings("hiding") final Collection<Object> values) {
+    public Args(final Collection<Object> values) {
         this.values = new Object[values.size()];
         this.values = values.toArray(this.values);
     }
