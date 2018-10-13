@@ -22,8 +22,6 @@ import class Collections = "java.util.Collections"
 
 val sieveFragementSize = 300
 
-val counter = Counter()
-
 -- Lines: 23
 def sieveFragment(outChan) =
 	val inChan = Channel() 
