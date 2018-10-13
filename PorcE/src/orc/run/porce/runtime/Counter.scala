@@ -132,7 +132,7 @@ object Counter {
     var nextCounterOffset: CounterOffset = null
 
     override def toString(): String = {
-      f"CounterOffset@${hashCode()}%x(inThreadList=$inThreadList, value=$value, globalCountHeld=$globalCountHeld)"
+      f"CounterOffset@${hashCode()}%08x(inThreadList=$inThreadList, value=$value, globalCountHeld=$globalCountHeld)"
     }
   }
 
@@ -553,7 +553,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   override def toString(): String = {
     val n = getClass.getSimpleName
     val h = System.identityHashCode(this)
-    f"$n%s@$h%x"
+    f"$n%s@$h%08x"
   }
 
   /** Called when this whole context has halted.

@@ -50,7 +50,7 @@ object DedupData {
       case Done => ()
     }
     val h = Arrays.hashCode(dst.digest())
-    println(h.formatted("%x"))
+    println(h.formatted("%08x"))
     h == 0xc991c9e1
   }
 }

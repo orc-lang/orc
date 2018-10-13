@@ -71,6 +71,6 @@ public class VisibleConditionProfile {
     @SuppressWarnings("boxing")
     @Override
     public String toString() {
-        return String.format("%s(wasTrue=%s, wasFalse=%s)@%x", getClass().getSimpleName(), wasTrue, wasFalse, hashCode());
+        return String.format("%s(wasTrue=%s, wasFalse=%s)@%08x", getClass().getSimpleName(), wasTrue, wasFalse, hashCode());
     }
 }

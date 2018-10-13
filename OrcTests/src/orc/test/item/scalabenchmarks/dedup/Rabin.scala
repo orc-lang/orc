@@ -60,7 +60,7 @@ class Rabin() {
     for (i <- (start + windowSize) until end) {
       // If we found a boundary bailout
       if ((hash & segmentMask) == 0) {
-        //println(s"Found segment at $i: ${hash.formatted("%x")} ${data.slice(i - windowSize, i).toSeq}")
+        //println(s"Found segment at $i: ${hash.formatted("%08x")} ${data.slice(i - windowSize, i).toSeq}")
         return i
       }
       

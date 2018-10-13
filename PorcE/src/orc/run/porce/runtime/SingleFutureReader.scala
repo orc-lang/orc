@@ -50,7 +50,7 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execu
   }
 
   override def toString() = {
-    s"SingleFutureReader@${hashCode().formatted("%x")}(${get()})"
+    s"SingleFutureReader@${hashCode().formatted("%08x")}(${get()})"
   }
 
   def fastHalt(): PorcEClosure = {
