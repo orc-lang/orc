@@ -216,6 +216,7 @@ public abstract class Call<ExternalDispatch extends Dispatch> extends Expression
                     return ExternalCPSDispatch.createBare(execution);
                 }
 
+                @SuppressWarnings("hiding")
                 @Override
                 protected Object callExternal(VirtualFrame frame, Object target, Object[] arguments) {
                     getExternalCall().executeDispatch(frame, target, arguments);

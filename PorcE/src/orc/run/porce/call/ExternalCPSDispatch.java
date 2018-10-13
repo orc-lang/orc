@@ -145,6 +145,7 @@ public class ExternalCPSDispatch extends Dispatch {
             // return InternalCPSDispatch.create(/*forceInline =*/ true, execution, isTail);
         }
 
+        @SuppressWarnings("hiding")
         protected ResponseSetHandler createResponseSetHandler(final PorcEExecution execution) {
             return ExternalCPSDispatchFactory.ResponseSetHandlerNodeGen.create(execution);
         }

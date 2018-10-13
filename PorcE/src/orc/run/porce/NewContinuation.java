@@ -72,7 +72,8 @@ public class NewContinuation extends Expression {
 		return new PorcEClosure(capturedValues, callTarget, false);
 	}
 
-	@Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
+	@SuppressWarnings("boxing")
+    @Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
 	@ExplodeLoop
 	public Object cached(final VirtualFrame frame) throws StopCachingException {
 		CompilerAsserts.compilationConstant(capturedVariables.length);

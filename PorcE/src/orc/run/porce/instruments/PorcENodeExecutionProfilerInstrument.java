@@ -73,7 +73,8 @@ public final class PorcENodeExecutionProfilerInstrument extends TruffleInstrumen
 		public ExecutionEventNode create(final EventContext ec) {
 			final com.oracle.truffle.api.nodes.Node n = ec.getInstrumentedNode();
 			final RootNode rootNode = n.getRootNode();
-			final PorcENodeExecutionProfiler profiler = PorcENodeExecutionProfilerInstrument.this.profiler;
+			@SuppressWarnings("hiding")
+            final PorcENodeExecutionProfiler profiler = PorcENodeExecutionProfilerInstrument.this.profiler;
 			return rootNode.atomic(() -> {
 				final Counter counter = profiler.getCounter(n);
 				final FrameSlot profilerStateSlot = getProfilerStateSlot(rootNode);

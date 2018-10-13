@@ -168,7 +168,7 @@ public class Force {
     @ImportStatic({ Force.class })
     @Introspectable
     public static class Future extends Expression {
-	private final PorcEExecution execution;
+	protected final PorcEExecution execution;
 	private final int index;
 
 

@@ -13,8 +13,8 @@ package orc.run.porce;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import orc.compiler.porce.PorcToPorcE;
 import orc.ast.porc.Variable;
+import orc.compiler.porce.PorcToPorcE;
 import orc.error.runtime.HaltException;
 import orc.run.porce.call.Call;
 import orc.run.porce.runtime.Future;
@@ -24,7 +24,6 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.PorcERuntime$;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
