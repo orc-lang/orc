@@ -10,5 +10,7 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="var" path="GRAALVM_JRE/jre/lib/jvmci/graal.jar"/>
+	<classpathentry kind="var" path="GRAALVM_JRE/jre/lib/truffle/truffle-api.jar" sourcepath="/GRAALVM_JRE/jre/lib/truffle/truffle-api.src.zip"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
