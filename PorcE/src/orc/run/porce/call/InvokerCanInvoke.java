@@ -17,6 +17,7 @@ import orc.Invoker;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
 import orc.values.sites.InvocableInvoker;
+import orc.values.sites.InvocationBehaviorUtilities;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
 
@@ -27,6 +28,7 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 /**
  * A node to call canInvoke on invokers.
@@ -55,9 +57,36 @@ abstract class InvokerCanInvoke extends NodeBase {
     @Specialization(guards = { "KnownSiteSpecialization", "invoker.argumentClss() == argumentClss" })
     public boolean invocableInvoker(InvocableInvoker invoker, Object target, Object[] arguments,
             @Cached(value = "invoker.argumentClss()", dimensions = 1) final Class<?>[] argumentClss) {
-
         CompilerAsserts.compilationConstant(invoker);
-        return invoker.canInvokeTarget(target) && orc.values.sites.InvocationBehaviorUtilities.valuesHaveType(arguments, argumentClss);
+        return invoker.canInvokeTarget(target) &&
+                valuesHaveType(arguments, argumentClss);
+    }
+
+    @Specialization(guards = { "KnownSiteSpecialization",
+            "invoker.targetCls() == targetCls", "invoker.argumentClss() == argumentClss" })
+    public boolean invocableInvoker(orc.values.sites.TargetClassAndArgumentClassSpecializedInvoker invoker,
+            Object target, Object[] arguments,
+            @Cached(value = "invoker.targetCls()") final Class<?> targetCls,
+            @Cached(value = "invoker.argumentClss()", dimensions = 1) final Class<?>[] argumentClss) {
+        CompilerAsserts.compilationConstant(invoker);
+        return InvocationBehaviorUtilities.valueHasType(target, targetCls) &&
+                valuesHaveType(arguments, argumentClss);
+    }
+
+    @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
+    private final boolean valuesHaveType(Object[] arguments, Class<?>[] argumentClss) {
+        if (arguments.length != argumentClss.length) {
+          return false;
+        }
+        // Conceptually: (argumentClss zip arguments).forall(... Predicate ...)
+        int i = 0;
+        boolean res = true;
+        while (i < argumentClss.length && res) {
+            // Predicate here:
+            res = res && InvocationBehaviorUtilities.valueHasType(arguments[i], argumentClss[i]);
+            i += 1;
+        }
+        return res;
     }
 
     @Specialization(guards = { "isPartiallyEvaluable(invoker)" })
@@ -71,7 +100,6 @@ abstract class InvokerCanInvoke extends NodeBase {
                 invoker instanceof orc.compile.orctimizer.OrcAnnotation.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayDerefSite.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayAssignSite.Invoker ||
-//                invoker instanceof orc.run.extensions.SiteInvoker ||
                 invoker instanceof orc.values.sites.JavaArrayLengthPseudofield.Invoker ||
                 false;
     }

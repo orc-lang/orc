@@ -35,6 +35,7 @@ import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 /**
  * A node to call canInvoke on invokers.
@@ -115,6 +116,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
 
     @Specialization(guards = { "!invoker.invocable().isVarArgs()", "KnownSiteSpecialization",
             "invoker.invocable().parameterTypes() == parameterTypes" })
+    @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
     public Object invocableInvoker(InvocableInvoker invoker, Object target, Object[] arguments,
             @Cached(value = "invoker.invocable().parameterTypes()", dimensions = 1) final Class<?>[] parameterTypes) {
         CompilerAsserts.compilationConstant(invoker);
@@ -130,7 +132,7 @@ abstract class InvokerInvokeDirect extends NodeBase {
                 throw new NullPointerException(
                         "Instance method called without a target object (i.e. non-static method called on a class)");
             }
-            for (int i = 0; i < arguments.length; i++) {
+            for (int i = 0; i < parameterTypes.length; i++) {
                 final Object a = arguments[i];
                 final Class<?> cls = parameterTypes[i];
                 arguments[i] = orc2javaOpt(a, cls);
