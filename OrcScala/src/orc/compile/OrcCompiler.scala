@@ -241,12 +241,14 @@ trait CoreOrcCompilerPhases {
           println(s"============ End dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============")
         }
 
-        ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
-        ExecutionLogOutputStream(s"ir-$name", "txt", s"$name dump") foreach { out =>
-          val wr = new OutputStreamWriter(out, "UTF-8")
-          wr.write(s"============ Dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============\n\n")
-          wr.write(astStr)
-          wr.close()
+        if (echoIR != 0) {
+          ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
+          ExecutionLogOutputStream(s"ir-$name", "txt", s"$name dump") foreach { out =>
+            val wr = new OutputStreamWriter(out, "UTF-8")
+            wr.write(s"============ Dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============\n\n")
+            wr.write(astStr)
+            wr.close()
+          }
         }
       }
 
