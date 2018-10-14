@@ -11,31 +11,18 @@
 
 package orc.run.porce
 
-import java.io.BufferedReader
-import java.io.File
-import java.io.PrintWriter
+import java.io.{ BufferedReader, File, PrintStream, PrintWriter }
 
-import com.oracle.truffle.api.Truffle
-import com.oracle.truffle.api.CallTarget
-import com.oracle.truffle.api.TruffleLanguage
-import com.oracle.truffle.api.source.Source
-import com.oracle.truffle.api.nodes.RootNode
-import com.oracle.truffle.api.frame.VirtualFrame
-
-import orc.PorcEBackend
+import orc.{ OrcOptions, PorcEBackend, PorcEPolyglotLauncher }
 import orc.compile.parse.OrcInputContext
-import orc.run.porce.runtime.Counter
-import orc.run.porce.runtime.PorcEClosure
-import orc.run.porce.runtime.PorcEObject
-import orc.run.porce.runtime.Terminator
+import orc.run.porce.runtime.{ Counter, PorcEClosure, PorcEObject, PorcERuntime, Terminator }
 import orc.script.OrcBindings
-import java.io.PrintStream
-import orc.PorcEPolyglotLauncher
-import orc.OrcOptions
-import orc.run.porce.runtime.PorcERuntime
-import com.oracle.truffle.api.Scope
-import com.oracle.truffle.api.interop.TruffleObject
-import com.oracle.truffle.api.interop.ForeignAccess
+
+import com.oracle.truffle.api.{ CallTarget, Scope, Truffle, TruffleLanguage }
+import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.interop.{ ForeignAccess, TruffleObject }
+import com.oracle.truffle.api.nodes.RootNode
+import com.oracle.truffle.api.source.Source
 
 class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
     this: PorcELanguage =>

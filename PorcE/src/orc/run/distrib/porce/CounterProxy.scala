@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 15, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -111,7 +111,7 @@ trait CounterProxyManager {
     override def onResurrect(): Unit = synchronized {
       Logger.Proxy.entering(getClass.getName, "onResurrect")
       assert(!waitingForCredit)
-      val n = incrementAndGet()
+      incrementAndGet()
       // Token: Create a token that is held by the request credits message. It will be returned with the credits.
       requestCredits()
       waitingForCredit = true
@@ -123,7 +123,7 @@ trait CounterProxyManager {
       */
     final def activate(credits: Int): Unit = synchronized {
       Logger.Proxy.entering(getClass.getName, s"activate $credits")
-      val n = incrementAndGet()
+      incrementAndGet()
       if(this.credits < 0) {
         this.credits = credits
       } else if(this.credits == credits) {

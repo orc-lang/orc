@@ -11,13 +11,12 @@
 
 package orc.util
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
-import orc.Invoker
-import orc.OrcRuntime
+import orc.{ DirectInvoker, Invoker, OrcRuntime }
 import orc.run.porce.runtime.MaterializedCPSCallContext
 import orc.values.Signal
-import orc.DirectInvoker
 import orc.values.sites.Site
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 object TraceOrcTask {
   final val Execute = 50L

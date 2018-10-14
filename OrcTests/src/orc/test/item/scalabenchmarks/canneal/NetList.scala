@@ -158,7 +158,7 @@ object NetList {
     
     while (s.hasNext()) {
       val e = nl.elementByName(s.next())
-      val tpe = s.nextInt()
+      s.nextInt()
       var wasEnd = false
       while (!wasEnd && s.hasNext()) { // Contains break
         val inName = s.next() 

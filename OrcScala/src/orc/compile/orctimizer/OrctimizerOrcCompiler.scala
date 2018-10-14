@@ -26,11 +26,6 @@ import java.io.{ FileOutputStream, FileInputStream, ObjectOutputStream, ObjectIn
 import java.util.zip.{ GZIPInputStream, GZIPOutputStream }
 import java.lang.ClassCastException
 
-/** StandardOrcCompiler extends CoreOrcCompiler with "standard" environment interfaces
-  * and specifies that compilation will finish with named.
-  *
-  * @author jthywiss
-  */
 abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
   with StandardOrcCompilerEnvInterface[porc.MethodCPS]
   with CoreOrcCompilerPhases {

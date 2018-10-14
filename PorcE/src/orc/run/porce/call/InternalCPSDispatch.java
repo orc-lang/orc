@@ -11,6 +11,10 @@
 
 package orc.run.porce.call;
 
+import scala.collection.Seq;
+
+import orc.ast.porc.Variable;
+import orc.compiler.porce.PorcToPorcE;
 import orc.error.runtime.ArityMismatchException;
 import orc.run.porce.Expression;
 import orc.run.porce.Logger;

@@ -13,7 +13,7 @@ package orc.run.porce.instruments
 
 import java.io.{ PrintWriter, StringWriter }
 
-import scala.collection.JavaConverters.{ asScalaBufferConverter, asScalaSetConverter }
+import scala.collection.JavaConverters._
 
 import orc.run.porce.{ CalledRootsProfile, HasCalledRoots, HasPorcNode, PorcERootNode }
 

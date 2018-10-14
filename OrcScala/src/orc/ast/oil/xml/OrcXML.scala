@@ -382,9 +382,7 @@ object OrcXML {
       case orc.values.Signal => <signal/>
       case orc.values.Field(s) => <field>{ s }</field>
       case x: java.lang.Class[_] => <jclass>{ x.getCanonicalName() }</jclass>
-      case x: orc.values.sites.Site =>
-        <site>{ strip$(a.asInstanceOf[AnyRef].getClass().getName) }</site>
-      case x: orc.values.HasMembers =>
+      case x @ (_: orc.values.sites.Site | _: orc.values.HasMembers) =>
         <site>{ strip$(a.asInstanceOf[AnyRef].getClass().getName) }</site>
       case _ => throw new AssertionError("Could not serialize value " + a.toString + " to XML.")
     }
