@@ -11,28 +11,23 @@
 
 package orc.run.porce.runtime
 
-import java.io.{ OutputStreamWriter, PrintWriter }
-import java.util.{ Timer, TimerTask }
+import java.io.{ FileOutputStream, OutputStreamWriter, PrintWriter }
+import java.util.{ ArrayList, Collections }
+
+import scala.ref.WeakReference
 
 import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
 import orc.error.runtime.HaltException
 import orc.run.core.EventHandler
 import orc.run.distrib.porce.CallTargetManager
-import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
+import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcERootNode, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
 import orc.run.porce.instruments.DumpSpecializations
-import orc.util.{ CsvWriter, ExecutionLogOutputStream }
+import orc.util.{ DumperRegistry, ExecutionLogOutputStream }
 
 import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
-import com.oracle.truffle.api.nodes.RootNode
-import com.oracle.truffle.api.nodes.Node
-import java.util.Collections
-import java.util.ArrayList
-import orc.run.porce.PorcERootNode
-import orc.util.DumperRegistry
-import java.io.FileOutputStream
-import scala.ref.WeakReference
+import com.oracle.truffle.api.nodes.{ Node, RootNode }
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {

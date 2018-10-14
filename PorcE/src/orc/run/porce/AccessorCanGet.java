@@ -14,11 +14,6 @@
 package orc.run.porce;
 
 import orc.Accessor;
-import orc.Invoker;
-import orc.run.porce.NodeBase;
-import orc.values.sites.InvocableInvoker;
-import orc.values.sites.OverloadedDirectInvokerBase1;
-import orc.values.sites.OverloadedDirectInvokerBase2;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Introspectable;

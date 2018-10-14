@@ -17,7 +17,6 @@ import orc.Invoker;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
 import orc.values.sites.InvocableInvoker;
-import orc.values.sites.OrcJavaCompatibility;
 import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
 

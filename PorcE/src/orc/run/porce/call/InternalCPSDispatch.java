@@ -11,9 +11,12 @@
 
 package orc.run.porce.call;
 
+import scala.collection.Seq;
+
+import orc.ast.porc.Variable;
+import orc.compiler.porce.PorcToPorcE;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.HaltException;
-import orc.compiler.porce.PorcToPorcE;
 import orc.run.porce.Expression;
 import orc.run.porce.Logger;
 import orc.run.porce.PorcERootNode;
@@ -22,11 +25,6 @@ import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.SelfTailCallException;
 import orc.run.porce.runtime.TailCallException;
-
-import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreter;
-
-import scala.collection.Seq;
-import orc.ast.porc.Variable;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;

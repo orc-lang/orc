@@ -14,27 +14,8 @@
 package orc.run.porce;
 
 import orc.Accessor;
-import orc.CallContext;
-import orc.DirectInvoker;
-import orc.Invoker;
-import orc.error.runtime.HaltException;
-import orc.error.runtime.JavaException;
-import orc.run.porce.NodeBase;
-import orc.run.porce.SpecializationConfiguration;
-import orc.run.porce.StackCheckingDispatch;
-import orc.run.porce.runtime.MaterializedCPSCallContext;
-import orc.run.porce.runtime.PorcEExecution;
-import orc.values.sites.InvocableInvoker;
-import orc.values.sites.OverloadedDirectInvokerBase1;
-import orc.values.sites.OverloadedDirectInvokerBase2;
-import orc.values.sites.OrcJavaCompatibility;
-import orc.values.Signal$;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.InvocationTargetException;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
