@@ -17,7 +17,7 @@ import orc.ast.orctimizer.named.{ Constant, FieldArgument, FieldFuture, FieldVal
 import orc.compile.orctimizer.FlowGraph.{ ConstantNode, ExitNode, MethodNode, Node, ValueNode }
 import orc.util.{ TFalse, TTrue, TUnknown, Ternary }
 import orc.values.Field
-import orc.values.sites.{ InvokerMethod => ExtInvokerMethod, Site => ExtSite }
+import orc.values.sites.{ Site => ExtSite }
 
 object CallGraphValues {
 
@@ -140,19 +140,19 @@ object CallGraphValues {
 
     def isMethod = valueSource match {
       case n: MethodNode => true
-      case ConstantNode(Constant(_: ExtSite | _: ExtInvokerMethod), _) => true
+      case ConstantNode(Constant(_: ExtSite), _) => true
       case _ => false
     }
 
     def isExternalMethod: Ternary = valueSource match {
       case n: MethodNode => TFalse
-      case ConstantNode(Constant(_: ExtSite | _: ExtInvokerMethod), _) => TTrue
+      case ConstantNode(Constant(_: ExtSite), _) => TTrue
       case _ => TUnknown
     }
 
     def isInternalMethod: Ternary = valueSource match {
       case n: MethodNode => TTrue
-      case ConstantNode(Constant(_: ExtSite | _: ExtInvokerMethod), _) => TFalse
+      case ConstantNode(Constant(_: ExtSite), _) => TFalse
       case _ => TUnknown
     }
 

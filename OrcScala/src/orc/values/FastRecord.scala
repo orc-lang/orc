@@ -14,7 +14,6 @@
 package orc.values
 
 import orc.{ OrcRuntime, Accessor }
-import orc.values.sites.AccessorValue
 import orc.run.distrib.DOrcMarshalingReplacement
 
 class FastRecordFactory(_members: Seq[String]) {
@@ -44,7 +43,7 @@ object FastRecord {
   }
 }
 
-case class FastRecord(members: Array[Field], values: Array[AnyRef]) extends AccessorValue with DOrcMarshalingReplacement {
+case class FastRecord(members: Array[Field], values: Array[AnyRef]) extends HasMembers with DOrcMarshalingReplacement {
 
   def getAccessor(runtime: OrcRuntime, field: Field): Accessor = {
     val index = members.indexOf(field)
