@@ -129,10 +129,19 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   @inline
   private final def incrementDepthValue(hasAlreadySpawnedHere: Boolean, prev: Int): (Boolean, Int) = {
     if (unrollOnLargeStack) {
-      val r = prev >= 0 && (if (!hasAlreadySpawnedHere) prev < maxStackDepth else prev < minSpawnStackDepth)
-      (r, if (r) prev + 1 else -1)
+      val r = prev >= 0 &&
+        (if (!hasAlreadySpawnedHere)
+          prev < maxStackDepth
+        else
+          prev < minSpawnStackDepth)
+      if (!hasAlreadySpawnedHere && !r)
+        CompilerDirectives.transferToInterpreterAndInvalidate()
+      val next = prev + 1
+      (r, if (r) next else -1)
     } else {
       val r = if (!hasAlreadySpawnedHere) prev < maxStackDepth else prev < minSpawnStackDepth
+      if (!hasAlreadySpawnedHere && !r)
+        CompilerDirectives.transferToInterpreterAndInvalidate()
       (r, prev + (if (r) 1 else 0))
     }
   }
