@@ -384,8 +384,6 @@ object OrcXML {
       case x: java.lang.Class[_] => <jclass>{ x.getCanonicalName() }</jclass>
       case x: orc.values.sites.Site =>
         <site>{ strip$(a.asInstanceOf[AnyRef].getClass().getName) }</site>
-      case x: orc.values.sites.InvokerMethod =>
-        <site>{ strip$(a.asInstanceOf[AnyRef].getClass().getName) }</site>
       case _ => throw new AssertionError("Could not serialize value " + a.toString + " to XML.")
     }
   }
