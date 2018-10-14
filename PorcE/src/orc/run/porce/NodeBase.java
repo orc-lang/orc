@@ -18,7 +18,6 @@ import java.util.function.Supplier;
 import scala.Option;
 
 import orc.ast.ASTWithIndex;
-import orc.ast.hasOptionalVariableName;
 import orc.ast.porc.PorcAST;
 import orc.run.porce.instruments.ProfiledPorcENodeTag;
 import orc.run.porce.instruments.ProfiledPorcNodeTag;
@@ -28,7 +27,6 @@ import orc.run.porce.runtime.SourceSectionFromPorc;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;

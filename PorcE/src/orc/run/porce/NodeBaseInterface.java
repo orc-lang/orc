@@ -13,9 +13,9 @@
 
 package orc.run.porce;
 
-import orc.ast.hasOptionalVariableName;
-import orc.ast.porc.PorcAST;
 import scala.Option;
+
+import orc.ast.porc.PorcAST;
 
 /**
  *

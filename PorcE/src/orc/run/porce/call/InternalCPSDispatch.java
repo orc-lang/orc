@@ -11,13 +11,7 @@
 
 package orc.run.porce.call;
 
-import scala.collection.Seq;
-
-import orc.ast.porc.Variable;
-import orc.compiler.porce.PorcToPorcE;
 import orc.error.runtime.ArityMismatchException;
-import orc.run.porce.Expression;
-import orc.run.porce.Logger;
 import orc.run.porce.PorcERootNode;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.CallKindDecision;
@@ -29,14 +23,11 @@ import orc.run.porce.runtime.TailCallException;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
 import com.oracle.truffle.api.nodes.DirectCallNode;

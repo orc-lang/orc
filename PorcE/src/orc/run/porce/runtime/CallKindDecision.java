@@ -13,11 +13,8 @@
 
 package orc.run.porce.runtime;
 
-import java.util.regex.Pattern;
-
 import orc.run.porce.Logger;
 import orc.run.porce.NodeBase;
-import orc.run.porce.NodeBaseInterface;
 import orc.run.porce.PorcERootNode;
 
 import com.oracle.truffle.api.CompilerAsserts;

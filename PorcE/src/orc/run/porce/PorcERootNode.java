@@ -20,7 +20,6 @@ import java.util.logging.Level;
 import scala.Option;
 import scala.collection.Seq;
 
-import orc.ast.hasOptionalVariableName;
 import orc.ast.ASTWithIndex;
 import orc.ast.porc.PorcAST;
 import orc.ast.porc.Variable;

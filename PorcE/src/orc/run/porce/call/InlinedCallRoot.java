@@ -13,11 +13,8 @@
 
 package orc.run.porce.call;
 
-import java.util.concurrent.atomic.LongAdder;
-
 import scala.collection.Seq;
 
-import orc.ast.hasOptionalVariableName;
 import orc.ast.porc.Variable;
 import orc.compiler.porce.PorcToPorcE;
 import orc.error.runtime.ArityMismatchException;
@@ -31,7 +28,6 @@ import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -42,7 +38,6 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import com.oracle.truffle.api.utilities.AssumedValue;
 
 /**
  *
