@@ -383,13 +383,9 @@ object OrcXML {
       case orc.values.Field(s) => <field>{ s }</field>
       case x: java.lang.Class[_] => <jclass>{ x.getCanonicalName() }</jclass>
       case x @ (_: orc.values.sites.Site | _: orc.values.HasMembers) =>
-        <site>{ strip$(a.asInstanceOf[AnyRef].getClass().getName) }</site>
+        <site>{ x.getClass.getName.stripSuffix("$") }</site>
       case _ => throw new AssertionError("Could not serialize value " + a.toString + " to XML.")
     }
-  }
-
-  def strip$(s: String): String = {
-    if (s.charAt(s.length - 1) == '$') s.substring(0, s.length - 1) else s
   }
 
   @throws(classOf[OilParsingException])
