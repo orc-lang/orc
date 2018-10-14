@@ -22,7 +22,6 @@ import com.oracle.truffle.api.nodes.Node
 import scala.collection.immutable.SortedMap
 import orc.util.DotUtils
 import com.oracle.truffle.api.dsl.Introspection
-import orc.run.porce.NodeBase
 
 object DumpRuntimeProfile {
   import DotUtils._
@@ -60,7 +59,7 @@ object DumpRuntimeProfile {
     }
   }
 
-  def apply(nodes: Iterable[Node], callsRequired: Int, out: PrintWriter): Unit = {
+  def apply(nodes: Iterable[Node], callsRequired: Int, out: PrintWriter): Boolean = {
     val idMap = mutable.HashMap[AnyRef, String]()
     def idFor(s: String, o: AnyRef) = idMap.getOrElseUpdate(o, {
       val nextID = idMap.size
@@ -171,6 +170,6 @@ object DumpRuntimeProfile {
     }).mkString("")
     out.println(s"""  label = "$txt(not including scheduled)\\l";\n  labelloc = "t";""")
     out.println("}")
+    displayedNodes.nonEmpty
   }
-
 }

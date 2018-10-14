@@ -267,5 +267,5 @@ public class InternalCPSDispatch extends Dispatch {
         static InternalCPSDispatchInternal createBare(final PorcEExecution execution) {
             return InternalCPSDispatchFactory.InternalCPSDispatchInternalNodeGen.create(execution);
         }
-}
+    }
 }

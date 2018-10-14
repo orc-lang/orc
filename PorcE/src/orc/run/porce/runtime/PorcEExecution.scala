@@ -150,8 +150,12 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
       val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(profileResultsFile)))
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
         val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
-      DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), 1, out)
+      val hasNodes = DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), 1, out)
       out.close()
+      if (hasNodes) {
+        import orc.util.DotUtils._
+        display(render(profileResultsFile))
+      }
     }
   }
 

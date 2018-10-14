@@ -198,6 +198,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     private Option<PorcAST> porcNode = Option.apply(null);
 
+    @Override
     public void setPorcAST(final PorcAST ast) {
         CompilerAsserts.neverPartOfCompilation();
         porcNode = Option.apply(ast);
