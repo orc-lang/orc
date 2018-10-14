@@ -262,7 +262,7 @@ object TraceTimelineViewer {
       //println(s"${g.getClip}, ${g.getClipBounds}")
       
       
-      val outsideTransform = g.getTransform
+      g.getTransform
       g.scale(zoom, zoom)
 
       //println(s"${g.getClip}, ${g.getClipBounds}")
