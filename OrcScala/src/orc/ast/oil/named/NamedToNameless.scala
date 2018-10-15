@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -85,7 +85,7 @@ trait NamedToNameless {
         nameless.Variable(i)
       }
       case UnboundVar(s) => nameless.UnboundVariable(s)
-      case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
+      case undef => throw new scala.MatchError(orc.util.GetScalaTypeName(undef) + " not matched in NamedToNameless.namedToNameless(Argument, List[BoundVar])")
     }
   }
 
@@ -136,7 +136,7 @@ trait NamedToNameless {
       case StructuralType(members) => nameless.StructuralType(members.mapValues(toType))
       case NominalType(a) => nameless.NominalType(toType(a))
       case UnboundTypevar(s) => nameless.UnboundTypeVariable(s)
-      //case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedToNameless.namedToNameless(Type, List[BoundTypeVar])")
+      //case undef => throw new scala.MatchError(orc.util.GetScalaTypeName(undef) + " not matched in NamedToNameless.namedToNameless(Type, List[BoundTypeVar])")
     }
   }
 

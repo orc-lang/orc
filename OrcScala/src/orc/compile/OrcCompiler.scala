@@ -236,16 +236,16 @@ trait CoreOrcCompilerPhases {
       if (pred(co)) {
         lazy val astStr = ast.toString
         if ((echoIR & irMask) == irMask) {
-          println(s"============ Begin Dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============")
+          println(s"============ Begin Dump $name (IR #$irNumber with type ${orc.util.GetScalaTypeName(ast)}) ============")
           println(astStr)
-          println(s"============ End dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============")
+          println(s"============ End dump $name (IR #$irNumber with type ${orc.util.GetScalaTypeName(ast)}) ============")
         }
 
         if (echoIR != 0) {
           ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
           ExecutionLogOutputStream(s"ir-$name", "txt", s"$name dump") foreach { out =>
             val wr = new OutputStreamWriter(out, "UTF-8")
-            wr.write(s"============ Dump $name (IR #$irNumber with type ${ast.getClass.getCanonicalName}) ============\n\n")
+            wr.write(s"============ Dump $name (IR #$irNumber with type ${orc.util.GetScalaTypeName(ast)}) ============\n\n")
             wr.write(astStr)
             wr.close()
           }
@@ -386,13 +386,13 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
   @throws(classOf[IOException])
   def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcCompilationOptions): OrcInputContext = {
     val baseIC = if (relativeTo != null) relativeTo else OrcNullInputContext
-    Logger.finer("openInclude " + includeFileName + ", relative to " + Option(baseIC.getClass.getCanonicalName).getOrElse(baseIC.getClass.getName) + "(" + baseIC.descr + ")")
+    Logger.finer("openInclude " + includeFileName + ", relative to " + orc.util.GetScalaTypeName(baseIC) + "(" + baseIC.descr + ")")
 
     // If no include path, allow absolute HTTP and HTTPS includes
     if (options.includePath.isEmpty && (includeFileName.toLowerCase.startsWith("http://") || includeFileName.toLowerCase.startsWith("https://"))) {
       try {
         val newIC = new OrcNetInputContext(new URI(includeFileName))
-        Logger.finer("include " + includeFileName + " opened as " + Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName) + "(" + newIC.descr + ")")
+        Logger.finer("include " + includeFileName + " opened as " + orc.util.GetScalaTypeName(newIC) + "(" + newIC.descr + ")")
         return newIC
       } catch {
         case e: URISyntaxException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; Check URI syntax (" + e.getMessage + ")");
@@ -410,7 +410,7 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
         // them.  This seems a weak barrier, and in fact was broken.
         // We need an alternative way to control local file reads.
         val newIC = baseIC.newInputFromPath(incPath, includeFileName)
-        Logger.finer("include " + includeFileName + ", found on include path entry " + incPath + ", opened as " + Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName) + "(" + newIC.descr + ")")
+        Logger.finer("include " + includeFileName + ", found on include path entry " + incPath + ", opened as " + orc.util.GetScalaTypeName(newIC) + "(" + newIC.descr + ")")
         return newIC
       } catch {
         case _: IOException => /* Ignore, must not be here */
@@ -420,7 +420,7 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
     // Try in the bundled include resources
     try {
       val newIC = new OrcResourceInputContext("orc/lib/includes/" + includeFileName, getResource)
-      Logger.finer("include " + includeFileName + ", found in bundled resources, opened as " + Option(newIC.getClass.getCanonicalName).getOrElse(newIC.getClass.getName) + "(" + newIC.descr + ")")
+      Logger.finer("include " + includeFileName + ", found in bundled resources, opened as " + orc.util.GetScalaTypeName(newIC) + "(" + newIC.descr + ")")
       return newIC
     } catch {
       case _: IOException => /* Ignore, must not be here */

@@ -60,7 +60,7 @@ case class JavaTypeConstructor(cl: Class[_])
   val formals = cl.getTypeParameters().toList
 
   if (formals.isEmpty) {
-    throw new SecondOrderTypeExpectedException(Option(cl.getClass.getCanonicalName).getOrElse(cl.getClass.getName))
+    throw new SecondOrderTypeExpectedException(orc.util.GetScalaTypeName(cl))
   }
 
   override def instance(actuals: List[Type]): Type = {

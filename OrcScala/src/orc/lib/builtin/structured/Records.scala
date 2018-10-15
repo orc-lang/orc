@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on March 31, 2011.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -38,7 +38,7 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
           v match {
             case OrcTuple(Array(Field(key), value: AnyRef)) =>
               valueMap += ((key, value))
-            case _ => throw new ArgumentTypeMismatchException(i, "(Field, _)", if (v != null) v.getClass().getCanonicalName() else "null")
+            case _ => throw new ArgumentTypeMismatchException(i, "(Field, _)", orc.util.GetScalaTypeName(v))
           }
       }
     OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)

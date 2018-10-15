@@ -69,7 +69,7 @@ trait DirectSite extends orc.values.sites.DirectSite {
 /* Enforce totality */
 trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
   def call(args: Array[AnyRef], callContext: CallContext) {
-    //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    //Logger.entering(orc.util.GetScalaTypeName(this), "call", args)
     try {
       orc.run.StopWatches.implementation {
         callContext.publish(evaluate(args))
@@ -79,7 +79,7 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
     }
   }
   def calldirect(args: Array[AnyRef]): AnyRef = {
-    //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    //Logger.entering(orc.util.GetScalaTypeName(this), "call", args)
     try {
       orc.run.StopWatches.implementation {
         evaluate(args)
@@ -98,7 +98,7 @@ trait TotalSite extends DirectSite with EffectFreeAfterPubSite {
 /* Enforce nonblocking, but do not enforce totality */
 trait ScalaPartialSite extends DirectSite with EffectFreeAfterPubSite {
   def call(args: Array[AnyRef], callContext: CallContext) {
-    //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    //Logger.entering(orc.util.GetScalaTypeName(this), "call", args)
     orc.run.StopWatches.implementation {
       evaluate(args) match {
         case Some(v) => callContext.publish(v)
@@ -108,7 +108,7 @@ trait ScalaPartialSite extends DirectSite with EffectFreeAfterPubSite {
   }
 
   def calldirect(args: Array[AnyRef]): AnyRef = {
-    //Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "call", args)
+    //Logger.entering(orc.util.GetScalaTypeName(this), "call", args)
     (try {
       orc.run.StopWatches.implementation {
         evaluate(args)

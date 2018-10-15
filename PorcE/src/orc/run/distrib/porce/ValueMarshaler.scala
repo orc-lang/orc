@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Mar 3, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -73,7 +73,7 @@ trait ValueMarshaler {
       case mn: DOrcMarshalingNotifications => mn.marshaled()
       case _ => { /* Nothing to do */ }
     }
-    Logger.Marshal.finest(s"marshalValue($destination)($value): ${value.getClass.getName} = $marshaledValue")
+    Logger.Marshal.finest(s"marshalValue($destination)($value): ${orc.util.GetScalaTypeName(value)} = $marshaledValue")
     assert(execution.marshalExecutionObject.isDefinedAt((destination, replacedValue)) || (marshaledValue != value) == marshalValueWouldReplace(destination)(value), s"marshaledValue disagrees with marshalValueWouldReplace for value=$value, marshaledValue=$marshaledValue")
     marshaledValue
   }

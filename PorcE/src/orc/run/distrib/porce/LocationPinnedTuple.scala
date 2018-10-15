@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jun 27, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -40,7 +40,7 @@ sealed abstract class LocationPinnedTupleConstructor(locationNum: Int) extends S
       def invoke(ctx: VirtualCallContext, target: AnyRef, arguments: Array[AnyRef]): SiteResponseSet = {
         try {
           orc.run.StopWatches.implementation {
-            Logger.entering(Option(this.getClass.getCanonicalName).getOrElse(this.getClass.getName), "invoke", args)
+            Logger.entering(orc.util.GetScalaTypeName(this), "invoke", args)
             val res = try {
               val loc = ctx.asInstanceOf[VirtualCPSCallContext].execution.asInstanceOf[DOrcExecution].locationForFollowerNum(locationNum)
               new LocationPinnedTuple(loc, args)

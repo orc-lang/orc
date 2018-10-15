@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml.
 //
+
 package orc.compile.typecheck
 
 import orc.ast.oil.{ named => syntactic }
@@ -235,7 +236,7 @@ object Typeloader extends SiteClassLoading {
         // by mistake.
         for (x <- cl.getTypeParameters()) {
           if (!(jctx contains x)) {
-            throw new FirstOrderTypeExpectedException(Option(cl.getClass.getCanonicalName).getOrElse(cl.getClass.getName))
+            throw new FirstOrderTypeExpectedException(orc.util.GetScalaTypeName(cl))
           }
         }
         // Check if this is actually a primitive array class

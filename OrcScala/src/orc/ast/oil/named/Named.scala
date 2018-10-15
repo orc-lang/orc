@@ -53,7 +53,7 @@ sealed abstract class NamedAST extends AST with NamedToNameless {
     case Constant(_) | UnboundVar(_) | Hole(_, _) | Stop() => Nil
     case Bot() | ClassType(_) | ImportedType(_) | Top() | UnboundTypevar(_) => Nil
     case _: BoundVar | _: BoundTypevar => Nil
-    //case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamedAST.subtrees")
+    //case undef => throw new scala.MatchError(orc.util.GetScalaTypeName(undef) + " not matched in NamedAST.subtrees")
   }
 
 }
