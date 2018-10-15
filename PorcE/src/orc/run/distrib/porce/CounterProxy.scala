@@ -273,7 +273,7 @@ trait CounterProxyManager {
     for(r <- Stream.continually(distributedCountersQueue.poll()).takeWhile(_ != null)) {
       r match {
         case r: DistributedCounterWeakReference =>
-          Logger.fine(s"Mapping for ${r.id} was GC'd, removing")
+          Logger.Proxy.finest(s"Mapping for ${r.id} was GC'd, removing")
           distributedCounters.remove(r.id)
       }
     }
@@ -304,7 +304,7 @@ trait CounterProxyManager {
         case _ => {
           // The key is absent or the WeakReference was cleared
           if(old != null)
-            Logger.fine(s"Mapping for $k was GC'd, computing")
+            Logger.Proxy.finest(s"Mapping for $k was GC'd, computing")
           val v = f(id)
           newV = v
           new DistributedCounterWeakReference(id, v, queue)
@@ -316,7 +316,7 @@ trait CounterProxyManager {
         newV = null
         v
       case _ =>
-        Logger.fine(s"Mapping for $k was GC'd, retrying computeWeakReferenceIfAbsentOrCleared")
+        Logger.Proxy.finest(s"Mapping for $k was GC'd, retrying computeWeakReferenceIfAbsentOrCleared")
         computeWeakReferenceIfAbsentOrCleared(map, queue)(k, f)
     }
   }
