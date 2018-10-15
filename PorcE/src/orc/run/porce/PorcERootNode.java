@@ -56,8 +56,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     private final LongAdder totalCalls = new LongAdder();
 
     @SuppressWarnings("boxing")
-    private final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<Boolean>(false);
-    public static final boolean profileTime = false;
+    private static final AssumedValue<Boolean> isProfilingFlag =
+        new AssumedValue<Boolean>(SpecializationConfiguration.ProfileCallGraph);
+    private static final boolean profileTime = SpecializationConfiguration.ProfileFunctionTime;
 
     @Override
     public ProfilingScope getProfilingScope() {
@@ -173,7 +174,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     }
 
     final public boolean shouldTimeCall() {
-    	return /*CompilerDirectives.inCompiledCode() &&*/ timePerCall < 0;
+    	return timePerCall < 0;
     }
 
     final public long getTimePerCall() {

@@ -139,12 +139,17 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     private static final boolean allowAllSpawnInlining = PorcERuntime$.MODULE$.allowAllSpawnInlining();
 
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
-        CompilerAsserts.neverPartOfCompilation();
-        CallKindDecision decision = CallKindDecision.get(this, (PorcERootNode) computation.body.getRootNode());
-        return allowSpawnInlining &&
-                (!mustSpawn || allowAllSpawnInlining) &&
-                decision != CallKindDecision.SPAWN;
-//                computation.getTimePerCall(targetRoot) < SpecializationConfiguration.InlineAverageTimeLimit;
+        if (SpecializationConfiguration.UseExternalCallKindDecision) {
+            CompilerAsserts.neverPartOfCompilation();
+            CallKindDecision decision = CallKindDecision.get(this, (PorcERootNode) computation.body.getRootNode());
+            return allowSpawnInlining &&
+                    (!mustSpawn || allowAllSpawnInlining) &&
+                    decision != CallKindDecision.SPAWN;
+        } else {
+            return allowSpawnInlining &&
+                    (!mustSpawn || allowAllSpawnInlining) &&
+                    computation.getTimePerCall(targetRoot) < SpecializationConfiguration.InlineAverageTimeLimit;
+        }
     }
 
     public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn,

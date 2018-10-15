@@ -212,7 +212,7 @@ public class InternalCPSDispatch extends Dispatch {
             }
         }
 
-        @Specialization(guards = { "TruffleASTInlining", //"isTail",
+        @Specialization(guards = { "TruffleASTInlining", "isTail",
                 "target.body == expected", "!isAbove(expected)",
                 "getCachedRootNode() != target.body.getRootNode()",
                 "canSpecificInlineAST(expected)",

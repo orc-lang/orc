@@ -16,6 +16,7 @@ package orc.run.porce.runtime;
 import orc.run.porce.Logger;
 import orc.run.porce.NodeBase;
 import orc.run.porce.PorcERootNode;
+import orc.run.porce.SpecializationConfiguration;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
@@ -64,11 +65,13 @@ public enum CallKindDecision {
         @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
         public CallKindDecision get(String source, String target) {
             CompilerAsserts.compilationConstant(table);
-            for (int i = 0; i < table.length; i++) {
-                Entry e = table[i];
-                CompilerAsserts.compilationConstant(e);
-                if (e.source == source && e.target == target) {
-                    return e.kind;
+            if (SpecializationConfiguration.UseExternalCallKindDecision) {
+                for (int i = 0; i < table.length; i++) {
+                    Entry e = table[i];
+                    CompilerAsserts.compilationConstant(e);
+                    if (e.source == source && e.target == target) {
+                        return e.kind;
+                    }
                 }
             }
             return ANY;
