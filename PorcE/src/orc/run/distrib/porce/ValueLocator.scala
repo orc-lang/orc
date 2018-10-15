@@ -26,7 +26,7 @@ trait ValueLocator {
 }
 
 trait CallLocationOverrider extends ValueLocator {
-  def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]) : Boolean
+  def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Option[Boolean]
   def callLocationOverride(target: AnyRef, arguments: Array[AnyRef]): Set[PeerLocation]
 }
 

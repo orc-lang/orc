@@ -36,7 +36,7 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
   override def receive(): R = {
     val obj = super.receive()
     Logger.Message.finest(s"RuntimeConnection.receive: Received $obj on $socket")
-    EventCounter.count( /*'receive*/ Symbol("recv " + obj.getClass.getName))
+    EventCounter.count(Symbol("recv " + orc.util.GetScalaTypeName(obj)))
     obj
   }
 
@@ -45,7 +45,7 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
     val startCount = cos.bytecount
     super.send(obj)
     Logger.Message.finest(s"message size = ${cos.bytecount - startCount}")
-    EventCounter.count( /*'send*/ Symbol("send " + obj.getClass.getName))
+    EventCounter.count(Symbol("send " + orc.util.GetScalaTypeName(obj)))
   }
 
   def receiveInContext(executionLookup: (DOrcExecution#ExecutionId) => DOrcExecution, origin: PeerLocation)(): R = ois synchronized {
@@ -169,7 +169,7 @@ protected class RuntimeConnectionInputStream(in: InputStream) extends ObjectInpu
   override protected def resolveObject(obj: AnyRef): AnyRef = {
     obj match {
       case xm: ExecutionContextSerializationMarker => {
-        Logger.Marshal.finest(s"ExecutionContext ${obj.getClass.getName}=$obj, xid=${xm.executionId}")
+        Logger.Marshal.finest(s"ExecutionContext ${orc.util.GetScalaTypeName(obj)}=$obj, xid=${xm.executionId}")
         currExecution = Some((currExecutionLookup.get)(xm.executionId))
         obj
       }
@@ -212,7 +212,7 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
 
   @throws(classOf[IOException])
   override protected def replaceObject(obj: AnyRef): AnyRef = {
-    //Logger.Marshal.entering(getClass.getName, "replaceObject", Seq(s"${obj.getClass.getName}=$obj"))
+    //Logger.Marshal.entering(getClass.getName, "replaceObject", Seq(s"${orc.util.GetScalaTypeName(obj)}=$obj"))
     val result = obj match {
       case xm: ExecutionContextSerializationMarker => {
         assert(xm.executionId == currExecution.get.executionId)
@@ -224,7 +224,7 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
 //          currExecution.get.marshalValue(currDestination.get)(obj)
       case _ => super.replaceObject(obj)
     }
-    //Logger.Marshal.exiting(getClass.getName, "replaceObject", s"${result.getClass.getName}=$result")
+    //Logger.Marshal.exiting(getClass.getName, "replaceObject", s"${orc.util.GetScalaTypeName(result)}=$result")
     result
   }
 

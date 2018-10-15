@@ -323,7 +323,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
         exceptionWhileMarshaling(e) match {
           case None => event
           case Some(nse) => {
-            val replacementThrowable = new Throwable("Replacement for corrupt (serialization failed) Throwable: " + e.getClass.getName + ": " + e.getMessage)
+            val replacementThrowable = new Throwable("Replacement for corrupt (serialization failed) Throwable: " + orc.util.GetScalaTypeName(e) + ": " + e.getMessage)
             replacementThrowable.setStackTrace(e.getStackTrace)
             replacementThrowable.addSuppressed(nse)
             CaughtEvent(replacementThrowable)
