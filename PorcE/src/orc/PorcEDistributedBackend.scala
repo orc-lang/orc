@@ -13,6 +13,10 @@
 package orc
 
 import orc.ast.porc.MethodCPS
+import orc.compile.distrib.DistributedPorcOrcCompiler
+import orc.compile.parse.OrcInputContext
+import orc.error.compiletime.CompileLogger
+import orc.progress.ProgressMonitor
 import orc.run.distrib.porce.LeaderRuntime
 
 case class PorcEDistributedBackendType() extends BackendType {
@@ -27,6 +31,13 @@ case class PorcEDistributedBackendType() extends BackendType {
   * @author amp, jthywiss
   */
 class PorcEDistributedBackend extends PorcBackend {
+  override lazy val compiler: Compiler[MethodCPS] = new DistributedPorcOrcCompiler() with Compiler[MethodCPS] {
+    def compile(source: OrcInputContext, options: OrcCompilationOptions,
+      compileLogger: CompileLogger, progress: ProgressMonitor): MethodCPS = {
+      this(source, modifyCompilationOptions(options), compileLogger, progress)
+    }
+  }
+
   override def modifyCompilationOptions(options: OrcCompilationOptions): OrcCompilationOptions = {
     val oos = options.optimizationOptions
     // Add options to prevent the use of features which are incompatible with DOrc.

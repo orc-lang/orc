@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 20, 2016.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,11 +12,11 @@
 //
 package orc
 
-import java.io.{ OutputStreamWriter }
+import java.io.OutputStreamWriter
 
 import orc.ast.oil.nameless.Expression
 import orc.ast.oil.xml.OrcXML
-import orc.compile.StandardOrcCompiler
+import orc.compile.distrib.DistributedOrcCompiler
 import orc.compile.parse.OrcInputContext
 import orc.error.compiletime.CompileLogger
 import orc.error.loadtime.{ LoadingException, OilParsingException }
@@ -28,7 +28,7 @@ import orc.run.distrib.token.LeaderRuntime
   * @author amp, jthywiss
   */
 class DistributedBackend extends Backend[Expression] {
-  lazy val compiler: Compiler[Expression] = new StandardOrcCompiler() with Compiler[Expression] {
+  lazy val compiler: Compiler[Expression] = new DistributedOrcCompiler() with Compiler[Expression] {
     def compile(source: OrcInputContext, options: OrcCompilationOptions,
       compileLogger: CompileLogger, progress: ProgressMonitor): Expression = this(source, options, compileLogger, progress)
   }

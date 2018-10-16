@@ -44,15 +44,15 @@ class FileValueLocator(execution: DOrcExecution) extends ValueLocator with CallL
 
   def remoteLocationForFilePath(filePath: String): Option[DOrcRuntime#RuntimeId] = {
     val loc = filenameLocationMap.get(filePath.split(java.io.File.separatorChar).last)
-    if (loc.isEmpty || loc.get == execution.runtime.here.runtimeId) None else Some(loc.get)
+    if (loc.isEmpty) None else Some(loc.get)
   }
 
-  override def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+  override def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Option[Boolean] = {
     target match {
       case c: Class[_] if c == classOf[java.io.File] && arguments.length == 1 && arguments(0).isInstanceOf[String] => {
-        remoteLocationForFilePath(arguments(0).asInstanceOf[String]).nonEmpty
+        remoteLocationForFilePath(arguments(0).asInstanceOf[String]).map(_ != execution.runtime.here.runtimeId)
       }
-      case _ => false
+      case _ => None
     }
   }
 

@@ -82,7 +82,7 @@ abstract class DOrcExecution(
       case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.collect(pfc(v)).reduce(_.union(_))
       case _ => hereSet
     }
-    //Logger.ValueLocation.finer(s"currentLocations($v: ${if (v==null) "Null" else (v.getClass.getName)})=$cl")
+    //Logger.ValueLocation.finer(s"currentLocations($v: ${orc.util.GetScalaTypeName(v)})=$cl")
     cl
   }
 
@@ -92,7 +92,7 @@ abstract class DOrcExecution(
       case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.exists({ vl => vl.currentLocations.isDefinedAt(v) && vl.valueIsLocal(v) })
       case _ => true
     }
-    //Logger.ValueLocation.finer(s"isLocal($v: ${if (v==null) "Null" else (v.getClass.getName)})=$result")
+    //Logger.ValueLocation.finer(s"isLocal($v: ${orc.util.GetScalaTypeName(v)})=$result")
     result
   }
 
@@ -105,16 +105,29 @@ abstract class DOrcExecution(
       case _ if valueLocators.exists(_.permittedLocations.isDefinedAt(v)) => valueLocators.collect(pfp(v)).reduce(_.intersect(_))
       case _ => runtime.allLocations
     }
-    //Logger.ValueLocation.finest(s"permittedLocations($v: ${if (v==null) "Null" else (v.getClass.getName)})=$pl")
+    //Logger.ValueLocation.finest(s"permittedLocations($v: ${orc.util.GetScalaTypeName(v)})=$pl")
     pl
   }
 
-  def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    callLocationOverriders.exists(_.callLocationMayNeedOverride(target, arguments))
+  def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Option[Boolean] = {
+    //val cloResults = callLocationOverriders.map(_.callLocationMayNeedOverride(target, arguments)).filter(_.isDefined).map(_.get)
+    //assert(cloResults.size <= 1, "Multiple CallLocationOverriders responded for " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
+    //cloResults.headOption
+    for (clo <- callLocationOverriders) {
+      val needsOverride = clo.callLocationMayNeedOverride(target, arguments)
+      /* Short-circuit: First clo to answer wins.  Masks multiple clo bugs, though. */
+      if (needsOverride.isDefined) return needsOverride
+    }
+    None
   }
 
   def callLocationOverride(target: AnyRef, arguments: Array[AnyRef]): Set[PeerLocation] = {
-    callLocationOverriders.find(_.callLocationMayNeedOverride(target, arguments)).map(_.callLocationOverride(target, arguments)).getOrElse(Set.empty)
+    for (clo <- callLocationOverriders) {
+      val needsOverride = clo.callLocationMayNeedOverride(target, arguments)
+      /* Short-circuit: First clo to answer wins.  Masks multiple clo bugs, though. */
+      if (needsOverride.isDefined) return clo.callLocationOverride(target, arguments)
+    }
+    Set.empty
   }
 
   def selectLocationForCall(candidateLocations: Set[PeerLocation]): PeerLocation = candidateLocations.head

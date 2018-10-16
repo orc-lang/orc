@@ -10,7 +10,7 @@ include "vertex.inc"
  - Single source shortest path
  --------}
 
-val verticesRef = Ref[Vertex]()
+val verticesRef = Ref[List[Vertex]]()
 
 def swapIf[A](ref :: Ref[A], sem :: Semaphore, newVal :: A, test :: lambda(A, A) :: Boolean) :: Boolean  =
   withLock(sem, {
@@ -27,7 +27,7 @@ def gt(i :: EdgeWeight, j :: EdgeWeight) :: Boolean = i :> j
 
 def updatePathLenFor(v :: Vertex, newPathLen :: EdgeWeight) :: Bot =
   if swapIf(v.pathLen(), v.pathLenSemaphore(), newPathLen, gt) then
-    each(v.outEdges()) >e> updatePathLenFor(vertexNamed(e.tail(), verticesRef?), newPathLen + e.weight())
+    each(v.outEdges()) >e> (vertexNamed(e.tail(), verticesRef?);signal) >> updatePathLenFor(vertexNamed(e.tail(), verticesRef?), newPathLen + e.weight())
   else
     stop
 

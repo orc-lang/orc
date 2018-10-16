@@ -26,19 +26,18 @@ type VertexName = Integer
 
 def mkEdge(head :: VertexName, tail :: VertexName, weight :: EdgeWeight) :: Edge = Edge(head, tail, weight)
 
-def mkVertex(name :: VertexName, next :: Vertex, outEdges :: List[Edge]) :: Vertex = Vertex(name, next, outEdges)
+def mkVertex(name :: VertexName, outEdges :: List[Edge]) :: Vertex = Vertex(name, outEdges)
 
-def freshVertex(oldVertex :: Vertex, next :: Vertex) :: Vertex =
-  Vertex(oldVertex.name(), next, oldVertex.outEdges())
+def freshVertex(oldVertex :: Vertex) :: Vertex =
+  Vertex(oldVertex.name(), oldVertex.outEdges())
 
-def vertexNamed(targetName :: VertexName, vertex :: Vertex) :: Vertex =
-  if vertex = null then
-    stop
-  else
+def vertexNamed(VertexName, List[Vertex]) :: Vertex
+def vertexNamed(targetName, []) = stop
+def vertexNamed(targetName, vertex:tailVertices) =
     if vertex.name() = targetName then
       vertex
     else
-      vertexNamed(targetName, vertex.next())
+      vertexNamed(targetName, tailVertices)
 
 
 {--------
@@ -52,39 +51,35 @@ def randomEdges(head :: VertexName, numVertices :: Integer,  probEdge :: Number,
     )
   })
 
-def randomGraph(numVertices :: Number, probEdge :: Number, maxWeight :: EdgeWeight) :: Vertex =
-  def randomGraph'(vn :: Number) :: Vertex =
+def randomGraph(numVertices :: Number, probEdge :: Number, maxWeight :: EdgeWeight) :: List[Vertex] =
+  def randomGraph'(vn :: Number) :: List[Vertex] =
     if vn <: numVertices then
-      mkVertex(vn, randomGraph'(vn + 1), randomEdges(vn, numVertices,  probEdge, { Random(maxWeight) + 1 }))
+      mkVertex(vn, randomEdges(vn, numVertices,  probEdge, { Random(maxWeight) + 1 })):randomGraph'(vn + 1)
     else
-      null
-  randomGraph'(0)
+      []
+  randomGraph'(0) >g> dumpGraph(g) >> g
 
-def freshGraph(oldVertices :: Vertex) :: Vertex =
-  if oldVertices /= null then
-    freshVertex(oldVertices, freshGraph(oldVertices.next()))
-  else
-    null
+def freshGraph(oldVertices :: List[Vertex]) :: List[Vertex] =
+  map(freshVertex, oldVertices)
 
 
 {--------
  - Output
  --------}
 
-def dumpGraph(v :: Vertex) :: Signal =
-  if v /= null then (
-    (v.pathLen().readD(); "(undef)")  >pl>
-    Println(v.name() + ": pathLen=" + pl + afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges())))  >>
-    dumpGraph(v.next())
-  ) else
-    signal
+def dumpGraph(List[Vertex]) :: Signal
+def dumpGraph([]) = signal
+def dumpGraph(v:tailVertices) =
+  (v.pathLen().readD(); "(undef)")  >pl>
+  Println(v.name() + ": pathLen=" + pl + afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges())))  >>
+  dumpGraph(tailVertices)
 
 
 {--------
  - Test Driver
  --------}
 
-val numRepetitions = Read(JavaSys.getProperty("orc.test.numRepetitions", "20"))
+val numRepetitions = Read(JavaSys.getProperty("orc.test.numRepetitions", "1"))
 
 def getProcessCumulativeCpuTime() =
   import class ManagementFactory = "java.lang.management.ManagementFactory"
