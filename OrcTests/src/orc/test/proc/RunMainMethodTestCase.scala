@@ -1,6 +1,6 @@
 //
 // RunMainMethodTestCase.scala -- Scala class RunMainMethodTestCase
-// Project project_name
+// Project OrcTests
 //
 // Created by jthywiss on Oct 6, 2017.
 //
