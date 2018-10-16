@@ -62,10 +62,9 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     val result = if (needsOverride.isDefined) {
       needsOverride.get
     } else if (/*FIXME:HACK*/target.isInstanceOf[PorcEClosure] && target.toString().startsWith("speculativeMigrateDef")) {
-      println("shouldInterceptInvocation of " + target)
       /* Look up current locations, and find their intersection */
       val intersectLocs = arguments.map(derefAnyBoundLocalFuture(_)).map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
-      println(s"speculative migrate: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
+      Logger.Invoke.finest(s"speculative migrate: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
       /* speculative migrate found a location to move to */
       intersectLocs.nonEmpty && !(intersectLocs contains execution.runtime.here)
     } else if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {

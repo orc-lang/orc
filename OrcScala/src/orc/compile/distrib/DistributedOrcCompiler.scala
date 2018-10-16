@@ -27,9 +27,7 @@ class DistributedOrcCompiler() extends StandardOrcCompiler() {
   val valueSetAnalysis = new CompilerPhase[CompilerOptions, named.Expression, named.Expression] {
     val phaseName = "valueSetAnalysis"
     override def apply(co: CompilerOptions) = { ast =>
-      val vsa = ValueSetAnalysis(ast)
-      println(vsa.prettyprint())
-      vsa
+      ValueSetAnalysis(ast)
     }
   }
 
@@ -61,9 +59,7 @@ class DistributedPorcOrcCompiler() extends PorcOrcCompiler() {
   val valueSetAnalysis = new CompilerPhase[CompilerOptions, named.Expression, named.Expression] {
     val phaseName = "valueSetAnalysis"
     override def apply(co: CompilerOptions) = { ast =>
-      val vsa = ValueSetAnalysis(ast)
-      println(vsa.prettyprint())
-      vsa
+      ValueSetAnalysis(ast)
     }
   }
 

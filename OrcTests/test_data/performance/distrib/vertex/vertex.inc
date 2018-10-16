@@ -57,7 +57,7 @@ def randomGraph(numVertices :: Number, probEdge :: Number, maxWeight :: EdgeWeig
       mkVertex(vn, randomEdges(vn, numVertices,  probEdge, { Random(maxWeight) + 1 })):randomGraph'(vn + 1)
     else
       []
-  randomGraph'(0) >g> dumpGraph(g) >> g
+  randomGraph'(0)
 
 def freshGraph(oldVertices :: List[Vertex]) :: List[Vertex] =
   map(freshVertex, oldVertices)
