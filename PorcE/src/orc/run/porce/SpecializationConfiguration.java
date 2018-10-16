@@ -124,4 +124,9 @@ public abstract class SpecializationConfiguration {
     @CompilationFinal
     public static final boolean ProfileFunctionTime = Boolean
             .parseBoolean(System.getProperty("orc.porce.profileFunctionTime", "false"));
+    {
+        if(ProfileFunctionTime && !ProfileCallGraph) {
+            Logger.warning(() -> "orc.porce.profileFunctionTime requires orc.porce.profileCallGraph, but profileCallGraph=false");
+        }
+    }
 }
