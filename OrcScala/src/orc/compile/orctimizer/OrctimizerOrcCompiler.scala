@@ -30,6 +30,8 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
   with StandardOrcCompilerEnvInterface[porc.MethodCPS]
   with CoreOrcCompilerPhases {
 
+  final protected val writeCompilerStatistics = false
+
   private[this] var currentAnalysisCache: Option[AnalysisCache] = None
   def cache = currentAnalysisCache match {
     case Some(c) => c
@@ -77,7 +79,8 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
         classOf[New], classOf[FieldFuture], classOf[FieldArgument])
       val optimizationsToOutput = optimizer.allOpts.map(_.name)
 
-      val statisticsOutputs = ExecutionLogOutputStream("orctimizer-statistics", "csv", "Orctimizer static optimization statistics") map { out =>
+      if (writeCompilerStatistics) ExecutionLogOutputStream.createOutputDirectoryIfNeeded()
+      val statisticsOutputs = if (!writeCompilerStatistics) None else ExecutionLogOutputStream("orctimizer-statistics", "csv", "Orctimizer static optimization statistics") map { out =>
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
         (new CsvWriter(traceCsv.append(_)), traceCsv)
       }
@@ -174,7 +177,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
         )
       val optimizationsToOutput = optimizer.allOpts.map(_.name)
 
-      val statisticsOutputs = ExecutionLogOutputStream("porc-optimizer-statistics", "csv", "Porc optimizer static optimization statistics") map { out =>
+      val statisticsOutputs = if (!writeCompilerStatistics) None else ExecutionLogOutputStream("porc-optimizer-statistics", "csv", "Porc optimizer static optimization statistics") map { out =>
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
         (new CsvWriter(traceCsv.append(_)), traceCsv)
       }
@@ -243,7 +246,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     override def apply(co: CompilerOptions) = { ast =>
       IndexAST(ast)
 
-      ExecutionLogOutputStream("porc-ast-indicies", "csv", "Porc AST index dump") foreach { out =>
+      if (writeCompilerStatistics) ExecutionLogOutputStream("porc-ast-indicies", "csv", "Porc AST index dump") foreach { out =>
         val traceCsv = new OutputStreamWriter(out, "UTF-8")
         val statisticsOut = new CsvWriter(traceCsv.append(_))
 
