@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.values.sites
 
 import scala.collection.mutable.ArrayBuffer
@@ -18,7 +19,6 @@ import scala.language.{ existentials, reflectiveCalls }
 import java.lang.reflect.{ Constructor => JavaConstructor }
 import java.lang.reflect.{ Method => JavaMethod }
 import java.lang.reflect.Modifier
-import orc.run.Logger
 import orc.values.NumericsConfig
 import scala.collection.generic.Shrinkable
 import java.util.concurrent.ConcurrentHashMap

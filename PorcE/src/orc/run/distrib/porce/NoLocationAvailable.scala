@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 29, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,4 +20,4 @@ import orc.error.runtime.TokenException
   * @author jthywiss
   */
 class NoLocationAvailable(valLocations: Seq[(AnyRef, Set[Int])])
-  extends TokenException("No common location for: " + valLocations.map(p => s"${p._1}: ${p._1.getClass.getName} at ${p._2.mkString(", ")}").mkString("; "))
+  extends TokenException("No common location for: " + valLocations.map(p => s"${p._1}: ${orc.util.GetScalaTypeName(p._1)} at ${p._2.mkString(", ")}").mkString("; "))

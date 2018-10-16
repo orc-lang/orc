@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 22, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -87,7 +87,7 @@ object OrcForTesting {
           Console.out.flush()
         }
         override def caught(e: Throwable) {
-          val name = Option(e.getClass.getCanonicalName).getOrElse(e.getClass.getName)
+          val name = orc.util.GetScalaTypeName(e)
           val msg = "Error: " + name + ": " + e.getMessage()
           println(msg)
           Console.out.flush()

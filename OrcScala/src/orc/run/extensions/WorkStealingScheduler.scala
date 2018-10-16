@@ -471,7 +471,10 @@ class SimpleWorkStealingScheduler(
     (name, ws.size, nBlocked, steals, stealFailures, newWorks, overflows, schedules, tasksRun, avgQueueSize, maxQueueSize, minQueueSize)
   }
 
-  DumperRegistry.registerCSVLineDumper(s"work-stealing-scheduler-statistics", "csv", "WorkStealingScheduler statistics",
+  private val dumpStats = false
+
+  if (dumpStats) {
+    DumperRegistry.registerCSVLineDumper(s"work-stealing-scheduler-statistics", "csv", "WorkStealingScheduler statistics",
       Seq(
           "Dump ID [id]",
           "Number of Workers [nWorkers]",
@@ -485,8 +488,9 @@ class SimpleWorkStealingScheduler(
           "Average Local Queue Size [avgQueueSize]",
           "Maximum Local Queue Size [maxQueueSize]",
           "Minimum Local Queue Size [minQueueSize]",
-          )
-      ) { name => dumpStats(name) }
+      )
+    ) { name => dumpStats(name) }
+  }
 
   final def startScheduler(): Unit = synchronized {
     for (_ <- 0 until minWorkers) {

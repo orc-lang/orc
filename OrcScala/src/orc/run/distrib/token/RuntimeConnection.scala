@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 12, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -33,14 +33,14 @@ class RuntimeConnection[+R, -S](socket: Socket) extends SocketObjectConnection[R
   override def receive(): R = {
     val obj = super.receive()
     Logger.finest(s"RuntimeConnection.receive: Received $obj on $socket")
-    EventCounter.count(/*'receive*/ Symbol("recv "+obj.getClass.getName))
+    EventCounter.count(Symbol("recv " + orc.util.GetScalaTypeName(obj)))
     obj
   }
 
   override def send(obj: S) {
     Logger.finest(s"RuntimeConnection.send: Sending $obj on $socket")
     super.send(obj)
-    EventCounter.count(/*'send*/ Symbol("send "+obj.getClass.getName))
+    EventCounter.count(Symbol("send " + orc.util.GetScalaTypeName(obj)))
   }
 
   def receiveInContext(executionLookup: (DOrcExecution#ExecutionId) => DOrcExecution, origin: PeerLocation)(): R = ois synchronized {

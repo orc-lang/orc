@@ -4,12 +4,13 @@
 //
 // Created by jthywiss on Jul 26, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.values.sites
 
 import scala.collection.JavaConverters._
@@ -19,7 +20,6 @@ import java.net.URL
 import java.net.URLClassLoader
 
 import orc.util.FirstNonNull
-import orc.compile.Logger
 
 /** Provides a loadClass/getResource implementation that uses the Java class path,
   * plus the class path supplied to SiteClassLoading.initWithClassPath.

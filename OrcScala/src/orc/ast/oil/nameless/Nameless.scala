@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on May 28, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -58,7 +58,7 @@ sealed abstract class NamelessAST extends AST {
     case NominalType(a) => List(a)
     case Constant(_) | UnboundVariable(_) | Variable(_) | Hole(_, _) | Stop() => Nil
     case Bot() | ClassType(_) | ImportedType(_) | Top() | TypeVar(_) | UnboundTypeVariable(_) => Nil
-    //case undef => throw new scala.MatchError(undef.getClass.getCanonicalName + " not matched in NamelessAST.subtrees")
+    //case undef => throw new scala.MatchError(orc.util.GetScalaTypeName(undef) + " not matched in NamelessAST.subtrees")
   }
 }
 

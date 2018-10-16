@@ -58,7 +58,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
         } catch (final HaltException e) {
             haltProfile.enter();
             execution.notifyOfException(e, this);
-            throw e;
+            throw new HaltException();
         } catch (final Throwable e) {
             exceptionProfile.enter();
             execution.notifyOfException(e, this);

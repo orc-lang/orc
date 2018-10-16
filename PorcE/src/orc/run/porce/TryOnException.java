@@ -44,6 +44,9 @@ public class TryOnException extends Expression {
             body.executePorcEUnit(frame);
         } catch (HaltException e) {
             haltCatchProfile.enter();
+            // Halt exceptions arriving here should only be for control flow (e.i. they should already be reported to
+            // the execution if needed.)
+            assert e.getCause() == null;
             handler.executePorcEUnit(frame);
         } catch (KilledException e) {
             killCatchProfile.enter();

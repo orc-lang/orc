@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Mar 3, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -47,7 +47,7 @@ trait ValueMarshaler { self: DOrcExecution =>
   }
 
   def marshalValue(destination: PeerLocation)(value: AnyRef): AnyRef = {
-    //Logger.finest(s"marshalValue: $value:${value.getClass.getCanonicalName}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
+    //Logger.finest(s"marshalValue: $value:${orc.util.GetScalaTypeName(value)}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
 
     val replacedValue = value match {
       /* keep in sync with cases in marshalValueWouldReplace */

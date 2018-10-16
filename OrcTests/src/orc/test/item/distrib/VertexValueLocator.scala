@@ -14,6 +14,7 @@
 package orc.test.item.distrib
 
 import orc.run.distrib.porce.{ CallLocationOverrider, DOrcExecution, PeerLocation, ValueLocator, ValueLocatorFactory }
+import orc.values.sites.JavaStaticMemberProxy
 
 /** A ValueLocator that maps VertexWithPathLen instances to a location base
   * on the vertex name.
@@ -39,24 +40,32 @@ class VertexValueLocator(execution: DOrcExecution) extends ValueLocator with Cal
     case v: VertexWithPathLen => Set(execution.locationForFollowerNum(locationFromVertexName(v.name)))
   }
 
-  override def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+  override def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Option[Boolean] = {
     target match {
-      case c: Class[_] if c == classOf[VertexWithPathLen] => {
-        require(arguments.length == 4 && arguments(0).isInstanceOf[Int])
-        locationFromVertexName(arguments(0).asInstanceOf[Int]) != execution.runtime.here.runtimeId
+      case jsmp: JavaStaticMemberProxy if jsmp.javaClass == classOf[VertexWithPathLen] && jsmp.memberName == "apply" => {
+        require(arguments.length == 2 && arguments(0).isInstanceOf[Number], s"VertexWithPathLen.apply unexpected args: ${arguments.map(orc.util.GetScalaTypeName(_)).mkString(", ")}: ${arguments.mkString(", ")}")
+        val mustMigrate = locationFromVertexName(arguments(0).asInstanceOf[Number].intValue) != execution.runtime.here.runtimeId
+        orc.run.distrib.porce.Logger.Invoke.finer("VertexValueLocator.callLocationMayNeedOverride JavaStaticMemberProxy returning " + mustMigrate)
+        Some(mustMigrate)
       }
-      case _ => false
+      case _ => {
+        None
+      }
     }
   }
 
   override def callLocationOverride(target: AnyRef, arguments: Array[AnyRef]): Set[PeerLocation] = {
     target match {
-      case c: Class[_] if c == classOf[VertexWithPathLen] => {
-        require(arguments.length == 4 && arguments(0).isInstanceOf[Int])
-        val loc = locationFromVertexName(arguments(0).asInstanceOf[Int])
-        if (loc == execution.runtime.here.runtimeId) Set.empty else Set(execution.locationForFollowerNum(loc))
+      case jsmp: JavaStaticMemberProxy if jsmp.javaClass == classOf[VertexWithPathLen] && jsmp.memberName == "apply" => {
+        orc.run.distrib.porce.Logger.Invoke.finer("VertexValueLocator.callLocationOverride JavaStaticMemberProxy case")
+        require(arguments.length == 2 && arguments(0).isInstanceOf[Number], s"VertexWithPathLen.apply unexpected args: ${arguments.map(orc.util.GetScalaTypeName(_)).mkString(", ")}: ${arguments.mkString(", ")}")
+        val loc = locationFromVertexName(arguments(0).asInstanceOf[Number].intValue)
+        orc.run.distrib.porce.Logger.Invoke.finer("VertexValueLocator.callLocationMayNeedOverride JavaStaticMemberProxy callLocationOverride location:" + loc)
+        Set(execution.locationForFollowerNum(loc))
       }
-      case _ => Set.empty
+      case _ => {
+        Set.empty
+      }
     }
   }
 

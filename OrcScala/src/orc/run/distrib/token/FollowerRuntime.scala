@@ -323,8 +323,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId, listenAddress: InetSocke
 
   object Here extends PeerLocation {
     override def toString = s"${getClass.getName}(runtimeId=$runtimeId)"
-    override def send(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
-    override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def send(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self: " + message)
+    override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd) = throw new UnsupportedOperationException("Cannot send dOrc messages to self: " + message)
     override def runtimeId = FollowerRuntime.this.runtimeId
   }
 

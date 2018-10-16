@@ -19,6 +19,8 @@ import orc.{ CaughtEvent, Schedulable }
 import orc.run.porce.runtime.{ MaterializedCPSCallContext, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
+import orc.Future
+import orc.FutureState.Bound
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
   *
@@ -41,25 +43,44 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
   @noinline
   @TruffleBoundary(allowInlining = true)
   override def shouldInterceptInvocation(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    //Logger.Invoke.entering(getClass.getName, "shouldInterceptInvocation", Seq(target.getClass.getName, target) ++ arguments)
-    //Logger.Invoke.finest("class names: "+target.getClass.getName+arguments.map(_.getClass.getName).mkString("(", ",", ")"))
-    //Logger.Invoke.finest("isInstanceOf[RemoteRef]: "+target.isInstanceOf[RemoteRef]+arguments.map(_.isInstanceOf[RemoteRef]).mkString("(", ",", ")"))
+    def derefAnyBoundLocalFuture(value: AnyRef): AnyRef = {
+      value match {
+        case _: RemoteFutureRef => value
+        case f: Future => f.get match {
+          case Bound(bv) => bv
+          case _ => value
+        }
+        case _ => value
+      }
+    }
+    //Logger.Invoke.entering(getClass.getName, "shouldInterceptInvocation", Seq(orc.util.GetScalaTypeName(target), target) ++ arguments)
+    Logger.Invoke.finest("class names: " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
+    //Logger.Invoke.finest("isInstanceOf[RemoteRef]: " + target.isInstanceOf[RemoteRef] + arguments.map(_.isInstanceOf[RemoteRef]).mkString("(", ",", ")"))
 
-    if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
-      //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
-      true
-    } else if (execution.callLocationMayNeedOverride(target, cleanUpArgumentList(arguments))) {
-      //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "true")
+    val needsOverride = execution.callLocationMayNeedOverride(target, cleanUpArgumentList(arguments))
+    Logger.Invoke.finest("needsOverride=" + needsOverride + " for types " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
+    val result = if (needsOverride.isDefined) {
+      needsOverride.get
+    } else if (/*FIXME:HACK*/target.isInstanceOf[PorcEClosure] && target.toString().startsWith("speculativeMigrateDef")) {
+      /* Look up current locations, and find their intersection */
+      val intersectLocs = arguments.map(derefAnyBoundLocalFuture(_)).map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
+      Logger.Invoke.finest(s"speculative migrate: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
+      /* speculative migrate found a location to move to */
+      intersectLocs.nonEmpty && !(intersectLocs contains execution.runtime.here)
+    } else if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
+      /* Found a remote reference */
       true
     } else {
-      val notAllHere = !execution.isLocal(target) || arguments.exists(!execution.isLocal(_))
-      //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", notAllHere.toString)
-      notAllHere
+      /* If everything's local, then stay here */
+      !execution.isLocal(target) || arguments.exists(!execution.isLocal(_))
     }
+    Logger.Invoke.finest("Returning " + result + " for types " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
+    //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", result.toString)
+    result
   }
 
   override def invokeIntercepted(callContext: MaterializedCPSCallContext, target: AnyRef, arguments: Array[AnyRef]): Unit = {
-    //Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(target.getClass.getName, target) ++ arguments)
+    Logger.Invoke.entering(getClass.getName, "invokeIntercepted", Seq(orc.util.GetScalaTypeName(target), target) ++ arguments)
 
     /* Case 1: If there's a call location override, use it */
     val clo = execution.callLocationOverride(target, arguments)
@@ -68,7 +89,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
       clo
     } else {
       /* Look up current locations, and find their intersection */
-      val intersectLocs = (arguments map execution.currentLocations).fold(execution.currentLocations(target)) { _ & _ }
+      val intersectLocs = arguments.map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
       require(!(intersectLocs contains execution.runtime.here), s"intersectLocs contains here on call: $target(${arguments.mkString(",")}")
       Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
 

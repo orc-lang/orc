@@ -4,7 +4,7 @@
 //
 // Created by Arthur Peters on Aug 28, 2013.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -44,7 +44,7 @@ object BackendType {
   private val stringToBackendType: Map[String, BackendType] = {
     backendTypes.foldLeft(Map[String, BackendType]()) { (map, typ) =>
       if(map contains typ.id) {
-        Logger.warning(s"Ignoring backend ${typ.getClass.getCanonicalName} (defined in ${typ.getClass.getClassLoader}), because the backend id ${typ.id} is already used by ${map(typ.id).getClass.getCanonicalName} (defined in ${map(typ.id).getClass.getClassLoader}).")
+        Logger.warning(s"Ignoring backend ${orc.util.GetScalaTypeName(typ)} (defined in ${typ.getClass.getClassLoader}), because the backend id ${typ.id} is already used by ${map(typ.id).getClass.getCanonicalName} (defined in ${map(typ.id).getClass.getClassLoader}).")
         map
       } else {
         map + (typ.id -> typ)

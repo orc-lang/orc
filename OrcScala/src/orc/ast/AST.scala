@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on May 27, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -140,7 +140,7 @@ trait AST extends ASTForSwivel {
   }
 
   def dump(prefix: String = ""): this.type = {
-    Console.println(prefix + getClass().getCanonicalName() + " at " + sourceTextRange + ": " + toString())
+    Console.println(prefix + orc.util.GetScalaTypeName(this) + " at " + sourceTextRange + ": " + toString())
     subtrees foreach { _.dump(prefix + "  ") }
     this
   }
