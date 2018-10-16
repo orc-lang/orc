@@ -130,8 +130,12 @@ object DumpRuntimeProfile {
               displayNode(from)
               displayNode(to)
 
-              val specs = Introspection.getSpecializations(callnode.asInstanceOf[Node]).asScala
-              val specNames = specs.filter(_.isActive()).map(_.getMethodName())
+              val specNames = try {
+                val specs = Introspection.getSpecializations(callnode.asInstanceOf[Node]).asScala
+                specs.filter(_.isActive()).map(_.getMethodName())
+              } catch {
+                case _: IllegalArgumentException => List("<not introspectable>")
+              }
 
               val proportion = callnode.getTotalCalls.toDouble / from.getTotalCalls
               val attrs: Map[String, Any] = Map(
