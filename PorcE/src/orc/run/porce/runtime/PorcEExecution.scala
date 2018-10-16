@@ -28,8 +28,9 @@ import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.{ Node, RootNode }
+import orc.OrcExecutionOptions
 
-class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
+class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit, val options: OrcExecutionOptions)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
   val truffleRuntime = Truffle.getRuntime()
 
