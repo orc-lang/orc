@@ -444,8 +444,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime#RuntimeId) extends DOrcRuntime(runt
 
   object Here extends PeerLocation {
     override def toString: String = s"${getClass.getName}(runtimeId=$runtimeId)"
-    override def send(message: OrcPeerCmd): Unit = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
-    override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd): Unit = throw new UnsupportedOperationException("Cannot send dOrc messages to self")
+    override def send(message: OrcPeerCmd): Unit = throw new UnsupportedOperationException("Cannot send dOrc messages to self: " + message)
+    override def sendInContext(execution: DOrcExecution)(message: OrcPeerCmd): Unit = throw new UnsupportedOperationException("Cannot send dOrc messages to self: " + message)
     override def runtimeId: DOrcRuntime#RuntimeId = FollowerRuntime.this.runtimeId
   }
 
