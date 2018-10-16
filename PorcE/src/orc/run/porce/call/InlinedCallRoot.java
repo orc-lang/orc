@@ -205,8 +205,30 @@ public abstract class InlinedCallRoot extends NodeBase {
         }
 
         if (!(node instanceof RootNode)) {
-            Logger.info(() -> String.format("%s no parent",
-                    node));
+            Logger.info(() -> String.format("%s no parent", node));
+        }
+        return false;
+    }
+
+    public static boolean isInMethod(final Node node, final RootNode rootNode) {
+        if (rootNode instanceof PorcERootNode) {
+            return isInMethod(node, ((PorcERootNode)rootNode).getMethodKey());
+        }
+        return false;
+    }
+
+    public static boolean isInMethod(final Node node, final Object key) {
+        if (node instanceof InlinedCallRoot && ((InlinedCallRoot)node).targetRootNode.getMethodKey() == key) {
+            return true;
+        }
+        if (node instanceof PorcERootNode && ((PorcERootNode)node).getMethodKey() == key) {
+            return true;
+        }
+        if (node.getParent() != null) {
+            return isInMethod(node.getParent(), key);
+        }
+        if (!(node instanceof RootNode)) {
+            Logger.info(() -> String.format("%s no parent", node));
         }
         return false;
     }

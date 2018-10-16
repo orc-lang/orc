@@ -139,7 +139,12 @@ public class InternalCPSDispatch extends Dispatch {
             throw new SelfTailCallException();
         }
 
-        @Specialization(guards = { "isTail", "isAbove(expected)", "getCachedRootNode() != target.body.getRootNode()" })
+        protected boolean isAbove(final RootCallTarget target) {
+            return InlinedCallRoot.isAbove(this, target.getRootNode());
+        }
+
+        @Specialization(guards = { "isTail", "isAbove(expected)",
+                "getCachedRootNode() != target.body.getRootNode()" })
         public void inlinedTail(final VirtualFrame frame,
                 final PorcEClosure target, final Object[] arguments,
                 @Cached("target.body") RootCallTarget expected) {
@@ -149,7 +154,8 @@ public class InternalCPSDispatch extends Dispatch {
 
         // The RootNode guard is required so that selfTail can be activated even
         // after tail has activated.
-        @Specialization(guards = { "UniversalTCO", "isTail", "getCachedRootNode() != target.body.getRootNode()" })
+        @Specialization(guards = { "UniversalTCO", "isTail",
+                "getCachedRootNode() != target.body.getRootNode()" })
         public void universalTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments,
                 @Cached("createBinaryProfile()") ConditionProfile reuseTCE) {
             addCalledRoot(target.body);
@@ -167,40 +173,25 @@ public class InternalCPSDispatch extends Dispatch {
 
         // Non-tail calls
 
-        protected boolean sameMethod(RootCallTarget expected) {
-            boolean sameMethod = getRootNode() instanceof PorcERootNode &&
-                    expected.getRootNode() instanceof PorcERootNode &&
-                    ((PorcERootNode)getRootNode()).getMethodKey() == ((PorcERootNode)expected.getRootNode()).getMethodKey();
-            return sameMethod;
-        }
-
-
         protected boolean canSpecificInlineAST(RootCallTarget target) {
             return (getCachedRootNode() instanceof PorcERootNode);
         }
 
-        protected boolean oneTimeGuard_SpecificInlineAST(VirtualFrame frame, RootCallTarget target, InlinedCallRoot inlinedCall) {
+        protected boolean oneTimeGuard_SpecificInlineAST(VirtualFrame frame,
+                RootCallTarget target, InlinedCallRoot inlinedCall) {
             CompilerAsserts.neverPartOfCompilation();
             if (inlinedCall == null || !(target.getRootNode() instanceof PorcERootNode)) {
                 return false;
             }
             CallKindDecision decision = CallKindDecision.get(this, (PorcERootNode)target.getRootNode());
             int nodeCount = computeNodeCount();
-            boolean inlineGuess = sameMethod(target) &&
+            boolean inlineGuess =
+                    InlinedCallRoot.isInMethod(this, target.getRootNode()) &&
                     nodeCount < SpecializationConfiguration.TruffleASTInliningLimit;
-//            if (decision == CallKindDecision.ANY && !inlineGuess) {
-//                Logger.info(() -> String.format("Didn't inline AST %s -> %s",
-//                        this.getContainingPorcCallableName(),
-//                        ((PorcERootNode)target.getRootNode()).getContainingPorcCallableName()));
-//            }
             return inlinedCall.isApplicable(frame) &&
+                    !InlinedCallRoot.isAbove(this, target.getRootNode()) &&
                     (decision == CallKindDecision.INLINE ||
                         decision == CallKindDecision.ANY && inlineGuess);
-        }
-
-        protected boolean isAbove(final RootCallTarget target) {
-            boolean b = InlinedCallRoot.isAbove(this, target.getRootNode());
-            return b;
         }
 
         @SuppressWarnings("hiding")
@@ -212,8 +203,9 @@ public class InternalCPSDispatch extends Dispatch {
             }
         }
 
+        // TODO: Use inliningForced.
         @Specialization(guards = { "TruffleASTInlining", "isTail",
-                "target.body == expected", "!isAbove(expected)",
+                "target.body == expected",
                 "getCachedRootNode() != target.body.getRootNode()",
                 "canSpecificInlineAST(expected)",
                 "oneTimeGuard"}, limit = "3")
@@ -234,11 +226,6 @@ public class InternalCPSDispatch extends Dispatch {
                 @Cached("target.body") RootCallTarget expected,
                 @Cached("create(expected)") DirectCallNode call) {
             addCalledRoot(call.getCurrentCallTarget());
-            CompilerDirectives.interpreterOnly(() -> {
-                if (sameMethod(expected) || inliningForced) {
-                    call.forceInlining();
-                }
-            });
 
             try {
                 call.call(arguments);
