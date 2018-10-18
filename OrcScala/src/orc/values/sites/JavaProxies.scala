@@ -296,7 +296,7 @@ sealed abstract class InvocableInvoker(
           }
           arguments
         }
-        Logger.finer(s"Invoking Java method ${JavaCall.classNameAndSignature(targetCls, invocable.getName, invocable.parameterTypes.toList)} with (${finalArgs.map(JavaCall.valueAndType).mkString(", ")})")
+        // Some Java Proxy code is partially evaluated and Logging breaks that: Logger.finer(s"Invoking Java method ${JavaCall.classNameAndSignature(targetCls, invocable.getName, invocable.parameterTypes.toList)} with (${finalArgs.map(JavaCall.valueAndType).mkString(", ")})")
         val r = orc.run.StopWatches.javaImplementation {
           // The returnType cast does not add any static information, but it enables runtime optimizations in Graal.
           boxedReturnType.cast(mh.invokeExact(theObject, finalArgs)).asInstanceOf[AnyRef]
@@ -362,7 +362,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
           }
         }
         def get(target: AnyRef): AnyRef = {
-          Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName.read")
+          // Some Java Proxy code is partially evaluated and Logging breaks that: Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName.read")
           new JavaArrayLengthPseudofield(target.asInstanceOf[JavaMemberProxy].theObject)
         }
       }
@@ -398,7 +398,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
         def get(target: AnyRef): AnyRef = {
           val value = jf.get(target.asInstanceOf[JavaMemberProxy].theObject)
           def valueCls = value.getClass()
-          Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
+          // Some Java Proxy code is partially evaluated and Logging breaks that: Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
           import JavaCall._
           // TODO:PERFORMANCE: The has*Member checks on value will actually be quite expensive. However for these semantics they are required. Maybe we could change the semantics. Or maybe I've missed a way to implement it so that all reflection is JIT time constant.
           if ((submemberName eq "read") && (value == null || !valueCls.hasInstanceMember("read"))) {
