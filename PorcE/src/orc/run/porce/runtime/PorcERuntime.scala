@@ -89,7 +89,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
               // FIXME: Make this error fatal for the whole runtime and make sure the message describes how to fix it.
               throw e //new RuntimeException(s"Allowed stack depth too deep: ${stackDepthThreadLocal.get()}", e)
           } finally {
-            decrementStackDepth(prev)
+            decrementStackDepth(prev, true)
           }
       } else {
         //Logger.log(Level.INFO, s"Scheduling $s", new RuntimeException())
@@ -181,11 +181,14 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   }
 
   @inline
-  private final def replaceDepthValue(curr: => Int, rep: Int): Int = {
+  private final def replaceDepthValue(curr: Int, prev: Int, hasAlreadySpawnedHere: Boolean): Int = {
     if (unrollOnLargeStack) {
-      if (curr < 0 && rep > 0) curr else rep
+      val b = curr < 0 && prev > 0
+      if (!hasAlreadySpawnedHere && b)
+        CompilerDirectives.transferToInterpreterAndInvalidate()
+      if (b) curr else prev
     } else {
-      rep
+      prev
     }
   }
 
@@ -193,16 +196,16 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     *
     * @see incrementAndCheckStackDepth()
     */
-  def decrementStackDepth(prev: Int) = {
+  def decrementStackDepth(prev: Int, hasAlreadySpawnedHere: Boolean) = {
     if (maxStackDepth > 0) {
       @TruffleBoundary @noinline
       def decrementStackDepthWithThreadLocal() = {
         val depth = stackDepthThreadLocal.get()
-        depth.value = replaceDepthValue(depth.value, prev)
+        depth.value = replaceDepthValue(depth.value, prev, hasAlreadySpawnedHere)
       }
       try {
         val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
-        t.stackDepth = replaceDepthValue(t.stackDepth, prev)
+        t.stackDepth = replaceDepthValue(t.stackDepth, prev, hasAlreadySpawnedHere)
       } catch {
         case _: ClassCastException => {
           if (allExecutionOnWorkers.isValid()) {

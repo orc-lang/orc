@@ -40,7 +40,7 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     @Child
     protected Dispatch call = null;
 
-    public final VisibleConditionProfile spawnProfile = VisibleConditionProfile.createBinaryProfile();
+    private final VisibleConditionProfile inlineProfile = VisibleConditionProfile.createBinaryProfile();
 
     @Override
     public boolean isScheduled() {
@@ -67,12 +67,14 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
 
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] args) {
-        final PorcERuntime r = execution.runtime();
         final PorcEClosure computation = (PorcEClosure) target;
-        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth(spawnProfile.wasFalse());
+
+        final PorcERuntime r = execution.runtime();
+        final boolean hasAlreadySpawnedHere = inlineProfile.wasFalse();
+        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth(hasAlreadySpawnedHere);
         final int prev = state.previousDepth();
-        if (spawnProfile.profile(state.growthAllowed())) {
-            executeInline(frame, computation, args, prev);
+        if (inlineProfile.profile(state.growthAllowed())) {
+            executeInline(frame, computation, args, prev, hasAlreadySpawnedHere);
         } else {
             addCalledRoot(computation.body);
             createSchedulableAndSchedule(args, computation);
@@ -101,14 +103,15 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
         return call;
     }
 
-    private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args, final int previous) {
+    private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args,
+            final int previous, final boolean hasAlreadySpawnedHere) {
         final PorcERuntime r = execution.runtime();
         Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
         long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
         try {
             getCall().executeDispatchWithEnvironment(frame, computation, args);
         } finally {
-            r.decrementStackDepth(previous);
+            r.decrementStackDepth(previous, hasAlreadySpawnedHere);
             SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
         }
     }
@@ -121,10 +124,6 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
         } finally {
             SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
         }
-    }
-
-    public void executeInline(final VirtualFrame frame, final PorcEClosure computation, final int previous) {
-        executeInline(frame, computation, new Object[] { null }, previous);
     }
 
     public void executeInline(final VirtualFrame frame, final PorcEClosure computation) {
@@ -142,7 +141,7 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     @Override
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
-        properties.put("spawnProfile", spawnProfile);
+        properties.put("inlineProfile", inlineProfile);
         return properties;
     }
 
