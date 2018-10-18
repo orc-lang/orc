@@ -121,7 +121,7 @@ public class InternalCPSDispatch extends Dispatch {
         // Tail calls
 
         @SuppressWarnings("boxing")
-        @Specialization(guards = { "SelfTCO", "isTail", "getRootNode() == target.body.getRootNode()" })
+        @Specialization(guards = { "SelfTCO", "isTail", "getCachedRootNode() == target.body.getRootNode()" })
         public void selfTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
             addCalledRoot(target.body);
             Object[] frameArguments = frame.getArguments();
