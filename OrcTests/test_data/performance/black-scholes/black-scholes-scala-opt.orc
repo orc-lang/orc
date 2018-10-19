@@ -12,7 +12,7 @@ import class BlackScholes = "orc.test.item.scalabenchmarks.blackscholes.BlackSch
 
 val compute = BlackScholes.compute
   
-  
+-- Lines: 9
 def run(data) =
     val riskless = BlackScholesData.riskless()
     val volatility = BlackScholesData.volatility()
