@@ -40,10 +40,10 @@ object PorcToPorcE {
     */
   def expression(e: porc.Expression,
       argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable], frameDescriptor: FrameDescriptor,
-      closureMap: collection.Map[Int, RootCallTarget], substs: collection.Map[porc.Variable, porc.Variable],
+      closureMap: collection.Map[Int, RootCallTarget], subst: porc.Variable => AnyRef,
       execution: PorcEExecution, language: PorcELanguage = null, isTail: Boolean = true): porce.Expression = {
     val converter = new PorcToPorcE(!execution.isInstanceOf[NoInvocationInterception], language)
-    converter(e.toZipper(), execution, argumentVariables, closureVariables, frameDescriptor, closureMap, substs, isTail)
+    converter(e.toZipper(), execution, argumentVariables, closureVariables, frameDescriptor, closureMap, subst, isTail)
   }
 
   @varargs
@@ -56,7 +56,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
   case class Context(
       descriptor: FrameDescriptor, execution: PorcEExecution,
       argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable],
-      variableSubstitutions: collection.Map[porc.Variable, porc.Variable],
+      variableSubstitution: porc.Variable => AnyRef,
       runtime: PorcERuntime, inTailPosition: Boolean) {
     def withTailPosition = copy(inTailPosition = true)
     def withoutTailPosition = copy(inTailPosition = false)
@@ -81,7 +81,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
   }
 
   private def lookupVariable(x: porc.Variable)(implicit ctx: Context) =
-    ctx.descriptor.findOrAddFrameSlot(x, FrameSlotKind.Object)
+    ctx.descriptor.findOrAddFrameSlot(ctx.variableSubstitution(x), FrameSlotKind.Object)
 
   private def normalizeOrder(s: TraversableOnce[porc.Variable]) = {
     s.toSeq.sortBy(_.optionalName)
@@ -109,8 +109,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
     callTarget
   }
 
-  def transform(inx: porc.Variable)(implicit ctx: Context): porce.Expression = {
-    val x = ctx.variableSubstitutions.getOrElse(inx, inx)
+  def transform(x: porc.Variable)(implicit ctx: Context): porce.Expression = {
     val res = if (ctx.argumentVariables.contains(x)) {
       porce.Read.Argument.create(ctx.argumentVariables.indexOf(x))
     } else if (ctx.closureVariables.contains(x)) {
@@ -130,7 +129,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
       argumentVariables = Seq(m.pArg, m.cArg, m.tArg),
       closureVariables = Seq(),
       closureMap = Map(),
-      substs = Map(),
+      subst = identity,
       isTail = true)
     val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, 3, 0, m.name, execution)
     rootNode.setVariables(Seq(m.pArg, m.cArg, m.tArg), Seq())
@@ -142,7 +141,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
 
   def apply(e: porc.Expression.Z, execution: PorcEExecution,
       argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable], descriptor: FrameDescriptor,
-      closureMap: collection.Map[Int, RootCallTarget], substs: collection.Map[porc.Variable, porc.Variable],
+      closureMap: collection.Map[Int, RootCallTarget], subst: porc.Variable => AnyRef,
       isTail: Boolean): porce.Expression = {
     this.closureMap ++= closureMap
     implicit val ctx = Context(
@@ -150,7 +149,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
       execution = execution,
       argumentVariables = argumentVariables,
       closureVariables = closureVariables,
-      variableSubstitutions = substs,
+      variableSubstitution = subst,
       runtime = execution.runtime,
       inTailPosition = isTail)
     val newBody = transform(e)
@@ -368,7 +367,7 @@ class PorcToPorcE(val usingInvokationInterceptor: Boolean, val language: PorcELa
           callTarget.getRootNode.asInstanceOf[porce.PorcERootNode]
       }
 
-      val methodSlot = oldCtx.descriptor.findOrAddFrameSlot(m.name)
+      val methodSlot = lookupVariable(m.name)(oldCtx)
       val readClosure = porce.Read.Local.create(closureSlot)
       val newMethod = porce.MethodDeclaration.NewMethod.create(readClosure, methodOffset + index, rootNode, m.value.isRoutine)
 

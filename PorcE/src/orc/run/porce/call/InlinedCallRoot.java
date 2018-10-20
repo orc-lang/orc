@@ -38,6 +38,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+import org.graalvm.collections.Pair;
 
 /**
  *
@@ -46,7 +47,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
  */
 public abstract class InlinedCallRoot extends NodeBase {
 
-    private final PorcERootNode targetRootNode;
+    protected final PorcERootNode targetRootNode;
     private final PorcEExecution execution;
 
     protected InlinedCallRoot(final PorcERootNode targetRootNode, final PorcEExecution execution) {
@@ -72,8 +73,8 @@ public abstract class InlinedCallRoot extends NodeBase {
     public void impl(final VirtualFrame frame,
             final Object[] _arguments,
             @Cached("getPorcEBodyFrameArguments(frame)") Expression body,
-            @Cached(value = "getArgumentSlots(frame)", dimensions = 1) FrameSlot[] argumentSlots,
-            @Cached(value = "getClosureSlots(frame)", dimensions = 1) FrameSlot[] closureSlots,
+            @Cached(value = "getSlots(targetRootNode.getArgumentVariables())", dimensions = 1) FrameSlot[] argumentSlots,
+            @Cached(value = "getSlots(targetRootNode.getClosureVariables())", dimensions = 1) FrameSlot[] closureSlots,
             @Cached("createCountingProfile()") ConditionProfile inlinedTailCallProfile) {
         ensureTail(body);
         Object[] arguments = _arguments;
@@ -139,31 +140,25 @@ public abstract class InlinedCallRoot extends NodeBase {
         }
     }
 
-    protected FrameSlot[] getArgumentSlots(VirtualFrame frame) {
+    protected FrameSlot[] getSlots(Seq<Variable> variables) {
         CompilerAsserts.neverPartOfCompilation("Frame update");
-        Seq<Variable> argumentVariables = targetRootNode.getArgumentVariables();
         FrameDescriptor descriptor = getCachedRootNode().getFrameDescriptor();
-        FrameSlot[] res = new FrameSlot[argumentVariables.size()];
+        FrameSlot[] res = new FrameSlot[variables.size()];
 
         for (int i = 0; i < res.length; i++) {
-            Variable x = argumentVariables.apply(i);
-            res[i] = descriptor.findOrAddFrameSlot(x, FrameSlotKind.Object);
+            Variable x = variables.apply(i);
+            res[i] = descriptor.findOrAddFrameSlot(variableSubst(x), FrameSlotKind.Object);
         }
         return res;
     }
 
-    protected FrameSlot[] getClosureSlots(VirtualFrame frame) {
-        CompilerAsserts.neverPartOfCompilation("Frame update");
-        Seq<Variable> closureVariables = targetRootNode.getClosureVariables();
-        FrameDescriptor descriptor = getCachedRootNode().getFrameDescriptor();
-        FrameSlot[] res = new FrameSlot[closureVariables.size()];
-
-        for (int i = 0; i < res.length; i++) {
-            Variable x = closureVariables.apply(i);
-            res[i] = descriptor.findOrAddFrameSlot(x, FrameSlotKind.Object);
-        }
-        return res;
-    }
+//    protected FrameSlot[] getArgumentSlots(VirtualFrame frame) {
+//        return getSlots(targetRootNode.getArgumentVariables());
+//    }
+//
+//    protected FrameSlot[] getClosureSlots(VirtualFrame frame) {
+//        return getSlots(targetRootNode.getClosureVariables());
+//    }
 
     protected Expression getPorcEBodyFrameArguments(VirtualFrame frame) {
         CompilerAsserts.neverPartOfCompilation("Reconversion of code.");
@@ -176,7 +171,6 @@ public abstract class InlinedCallRoot extends NodeBase {
         Expression body = targetRootNode.getBody();
 
         assert body.porcNode().isDefined();
-        assert targetRootNode.getArgumentVariables() != null;
 
         // Now reconvert the original Porc code to PorcE in a new context.
         Expression res = orc.compiler.porce.PorcToPorcE.expression(
@@ -185,13 +179,17 @@ public abstract class InlinedCallRoot extends NodeBase {
                 PorcToPorcE.variableSeq(),
                 frame.getFrameDescriptor(),
                 execution.callTargetMap(),
-                scala.collection.immutable.Map$.MODULE$.empty(),
+                this::variableSubst,
                 execution,
                 execution.runtime().language(),
                 isTail
                 );
 
         return res;
+    }
+
+    protected Object variableSubst(orc.ast.porc.Variable v) {
+        return Pair.create(this, v);
     }
 
     public static boolean isAbove(final Node node, final RootNode targetRootNode) {
