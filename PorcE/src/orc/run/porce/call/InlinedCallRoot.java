@@ -173,16 +173,15 @@ public abstract class InlinedCallRoot extends NodeBase {
         assert body.porcNode().isDefined();
 
         // Now reconvert the original Porc code to PorcE in a new context.
-        Expression res = orc.compiler.porce.PorcToPorcE.expression(
+        Expression res = execution.porcToPorcE().expression(
                 (orc.ast.porc.Expression)body.porcNode().get(),
                 PorcToPorcE.variableSeq(),
                 PorcToPorcE.variableSeq(),
                 frame.getFrameDescriptor(),
                 execution.callTargetMap(),
                 this::variableSubst,
-                execution,
-                execution.runtime().language(),
-                isTail
+                isTail,
+                (orc.ast.porc.Variable)targetRootNode.getMethodKey()
                 );
 
         return res;

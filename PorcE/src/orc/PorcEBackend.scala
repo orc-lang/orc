@@ -78,7 +78,7 @@ case class PorcEBackend(language: PorcELanguage = null) extends PorcBackend {
 
     private def start(ast: MethodCPS, k: orc.OrcEvent => Unit): PorcEExecutionWithLaunch = synchronized {
       val execution = new PorcEExecution(this, k, options) with PorcEExecutionWithLaunch
-      val (porceAst, map) = PorcToPorcE.method(ast, execution, language)
+      val (porceAst, map) = execution.porcToPorcE.method(ast)
       addRoot(execution)
       execution.scheduleProgram(porceAst, map)
       execution

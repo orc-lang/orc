@@ -29,9 +29,14 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.{ Node, RootNode }
 import orc.OrcExecutionOptions
+import orc.run.porce.SpecializationConfiguration
+import orc.compiler.porce.PorcToPorcE
 
 class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit, val options: OrcExecutionOptions)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
+
+  val porcToPorcE = PorcToPorcE(this, runtime.language)
+
   val truffleRuntime = Truffle.getRuntime()
 
   runtime.installHandlers(this)
