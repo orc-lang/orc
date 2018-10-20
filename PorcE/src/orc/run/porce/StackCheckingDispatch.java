@@ -28,6 +28,8 @@ import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.Instrumentable;
+import com.oracle.truffle.api.nodes.NodeUtil;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 /**
  *
@@ -41,6 +43,7 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     protected Dispatch call = null;
 
     private final VisibleConditionProfile inlineProfile = VisibleConditionProfile.createBinaryProfile();
+    private final ConditionProfile unrollProfile = ConditionProfile.createBinaryProfile();
 
     @Override
     public boolean isScheduled() {
@@ -69,12 +72,18 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] args) {
         final PorcEClosure computation = (PorcEClosure) target;
 
+        // If this node has never actually had to spawn and there is an enclosing
+        // StackCheckingDispatch in this function then don't even count this frame.
+//        if (!inlineProfile.wasFalse() && NodeUtil.findParent(this, StackCheckingDispatch.class) != null) {
+//            executeInline(frame, computation, args);
+//            return;
+//        }
+
         final PorcERuntime r = execution.runtime();
-        final boolean hasAlreadySpawnedHere = inlineProfile.wasFalse();
-        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth(hasAlreadySpawnedHere);
+        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth(inlineProfile);
         final int prev = state.previousDepth();
         if (inlineProfile.profile(state.growthAllowed())) {
-            executeInline(frame, computation, args, prev, hasAlreadySpawnedHere);
+            executeInline(frame, computation, args, prev);
         } else {
             addCalledRoot(computation.body);
             createSchedulableAndSchedule(args, computation);
@@ -104,14 +113,14 @@ public class StackCheckingDispatch extends Dispatch implements HasCalledRoots {
     }
 
     private void executeInline(final VirtualFrame frame, final PorcEClosure computation, final Object[] args,
-            final int previous, final boolean hasAlreadySpawnedHere) {
+            final int previous) {
         final PorcERuntime r = execution.runtime();
         Object old = SimpleWorkStealingSchedulerWrapper.currentSchedulable();
         long id = SimpleWorkStealingSchedulerWrapper.enterSchedulableInline();
         try {
             getCall().executeDispatchWithEnvironment(frame, computation, args);
         } finally {
-            r.decrementStackDepth(previous, hasAlreadySpawnedHere);
+            r.decrementStackDepth(previous, unrollProfile);
             SimpleWorkStealingSchedulerWrapper.exitSchedulable(id, old);
         }
     }

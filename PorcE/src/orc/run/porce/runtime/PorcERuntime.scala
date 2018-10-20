@@ -26,6 +26,8 @@ import orc.util.DumperRegistry
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.CompilerDirectives.ValueType
+import com.oracle.truffle.api.profiles.ConditionProfile
+import orc.run.porce.profiles.VisibleConditionProfile
 
 /** The base runtime for PorcE runtimes.
  *
@@ -77,7 +79,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         }
       }
       if (allowSpawnInlining && occationallySchedule && isFast) {
-        val PorcERuntime.StackDepthState(b, prev) = incrementAndCheckStackDepth(true)
+        val PorcERuntime.StackDepthState(b, prev) = incrementAndCheckStackDepth(null)
         if (b)
           try {
             val old = SimpleWorkStealingSchedulerWrapper.currentSchedulable
@@ -89,7 +91,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
               // FIXME: Make this error fatal for the whole runtime and make sure the message describes how to fix it.
               throw e //new RuntimeException(s"Allowed stack depth too deep: ${stackDepthThreadLocal.get()}", e)
           } finally {
-            decrementStackDepth(prev, true)
+            decrementStackDepth(prev, null)
           }
       } else {
         //Logger.log(Level.INFO, s"Scheduling $s", new RuntimeException())
@@ -127,22 +129,18 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   }
 
   @inline
-  private final def incrementDepthValue(hasAlreadySpawnedHere: Boolean, prev: Int): (Boolean, Int) = {
+  private final def incrementDepthValue(inlineAllowedProfile: VisibleConditionProfile, prev: Int): (Boolean, Int) = {
     if (unrollOnLargeStack) {
       val r = prev >= 0 &&
-        (if (!hasAlreadySpawnedHere)
+        (if (inlineAllowedProfile == null || !inlineAllowedProfile.wasFalse())
           prev < maxStackDepth
         else
           prev < minSpawnStackDepth)
-      if (!hasAlreadySpawnedHere && !r)
-        CompilerDirectives.transferToInterpreterAndInvalidate()
       val next = prev + 1
-      (r, if (r) next else -1)
+      (r, if (inlineAllowedProfile != null && inlineAllowedProfile.profile(r) || inlineAllowedProfile == null && r) next else -1)
     } else {
-      val r = if (!hasAlreadySpawnedHere) prev < maxStackDepth else prev < minSpawnStackDepth
-      if (!hasAlreadySpawnedHere && !r)
-        CompilerDirectives.transferToInterpreterAndInvalidate()
-      (r, prev + (if (r) 1 else 0))
+      val r = if (inlineAllowedProfile == null || !inlineAllowedProfile.wasFalse()) prev < maxStackDepth else prev < minSpawnStackDepth
+      (r, prev + (if (inlineAllowedProfile != null && inlineAllowedProfile.profile(r) || inlineAllowedProfile == null && r) 1 else 0))
     }
   }
 
@@ -150,20 +148,20 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     *
     * If this returns true the caller must call decrementStackDepth() after it finishes.
     */
-  def incrementAndCheckStackDepth(hasAlreadySpawnedHere: Boolean): PorcERuntime.StackDepthState = {
+  def incrementAndCheckStackDepth(inlineAllowedProfile: VisibleConditionProfile): PorcERuntime.StackDepthState = {
     if (maxStackDepth > 0) {
       @TruffleBoundary @noinline
       def incrementAndCheckStackDepthWithThreadLocal() = {
         val depth = stackDepthThreadLocal.get()
         val prev = depth.value
-        val (r, n) = incrementDepthValue(hasAlreadySpawnedHere, prev)
+        val (r, n) = incrementDepthValue(inlineAllowedProfile, prev)
         depth.value = n
         PorcERuntime.StackDepthState(r, prev)
       }
       try {
         val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
         val prev = t.stackDepth
-        val (r, n) = incrementDepthValue(hasAlreadySpawnedHere, prev)
+        val (r, n) = incrementDepthValue(inlineAllowedProfile, prev)
         t.stackDepth = n
         PorcERuntime.StackDepthState(r, prev)
       } catch {
@@ -181,12 +179,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   }
 
   @inline
-  private final def replaceDepthValue(curr: Int, prev: Int, hasAlreadySpawnedHere: Boolean): Int = {
+  private final def replaceDepthValue(curr: Int, prev: Int, unrollProfile: ConditionProfile): Int = {
     if (unrollOnLargeStack) {
       val b = curr < 0 && prev > 0
-      if (!hasAlreadySpawnedHere && b)
-        CompilerDirectives.transferToInterpreterAndInvalidate()
-      if (b) curr else prev
+      if (unrollProfile != null && unrollProfile.profile(b) || unrollProfile == null && b) curr else prev
     } else {
       prev
     }
@@ -196,16 +192,16 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     *
     * @see incrementAndCheckStackDepth()
     */
-  def decrementStackDepth(prev: Int, hasAlreadySpawnedHere: Boolean) = {
+  def decrementStackDepth(prev: Int, unrollProfile: ConditionProfile) = {
     if (maxStackDepth > 0) {
       @TruffleBoundary @noinline
       def decrementStackDepthWithThreadLocal() = {
         val depth = stackDepthThreadLocal.get()
-        depth.value = replaceDepthValue(depth.value, prev, hasAlreadySpawnedHere)
+        depth.value = replaceDepthValue(depth.value, prev, unrollProfile)
       }
       try {
         val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
-        t.stackDepth = replaceDepthValue(t.stackDepth, prev, hasAlreadySpawnedHere)
+        t.stackDepth = replaceDepthValue(t.stackDepth, prev, unrollProfile)
       } catch {
         case _: ClassCastException => {
           if (allExecutionOnWorkers.isValid()) {
@@ -258,7 +254,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
 
   @inline
   @CompilationFinal
-  final val minSpawnStackDepth = (maxStackDepth * 95) / 100
+  final val minSpawnStackDepth = (maxStackDepth * 75) / 100
 
   @inline
   @CompilationFinal
