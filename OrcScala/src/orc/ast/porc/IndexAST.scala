@@ -12,26 +12,46 @@
 package orc.ast.porc
 
 import orc.ast.ASTWithIndex
+import swivel.Zipper
 
-object IndexAST {
-  def apply(ast: PorcAST): Unit = {
-    var i = 0
-    def nextIndex(): Int = {
+class IndexAST {
+  private var i = 0
+  private def nextIndex(j: Int): Int = {
+    if (j > i) {
+      i = j + 1
+      j
+    } else {
       val r = i
       i += 1
       r
     }
-    
-    def process(ast: PorcAST): Unit = {
+  }
+
+  private val indexedASTs = collection.mutable.HashSet[Zipper]()
+
+  def apply(ast: PorcAST.Z): Unit = {
+    def process(ast: PorcAST.Z): Unit = {
       ast match {
-        case a: ASTWithIndex =>
-          a.optionalIndex = Some(nextIndex())
-        case _ =>
-          ()
+        case a @ Zipper(n: ASTWithIndex, _) if !indexedASTs.contains(a) =>
+          val ni = nextIndex(n.optionalIndex.getOrElse(Int.MinValue))
+          n.optionalIndex match {
+            case Some(oi) if ni != oi =>
+              Logger.warning(s"${ast.toString.take(100)} already has index $oi, but being assigned index $ni")
+            case _ => ()
+          }
+          n.optionalIndex = Some(ni)
+          indexedASTs += a
+        case _ => ()
       }
       ast.subtrees.foreach(process)
     }
-    
+
     process(ast)
+  }
+}
+
+object IndexAST {
+  def apply(ast: PorcAST.Z): Unit = {
+    new IndexAST()(ast)
   }
 }

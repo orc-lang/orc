@@ -24,18 +24,19 @@ import orc.util.TUnknown
 import orc.lib.builtin.structured.TupleArityChecker
 import orc.compile.Logger
 
-case class ConversionContext(
-    p: porc.Variable, c: porc.Variable, t: porc.Variable,
-    recursives: Set[BoundVar],
-    callgraph: CallGraph,
-    publications: PublicationCountAnalysis,
-    effects: EffectAnalysis,
-    containingFunction: String) {
-}
 
 /** @author amp
   */
 class OrctimizerToPorc(co: CompilerOptions) {
+  case class ConversionContext(
+      p: porc.Variable, c: porc.Variable, t: porc.Variable,
+      recursives: Set[BoundVar],
+      callgraph: CallGraph,
+      publications: PublicationCountAnalysis,
+      effects: EffectAnalysis,
+      containingFunction: String) {
+  }
+
   def apply(prog: Expression, cache: AnalysisCache): porc.MethodCPS = {
     val z = prog.toZipper()
     val callgraph: CallGraph = cache.get(CallGraph)((z, None))
