@@ -42,7 +42,7 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     private final PorcEExecution execution;
 
     protected final ConditionProfile moreTasksNeeded = ConditionProfile.createCountingProfile();
-    protected final ValueProfile targetRoot = ValueProfile.createIdentityProfile();
+    protected final ValueProfile targetRootProfile = ValueProfile.createIdentityProfile();
 
     @Child
     protected StackCheckingDispatch dispatch;
@@ -132,16 +132,18 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     private static final boolean allowAllSpawnInlining = PorcERuntime$.MODULE$.allowAllSpawnInlining();
 
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
+        return shouldInlineSpawn(this, targetRootProfile, computation);
+    }
+
+    static boolean shouldInlineSpawn(NodeBase self, ValueProfile targetRootProfile, final PorcEClosure computation) {
         if (SpecializationConfiguration.UseExternalCallKindDecision) {
             CompilerAsserts.neverPartOfCompilation();
-            CallKindDecision decision = CallKindDecision.get(this, (PorcERootNode) computation.body.getRootNode());
+            CallKindDecision decision = CallKindDecision.get(self, (PorcERootNode) computation.body.getRootNode());
             return allowSpawnInlining &&
-                    (!mustSpawn || allowAllSpawnInlining) &&
                     decision != CallKindDecision.SPAWN;
         } else {
             return allowSpawnInlining &&
-                    (!mustSpawn || allowAllSpawnInlining) &&
-                    computation.getTimePerCall(targetRoot) < SpecializationConfiguration.InlineAverageTimeLimit;
+                    computation.getTimePerCall(targetRootProfile) < SpecializationConfiguration.InlineAverageTimeLimit;
         }
     }
 
