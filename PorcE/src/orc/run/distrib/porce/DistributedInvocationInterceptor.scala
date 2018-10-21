@@ -15,12 +15,14 @@ package orc.run.distrib.porce
 
 import java.util.concurrent.atomic.AtomicLong
 
-import orc.{ CaughtEvent, Schedulable }
-import orc.run.porce.runtime.{ MaterializedCPSCallContext, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
+import scala.util.control.NonFatal
+
+import orc.{ CaughtEvent, Future }
+import orc.FutureState.Bound
+import orc.Schedulable
+import orc.run.porce.runtime.{ CallClosureSchedulable, InvocationInterceptor, MaterializedCPSCallContext, PorcEClosure }
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
-import orc.Future
-import orc.FutureState.Bound
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
   *
@@ -53,6 +55,8 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         case _ => value
       }
     }
+    def safeToString(v: AnyRef): String = if (v == null) "null" else try v.toString() catch { case NonFatal(_) | _: LinkageError => s"${orc.util.GetScalaTypeName(v)}@${System.identityHashCode(v)}" }
+
     //Logger.Invoke.entering(getClass.getName, "shouldInterceptInvocation", Seq(orc.util.GetScalaTypeName(target), target) ++ arguments)
     Logger.Invoke.finest("class names: " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
     //Logger.Invoke.finest("isInstanceOf[RemoteRef]: " + target.isInstanceOf[RemoteRef] + arguments.map(_.isInstanceOf[RemoteRef]).mkString("(", ",", ")"))
@@ -64,7 +68,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     } else if (/*FIXME:HACK*/target.isInstanceOf[PorcEClosure] && target.toString().startsWith("speculativeMigrateDef")) {
       /* Look up current locations, and find their intersection */
       val intersectLocs = arguments.map(derefAnyBoundLocalFuture(_)).map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
-      Logger.Invoke.finest(s"speculative migrate: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
+      Logger.Invoke.finest(s"speculative migrate: ${safeToString(target)}(${arguments.map(safeToString(_)).mkString(",")}): intersection of current locations=$intersectLocs")
       /* speculative migrate found a location to move to */
       intersectLocs.nonEmpty && !(intersectLocs contains execution.runtime.here)
     } else if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {

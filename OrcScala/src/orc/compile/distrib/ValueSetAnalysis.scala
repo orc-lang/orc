@@ -13,12 +13,10 @@
 
 package orc.compile.distrib
 
-import orc.ast.oil.named._
 import orc.ast.hasOptionalVariableName
-import javax.lang.model.`type`.DeclaredType
-import orc.ast.oil.named.DeclareCallables
+import orc.ast.oil.named._
+import orc.run.distrib.DOrcPlacementPolicy
 import orc.values.Signal
-import orc.ast.oil.named.BoundVar
 
 /** Applying ValueSetAnalysis to an OIL named AST results in an annotated
   * OIL named AST.  The annotations indicate the set of values referred to
@@ -37,9 +35,12 @@ object ValueSetAnalysis extends NamedASTTransform {
     target.optionalVariableName.isDefined && target.optionalVariableName.get.startsWith("speculativeMigrateDef")
 
   override def apply(e: Expression): Expression = {
-    val ae = super.apply(e)
-    val speculativeMigrateDefs = speculativeMigrateDefNames.toList.map({case (arity, name) => Def(name, List.fill(arity)(new BoundVar(Some(hasOptionalVariableName.unusedVariable))), Constant(Signal), Nil, None, None)})
-    e ->> DeclareCallables(speculativeMigrateDefs, ae)
+    val annotatedExpressionDirty = super.apply(e)
+    val annotatedExpression = PostProcess(annotatedExpressionDirty)
+    val speculativeMigrateDefs = speculativeMigrateDefNames.toList.map({case (arity, name) => Def(name, List.fill(arity)(new BoundVar(Some(hasOptionalVariableName.unusedVariable))), Constant(Signal), Nil, Some(List.fill(arity)(Top())), Some(ImportedType("orc.types.SignalType")))})
+    val annotatedExpressionWithDefs = e ->> DeclareCallables(speculativeMigrateDefs, annotatedExpression)
+    println(annotatedExpressionWithDefs)
+    annotatedExpressionWithDefs
   }
 
   override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = {
@@ -143,8 +144,14 @@ object ValueSetAnalysis extends NamedASTTransform {
 
   protected def filterRelevantValues(values: Set[Argument]): Set[Argument] = {
     values.filter({
-      case v if v.getClass.getName.endsWith("VertexWithPathLen") => true
+      case _: Var => true
+      case Constant(null) => false
       case Constant("hiya") => true
+      case Constant(_: java.lang.Boolean) | Constant(_: java.lang.Character) | Constant(_: java.lang.Number) | Constant(_: String) => false
+      case Constant(_: DOrcPlacementPolicy) => true
+      //FIXME: Ask ValueLocators if this value is of interest
+      case Constant(c: Class[_]) if c.getName.contains("VertexWithPathLen") => true
+      case Constant(v) if v.getClass.getName.contains("VertexWithPathLen") => true
       case _ => false
     })
   }
@@ -174,4 +181,11 @@ object ValueSetAnalysis extends NamedASTTransform {
 //    td
 //  }
 
+  object PostProcess extends NamedASTTransform {
+    override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = {
+      /* Clean up obviously redundant annotations */
+      case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr: Call) if isSpeculativeMigrateTarget(target) => innerExpr
+      case Sequence(c: Constant, bv, Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr)) if isSpeculativeMigrateTarget(target) && bv == innerExpr => c
+    }
+  }
 }
