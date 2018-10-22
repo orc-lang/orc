@@ -29,13 +29,13 @@ object OrcBacktrace {
 
     def findRange(n: Node): Option[OrcSourceRange] = n match {
         case n: HasPorcNode if n.porcNode.isDefined =>
-          n.porcNode flatMap { _.sourceTextRange }
+          n.porcNode flatMap { _.value.sourceTextRange }
         case n: Node =>
           findRange(n.getParent)
         case null =>
           None
     }
-    
+
     if (truffleFrames == null) {
       Array()
     } else {
@@ -43,7 +43,7 @@ object OrcBacktrace {
       locations.flatten.toArray
     }
   }
-  
+
   def orcifyException(e: Throwable, node: Node): TokenException = {
     val backtrace = fromTruffleException(e, node)
     val r = e match {

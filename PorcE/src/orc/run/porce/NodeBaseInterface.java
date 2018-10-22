@@ -33,12 +33,12 @@ public interface NodeBaseInterface {
      * Set the Porc AST of this node and its children (if they don't yet have a node).
      * @param ast The Porc AST node to use.
      */
-    void setPorcAST(PorcAST ast);
+    void setPorcAST(PorcAST.Z ast);
 
     /**
      * @return The Porc AST node associated with this PorcE node.
      */
-    Option<PorcAST> porcNode();
+    Option<PorcAST.Z> porcNode();
 
     /**
      * @return

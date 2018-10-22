@@ -197,14 +197,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
         }
     }
 
-    private Option<PorcAST> porcNode = Option.apply(null);
+    private Option<PorcAST.Z> porcNode = Option.apply(null);
 
     @Override
-    public void setPorcAST(final PorcAST ast) {
+    public void setPorcAST(final PorcAST.Z ast) {
         CompilerAsserts.neverPartOfCompilation();
         porcNode = Option.apply(ast);
         section = SourceSectionFromPorc.apply(ast);
-        internal = !(ast instanceof orc.ast.porc.Method);
+        internal = !(ast.value() instanceof orc.ast.porc.Method);
         internedName = getName().intern();
     }
 
@@ -214,7 +214,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     }
 
     @Override
-    public Option<PorcAST> porcNode() {
+    public Option<PorcAST.Z> porcNode() {
         return porcNode;
     }
 
@@ -236,9 +236,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     @Override
     public String getName() {
         String name = "<no AST>";
-        scala.Option<PorcAST> optAst = porcNode();
+        scala.Option<PorcAST.Z> optAst = porcNode();
         if (optAst.isDefined()) {
-            final PorcAST ast = optAst.get();
+            final PorcAST ast = (PorcAST) optAst.get().value();
             name = "<N/A>";
             if (ast instanceof orc.ast.hasOptionalVariableName) {
                 scala.Option<String> optName = ((orc.ast.hasOptionalVariableName) ast).optionalVariableName();
@@ -254,7 +254,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     @Override
     public int getId() {
-        return ((Integer) ((ASTWithIndex) porcNode().get()).optionalIndex().get()).intValue();
+        return ((Integer) ((ASTWithIndex) porcNode().get().value()).optionalIndex().get()).intValue();
     }
 
     @Child

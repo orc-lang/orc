@@ -23,6 +23,8 @@ import com.oracle.truffle.api.source.{ Source, SourceSection }
 object SourceSectionFromPorc {
   val sourceCache = new java.util.WeakHashMap[OrcInputContext, Source]()
 
+  def apply(e: PorcAST.Z): SourceSection = this(e.value)
+
   def apply(e: PorcAST): SourceSection = synchronized {
     e.sourceTextRange match {
       case Some(range) =>

@@ -50,11 +50,11 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     * This is used for inlining.
     *
     */
-  def expression(e: porc.Expression,
+  def expression(e: porc.Expression.Z,
       argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable], frameDescriptor: FrameDescriptor,
       closureMap: collection.Map[Int, RootCallTarget], subst: porc.Variable => AnyRef, isTail: Boolean,
       outerEnclosingMethod: porc.Variable): porce.Expression = {
-    this(e.toZipper(), argumentVariables, closureVariables, frameDescriptor, closureMap, subst, isTail, outerEnclosingMethod)
+    this(e, argumentVariables, closureVariables, frameDescriptor, closureMap, subst, isTail, outerEnclosingMethod)
   }
 
 
@@ -108,8 +108,8 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
 
   def makeCallTarget(root: porce.PorcERootNode): RootCallTarget = {
     require(root.porcNode().isDefined, s"$root")
-    require(root.porcNode().get.isInstanceOf[ASTWithIndex], s"${root.porcNode().get}")
-    require(root.porcNode().get.asInstanceOf[ASTWithIndex].optionalIndex.isDefined, s"${root.porcNode().get}")
+    require(root.porcNode().get.value.isInstanceOf[ASTWithIndex], s"${root.porcNode().get.value}")
+    require(root.porcNode().get.value.asInstanceOf[ASTWithIndex].optionalIndex.isDefined, s"${root.porcNode().get.value}")
     val callTarget = Truffle.getRuntime().createCallTarget(root)
     closureMap += (root.getId() -> callTarget)
     callTarget
@@ -123,7 +123,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     } else {
       porce.Read.Local.create(lookupVariable(x))
     }
-    res.setPorcAST(x)
+    res.setPorcAST(x.toZipper) // TODO: This should probably be the actual zipper.
     res
   }
 
@@ -140,7 +140,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
       outerEnclosingMethod = m.name)
     val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, 3, 0, m.name, execution)
     rootNode.setVariables(Seq(m.pArg, m.cArg, m.tArg), Seq())
-    rootNode.setPorcAST(m)
+    rootNode.setPorcAST(m.toZipper)
     val callTarget = makeCallTarget(rootNode)
     val closure = new PorcEClosure(Array(), callTarget, true)
     (closure, closureMap)
@@ -202,7 +202,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
             val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, args.size, capturedVars.size,
                 getEnclosingMethod(e)(ctx), execution)
             rootNode.setVariables(args, capturedVars)
-            rootNode.setPorcAST(e.value)
+            rootNode.setPorcAST(e)
             makeCallTarget(rootNode)
             porce.NewContinuation.create(capturingExprs, rootNode, reuse)
           }
@@ -329,7 +329,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
           val fieldValues = fieldOrdering.map(newBindings(_))
           porce.NewObject.create(fieldOrdering.toArray, fieldValues.toArray)
       }
-      res.setPorcAST(e.value)
+      res.setPorcAST(e)
       res.setTail(thisCtx.inTailPosition)
       res
     }
@@ -349,7 +349,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
           val rootNode = porce.PorcERootNode.create(language, descriptor, newBody, arguments.size, closureVariables.size,
               m.name, execution)
           rootNode.setVariables(arguments, closureVariables)
-          rootNode.setPorcAST(m.value)
+          rootNode.setPorcAST(m)
 
           makeCallTarget(rootNode)
 
@@ -371,7 +371,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
       case porc.MethodCPS.Z(name, pArg, cArg, tArg, _, arguments, body) =>
         process(pArg +: cArg +: tArg +: arguments)
     }
-    res.setPorcAST(m.value)
+    res.setPorcAST(m)
     res
   }
 

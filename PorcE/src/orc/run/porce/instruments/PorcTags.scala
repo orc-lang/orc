@@ -21,12 +21,15 @@ class ProfiledPorcNodeTag private () {
 }
 
 object ProfiledPorcNodeTag {
+  def isProfiledPorcNode(n: PorcAST.Z): Boolean = {
+    isProfiledPorcNode(n.value)
+  }
   def isProfiledPorcNode(n: PorcAST): Boolean = {
     import orc.ast.porc._
     n match {
-      // Closure Construction 
+      // Closure Construction
       case _: Continuation | _: MethodDeclaration => true
-      // Calls 
+      // Calls
       case _: MethodDirectCall | _: MethodCPSCall | _: CallContinuation => true
       // Future Binds
       case _: Bind | _: BindStop => true
@@ -42,7 +45,7 @@ object ProfiledPorcNodeTag {
       case _: Spawn => true
       // Objects
       case _: New => true
-      
+
       case _ => false
     }
   }

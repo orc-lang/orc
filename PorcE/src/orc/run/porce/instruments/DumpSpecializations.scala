@@ -73,10 +73,10 @@ object DumpSpecializations {
       if (doPrintHeader) {
         out.print("--- ")
         findNodeWithSource(node) match {
-          case p: HasPorcNode if p.porcNode.isDefined && p.porcNode.get.sourceTextRange.isDefined =>
-            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.sourceTextRange.get.lineContentWithCaret}")
+          case p: HasPorcNode if p.porcNode.isDefined && p.porcNode.get.value.sourceTextRange.isDefined =>
+            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.value.sourceTextRange.get.lineContentWithCaret}")
           case p: HasPorcNode if p.porcNode.isDefined =>
-            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.toString.takeWhile(_ != '\n')}")
+            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.value.toString.takeWhile(_ != '\n')}")
           case _ if node.getSourceSection != null =>
             val ss = node.getSourceSection
             out.println(s"$prefix${node.getClass} ${ss.getSource.getName}:${ss.getStartLine} (${ss}) $specsStr")

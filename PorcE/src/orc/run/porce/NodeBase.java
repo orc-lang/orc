@@ -81,10 +81,10 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
     }
 
     @CompilationFinal
-    private Option<PorcAST> porcNode = Option.apply(null);
+    private Option<PorcAST.Z> porcNode = Option.apply(null);
 
     @Override
-    public void setPorcAST(final PorcAST ast) {
+    public void setPorcAST(final PorcAST.Z ast) {
         CompilerAsserts.neverPartOfCompilation();
         porcNode = Option.apply(ast);
         section = SourceSectionFromPorc.apply(ast);
@@ -99,7 +99,7 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
     }
 
     @Override
-    public Option<PorcAST> porcNode() {
+    public Option<PorcAST.Z> porcNode() {
         return porcNode;
     }
 
@@ -152,7 +152,7 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
         if (tag == TailTag.class) {
             return isTail;
         } else if (tag == ProfiledPorcNodeTag.class) {
-            return porcNode().isDefined() && ProfiledPorcNodeTag.isProfiledPorcNode(porcNode().get());
+            return porcNode().isDefined() && ProfiledPorcNodeTag.isProfiledPorcNode((PorcAST)porcNode().get().value());
         } else if (tag == ProfiledPorcENodeTag.class) {
             return ProfiledPorcENodeTag.isProfiledPorcENode(this);
         } else {
@@ -196,7 +196,7 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
         if (e instanceof HasPorcNode) {
             HasPorcNode pn = (HasPorcNode) e;
             if (pn.porcNode().isDefined()) {
-                final PorcAST ast = pn.porcNode().get();
+                final PorcAST ast = (PorcAST) pn.porcNode().get().value();
                 if (ast instanceof ASTWithIndex && ((ASTWithIndex) ast).optionalIndex().isDefined()) {
                     return ((Integer) ((ASTWithIndex) ast).optionalIndex().get()).intValue();
                 }

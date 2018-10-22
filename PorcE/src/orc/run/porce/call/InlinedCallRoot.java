@@ -174,7 +174,7 @@ public abstract class InlinedCallRoot extends NodeBase {
 
         // Now reconvert the original Porc code to PorcE in a new context.
         Expression res = execution.porcToPorcE().expression(
-                (orc.ast.porc.Expression)body.porcNode().get(),
+                (orc.ast.porc.Expression.Z)body.porcNode().get(),
                 PorcToPorcE.variableSeq(),
                 PorcToPorcE.variableSeq(),
                 frame.getFrameDescriptor(),

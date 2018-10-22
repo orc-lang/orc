@@ -46,7 +46,7 @@ public class NewContinuation extends Expression {
 	}
 
 	@Override
-	public void setPorcAST(final PorcAST ast) {
+	public void setPorcAST(final PorcAST.Z ast) {
 		((PorcERootNode) callTarget.getRootNode()).setPorcAST(ast);
 		super.setPorcAST(ast);
 	}
