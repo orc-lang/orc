@@ -111,7 +111,7 @@ public abstract class SpecializationConfiguration {
 
     @CompilationFinal
     public static final double MinimumEarlyHaltProbability = Double
-            .parseDouble(System.getProperty("orc.porce.minimumEarlyHaltProbability", "0.5"));
+            .parseDouble(System.getProperty("orc.porce.minimumEarlyHaltProbability", "0.0"));
 
     @CompilationFinal
     public static final boolean UseExternalCallKindDecision = Boolean
@@ -124,6 +124,7 @@ public abstract class SpecializationConfiguration {
     @CompilationFinal
     public static final boolean ProfileFunctionTime = Boolean
             .parseBoolean(System.getProperty("orc.porce.profileFunctionTime", "false"));
+
     {
         if(ProfileFunctionTime && !ProfileCallGraph) {
             Logger.warning(() -> "orc.porce.profileFunctionTime requires orc.porce.profileCallGraph, but profileCallGraph=false");

@@ -73,7 +73,8 @@ public class FlushAllCounters extends Expression {
         }
 
         if (flushPolarity >= 0 ||
-                prob > SpecializationConfiguration.MinimumEarlyHaltProbability ||
+                hc > 0 ||
+                //prob > SpecializationConfiguration.MinimumEarlyHaltProbability ||
                 CompilerDirectives.inInterpreter()) {
             final SimpleWorkStealingScheduler.Worker worker = (SimpleWorkStealingScheduler.Worker)thread;
             Counter.incrFlushAllCount();
@@ -143,7 +144,7 @@ public class FlushAllCounters extends Expression {
 
     private static double getProbability(int haltCount, int totalCount) {
         if (totalCount <= 0) {
-            return 0.0;
+            return 1.0;
         } else {
             return (double)haltCount / totalCount;
         }

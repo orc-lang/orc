@@ -397,7 +397,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     @TruffleBoundary(allowInlining = false)
     private void createSchedulableAndSchedule(final Object[] args) {
-        execution.runtime().schedule(new CallPorcERootNodeSchedulable(this, args));
+//        Logger.info(() -> "Trampolining " + this + " " + java.util.Arrays.toString(args));
+        execution.runtime().schedule(new CallPorcERootNodeSchedulable(this.getTrampolineCallTarget(), args));
     }
 
     public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor,

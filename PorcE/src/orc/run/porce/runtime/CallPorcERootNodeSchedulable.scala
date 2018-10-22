@@ -15,16 +15,19 @@ package orc.run.porce.runtime
 
 import orc.Schedulable
 import orc.values.Format
-import orc.run.porce.PorcERootNode
+import com.oracle.truffle.api.RootCallTarget
 
-final class CallPorcERootNodeSchedulable(private var _target: PorcERootNode, private var _arguments: Array[AnyRef]) extends Schedulable {
+final class CallPorcERootNodeSchedulable(private var _target: RootCallTarget, private var _arguments: Array[AnyRef]) extends Schedulable {
+  require(_target != null)
+  require(_arguments != null)
+
   override val nonblocking: Boolean = true
 
   def run(): Unit = {
     val (t, a) = (_target, _arguments)
     _target = null
     _arguments = null
-    t.getTrampolineCallTarget().call(a)
+    t.call(a: _*)
   }
 
   override def toString(): String = {
@@ -36,6 +39,6 @@ final class CallPorcERootNodeSchedulable(private var _target: PorcERootNode, pri
       ""
     }
 
-    s"${_target.getName}($a)" // %$priority
+    s"${_target}($a)"
   }
 }
