@@ -187,34 +187,13 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
             porce.Write.Local.create(lookupVariable(x), transform(v)(innerCtx)),
             transform(body)(thisCtx)))
         case e@porc.Continuation.Z(args, body) if e.value.optionalIndex.exists(closureMap.contains(_)) =>
-          // TODO: Eliminate duplicated code between this case and the next.
-          val reuse = {
-            val capturedVars = e.freeVars
-            val isSubset = capturedVars.forall(thisCtx.closureVariables.contains)
-            val nDropped = thisCtx.closureVariables.count(!capturedVars.contains(_))
-            //println(s"${if (isSubset) 1 else 0},$nDropped,'${thisCtx.closureVariables}','${normalizeOrder(capturedVars)}'")
-            isSubset && nDropped <= 0
-          }
-
-          val capturedVars = if (reuse) thisCtx.closureVariables else normalizeOrder(e.freeVars)
-
-          val capturingExprs = capturedVars.map(transform(_)(innerCtx)).toArray
+          val (reuse, capturedVars, capturingExprs) = transformContinuationContext(e)
 
           porce.NewContinuation.create(capturingExprs, closureMap(e.value.optionalIndex.get).getRootNode, reuse)
-        case porc.Continuation.Z(args, body) =>
+        case e@porc.Continuation.Z(args, body) =>
           val descriptor = new FrameDescriptor()
 
-          val reuse = {
-            val capturedVars = e.freeVars
-            val isSubset = capturedVars.forall(thisCtx.closureVariables.contains)
-            val nDropped = thisCtx.closureVariables.count(!capturedVars.contains(_))
-            //println(s"${if (isSubset) 1 else 0},$nDropped,'${thisCtx.closureVariables}','${normalizeOrder(capturedVars)}'")
-            isSubset && nDropped <= 0
-          }
-
-          val capturedVars = if (reuse) thisCtx.closureVariables else normalizeOrder(e.freeVars)
-
-          val capturingExprs = capturedVars.map(transform(_)(innerCtx)).toArray
+          val (reuse, capturedVars, capturingExprs) = transformContinuationContext(e)
 
           {
             val ctx = innerCtx.withTailPosition.copy(descriptor = descriptor, closureVariables = capturedVars, argumentVariables = args)
@@ -394,5 +373,22 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     }
     res.setPorcAST(m.value)
     res
+  }
+
+  def transformContinuationContext(e: porc.Continuation.Z)(implicit ctx: Context) = {
+    val reuse = {
+      val capturedVars = e.freeVars
+      val isSubset = capturedVars.forall(ctx.closureVariables.contains)
+      val nDropped = ctx.closureVariables.count(!capturedVars.contains(_))
+      //println(s"${if (isSubset) 1 else 0},$nDropped,'${thisCtx.closureVariables}','${normalizeOrder(capturedVars)}'")
+      // TODO: capturedVars.nonEmpty is a hack to avoid reuse inside inlining.
+      isSubset && nDropped <= 0 && capturedVars.nonEmpty
+    }
+
+    val capturedVars = if (reuse) ctx.closureVariables else normalizeOrder(e.freeVars)
+
+    val capturingExprs = capturedVars.map(transform(_)(ctx.withoutTailPosition)).toArray
+
+    (reuse, capturedVars, capturingExprs)
   }
 }
