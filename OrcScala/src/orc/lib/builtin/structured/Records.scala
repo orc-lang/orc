@@ -19,16 +19,17 @@
 
 package orc.lib.builtin.structured
 
-import orc.error.compiletime.typing._
+import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType }
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.types._
-import orc.util.OptionMapExtension._
+import orc.types.{ RecordType, SimpleCallableType, StrictCallableType, Top, TupleType, Type }
 import orc.util.ArrayExtensions.ArrayN
-import orc.values._
+import orc.util.OptionMapExtension.addOptionMapToList
+import orc.values.{ Field, OrcRecord, OrcTuple, OrcValue }
 import orc.values.sites.{ FunctionalSite, TypedSite }
-import orc.values.sites.compatibility.{ TotalSite, ScalaPartialSite, CallContext }
+import orc.values.sites.compatibility.{ ScalaPartialSite, TotalSite }
 
-object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
+@SerialVersionUID(-4970620914536871147L)
+object RecordConstructor extends TotalSite with TypedSite with FunctionalSite with Serializable {
   override def name = "Record"
   override def evaluate(args: Array[AnyRef]) = {
     val valueMap = new scala.collection.mutable.HashMap[String, AnyRef]()
@@ -48,7 +49,7 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
     def call(argTypes: List[Type]) = {
       val bindings =
         (argTypes.zipWithIndex) map {
-          case (TupleType(List(FieldType(f), t)), _) => (f, t)
+//          case (TupleType(List(FieldType(f), t)), _) => (f, t)
           case (t, i) => throw new ArgumentTypecheckingException(i, TupleType(List(ExpectedType("of some field"), Top)), t)
         }
       RecordType(bindings.toMap)
@@ -56,7 +57,8 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
   }
 }
 
-object RecordMatcher extends ScalaPartialSite with TypedSite with FunctionalSite {
+@SerialVersionUID(-7652586938987434961L)
+object RecordMatcher extends ScalaPartialSite with TypedSite with FunctionalSite with Serializable {
   override def name = "RecordMatcher"
 
   override def evaluate(args: Array[AnyRef]): Option[AnyRef] =
@@ -79,7 +81,7 @@ object RecordMatcher extends ScalaPartialSite with TypedSite with FunctionalSite
         case List(rt @ RecordType(entries), shape @ _*) => {
           val matchedElements =
             shape.toList.zipWithIndex map {
-              case (FieldType(f), _) => entries.getOrElse(f, throw new RecordShapeMismatchException(rt, f))
+//              case (FieldType(f), _) => entries.getOrElse(f, throw new RecordShapeMismatchException(rt, f))
               case (t, i) => throw new ArgumentTypecheckingException(i + 1, ExpectedType("of some field"), t)
             }
           letLike(matchedElements)

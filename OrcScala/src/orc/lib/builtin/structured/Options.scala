@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on March 31, 2011.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,20 +13,25 @@
 
 package orc.lib.builtin.structured
 
-import orc.types._
-import orc.values._
+import orc.types.{ Bot, Covariant, FunctionType, SignalType, SimpleFunctionType, SimpleTypeConstructor, Top, TypeVariable }
+import orc.values.Signal
 import orc.values.sites.{ FunctionalSite, TypedSite }
-import orc.values.sites.compatibility.{ TotalSite0, TotalSite1, PartialSite1, StructurePairSite }
+import orc.values.sites.compatibility.{ PartialSite1, StructurePairSite, TotalSite0, TotalSite1 }
 
 object OptionType extends SimpleTypeConstructor("Option", Covariant)
 
-object NoneSite extends StructurePairSite(NoneConstructor, NoneExtractor)
-object NoneConstructor extends TotalSite0 with TypedSite with FunctionalSite {
+@SerialVersionUID(111672818275898614L)
+object NoneSite extends StructurePairSite(NoneConstructor, NoneExtractor) with Serializable
+
+@SerialVersionUID(-427078783776597086L)
+object NoneConstructor extends TotalSite0 with TypedSite with FunctionalSite with Serializable {
   override def name = "None"
   def eval() = None
   def orcType() = SimpleFunctionType(OptionType(Bot))
 }
-object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite {
+
+@SerialVersionUID(1097292286490160503L)
+object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable {
   override def name = "None.unapply"
   def eval(a: AnyRef) = {
     a match {
@@ -38,8 +43,11 @@ object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite {
   def orcType() = SimpleFunctionType(OptionType(Top), SignalType)
 }
 
-object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor)
-object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite {
+@SerialVersionUID(4417930309108966987L)
+object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor) with Serializable
+
+@SerialVersionUID(3009000043854264802L)
+object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite with Serializable {
   override def name = "Some"
   def eval(a: AnyRef) = Some(a)
   def orcType() = {
@@ -47,7 +55,9 @@ object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite {
     new FunctionType(List(X), List(X), OptionType(X))
   }
 }
-object SomeExtractor extends PartialSite1 with TypedSite with FunctionalSite {
+
+@SerialVersionUID(-8183246747813035072L)
+object SomeExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable {
   override def name = "Some.unapply"
   def eval(arg: AnyRef) = {
     arg match {

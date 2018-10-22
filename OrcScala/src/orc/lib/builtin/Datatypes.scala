@@ -4,20 +4,21 @@
 //
 // Created by dkitchin on June 24, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.builtin
 
 import orc.error.compiletime.typing.MalformedDatatypeCallException
 import orc.error.runtime.ArityMismatchException
-import orc.types._
-import orc.util.TypeListEnrichment._
-import orc.values._
-import orc.values.sites.{ TypedSite }
+import orc.types.{ CallableType, IntegerType, MonomorphicDatatype, PolymorphicDatatype, StrictCallableType, StringType, TupleType, Type, TypeInstance }
+import orc.util.TypeListEnrichment.enrichTypeList
+import orc.values.{ OrcRecord, OrcTuple, OrcValue, Tag, TaggedValue }
+import orc.values.sites.TypedSite
 import orc.values.sites.compatibility.{ FunctionalSite, PartialSite1, TotalSite }
 
 object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite {
@@ -68,7 +69,8 @@ object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite {
   }
 }
 
-class DatatypeConstructor(arity: Int, tag: Tag) extends TotalSite with FunctionalSite {
+@SerialVersionUID(5848404637077736601L)
+class DatatypeConstructor(arity: Int, tag: Tag) extends TotalSite with FunctionalSite with Serializable {
   def evaluate(args: Array[AnyRef]): AnyRef = {
     if (args.size != arity) {
       throw new ArityMismatchException(arity, args.size)
@@ -77,7 +79,9 @@ class DatatypeConstructor(arity: Int, tag: Tag) extends TotalSite with Functiona
     }
   }
 }
-class DatatypeExtractor(tag: Tag) extends PartialSite1 with FunctionalSite {
+
+@SerialVersionUID(401721348892078909L)
+class DatatypeExtractor(tag: Tag) extends PartialSite1 with FunctionalSite with Serializable {
   def eval(arg: AnyRef): Option[AnyRef] = {
     arg match {
       case TaggedValue(`tag`, values) => Some(OrcValue.letLike(values))

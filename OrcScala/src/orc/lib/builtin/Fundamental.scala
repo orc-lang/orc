@@ -19,9 +19,10 @@ import orc.util.ArrayExtensions.{ Array0, Array1 }
 import orc.util.TypeListEnrichment.enrichTypeList
 import orc.values.{ OrcTuple, Signal }
 import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2, TalkativeSite, TypedSite }
-import orc.values.sites.compatibility.{ TotalSite }
+import orc.values.sites.compatibility.TotalSite
 
-case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
+@SerialVersionUID(1713576028304864566L)
+case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite with Serializable {
   override def name = "Ift"
 
   def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
@@ -35,7 +36,8 @@ case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
-case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
+@SerialVersionUID(7595428578485445916L)
+case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite with Serializable {
   override def name = "Iff"
 
   def getInvokerSpecialized(a: java.lang.Boolean): Invoker = {
@@ -49,7 +51,8 @@ case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
-case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite {
+@SerialVersionUID(7152101636414367959L)
+case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite with Serializable {
   override def name = "Eq"
 
   def getInvokerSpecialized(a: Any, b: Any): Invoker = {
@@ -64,7 +67,8 @@ case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalS
   def orcType() = SimpleFunctionType(Top, Top, BooleanType)
 }
 
-object Let extends TotalSite with TypedSite with FunctionalSite {
+@SerialVersionUID(5555898947968354991L)
+object Let extends TotalSite with TypedSite with FunctionalSite with Serializable {
   override def name = "let"
   def evaluate(args: Array[AnyRef]) =
     args match {
