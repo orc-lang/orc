@@ -19,9 +19,9 @@
 
 package orc.lib.builtin.structured
 
-import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType }
+import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType, RecordShapeMismatchException }
 import orc.error.runtime.ArgumentTypeMismatchException
-import orc.types.{ RecordType, SimpleCallableType, StrictCallableType, Top, TupleType, Type }
+import orc.types.{ FieldType, RecordType, SimpleCallableType, StrictCallableType, Top, TupleType, Type }
 import orc.util.ArrayExtensions.ArrayN
 import orc.util.OptionMapExtension.addOptionMapToList
 import orc.values.{ Field, OrcRecord, OrcTuple, OrcValue }
@@ -49,7 +49,7 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite wi
     def call(argTypes: List[Type]) = {
       val bindings =
         (argTypes.zipWithIndex) map {
-//          case (TupleType(List(FieldType(f), t)), _) => (f, t)
+          case (TupleType(List(FieldType(f), t)), _) => (f, t)
           case (t, i) => throw new ArgumentTypecheckingException(i, TupleType(List(ExpectedType("of some field"), Top)), t)
         }
       RecordType(bindings.toMap)
@@ -81,7 +81,7 @@ object RecordMatcher extends ScalaPartialSite with TypedSite with FunctionalSite
         case List(rt @ RecordType(entries), shape @ _*) => {
           val matchedElements =
             shape.toList.zipWithIndex map {
-//              case (FieldType(f), _) => entries.getOrElse(f, throw new RecordShapeMismatchException(rt, f))
+              case (FieldType(f), _) => entries.getOrElse(f, throw new RecordShapeMismatchException(rt, f))
               case (t, i) => throw new ArgumentTypecheckingException(i + 1, ExpectedType("of some field"), t)
             }
           letLike(matchedElements)
