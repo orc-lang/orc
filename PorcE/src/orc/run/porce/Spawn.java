@@ -13,6 +13,7 @@ package orc.run.porce;
 
 import java.util.Set;
 
+import orc.run.porce.call.Dispatch;
 import orc.run.porce.runtime.CallClosureSchedulable;
 import orc.run.porce.runtime.CallKindDecision;
 import orc.run.porce.runtime.Counter;
@@ -45,7 +46,7 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     protected final ValueProfile targetRootProfile = ValueProfile.createIdentityProfile();
 
     @Child
-    protected StackCheckingDispatch dispatch;
+    protected Dispatch dispatch;
 
     private final CalledRootsProfile calledRootsProfile = new CalledRootsProfile();
 
@@ -77,7 +78,7 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     protected Spawn(boolean mustSpawn, PorcEExecution execution) {
         this.mustSpawn = mustSpawn;
         this.execution = execution;
-        this.dispatch = StackCheckingDispatch.create(execution);
+        this.dispatch = Dispatch.createInternal(execution);
         this.dispatch.forceInline();
     }
 
@@ -92,8 +93,6 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
             final PorcEClosure computation,
             @Cached("shouldInlineSpawn(computation)") boolean shouldInline) {
         final PorcERuntime r = execution.runtime();
-        // The incrementAndCheckStackDepth call should not go in shouldInlineSpawn because it has side effects and
-        // we can't guarantee that guards are not called multiple times.
         t.checkLive();
         if (!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize()))) {
             dispatch.dispatch(frame, computation);
@@ -108,15 +107,8 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     public PorcEUnit inline(final VirtualFrame frame, final Counter c, final Terminator t,
             final PorcEClosure computation,
             @Cached("shouldInlineSpawn(computation)") boolean shouldInline) {
-        // Here we can inline spawns speculatively if we have not done that too much on this stack.
-        // This is very heuristic and may cause load imbalance problems in some cases.
-        final PorcERuntime r = execution.runtime();
+        dispatch.dispatch(frame, computation);
 
-        if (r.actuallySchedule()) {
-            dispatch.dispatch(frame, computation);
-        } else {
-            dispatch.executeInline(frame, computation);
-        }
         return PorcEUnit.SINGLETON;
     }
 

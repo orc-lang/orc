@@ -123,7 +123,7 @@ public abstract class Bind extends Expression {
         public void porceSeparateCaches(VirtualFrame frame, int index, final PorcEFutureReader reader, final Object value,
             @Cached("index") int cachedIndex,
             @Cached("createClassProfile()") ValueProfile readerClassProfile,
-            @Cached("createDispatch()") Dispatch dispatch,
+            @Cached("createInternal(execution)") Dispatch dispatch,
             @Cached("createBinaryProfile()") ConditionProfile inlineProfile,
             @Cached("create()") BranchProfile callProfile) {
             porce(frame, reader, value, readerClassProfile, dispatch, inlineProfile, callProfile);
@@ -132,7 +132,7 @@ public abstract class Bind extends Expression {
         @Specialization(replaces = "porceSeparateCaches")
         public void porceSharedCache(VirtualFrame frame, int index, final PorcEFutureReader reader, final Object value,
             @Cached("createClassProfile()") ValueProfile readerClassProfile,
-            @Cached("createDispatch()") Dispatch dispatch,
+            @Cached("createInternal(execution)") Dispatch dispatch,
             @Cached("createBinaryProfile()") ConditionProfile inlineProfile,
             @Cached("create()") BranchProfile callProfile) {
             porce(frame, reader, value, readerClassProfile, dispatch, inlineProfile, callProfile);
@@ -141,10 +141,6 @@ public abstract class Bind extends Expression {
         @Specialization
         public void orc(int index, final FutureReader reader, final Object value) {
             reader.publish(value);
-        }
-
-        protected Dispatch createDispatch() {
-          return StackCheckingDispatch.create(execution);
         }
     }
 }

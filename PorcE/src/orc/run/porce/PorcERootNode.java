@@ -26,9 +26,12 @@ import orc.ast.porc.Variable;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.HaltException;
 import orc.run.porce.call.CatchSelfTailCall;
+import orc.run.porce.profiles.VisibleConditionProfile;
 import orc.run.porce.runtime.KilledException;
+import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.SourceSectionFromPorc;
+import orc.run.porce.runtime.CallPorcERootNodeSchedulable;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -40,6 +43,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.utilities.AssumedValue;
 
@@ -357,6 +361,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
             }
         }
 
+        final PorcERuntime r = execution.runtime();
+        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth(inlineProfile);
+        final int previousStackHeight = state.previousDepth();
+        if (!inlineProfile.profile(state.growthAllowed())) {
+            createSchedulableAndSchedule(frame.getArguments());
+            return PorcEUnit.SINGLETON;
+        }
+
         long startTime = getTime();
 
         try {
@@ -375,7 +387,17 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
             transferToInterpreter();
             execution.notifyOfException(e, this);
             return PorcEUnit.SINGLETON;
+        } finally {
+            r.decrementStackDepth(previousStackHeight, unrollProfile);
         }
+    }
+
+    private final VisibleConditionProfile inlineProfile = VisibleConditionProfile.createBinaryProfile();
+    private final ConditionProfile unrollProfile = ConditionProfile.createBinaryProfile();
+
+    @TruffleBoundary(allowInlining = false)
+    private void createSchedulableAndSchedule(final Object[] args) {
+        execution.runtime().schedule(new CallPorcERootNodeSchedulable(this, args));
     }
 
     public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor,

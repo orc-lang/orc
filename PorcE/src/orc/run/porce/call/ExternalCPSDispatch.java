@@ -20,7 +20,6 @@ import orc.error.runtime.HaltException;
 import orc.run.porce.HaltToken;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
-import orc.run.porce.StackCheckingDispatch;
 import orc.run.porce.profiles.ValueClassesProfile;
 import orc.run.porce.runtime.CallContextCommon;
 import orc.run.porce.runtime.Counter;
@@ -130,11 +129,6 @@ public class ExternalCPSDispatch extends Dispatch {
 //            return dispatchP;
 //        }
 
-        protected Dispatch createDispatchP() {
-            return StackCheckingDispatch.create(execution);
-            // return InternalCPSDispatch.create(/*forceInline =*/ true, execution, isTail);
-        }
-
         @SuppressWarnings("hiding")
         protected ResponseSetHandler createResponseSetHandler(final PorcEExecution execution) {
             return ExternalCPSDispatchFactory.ResponseSetHandlerNodeGen.create(execution);
@@ -152,7 +146,7 @@ public class ExternalCPSDispatch extends Dispatch {
                 @Cached("getDirectInvokerWithBoundary(target, arguments)") DirectInvoker invoker,
                 @Cached("create()") InvokerCanInvoke canInvoke,
                 @Cached("create(execution)") InvokerInvokeDirect invokeDirect,
-                @Cached("createDispatchP()") Dispatch dispatchP,
+                @Cached("createInternal(execution)") Dispatch dispatchP,
                 @Cached("create(execution)") HaltToken.KnownCounter haltToken) {
             ensureTail(dispatchP);
             ensureForceInline(dispatchP);
@@ -245,7 +239,7 @@ public class ExternalCPSDispatch extends Dispatch {
                 @Cached("create(execution)") InvokerInvokeDirect invokeDirect,
                 @Cached("create(execution)") InvokerInvoke invoke,
                 @Cached("createResponseSetHandler(execution)") ResponseSetHandler handler,
-                @Cached("createDispatchP()") Dispatch dispatchP,
+                @Cached("createInternal(execution)") Dispatch dispatchP,
                 @Cached("create(execution)") HaltToken.KnownCounter haltToken) {
             final Invoker invoker = getInvokerWithBoundary(target, arguments);
             if (ExternalCPSDirectSpecialization && isDirectProfile.profile(invoker instanceof DirectInvoker)) {
@@ -299,7 +293,7 @@ public class ExternalCPSDispatch extends Dispatch {
 
         protected ResponseSetHandler(final PorcEExecution execution) {
             this.execution = execution;
-            this.dispatchP = InternalCPSDispatch.create(execution, false);
+            this.dispatchP = Dispatch.createInternal(execution);
             this.haltToken = HaltToken.KnownCounter.create(execution);
         }
 

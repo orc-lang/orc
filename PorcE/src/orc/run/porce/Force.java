@@ -40,7 +40,7 @@ public class Force {
     }
 
     public static Dispatch createCall(PorcEExecution execution) {
-        Dispatch n = StackCheckingDispatch.create(execution);
+        Dispatch n = Dispatch.createInternal(execution);
         n.forceInline();
         return n;
     }
