@@ -122,10 +122,28 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
             properties.put("sourceSection", section);
         }
         if (porcNode.isDefined()) {
-            String s = porcNode.get().toString().replaceAll("(\n| |\t)+", " ");
-            properties.put("porcNode", s.substring(0, Math.min(100, s.length())));
+            Object nodePrefixStub = new PorcASTDebugStub((PorcAST)porcNode.get().value());
+            properties.put("porcNode", nodePrefixStub);
         }
         return properties;
+    }
+
+    /**
+     * Wrapper class for PorcAST to perform the correct toString conversion when needed.
+     *
+     * @author amp
+     */
+    private static final class PorcASTDebugStub {
+        private final PorcAST porcAST;
+
+        public PorcASTDebugStub(PorcAST porcAST) {
+            this.porcAST = porcAST;
+        }
+
+        @Override
+        public String toString() {
+            return porcAST.prettyprintWithoutNested();
+        }
     }
 
     @Override

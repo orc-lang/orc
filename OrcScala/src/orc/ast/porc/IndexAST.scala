@@ -36,7 +36,7 @@ class IndexAST {
           val ni = nextIndex(n.optionalIndex.getOrElse(Int.MinValue))
           n.optionalIndex match {
             case Some(oi) if ni != oi =>
-              Logger.warning(s"${ast.toString.take(100)} already has index $oi, but being assigned index $ni")
+              Logger.warning(s"${ast.value.prettyprintWithoutNested()} already has index $oi, but being assigned index $ni")
             case _ => ()
           }
           n.optionalIndex = Some(ni)

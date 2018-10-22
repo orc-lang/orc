@@ -21,37 +21,37 @@ object PositionChecker {
   def apply(e: PorcAST.Z, co: CompilerOptions): Unit = {
     checker(co)(e)
   }
-  
+
   private def checkError(b: Boolean, msg: => String, e: PorcAST.Z)(implicit co: CompilerOptions): Unit = if (!b) {
     val exc = new InternalCompilerError(msg)
     e.value.sourceTextRange foreach { exc.setPosition(_) }
     co.reportProblem(exc)
   }
-  
+
   private def checkWarning(b: Boolean, msg: => String, e: PorcAST.Z)(implicit co: CompilerOptions): Unit = if (!b) {
     val exc = new InternalCompilerWarning(msg)
     e.value.sourceTextRange foreach { exc.setPosition(_) }
     co.reportProblem(exc)
   }
-  
+
   val prefixLength = 50
-  
+
   private def checker(implicit co: CompilerOptions) = new Transform {
     override val onExpression: PartialFunction[Expression.Z, Expression] = {
       case e  =>
-        checkWarning(e.value.sourceTextRange.isDefined, s"The expression beginning with ${e.value.toString().take(prefixLength)} does not have source information associated with it.", e)
+        checkWarning(e.value.sourceTextRange.isDefined, s"The expression beginning with ${e.value.prettyprintWithoutNested().take(prefixLength)} does not have source information associated with it.", e)
         e.value
     }
-  
+
     override val onMethod: PartialFunction[Method.Z, Method] = {
       case e =>
-        checkWarning(e.value.sourceTextRange.isDefined, s"The method beginning with ${e.value.toString().take(prefixLength)} does not have source information associated with it.", e)
+        checkWarning(e.value.sourceTextRange.isDefined, s"The method beginning with ${e.value.prettyprintWithoutNested().take(prefixLength)} does not have source information associated with it.", e)
         e.value
     }
-  
+
     override val onArgument: PartialFunction[Argument.Z, Argument] = {
       case v =>
-        checkWarning(v.value.sourceTextRange.isDefined, s"The argument ${v.value.toString().take(prefixLength)} does not have source information associated with it.", v)
+        checkWarning(v.value.sourceTextRange.isDefined, s"The argument ${v.value.prettyprintWithoutNested().take(prefixLength)} does not have source information associated with it.", v)
         v.value
     }
   }
