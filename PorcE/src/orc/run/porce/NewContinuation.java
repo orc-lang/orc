@@ -33,13 +33,8 @@ public class NewContinuation extends Expression {
 	protected final RootCallTarget callTarget;
 	protected final boolean reuseClosure;
 
-        @CompilerDirectives.CompilationFinal
+    @CompilerDirectives.CompilationFinal
 	private PorcEClosure closureCache = null;
-
-	@CompilerDirectives.CompilationFinal
-	private volatile long closureCacheChangeCount = 0;
-	@CompilerDirectives.CompilationFinal
-	private volatile long closureCacheUseCount = 0;
 
 	static final class StopCachingException extends SlowPathException {
 		private static final long serialVersionUID = 1L;
@@ -57,15 +52,6 @@ public class NewContinuation extends Expression {
 		this.reuseClosure = reuseClosure;
 	}
 
-	private boolean isCachable() {
-		if (CompilerDirectives.inInterpreter() && closureCacheChangeCount > 0) {
-			long usePerChange = closureCacheUseCount / closureCacheChangeCount;
-			return usePerChange >= 7 || closureCacheUseCount < 100;
-		} else {
-			return true;
-		}
-	}
-
 	@Specialization(guards = { "reuseClosure" })
 	public Object reuse(final VirtualFrame frame) {
 		final Object[] capturedValues = (Object[]) frame.getArguments()[0];
@@ -77,13 +63,6 @@ public class NewContinuation extends Expression {
 	@ExplodeLoop
 	public Object cached(final VirtualFrame frame) throws StopCachingException {
 		CompilerAsserts.compilationConstant(capturedVariables.length);
-
-		/*
-		if (!isCachable()) {
-			CompilerAsserts.neverPartOfCompilation("Cache invalidation should not be in compiled code.");
-			throw new StopCachingException();
-		}
-		*/
 
 		PorcEClosure closure = closureCache;
 
@@ -111,24 +90,7 @@ public class NewContinuation extends Expression {
 
 			closure = new PorcEClosure(capturedValues, callTarget, false);
 			closureCache = closure;
-
-			/*
-			if (CompilerDirectives.inInterpreter())
-				closureCacheChangeCount++;
-				*/
 		}
-
-		/*
-		if (CompilerDirectives.inInterpreter()) {
-			closureCacheUseCount++;
-			long useCount = closureCacheUseCount;
-
-			if (useCount > 5000) {
-				closureCacheUseCount = 0;
-				closureCacheChangeCount = 0;
-			}
-		}
-		*/
 
 		return closure;
 	}
