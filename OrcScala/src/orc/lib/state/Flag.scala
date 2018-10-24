@@ -4,7 +4,7 @@
 //
 // Created by amp on Sep 8, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,7 +17,7 @@ import orc.error.runtime.ArgumentTypeMismatchException
 import orc.run.distrib.PinnedPlacementPolicy
 import orc.types.{ JavaObjectType, SignalType, SimpleFunctionType }
 import orc.values.Signal
-import orc.values.sites.{ EffectFreeSite, Effects, FunctionalSite, TalkativeSite, NonBlockingSite, TypedSite }
+import orc.values.sites.{ EffectFreeSite, Effects, FunctionalSite, LocalSingletonSite, NonBlockingSite, TalkativeSite, TypedSite }
 import orc.values.sites.compatibility.{ PartialSite1, TotalSite0, TotalSite1 }
 
 final class Flag extends PinnedPlacementPolicy {
@@ -38,7 +38,7 @@ final class Flag extends PinnedPlacementPolicy {
 /**
   * @author amp
   */
-object NewFlag extends TotalSite0 with TypedSite with FunctionalSite with TalkativeSite {
+object NewFlag extends TotalSite0 with TypedSite with FunctionalSite with TalkativeSite with Serializable with LocalSingletonSite {
   def eval() = {
     new Flag()
   }
@@ -51,7 +51,7 @@ object NewFlag extends TotalSite0 with TypedSite with FunctionalSite with Talkat
 /**
   * @author amp
   */
-object SetFlag extends TotalSite1 with TypedSite with TalkativeSite with NonBlockingSite {
+object SetFlag extends TotalSite1 with TypedSite with TalkativeSite with NonBlockingSite with Serializable with LocalSingletonSite {
   def eval(arg: AnyRef) = {
     arg match {
       case flag: Flag => {
@@ -69,7 +69,7 @@ object SetFlag extends TotalSite1 with TypedSite with TalkativeSite with NonBloc
   override def effects = Effects.BeforePub
 }
 
-object PublishIfNotSet extends PartialSite1 with TypedSite with NonBlockingSite with EffectFreeSite {
+object PublishIfNotSet extends PartialSite1 with TypedSite with NonBlockingSite with EffectFreeSite with Serializable with LocalSingletonSite {
   def eval(arg: AnyRef) = {
     arg match {
       case flag: Flag => {

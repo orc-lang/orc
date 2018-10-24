@@ -11,19 +11,13 @@
 
 package orc.lib.util
 
-import orc.values.sites.Site
-import orc.values.sites.SiteMetadata
-import orc.OrcRuntime
-import orc.Invoker
 import java.math.BigInteger
 import java.util.concurrent.ThreadLocalRandom
-import orc.values.sites.Range
-import orc.values.sites.IllegalArgumentInvoker
-import java.lang.IllegalArgumentException
-import orc.values.sites.FunctionalSite
-import orc.DirectInvoker
 
-object Random extends Site with SiteMetadata with FunctionalSite {
+import orc.{ DirectInvoker, Invoker, OrcRuntime }
+import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, LocalSingletonSite, Range, Site, SiteMetadata }
+
+object Random extends Site with SiteMetadata with FunctionalSite with Serializable with LocalSingletonSite {
   class ArgInvoker extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == Random && arguments.length == 1 && arguments(0).isInstanceOf[Number]
@@ -69,7 +63,7 @@ object Random extends Site with SiteMetadata with FunctionalSite {
   override def publications: Range = Range(0, 1)
 }
 
-object URandom extends Site with SiteMetadata with FunctionalSite {
+object URandom extends Site with SiteMetadata with FunctionalSite with Serializable with LocalSingletonSite {
   class NoArgInvoker extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == URandom && arguments.length == 0

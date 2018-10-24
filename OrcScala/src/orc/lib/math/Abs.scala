@@ -2,7 +2,7 @@
 // Abs.scala -- Scala object Abs
 // Project OrcScala
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,11 +11,10 @@
 
 package orc.lib.math
 
-import orc.{ Invoker }
-import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1 }
-import orc.values.sites.IllegalArgumentInvoker
+import orc.Invoker
+import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, LocalSingletonSite, OverloadedDirectInvokerMethod1 }
 
-object Abs extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
+object Abs extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Number): Invoker = {
     arg1 match {
       case a: java.lang.Double => invoker(a)(a => Math.abs(a.doubleValue()))

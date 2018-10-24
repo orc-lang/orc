@@ -11,11 +11,11 @@
 
 package orc.lib.math
 
-import orc.values.sites._
 import orc.Invoker
+import orc.values.sites.{ FunctionalSite, LocalSingletonSite, OverloadedDirectInvokerMethod1 }
 
 
-object Log extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
+object Log extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Number): Invoker = {
     invoker(arg1)(a => Math.log(a.doubleValue()))
   }

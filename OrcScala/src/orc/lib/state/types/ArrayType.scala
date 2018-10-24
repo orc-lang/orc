@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.state.types
 
 import orc.types.{ FunctionType, IntegerType, Invariant, OverloadedType, RecordType, SimpleFunctionType, SimpleTypeConstructor, StringType, Type, TypeVariable }

@@ -15,23 +15,23 @@ package orc.lib.builtin.structured
 
 import orc.types.{ Bot, Covariant, FunctionType, SignalType, SimpleFunctionType, SimpleTypeConstructor, Top, TypeVariable }
 import orc.values.Signal
-import orc.values.sites.{ FunctionalSite, TypedSite }
+import orc.values.sites.{ FunctionalSite, LocalSingletonSite, TypedSite }
 import orc.values.sites.compatibility.{ PartialSite1, StructurePairSite, TotalSite0, TotalSite1 }
 
 object OptionType extends SimpleTypeConstructor("Option", Covariant)
 
 @SerialVersionUID(111672818275898614L)
-object NoneSite extends StructurePairSite(NoneConstructor, NoneExtractor) with Serializable
+object NoneSite extends StructurePairSite(NoneConstructor, NoneExtractor) with Serializable with LocalSingletonSite
 
 @SerialVersionUID(-427078783776597086L)
-object NoneConstructor extends TotalSite0 with TypedSite with FunctionalSite with Serializable {
+object NoneConstructor extends TotalSite0 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "None"
   def eval() = None
   def orcType() = SimpleFunctionType(OptionType(Bot))
 }
 
 @SerialVersionUID(1097292286490160503L)
-object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable {
+object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "None.unapply"
   def eval(a: AnyRef) = {
     a match {
@@ -44,10 +44,10 @@ object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite wit
 }
 
 @SerialVersionUID(4417930309108966987L)
-object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor) with Serializable
+object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor) with Serializable with LocalSingletonSite
 
 @SerialVersionUID(3009000043854264802L)
-object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite with Serializable {
+object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Some"
   def eval(a: AnyRef) = Some(a)
   def orcType() = {
@@ -57,7 +57,7 @@ object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite wit
 }
 
 @SerialVersionUID(-8183246747813035072L)
-object SomeExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable {
+object SomeExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Some.unapply"
   def eval(arg: AnyRef) = {
     arg match {

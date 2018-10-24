@@ -4,19 +4,20 @@
 //
 // Created by dkitchin on Jan 20, 2011.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.util
 
-import orc.{ OrcEvent }
+import orc.OrcEvent
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ SimpleFunctionType, StringType }
-import orc.values.sites.{ TypedSite }
-import orc.values.sites.compatibility.{ Site1, CallContext }
+import orc.values.sites.{ LocalSingletonSite, TypedSite }
+import orc.values.sites.compatibility.{ CallContext, Site1 }
 
 /** Generic site for presenting the user with a prompt for input.
   * Different runtimes will present different prompts depending
@@ -31,7 +32,7 @@ trait PromptCallback {
 
 case class PromptEvent(val prompt: String, val callback: PromptCallback) extends OrcEvent
 
-object Prompt extends Site1 with TypedSite {
+object Prompt extends Site1 with TypedSite with Serializable with LocalSingletonSite {
 
   def call(arg: AnyRef, callContext: CallContext) {
     arg match {

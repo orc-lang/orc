@@ -16,23 +16,23 @@ package orc.lib.builtin.structured
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ Bot, Covariant, FunctionType, SignalType, SimpleFunctionType, SimpleTypeConstructor, Top, TupleType, TypeVariable }
 import orc.values.{ OrcTuple, Signal }
-import orc.values.sites.{ SiteMetadata, TypedSite }
+import orc.values.sites.{ LocalSingletonSite, SiteMetadata, TypedSite }
 import orc.values.sites.compatibility.{ FunctionalSite, PartialSite1, StructurePairSite, TotalSite0, TotalSite2 }
 
 object ListType extends SimpleTypeConstructor("List", Covariant)
 
 @SerialVersionUID(-3182160592903163294L)
-object NilSite extends StructurePairSite(NilConstructor, NilExtractor) with Serializable
+object NilSite extends StructurePairSite(NilConstructor, NilExtractor) with Serializable with LocalSingletonSite
 
 @SerialVersionUID(2703598179440668393L)
-object NilConstructor extends TotalSite0 with TypedSite with FunctionalSite with Serializable {
+object NilConstructor extends TotalSite0 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Nil"
   def eval() = Nil
   def orcType() = SimpleFunctionType(ListType(Bot))
 }
 
 @SerialVersionUID(3585143907461788057L)
-object NilExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable {
+object NilExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Nil.unapply"
   def eval(arg: AnyRef) = {
     arg match {
@@ -44,10 +44,10 @@ object NilExtractor extends PartialSite1 with TypedSite with FunctionalSite with
 }
 
 @SerialVersionUID(8311877438024877786L)
-object ConsSite extends StructurePairSite(ConsConstructor, ConsExtractor) with Serializable
+object ConsSite extends StructurePairSite(ConsConstructor, ConsExtractor) with Serializable with LocalSingletonSite
 
 @SerialVersionUID(3494959098141772508L)
-object ConsConstructor extends TotalSite2 with TypedSite with FunctionalSite with Serializable {
+object ConsConstructor extends TotalSite2 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Cons"
   def eval(h: AnyRef, t: AnyRef) = {
     t match {
@@ -62,7 +62,7 @@ object ConsConstructor extends TotalSite2 with TypedSite with FunctionalSite wit
 }
 
 @SerialVersionUID(-6338949926050200496L)
-object ConsExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable {
+object ConsExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Cons.unapply"
   def eval(arg: AnyRef) =
     arg match {

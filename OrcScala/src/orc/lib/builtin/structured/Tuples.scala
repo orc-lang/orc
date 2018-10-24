@@ -18,12 +18,12 @@ import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedTyp
 import orc.error.runtime.HaltException
 import orc.types.{ BinaryCallableType, IntegerConstantType, IntegerType, SimpleCallableType, StrictCallableType, TupleType, Type }
 import orc.values.OrcTuple
-import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod2, Site, SiteMetadata, TalkativeSite }
+import orc.values.sites.{ FunctionalSite, LocalSingletonSite, OverloadedDirectInvokerMethod2, Site, SiteMetadata, TalkativeSite }
 
 // TODO: Replace current tuple values with object and _n fields.
 
 @SerialVersionUID(-2029136642088898630L)
-object TupleConstructor extends Site with FunctionalSite with TalkativeSite with Serializable {
+object TupleConstructor extends Site with FunctionalSite with TalkativeSite with Serializable with LocalSingletonSite {
   override def name = "Tuple"
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
@@ -52,7 +52,7 @@ object TupleConstructor extends Site with FunctionalSite with TalkativeSite with
  * else None.
  */
 @SerialVersionUID(-5168873507961952728L)
-object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] with FunctionalSite with Serializable {
+object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "TupleArityChecker"
   def getInvokerSpecialized(t: AnyRef, arity: Number): Invoker = {
     invoker(t, arity)((t, arity) => t match {

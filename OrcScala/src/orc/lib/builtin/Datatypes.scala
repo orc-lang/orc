@@ -18,10 +18,10 @@ import orc.error.runtime.ArityMismatchException
 import orc.types.{ CallableType, IntegerType, MonomorphicDatatype, PolymorphicDatatype, StrictCallableType, StringType, TupleType, Type, TypeInstance }
 import orc.util.TypeListEnrichment.enrichTypeList
 import orc.values.{ OrcRecord, OrcTuple, OrcValue, Tag, TaggedValue }
-import orc.values.sites.TypedSite
+import orc.values.sites.{ LocalSingletonSite, TypedSite }
 import orc.values.sites.compatibility.{ FunctionalSite, PartialSite1, TotalSite }
 
-object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite {
+object DatatypeBuilder extends TotalSite with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
 
   override def name = "Datatype"
   def evaluate(args: Array[AnyRef]) = {

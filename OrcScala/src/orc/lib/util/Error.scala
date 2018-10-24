@@ -10,22 +10,19 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.util
 
-import orc.values.sites.compatibility.TotalSite
-import orc.values.sites.compatibility.TotalSite1
-import orc.values.sites.TypedSite
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.error.runtime.ProgramSignalledError
-import orc.types.Bot
-import orc.types.SimpleFunctionType
-import orc.types.StringType
+import orc.error.runtime.{ ArgumentTypeMismatchException, ProgramSignalledError }
+import orc.types.{ Bot, SimpleFunctionType, StringType }
+import orc.values.sites.{ LocalSingletonSite, TypedSite }
+import orc.values.sites.compatibility.{ TotalSite, TotalSite1 }
 
 /** The Error site throws an Orc runtime exception with a program supplied message.
   *
   * @author jthywiss
   */
-object Error extends TotalSite with TotalSite1 with TypedSite {
+object Error extends TotalSite with TotalSite1 with TypedSite with Serializable with LocalSingletonSite {
   def eval(x: AnyRef) = {
     x match {
       case s: String => throw new ProgramSignalledError(s)

@@ -25,11 +25,11 @@ import orc.types.{ FieldType, RecordType, SimpleCallableType, StrictCallableType
 import orc.util.ArrayExtensions.ArrayN
 import orc.util.OptionMapExtension.addOptionMapToList
 import orc.values.{ Field, OrcRecord, OrcTuple, OrcValue }
-import orc.values.sites.{ FunctionalSite, TypedSite }
+import orc.values.sites.{ FunctionalSite, LocalSingletonSite, TypedSite }
 import orc.values.sites.compatibility.{ ScalaPartialSite, TotalSite }
 
 @SerialVersionUID(-4970620914536871147L)
-object RecordConstructor extends TotalSite with TypedSite with FunctionalSite with Serializable {
+object RecordConstructor extends TotalSite with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Record"
   override def evaluate(args: Array[AnyRef]) = {
     val valueMap = new scala.collection.mutable.HashMap[String, AnyRef]()
@@ -58,7 +58,7 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite wi
 }
 
 @SerialVersionUID(-7652586938987434961L)
-object RecordMatcher extends ScalaPartialSite with TypedSite with FunctionalSite with Serializable {
+object RecordMatcher extends ScalaPartialSite with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "RecordMatcher"
 
   override def evaluate(args: Array[AnyRef]): Option[AnyRef] =
