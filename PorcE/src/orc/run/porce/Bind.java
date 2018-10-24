@@ -20,6 +20,7 @@ import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcEFutureReader;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -41,11 +42,16 @@ public abstract class Bind extends Expression {
       this.execution = execution;
     }
 
-    @Specialization(guards = { "exactlyFuture(future)" })
-    public PorcEUnit bindExactlyFuture(VirtualFrame frame, final Future future, final Object value,
+    protected static boolean exactlyFuture(Future f) {
+      return f != null && f.getClass() == Future.class;
+    }
+
+    @Specialization(guards = { "exactlyFuture(_future)" })
+    public PorcEUnit bindExactlyFuture(VirtualFrame frame, final Future _future, final Object value,
         @Cached("create()") MaximumValueProfile readersLengthProfile,
         @Cached("createBinaryProfile()") ConditionProfile lastBindProfile,
         @Cached("createCallReaderPublish()") CallReaderPublish callPublish) {
+        final Future future = CompilerDirectives.castExact(_future, Future.class);
         FutureReader[] readers = future.fastLocalBind(value);
         if (lastBindProfile.profile(readers != null)) {
             @SuppressWarnings("null")
@@ -84,10 +90,6 @@ public abstract class Bind extends Expression {
     public PorcEUnit bindFuture(final Future future, final Object value) {
         future.bind(value);
         return PorcEUnit.SINGLETON;
-    }
-
-    protected static boolean exactlyFuture(Future f) {
-      return f.getClass() == Future.class;
     }
 
     public static Bind create(final Expression future, final Expression value, final PorcEExecution execution) {
