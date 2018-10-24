@@ -15,6 +15,7 @@ import orc.run.porce.PorcERootNode;
 import orc.values.Format;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.ValueType;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ValueProfile;
@@ -24,6 +25,7 @@ import com.oracle.truffle.api.profiles.ValueProfile;
  *
  * @author amp
  */
+@ValueType
 final public class PorcEClosure {
     public final Object[] environment;
     public final RootCallTarget body;
