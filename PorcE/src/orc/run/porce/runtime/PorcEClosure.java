@@ -66,36 +66,6 @@ final public class PorcEClosure {
         }
     }
 
-    public Object callFromRuntimeArgArray(final Object[] values) {
-        values[0] = environment;
-        return body.call(values);
-    }
-
-    public Object callFromRuntime() {
-        return body.call((Object) environment);
-    }
-
-    /*
-    public Object callFromRuntime(final Object p1) {
-        return body.call(environment, p1);
-    }
-
-    public Object callFromRuntime(final Object p1, final Object p2) {
-        return body.call(environment, p1, p2);
-    }
-
-    public Object callFromRuntime(final Object p1, final Object p2, final Object p3) {
-        return body.call(environment, p1, p2, p3);
-    }
-
-    public Object callFromRuntimeVarArgs(final Object[] args) {
-        final Object[] values = new Object[args.length + 1];
-        values[0] = environment;
-        System.arraycopy(args, 0, values, 1, args.length);
-        return body.call(values);
-    }
-    */
-
     private static final ThreadLocal<Boolean> toStringRecursionCheck = new ThreadLocal<Boolean>() {
         @Override
         @SuppressWarnings("boxing")
