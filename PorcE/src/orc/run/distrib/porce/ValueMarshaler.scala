@@ -119,10 +119,13 @@ trait ValueMarshaler {
       try {
         nullOos synchronized {
           nullOos.setContext(execution, destination)
-          nullOos.writeObject(v)
-          nullOos.flush()
-          nullOos.clearContext()
-          nullOos.reset()
+          try {
+            nullOos.writeObject(v)
+            nullOos.flush()
+          } finally {
+            nullOos.clearContext()
+            nullOos.reset()
+          }
         }
         synchronized { knownGoodSerializables.put(v, ()) }
         true
