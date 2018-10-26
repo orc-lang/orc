@@ -43,7 +43,7 @@ final public class PorcEClosure implements Serializable, ObjectInputValidation {
     /**
      * @serialField marshaledFieldData Serializable
      */
-    private static final ObjectStreamField[] serialPersistentFields = { new ObjectStreamField("marshaledFieldData", Serializable.class) };
+    private static final ObjectStreamField[] serialPersistentFields = { new ObjectStreamField("marshaledFieldData", Serializable.class), new ObjectStreamField("isRoutine", Boolean.TYPE) };
     private Serializable marshaledFieldData;
 
     /*
