@@ -89,7 +89,7 @@ object StartBenchmark extends Site {
 
         def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
           Benchmark.traceStartBenchmark()
-          System.gc()
+          //System.gc()
           Benchmark.getTimes()
         }
       }
