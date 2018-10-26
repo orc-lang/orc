@@ -11,36 +11,19 @@
 
 package orc.run.porce;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import orc.ast.porc.Variable;
-import orc.compiler.porce.PorcToPorcE;
-import orc.error.runtime.HaltException;
-import orc.run.porce.call.Call;
-import orc.run.porce.runtime.Future;
-import orc.run.porce.runtime.KilledException;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
-import orc.run.porce.runtime.PorcERuntime;
-import orc.run.porce.runtime.PorcERuntime$;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlot;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import com.oracle.truffle.api.profiles.BranchProfile;
 import com.oracle.truffle.api.profiles.ValueProfile;
 
 @Introspectable
 public abstract class Graft extends Expression {
-    protected static final boolean TRUE = true;
-
     protected final PorcEExecution execution;
 
     protected final ValueProfile targetRootProfile = ValueProfile.createIdentityProfile();

@@ -40,6 +40,8 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import org.graalvm.collections.Pair;
 
+import java.util.logging.Level;
+
 /**
  *
  *
@@ -49,6 +51,9 @@ public abstract class InlinedCallRoot extends NodeBase {
 
     protected final PorcERootNode targetRootNode;
     private final PorcEExecution execution;
+
+    @Child
+    protected Expression inlinedBody;
 
     protected InlinedCallRoot(final PorcERootNode targetRootNode, final PorcEExecution execution) {
         this.targetRootNode = targetRootNode;
@@ -68,14 +73,14 @@ public abstract class InlinedCallRoot extends NodeBase {
     }
 
     @Specialization(guards = {
-            "body != null", "argumentSlots != null", "closureSlots != null"
+            "argumentSlots != null", "closureSlots != null"
             })
     public void impl(final VirtualFrame frame,
             final Object[] _arguments,
-            @Cached("getPorcEBodyFrameArguments(frame)") Expression body,
             @Cached(value = "getSlots(targetRootNode.getArgumentVariables())", dimensions = 1) FrameSlot[] argumentSlots,
             @Cached(value = "getSlots(targetRootNode.getClosureVariables())", dimensions = 1) FrameSlot[] closureSlots,
             @Cached("createCountingProfile()") ConditionProfile inlinedTailCallProfile) {
+        Expression body = getPorcEBodyFrameArguments();
         ensureTail(body);
         Object[] arguments = _arguments;
         // CompilerDirectives.ensureVirtualized(arguments);
@@ -152,39 +157,37 @@ public abstract class InlinedCallRoot extends NodeBase {
         return res;
     }
 
-//    protected FrameSlot[] getArgumentSlots(VirtualFrame frame) {
-//        return getSlots(targetRootNode.getArgumentVariables());
-//    }
-//
-//    protected FrameSlot[] getClosureSlots(VirtualFrame frame) {
-//        return getSlots(targetRootNode.getClosureVariables());
-//    }
+    protected Expression getPorcEBodyFrameArguments() {
+        if (inlinedBody == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            computeAtomicallyIfNull(() -> inlinedBody, (v) -> inlinedBody = v, () -> {
+//                Logger.log(Level.INFO, () ->
+//                    String.format("%s@%08x: AST inlining %s@%08x (at %s)",
+//                            getRootNode(), System.identityHashCode(getRootNode()),
+//                            targetRootNode, System.identityHashCode(targetRootNode),
+//                            this
+//                            ));
+                Expression body = targetRootNode.getBody();
 
-    protected Expression getPorcEBodyFrameArguments(VirtualFrame frame) {
-        CompilerAsserts.neverPartOfCompilation("Reconversion of code.");
-//        Logger.info(() ->
-//            String.format("%s@%08x: AST inlining %s@%08x (at %s)",
-//                    getRootNode(), System.identityHashCode(getRootNode()),
-//                    targetRootNode, System.identityHashCode(targetRootNode),
-//                    this
-//                    ));
-        Expression body = targetRootNode.getBody();
+                assert body.porcNode().isDefined();
 
-        assert body.porcNode().isDefined();
+                // Now reconvert the original Porc code to PorcE in a new context.
+                Expression res = execution.porcToPorcE().expression(
+                        (orc.ast.porc.Expression.Z)body.porcNode().get(),
+                        PorcToPorcE.variableSeq(),
+                        PorcToPorcE.variableSeq(),
+                        getCachedRootNode().getFrameDescriptor(),
+                        execution.callTargetMap(),
+                        this::variableSubst,
+                        isTail,
+                        (orc.ast.porc.Variable)targetRootNode.getMethodKey()
+                        );
 
-        // Now reconvert the original Porc code to PorcE in a new context.
-        Expression res = execution.porcToPorcE().expression(
-                (orc.ast.porc.Expression.Z)body.porcNode().get(),
-                PorcToPorcE.variableSeq(),
-                PorcToPorcE.variableSeq(),
-                frame.getFrameDescriptor(),
-                execution.callTargetMap(),
-                this::variableSubst,
-                isTail,
-                (orc.ast.porc.Variable)targetRootNode.getMethodKey()
-                );
+                return insert(res);
+            });
+        }
 
-        return res;
+        return inlinedBody;
     }
 
     protected Object variableSubst(orc.ast.porc.Variable v) {

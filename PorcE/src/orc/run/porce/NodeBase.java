@@ -229,6 +229,7 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
         return -1;
     }
 
+    @SuppressWarnings("boxing")
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
@@ -242,7 +243,7 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
         if (hasProperties) {
             sb.append(">");
         }
-        sb.append("@").append(String.format("%08x", hashCode()));
+        sb.append(String.format("@%08x", hashCode()));
         return sb.toString();
     }
 
@@ -261,8 +262,8 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
      *            a function to compute the value when needed.
      */
     protected <T> void computeAtomicallyIfNull(Supplier<T> read, Consumer<T> write, Supplier<T> compute) {
-        CompilerDirectives
-                .bailout("computeAtomicallyIfNull is called from compiled code. This will not work correctly.");
+        CompilerAsserts
+                .neverPartOfCompilation("computeAtomicallyIfNull is called from compiled code");
         atomic(() -> {
             if (read.get() == null) {
                 T v = compute.get();
