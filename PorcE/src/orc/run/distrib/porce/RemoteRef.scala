@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicLong
 trait RemoteRef {
   type RemoteRefId = Long
   val remoteRefId: RemoteRefId
+  def canBeUsedLocally: Boolean
   // Possible enhancements:
   //  val homeLocation: Location
   //  def get(): AnyRef
@@ -54,6 +55,8 @@ trait RemoteRefIdManager {
   * @author jthywiss
   */
 class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
+
+  override def canBeUsedLocally: Boolean = false
 
   override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x)"
 

@@ -60,7 +60,10 @@ abstract class DOrcExecution(
   with RemoteObjectManager
   with RemoteRefIdManager {
 
+  Logger.ProgLoad.fine("PorcToPorcE compile start")
+  val startTime = System.nanoTime
   val (programPorceAst, programCallTargetMap) = PorcToPorcE.method(programAst, this)
+  Logger.ProgLoad.fine(s"PorcToPorcE compile finish (compile duration ${(System.nanoTime - startTime) / 1.0e9} s)")
 
   type ExecutionId = String
 
@@ -78,7 +81,8 @@ abstract class DOrcExecution(
     def pfc(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
       { case vl if vl.currentLocations.isDefinedAt(v) => vl.currentLocations(v) }
     val cl = v match {
-      case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
+      //TODO: Move this special case into a ValueLocator
+      case rmt: RemoteRef => if (rmt.canBeUsedLocally) Set(runtime.here, homeLocationForRemoteRef(rmt.remoteRefId)) else Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.collect(pfc(v)).reduce(_.union(_))
       case _ => hereSet
     }
@@ -88,7 +92,8 @@ abstract class DOrcExecution(
 
   def isLocal(v: Any): Boolean = {
     val result = v match {
-      case rmt: RemoteRef => false
+      //TODO: Move this special case into a ValueLocator
+      case rmt: RemoteRef => rmt.canBeUsedLocally
       case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.exists({ vl => vl.currentLocations.isDefinedAt(v) && vl.valueIsLocal(v) })
       case _ => true
     }
@@ -101,7 +106,8 @@ abstract class DOrcExecution(
       { case vl if vl.permittedLocations.isDefinedAt(v) => vl.permittedLocations(v) }
     val pl = v match {
       case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime)
-      case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
+      //TODO: Move this special case into a ValueLocator
+      case rmt: RemoteRef => if (rmt.canBeUsedLocally) Set(runtime.here, homeLocationForRemoteRef(rmt.remoteRefId)) else Set(homeLocationForRemoteRef(rmt.remoteRefId))
       case _ if valueLocators.exists(_.permittedLocations.isDefinedAt(v)) => valueLocators.collect(pfp(v)).reduce(_.intersect(_))
       case _ => runtime.allLocations
     }

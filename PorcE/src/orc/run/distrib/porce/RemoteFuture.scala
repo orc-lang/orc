@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jan 13, 2016.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,10 +13,10 @@
 
 package orc.run.distrib.porce
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
-
-import orc.FutureReader
+import orc.{ FutureReader, FutureState }
 import orc.run.porce.runtime.Future
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** A reference to an Future value at another Location.
   *
@@ -25,6 +25,8 @@ import orc.run.porce.runtime.Future
 class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRefId: RemoteFutureRef#RemoteRefId, raceFreeResolution: Boolean) extends Future(raceFreeResolution) with RemoteRef {
 
   override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x)"
+
+  override def canBeUsedLocally: Boolean = get != FutureState.Unbound
 
   /** Resolve this to a value and call publish and halt on each blocked FutureReader.
     */

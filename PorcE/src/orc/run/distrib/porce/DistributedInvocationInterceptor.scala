@@ -71,15 +71,12 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
       Logger.Invoke.finest(s"speculative migrate: ${safeToString(target)}(${arguments.map(safeToString(_)).mkString(",")}): intersection of current locations=$intersectLocs")
       /* speculative migrate found a location to move to */
       intersectLocs.nonEmpty && !(intersectLocs contains execution.runtime.here)
-    } else if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
-      /* Found a remote reference */
-      true
     } else {
+      //FIXME: lists, refs, cells, etc. can accept RemoteRefs
       /* If everything's local, then stay here */
       !execution.isLocal(target) || arguments.exists(!execution.isLocal(_))
     }
-    Logger.Invoke.finest("Returning " + result + " for types " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
-    //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", result.toString)
+    Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "Returning " + result + " for types " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
     result
   }
 
