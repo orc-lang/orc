@@ -36,10 +36,10 @@ trait ExecutionMashaler {
          * ObjectOutputStream will handle them, including cycles among
          * environments. */
         case cl: PorcEClosure => cl
-        case cl: ClosureReplacement => cl
         case v => execution.marshalValue(destination)(v)
       })
-      ClosureReplacement(callTargetIndex, marshaledEnvironent, closure.isRoutine)
+      closure.setMarshaledFieldData(ClosureMarshaledFieldData(callTargetIndex, marshaledEnvironent))
+      closure
     }
     case (destination, counter: Counter) => {
       // Token: Counters which are just in the context do not carry a token with them. So this does not effect tokens.
@@ -62,21 +62,22 @@ trait ExecutionMashaler {
   }
 
   val unmarshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
-    case (origin, ClosureReplacement(callTargetIndex, environment, isRoutine)) => {
-      val callTarget = execution.idToCallTarget(callTargetIndex)
+    case (origin, closure: PorcEClosure) => {
+      val cmfd = closure.getMarshaledFieldData.asInstanceOf[ClosureMarshaledFieldData]
+      val callTarget = execution.idToCallTarget(cmfd.callTargetIndex)
       /* Invoke ValueMarshaler.unmarshalValue on values in environments. */
-      val unmarshledEnvironment = environment.map(_ match {
+      val unmarshledEnvironment = cmfd.environment.map(_ match {
         /* Don't run the value marshaler on closures in the environment.
          * ObjectInputStream will handle them, including cycles among
          * environments. */
-        case cl: ClosureReplacement => cl
         case cl: PorcEClosure => cl
         case v => execution.unmarshalValue(origin)(v)
       })
-      new PorcEClosure(unmarshledEnvironment, callTarget, isRoutine)
+      closure.marshalingInitFieldData(unmarshledEnvironment, callTarget)
+      closure
     }
     case (origin, CounterReplacement(proxyId)) => {
-      // Token: Counters which are just in the context do not carry a token with them. So this does not effect tokens.
+      // Token: Counters which are just in the context do not carry a token with them. So this does not affect tokens.
       execution.getDistributedCounterForId(proxyId).counter
     }
     case (origin, TerminatorReplacement(proxyId)) => {
@@ -92,7 +93,8 @@ trait ExecutionMashaler {
   }
 }
 
-private final case class ClosureReplacement(callTargetIndex: Int, environment: Array[AnyRef], isRoutine: Boolean) extends Serializable
+
+private final case class ClosureMarshaledFieldData(callTargetIndex: Int, environment: Array[AnyRef]) extends Serializable
 
 // Token: Does not carry a token.
 private final case class CounterReplacement(proxyId: CounterProxyManager#DistributedCounterId) extends Serializable

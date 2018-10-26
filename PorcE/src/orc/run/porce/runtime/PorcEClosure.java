@@ -11,6 +11,8 @@
 
 package orc.run.porce.runtime;
 
+import java.io.Serializable;
+
 import orc.run.porce.PorcERootNode;
 import orc.values.Format;
 
@@ -24,9 +26,13 @@ import com.oracle.truffle.api.profiles.ValueProfile;
  *
  * @author amp
  */
-final public class PorcEClosure {
-    public final Object[] environment;
-    public final RootCallTarget body;
+final public class PorcEClosure implements Serializable {
+    private static final long serialVersionUID = 3075892152696469588L;
+    //These public fields were final, but have been un-final-ed so deserialization can initialize them.
+    //TODO: Make these fields final again, and cram values in using reflection in marshalingInitFieldData.
+    public transient Object[] environment;
+    public transient RootCallTarget body;
+    private Object marshaledFieldData; 
 
     public final boolean isRoutine;
 
@@ -95,6 +101,20 @@ final public class PorcEClosure {
         return body.call(values);
     }
     */
+
+    public Object getMarshaledFieldData() {
+        return marshaledFieldData;
+    }
+
+    public void setMarshaledFieldData(Object marshaledFieldData) {
+        this.marshaledFieldData = marshaledFieldData;
+    }
+
+    public void marshalingInitFieldData(final Object[] newEnvironment, final RootCallTarget newBody) {
+        assert environment == null && body == null : "marshalingInitFieldData on already initialized PorcEClosure" ;
+        this.environment = newEnvironment;
+        this.body = newBody;
+    }
 
     private static final ThreadLocal<Boolean> toStringRecursionCheck = new ThreadLocal<Boolean>() {
         @Override
