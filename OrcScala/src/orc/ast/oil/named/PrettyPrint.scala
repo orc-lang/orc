@@ -72,7 +72,7 @@ class PrettyPrint {
       case Graft(x, value, body) => pp"val $x = $StartIndent\n$value$EndIndent #\n$body"
       case Trim(f) => pp"{| $f |}"
       case Otherwise(left, right) => pp"($left ; $right)"
-      case DeclareCallables(defs, body) => pp"-- mutual\n${FragmentAppender.mkString(defs.map(reduce))}\n$body"
+      case DeclareCallables(defs, body) => pp"-- group of ${defs.size} defs/sites\n${FragmentAppender.mkString(defs.map(reduce))}\n$body"
       case c @ Callable(f, formals, body, typeformals, argtypes, returntype) => {
         val prefix = c match {
           case _: Def => "def"

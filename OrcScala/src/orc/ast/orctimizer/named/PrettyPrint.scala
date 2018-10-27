@@ -77,7 +77,7 @@ class PrettyPrint {
       case Force(xs, vs, e) => pp"force ${commasep(xs)} = ${commasep(vs)} #\n$e"
       case left Otherwise right => pp"($left ; $right)"
       case IfLenientMethod(a, l, r) => pp"iflenient $a then$StartIndent\n$l$EndIndent\nelse$StartIndent\n$r$EndIndent"
-      case DeclareMethods(defs, body) => pp"-- mutual\n${FragmentAppender.mkString(defs.map(reduce))}\n$body"
+      case DeclareMethods(defs, body) => pp"-- group of ${defs.size} defs/sites\n${FragmentAppender.mkString(defs.map(reduce))}\n$body"
       case Routine(f, formals, body, typeformals, argtypes, returntype) => {
         val name = f.optionalVariableName.getOrElse(lookup(f))
         val retT = returntype match {
