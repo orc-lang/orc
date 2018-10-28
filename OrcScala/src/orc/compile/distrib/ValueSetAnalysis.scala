@@ -28,17 +28,19 @@ import orc.values.Signal
   * @author jthywiss
   */
 object ValueSetAnalysis extends NamedASTTransform {
+  val subAstValueSetDefNamePrefix = "ᑅSubAstValueSetDef"
 
-  protected val speculativeMigrateDefNames = new scala.collection.mutable.HashMap[Int, BoundVar]()
-  def speculativeMigrateDefName(arity: Int) = speculativeMigrateDefNames.getOrElseUpdate(arity, new BoundVar(Some("speculativeMigrateDef" + arity)))
-  def isSpeculativeMigrateTarget(target: Var) =
-    target.optionalVariableName.isDefined && target.optionalVariableName.get.startsWith("speculativeMigrateDef")
+  protected val subAstValueSetDefNames = new scala.collection.mutable.HashMap[Int, BoundVar]()
+  def subAstValueSetDefName(arity: Int) = subAstValueSetDefNames.getOrElseUpdate(arity, new BoundVar(Some(subAstValueSetDefNamePrefix + arity)))
+  def isSubAstValueSetTarget(target: Var) =
+    target.optionalVariableName.isDefined && target.optionalVariableName.get.startsWith(subAstValueSetDefNamePrefix)
 
   override def apply(e: Expression): Expression = {
     val annotatedExpressionDirty = super.apply(e)
     val annotatedExpression = PostProcess(annotatedExpressionDirty)
-    val speculativeMigrateDefs = speculativeMigrateDefNames.toList.map({case (arity, name) => Def(name, List.fill(arity)(new BoundVar(Some(hasOptionalVariableName.unusedVariable))), Constant(Signal), Nil, Some(List.fill(arity)(Top())), Some(ImportedType("orc.types.SignalType")))})
-    val annotatedExpressionWithDefs = e ->> DeclareCallables(speculativeMigrateDefs, annotatedExpression)
+    val annotatedExpressionWithDefs = e ->> subAstValueSetDefNames.toList.foldRight(annotatedExpression)({(arityAndName, e) =>
+      DeclareCallables(List(Def(arityAndName._2, List.fill(arityAndName._1)(new BoundVar(Some(hasOptionalVariableName.unusedVariable))), Constant(Signal), Nil, Some(List.fill(arityAndName._1)(Top())), Some(ImportedType("orc.types.SignalType")))), e)
+    })
     println(annotatedExpressionWithDefs)
     annotatedExpressionWithDefs
   }
@@ -128,17 +130,17 @@ object ValueSetAnalysis extends NamedASTTransform {
     if (filteredValues.isEmpty) {
       expr
     } else {
-      expr ->> Sequence(Call(speculativeMigrateDefName(filteredValues.size), filteredValues.toList, None), new BoundVar(Some(hasOptionalVariableName.unusedVariable)), expr)
+      expr ->> Sequence(Call(subAstValueSetDefName(filteredValues.size), filteredValues.toList, None), new BoundVar(Some(hasOptionalVariableName.unusedVariable)), expr)
     }
   }
 
   protected def deannotate(expr: Expression): Expression = expr match {
-    case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr) if isSpeculativeMigrateTarget(target) => innerExpr
+    case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr) if isSubAstValueSetTarget(target) => innerExpr
     case _ => expr
   }
 
   protected def getValueSet(expr: Expression): Set[Argument] = expr match {
-    case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, expr) if isSpeculativeMigrateTarget(target) => vs.toSet
+    case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, expr) if isSubAstValueSetTarget(target) => vs.toSet
     case _ => Set.empty
   }
 
@@ -184,8 +186,8 @@ object ValueSetAnalysis extends NamedASTTransform {
   object PostProcess extends NamedASTTransform {
     override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = {
       /* Clean up obviously redundant annotations */
-      case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr: Call) if isSpeculativeMigrateTarget(target) => innerExpr
-      case Sequence(c: Constant, bv, Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr)) if isSpeculativeMigrateTarget(target) && bv == innerExpr => c
+      case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr: Call) if isSubAstValueSetTarget(target) => innerExpr
+      case Sequence(c: Constant, bv, Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr)) if isSubAstValueSetTarget(target) && bv == innerExpr => c
     }
   }
 }

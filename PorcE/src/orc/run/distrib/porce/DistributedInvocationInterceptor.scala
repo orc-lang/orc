@@ -65,11 +65,12 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     Logger.Invoke.finest("needsOverride=" + needsOverride + " for types " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
     val result = if (needsOverride.isDefined) {
       needsOverride.get
-    } else if (/*FIXME:HACK*/target.isInstanceOf[PorcEClosure] && target.toString().startsWith("speculativeMigrateDef")) {
+    } else if (/*FIXME:HACK*/target.isInstanceOf[PorcEClosure] && target.toString().startsWith("ᑅSubAstValueSetDef")) {
+      /* Attempt to prospectively migrate to Sub-AST value set */
       /* Look up current locations, and find their intersection */
       val intersectLocs = arguments.map(derefAnyBoundLocalFuture(_)).map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
-      Logger.Invoke.finest(s"speculative migrate: ${safeToString(target)}(${arguments.map(safeToString(_)).mkString(",")}): intersection of current locations=$intersectLocs")
-      /* speculative migrate found a location to move to */
+      Logger.Invoke.finest(s"prospective migrate: ${safeToString(target)}(${arguments.map(safeToString(_)).mkString(",")}): intersection of current locations=$intersectLocs")
+      /* Prospective migrate found a location to move to */
       intersectLocs.nonEmpty && !(intersectLocs contains execution.runtime.here)
     } else {
       //FIXME: lists, refs, cells, etc. can accept RemoteRefs
