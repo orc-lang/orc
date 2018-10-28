@@ -24,7 +24,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
   */
 class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRefId: RemoteFutureRef#RemoteRefId, raceFreeResolution: Boolean) extends Future(raceFreeResolution) with RemoteRef {
 
-  override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x)"
+  override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x,cachedState=${get})"
 
   override def canBeUsedLocally: Boolean = get != FutureState.Unbound
 

@@ -92,7 +92,6 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     } else {
       /* Look up current locations, and find their intersection */
       val intersectLocs = arguments.map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
-      //require(!(intersectLocs contains execution.runtime.here), s"intersectLocs contains here on call: $target(${arguments.mkString(",")}")
       Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
 
       if (intersectLocs.nonEmpty) {
@@ -124,11 +123,11 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
       val callInvoker = new Schedulable {
         override def toString: String = s"execution.invokeCallTarget(${callContext.callSiteId}, ${callContext.p}, ${callContext.c}, ${callContext.t}, ${target}(${arguments.mkString(", ")}))"
         def run(): Unit = {
-          // Token: Pass local token to the invocation.
-            execution.invokeCallTarget(callContext.callSiteId, callContext.p, callContext.c, callContext.t, target, arguments)
+          execution.invokeCallTarget(callContext.callSiteId, callContext.p, callContext.c, callContext.t, target, arguments)
+          //Logger.Downcall.fine(s"Completed local call to $this")
         }
       }
-      Logger.Downcall.fine(s"Scheduling $callInvoker")
+      Logger.Downcall.fine(s"Scheduling local call to $callInvoker")
       execution.runtime.schedule(callInvoker)      
     }
   }
