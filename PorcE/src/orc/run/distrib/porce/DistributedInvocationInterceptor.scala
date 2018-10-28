@@ -92,7 +92,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     } else {
       /* Look up current locations, and find their intersection */
       val intersectLocs = arguments.map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
-      require(!(intersectLocs contains execution.runtime.here), s"intersectLocs contains here on call: $target(${arguments.mkString(",")}")
+      //require(!(intersectLocs contains execution.runtime.here), s"intersectLocs contains here on call: $target(${arguments.mkString(",")}")
       Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
 
       if (intersectLocs.nonEmpty) {
@@ -113,9 +113,24 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
       }
     }
     Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): candidateDestinations=$candidateDestinations")
-    val destination = execution.selectLocationForCall(candidateDestinations)
-    Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): selected location for call: $destination")
-    sendCall(callContext, target, arguments, destination)
+    if (!(candidateDestinations contains execution.runtime.here)) {
+      /* Send remote call */
+      val destination = execution.selectLocationForCall(candidateDestinations)
+      Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): selected location for call: $destination")
+      sendCall(callContext, target, arguments, destination)
+    } else {
+      /* Call can be local after all, run here */
+      Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): invoking locally")
+      val callInvoker = new Schedulable {
+        override def toString: String = s"execution.invokeCallTarget(${callContext.callSiteId}, ${callContext.p}, ${callContext.c}, ${callContext.t}, ${target}(${arguments.mkString(", ")}))"
+        def run(): Unit = {
+          // Token: Pass local token to the invocation.
+            execution.invokeCallTarget(callContext.callSiteId, callContext.p, callContext.c, callContext.t, target, arguments)
+        }
+      }
+      Logger.Downcall.fine(s"Scheduling $callInvoker")
+      execution.runtime.schedule(callInvoker)      
+    }
   }
 
   /* Since we don't have token IDs in PorcE: */
