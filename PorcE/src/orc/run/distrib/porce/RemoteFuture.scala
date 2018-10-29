@@ -13,7 +13,7 @@
 
 package orc.run.distrib.porce
 
-import orc.{ FutureReader, FutureState }
+import orc.FutureReader
 import orc.run.porce.runtime.Future
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
@@ -24,9 +24,7 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
   */
 class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRefId: RemoteFutureRef#RemoteRefId, raceFreeResolution: Boolean) extends Future(raceFreeResolution) with RemoteRef {
 
-  override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x,cachedState=${get})"
-
-  override def canBeUsedLocally: Boolean = get != FutureState.Unbound
+  override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x,cachedState=${get},numWaiters=$numWaiters)"
 
   /** Resolve this to a value and call publish and halt on each blocked FutureReader.
     */
@@ -167,11 +165,11 @@ trait RemoteFutureManager {
     if (reader != null) {
       value match {
         case Some(v) => {
-          Logger.Futures.fine(f"Future $futureId%#x was resolved to $v")
+          Logger.Futures.fine(f"Future $futureId%#x (reader $reader) was resolved to $v")
           reader.localBind(execution.unmarshalValue(origin)(v))
         }
         case None => {
-          Logger.Futures.fine(f"Future $futureId%#x was resolved to stop")
+          Logger.Futures.fine(f"Future $futureId%#x (reader $reader) was resolved to stop")
           reader.localStop()
         }
       }
