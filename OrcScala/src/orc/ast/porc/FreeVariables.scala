@@ -12,25 +12,16 @@
 //
 package orc.ast.porc
 
-import scala.collection.mutable
-
 /**
   * @author amp
   */
 trait FreeVariables {
-  this: Expression =>
+  this: PorcAST =>
   lazy val freeVars: Set[Variable] = {
-    val s = mutable.Set[Variable]()
-    (new Transform {
-      override def onArgument = {
-        case v: Variable.Z =>
-          if (!v.contextBoundVars.contains(v.value)) {
-            s += v.value
-          }
-          v.value
-      }
-    })(this.toZipper())
-    //Logger.finest(s"$this has free vars ${s.toSet}")
-    s.toSet
+    this match {
+      case v: Variable => Set(v)
+      case _ =>
+        this.subtrees.flatMap(_.freeVars).toSet -- this.boundVars
+    }
   }
 }
