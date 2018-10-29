@@ -28,6 +28,7 @@ import orc.run.porce.runtime.PorcEExecution;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -54,6 +55,10 @@ public abstract class InlinedCallRoot extends NodeBase {
 
     @Child
     protected Expression inlinedBody;
+    @CompilationFinal
+    private FrameSlot[] argumentSlots;
+    @CompilationFinal
+    private FrameSlot[] closureSlots;
 
     protected InlinedCallRoot(final PorcERootNode targetRootNode, final PorcEExecution execution) {
         this.targetRootNode = targetRootNode;
@@ -72,23 +77,17 @@ public abstract class InlinedCallRoot extends NodeBase {
         return targetRootNode.getContainingPorcCallableName();
     }
 
-    @Specialization(guards = {
-            "argumentSlots != null", "closureSlots != null"
-            })
+    @Specialization()
     public void impl(final VirtualFrame frame,
-            final Object[] _arguments,
-            @Cached(value = "getSlots(targetRootNode.getArgumentVariables())", dimensions = 1) FrameSlot[] argumentSlots,
-            @Cached(value = "getSlots(targetRootNode.getClosureVariables())", dimensions = 1) FrameSlot[] closureSlots,
+            final Object[] arguments,
             @Cached("createCountingProfile()") ConditionProfile inlinedTailCallProfile) {
         Expression body = getPorcEBodyFrameArguments();
         ensureTail(body);
-        Object[] arguments = _arguments;
-        // CompilerDirectives.ensureVirtualized(arguments);
+        CompilerDirectives.ensureVirtualized(arguments);
+        copyArgumentsToFrame(frame, arguments);
         while(true) {
             long startTime = getProfilingScope().getTime();
             try {
-                copyArgumentsToFrame(frame, arguments, argumentSlots, closureSlots);
-
                 body.execute(frame);
 
                 // No tail call so break out of the loop.
@@ -100,8 +99,6 @@ public abstract class InlinedCallRoot extends NodeBase {
                     //    " at inlined copy of " + targetRootNode + System.identityHashCode(e.target));
                     throw e;
                 }
-                // Set the new arguments and fall through to go through the loop again.
-                arguments = e.arguments;
             } finally {
                 getProfilingScope().addTime(startTime);
             }
@@ -126,8 +123,7 @@ public abstract class InlinedCallRoot extends NodeBase {
     }
 
     @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
-    private void copyArgumentsToFrame(final VirtualFrame frame, final Object[] arguments, FrameSlot[] argumentSlots,
-            FrameSlot[] closureSlots) {
+    void copyArgumentsToFrame(final VirtualFrame frame, final Object[] arguments) {
         if (arguments.length != argumentSlots.length + 1) {
             CompilerDirectives.transferToInterpreter();
             throw new ArityMismatchException(arguments.length - 1, argumentSlots.length);
@@ -183,6 +179,9 @@ public abstract class InlinedCallRoot extends NodeBase {
                         (orc.ast.porc.Variable)targetRootNode.getMethodKey()
                         );
 
+                argumentSlots = getSlots(targetRootNode.getArgumentVariables());
+                closureSlots = getSlots(targetRootNode.getClosureVariables());
+
                 return insert(res);
             });
         }
@@ -194,20 +193,20 @@ public abstract class InlinedCallRoot extends NodeBase {
         return Pair.create(this, v);
     }
 
-    public static boolean isAbove(final Node node, final RootNode targetRootNode) {
+    public static InlinedCallRoot findInlinedCallRoot(final Node node, final RootNode targetRootNode) {
         if (node instanceof InlinedCallRoot) {
             if (((InlinedCallRoot)node).targetRootNode == targetRootNode) {
-                return true;
+                return (InlinedCallRoot)node;
             }
         }
         if (node.getParent() != null) {
-            return isAbove(node.getParent(), targetRootNode);
+            return findInlinedCallRoot(node.getParent(), targetRootNode);
         }
 
         if (!(node instanceof RootNode)) {
             Logger.info(() -> String.format("%s no parent", node));
         }
-        return false;
+        return null;
     }
 
     public static boolean isInMethod(final Node node, final RootNode rootNode) {

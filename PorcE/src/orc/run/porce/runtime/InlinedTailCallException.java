@@ -23,10 +23,8 @@ import com.oracle.truffle.api.nodes.ControlFlowException;
 @SuppressWarnings("serial")
 public final class InlinedTailCallException extends ControlFlowException {
     public final PorcERootNode target;
-    public final Object[] arguments;
 
-    public InlinedTailCallException(PorcERootNode target, Object[] arguments) {
+    public InlinedTailCallException(PorcERootNode target) {
         this.target = target;
-        this.arguments = arguments;
     }
 }

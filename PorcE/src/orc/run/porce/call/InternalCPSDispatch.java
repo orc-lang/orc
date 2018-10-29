@@ -11,6 +11,8 @@
 
 package orc.run.porce.call;
 
+import java.util.function.BiConsumer;
+
 import orc.error.runtime.ArityMismatchException;
 import orc.run.porce.PorcERootNode;
 import orc.run.porce.SpecializationConfiguration;
@@ -139,17 +141,25 @@ public class InternalCPSDispatch extends Dispatch {
             throw new SelfTailCallException();
         }
 
-        protected boolean isAbove(final RootCallTarget target) {
-            return InlinedCallRoot.isAbove(this, target.getRootNode());
+        protected BiConsumer<VirtualFrame, Object[]> findInlinedCallRoot(final RootCallTarget target) {
+            InlinedCallRoot node = InlinedCallRoot.findInlinedCallRoot(this, target.getRootNode());
+            if (node == null) {
+                return null;
+            } else {
+                return node::copyArgumentsToFrame;
+            }
         }
 
-        @Specialization(guards = { "isTail", "isAbove(expected)",
+        @Specialization(guards = { "isTail", "copyArgumentsToFrame != null",
                 "getCachedRootNode() != target.body.getRootNode()" })
         public void inlinedTail(final VirtualFrame frame,
                 final PorcEClosure target, final Object[] arguments,
-                @Cached("target.body") RootCallTarget expected) {
+                @Cached("target.body") RootCallTarget expected,
+                @Cached("findInlinedCallRoot(expected)") BiConsumer<VirtualFrame, Object[]> copyArgumentsToFrame) {
+            CompilerDirectives.ensureVirtualized(arguments);
             addCalledRoot(target.body);
-            throw new InlinedTailCallException((PorcERootNode)expected.getRootNode(), arguments);
+            copyArgumentsToFrame.accept(frame, arguments);
+            throw new InlinedTailCallException((PorcERootNode)expected.getRootNode());
         }
 
         // The RootNode guard is required so that selfTail can be activated even
@@ -189,7 +199,7 @@ public class InternalCPSDispatch extends Dispatch {
                     InlinedCallRoot.isInMethod(this, target.getRootNode()) &&
                     nodeCount < SpecializationConfiguration.TruffleASTInliningLimit;
             return inlinedCall.isApplicable(frame) &&
-                    !InlinedCallRoot.isAbove(this, target.getRootNode()) &&
+                    InlinedCallRoot.findInlinedCallRoot(this, target.getRootNode()) == null &&
                     (decision == CallKindDecision.INLINE ||
                         decision == CallKindDecision.ANY && inlineGuess);
         }
