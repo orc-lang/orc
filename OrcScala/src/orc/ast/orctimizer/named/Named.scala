@@ -60,10 +60,18 @@ sealed abstract class NamedAST extends ASTForSwivel {
   override def toString() = prettyprint()
 
   /** @return a set of variables that are bound by this AST node.
-    * 				These variables in in scope for any subexpressions.
+    *         These variables in in scope for any subexpressions.
     */
   def boundVars: Set[BoundVar] = Set()
-  
+
+  /** Get the set of free variables in an expression.
+    *
+    * Note: As is evident from the type, UnboundVars are not included in this set
+    */
+  lazy val freeVars: Set[BoundVar] = {
+    this.subtrees.flatMap(_.freeVars).toSet -- this.boundVars
+  }
+
   override def transferMetadata[T <: NamedAST](e: T): T = {
     this ->> e
   }
@@ -76,11 +84,25 @@ object NamedAST {
     */
   class Z {
     /** @return a set of variables that are bound by this AST node.
-      * 				These variables in in scope for any subexpressions.
+      *         These variables in in scope for any subexpressions.
       *
       * This simply forwards to value.boundVars.
       */
     def boundVars: Set[BoundVar] = value.boundVars
+
+    /** @return the set of all variable bound in the current context.
+      */
+    lazy val contextBoundVars: Set[BoundVar] = {
+      parent.map(_.contextBoundVars).getOrElse(Set()) ++ boundVars
+    }
+
+    /** @return the set of free variable in this expression.
+      *
+      * This simply forwards to value.freeVars.
+      */
+    def freeVars = {
+      value.freeVars
+    }
   }
 }
 
@@ -96,38 +118,10 @@ sealed abstract class Expression
   with Substitution[Expression]
   with PrecomputeHashcode {
   this: Product =>
-
-  /** Get the set of free variables in an expression.
-    *
-    * Note: As is evident from the type, UnboundVars are not included in this set
-    */
-  lazy val freeVars: Set[BoundVar] = {
-    val varset = new scala.collection.mutable.HashSet[BoundVar]()
-    val collect = new Transform {
-      override val onArgument = {
-        case x: BoundVar.Z => (if (x.contextBoundVars contains x.value) {} else { varset += x.value }); x.value
-      }
-    }
-    collect(this.toZipper())
-    Set.empty ++ varset
-  }
 }
 
 object Expression {
   class Z {
-    /** @return the set of all variable bound in the current context.
-      */
-    def contextBoundVars = {
-      parents.flatMap(_.value.boundVars)
-    }
-
-    /** @return the set of free variable in this expression.
-      *
-      * This simply forwards to value.freeVars.
-      */
-    def freeVars = {
-      value.freeVars
-    }
   }
 }
 
@@ -382,7 +376,7 @@ final case class Service(override val name: BoundVar, override val formals: Seq[
   require(!formals.isInstanceOf[collection.TraversableView[_, _]])
   require(!typeformals.isInstanceOf[collection.TraversableView[_, _]])
   require(!argtypes.isInstanceOf[collection.TraversableView[_, _]])
-  
+
   transferOptionalVariableName(name, this)
 
   def copy(name: BoundVar = name,
@@ -471,6 +465,8 @@ final case class UnboundVar(name: String) extends Var {
   */
 @leaf @transform
 final class BoundVar(val optionalName: Option[String]) extends Var with hasOptionalVariableName with Product {
+  override lazy val freeVars: Set[BoundVar] = Set(this)
+
   // Members declared in scala.Equals
   def canEqual(that: Any): Boolean = that.isInstanceOf[BoundVar]
 

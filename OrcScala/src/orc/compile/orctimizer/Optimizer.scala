@@ -334,15 +334,19 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   val UnforcedRefElim = OptFull("unforced-ref-elim") { (e, a) =>
+    // Remove references to variables that are not forced when a forced version exists in scope
     e match {
-      case v: Var.Z => {
-        val force = v.parents.collectFirst({
-          case Force.Z(xs, vs, body) if vs.exists((v1) => v.value == v1.value && v != v1) =>
-            //Logger.fine(s"By ID: ${v.value} in force (${xs.mkString(",")}) (${vs.map(_.value).mkString(",")})")
-            xs(vs.map(_.value).indexOf(v.value))
-        })
-        force
-      }
+      case e @ Force.Z(xs, _, body) =>
+        val vs = e.value.vs
+        val toFix = body.freeVars intersect vs.collect({ case y: BoundVar => y }).toSet
+        val replacements = toFix.map { y =>
+          (y : Argument, xs(vs.indexOf(y)) : Argument)
+        }
+
+        if (toFix.nonEmpty) {
+          Logger.finest(s"unforced-ref-elim: $xs = $vs\n$replacements")
+          Some(Force(xs, vs, body.value.substAll(replacements.toMap)))
+        } else None
       case _ => None
     }
   }
@@ -762,7 +766,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           if (valueConstants.size == 1 && valueConstants.head.isDefined) {
             // Just propagate the constant if that's what was in the tuple
             Some(Constant(valueConstants.head.get))
-          } else if (e.contextBoundVars contains value.value) {
+          } else if (value.value match { case a: BoundVar => e.contextBoundVars contains a; case _ => false }) {
             // If we are in scope of the binding used in the tuple put in the variable name.
             Some(value.value)
           } else {

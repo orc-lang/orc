@@ -42,7 +42,7 @@ abstract class Transform extends TransformFunction {
 /** @author amp
   */
 @root @transform[Transform]
-sealed abstract class PorcAST extends ASTForSwivel with Product {
+sealed abstract class PorcAST extends ASTForSwivel with Product with FreeVariables {
   def prettyprint() = (new PrettyPrint()).reduce(this).toString()
   def prettyprintWithoutNested() = (new PrettyPrint(false)).reduce(this).toString()
   override def toString() = prettyprint()
@@ -54,14 +54,10 @@ sealed abstract class PorcAST extends ASTForSwivel with Product {
   }
 }
 
-// ==================== CORE ===================
-@branch @replacement[Expression]
-sealed abstract class Expression extends PorcAST with FreeVariables with Substitution[Expression] with PrecomputeHashcode with PorcInfixExpr
-
-object Expression {
+object PorcAST {
   class Z {
-    def contextBoundVars = {
-      parents.flatMap(_.value.boundVars)
+    lazy val contextBoundVars: Set[Variable] = {
+      parent.map(_.contextBoundVars).getOrElse(Set()) ++ value.boundVars
     }
     def freeVars = {
       value.freeVars
@@ -69,6 +65,15 @@ object Expression {
     def binderOf(x: Variable) = {
       parents.find(_.value.boundVars.contains(x))
     }
+  }
+}
+
+// ==================== CORE ===================
+@branch @replacement[Expression]
+sealed abstract class Expression extends PorcAST with Substitution[Expression] with PrecomputeHashcode with PorcInfixExpr
+
+object Expression {
+  class Z {
   }
 }
 
