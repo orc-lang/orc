@@ -237,15 +237,10 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
 
     Logger.finest(s"Loaded program. CallTagetMap:\n${callTargetMap.mkString("\n")}")
 
-    val nStarts = System.getProperty("porce.nStarts", "1").toInt
     // Token: From initial.
-    for (_ <- 0 until nStarts) {
-      c.newToken()
-      val s = CallClosureSchedulable.varArgs(prog, Array(null, p, c, t), execution)
-      SimpleWorkStealingSchedulerWrapper.traceTaskParent(-1, SimpleWorkStealingSchedulerWrapper.getSchedulableID(s))
-      runtime.schedule(s)
-    }
-    c.haltToken()
+    val s = CallClosureSchedulable.varArgs(prog, Array(null, p, c, t), execution)
+    SimpleWorkStealingSchedulerWrapper.traceTaskParent(-1, SimpleWorkStealingSchedulerWrapper.getSchedulableID(s))
+    runtime.schedule(s)
   }
 
   protected override def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
