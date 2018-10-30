@@ -634,6 +634,37 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               lazy val hasCapturedVariables = {
                 (body.freeVars -- formals).nonEmpty
               }
+              lazy val localClosureInstance = {
+                // Trace back through simple operations (force and branch) and look for a direct reference to the function.
+                // If we find it then we are directly using a local instance instead of one stored or passed by parameter.
+
+                def traceLocalReferences(e: Expression.Z, x: BoundVar): Boolean = {
+                  // Logger.info(s"$x\n${e.value.toString.take(50)}\n${e.parents.find(_.boundVars.contains(x)).map(_.value).toString.take(50)}")
+                  e.parents.find(_.boundVars.contains(x)) match {
+                    case Some(e1 @ Force.Z(xs, vs, _)) if xs contains x =>
+                      vs(xs.indexOf(x)).value match {
+                        case x1: BoundVar =>
+                          traceLocalReferences(e1, x1)
+                        case _ => false
+                      }
+                    case Some(e1 @ Branch.Z(x1: BoundVar.Z, `x`, _)) =>
+                      traceLocalReferences(e1, x1.value)
+                    case Some(e1 @ Branch.Z(GetMethod.Z(x1: BoundVar.Z), `x`, _)) =>
+                      traceLocalReferences(e1, x1.value)
+                    case Some(e1 @ Branch.Z(Future.Z(x1: BoundVar.Z), `x`, _)) =>
+                      traceLocalReferences(e1, x1.value)
+                    case Some(e1 @ Branch.Z(Future.Z(Resolve.Z(_, x1: BoundVar.Z)), `x`, _)) =>
+                      traceLocalReferences(e1, x1.value)
+                    case Some(Zipper(d: DeclareMethods, _)) if d.boundVars contains name =>
+                      true
+                    case _ => false
+                  }
+                }
+                target.value match {
+                  case t: BoundVar => traceLocalReferences(e, t)
+                  case _ => false
+                }
+              }
               lazy val isRecursive1 = e.parents.exists {
                 case Routine.Z(`name`, _, _, _, _, _) => true
                 case _ => false
@@ -668,8 +699,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                 a.valuesOf(arg).exists(isMethod)
               }
 
-              //Logger.finer(s"Attempting inline of $name at ${e.value}: $isRecursive1 $isRecursive2 $cost $hasClosureArgument $hasCapturedVariables")
-              if (isRecursive || (target != name && hasCapturedVariables)) {
+              Logger.finer(s"Attempting inline of $name at ${e.value}: $isRecursive1 $isRecursive2 $cost (< $inlineCostThreshold) $hasClosureArgument $localClosureInstance $hasCapturedVariables")
+              if (isRecursive || (!localClosureInstance && hasCapturedVariables)) {
                 // Never inline recursive functions or functions with captured variables where we are not referencing the function directly.
                 None
               } else if (directCallCount <= 1 || cost < inlineCostThreshold || (cost < higherOrderInlineCostThreshold && hasClosureArgument)) {
