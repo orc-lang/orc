@@ -31,7 +31,7 @@ class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRef
   @TruffleBoundary(allowInlining = true) @noinline
   override def bind(v: AnyRef) = {
     if (raceFreeResolution) {
-      Logger.Futures.finest("Shortcutting bind communication, since raceFreeResolution=true")
+      Logger.Futures.finest("Future $futureId%#x: Shortcutting bind communication, since raceFreeResolution=true")
       localBind(v)
     }
     futureManager.sendFutureResolution(remoteRefId, Some(v))
@@ -42,7 +42,7 @@ class RemoteFutureRef(futureManager: RemoteFutureManager, override val remoteRef
   @TruffleBoundary(allowInlining = true) @noinline
   override def stop(): Unit = {
     if (raceFreeResolution) {
-      Logger.Futures.finest("Shortcutting bind communication, since raceFreeResolution=true")
+      Logger.Futures.finest("Future $futureId%#x: Shortcutting bind communication, since raceFreeResolution=true")
       localStop()
     }
     futureManager.sendFutureResolution(remoteRefId, None)
@@ -76,12 +76,12 @@ class RemoteFutureReader(val fut: Future, val futureManager: RemoteFutureManager
   }
 
   override def publish(v: AnyRef): Unit = synchronized {
-    Logger.Futures.entering(getClass.getName, s"$this publish $v")
+    Logger.Futures.entering(getClass.getName, "publish", Seq(s"$this publish $v"))
     futureManager.sendFutureResult(getAndClearReaders(), futureId, fut, Some(v))
   }
 
   override def halt(): Unit = synchronized {
-    Logger.Futures.entering(getClass.getName, s"$this halt")
+    Logger.Futures.entering(getClass.getName, "halt", Seq(s"$this halt"))
     futureManager.sendFutureResult(getAndClearReaders(), futureId, fut, None)
   }
 
@@ -113,7 +113,7 @@ trait RemoteFutureManager {
     * previously, set it up to be remotely ref'ed, and return its new ID.
     */
   def ensureFutureIsRemotelyAccessibleAndGetId(fut: Future): RemoteFutureId = {
-    //Logger.Futures.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId")
+    //Logger.Futures.entering(getClass.getName, "ensureFutureIsRemotelyAccessibleAndGetId", Seq(fut))
     fut match {
       case rfut: RemoteFutureRef => rfut.remoteRefId
       case _ => servingLocalFutures.computeIfAbsent(fut, fut => {
@@ -137,17 +137,20 @@ trait RemoteFutureManager {
     }
   }
 
+  /** Send request to be sent the resolution of a remote future. */
   def sendReadFuture(futureId: RemoteFutureId): Unit = {
     val homeLocation = execution.homeLocationForRemoteRef(futureId)
     Tracer.traceFutureReadSend(futureId, execution.runtime.here, homeLocation)
     homeLocation.sendInContext(execution)(ReadFutureCmd(executionId, futureId, followerExecutionNum))
   }
 
+  /** Record remote request to be sent the resolution of a future we're serving. */
   def readFuture(futureId: RemoteFutureId, readerFollowerNum: DOrcRuntime#RuntimeId): Unit = {
     Logger.Futures.fine(f"Posting read on $futureId%#x, with reader at follower number $readerFollowerNum")
     servingRemoteFutures.get(futureId).addReader(execution.locationForFollowerNum(readerFollowerNum))
   }
 
+  /** Send the resolution of a future we're serving. */
   def sendFutureResult(readers: Traversable[PeerLocation], futureId: RemoteFutureId, fut: Future, value: Option[AnyRef]): Unit = {
     Logger.Futures.entering(getClass.getName, "sendFutureResult", Seq(readers, "0x" + futureId.toHexString, value))
     readers foreach { reader =>
@@ -160,13 +163,15 @@ trait RemoteFutureManager {
     //servingRemoteFutures.remove(futureId)
   }
 
+  /** Locally deliver the resolution of a remote future. */
   def deliverFutureResult(origin: PeerLocation, futureId: RemoteFutureId, value: Option[AnyRef]): Unit = {
     val reader = waitingReaders.get(futureId)
     if (reader != null) {
       value match {
         case Some(v) => {
-          Logger.Futures.fine(f"Future $futureId%#x (reader $reader) was resolved to $v")
-          reader.localBind(execution.unmarshalValue(origin)(v))
+          val unmarshalledValue = execution.unmarshalValue(origin)(v)
+          Logger.Futures.fine(f"Future $futureId%#x (reader $reader) was resolved to $unmarshalledValue")
+          reader.localBind(unmarshalledValue)
         }
         case None => {
           Logger.Futures.fine(f"Future $futureId%#x (reader $reader) was resolved to stop")
@@ -179,6 +184,7 @@ trait RemoteFutureManager {
     }
   }
 
+  /** Send our resolution of a remote future. */
   def sendFutureResolution(futureId: RemoteFutureId, value: Option[AnyRef]): Unit = {
     val homeLocation = execution.homeLocationForRemoteRef(futureId)
     val marshaledFutureValue = value match {
@@ -189,6 +195,7 @@ trait RemoteFutureManager {
     homeLocation.sendInContext(execution)(ResolveFutureCmd(executionId, futureId, marshaledFutureValue))
   }
 
+  /** Handle remote resolution of a future we're serving. */
   def receiveFutureResolution(origin: PeerLocation, futureId: RemoteFutureId, value: Option[AnyRef]): Unit = {
     value match {
       case Some(v) => servingRemoteFutures.get(futureId).fut.bind(execution.unmarshalValue(origin)(v))
