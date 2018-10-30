@@ -214,7 +214,7 @@ public class InternalCPSDispatch extends Dispatch {
         }
 
         // TODO: Use inliningForced.
-        @Specialization(guards = { "TruffleASTInlining", "isTail",
+        @Specialization(guards = { "TruffleASTInlining",
                 "target.body == expected",
                 "getCachedRootNode() != target.body.getRootNode()",
                 "canSpecificInlineAST(expected)",
