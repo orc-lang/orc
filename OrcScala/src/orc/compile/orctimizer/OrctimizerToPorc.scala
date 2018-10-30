@@ -80,27 +80,6 @@ class OrctimizerToPorc(co: CompilerOptions) {
     })
   }
 
-  def buildGraft(v: Expression.Z)(implicit ctx: ConversionContext): porc.Expression = {
-    import orc.ast.porc.PorcInfixNotation._
-    val oldCtx = ctx
-    val cf = s"${ctx.containingFunction}"
-
-    val vClosure = Variable(id"V_${cf}_$v")
-    val newP = Variable(id"P_${cf}_$v")
-    val newC = Variable(id"C_${cf}_$v")
-
-    let(
-      (vClosure, porc.Continuation(Seq(newP, newC), {
-        implicit val ctx = oldCtx.copy(p = newP, c = newC)
-        catchExceptions {
-          expression(v)
-        }
-      }))) {
-      porc.Graft(ctx.p, ctx.c, ctx.t, vClosure)
-    }
-  }
-
-
   /** Run expression f to bind future fut.
     *
     * This uses the current counter and terminator, but does not publish any value.
@@ -280,15 +259,27 @@ class OrctimizerToPorc(co: CompilerOptions) {
             }
           }
       }
-      case Future.Z(f) if usePorcGraft => {
-        buildGraft(f)
-      }
       case Future.Z(f) => {
-        val fut = Variable(id"fut${cf}_$f")
-        val zeroOrOnePubRhs = ctx.publications.publicationsOf(f) <= 1
-        let((fut, porc.NewFuture(zeroOrOnePubRhs))) {
-          buildSlowFuture(fut, f) :::
-            ctx.p(fut)
+        import orc.ast.porc.PorcInfixNotation._
+        val oldCtx = ctx
+        val cf = s"${ctx.containingFunction}"
+
+        val vClosure = Variable(id"V_${cf}_$f")
+        val newP = Variable(id"P_${cf}_$f")
+        val newC = Variable(id"C_${cf}_$f")
+
+        let(
+          (vClosure, porc.Continuation(Seq(newP, newC), {
+            implicit val ctx = oldCtx.copy(p = newP, c = newC)
+            catchExceptions {
+              expression(f)
+            }
+          }))) {
+          val g = porc.Graft(ctx.p, ctx.c, ctx.t, vClosure)
+          if (usePorcGraft)
+            g
+          else
+            porc.Lower(true)(g)
         }
       }
       case Force.Z(xs, vs, e) => {

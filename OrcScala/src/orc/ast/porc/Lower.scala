@@ -36,7 +36,7 @@ object Lower {
     *
     * This uses the current counter and terminator, but does not publish any value.
     */
-  def buildSlowFuture(vClosure: Argument.Z)(implicit ctx: ConversionContext): Expression = {
+  def buildSlowFuture(vClosure: Argument)(implicit ctx: ConversionContext): Expression = {
     import orc.ast.porc.PorcInfixNotation._
 
     val fut = Variable(id"fut_$vClosure~")
@@ -61,14 +61,15 @@ object Lower {
             Bind(fut, v) :::
               HaltToken(newC)
           }))) {
-            vClosure.value(newP, newC)
+            vClosure(newP, newC)
           }
       }))) {
         NewToken(ctx.c) :::
-          // TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
           catchExceptions {
+            // TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
             Spawn(ctx.c, ctx.t, false, comp)
-          }
+          } :::
+          ctx.p(fut)
       }
   }
 
@@ -77,7 +78,7 @@ object Lower {
     * This sill handle future like semantics (only one call to P) but will
     * not actually run anything in parallel. P will be the P for f.
     */
-  def buildNoFuture(vClosure: Argument.Z)(implicit ctx: ConversionContext): Expression = {
+  def buildNoFuture(vClosure: Argument)(implicit ctx: ConversionContext): Expression = {
     import orc.ast.porc.PorcInfixNotation._
 
     val gate = Variable(id"gate_$vClosure~")
@@ -106,17 +107,17 @@ object Lower {
           ctx.p(v)
         }
       }))) {
-        vClosure.value(newP, ctx.c)
+        vClosure(newP, ctx.c)
       }
   }
 
   /** Lower expr based on .
     *
     */
-  def apply(parallelGraft: Boolean = true)(expr: Expression.Z): Expression.Z = {
+  def apply(parallelGraft: Boolean = true)(expr: Expression): Expression = {
     val code = expr match {
-      case Graft.Z(p, c, t, vClosure) => {
-        implicit val ctx = ConversionContext(p.value, c.value, t.value)
+      case Graft(p, c, t, vClosure) => {
+        implicit val ctx = ConversionContext(p, c, t)
         if (parallelGraft)
           buildSlowFuture(vClosure)
         else
@@ -124,9 +125,9 @@ object Lower {
       }
 
       case _ =>
-        throw new IllegalArgumentException(s"Attempted to lower a node which does not require lowering: ${expr.value}")
+        throw new IllegalArgumentException(s"Attempted to lower a node which does not require lowering: ${expr}")
     }
-    expr.replace(expr.value ->> code)
+    expr ->> code
   }
 
   private def newGate(): Expression = {

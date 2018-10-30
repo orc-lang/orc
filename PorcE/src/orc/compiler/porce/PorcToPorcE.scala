@@ -26,6 +26,7 @@ import orc.run.porce.PorcELanguage
 import orc.run.porce.runtime.NoInvocationInterception
 import scala.annotation.varargs
 import orc.ast.porc.IndexAST
+import orc.compile.Logger
 
 object PorcToPorcE {
   def apply(execution: PorcEExecution, language: PorcELanguage = null): PorcToPorcE = {
@@ -143,6 +144,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     rootNode.setPorcAST(m.toZipper)
     val callTarget = makeCallTarget(rootNode)
     val closure = new PorcEClosure(Array(), callTarget, true)
+    Logger.fine(s"finished converting ${m.name} to PorcE")
     (closure, closureMap)
   }
 
@@ -161,13 +163,14 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
       inTailPosition = isTail,
       outerEnclosingMethod = outerEnclosingMethod)
     val newBody = transform(e)
+    Logger.fine(s"finished converting expression to PorcE:\n${e.value.prettyprintWithoutNested()}")
     newBody
   }
 
   def transform(e: porc.Expression.Z)(implicit ctx: Context): porce.Expression = {
     val thisCtx = ctx
     val innerCtx = ctx.withoutTailPosition
-    //Logger.info(s"At ${e.value}: ${thisCtx.inTailPosition} && ${getEnclosingMethod(e)}")
+    Logger.finest(s"At ${e.value}: ${thisCtx.inTailPosition} && ${getEnclosingMethod(e)}")
     //*
 
     {
@@ -255,7 +258,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
           porce.NewFuture.create(raceFreeResolution)
         case porc.Graft.Z(p, c, t, v) =>
           def variant(b: Boolean) = {
-            val e1 = porc.Lower(parallelGraft=b)(e)
+            val e1 = e.replace(porc.Lower(parallelGraft=b)(e.value))
             indexAST(e1)
             e1
           }
@@ -388,6 +391,8 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     val capturedVars = if (reuse) ctx.closureVariables else normalizeOrder(e.freeVars)
 
     val capturingExprs = capturedVars.map(transform(_)(ctx.withoutTailPosition)).toArray
+
+    Logger.finer(s"Reusing environment on ${e.value.optionalVariableName}: Reuse $reuse, Captured ${capturedVars}, nDropped ${ctx.closureVariables.count(!e.freeVars.contains(_))}")
 
     (reuse, capturedVars, capturingExprs)
   }
