@@ -122,38 +122,34 @@ case class OptFull(name: String)(f: (Expression.Z, AnalysisResults) => Option[Ex
 /** @author amp
   */
 abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
+  import orc.util.StringExtension._
+
   def opts: Seq[Optimization]
-  
-  val optimizeOptimizationResult = true
+
+  val optimizeOptimizationResult = false
 
   def apply(e: Expression.Z, cache: AnalysisCache): Expression = {
     val optimizationTransform: Transform = new Transform { optimizationTransform =>
       val results = new AnalysisResults(cache, e)
 
       def performOpts(e: Expression.Z): Expression.Z = {
-        import orc.util.StringExtension._
         //Logger.finer(s"Optimizing:${" " * e.parents.size}${e.value.getClass.getSimpleName} ${e.value.toString.truncateTo(40)}")
         opts.foldLeft(e)((e, opt) => {
           //Logger.finer(s"invoking ${opt.name} on:\n${e.value.toString.truncateTo(120)}")
           opt(e, results) match {
             case None => e
             case Some(e2) =>
-              val e3 = if (e.value != e2) {
-                Logger.finer(s"${opt.name}:\n${e.value.toString.truncateTo(120)}\n====>\n${e2.toString.truncateTo(120)}")
-                countOptimization(opt)
-                val e3 = e.replace(e.value ->> e2)
-                results.addMapping(e3, e)
-                e3
-              } else {
-                e
-              }
+              assert(e.value != e2, s"optimization $opt returned identical expr:\n${e.value}")
+              Logger.finer(s"${opt.name}:\n${e.value.toString.truncateTo(120)}\n====>\n${e2.toString.truncateTo(120)}")
+              countOptimization(opt)
+              val e3 = e.replace(e.value ->> e2)
+              results.addMapping(e3, e)
               e3
           }
         })
       }      
       override val onArgument = {
         case e => {
-          import orc.util.StringExtension._
           val e1 = performOpts(e) match {
             case a: Argument.Z =>
               a
@@ -285,20 +281,23 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
   val ForceElim = OptFull("force-elim") { (e, a) =>
-    
     e match {
       case Force.Z(xs, vs, body) => {
         def eliminateNonFutures() = {
+          val values = (xs zip vs).map(v => (v._1, v._2.value, a.valuesOf(v._2)))
           val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).futures.nonEmpty)
           
           val (newXs, newVs) = fs.unzip
-          val newBody = body.value.substAll(nfs.map(p => (p._1, p._2.value)).toMap[Argument, Argument])
-          if (nfs.isEmpty)
+          lazy val argumentMapping = nfs.map(p => (p._1, p._2.value)).toMap[Argument, Argument]
+          lazy val newBody = body.value.substAll(argumentMapping)
+          //Logger.info(s"${fs.size} ${nfs.size} ${values.mkString("{\n", ",\n", "}")}\n${e.value.toString.truncateTo(120)}")
+          if (nfs.isEmpty) {
             None
-          else if (fs.nonEmpty)
+          } else if (fs.nonEmpty) {
             Some(Force(newXs, newVs.map(_.value), newBody))
-          else
+          } else {
             Some(newBody)
+          }
         }
         
         def eliminateDuplicateForces() = {
@@ -353,7 +352,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   
   val SequentializeForce = OptFull("sequentialize-force") { (e, a) =>    
     e match {
-      case Force.Z(xs, vs, body) => {
+      case Force.Z(xs, vs, body) if xs.size > 1 => {
         val pairs = xs zip vs
         val r = pairs.foldRight(body.value: Expression) { (p, body) =>
           val (x, v) = p
@@ -438,9 +437,17 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   val Normalize = OptFull("normalize") { (e, a) =>
     e match {
-      case Branch.Z(f, x, y) =>
+      case Branch.Z(f @ (
+          _: Force.Z |
+          _: DeclareMethods.Z |
+          _: DeclareType.Z |
+          _: Branch.Z
+          ), x, y) =>
         Some(Branch(f.value, x, y.value))
-      case Otherwise.Z(f, y) =>
+      case Otherwise.Z(f @ (
+          _: DeclareType.Z |
+          _: Otherwise.Z
+          ), y) =>
         Some(Otherwise(f.value, y.value))
       case _ => None
     }
@@ -528,7 +535,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     })
   }
 
-  def renameVariables(e: Argument.Z)(implicit mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): Argument = {
+  def renameVariables(e: Argument.Z)(implicit mapping: Map[BoundVar, Argument], _tmapping: Map[BoundTypevar, Type]): Argument = {
     e.value ->> (e.value match {
       case v: BoundVar =>
         mapping.getOrElse(v, v)
@@ -537,7 +544,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     })
   }
 
-  def renameVariables(e: Type.Z)(implicit mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): Type = {
+  def renameVariables(e: Type.Z)(implicit _mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): Type = {
     val typeRewrite = new Transform {
       override val onType = {
         case v: BoundTypevar.Z =>
@@ -607,8 +614,14 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val higherOrderInlineCostThreshold = co.options.optimizationFlags("orct:higher-order-inline-threshold").asInt(200)
 
   val Inline = OptFull("inline") { (e, a) =>
+    // True if e.parent is `iflenient`
+    def isInIfLenient(e: Expression.Z) = e.parent match {
+      case Some(_: IfLenientMethod.Z) => true
+      case _ => false
+    }
+
     e match {
-      case Call.Z(target, args, targs) => {
+      case Call.Z(target, args, targs) if !isInIfLenient(e) => {
         val vs = a.valuesOf(target).toSet
         if (vs.size == 1) {
           vs.head match {
@@ -920,22 +933,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
       Normalize, SequentializeForce,
-      IfDefElim, Inline, FutureForceElim, BranchElim, OtherwiseElim, TrimElim, UnusedFutureElim, StopEquiv, 
-      ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant, 
-      FutureElim, GetMethodElim, TupleElim, MethodElim, UnforcedRefElim)
-  /*
-  val allOpts = List(
-    BranchReassoc,
-    DefBranchNorm, DefElim,
-    LiftUnrelated, LiftForce,
-    FutureElimFlatten, /*UnusedFutureElim,*/ FutureElim,
-    /*FutureForceElim,*/ ForceElim, IfDefElim,
-    TupleElim, AccessorElim,
-    TrimCompChoice, TrimElim, ConstProp,
-    StopEquiv, StopElim,
-    BranchExp, BranchElim, BranchElimVar,
-    InlineDef, TypeElim)
-    */
+      IfDefElim, FutureForceElim, BranchElim, OtherwiseElim, TrimElim, UnusedFutureElim, StopEquiv,
+      ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant,
+      FutureElim, GetMethodElim, TupleElim, MethodElim, UnforcedRefElim, Inline)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"orct:${o.name}").asBool()
@@ -954,165 +954,3 @@ case class UnrollOptimizer(co: CompilerOptions) extends Optimizer(co) {
   }
 }
 */
-
-object Optimizer {
-  //import WithContext._
-
-  /*
-  object Pars {
-    private def pars(p: Expression): List[Expression] = {
-      p match {
-        case f || g => pars(f) ++ pars(g)
-        case e => List(e)
-      }
-    }
-    def unapply(e: Expression): Option[List[Expression]] = Some(pars(e))
-    def unapply(e: WithContext[Expression]): Option[(List[Expression], TransformContext)] = {
-      Some(pars(e.e), e.ctx)
-    }
-
-    def apply(l: Traversable[Expression]) = l.reduce(_ || _)
-  }
-
-  /** Match a sequence of expressions in the form: e1 >x1> ... >xn-1> en (ignoring association)
-    */
-  object Seqs {
-    private def seqsAt(p: WithContext[Expression]): (List[(WithContext[Expression], BoundVar)], WithContext[Expression]) = {
-      p match {
-        case f > x > g => {
-          val (fss, fn) = seqsAt(f) // f1 >x1> ... >xn-1> fn
-          val (gss, gn) = seqsAt(g) // g1 >y1> ... >yn-1> gn
-          // TODO: Add an assert here to check that no variables are shadowed. This should never happen because of how variables are handled and allocated.
-          // f1 >x1> ... >xn-1> fn >x> g1 >y1> ... >yn-1> gn
-          (fss ::: (fn, x) :: gss, gn)
-        }
-        case e => (Nil, e)
-      }
-    }
-
-    def unapply(e: WithContext[Expression]): Option[(List[(WithContext[Expression], BoundVar)], WithContext[Expression])] = {
-      Some(seqsAt(e))
-    }
-
-    def apply(ss: Seq[(WithContext[Expression], BoundVar)], en: WithContext[Expression]): Expression = apply(ss.map(p => (p._1.e, p._2)), en)
-    def apply(ss: Seq[(Expression, BoundVar)], en: Expression): Expression = {
-      ss match {
-        case Nil => en
-        case (e, x) +: sst => e > x > apply(sst, en)
-      }
-    }
-  }
-  */
-
-  /*
-  object IndependentSeqs {
-    private def independent(p: WithContext[Expression], a: ExpressionAnalysisProvider[Expression]): (Seq[(Expression, BoundVar)], WithContext[Expression]) = {
-      import a.ImplicitResults._
-      val Seqs(seqs, core) = p
-      def collectIndependents(
-        seqs: List[(WithContext[Expression], BoundVar)],
-        independents: Vector[(Expression, BoundVar)] = Vector[(Expression, BoundVar)](),
-        ctx: TransformContext = core.ctx): (Seq[(Expression, BoundVar)], WithContext[Expression]) = seqs match {
-        case (f, x) +: tl =>
-          val isSafe = f.effectFree && f.nonBlockingPublish && (f.publications only 1)
-          val noRefs = independents.map(_._2).forall { y => !f.freeVars.contains(y) }
-          if (isSafe && noRefs) {
-            // FIXME: This generates the context inside out. :/
-            val _ > _ > (_ in newctx) = (f.e > x > core) in ctx
-            collectIndependents(tl, independents :+ (f.e, x), newctx)
-          } else {
-            (independents, Seqs(seqs, core) in ctx)
-          }
-        case Nil =>
-          (independents, core)
-      }
-      collectIndependents(seqs)
-    }
-
-    def unapply(p: (WithContext[Expression], ExpressionAnalysisProvider[Expression])): Option[(Seq[(Expression, BoundVar)], WithContext[Expression])] = {
-      val (e, a) = p
-      val (seqs, core) = independent(e, a)
-      if (seqs.size >= 1)
-        Some((seqs, core))
-      else e match {
-        case f > x > g => Some((List((f, x)), g))
-        case _ => None
-      }
-    }
-  }
-  */
-
-  /*
-
-  /* This uses the identity:
-   * future x = future y = e # f # g
-   * ===
-   * future y = e # future x = f # g
-   */
-
-  object Futures {
-    private def futsAt(p: WithContext[Expression]): (List[(WithContext[Expression], BoundVar)], WithContext[Expression]) = {
-      p match {
-        case FutureAt(f) > x > g => {
-          val (fss, fn) = futsAt(f) // f1 >x1> ... >xn-1> fn
-          val (gss, gn) = futsAt(g) // g1 >y1> ... >yn-1> gn
-          // TODO: Add an assert here to check that no variables are shadowed. This should never happen because of how variables are handled and allocated.
-          // f1 >x1> ... >xn-1> fn >x> g1 >y1> ... >yn-1> gn
-          (fss ::: (fn, x) :: gss, gn)
-        }
-        case e => (Nil, e)
-      }
-    }
-
-    def unapply(e: WithContext[Expression]): Option[(List[(WithContext[Expression], BoundVar)], WithContext[Expression])] = {
-      Some(futsAt(e))
-    }
-
-    def apply(ss: Seq[(WithContext[Expression], BoundVar)], en: WithContext[Expression]): Expression = apply(ss.map(p => (p._1.e, p._2)), en)
-    def apply(ss: Seq[(Expression, BoundVar)], en: Expression): Expression = {
-      ss match {
-        case Nil => en
-        case (e, x) +: sst => Future(e) > x > apply(sst, en)
-      }
-    }
-  }
-
-  /** Match an expression in the form: e <x1<| g1 <x2<| g2 ... where x1,...,xn are distinct
-    * and no gi references any xj.
-    */
-  object IndependentFutures {
-    private def independent(p: WithContext[Expression], a: ExpressionAnalysisProvider[Expression]): (Seq[(Expression, BoundVar)], WithContext[Expression]) = {
-      import a.ImplicitResults._
-      val Futures(seqs, core) = p
-      def collectIndependents(
-        seqs: List[(WithContext[Expression], BoundVar)],
-        independents: Vector[(Expression, BoundVar)] = Vector[(Expression, BoundVar)](),
-        ctx: TransformContext = core.ctx): (Seq[(Expression, BoundVar)], WithContext[Expression]) = seqs match {
-        case (f, x) +: tl =>
-          val noRefs = independents.map(_._2).forall { y => !f.freeVars.contains(y) }
-          if (noRefs) {
-            // FIXME: This generates the context inside out. :/
-            val _ > _ > (_ in newctx) = (f.e > x > core) in ctx
-            collectIndependents(tl, independents :+ (f.e, x), newctx)
-          } else {
-            (independents, Futures(seqs, core) in ctx)
-          }
-        case Nil =>
-          (independents, core)
-      }
-      collectIndependents(seqs)
-    }
-
-    def unapply(p: (WithContext[Expression], ExpressionAnalysisProvider[Expression])): Option[(Seq[(Expression, BoundVar)], WithContext[Expression])] = {
-      val (e, a) = p
-      val (seqs, core) = independent(e, a)
-      if (seqs.size >= 1)
-        Some((seqs, core))
-      else e match {
-        case f > x > g => Some((List((f, x)), g))
-        case _ => None
-      }
-    }
-  }
-  */
-}
