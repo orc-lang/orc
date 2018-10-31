@@ -186,8 +186,17 @@ object ValueSetAnalysis extends NamedASTTransform {
   object PostProcess extends NamedASTTransform {
     override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = {
       /* Clean up obviously redundant annotations */
-      case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr: Call) if isSubAstValueSetTarget(target) => innerExpr
-      case Sequence(c: Constant, bv, Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr)) if isSubAstValueSetTarget(target) && bv == innerExpr => c
+      /* Sub-ASTs that are just a call. */
+      case Sequence(Call(target1: BoundVar, args1, None), _: BoundVar, innerExpr @ Call(target2: BoundVar, _, _)) if isSubAstValueSetTarget(target1) && !isSubAstValueSetTarget(target2) =>
+        innerExpr
+      case Sequence(Call(target1: BoundVar, args1, None), _: BoundVar, innerExpr: Call) if isSubAstValueSetTarget(target1) =>
+        innerExpr
+      /* Sub-ASTs that are just "c >x> x", where c is a Constant */
+      case Sequence(c: Constant, x, Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr)) if isSubAstValueSetTarget(target) && x == innerExpr =>
+        c
+      /* Sub-ASTs that are just " x >y> ...", where x & y are Variables */
+      case Sequence(annotation1 @ Call(target1: BoundVar, vs1, None), dummy1: BoundVar, Sequence(x: BoundVar, y: BoundVar, Sequence(Call(target2: BoundVar, vs2, None),_: BoundVar, innerExpr))) if isSubAstValueSetTarget(target1) && isSubAstValueSetTarget(target2) =>
+        Sequence(annotation1,  dummy1, Sequence(x: BoundVar, y: BoundVar, innerExpr))
     }
   }
 }
