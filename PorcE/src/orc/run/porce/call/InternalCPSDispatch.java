@@ -151,7 +151,7 @@ public class InternalCPSDispatch extends Dispatch {
                 //System.arraycopy(arguments, 0, frameArguments, 0, arguments.length);
             } else {
                 CompilerDirectives.transferToInterpreter();
-                throw new ArityMismatchException(arguments.length, frameArguments.length);
+                throw new ArityMismatchException(frameArguments.length - 3, arguments.length - 3);
             }
             //Logger.log(java.util.logging.Level.INFO, () -> "Self tail call: " + target.toString() + " (" + java.util.Arrays.toString(arguments) + ")");
             throw new SelfTailCallException();
@@ -201,7 +201,7 @@ public class InternalCPSDispatch extends Dispatch {
             try {
                 if (arguments.length != argumentSlots.length + 1) {
                     CompilerDirectives.transferToInterpreter();
-                    throw new ArityMismatchException(arguments.length - 1, argumentSlots.length);
+                    throw new ArityMismatchException(argumentSlots.length - 3, arguments.length - 4);
                 }
 
                 for (int i = 0; i < argumentSlots.length; i++) {
