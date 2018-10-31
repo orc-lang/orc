@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 import scala.util.control.NonFatal
 
-import orc.{ CaughtEvent, Future }
+import orc.Future
 import orc.FutureState.Bound
 import orc.Schedulable
 import orc.run.porce.runtime.{ CallClosureSchedulable, InvocationInterceptor, MaterializedCPSCallContext, PorcEClosure }
@@ -106,7 +106,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         } else {
           /* Case 4: No permitted location, fail */
           val nla = new NoLocationAvailable((target +: arguments.toSeq).map(v => (v, execution.currentLocations(v).map(_.runtimeId))))
-          execution.notifyOrc(CaughtEvent(nla))
+          Logger.Invoke.throwing(getClass.getName, "invokeIntercepted", nla)
           throw nla
         }
       }
@@ -115,7 +115,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     if (!(candidateDestinations contains execution.runtime.here)) {
       /* Send remote call */
       val destination = execution.selectLocationForCall(candidateDestinations)
-      Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): selected location for call: $destination")
+      Logger.Invoke.fine(s"siteCall: $target(${arguments.mkString(",")}): selected location for call: $destination")
       sendCall(callContext, target, arguments, destination)
     } else {
       /* Call can be local after all, run here */
