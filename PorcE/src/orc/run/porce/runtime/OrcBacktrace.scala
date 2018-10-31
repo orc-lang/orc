@@ -13,29 +13,38 @@
 
 package orc.run.porce.runtime
 
-import scala.collection.JavaConverters._
+import scala.collection.JavaConverters.asScalaBufferConverter
 
 import orc.compile.parse.OrcSourceRange
 import orc.error.runtime.{ JavaException, TokenException }
 import orc.run.porce.HasPorcNode
 
-import com.oracle.truffle.api.TruffleStackTraceElement
+import com.oracle.truffle.api.{ TruffleException, TruffleStackTraceElement }
 import com.oracle.truffle.api.nodes.Node
 
 object OrcBacktrace {
-  def fromTruffleException(e: Throwable, node: Node): Array[OrcSourceRange] = {
-    TruffleStackTraceElement.fillIn(e)
-    val truffleFrames = TruffleStackTraceElement.getStackTrace(e).asScala
 
-    def findRange(n: Node): Option[OrcSourceRange] = n match {
-        case n: HasPorcNode if n.porcNode.isDefined =>
-          n.porcNode flatMap { _.sourceTextRange }
-        case n: Node =>
-          findRange(n.getParent)
-        case null =>
-          None
+  def fromTruffleException(e: Throwable, node: Node): Array[OrcSourceRange] = {
+    /*
+     * Truffle bug work-around: TruffleStackTraceElement.fillIn adds
+     * non-serializable values to the Throwable, so we create a temporary
+     * copy and leave the original alone
+     */
+    val throwAwayThowable: Throwable = e match {
+      case te: TruffleException => {
+        val newE = new Throwable with TruffleException() {
+          override def getLocation() = te.getLocation()
+          override def getStackTraceElementLimit() = te.getStackTraceElementLimit()
+          override def isInternalError() = te.isInternalError()
+        }
+        newE
+      }
+      case _ => new Throwable()
     }
-    
+    throwAwayThowable.initCause(e.getCause)
+    TruffleStackTraceElement.fillIn(throwAwayThowable)
+    val truffleFrames = TruffleStackTraceElement.getStackTrace(throwAwayThowable).asScala
+
     if (truffleFrames == null) {
       Array()
     } else {
@@ -43,14 +52,25 @@ object OrcBacktrace {
       locations.flatten.toArray
     }
   }
-  
+
   def orcifyException(e: Throwable, node: Node): TokenException = {
     val backtrace = fromTruffleException(e, node)
     val r = e match {
-      case e: TokenException => e
-      case e => new JavaException(e)
+      case te: TokenException => te
+      case _ => new JavaException(e)
     }
+    findRange(node).foreach(r.setPosition(_))
     r.setBacktrace(backtrace)
     r
   }
+
+  private def findRange(n: Node): Option[OrcSourceRange] = n match {
+    case n: HasPorcNode if n.porcNode.isDefined =>
+      n.porcNode flatMap { _.sourceTextRange }
+    case n: Node =>
+      findRange(n.getParent)
+    case null =>
+      None
+  }
+
 }
