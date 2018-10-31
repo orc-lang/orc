@@ -364,7 +364,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
         final PorcERuntime r = execution.runtime();
         PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth(inlineProfile);
         final int previousStackHeight = state.previousDepth();
-        if (!inlineProfile.profile(state.growthAllowed())) {
+        final boolean doSpawn = !inlineProfile.profile(state.growthAllowed());
+        if (CompilerDirectives.injectBranchProbability(CompilerDirectives.SLOWPATH_PROBABILITY, doSpawn)) {
             createSchedulableAndSchedule(frame.getArguments());
             return PorcEUnit.SINGLETON;
         }

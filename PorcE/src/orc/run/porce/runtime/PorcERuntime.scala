@@ -129,6 +129,9 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   }
 
   @inline
+  private def depthIncrement = if (CompilerDirectives.inCompiledCode()) 1 else 16
+
+  @inline
   private final def incrementDepthValue(inlineAllowedProfile: VisibleConditionProfile, prev: Int): (Boolean, Int) = {
     if (unrollOnLargeStack) {
       val r = prev >= 0 &&
@@ -136,11 +139,13 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
           prev < maxStackDepth
         else
           prev < minSpawnStackDepth)
-      val next = prev + 1
-      (r, if (inlineAllowedProfile != null && inlineAllowedProfile.profile(r) || inlineAllowedProfile == null && r) next else -1)
+      val next = prev + depthIncrement
+      val b = inlineAllowedProfile != null && inlineAllowedProfile.profile(r) || inlineAllowedProfile == null && r
+      (b, if (CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY, b)) next else -1)
     } else {
       val r = if (inlineAllowedProfile == null || !inlineAllowedProfile.wasFalse()) prev < maxStackDepth else prev < minSpawnStackDepth
-      (r, prev + (if (inlineAllowedProfile != null && inlineAllowedProfile.profile(r) || inlineAllowedProfile == null && r) 1 else 0))
+      val b = inlineAllowedProfile != null && inlineAllowedProfile.profile(r) || inlineAllowedProfile == null && r
+      (b, prev + (if (CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY, b)) depthIncrement else 0))
     }
   }
 
