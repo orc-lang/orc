@@ -9,7 +9,7 @@ include "write-csv-file.inc"
 import class JavaSys = "java.lang.System"
 
 {- Number of vertices to generate. -}
-val numVertices = Read(JavaSys.getProperty("orc.test.numVertices", "12"))
+val numVertices = Read(JavaSys.getProperty("orc.test.numVertices", "30"))
 
 {- Probability of edge between a given vertex pair. -}
 val probEdge = Read(JavaSys.getProperty("orc.test.probEdge", "0.33"))
@@ -19,6 +19,7 @@ val probEdge = Read(JavaSys.getProperty("orc.test.probEdge", "0.33"))
  - Graph definition
  --------}
 
+import class Graph = "orc.test.item.distrib.GraphOfVertexWithPathLen"
 import class Vertex = "orc.test.item.distrib.VertexWithPathLen"
 import class Edge = "orc.test.item.distrib.EdgeWithIntWeight"
 type EdgeWeight = Integer
@@ -31,14 +32,9 @@ def mkVertex(name :: VertexName, outEdges :: List[Edge]) :: Vertex = Vertex(name
 def freshVertex(oldVertex :: Vertex) :: Vertex =
   Vertex(oldVertex.name(), oldVertex.outEdges())
 
-def vertexNamed(VertexName, List[Vertex]) :: Vertex
-def vertexNamed(targetName, []) = stop
-def vertexNamed(targetName, vertex:tailVertices) =
-    if vertex.name() = targetName then
-      vertex
-    else
-      vertexNamed(targetName, tailVertices)
-
+def vertexNamed(VertexName, Graph) :: Vertex
+def vertexNamed(targetName, graph) =
+  graph.get(targetName)
 
 {--------
  - Random graph generation 
@@ -51,28 +47,41 @@ def randomEdges(head :: VertexName, numVertices :: Integer,  probEdge :: Number,
     )
   })
 
-def randomGraph(numVertices :: Number, probEdge :: Number, maxWeight :: EdgeWeight) :: List[Vertex] =
-  def randomGraph'(vn :: Number) :: List[Vertex] =
+def randomGraph(numVertices :: Number, probEdge :: Number, maxWeight :: EdgeWeight) :: Graph =
+  def randomGraph'(vn :: Number, graph :: Graph) :: Graph =
     if vn <: numVertices then
-      mkVertex(vn, randomEdges(vn, numVertices,  probEdge, { Random(maxWeight) + 1 })):randomGraph'(vn + 1)
+      graph.put(vn, mkVertex(vn, randomEdges(vn, numVertices,  probEdge, { Random(maxWeight) + 1 })))  >>
+      randomGraph'(vn + 1, graph)
     else
-      []
-  randomGraph'(0)
+      graph
+  Graph(numVertices)  >graph>
+  randomGraph'(0, graph) >g> dumpGraph(g) >> g
 
-def freshGraph(oldVertices :: List[Vertex]) :: List[Vertex] =
-  map(freshVertex, oldVertices)
+def freshGraph(oldVertices :: Graph) :: Graph =
+  def freshGraph'(vn :: Number) :: Graph =
+    if vn <: oldVertices.size() then
+      oldVertices.put(vn, freshVertex(oldVertices.get(vn)))  >>
+      freshGraph'(vn + 1)
+    else
+      oldVertices
+  freshGraph'(0)
 
 
 {--------
  - Output
  --------}
 
-def dumpGraph(List[Vertex]) :: Signal
-def dumpGraph([]) = signal
-def dumpGraph(v:tailVertices) =
-  (v.pathLen().readD(); "(undef)")  >pl>
-  Println(v.name() + ": pathLen=" + pl + afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges())))  >>
-  dumpGraph(tailVertices)
+def dumpGraph(Graph) :: Signal
+def dumpGraph(graph) =
+  def dumpGraph'(vn :: Number) :: Signal =
+    if vn <: graph.size() then
+      graph.get(vn)  >v>
+      (v.pathLen().readD(); "(undef)")  >pl>
+      Println(v.name() + ": pathLen=" + pl + afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges())))  >>
+      dumpGraph'(vn + 1)
+    else
+      signal
+  dumpGraph'(0)
 
 
 {--------

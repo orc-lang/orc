@@ -52,6 +52,8 @@ class VertexValueLocator(execution: DOrcExecution) extends ValueLocator with Cal
         orc.run.distrib.porce.Logger.Invoke.finer("VertexValueLocator.callLocationMayNeedOverride JavaStaticMemberProxy returning " + mustMigrate)
         Some(mustMigrate)
       }
+      case _: orc.test.item.distrib.GraphOfVertexWithPathLen => Some(0 != execution.runtime.here.runtimeId)
+      case jmp: JavaMemberProxy if jmp.javaClass == classOf[GraphOfVertexWithPathLen] => Some(0 != execution.runtime.here.runtimeId)
       case _ => {
         None
       }
@@ -67,6 +69,8 @@ class VertexValueLocator(execution: DOrcExecution) extends ValueLocator with Cal
         orc.run.distrib.porce.Logger.Invoke.finer("VertexValueLocator.callLocationMayNeedOverride JavaStaticMemberProxy callLocationOverride location:" + loc)
         Set(execution.locationForFollowerNum(loc))
       }
+      case _: orc.test.item.distrib.GraphOfVertexWithPathLen => Set(execution.locationForFollowerNum(0))
+      case jmp: JavaMemberProxy if jmp.javaClass == classOf[GraphOfVertexWithPathLen] => Set(execution.locationForFollowerNum(0))
       case _ => {
         Set.empty
       }
