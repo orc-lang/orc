@@ -14,7 +14,7 @@
 package orc.compile.distrib
 
 import orc.ast.hasOptionalVariableName
-import orc.ast.oil.named._
+import orc.ast.oil.named.{ Argument, BoundTypevar, BoundVar, Call, Constant, DeclareCallables, Def, Expression, FieldAccess, Graft, HasType, Hole, ImportedType, NamedASTTransform, New, Otherwise, Parallel, Sequence, Top, Trim, Type, Var, VtimeZone }
 import orc.run.distrib.DOrcPlacementPolicy
 import orc.values.Signal
 
@@ -94,7 +94,7 @@ object ValueSetAnalysis extends NamedASTTransform {
       }
     }
 
-    //case dc @ DeclareCallables(defs: List[Callable], body: Expression) => ???
+    //case dc @ DeclareCallables(defs: List[Callable], body: Expression) => dc
 
     //case dt @ DeclareType(name: BoundTypevar, t: Type, body: Expression) => dt
 
@@ -103,18 +103,26 @@ object ValueSetAnalysis extends NamedASTTransform {
       annotate(HasType(deannotate(tb), expectedType), vs)
     }
 
-    //case h @ Hole(context: Map[String, Argument], typecontext: Map[String, Type]) => h
+    case h @ Hole(context: Map[String, Argument], typecontext: Map[String, Type]) => annotate(h, context.values.toSet)
 
     case VtimeZone(timeOrder: Argument, body: Expression) => {
       val (tb, vs) = transformAndGetValueSet(body, context, typecontext)
       annotate(VtimeZone(timeOrder, deannotate(tb)), vs + timeOrder)
     }
 
-    //case n @ New(self: BoundVar, selfType: Option[Type], bindings: Map[orc.values.Field, Expression], objType: Option[Type]) => {
-    //  ???
-    //}
+    case n @ New(self: BoundVar, selfType: Option[Type], bindings: Map[orc.values.Field, Expression], objType: Option[Type]) => {
+      val annotatedBindingsAndValueSets = bindings.mapValues(transformAndGetValueSet(_, context, typecontext))
+      val annotatedBindings = annotatedBindingsAndValueSets.mapValues(_._1)
+      val bindingsCombinedValueSets = annotatedBindingsAndValueSets.values.flatMap(_._2).toSet - self
+      val nonRedundantlyAnnotatedBindings = annotatedBindings.mapValues(_ match {
+        case b if getValueSet(b) == bindingsCombinedValueSets => deannotate(b)
+        case b => b
+      })
+      val annotatedNew = annotate(New(self, selfType, nonRedundantlyAnnotatedBindings, objType), bindingsCombinedValueSets)
+      annotatedNew
+    }
 
-    //case fa @ FieldAccess(obj: Argument, field: orc.values.Field) => ??? //annotate(fa, Set(obj, Constant(field)))
+    case fa @ FieldAccess(obj: Argument, field: orc.values.Field) => annotate(fa, Set(obj))
 
     case a: Argument => annotate(a, Set(a))
 
@@ -148,7 +156,6 @@ object ValueSetAnalysis extends NamedASTTransform {
     values.filter({
       case _: Var => true
       case Constant(null) => false
-      case Constant("hiya") => true
       case Constant(_: java.lang.Boolean) | Constant(_: java.lang.Character) | Constant(_: java.lang.Number) | Constant(_: String) => false
       case Constant(_: DOrcPlacementPolicy) => true
       //FIXME: Ask ValueLocators if this value is of interest
@@ -189,7 +196,7 @@ object ValueSetAnalysis extends NamedASTTransform {
       /* Sub-ASTs that are just a call. */
       case Sequence(Call(target1: BoundVar, args1, None), _: BoundVar, innerExpr @ Call(target2: BoundVar, _, _)) if isSubAstValueSetTarget(target1) && !isSubAstValueSetTarget(target2) =>
         innerExpr
-      case Sequence(Call(target1: BoundVar, args1, None), _: BoundVar, innerExpr: Call) if isSubAstValueSetTarget(target1) =>
+      case Sequence(Call(target1: BoundVar, args1, None), _: BoundVar, innerExpr: Call) if isSubAstValueSetTarget(target1) => /* Call target2 not a BoundVar */
         innerExpr
       /* Sub-ASTs that are just "c >x> x", where c is a Constant */
       case Sequence(c: Constant, x, Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr)) if isSubAstValueSetTarget(target) && x == innerExpr =>
