@@ -97,6 +97,8 @@ abstract class InvokerCanInvoke extends NodeBase {
     protected static boolean isPartiallyEvaluable(Invoker invoker) {
         return  invoker instanceof OverloadedDirectInvokerBase1 ||
                 invoker instanceof OverloadedDirectInvokerBase2 ||
+                invoker instanceof orc.values.sites.TargetValueAndArgumentClassSpecializedInvoker ||
+                invoker instanceof orc.values.sites.TargetClassAndArgumentClassSpecializedInvoker ||
                 invoker instanceof orc.compile.orctimizer.OrcAnnotation.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayDerefSite.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayAssignSite.Invoker ||

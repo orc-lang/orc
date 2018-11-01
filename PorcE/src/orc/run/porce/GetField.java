@@ -38,7 +38,7 @@ public abstract class GetField extends Expression {
         this.execution = execution;
     }
 
-    @Specialization(guards = { "isNotError(accessor)", "canGetNode.executeCanGet(frame, accessor, obj)" },
+    @Specialization(guards = { "canGetNode.executeCanGet(frame, accessor, obj)" },
             limit = "GetFieldMaxCacheSize")
     public Object cachedAccessor(final VirtualFrame frame, final Object obj,
             @Cached("create()") AccessorCanGet canGetNode,
@@ -71,17 +71,13 @@ public abstract class GetField extends Expression {
     }
 
     @TruffleBoundary(allowInlining = true)
-    public static Object accessWithBoundary(final Accessor accessor, final Object obj) {
+    static Object accessWithBoundary(final Accessor accessor, final Object obj) {
         return accessor.get(obj);
     }
 
     @TruffleBoundary(allowInlining = true)
-    public static boolean canGetWithBoundary(final Accessor accessor, final Object obj) {
+    static boolean canGetWithBoundary(final Accessor accessor, final Object obj) {
         return accessor.canGet(obj);
-    }
-
-    public static boolean isNotError(final Accessor accessor) {
-        return !(accessor instanceof ErrorAccessor);
     }
 
     public static GetField create(final Expression object, final Field field, final PorcEExecution execution) {
