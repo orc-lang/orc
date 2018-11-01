@@ -9,7 +9,7 @@ include "write-csv-file.inc"
 import class JavaSys = "java.lang.System"
 
 {- Number of vertices to generate. -}
-val numVertices = Read(JavaSys.getProperty("orc.test.numVertices", "30"))
+val numVertices = Read(JavaSys.getProperty("orc.test.numVertices", "120"))
 
 {- Probability of edge between a given vertex pair. -}
 val probEdge = Read(JavaSys.getProperty("orc.test.probEdge", "0.33"))
@@ -55,7 +55,7 @@ def randomGraph(numVertices :: Number, probEdge :: Number, maxWeight :: EdgeWeig
     else
       graph
   Graph(numVertices)  >graph>
-  randomGraph'(0, graph) >g> dumpGraph(g) >> g
+  randomGraph'(0, graph)
 
 def freshGraph(oldVertices :: Graph) :: Graph =
   def freshGraph'(vn :: Number) :: Graph =
@@ -88,7 +88,7 @@ def dumpGraph(graph) =
  - Test Driver
  --------}
 
-val numRepetitions = Read(JavaSys.getProperty("orc.test.numRepetitions", "1"))
+val numRepetitions = Read(JavaSys.getProperty("orc.test.numRepetitions", "3"))
 
 def getProcessCumulativeCpuTime() =
   import class ManagementFactory = "java.lang.management.ManagementFactory"

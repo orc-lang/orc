@@ -48,7 +48,8 @@ def runTestRep() :: Signal =
   signal
 
 def tearDownTestRep() =
-  dumpGraph(verticesRef?)
+  -- dumpGraph(verticesRef?)
+  signal
 
 def tearDownTest() =
   signal
