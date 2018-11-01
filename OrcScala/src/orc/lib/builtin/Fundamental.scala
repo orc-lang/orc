@@ -70,7 +70,7 @@ case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalS
 
 @SerialVersionUID(5555898947968354991L)
 object Let extends TotalSite with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
-  override def name = "let"
+  override def name = "Let"
   def evaluate(args: Array[AnyRef]) =
     args match {
       case Array0() => Signal
