@@ -49,7 +49,7 @@ public final class PorcEObject implements HasMembers, DOrcMarshalingReplacement 
 
     @Override
     @SuppressWarnings("boxing")
-    public String toString() {
+    public String toOrcSyntax() {
         // FIXME: The recursion check will be SLOW. But it may not matter. However it may not even be good to have this as a default.
         if (toStringRecursionCheck.get()) {
             return "[... recursive ...]";
