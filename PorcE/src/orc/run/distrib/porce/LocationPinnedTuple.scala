@@ -13,17 +13,12 @@
 
 package orc.run.distrib.porce
 
-import orc.VirtualCallContext
+import orc.{ Invoker, OrcRuntime, SiteResponseSet, VirtualCallContext }
 import orc.error.OrcException
+import orc.run.distrib.{ AbstractLocation, ClusterLocations, DOrcPlacementPolicy }
+import orc.run.porce.runtime.VirtualCPSCallContext
 import orc.values.OrcTuple
 import orc.values.sites.Site
-import orc.run.distrib.DOrcPlacementPolicy
-import orc.run.distrib.ClusterLocations
-import orc.run.distrib.AbstractLocation
-import orc.OrcRuntime
-import orc.Invoker
-import orc.SiteResponseSet
-import orc.run.porce.runtime.VirtualCPSCallContext
 
 /** Superclass of Orc sites to construct LocationPinnedTuples
   *

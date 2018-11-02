@@ -82,6 +82,6 @@ package orc.run.distrib
  * calling back into the FutureReader.
  */
 
-package object porce  {
+package object porce {
   type PeerLocation = Location[OrcPeerCmd]
 }

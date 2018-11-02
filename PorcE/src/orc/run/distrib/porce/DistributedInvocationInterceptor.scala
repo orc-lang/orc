@@ -65,7 +65,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     Logger.Invoke.finest("needsOverride=" + needsOverride + " for types " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
     val result = if (needsOverride.isDefined) {
       needsOverride.get
-    } else if (/*FIXME:HACK*/target.isInstanceOf[PorcEClosure] && target.toString().startsWith("ᑅSubAstValueSetDef")) {
+    } else if ( /*FIXME:HACK*/ target.isInstanceOf[PorcEClosure] && target.toString().startsWith("ᑅSubAstValueSetDef")) {
       /* Attempt to prospectively migrate to Sub-AST value set */
       /* Look up current locations, and find their intersection */
       val intersectLocs = arguments.map(derefAnyBoundLocalFuture(_)).map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
@@ -128,7 +128,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         }
       }
       Logger.Downcall.fine(s"Scheduling local call to $callInvoker")
-      execution.runtime.schedule(callInvoker)      
+      execution.runtime.schedule(callInvoker)
     }
   }
 

@@ -47,7 +47,8 @@ trait ExecutionMashaler {
       CounterReplacement(proxyId)
     }
     case (destination, terminator: Terminator) => {
-      val proxyId = execution.makeProxyWithinTerminator(terminator,
+      val proxyId = execution.makeProxyWithinTerminator(
+        terminator,
         (terminatorProxyId) => execution.sendKilled(destination, terminatorProxyId)())
       TerminatorReplacement(proxyId)
     }
@@ -92,7 +93,6 @@ trait ExecutionMashaler {
     }
   }
 }
-
 
 private final case class ClosureMarshaledFieldData(callTargetIndex: Int, environment: Array[AnyRef]) extends Serializable
 

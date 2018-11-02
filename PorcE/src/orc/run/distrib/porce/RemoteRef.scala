@@ -54,7 +54,7 @@ trait RemoteRefIdManager {
   * @author jthywiss
   */
 class RemoteObjectRef(override val remoteRefId: RemoteObjectRef#RemoteRefId) extends RemoteRef {
-  
+
   override def toString: String = f"${getClass.getName}(remoteRefId=$remoteRefId%#x)"
 
   def marshal(): RemoteObjectRefReplacement = {
