@@ -493,11 +493,13 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
       }
     }
 
-    val r = if (coh != null) {
+    val r = if (CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
+        coh != null)) {
       coh.value -= 1
-      handleHaltToken(false)
+      //handleHaltToken(false)
       null
     } else {
+      ctx.enterOffWorker()
       decrGlobal()
     }
     stopTimer(s)
