@@ -319,7 +319,7 @@ sealed abstract class InvocableInvoker(
   * @author jthywiss, amp
   */
 class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: String, @inline val javaField: Option[JavaField]) extends Site with HasMembers {
-  def javaClass = theObject.getClass()
+  final var javaClass = if (theObject != null) theObject.getClass() else null
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     import JavaCall._
@@ -423,7 +423,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
   * @author jthywiss, amp
   */
 class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], _memberName: String, javaField: Option[JavaField]) extends JavaMemberProxy(null, _memberName, javaField) with Serializable {
-  override def javaClass = declaringClass
+  javaClass = declaringClass
   override def toString() = s"JavaStaticMemberProxy($javaClass.$memberName)"
 
   @throws(classOf[java.io.ObjectStreamException])

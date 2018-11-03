@@ -81,7 +81,7 @@ object OrcJavaCompatibility {
         case _ => i
       }
     }.asInstanceOf[Object]
-  
+
   /** Utility methods for orc2java handling primitive floating-point numeric expectedType. */
   private def orc2javaAsFloat(f: Number, expectedType: Class[_]): Object = {
       expectedType match {
@@ -129,9 +129,13 @@ object OrcJavaCompatibility {
     val returnType: java.lang.Class[_]
     val isStatic: Boolean
     val isVarArgs: Boolean
-    val getName: String
+    val name: String
+    def executableMember: java.lang.reflect.Executable
+
+    final def declaringClass = executableMember.getDeclaringClass
+
     def invoke(obj: Object, args: Array[Object]): Object
-    
+
     def toMethodHandle: MethodHandle
   }
 
@@ -144,17 +148,19 @@ object OrcJavaCompatibility {
       }
     }
   }
-  
+
   val methodLookup = MethodHandles.publicLookup()
 
-  case class InvocableMethod(method: JavaMethod) extends Invocable {    
+  final case class InvocableMethod(method: JavaMethod) extends Invocable {
     val parameterTypes: Array[java.lang.Class[_]] = method.getParameterTypes
     val returnType: java.lang.Class[_] = method.getReturnType
     val isStatic = Modifier.isStatic(method.getModifiers())
     val isVarArgs = method.isVarArgs()
-    val getName: String = method.getName()
+    val name: String = method.getName()
+    def executableMember = method
+
     def invoke(obj: Object, args: Array[Object]): Object = method.invoke(obj, args: _*)
-    
+
     def toMethodHandle = if (isStatic) {
       MethodHandles.dropArguments(methodLookup.unreflect(method), 0, classOf[Object])
     } else {
@@ -162,14 +168,16 @@ object OrcJavaCompatibility {
     }
   }
 
-  case class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
+  final case class InvocableCtor(ctor: JavaConstructor[_]) extends Invocable {
     val parameterTypes: Array[java.lang.Class[_]] = ctor.getParameterTypes
     val returnType: java.lang.Class[_] = ctor.getDeclaringClass
     val isStatic = true
     val isVarArgs = ctor.isVarArgs()
-    val getName: String = ctor.getName()
+    val name: String = ctor.getName()
+    def executableMember = ctor
+
     def invoke(obj: Object, args: Array[Object]): Object = ctor.newInstance(args: _*).asInstanceOf[Object]
-    
+
     def toMethodHandle = {
       MethodHandles.dropArguments(methodLookup.unreflectConstructor(ctor), 0, classOf[Object])
     }
@@ -218,7 +226,7 @@ object OrcJavaCompatibility {
       if (potentiallyApplicableMethods.isEmpty) {
         throw new NoSuchMethodException("No public " + methodName + " with " + argTypes.size + " arguments in " + targetClass.getName() + " [[OrcWiki:NoSuchMethodException]]")
       }
-  
+
       //Phase 1: Identify Matching Arity Methods Applicable by Subtyping
       val phase1Results = potentiallyApplicableMethods.filter({ m =>
         !m.isVarArgs() &&
@@ -228,7 +236,7 @@ object OrcJavaCompatibility {
       if (phase1Results.nonEmpty) {
         return Invocable(mostSpecificMethod(phase1Results))
       }
-  
+
       //Phase 2: Identify Matching Arity Methods Applicable by Method Invocation Conversion
       val phase2Results = potentiallyApplicableMethods.filter({ m =>
         !m.isVarArgs() &&
@@ -238,7 +246,7 @@ object OrcJavaCompatibility {
       if (phase2Results.nonEmpty) {
         return Invocable(mostSpecificMethod(phase2Results))
       }
-  
+
       //Phase 3: Identify Applicable Variable Arity Methods
       val phase3Results = potentiallyApplicableMethods.filter({ m =>
         if (m.isVarArgs()) {
@@ -342,7 +350,7 @@ object OrcJavaCompatibility {
   private val longRefClass = classOf[java.lang.Long]
   private val floatRefClass = classOf[java.lang.Float]
   private val doubleRefClass = classOf[java.lang.Double]
-  
+
   /** Java boxing conversion per JLS §5.1.7 */
   def box(primType: Class[_]): Class[_] = {
     primType match {
@@ -384,8 +392,8 @@ object OrcJavaCompatibility {
       case java.lang.Float.TYPE => toPrimType == java.lang.Double.TYPE
       case _ => false
     })
-  } 
-  
+  }
+
   // Orc's numeric types
   def isOrcIntegralClass(cls: Class[_]) = {
     val isBigInt = classOf[BigInt].isAssignableFrom(cls)
