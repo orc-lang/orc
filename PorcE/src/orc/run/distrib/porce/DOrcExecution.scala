@@ -221,6 +221,11 @@ class DOrcFollowerExecution(
 
   val pCallTarget = truffleRuntime.createCallTarget(pRootNode)
 
+  override def kill(): Unit = {
+    //TODO: Forward the kill to the leader execution
+    // ... maybe.  For Java Errors and TokenErrors, the event has already been sent to the leader.
+  }
+
   protected override def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
     super.setCallTargetMap(callTargetMap)
     this.callTargetMap += (-1 -> pCallTarget)

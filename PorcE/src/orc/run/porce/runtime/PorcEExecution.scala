@@ -13,11 +13,12 @@ package orc.run.porce.runtime
 
 import java.io.{ FileOutputStream, OutputStreamWriter, PrintWriter }
 import java.util.{ ArrayList, Collections }
+import java.util.logging.Level
 
 import scala.ref.WeakReference
 
 import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
-import orc.error.runtime.HaltException
+import orc.error.runtime.{ HaltException, TokenError }
 import orc.run.core.EventHandler
 import orc.run.distrib.porce.CallTargetManager
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcERootNode, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
@@ -29,11 +30,21 @@ import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.{ Node, RootNode }
 
-class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
+abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
   val truffleRuntime = Truffle.getRuntime()
 
   runtime.installHandlers(this)
+
+  val oldHandler = eventHandler
+  eventHandler = {
+    case e @ CaughtEvent(je: Error) => { Logger.log(Level.SEVERE, "Unexpected Java Error thrown; killing Orc Execution", je); oldHandler(e); kill() }
+    case e @ CaughtEvent(_: TokenError) => { oldHandler(e); kill() }
+    case e => oldHandler(e)
+  }
+
+  /** Kill this execution */
+  def kill()
 
   @TruffleBoundary @noinline
   def notifyOrcWithBoundary(e: OrcEvent) = {
@@ -145,7 +156,6 @@ class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcE
     }
   }
 
-
   def onProgramHalted() = {
   }
 }
@@ -201,7 +211,7 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
     }
   }
 
-  val t = new Terminator
+  val t = new Terminator()
 
   def scheduleProgram(prog: PorcEClosure, callTargetMap: collection.Map[Int, RootCallTarget]): Unit = {
     setCallTargetMap(callTargetMap)
@@ -219,8 +229,13 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
     c.haltToken()
   }
 
+  override def kill(): Unit = {
+    t.kill()
+  }
+
   protected override def setCallTargetMap(callTargetMap: collection.Map[Int, RootCallTarget]) = {
     super.setCallTargetMap(callTargetMap)
     this.callTargetMap += (-1 -> pCallTarget)
   }
+
 }
