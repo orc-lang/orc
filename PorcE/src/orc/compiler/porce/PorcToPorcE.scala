@@ -184,12 +184,12 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
         case Zipper(x: porc.Variable, p) =>
           transform(x)(thisCtx)
         case porc.Sequence.Z(es) =>
-          porce.Sequence.create(es.contextMap(transform(_)(_))(thisCtx).toArray)
+          porce.Sequence.create(es.contextMap(transform(_)(_))(thisCtx).toArray, Array())
         case porc.Let.Z(x, v, body) =>
           porce.Sequence.create(Array(
             porce.Write.Local.create(lookupVariable(x), transform(v)(innerCtx)),
-            transform(body)(thisCtx),
-            porce.Write.Local.create(lookupVariable(x), null)))
+            transform(body)(thisCtx)),
+            Array(lookupVariable(x)))
         case e@porc.Continuation.Z(args, body) if e.value.optionalIndex.exists(closureMap.contains(_)) =>
           val (reuse, capturedVars, capturingExprs) = transformContinuationContext(e)
 
@@ -253,13 +253,13 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
           assert(methodsOrdered.map(_.name) == recCapturedVars)
 
           val newMethods = methodsOrdered.zipWithIndex.map({ case (m, i) => transform(m, i, closure, allCapturedVars, scopeCapturedVars.size) })
-          val clearMethods = methodsOrdered.map(m => porce.Write.Local.create(lookupVariable(m.name), null))
+          val clearMethods = methodsOrdered.map(m => lookupVariable(m.name)).toArray
 
           porce.Sequence.create(((constructClosure +:
               newMethods :+
               porce.Write.Local.create(closure, null) :+
-              transform(body)(thisCtx)) ++
-              clearMethods).toArray)
+              transform(body)(thisCtx))).toArray,
+              clearMethods)
         case porc.NewFuture.Z(raceFreeResolution) =>
           porce.NewFuture.create(raceFreeResolution)
         case porc.Graft.Z(p, c, t, v) =>
@@ -303,7 +303,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
           }
           val finishJoin = porce.Resolve.Finish.create(porce.Read.Local.create(join), execution)
           finishJoin.setTail(thisCtx.inTailPosition)
-          porce.Sequence.create((newJoin +: processors :+ finishJoin :+ porce.Write.Local.create(join, null)).toArray)
+          porce.Sequence.create((newJoin +: processors :+ finishJoin).toArray, Array(join))
         case porc.Force.Z(p, c, t, Seq(future)) =>
           // Special optimized case for only one future.
           porce.Force.SingleFuture.create(transform(p), transform(c), transform(t), transform(future), execution)
@@ -318,7 +318,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
           }
           val finishJoin = porce.Force.Finish.create(porce.Read.Local.create(join), execution)
           finishJoin.setTail(thisCtx.inTailPosition)
-          porce.Sequence.create((newJoin +: processors :+ finishJoin :+ porce.Write.Local.create(join, null)).toArray)
+          porce.Sequence.create((newJoin +: processors :+ finishJoin).toArray, Array(join))
         case porc.SetDiscorporate.Z(c) =>
           porce.SetDiscorporate.create(transform(c))
         case porc.TryOnException.Z(b, h) =>
