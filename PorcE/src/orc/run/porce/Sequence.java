@@ -32,7 +32,15 @@ public class Sequence extends Expression {
         for(int i = 0; i < exprs.length - 1; i++) {
             assert !exprs[i].isTail;
         }
-        exprs[exprs.length - 1].setTail(b);
+        int i = exprs.length - 1;
+        while (i >= 0) {
+            if (exprs[i] instanceof Write.Local && ((Write.Local)exprs[i]).value == null) {
+                i--;
+            } else {
+                break;
+            }
+        }
+        exprs[i].setTail(b);
     }
 
     @Override

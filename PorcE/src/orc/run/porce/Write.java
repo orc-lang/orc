@@ -31,13 +31,19 @@ public class Write {
         @Override
         public void setTail(boolean v) {
             super.setTail(v);
-            value.setTail(v);
+            if (value != null) {
+                value.setTail(v);
+            }
         }
 
         @Override
         public Object execute(final VirtualFrame frame) {
-            frame.setObject(slot, value.execute(frame));
-            return value;
+            if (value == null) {
+                frame.setObject(slot, null);
+            } else {
+                frame.setObject(slot, value.execute(frame));
+            }
+            return null;
         }
 
         public static Local create(final FrameSlot slot, final Expression value) {
