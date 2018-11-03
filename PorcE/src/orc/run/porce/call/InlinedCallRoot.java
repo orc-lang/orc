@@ -55,9 +55,9 @@ public abstract class InlinedCallRoot extends NodeBase {
 
     @Child
     protected Expression inlinedBody;
-    @CompilationFinal
+    @CompilationFinal(dimensions=1)
     private FrameSlot[] argumentSlots;
-    @CompilationFinal
+    @CompilationFinal(dimensions=1)
     private FrameSlot[] closureSlots;
 
     protected InlinedCallRoot(final PorcERootNode targetRootNode, final PorcEExecution execution) {
@@ -85,23 +85,27 @@ public abstract class InlinedCallRoot extends NodeBase {
         ensureTail(body);
         CompilerDirectives.ensureVirtualized(arguments);
         copyArgumentsToFrame(frame, arguments);
-        while(true) {
-            long startTime = getProfilingScope().getTime();
-            try {
-                body.execute(frame);
+        try {
+            while(true) {
+                long startTime = getProfilingScope().getTime();
+                try {
+                    body.execute(frame);
 
-                // No tail call so break out of the loop.
-                break;
-            } catch (final InlinedTailCallException e) {
-                if (inlinedTailCallProfile.profile(e.target != targetRootNode)) {
-                    //Logger.info(() ->
-                    //    "Rethrowing InlinedTailCall to " + e.target + System.identityHashCode(e.target) +
-                    //    " at inlined copy of " + targetRootNode + System.identityHashCode(e.target));
-                    throw e;
+                    // No tail call so break out of the loop.
+                    break;
+                } catch (final InlinedTailCallException e) {
+                    if (inlinedTailCallProfile.profile(e.target != targetRootNode)) {
+                        //Logger.info(() ->
+                        //    "Rethrowing InlinedTailCall to " + e.target + System.identityHashCode(e.target) +
+                        //    " at inlined copy of " + targetRootNode + System.identityHashCode(e.target));
+                        throw e;
+                    }
+                } finally {
+                    getProfilingScope().addTime(startTime);
                 }
-            } finally {
-                getProfilingScope().addTime(startTime);
             }
+        } finally {
+            clearFrame(frame);
         }
     }
 
@@ -138,6 +142,17 @@ public abstract class InlinedCallRoot extends NodeBase {
         for (int i = 0; i < closureSlots.length; i++) {
             FrameSlot slot = closureSlots[i];
             frame.setObject(slot, environment[i]);
+        }
+    }
+    @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
+    void clearFrame(final VirtualFrame frame) {
+        for (int i = 0; i < argumentSlots.length; i++) {
+            FrameSlot slot = argumentSlots[i];
+            frame.setObject(slot, null);
+        }
+        for (int i = 0; i < closureSlots.length; i++) {
+            FrameSlot slot = closureSlots[i];
+            frame.setObject(slot, null);
         }
     }
 

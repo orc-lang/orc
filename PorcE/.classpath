@@ -12,5 +12,15 @@
 	</classpathentry>
 	<classpathentry kind="var" path="GRAALVM_JRE/jre/lib/jvmci/graal.jar"/>
 	<classpathentry kind="var" path="GRAALVM_JRE/jre/lib/truffle/truffle-api.jar" sourcepath="/GRAALVM_JRE/jre/lib/truffle/truffle-api.src.zip"/>
+	<classpathentry kind="lib" path="lib/asm-6.2.jar" sourcepath="lib/asm-6.2-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/PorcE/lib/asm-6.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/asm-commons-6.2.jar" sourcepath="lib/asm-commons-6.2-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/PorcE/lib/asm-commons-6.2-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

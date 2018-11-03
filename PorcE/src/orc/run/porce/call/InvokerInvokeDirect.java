@@ -21,6 +21,7 @@ import orc.compile.orctimizer.OrcAnnotation;
 import orc.error.runtime.JavaException;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
+import orc.run.porce.runtime.CallAdapter;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.values.NumericsConfig;
 import orc.values.sites.InvocableInvoker;
@@ -29,6 +30,7 @@ import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
@@ -118,7 +120,8 @@ abstract class InvokerInvokeDirect extends NodeBase {
             "invoker.invocable().parameterTypes() == parameterTypes" })
     @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
     public Object invocableInvoker(InvocableInvoker invoker, Object target, Object[] arguments,
-            @Cached(value = "invoker.invocable().parameterTypes()", dimensions = 1) final Class<?>[] parameterTypes) {
+            @Cached(value = "invoker.invocable().parameterTypes()", dimensions = 1) final Class<?>[] parameterTypes,
+            @Cached("apply(invoker.invocable())") CallAdapter callAdapter) {
         CompilerAsserts.compilationConstant(invoker);
         Object theObject = invoker.getRealTarget(target);
         OrcJavaCompatibility.Invocable invocable = invoker.invocable();
@@ -129,13 +132,18 @@ abstract class InvokerInvokeDirect extends NodeBase {
         }
         try {
             if (theObject == null && !invocable.isStatic()) {
+                CompilerDirectives.transferToInterpreter();
                 throw new NullPointerException(
                         "Instance method called without a target object (i.e. non-static method called on a class)");
             }
             for (int i = 0; i < parameterTypes.length; i++) {
                 final Object a = arguments[i];
                 final Class<?> cls = parameterTypes[i];
-                arguments[i] = orc2javaOpt(a, cls);
+                if (!cls.isPrimitive()) {
+                    arguments[i] = cls.cast(orc2javaOpt(a, cls));
+                } else {
+                    arguments[i] = orc2javaOpt(a, cls);
+                }
             }
             long jis = 0;
             if (orc.run.StopWatches.callsEnabled()) {
@@ -143,14 +151,14 @@ abstract class InvokerInvokeDirect extends NodeBase {
             }
             Object r;
             try {
-                r = invoker.boxedReturnType().cast(callMethodHandle(invoker.mh(), theObject, arguments));
+                r = invoker.boxedReturnType().cast(callAdapter.invoke(theObject, arguments));
             } finally {
                 if (orc.run.StopWatches.callsEnabled()) {
                     orc.run.StopWatches.javaImplTime().stop(jis);
                 }
             }
             return java2orcOpt(r);
-        } catch (InvocationTargetException | ExceptionInInitializerError e) {
+        } catch (ExceptionInInitializerError e) {
             throw new JavaException(e.getCause());
         } catch (Throwable e) {
             throw new JavaException(e);
@@ -322,27 +330,32 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return OrcJavaCompatibility.java2orc(v);
     }
 
+    @TruffleBoundary(allowInlining = true)
+    private static Object callInvocable(OrcJavaCompatibility.Invocable invocable, Object theObject, Object[] arguments) throws Throwable {
+        return invocable.invoke(theObject, arguments);
+    }
+
     @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
     private static Object callMethodHandle(MethodHandle mh, Object theObject, Object[] arguments) throws Throwable {
         return mh.invokeExact(theObject, arguments);
     }
 
-    //@TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = true)
     private static Object callMethodHandleGetter(MethodHandle mh, Object theObject) throws Throwable {
         return mh.invokeExact(theObject);
     }
 
-    //@TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = true)
     private static void callMethodHandleSetter(MethodHandle mh, Object theObject, Object arg) throws Throwable {
         mh.invokeExact(theObject, arg);
     }
 
-    //@TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = true)
     private static Object callMethodHandleArrayGetter(MethodHandle mh, Object theObject, int arg) throws Throwable {
         return mh.invokeExact(theObject, arg);
     }
 
-    //@TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = true)
     private static void callMethodHandleArraySetter(MethodHandle mh, Object theObject, int arg1, Object arg2) throws Throwable {
         mh.invokeExact(theObject, arg1, arg2);
     }
