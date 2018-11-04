@@ -87,7 +87,7 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
     public void setPorcAST(final PorcAST.Z ast) {
         CompilerAsserts.neverPartOfCompilation();
         porcNode = Option.apply(ast);
-        section = SourceSectionFromPorc.apply(ast);
+        sourceSection = SourceSectionFromPorc.apply(ast);
         getChildren().forEach((n) -> {
             if (n instanceof NodeBase) {
                 final NodeBase e = (NodeBase) n;
@@ -104,11 +104,11 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
     }
 
     @CompilationFinal
-    private SourceSection section = null;
+    private SourceSection sourceSection = null;
 
     @Override
     public SourceSection getSourceSection() {
-        return section;
+        return sourceSection;
     }
 
     @SuppressWarnings("boxing")
@@ -116,10 +116,10 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
         if (isTail) {
-            properties.put("tail", true);
+            properties.put("isTail", true);
         }
-        if (section != null) {
-            properties.put("sourceSection", section);
+        if (sourceSection != null) {
+            properties.put("sourceSection", sourceSection);
         }
         if (porcNode.isDefined()) {
             Object nodePrefixStub = new PorcASTDebugStub((PorcAST)porcNode.get().value());
