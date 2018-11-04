@@ -298,6 +298,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
             CompilerDirectives.transferToInterpreterAndInvalidate();
             atomic(() -> {
                 if (trampolineCallTarget == null) {
+                    // TODO: This should return this root node directly once we are no longer using getTimePerCall and when UniversalTCO is off.
                     RootCallTarget v = Truffle.getRuntime().createCallTarget(
                             new InvokeWithTrampolineRootNode(getLanguage(PorcELanguage.class), this, execution));
                     // TODO: Use the new Java 9 fence when we start requiring Java 9

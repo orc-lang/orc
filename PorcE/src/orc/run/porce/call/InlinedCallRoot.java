@@ -81,7 +81,6 @@ public abstract class InlinedCallRoot extends NodeBase {
             @Cached("createCountingProfile()") ConditionProfile inlinedTailCallProfile) {
         Expression body = getPorcEBodyFrameArguments();
         ensureTail(body);
-        CompilerDirectives.ensureVirtualized(arguments);
         copyArgumentsToFrame(frame, arguments);
         try {
             while(true) {
@@ -133,6 +132,7 @@ public abstract class InlinedCallRoot extends NodeBase {
 
         for (int i = 0; i < argumentSlots.length; i++) {
             FrameSlot slot = argumentSlots[i];
+            //CompilerDirectives.ensureVirtualizedHere(arguments);
             frame.setObject(slot, arguments[i+1]);
         }
 

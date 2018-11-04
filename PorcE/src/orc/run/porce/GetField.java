@@ -12,7 +12,6 @@
 package orc.run.porce;
 
 import orc.Accessor;
-import orc.ErrorAccessor;
 import orc.error.runtime.HaltException;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.values.Field;

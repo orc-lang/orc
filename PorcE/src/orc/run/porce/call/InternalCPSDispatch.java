@@ -125,12 +125,12 @@ public class InternalCPSDispatch extends Dispatch {
         @SuppressWarnings("boxing")
         @Specialization(guards = { "SelfTCO", "isTail", "getCachedRootNode() == target.body.getRootNode()" })
         public void selfTail(final VirtualFrame frame, final PorcEClosure target, final Object[] arguments) {
-            CompilerDirectives.ensureVirtualized(arguments);
             addCalledRoot(target.body);
             Object[] frameArguments = frame.getArguments();
             CompilerAsserts.compilationConstant(arguments.length);
             if (frameArguments.length == arguments.length) {
                 for (int i = 0; i < arguments.length; i ++) {
+                    //CompilerDirectives.ensureVirtualizedHere(arguments);
                     frameArguments[i] = arguments[i];
                 }
             } else {
@@ -156,7 +156,6 @@ public class InternalCPSDispatch extends Dispatch {
                 final PorcEClosure target, final Object[] arguments,
                 @Cached("target.body") RootCallTarget expected,
                 @Cached("findInlinedCallRoot(expected)") BiConsumer<VirtualFrame, Object[]> copyArgumentsToFrame) {
-            CompilerDirectives.ensureVirtualized(arguments);
             addCalledRoot(target.body);
             copyArgumentsToFrame.accept(frame, arguments);
             throw new InlinedTailCallException((PorcERootNode)expected.getRootNode());

@@ -133,7 +133,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   private def depthIncrement = 1 //if (CompilerDirectives.inCompiledCode()) 1 else 16
 
   @inline
-  protected[runtime] final def incrementDepthValue(inlineAllowedProfile: VisibleConditionProfile, prev: Int): (Boolean, Int) = {
+  final def incrementDepthValue(inlineAllowedProfile: VisibleConditionProfile, prev: Int): (Boolean, Int) = {
     if (unrollOnLargeStack) {
       val r = prev >= 0 &&
         (if (inlineAllowedProfile == null || !inlineAllowedProfile.wasFalse())

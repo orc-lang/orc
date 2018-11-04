@@ -246,7 +246,6 @@ public class Force {
 	@Specialization(guards = { "InlineForceHalted", "join.isHalted()" }, replaces = { "blocked" })
 	public PorcEUnit halted(final VirtualFrame frame, final Join join,
                 @Cached("create(execution)") HaltToken.KnownCounter haltToken) {
-	    //CompilerDirectives.ensureVirtualizedHere(join);
 	    haltToken.execute(frame, join.c());
 	    return PorcEUnit.SINGLETON;
 	}
