@@ -73,7 +73,7 @@ public final class PorcEObject implements HasMembers, DOrcMarshalingReplacement 
         }
     }
 
-    private static class ObjectAccessor implements orc.values.sites.SimpleAccessor {
+    private static class ObjectAccessor implements orc.values.sites.InlinableAccessor {
         @CompilationFinal(dimensions = 1)
         private final Field[] theseFieldNames;
         private final int index;

@@ -99,7 +99,7 @@ abstract class InvokerCanInvoke extends NodeBase {
                 invoker instanceof OverloadedDirectInvokerBase2 ||
                 invoker instanceof orc.values.sites.TargetValueAndArgumentClassSpecializedInvoker ||
                 invoker instanceof orc.values.sites.TargetClassAndArgumentClassSpecializedInvoker ||
-                invoker instanceof orc.compile.orctimizer.OrcAnnotation.Invoker ||
+                invoker instanceof orc.values.sites.InlinableInvoker ||
                 invoker instanceof orc.values.sites.JavaArrayDerefSite.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayAssignSite.Invoker ||
                 invoker instanceof orc.values.sites.JavaArrayLengthPseudofield.Invoker ||

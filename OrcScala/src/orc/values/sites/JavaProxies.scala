@@ -109,7 +109,7 @@ object JavaCall {
       val memberName = _memberName.intern()
       val cls = this.cls
       val javaField = cls.getFieldOption(memberName)
-      new SimpleAccessor {
+      new InlinableAccessor {
         def canGet(target: AnyRef): Boolean = {
           cls.isInstance(target)
         }
@@ -123,7 +123,7 @@ object JavaCall {
     def getStaticMemberAccessor(memberName: String): Accessor = {
       val cls = this.cls
       val javaField = cls.getFieldOption(memberName)
-      new SimpleAccessor {
+      new InlinableAccessor {
         def canGet(target: AnyRef): Boolean = {
           cls == target
         }
@@ -145,7 +145,7 @@ object JavaCall {
 
         // ARRAYS
         case (_, Array1(l: java.lang.Long)) if targetCls.isArray() => {
-          Some(new DirectInvoker {
+          Some(new DirectInvoker with InlinableInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
               target.getClass().isArray() && arguments.length == 1 && arguments(0).isInstanceOf[java.lang.Long]
             }
@@ -159,7 +159,7 @@ object JavaCall {
           })
         }
         case (_, Array1(_: BigInt | _: java.lang.Integer)) if targetCls.isArray() => {
-          Some(new DirectInvoker {
+          Some(new DirectInvoker with InlinableInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
               target.getClass().isArray() && arguments.length == 1 &&
               (arguments(0).isInstanceOf[BigInt] || arguments(0).isInstanceOf[java.lang.Long] || arguments(0).isInstanceOf[java.lang.Integer])
@@ -228,8 +228,6 @@ object JavaCall {
     }
   }
 }
-
-trait SimpleAccessor extends Accessor
 
 /**
   * @author jthywiss, amp
@@ -354,7 +352,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
 
     // In violation of JLS §10.7, arrays don't really have a length field!  Java bug 5047859
     if (memberName == "length" && submemberName == "read" && javaClass.isArray()) {
-      new SimpleAccessor {
+      new InlinableAccessor {
         def canGet(target: AnyRef): Boolean = {
           target match {
             case p: JavaMemberProxy if (p.memberName eq "length") && p.javaClass.isArray() => true
@@ -369,7 +367,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
     } else if (javaField.isEmpty) {
       val memberName = this.memberName
       val javaClass = this.javaClass
-      new ErrorAccessor with SimpleAccessor {
+      new ErrorAccessor with InlinableAccessor {
         @throws[NoSuchMemberException]
         def get(target: AnyRef): AnyRef = {
           throw new NoSuchMemberException(javaClass, memberName)
@@ -546,7 +544,7 @@ case class JavaArrayElementProxy(@inline val theArray: AnyRef, @inline val index
   }
 }
 
-abstract class ArrayAccessor extends SimpleAccessor {
+abstract class ArrayAccessor extends InlinableAccessor {
   def methodInstance(theArray: AnyRef, index: Int): AnyRef
 
   def canGet(target: AnyRef): Boolean = {
@@ -561,7 +559,7 @@ abstract class ArrayAccessor extends SimpleAccessor {
 
 
 object JavaArrayDerefSite {
-  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends DirectInvoker {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends DirectInvoker with InlinableInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaArrayDerefSite] && arguments.length == 0 && cls.isInstance(target.asInstanceOf[JavaArrayDerefSite].theArray)
     }
@@ -644,7 +642,7 @@ case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends Site with Fu
 }
 
 object JavaArrayLengthPseudofield {
-  final class Invoker(val cls: Class[_]) extends DirectInvoker {
+  final class Invoker(val cls: Class[_]) extends DirectInvoker with InlinableInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaArrayLengthPseudofield] &&
       arguments.length == 0 &&

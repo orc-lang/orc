@@ -19,6 +19,7 @@ import orc.VirtualCallContext;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEExecution;
+import orc.values.sites.InlinableInvoker;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.ImportStatic;
@@ -55,6 +56,11 @@ abstract class InvokerInvoke extends NodeBase {
      *            The arguments to the call as expected by the invoker (without PCT).
      */
     public abstract SiteResponseSet executeInvoke(VirtualFrame frame, Invoker invoker, VirtualCallContext callContext, Object target, Object[] arguments);
+
+    @Specialization(guards = { "KnownSiteSpecialization" })
+    public SiteResponseSet partiallyEvaluable(InlinableInvoker invoker, VirtualCallContext callContext, Object target, Object[] arguments) {
+        return invoker.invoke(callContext, target, arguments);
+    }
 
     @Specialization
     @TruffleBoundary(allowInlining = true)

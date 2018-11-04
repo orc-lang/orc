@@ -17,7 +17,7 @@ import java.util.Arrays
 import orc.{ DirectInvoker, OrcRuntime }
 import orc.run.distrib.DOrcMarshalingReplacement
 import orc.util.ArrayExtensions.Array1
-import orc.values.sites.{ NonBlockingSite, PartialSite, UntypedSite, IllegalArgumentInvoker }
+import orc.values.sites.{ NonBlockingSite, PartialSite, UntypedSite, IllegalArgumentInvoker, InlinableInvoker }
 
 /** @author dkitchin
   */
@@ -49,7 +49,7 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
       case Array1(i: java.lang.Long) => {
         val size = values.length
 
-        new DirectInvoker {
+        new DirectInvoker with InlinableInvoker {
           def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
             (target, args) match {
               case (t: OrcTuple, Array1(bi: java.lang.Long)) =>

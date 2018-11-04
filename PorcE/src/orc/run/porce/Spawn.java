@@ -121,7 +121,6 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     }
 
     private static final boolean allowSpawnInlining = PorcERuntime$.MODULE$.allowSpawnInlining();
-    private static final boolean allowAllSpawnInlining = PorcERuntime$.MODULE$.allowAllSpawnInlining();
 
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
         return shouldInlineSpawn(this, targetRootProfile, computation);

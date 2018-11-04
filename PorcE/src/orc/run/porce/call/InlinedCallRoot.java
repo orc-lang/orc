@@ -41,8 +41,6 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import org.graalvm.collections.Pair;
 
-import java.util.logging.Level;
-
 /**
  *
  *

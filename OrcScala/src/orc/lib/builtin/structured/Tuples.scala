@@ -18,7 +18,7 @@ import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedTyp
 import orc.error.runtime.HaltException
 import orc.types.{ BinaryCallableType, IntegerConstantType, IntegerType, SimpleCallableType, StrictCallableType, TupleType, Type }
 import orc.values.OrcTuple
-import orc.values.sites.{ FunctionalSite, Site, OverloadedDirectInvokerMethod2, SiteMetadata, TalkativeSite }
+import orc.values.sites.{ FunctionalSite, Site, OverloadedDirectInvokerMethod2, SiteMetadata, TalkativeSite, InlinableInvoker }
 
 // TODO: Replace current tuple values with object and _n fields.
 
@@ -26,7 +26,7 @@ object TupleConstructor extends Site with FunctionalSite with TalkativeSite {
   override def name = "Tuple"
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
-    new DirectInvoker {
+    new DirectInvoker with InlinableInvoker {
       def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
         target eq TupleConstructor
       }

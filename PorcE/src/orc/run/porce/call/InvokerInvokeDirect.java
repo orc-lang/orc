@@ -342,11 +342,6 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return OrcJavaCompatibility.java2orc(v);
     }
 
-    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-    private static Object callMethodHandle(MethodHandle mh, Object theObject, Object[] arguments) throws Throwable {
-        return mh.invokeExact(theObject, arguments);
-    }
-
     private static Object callMethodHandleGetter(MethodHandle mh, Object theObject) throws Throwable {
         return mh.invokeExact(theObject);
     }
@@ -369,12 +364,11 @@ abstract class InvokerInvokeDirect extends NodeBase {
     }
 
     protected static boolean isPartiallyEvaluable(DirectInvoker invoker) {
-        return invoker instanceof OrcAnnotation.Invoker ||
-                invoker instanceof orc.values.sites.JavaArrayLengthPseudofield.Invoker;
+        return invoker instanceof orc.values.sites.InlinableInvoker;
     }
 
     @Specialization
-    @TruffleBoundary(allowInlining = true)
+    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
     public Object unknown(DirectInvoker invoker, Object target, Object[] arguments) {
         return invoker.invokeDirect(target, arguments);
     }

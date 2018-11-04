@@ -33,7 +33,7 @@ abstract class AccessorCanGet extends NodeBase {
     }
 
     protected static boolean isPartiallyEvaluable(Accessor accessor) {
-        return accessor instanceof orc.values.sites.SimpleAccessor ||
+        return accessor instanceof orc.values.sites.InlinableAccessor ||
                 accessor instanceof orc.ErrorAccessor ||
                 accessor instanceof orc.values.FastRecord.AccessorImpl ||
                 false;
