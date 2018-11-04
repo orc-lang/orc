@@ -31,7 +31,7 @@ object DumpSpecializations {
 
   def apply(node: Node, callsRequired: Int, out: PrintWriter): Unit = {
     val calledEnough = node match {
-      case r: PorcERootNode if r.getTotalCalls >= callsRequired =>
+      case r: PorcERootNode if (r.getTotalCalls max r.getTotalSpawnedCalls) >= callsRequired =>
         out.println(s"=== ${node}:")
         out.println("    " +
           f"timePerCall (spawned) = ${formatNumWOMax(r.getTimePerCall)}ns " +

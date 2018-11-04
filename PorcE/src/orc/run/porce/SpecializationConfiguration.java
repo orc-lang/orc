@@ -111,7 +111,7 @@ public abstract class SpecializationConfiguration {
 
     @CompilationFinal
     public static final double MinimumEarlyHaltProbability = Double
-            .parseDouble(System.getProperty("orc.porce.minimumEarlyHaltProbability", "0.0"));
+            .parseDouble(System.getProperty("orc.porce.minimumEarlyHaltProbability", "0.5"));
 
     @CompilationFinal
     public static final boolean UseExternalCallKindDecision = Boolean
