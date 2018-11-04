@@ -21,7 +21,6 @@ object PorcEShared {
             "test_data/performance/sieve/savina_sieve-opt.orc",
             "test_data/performance/sieve/savina_sieve-scala.orc",
             "test_data/performance/sieve/savina_sieve-scala-opt.orc",
-            "test_data/performance/8-queens.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
@@ -94,14 +93,14 @@ object PorcEShared {
             )
 
   val mainJvmOpts = Seq(
-      "-javaagent:ScalaGraalAgent-0.1.jar",
+      "-javaagent:../ScalaGraalAgent/build/ScalaGraalAgent-0.1.jar",
       "-XX:-RestrictContended",
       //"-XX:+UseParallelGC",
-      "-XX:+UseG1GC",
-      "-Xms4g", "-Xmx16g", "-Xss8m")
+      //"-XX:+UseG1GC",
+      "-Xms4g", "-Xmx4g", "-Xss8m")
 
   val mainOrcArgs = Seq(
-      "-O", "3",
+      "-O", "3", "--echo-ir", "0x1000",
       "--opt-opt", "orct:sequentialize-force",
       "--max-site-threads=16")
 
@@ -112,17 +111,18 @@ object PorcEShared {
         //"graal.TruffleMaximumRecursiveInlining" -> 10,
         "graal.TruffleInliningMaxCallerSize" -> 200,
         //"graal.MaximumInliningSize" -> 5000,
-        "graal.TrivialInliningSize" -> 1000,
+        //"graal.TrivialInliningSize" -> 1000,
         //"graal.MaximumDesiredSize" -> 30000,
         //"graal.SmallCompiledLowLevelGraphSize" -> 1500,
 
         "orc.numerics.preferLP" -> true,
-        "orc.porce.maxStackDepth" -> 512,
+        "orc.porce.maxStackDepth" -> 128,
         "orc.porce.optimizations.knownSiteSpecialization" -> true,
         "orc.ast.generateUniqueVariableNames" -> true,
         "orc.porce.truffleASTInlining" -> true,
-        "orc.porce.truffleASTInliningLimit" -> 1000,
+        "orc.porce.truffleASTInliningLimit" -> 10000,
         //"orc.porce.universalTCO" -> true,
+        //"orc.porce.useExternalCallKindDecision" -> true,
         )
 
 

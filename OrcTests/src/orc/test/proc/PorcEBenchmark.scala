@@ -46,17 +46,20 @@ object ArthursBenchmarkEnv {
     val remoteOutputDir = "runs"
 
     val filesToCopy = Seq(
-        s"OrcScala/build",
+        s"OrcScala/build/classes",
         s"OrcScala/lib",
         s"PorcE/build/classes",
+        s"PorcE/lib",
         s"OrcTests/build",
-        s"OrcTests/test_data"
+        s"OrcTests/test_data",
+        s"ScalaGraalAgent/build",
         )
 
     val classPathSeq = Seq(
-        s"$targetBinariesDir/OrcScala/build/*",
+        s"$targetBinariesDir/OrcScala/build/classes",
         s"$targetBinariesDir/OrcScala/lib/*",
         s"$targetBinariesDir/PorcE/build/classes",
+        s"$targetBinariesDir/PorcE/lib/*",
         s"$targetBinariesDir/OrcTests/build",
         )
 
