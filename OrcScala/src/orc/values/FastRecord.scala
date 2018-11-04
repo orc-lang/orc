@@ -19,8 +19,8 @@ import orc.run.distrib.DOrcMarshalingReplacement
 object FastObject {
   final class AccessorImpl(members: Array[Field], index: Int) extends Accessor {
     def canGet(target: AnyRef): Boolean = {
-      target.isInstanceOf[FastRecord] &&
-        (target.asInstanceOf[FastRecord].members eq members)
+      target.isInstanceOf[FastObject] &&
+        (target.asInstanceOf[FastObject].members eq members)
     }
     def get(target: AnyRef): AnyRef = {
       target.asInstanceOf[FastObject].values(index)
@@ -30,7 +30,7 @@ object FastObject {
   def members(members: String*): Array[Field] = members.map(Field(_)).toArray
 }
 
-abstract class FastObject(members: Array[Field]) extends HasMembers with DOrcMarshalingReplacement {
+abstract class FastObject(val members: Array[Field]) extends HasMembers with DOrcMarshalingReplacement {
   protected val values: Array[AnyRef]
 
   final def getAccessor(runtime: OrcRuntime, field: Field): Accessor = {
@@ -53,4 +53,4 @@ abstract class FastObject(members: Array[Field]) extends HasMembers with DOrcMar
     FastRecord(members, values map unmarshaler)
 }
 
-case class FastRecord(members: Array[Field], values: Array[AnyRef]) extends FastObject(members)
+case class FastRecord(_members: Array[Field], values: Array[AnyRef]) extends FastObject(_members)
