@@ -231,12 +231,19 @@ object Counter {
 
     def profileCreateCounterOffset(b: Boolean): Boolean = createCounterOffsetProfile.profile(b)
     def profileInThreadList(b: Boolean): Boolean = inThreadListProfile.profile(b)
+
+    protected def innerString = s"createCounterOffset=$createCounterOffsetProfile, inThreadList=$inThreadListProfile"
+    protected def prefixString = "GetCounterOffsetContext"
+    override def toString() = s"$prefixString($innerString)"
   }
 
   final class NewTokenContextImpl(runtime: PorcERuntime) extends GetCounterOffsetContextImpl(runtime) with NewTokenContext {
     val globalCountHeldProfile = ConditionProfile.createCountingProfile()
 
     def profileGlobalCountHeld(b: Boolean): Boolean = globalCountHeldProfile.profile(b)
+
+    protected override def innerString = s"${super.innerString}, globalCountHeld=$globalCountHeldProfile"
+    protected override def prefixString = "NewTokenContext"
   }
 
   final class FlushContextImpl(runtime: PorcERuntime) extends GetCounterOffsetContextImpl(runtime) with FlushContext {
@@ -245,6 +252,9 @@ object Counter {
 
     def profileNonzeroOffset(b: Boolean): Boolean = nonzeroOffsetProfile.profile(b)
     def profileHalted(b: Boolean): Boolean = haltedProfile.profile(b)
+
+    protected override def innerString = s"${super.innerString}, nonzeroOffset=$nonzeroOffsetProfile, halted=$haltedProfile"
+    protected override def prefixString = "FlushContext"
   }
 
   object NoOpContext extends FlushContext with NewTokenContext {
@@ -441,15 +451,6 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   @TruffleBoundary(allowInlining = true) @noinline
   final def flushCounterOffsetAndHandle(coh: CounterOffset): Unit = {
     scheduleHaltClosureIfNeeded(flushCounterOffsetAndHandleOptimized(coh)(NoOpContext))
-  }
-
-  private final def flushCounterOffsetIfLocalHalt(coh: CounterOffset): Boolean = {
-    if (coh.value == -get() && coh.value < 0) {
-      val n = flushCounterOffsetAndGet(coh)
-      n == 0
-    } else {
-      false
-    }
   }
 
   @volatile
