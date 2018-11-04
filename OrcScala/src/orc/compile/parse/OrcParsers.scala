@@ -15,7 +15,6 @@ package orc.compile.parse
 
 import java.io.IOException
 
-import scala.{ BigDecimal, BigInt }
 import scala.language.{ implicitConversions, postfixOps }
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 

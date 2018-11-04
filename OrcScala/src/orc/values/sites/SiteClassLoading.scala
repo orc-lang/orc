@@ -63,9 +63,10 @@ object SiteClassLoading {
 
   def initWithClassPathUrls(classPath: Array[URL]) {
     Logger.config("Initializing site & class loading with class path " + classPath.mkString(":"))
-    if (!initted)
+    if (!initted) {
+      initted = true
       stackClassLoaderWithPath(classPath)
-    else
+    } else
       throw new IllegalStateException("Cannot double-init SiteClassLoading")
   }
 

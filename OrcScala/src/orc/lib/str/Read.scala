@@ -15,11 +15,9 @@ package orc.lib.str
 import orc.ast.ext.{ Constant, Expression, ListExpr, RecordExpr, TupleExpr }
 import orc.compile.parse.{ OrcLiteralParser, ToTextRange }
 import orc.error.compiletime.ParsingException
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
 import orc.types.{ SimpleFunctionType, StringType, Top, Type }
 import orc.values.{ OrcRecord, OrcTuple }
 import orc.values.sites.{ TotalSite1Simple, TypedSite }
-import orc.util.ArrayExtensions.Array1
 
 object Read extends TotalSite1Simple[String] with TypedSite {
   def eval(s: String): AnyRef = {

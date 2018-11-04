@@ -18,7 +18,6 @@ import orc.types.StringType
 import orc.types.SimpleFunctionType
 import scala.xml.XML
 import org.xml.sax.SAXException
-import orc.error.runtime.ArgumentTypeMismatchException
 import orc.error.runtime.SiteException
 import orc.values.sites.TotalSite1Simple
 

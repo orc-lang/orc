@@ -16,21 +16,6 @@ package orc.values
 import orc.{ OrcRuntime, Accessor }
 import orc.run.distrib.DOrcMarshalingReplacement
 
-class FastRecordFactory(_members: Seq[String]) {
-  def this(_members: Array[String]) = this(_members.toSeq)
-
-  /** The canonical member ordering for FastRecords produced by this factory.
-    */
-  val members: Array[Field] = _members.map(Field(_)).toArray
-
-  def apply(values: Seq[AnyRef]) = {
-    FastRecord(members, values.toArray)
-  }
-  def apply(values: Array[AnyRef]) = {
-    FastRecord(members, values)
-  }
-}
-
 object FastObject {
   final class AccessorImpl(members: Array[Field], index: Int) extends Accessor {
     def canGet(target: AnyRef): Boolean = {

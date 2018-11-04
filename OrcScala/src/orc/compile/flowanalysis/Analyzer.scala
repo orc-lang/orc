@@ -13,7 +13,6 @@ package orc.compile.flowanalysis
 
 import scala.collection.mutable
 import scala.annotation.tailrec
-import scala.collection.immutable.HashMap
 import scala.reflect.ClassTag
 import orc.compile.Logger
 import java.io.File
@@ -35,15 +34,15 @@ abstract class Analyzer {
   type StateMap = collection.Map[NodeT, StateT]
 
   case class ConnectedNode(edge: EdgeT, node: NodeT)
-  
+
   case class AnalyzerLogEntry(id: Int, node: NodeT, inEdges: Seq[EdgeT], newState: StateT, isChange: Boolean, tracePredicate: (AnalyzerLogEntry, StateMap) => Boolean)
 
   val defaultTracePredicate = (e: AnalyzerLogEntry, s: StateMap) => false
-  
+
   val tracePredicateVariable = new ThreadLocal[(AnalyzerLogEntry, StateMap) => Boolean]() {
     override def initialValue() = defaultTracePredicate
   }
-  
+
   val level = if (checkAnalysis) Level.INFO else Level.FINER
   val finerLevel = if (checkAnalysis) Level.FINER else Level.FINEST
 
@@ -95,7 +94,7 @@ abstract class Analyzer {
       in
     }
   }
-  
+
   protected def tracePredicate(f: (AnalyzerLogEntry, StateMap) => Boolean) = {
     tracePredicateVariable.set(f)
   }
@@ -131,7 +130,7 @@ abstract class Analyzer {
             None
         }
       }
-      
+
 
       @tailrec
       def process(): StateMap = {
@@ -140,7 +139,7 @@ abstract class Analyzer {
             if(Logger.julLogger.isLoggable(level)) {
               tracePredicateVariable.set(defaultTracePredicate)
             }
-            
+
             val oldState = states.getOrElse(node, initialState)
             val (newState, newNodes) = transfer(node, oldState, new States(node, states))
             val retroactiveWork = newNodes.filter(n => inputs(n).map(_.node).exists(states.contains(_)))
@@ -187,7 +186,7 @@ abstract class Analyzer {
   private def writeSelectedLog(traversal: mutable.Buffer[AnalyzerLogEntry], states: StateMap) = {
     import orc.util.PrettyPrintInterpolator
     import orc.util.FragmentAppender
-    
+
     class MyPrettyPrintInterpolator extends PrettyPrintInterpolator {
       implicit def implicitInterpolator(sc: StringContext) = new MyInterpolator(sc)
       class MyInterpolator(sc: StringContext) extends Interpolator(sc) {
@@ -196,7 +195,7 @@ abstract class Analyzer {
     }
     val interpolator = new MyPrettyPrintInterpolator
     import interpolator._
-  
+
     def findNodeEntryBefore(n: NodeT, i: Int): (Int, AnalyzerLogEntry) = {
       val ind = traversal.lastIndexWhere(_.node == n, i)
       if (ind < 0)
@@ -204,9 +203,9 @@ abstract class Analyzer {
       else
         (ind, traversal(ind))
     }
-    
+
     val statesDefault = states.toMap.withDefaultValue(initialState)
-    
+
     val selected = traversal.zipWithIndex.par.flatMap({ p =>
       val (e, i) = p
       if (e.tracePredicate(e, statesDefault)) {
@@ -232,17 +231,17 @@ abstract class Analyzer {
         Seq()
       }
     }).seq
-    
+
     if (selected.nonEmpty) {
       val traceFile = File.createTempFile("analysis_selected_log_", ".txt")
-  
+
       val out = new FileWriter(traceFile)
       for(l <- selected) {
         out.write(l)
         out.write("\n")
       }
       out.close()
-      
+
       Logger.log(level, s"Traversal $this: selected trace in $traceFile")
     } else {
       //Logger.log(level, s"Traversal $this: selected trace is empty")
@@ -271,7 +270,7 @@ abstract class Analyzer {
       out.write("\n")
     }
     out.close()
-    
+
     Logger.log(level, s"Traversal $this: (${((endTime.toDouble - startTime) / 1000 / 1000).formatted("%.1f")} ms) ${traversal.map(_.node).toSet.size} nodes, ${traversal.flatMap(_.inEdges).toSet.size} edges, ${traversal.size} visits ($avoidedEnqueues eliminated), trace in $traceFile")
   }
 
@@ -284,9 +283,9 @@ abstract class Analyzer {
 
 trait AnalyzerEdgeCache extends Analyzer {
     val inputsCache = collection.mutable.HashMap[NodeT, Seq[ConnectedNode]]()
-    
+
     def inputsCompute(node: NodeT): collection.Seq[ConnectedNode]
-    
+
     final def inputs(node: NodeT): collection.Seq[ConnectedNode] = {
       inputsCache.getOrElseUpdate(node, inputsCompute(node))
     }
@@ -294,7 +293,7 @@ trait AnalyzerEdgeCache extends Analyzer {
     val outputsCache = collection.mutable.HashMap[NodeT, Seq[ConnectedNode]]()
 
     def outputsCompute(node: NodeT): collection.Seq[ConnectedNode]
-    
+
     final def outputs(node: NodeT): collection.Seq[ConnectedNode] = {
       outputsCache.getOrElseUpdate(node, outputsCompute(node))
     }

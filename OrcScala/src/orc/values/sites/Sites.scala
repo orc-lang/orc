@@ -21,7 +21,7 @@ import orc.error.OrcException
 import orc.error.compiletime.typing.TypeException
 import orc.error.runtime.HaltException
 import orc.types.{ Bot, RecordType, Type }
-import orc.values.{ FastRecord, FastRecordFactory, OrcValue }
+import orc.values.{ FastObject, OrcValue }
 
 //FIXME:XXX: "Serializable" here is a temporary hack.  Sites are not all Serializable.
 trait Site extends OrcValue with SiteMetadata /*with Serializable*/ {
@@ -186,7 +186,7 @@ object PartialSiteBase {
 }
 
 object StructurePairSite {
-  val recordFactory = new FastRecordFactory(Array("apply", "unapply"))
+  val members = FastObject.members("apply", "unapply")
 }
 
 /* Template for building values which act as constructor-extractor sites,
@@ -195,7 +195,8 @@ object StructurePairSite {
 class StructurePairSite(
   applySite: TotalSite with TypedSite,
   unapplySite: PartialSite1 with TypedSite) extends
-  FastRecord(StructurePairSite.recordFactory.members, Array(applySite, unapplySite)) {
+  FastObject(StructurePairSite.members) {
+  protected val values = Array(applySite, unapplySite)
 
   // FIXME: This should be a TypedSite or something similar, but that makes it callable, so breaks runtime checks.
 
