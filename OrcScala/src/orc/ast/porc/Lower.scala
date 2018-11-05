@@ -75,7 +75,7 @@ object Lower {
 
   /** Run expression f and call ctx.p when it publishes.
     *
-    * This sill handle future like semantics (only one call to P) but will
+    * This sill handle future-like semantics (only one call to P) but will
     * not actually run anything in parallel. P will be the P for f.
     */
   def buildNoFuture(vClosure: Argument)(implicit ctx: ConversionContext): Expression = {
@@ -85,13 +85,14 @@ object Lower {
     val v = Variable(id"v_$vClosure~")
     val cr = Variable(id"cr_$vClosure~")
     val newP = Variable(id"P_$vClosure~")
+    val newC = Variable(id"C_$vClosure~")
 
     val crImpl = Continuation(Seq(), {
       val fut = Variable(id"fut_$vClosure~")
-      let((fut, NewFuture(true))) {
-        BindStop(fut) :::
-        catchExceptions {
-          gate() :::
+      catchExceptions {
+        MethodDirectCall(true, gate, Nil) :::
+        let((fut, NewFuture(true))) {
+          BindStop(fut) :::
           ctx.p(fut) :::
           HaltToken(ctx.c)
         }
@@ -101,13 +102,14 @@ object Lower {
     let(
       (gate, newGate()),
       (cr, crImpl),
+      (newC, NewSimpleCounter(ctx.c, cr)),
       (newP, Continuation(Seq(v), {
         catchExceptions {
           MethodDirectCall(true, gate, Nil) :::
           ctx.p(v)
         }
       }))) {
-        vClosure(newP, ctx.c)
+        vClosure(newP, newC)
       }
   }
 

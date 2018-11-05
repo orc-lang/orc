@@ -262,13 +262,8 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
               clearMethods)
         case porc.NewFuture.Z(raceFreeResolution) =>
           porce.NewFuture.create(raceFreeResolution)
-        case porc.Graft.Z(p, c, t, v) =>
-          def variant(b: Boolean) = {
-            val e1 = e.replace(porc.Lower(parallelGraft=b)(e.value))
-            indexAST(e1)
-            e1
-          }
-          porce.Graft.create(execution, transform(v), transform(variant(true)), transform(variant(false)))
+        case e@porc.Graft.Z(p, c, t, v) =>
+          porce.Graft.create(execution, transform(v), transform(graftVariant(e, true)), transform(graftVariant(e, false)))
         case porc.NewSimpleCounter.Z(p, h) =>
           porce.NewCounter.Simple.create(execution, transform(p), transform(h))
         case porc.NewServiceCounter.Z(p, p2, t) =>
@@ -403,5 +398,15 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     Logger.finer(s"Reusing environment on ${e.value.optionalVariableName}: Reuse $reuse, Captured ${capturedVars}, nDropped ${ctx.closureVariables.count(!e.freeVars.contains(_))}")
 
     (reuse, capturedVars, capturingExprs)
+  }
+
+  private val graftVariantCache = mutable.HashMap[(porc.Graft.Z, Boolean), porc.Expression.Z]()
+
+  private def graftVariant(graft: porc.Graft.Z, b: Boolean): porc.Expression.Z = {
+    graftVariantCache.getOrElseUpdate((graft, b), {
+      val e1 = graft.replace(porc.Lower(parallelGraft=b)(graft.value))
+      indexAST(e1)
+      e1
+    })
   }
 }
