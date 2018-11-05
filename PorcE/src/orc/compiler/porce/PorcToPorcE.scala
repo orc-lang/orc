@@ -75,13 +75,13 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     }
   }
 
-  val indexAST = new IndexAST()
+  private val indexAST = new IndexAST()
 
   private def getEnclosingMethod(e: porc.PorcAST.Z)(implicit ctx: Context): porc.Variable = {
     e.parents.collectFirst({ case porc.Method.Z(n, _, _, _) => n }).getOrElse(ctx.outerEnclosingMethod)
   }
 
-  object LocalVariables {
+  private object LocalVariables {
     val MethodGroupClosure = new porc.Variable(Some("MethodGroupClosure"))
     val Join = new porc.Variable(Some("Join"))
     val Resolve = new porc.Variable(Some("Resolve"))
@@ -107,7 +107,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
 
   val closureMap = mutable.HashMap[Int, RootCallTarget]()
 
-  def makeCallTarget(root: porce.PorcERootNode): RootCallTarget = {
+  private def makeCallTarget(root: porce.PorcERootNode): RootCallTarget = {
     require(root.porcNode().isDefined, s"$root")
     require(root.porcNode().get.value.isInstanceOf[ASTWithIndex], s"${root.porcNode().get.value}")
     require(root.porcNode().get.value.asInstanceOf[ASTWithIndex].optionalIndex.isDefined, s"${root.porcNode().get.value}")
@@ -116,7 +116,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     callTarget
   }
 
-  def transform(x: porc.Variable)(implicit ctx: Context): porce.Expression = {
+  private def transform(x: porc.Variable)(implicit ctx: Context): porce.Expression = {
     val res = if (ctx.argumentVariables.contains(x)) {
       porce.Read.Argument.create(ctx.argumentVariables.indexOf(x))
     } else if (ctx.closureVariables.contains(x)) {
@@ -128,7 +128,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     res
   }
 
-  def apply(m: porc.MethodCPS): (PorcEClosure, collection.Map[Int, RootCallTarget]) = {
+  def apply(m: porc.MethodCPS): (PorcEClosure, collection.Map[Int, RootCallTarget]) = synchronized {
     indexAST(m.toZipper)
     val descriptor = new FrameDescriptor()
     val newBody = apply(m.toZipper().body,
@@ -151,7 +151,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
   def apply(e: porc.Expression.Z,
       argumentVariables: Seq[porc.Variable], closureVariables: Seq[porc.Variable], descriptor: FrameDescriptor,
       closureMap: collection.Map[Int, RootCallTarget], subst: porc.Variable => AnyRef,
-      isTail: Boolean, outerEnclosingMethod: porc.Variable): porce.Expression = {
+      isTail: Boolean, outerEnclosingMethod: porc.Variable): porce.Expression = synchronized {
     indexAST(e)
     this.closureMap ++= closureMap
     implicit val ctx = Context(
@@ -167,7 +167,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     newBody
   }
 
-  def transform(e: porc.Expression.Z)(implicit ctx: Context): porce.Expression = {
+  private def transform(e: porc.Expression.Z)(implicit ctx: Context): porce.Expression = {
     val thisCtx = ctx
     val innerCtx = ctx.withoutTailPosition
     Logger.finest(s"At ${e.value}: ${thisCtx.inTailPosition} && ${getEnclosingMethod(e)}")
@@ -345,7 +345,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     // */  ???
   }
 
-  def transform(m: porc.Method.Z, index: Int, closureSlot: FrameSlot, closureVariables: Seq[porc.Variable], methodOffset: Int)(implicit ctx: Context): porce.Expression = {
+  private def transform(m: porc.Method.Z, index: Int, closureSlot: FrameSlot, closureVariables: Seq[porc.Variable], methodOffset: Int)(implicit ctx: Context): porce.Expression = {
     val oldCtx = ctx
 
     def process(arguments: Seq[porc.Variable]) = {
@@ -384,7 +384,7 @@ class PorcToPorcE(execution: PorcEExecution, val language: PorcELanguage) {
     res
   }
 
-  def transformContinuationContext(e: porc.Continuation.Z)(implicit ctx: Context) = {
+  private def transformContinuationContext(e: porc.Continuation.Z)(implicit ctx: Context) = {
     val reuse = {
       val capturedVars = e.freeVars
       val isSubset = capturedVars.forall(ctx.closureVariables.contains)
