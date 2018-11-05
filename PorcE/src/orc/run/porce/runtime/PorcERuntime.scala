@@ -35,12 +35,14 @@ import orc.run.porce.profiles.VisibleConditionProfile
  *  schedulables. See PorcEWithWorkStealingScheduler.
   */
 class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) extends Orc(engineInstanceName)
-  with PorcEInvocationBehavior
-  with PorcEWithWorkStealingScheduler
-  with SupportForRwait
-  with SupportForSynchronousExecution
-  // with SupportForSchedulerUseProfiling
-  {
+    with PorcEInvocationBehavior
+    with PorcEWithWorkStealingScheduler
+    with SupportForRwait
+    with SupportForSynchronousExecution
+    // with SupportForSchedulerUseProfiling
+    {
+  import PorcERuntime._
+
 
   override def removeRoot(arg: ExecutionRoot) = synchronized {
     super.removeRoot(arg)
@@ -79,7 +81,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         }
       }
       if (allowSpawnInlining && occationallySchedule && isFast) {
-        val PorcERuntime.StackDepthState(b, prev) = incrementAndCheckStackDepth(null)
+        val StackDepthState(b, prev) = incrementAndCheckStackDepth(null)
         if (b)
           try {
             val old = SimpleWorkStealingSchedulerWrapper.currentSchedulable
@@ -153,7 +155,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
     *
     * If this returns true the caller must call decrementStackDepth() after it finishes.
     */
-  def incrementAndCheckStackDepth(inlineAllowedProfile: VisibleConditionProfile): PorcERuntime.StackDepthState = {
+  def incrementAndCheckStackDepth(inlineAllowedProfile: VisibleConditionProfile): StackDepthState = {
     if (maxStackDepth > 0) {
       @TruffleBoundary @noinline
       def incrementAndCheckStackDepthWithThreadLocal() = {
@@ -161,14 +163,14 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         val prev = depth.value
         val (r, n) = incrementDepthValue(inlineAllowedProfile, prev)
         depth.value = n
-        PorcERuntime.StackDepthState(r, prev)
+        StackDepthState(r, prev)
       }
       try {
         val t = Thread.currentThread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
         val prev = t.stackDepth
         val (r, n) = incrementDepthValue(inlineAllowedProfile, prev)
         t.stackDepth = n
-        PorcERuntime.StackDepthState(r, prev)
+        StackDepthState(r, prev)
       } catch {
         case _: ClassCastException => {
           if (allExecutionOnWorkers.isValid()) {
@@ -179,7 +181,7 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         }
       }
     } else {
-      PorcERuntime.StackDepthState(false, 0)
+      StackDepthState(false, 0)
     }
   }
 
@@ -242,11 +244,13 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
 
   @inline
   @CompilationFinal
-  final val logNoninlinableSchedules = System.getProperty("orc.porce.logNoninlinableSchedules", "false").toBoolean
+  final val allExecutionOnWorkers = Truffle.getRuntime.createAssumption("allExecutionOnWorkers")
+}
 
+object PorcERuntime {
   @inline
   @CompilationFinal
-  final val allExecutionOnWorkers = Truffle.getRuntime.createAssumption("allExecutionOnWorkers")
+  final val logNoninlinableSchedules = System.getProperty("orc.porce.logNoninlinableSchedules", "false").toBoolean
 
   @inline
   @CompilationFinal
@@ -265,24 +269,6 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
   @CompilationFinal
   final val unrollOnLargeStack = System.getProperty("orc.porce.unrollOnLargeStack", "true").toBoolean
 
-  @inline
-  @CompilationFinal
-  final val actuallySchedule = PorcERuntime.actuallySchedule
-
-  @inline
-  @CompilationFinal
-  final val occationallySchedule = PorcERuntime.occationallySchedule
-
-  @inline
-  @CompilationFinal
-  final val allowAllSpawnInlining = PorcERuntime.allowAllSpawnInlining
-
-  @inline
-  @CompilationFinal
-  final val allowSpawnInlining = PorcERuntime.allowSpawnInlining
-}
-
-object PorcERuntime {
   @inline
   final val displayClosureValues = System.getProperty("orc.porce.displayClosureValues", "false").toBoolean
 

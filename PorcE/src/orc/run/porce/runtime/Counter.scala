@@ -282,7 +282,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   incrCounter()
 
   protected def handleHaltToken(optimized: Boolean) = {
-    if (false && execution.runtime.logNoninlinableSchedules) {
+    if (false && PorcERuntime.logNoninlinableSchedules) {
       if (!optimized && get() == -counterOffsets.map({
           case null => (0).toInt
           case coh => coh.value.toInt
