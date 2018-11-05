@@ -20,11 +20,12 @@ import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
-import orc.run.porce.runtime.PorcERuntime$;
 import orc.run.porce.runtime.Terminator;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -88,10 +89,9 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
         dispatch.setTail(v);
     }
 
-    @Specialization(guards = { "!shouldInline" })
+    @Specialization(guards = { "!shouldInlineSpawn(computation)" })
     public PorcEUnit spawn(final VirtualFrame frame, final Counter c, final Terminator t,
-            final PorcEClosure computation,
-            @Cached("shouldInlineSpawn(computation)") boolean shouldInline) {
+            final PorcEClosure computation) {
         final PorcERuntime r = execution.runtime();
         t.checkLive();
         if (!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize()))) {
@@ -103,12 +103,10 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
         return PorcEUnit.SINGLETON;
     }
 
-    @Specialization(guards = { "shouldInline" }, replaces = { "spawn" })
+    @Specialization(guards = { "shouldInlineSpawn(computation)" }, replaces = { "spawn" })
     public PorcEUnit inline(final VirtualFrame frame, final Counter c, final Terminator t,
-            final PorcEClosure computation,
-            @Cached("shouldInlineSpawn(computation)") boolean shouldInline) {
+            final PorcEClosure computation) {
         dispatch.dispatch(frame, computation);
-
         return PorcEUnit.SINGLETON;
     }
 
@@ -117,21 +115,31 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     @Specialization()
     public PorcEUnit spawnAfterInline(final VirtualFrame frame, final Object c, final Terminator t,
             final PorcEClosure computation) {
-        return spawn(frame, (Counter) c, t, computation, false);
+        return spawn(frame, (Counter) c, t, computation);
     }
 
-    private static final boolean allowSpawnInlining = PorcERuntime$.MODULE$.allowSpawnInlining();
+    private static final boolean allowSpawnInlining = PorcERuntime.allowSpawnInlining();
+
+    @CompilationFinal
+    private CallKindDecision callKindDecision;
+
+    /**
+     * @param computation
+     * @return the call kind computing it if needed.
+     */
+    protected CallKindDecision getCallKindDecision(PorcEClosure computation) {
+        if (callKindDecision == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            computeAtomicallyIfNull(() -> callKindDecision, (v) -> callKindDecision = v,
+                    () -> CallKindDecision.get(this, (PorcERootNode) computation.body.getRootNode()));
+        }
+        return callKindDecision;
+    }
 
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
-        return shouldInlineSpawn(this, targetRootProfile, computation);
-    }
-
-    static boolean shouldInlineSpawn(NodeBase self, ValueProfile targetRootProfile, final PorcEClosure computation) {
         if (SpecializationConfiguration.UseExternalCallKindDecision) {
-            CompilerAsserts.neverPartOfCompilation();
-            CallKindDecision decision = CallKindDecision.get(self, (PorcERootNode) computation.body.getRootNode());
             return allowSpawnInlining &&
-                    decision != CallKindDecision.SPAWN;
+                    getCallKindDecision(computation) != CallKindDecision.SPAWN;
         } else {
             return allowSpawnInlining &&
                     computation.getTimePerCall(targetRootProfile) < SpecializationConfiguration.InlineAverageTimeLimit;

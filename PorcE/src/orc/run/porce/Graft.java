@@ -11,10 +11,13 @@
 
 package orc.run.porce;
 
+import orc.run.porce.runtime.CallKindDecision;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
+import orc.run.porce.runtime.PorcERuntime;
 
 import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -40,10 +43,6 @@ public abstract class Graft extends Expression {
         this.v = v;
         this.fullFuture = fullFuture;
         this.noFuture = noFuture;
-    }
-
-    protected boolean shouldInlineSpawn(final PorcEClosure computation) {
-        return Spawn.shouldInlineSpawn(this, targetRootProfile, computation);
     }
 
     protected boolean shouldInlineSpawn(VirtualFrame frame) {
@@ -77,9 +76,34 @@ public abstract class Graft extends Expression {
         return fullFuture(frame, false);
     }
 
-    protected PorcERootNode getPorcERootNode() {
-        return (PorcERootNode) Graft.this.getCachedRootNode();
+    private static final boolean allowSpawnInlining = PorcERuntime.allowSpawnInlining();
+
+    @CompilationFinal
+    private CallKindDecision callKindDecision;
+
+    /**
+     * @param computation
+     * @return the call kind computing it if needed.
+     */
+    protected CallKindDecision getCallKindDecision(PorcEClosure computation) {
+        if (callKindDecision == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            computeAtomicallyIfNull(() -> callKindDecision, (v) -> callKindDecision = v,
+                    () -> CallKindDecision.get(this, (PorcERootNode) computation.body.getRootNode()));
+        }
+        return callKindDecision;
     }
+
+    protected boolean shouldInlineSpawn(final PorcEClosure computation) {
+        if (SpecializationConfiguration.UseExternalCallKindDecision) {
+            return allowSpawnInlining &&
+                    getCallKindDecision(computation) != CallKindDecision.SPAWN;
+        } else {
+            return allowSpawnInlining &&
+                    computation.getTimePerCall(targetRootProfile) < SpecializationConfiguration.InlineAverageTimeLimit;
+        }
+    }
+
 
     public static Graft create(PorcEExecution execution, Expression v, Expression fullFuture, Expression noFuture) {
         return GraftNodeGen.create(execution, v, fullFuture, noFuture);
