@@ -268,7 +268,7 @@ public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInte
             if (read.get() == null) {
                 T v = compute.get();
                 // TODO: Use the new Java 9 fence when we start requiring Java 9
-                // for PorcE.
+                // for PorcE. The needed fence is VarHandle.releaseFence().
                 UNSAFE.fullFence();
                 write.accept(v);
             }
