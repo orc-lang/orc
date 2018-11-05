@@ -80,6 +80,7 @@ object Lower {
     */
   def buildNoFuture(vClosure: Argument)(implicit ctx: ConversionContext): Expression = {
     import orc.ast.porc.PorcInfixNotation._
+    val graftCtx = ctx
 
     val gate = Variable(id"gate_$vClosure~")
     val v = Variable(id"v_$vClosure~")
@@ -88,24 +89,28 @@ object Lower {
     val newC = Variable(id"C_$vClosure~")
 
     val crImpl = Continuation(Seq(), {
-      val fut = Variable(id"fut_$vClosure~")
+      val fut = Variable(id"stopped_fut")
       catchExceptions {
-        MethodDirectCall(true, gate, Nil) :::
+        MethodDirectCall(true, gate, List()) :::
         let((fut, NewFuture(true))) {
           BindStop(fut) :::
-          ctx.p(fut) :::
-          HaltToken(ctx.c)
+          HaltToken(ctx.c) :::
+          ctx.p(fut)
         }
       }
     })
 
+
+    NewToken(ctx.c) :::
     let(
       (gate, newGate()),
       (cr, crImpl),
       (newC, NewSimpleCounter(ctx.c, cr)),
       (newP, Continuation(Seq(v), {
+        implicit val ctx = graftCtx.copy(c = newC)
         catchExceptions {
-          MethodDirectCall(true, gate, Nil) :::
+          MethodDirectCall(true, gate, List()) :::
+          HaltToken(newC) :::
           ctx.p(v)
         }
       }))) {
