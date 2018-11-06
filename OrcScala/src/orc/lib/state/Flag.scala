@@ -16,7 +16,7 @@ package orc.lib.state
 import orc.run.distrib.PinnedPlacementPolicy
 import orc.types.{ JavaObjectType, SignalType, SimpleFunctionType }
 import orc.values.Signal
-import orc.values.sites.{ Effects, FunctionalSite, LocalSingletonSite, NonBlockingSite, TalkativeSite, TotalSite0Simple, TotalSite1Simple, TypedSite }
+import orc.values.sites.{ Effects, EffectFreeSite, FunctionalSite, LocalSingletonSite, NonBlockingSite, PartialSite1Simple, TalkativeSite, TotalSite0Simple, TotalSite1Simple, TypedSite }
 
 final class Flag extends PinnedPlacementPolicy {
   @volatile
@@ -60,7 +60,7 @@ object SetFlag extends TotalSite1Simple[Flag] with TypedSite with TalkativeSite 
   override def effects = Effects.BeforePub
 }
 
-object PublishIfNotSet extends TotalSite1Simple[Flag] with TypedSite with TalkativeSite with NonBlockingSite with Serializable with LocalSingletonSite {
+object PublishIfNotSet extends PartialSite1Simple[Flag] with TypedSite with NonBlockingSite with EffectFreeSite with Serializable with LocalSingletonSite {
   def eval(flag: Flag) = {
     if (flag.get())
       None

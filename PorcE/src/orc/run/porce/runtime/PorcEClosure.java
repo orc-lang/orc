@@ -36,7 +36,7 @@ import com.oracle.truffle.api.profiles.ValueProfile;
  * Serialization: PorcEClosure relies on an external helper during serialization
  * and deserialization to translate instance state to/from a Serializable
  * marshaledFieldData. This is the only field written to the I/O stream.
- * 
+ *
  * @author amp
  */
 @ValueType
@@ -94,36 +94,6 @@ final public class PorcEClosure implements Serializable, ObjectInputValidation {
             return Long.MAX_VALUE;
         }
     }
-
-    public Object callFromRuntimeArgArray(final Object[] values) {
-        values[0] = environment;
-        return body.call(values);
-    }
-
-    public Object callFromRuntime() {
-        return body.call((Object) environment);
-    }
-
-    /*-
-    public Object callFromRuntime(final Object p1) {
-        return body.call(environment, p1);
-    }
-
-    public Object callFromRuntime(final Object p1, final Object p2) {
-        return body.call(environment, p1, p2);
-    }
-
-    public Object callFromRuntime(final Object p1, final Object p2, final Object p3) {
-        return body.call(environment, p1, p2, p3);
-    }
-
-    public Object callFromRuntimeVarArgs(final Object[] args) {
-        final Object[] values = new Object[args.length + 1];
-        values[0] = environment;
-        System.arraycopy(args, 0, values, 1, args.length);
-        return body.call(values);
-    }
-    */
 
     public Serializable getMarshaledFieldData() {
         return marshaledFieldData;
