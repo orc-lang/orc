@@ -32,6 +32,7 @@ import com.oracle.truffle.api.nodes.{ Node, RootNode }
 import orc.OrcExecutionOptions
 import orc.run.porce.SpecializationConfiguration
 import orc.compiler.porce.PorcToPorcE
+import com.oracle.truffle.api.CompilerDirectives
 
 abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit, val options: OrcExecutionOptions)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -57,18 +58,22 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
     notifyOrc(e)
   }
 
-  def notifyOfException(e: Throwable, node: Node) = {
-    @TruffleBoundary @noinline
-    def handle(e: Throwable) = {
-      val oe = OrcBacktrace.orcifyException(e, node)
-      notifyOrc(new CaughtEvent(oe))
-    }
+  @TruffleBoundary @noinline
+  def handleExceptionAtNode(e: Throwable, node: Node) = {
+    val oe = OrcBacktrace.orcifyException(e, node)
+    notifyOrc(new CaughtEvent(oe))
+  }
 
-    e match {
-      case e: HaltException if e.getCause != null => handle(e.getCause())
-      case e: HaltException => ()
-      case e: Throwable => handle(e)
+  def notifyOfException(e: Throwable, node: Node): Unit = {
+    var realE = e
+    if (e.isInstanceOf[HaltException] && e.getCause != null) {
+      CompilerDirectives.transferToInterpreter()
+      realE = e.getCause()
+    } else if (e.isInstanceOf[HaltException]) {
+      return
     }
+    CompilerDirectives.transferToInterpreter()
+    handleExceptionAtNode(realE, node)
   }
 
   /// CallTargetManager Implementation
