@@ -46,8 +46,7 @@ object SiteClassLoading {
    *     here, which precludes reducing the class path after startup.
    * We've chosen 2, because 1 would violate singletons' invariant.
    *
-   * That said, even though the design permits it, we'll disallow
-   * double-inits for now, because they're probably a mistake.
+   * We allow double-init so that testing works.
    */
 
   private var classLoader = FirstNonNull(
@@ -55,19 +54,13 @@ object SiteClassLoading {
     getClass().getClassLoader(),
     ClassLoader.getSystemClassLoader())
 
-  private var initted = false
-
   def initWithClassPathStrings(classPath: java.util.List[String]) { initWithClassPathStrings(classPath.asScala.map(identity).toArray) }
 
   def initWithClassPathStrings(classPath: Array[String]) { initWithClassPathUrls(classPath.map(path2URL(_)).toArray) }
 
   def initWithClassPathUrls(classPath: Array[URL]) {
     Logger.config("Initializing site & class loading with class path " + classPath.mkString(":"))
-    if (!initted) {
-      initted = true
-      stackClassLoaderWithPath(classPath)
-    } else
-      throw new IllegalStateException("Cannot double-init SiteClassLoading")
+    stackClassLoaderWithPath(classPath)
   }
 
   private def path2URL(path: String): URL = {
