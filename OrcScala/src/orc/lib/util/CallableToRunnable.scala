@@ -4,28 +4,28 @@
 //
 // Created by amp on Feb 11, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.util
 
 import java.util.concurrent.Callable
 
-import orc.values.sites.compatibility.CallContext
 import orc.compile.typecheck.Typeloader
+import orc.run.core.CallController
 import orc.run.extensions.SupportForCallsIntoOrc
 import orc.types.{ Bot, FunctionType, SimpleFunctionType, TypeVariable }
-import orc.values.sites.{ TypedSite }
-import orc.values.sites.compatibility.{ Site1 }
-import orc.run.core.CallController
+import orc.values.sites.{ LocalSingletonSite, TypedSite }
+import orc.values.sites.compatibility.{ CallContext, Site1 }
 
 /** Convert an Orc callable into a Java Runnable instance.
   * @author amp
   */
-object CallableToRunnable extends Site1 with TypedSite {
+object CallableToRunnable extends Site1 with TypedSite with Serializable with LocalSingletonSite {
   def call(arg: AnyRef, callContext: CallContext) = {
     val runtime = callContext.underlying.asInstanceOf[CallController].caller.execution match {
       case r: SupportForCallsIntoOrc => r
@@ -48,7 +48,7 @@ object CallableToRunnable extends Site1 with TypedSite {
 /** Convert an Orc callable into a Java Callable instance.
   * @author amp
   */
-object CallableToCallable extends Site1 with TypedSite {
+object CallableToCallable extends Site1 with TypedSite with Serializable with LocalSingletonSite {
   def call(arg: AnyRef, callContext: CallContext) = {
     val runtime = callContext.underlying.asInstanceOf[CallController].caller.execution match {
       case r: SupportForCallsIntoOrc => r

@@ -23,8 +23,7 @@ import orc.error.runtime.HaltException
 import orc.types.{ Bot, RecordType, Type }
 import orc.values.{ FastObject, OrcValue }
 
-//FIXME:XXX: "Serializable" here is a temporary hack.  Sites are not all Serializable.
-trait Site extends OrcValue with SiteMetadata /*with Serializable*/ {
+trait Site extends OrcValue with SiteMetadata {
   /** Get an invoker for this target type and argument types.
     *
     * This method is slow and the results should be cached if possible.

@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 21, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,36 +13,33 @@
 
 package orc.run.distrib.porce
 
-import java.util.{ Collections, WeakHashMap }
-
 import orc.PublishedEvent
 import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
 
 /** A DOrcExecution mix-in to marshal and unmarshal dOrc execution-internal
   * objects, such as tokens, groups, closures, counters, terminators, etc.
   *
+  * Note that this is called during serialization, not during
+  * ValueMarshaler.marshalValue/unmarshalValue calls.
+  *
   * @author jthywiss
   */
 trait ExecutionMashaler {
   execution: DOrcExecution =>
 
-  // FIXME: Using a weak map here is probably not really right. Instead we could use a throw away map for each unmarshel operation since the problems will only for cycles, back refs will be handled by OIS.
-  val instanceTable = Collections.synchronizedMap(new WeakHashMap[AnyRef, AnyRef]())
-
   val marshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
     case (destination, closure: PorcEClosure) => {
       val callTargetIndex = execution.callTargetToId(closure.body)
+      /* Invoke ValueMarshaler.marshalValue on values in environments. */
       val marshaledEnvironent = closure.environment.map(_ match {
-        /* Don't run the value marshler on closures.  Closures can be copied
-         * to any location.  Also, cycles in closure environments are
-         * avoided here by not running the value marshler on closures. */
+        /* Don't run the value marshaler on closures in the environment.
+         * ObjectOutputStream will handle them, including cycles among
+         * environments. */
         case cl: PorcEClosure => cl
-        case cl: ClosureReplacement => {
-          throw new AssertionError(s"ClosureReplacement should not have been introduced yet: $cl")
-        }
         case v => execution.marshalValue(destination)(v)
       })
-      ClosureReplacement(callTargetIndex, marshaledEnvironent, closure.isRoutine)
+      closure.setMarshaledFieldData(ClosureMarshaledFieldData(callTargetIndex, marshaledEnvironent))
+      closure
     }
     case (destination, counter: Counter) => {
       // Token: Counters which are just in the context do not carry a token with them. So this does not effect tokens.
@@ -50,7 +47,8 @@ trait ExecutionMashaler {
       CounterReplacement(proxyId)
     }
     case (destination, terminator: Terminator) => {
-      val proxyId = execution.makeProxyWithinTerminator(terminator,
+      val proxyId = execution.makeProxyWithinTerminator(
+        terminator,
         (terminatorProxyId) => execution.sendKilled(destination, terminatorProxyId)())
       TerminatorReplacement(proxyId)
     }
@@ -65,27 +63,22 @@ trait ExecutionMashaler {
   }
 
   val unmarshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
-    case (origin, old@ClosureReplacement(callTargetIndex, environment, isRoutine)) => {
-      //Logger.Marshal.fine(f"Unmarshaling $old ${System.identityHashCode(old)}%08x")
-      val callTarget = execution.idToCallTarget(callTargetIndex)
-      val unmarshledEnvironment = Array.ofDim[AnyRef](environment.length)
-      val replacement = new PorcEClosure(unmarshledEnvironment, callTarget, isRoutine)
-      instanceTable.put(old, replacement)
-      environment.zipWithIndex.foreach({
-        /* Don't run the value marshaler on closures.  Closures can be copied
-         * to any location.  Also, cycles in closure environments are
-         * avoided here by not running the value marshaler on closures. */
-        case (cl: PorcEClosure, i) =>
-          unmarshledEnvironment(i) = cl
-        case (v, i) =>
-          //Logger.Marshal.fine(f"Unmarshaling nested value $v ${System.identityHashCode(v)}%08x")
-          // This handles Closures and uses instanceTable to avoid recursion.
-          unmarshledEnvironment(i) = instanceTable.computeIfAbsent(v, (k) => execution.unmarshalValue(origin)(v))
+    case (origin, closure: PorcEClosure) => {
+      val cmfd = closure.getMarshaledFieldData.asInstanceOf[ClosureMarshaledFieldData]
+      val callTarget = execution.idToCallTarget(cmfd.callTargetIndex)
+      /* Invoke ValueMarshaler.unmarshalValue on values in environments. */
+      val unmarshledEnvironment = cmfd.environment.map(_ match {
+        /* Don't run the value marshaler on closures in the environment.
+         * ObjectInputStream will handle them, including cycles among
+         * environments. */
+        case cl: PorcEClosure => cl
+        case v => execution.unmarshalValue(origin)(v)
       })
-      replacement
+      closure.marshalingInitFieldData(unmarshledEnvironment, callTarget)
+      closure
     }
     case (origin, CounterReplacement(proxyId)) => {
-      // Token: Counters which are just in the context do not carry a token with them. So this does not effect tokens.
+      // Token: Counters which are just in the context do not carry a token with them. So this does not affect tokens.
       execution.getDistributedCounterForId(proxyId).counter
     }
     case (origin, TerminatorReplacement(proxyId)) => {
@@ -101,7 +94,7 @@ trait ExecutionMashaler {
   }
 }
 
-private final case class ClosureReplacement(callTargetIndex: Int, environment: Array[AnyRef], isRoutine: Boolean) extends Serializable
+private final case class ClosureMarshaledFieldData(callTargetIndex: Int, environment: Array[AnyRef]) extends Serializable
 
 // Token: Does not carry a token.
 private final case class CounterReplacement(proxyId: CounterProxyManager#DistributedCounterId) extends Serializable

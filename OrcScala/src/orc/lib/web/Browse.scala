@@ -4,12 +4,13 @@
 //
 // Created by dkitchin on Jan 18, 2011.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.web
 
 import java.net.URL
@@ -18,9 +19,7 @@ import orc.{ OrcEvent, VirtualCallContext }
 import orc.error.runtime.ArgumentTypeMismatchException
 import orc.types.{ JavaObjectType, OverloadedType, SignalType, SimpleFunctionType, StringType }
 import orc.values.Signal
-import orc.values.sites.{ Site1Simple, TypedSite }
-
-
+import orc.values.sites.{ LocalSingletonSite, Site1Simple, TypedSite }
 
 /** Open a new browser window or tab for the specified URL.
   *
@@ -28,7 +27,7 @@ import orc.values.sites.{ Site1Simple, TypedSite }
   */
 case class BrowseEvent(val url: URL) extends OrcEvent
 
-object Browse extends Site1Simple[AnyRef] with TypedSite {
+object Browse extends Site1Simple[AnyRef] with TypedSite with Serializable with LocalSingletonSite {
 
   def eval(callContext: VirtualCallContext, v: AnyRef) = {
     v match {

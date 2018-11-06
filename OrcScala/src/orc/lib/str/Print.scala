@@ -4,20 +4,21 @@
 //
 // Created by dkitchin on Jan 18, 2011.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.str
 
-import orc.{ OrcEvent, OrcRuntime, SiteResponseSet, VirtualCallContext }
-import orc.types.{ SignalType, SimpleFunctionType, StringType, Top }
+import orc.{ OrcEvent, OrcRuntime, VirtualCallContext, SiteResponseSet }
+import orc.types.{ SignalType, SimpleFunctionType, Top }
 import orc.values.Format.formatValue
 import orc.values.Signal
-import orc.values.sites.{ Range, Site1Base, TotalSite1Simple, TypedSite }
-
+import orc.values.sites.{ LocalSingletonSite, Range, TypedSite, Site1Base, TotalSite1Simple }
+import orc.types.StringType
 
 /** Display a value on the console or equivalent output device.
   *
@@ -43,14 +44,14 @@ abstract class PrintSite extends Site1Base[AnyRef] with TypedSite {
   override def publications: Range = super.publications intersect Range(1, 1)
 }
 
-object Print extends PrintSite {
+object Print extends PrintSite with Serializable with LocalSingletonSite {
   def call(callContext: VirtualCallContext, a: AnyRef) = {
     callContext.notifyOrc(PrintEvent(formatToPrint(a)))
     callContext.publish(Signal)
   }
 }
 
-object Println extends PrintSite {
+object Println extends PrintSite with Serializable with LocalSingletonSite {
   def call(callContext: VirtualCallContext, a: AnyRef) = {
     callContext.notifyOrc(PrintEvent(formatToPrint(a) + "\n"))
     callContext.publish(Signal)

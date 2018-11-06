@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 29, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,6 +22,8 @@ import java.util.regex.Pattern
   * @author jthywiss
   */
 object ExecutionLogOutputStream {
+  private object OrcUtilLogger extends orc.util.Logger("orc.util")
+
   /** Create the output directory for ExecutionLogOutputStream if needed.
     *
     * This can be safely called when orc.executionlog.dir is unset.
@@ -35,7 +37,7 @@ object ExecutionLogOutputStream {
     if (out != null) {
       val outDir = new File(out)
       if (outDir.mkdirs())
-        println("Created output directory: " + outDir.getCanonicalPath())
+        OrcUtilLogger.warning("Created output directory: " + outDir.getCanonicalPath())
     }
   }
 

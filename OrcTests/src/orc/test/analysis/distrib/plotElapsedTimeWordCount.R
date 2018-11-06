@@ -1,4 +1,4 @@
-# plotElapsedTimeDistribScaleTest.R -- R script to plot elapsed time results from DistribScaleTest
+# plotElapsedTimeWordCount.R -- R script to plot elapsed time results from WordCount DistribScaleTest
 # Project OrcTests
 #
 # Created by jthywiss on Oct 13, 2017.

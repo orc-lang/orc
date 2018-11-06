@@ -16,6 +16,7 @@ package orc.util
 import java.util.logging.{ Level, LogRecord }
 
 import scala.util.control.ControlThrowable
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** Handle exit from main method.  Provides failure diagnostic messages, sets
   * exit status values, and handles uncaught exceptions.
@@ -48,6 +49,8 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
     }
   }
 
+  val shutdownInProgress = new AtomicBoolean(false)
+
   /** Perform program failure exit processing, namely write diagnostic message
     * and set exit status.
     */
@@ -59,8 +62,19 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
   def failureExit(pathName: String, message: String, exitStatus: Int): Nothing = {
     writeHaltMessage(pathName, message)
 
-    System.exit(exitStatus).asInstanceOf[Nothing]
-    /* Cast to let type checker know System.exit never returns. */
+    /*
+     * Unfortunately, the JRE does not exposes its "shutdown in progress"
+     * status, so we keep our own.  This is approximate -- if a shutdown is
+     * initiated somewhere else, and failureExit is invoked from a shutdown
+     * hook or finalizer, System.exit will be called a a second time, and
+     * will deadlock.
+     */
+    if (!shutdownInProgress.getAndSet(true)) {
+      System.exit(exitStatus).asInstanceOf[Nothing]
+      /* Cast to let type checker know System.exit never returns. */
+    } else {
+      throw new Error("failureExit called during a shutdown -- ignored") with ControlThrowable {}
+    }
   }
 
   /** Write a HALT diagnostic message to stderr.

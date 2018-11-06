@@ -13,16 +13,17 @@
 
 package orc.lib.builtin.structured
 
-import orc.{ Invoker, OrcRuntime, DirectInvoker }
+import orc.{ DirectInvoker, Invoker, OrcRuntime }
 import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType, TupleSizeException }
 import orc.error.runtime.HaltException
 import orc.types.{ BinaryCallableType, IntegerConstantType, IntegerType, SimpleCallableType, StrictCallableType, TupleType, Type }
 import orc.values.OrcTuple
-import orc.values.sites.{ FunctionalSite, Site, OverloadedDirectInvokerMethod2, SiteMetadata, TalkativeSite, InlinableInvoker }
+import orc.values.sites.{ FunctionalSite, LocalSingletonSite, Site, OverloadedDirectInvokerMethod2, SiteMetadata, TalkativeSite, InlinableInvoker }
 
 // TODO: Replace current tuple values with object and _n fields.
 
-object TupleConstructor extends Site with FunctionalSite with TalkativeSite {
+@SerialVersionUID(-2029136642088898630L)
+object TupleConstructor extends Site with FunctionalSite with TalkativeSite with Serializable with LocalSingletonSite {
   override def name = "Tuple"
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
@@ -50,7 +51,8 @@ object TupleConstructor extends Site with FunctionalSite with TalkativeSite {
  * If the check succeeds, the Some(t) is returned,
  * else None.
  */
-object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] with FunctionalSite {
+@SerialVersionUID(-5168873507961952728L)
+object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "TupleArityChecker"
   def getInvokerSpecialized(t: AnyRef, arity: Number) = {
     invoker(t, arity)((t, arity) => t match {

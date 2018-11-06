@@ -2,7 +2,7 @@
 // CeilFloor.scala -- Scala objects Ceil and Floor
 // Project OrcScala
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,11 +11,12 @@
 
 package orc.lib.math
 
-import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1 }
 import java.math.{ BigDecimal => JBigDecimal }
-import orc.values.NumericsConfig
 
-object Ceil extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
+import orc.values.NumericsConfig
+import orc.values.sites.{ FunctionalSite, LocalSingletonSite, OverloadedDirectInvokerMethod1 }
+
+object Ceil extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
       case a: java.lang.Double => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.ceil(a)))
@@ -32,7 +33,7 @@ object Ceil extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
   override def toString = "Ceil"
 }
 
-object Floor extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite {
+object Floor extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
       case a: java.lang.Double => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.floor(a)))

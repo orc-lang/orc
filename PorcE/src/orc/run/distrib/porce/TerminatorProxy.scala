@@ -96,7 +96,7 @@ trait TerminatorProxyManager {
       case _ => proxiedTerminatorMembersByTerminator.computeIfAbsent(enclosingTerminator, (_) => freshRemoteRefId())
     }
 
-    val rmtTerminatorMbrProxy = proxiedTerminatorMembers.computeIfAbsent(terminatorProxyId, (_) => 
+    val rmtTerminatorMbrProxy = proxiedTerminatorMembers.computeIfAbsent(terminatorProxyId, (_) =>
       new RemoteTerminatorMembersProxy(terminatorProxyId, enclosingTerminator, { (id) =>
         proxiedTerminatorMembers.remove(terminatorProxyId)
         proxiedTerminatorMembersByTerminator.remove(enclosingTerminator)
@@ -116,7 +116,7 @@ trait TerminatorProxyManager {
         //val rtp = new RemoteTerminatorProxy(terminatorProxyId)
         //proxiedTerminators.put(terminatorProxyId, rtp)
         proxiedTerminators.computeIfAbsent(terminatorProxyId, (_) => {
-          new RemoteTerminatorProxy(terminatorProxyId, { (counter, closure) => 
+          new RemoteTerminatorProxy(terminatorProxyId, { (counter, closure) =>
             proxiedTerminators.remove(terminatorProxyId)
             sendKilling(origin, terminatorProxyId)(counter, closure)
           })

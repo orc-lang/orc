@@ -13,12 +13,10 @@
 
 package orc.compile.distrib
 
-import orc.ast.oil.named._
 import orc.ast.hasOptionalVariableName
-import javax.lang.model.`type`.DeclaredType
-import orc.ast.oil.named.DeclareCallables
+import orc.ast.oil.named.{ Argument, BoundTypevar, BoundVar, Call, Constant, DeclareCallables, Def, Expression, FieldAccess, Graft, HasType, Hole, ImportedType, NamedASTTransform, New, Otherwise, Parallel, Sequence, Top, Trim, Type, Var, VtimeZone }
+import orc.run.distrib.DOrcPlacementPolicy
 import orc.values.Signal
-import orc.ast.oil.named.BoundVar
 
 /** Applying ValueSetAnalysis to an OIL named AST results in an annotated
   * OIL named AST.  The annotations indicate the set of values referred to
@@ -30,16 +28,21 @@ import orc.ast.oil.named.BoundVar
   * @author jthywiss
   */
 object ValueSetAnalysis extends NamedASTTransform {
+  val subAstValueSetDefNamePrefix = "ᑅSubAstValueSetDef"
 
-  protected val speculativeMigrateDefNames = new scala.collection.mutable.HashMap[Int, BoundVar]()
-  def speculativeMigrateDefName(arity: Int) = speculativeMigrateDefNames.getOrElseUpdate(arity, new BoundVar(Some("speculativeMigrateDef" + arity)))
-  def isSpeculativeMigrateTarget(target: Var) =
-    target.optionalVariableName.isDefined && target.optionalVariableName.get.startsWith("speculativeMigrateDef")
+  protected val subAstValueSetDefNames = new scala.collection.mutable.HashMap[Int, BoundVar]()
+  def subAstValueSetDefName(arity: Int) = subAstValueSetDefNames.getOrElseUpdate(arity, new BoundVar(Some(subAstValueSetDefNamePrefix + arity)))
+  def isSubAstValueSetTarget(target: Var) =
+    target.optionalVariableName.isDefined && target.optionalVariableName.get.startsWith(subAstValueSetDefNamePrefix)
 
   override def apply(e: Expression): Expression = {
-    val ae = super.apply(e)
-    val speculativeMigrateDefs = speculativeMigrateDefNames.toList.map({case (arity, name) => Def(name, List.fill(arity)(new BoundVar(Some(hasOptionalVariableName.unusedVariable))), Constant(Signal), Nil, None, None)})
-    e ->> DeclareCallables(speculativeMigrateDefs, ae)
+    val annotatedExpressionDirty = super.apply(e)
+    val annotatedExpression = PostProcess(annotatedExpressionDirty)
+    val annotatedExpressionWithDefs = e ->> subAstValueSetDefNames.toList.foldRight(annotatedExpression)({(arityAndName, e) =>
+      DeclareCallables(List(Def(arityAndName._2, List.fill(arityAndName._1)(new BoundVar(Some(hasOptionalVariableName.unusedVariable))), Constant(Signal), Nil, Some(List.fill(arityAndName._1)(Top())), Some(ImportedType("orc.types.SignalType")))), e)
+    })
+    println(annotatedExpressionWithDefs)
+    annotatedExpressionWithDefs
   }
 
   override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = {
@@ -91,7 +94,7 @@ object ValueSetAnalysis extends NamedASTTransform {
       }
     }
 
-    //case dc @ DeclareCallables(defs: List[Callable], body: Expression) => ???
+    //case dc @ DeclareCallables(defs: List[Callable], body: Expression) => dc
 
     //case dt @ DeclareType(name: BoundTypevar, t: Type, body: Expression) => dt
 
@@ -100,18 +103,26 @@ object ValueSetAnalysis extends NamedASTTransform {
       annotate(HasType(deannotate(tb), expectedType), vs)
     }
 
-    //case h @ Hole(context: Map[String, Argument], typecontext: Map[String, Type]) => h
+    case h @ Hole(context: Map[String, Argument], typecontext: Map[String, Type]) => annotate(h, context.values.toSet)
 
     case VtimeZone(timeOrder: Argument, body: Expression) => {
       val (tb, vs) = transformAndGetValueSet(body, context, typecontext)
       annotate(VtimeZone(timeOrder, deannotate(tb)), vs + timeOrder)
     }
 
-    //case n @ New(self: BoundVar, selfType: Option[Type], bindings: Map[orc.values.Field, Expression], objType: Option[Type]) => {
-    //  ???
-    //}
+    case n @ New(self: BoundVar, selfType: Option[Type], bindings: Map[orc.values.Field, Expression], objType: Option[Type]) => {
+      val annotatedBindingsAndValueSets = bindings.mapValues(transformAndGetValueSet(_, context, typecontext))
+      val annotatedBindings = annotatedBindingsAndValueSets.mapValues(_._1)
+      val bindingsCombinedValueSets = annotatedBindingsAndValueSets.values.flatMap(_._2).toSet - self
+      val nonRedundantlyAnnotatedBindings = annotatedBindings.mapValues(_ match {
+        case b if getValueSet(b) == bindingsCombinedValueSets => deannotate(b)
+        case b => b
+      })
+      val annotatedNew = annotate(New(self, selfType, nonRedundantlyAnnotatedBindings, objType), bindingsCombinedValueSets)
+      annotatedNew
+    }
 
-    //case fa @ FieldAccess(obj: Argument, field: orc.values.Field) => ??? //annotate(fa, Set(obj, Constant(field)))
+    case fa @ FieldAccess(obj: Argument, field: orc.values.Field) => annotate(fa, Set(obj))
 
     case a: Argument => annotate(a, Set(a))
 
@@ -127,24 +138,29 @@ object ValueSetAnalysis extends NamedASTTransform {
     if (filteredValues.isEmpty) {
       expr
     } else {
-      expr ->> Sequence(Call(speculativeMigrateDefName(filteredValues.size), filteredValues.toList, None), new BoundVar(Some(hasOptionalVariableName.unusedVariable)), expr)
+      expr ->> Sequence(Call(subAstValueSetDefName(filteredValues.size), filteredValues.toList, None), new BoundVar(Some(hasOptionalVariableName.unusedVariable)), expr)
     }
   }
 
   protected def deannotate(expr: Expression): Expression = expr match {
-    case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr) if isSpeculativeMigrateTarget(target) => innerExpr
+    case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr) if isSubAstValueSetTarget(target) => innerExpr
     case _ => expr
   }
 
   protected def getValueSet(expr: Expression): Set[Argument] = expr match {
-    case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, expr) if isSpeculativeMigrateTarget(target) => vs.toSet
+    case Sequence(Call(target: BoundVar, vs, None), _: BoundVar, expr) if isSubAstValueSetTarget(target) => vs.toSet
     case _ => Set.empty
   }
 
   protected def filterRelevantValues(values: Set[Argument]): Set[Argument] = {
     values.filter({
-      case v if v.getClass.getName.endsWith("VertexWithPathLen") => true
-      case Constant("hiya") => true
+      case _: Var => true
+      case Constant(null) => false
+      case Constant(_: java.lang.Boolean) | Constant(_: java.lang.Character) | Constant(_: java.lang.Number) | Constant(_: String) => false
+      case Constant(_: DOrcPlacementPolicy) => true
+      //FIXME: Ask ValueLocators if this value is of interest
+      case Constant(c: Class[_]) if c.getName.contains("VertexWithPathLen") => true
+      case Constant(v) if v.getClass.getName.contains("VertexWithPathLen") => true
       case _ => false
     })
   }
@@ -174,4 +190,20 @@ object ValueSetAnalysis extends NamedASTTransform {
 //    td
 //  }
 
+  object PostProcess extends NamedASTTransform {
+    override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = {
+      /* Clean up obviously redundant annotations */
+      /* Sub-ASTs that are just a call. */
+      case Sequence(Call(target1: BoundVar, args1, None), _: BoundVar, innerExpr @ Call(target2: BoundVar, _, _)) if isSubAstValueSetTarget(target1) && !isSubAstValueSetTarget(target2) =>
+        innerExpr
+      case Sequence(Call(target1: BoundVar, args1, None), _: BoundVar, innerExpr: Call) if isSubAstValueSetTarget(target1) => /* Call target2 not a BoundVar */
+        innerExpr
+      /* Sub-ASTs that are just "c >x> x", where c is a Constant */
+      case Sequence(c: Constant, x, Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr)) if isSubAstValueSetTarget(target) && x == innerExpr =>
+        c
+      /* Sub-ASTs that are just " x >y> ...", where x & y are Variables */
+      case Sequence(annotation1 @ Call(target1: BoundVar, vs1, None), dummy1: BoundVar, Sequence(x: BoundVar, y: BoundVar, Sequence(Call(target2: BoundVar, vs2, None),_: BoundVar, innerExpr))) if isSubAstValueSetTarget(target1) && isSubAstValueSetTarget(target2) =>
+        Sequence(annotation1,  dummy1, Sequence(x: BoundVar, y: BoundVar, innerExpr))
+    }
+  }
 }

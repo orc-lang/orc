@@ -10,9 +10,9 @@ include "vertex.inc"
  - Single source shortest path
  --------}
 
-val verticesRef = Ref[List[Vertex]]()
+val verticesRef = Ref[Graph]()
 
-def swapIf[A](ref :: Ref[A], sem :: Semaphore, newVal :: A, test :: lambda(A, A) :: Boolean) :: Boolean  =
+def swapIf[A](ref :: Ref[A], sem :: Semaphore, newVal :: A, test :: lambda(A, A) :: Boolean) :: Boolean =
   withLock(sem, {
     -- Swap if test is true, or if Ref is unbound
     val shouldSwap = Iff(test(ref.readD(), newVal)) >> false; true
@@ -22,7 +22,7 @@ def swapIf[A](ref :: Ref[A], sem :: Semaphore, newVal :: A, test :: lambda(A, A)
     else
       false
   })
-  
+
 def gt(i :: EdgeWeight, j :: EdgeWeight) :: Boolean = i :> j
 
 def updatePathLenFor(v :: Vertex, newPathLen :: EdgeWeight) :: Bot =
@@ -35,11 +35,10 @@ def updatePathLenFor(v :: Vertex, newPathLen :: EdgeWeight) :: Bot =
  - Test Procedure
  --------}
 
-def setUpTest() =
+def setUpTest() :: Signal =
   verticesRef := randomGraph(numVertices, probEdge, 40)
 
-
-def setUpTestRep() =
+def setUpTestRep() :: Signal =
   verticesRef := freshGraph(verticesRef?)
 
 def runTestRep() :: Signal =
@@ -47,10 +46,11 @@ def runTestRep() :: Signal =
   updatePathLenFor(vertexNamed(0, verticesRef?), 0) >> stop;
   signal
 
-def tearDownTestRep() =
-  dumpGraph(verticesRef?)
+def tearDownTestRep() :: Signal =
+  -- dumpGraph(verticesRef?)
+  signal
 
-def tearDownTest() =
+def tearDownTest() :: Signal =
   signal
 
 executeTest("shortest-path.orc", setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest)

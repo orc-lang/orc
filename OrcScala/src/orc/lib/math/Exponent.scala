@@ -13,9 +13,9 @@
 
 package orc.lib.math
 
-import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod2, IllegalArgumentInvoker }
+import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, LocalSingletonSite, OverloadedDirectInvokerMethod2 }
 
-object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with FunctionalSite {
+object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def lpow(a: Long, b: Long) = {
     var expon = b
     var mult = a

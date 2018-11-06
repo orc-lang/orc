@@ -14,8 +14,8 @@
 package orc.run.distrib.porce
 
 import orc.ast.porc.MethodCPS
-import orc.run.porce.runtime.PorcERuntime
 import orc.run.distrib.ClusterLocations
+import orc.run.porce.runtime.PorcERuntime
 
 /** Distributed Orc (dOrc) Runtime Engine.
   *
@@ -26,8 +26,8 @@ import orc.run.distrib.ClusterLocations
   * @author jthywiss
   */
 abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceName: String)
-    extends PorcERuntime(engineInstanceName, null)
-    with ClusterLocations[PeerLocation] {
+  extends PorcERuntime(engineInstanceName, null)
+  with ClusterLocations[PeerLocation] {
 
   type ProgramAST = MethodCPS
 
@@ -56,10 +56,11 @@ abstract class DOrcRuntime(val runtimeId: DOrcRuntime#RuntimeId, engineInstanceN
 
 }
 
-/** A RuntimeId to Location map.  Needed instead of 
+/** A RuntimeId to Location map.  Needed instead of
   * scala.collection.concurrent.Map to provide bulk operation semantics with
   * concurrent updates. This just implements the few operations we need
-  * here.  Also notifies waiters upon any changes. */
+  * here.  Also notifies waiters upon any changes.
+  */
 class LocationMap[L](here: L) {
   protected val theMap = scala.collection.mutable.Map[DOrcRuntime#RuntimeId, L]()
   protected var cachedLocationSnapshot: Option[scala.collection.immutable.Set[L]] = None

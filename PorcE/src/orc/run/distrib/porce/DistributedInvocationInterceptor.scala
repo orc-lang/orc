@@ -15,12 +15,14 @@ package orc.run.distrib.porce
 
 import java.util.concurrent.atomic.AtomicLong
 
-import orc.{ CaughtEvent, Schedulable }
-import orc.run.porce.runtime.{ MaterializedCPSCallContext, CallClosureSchedulable, InvocationInterceptor, PorcEClosure }
+import scala.util.control.NonFatal
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import orc.Future
 import orc.FutureState.Bound
+import orc.Schedulable
+import orc.run.porce.runtime.{ CallClosureSchedulable, InvocationInterceptor, MaterializedCPSCallContext, PorcEClosure }
+
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
 /** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
   *
@@ -53,6 +55,8 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         case _ => value
       }
     }
+    def safeToString(v: AnyRef): String = if (v == null) "null" else try v.toString() catch { case NonFatal(_) | _: LinkageError => s"${orc.util.GetScalaTypeName(v)}@${System.identityHashCode(v)}" }
+
     //Logger.Invoke.entering(getClass.getName, "shouldInterceptInvocation", Seq(orc.util.GetScalaTypeName(target), target) ++ arguments)
     Logger.Invoke.finest("class names: " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
     //Logger.Invoke.finest("isInstanceOf[RemoteRef]: " + target.isInstanceOf[RemoteRef] + arguments.map(_.isInstanceOf[RemoteRef]).mkString("(", ",", ")"))
@@ -61,21 +65,19 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     Logger.Invoke.finest("needsOverride=" + needsOverride + " for types " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
     val result = if (needsOverride.isDefined) {
       needsOverride.get
-    } else if (/*FIXME:HACK*/target.isInstanceOf[PorcEClosure] && target.toString().startsWith("speculativeMigrateDef")) {
+    } else if ( /*FIXME:HACK*/ target.isInstanceOf[PorcEClosure] && target.toString().startsWith("ᑅSubAstValueSetDef")) {
+      /* Attempt to prospectively migrate to Sub-AST value set */
       /* Look up current locations, and find their intersection */
       val intersectLocs = arguments.map(derefAnyBoundLocalFuture(_)).map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
-      Logger.Invoke.finest(s"speculative migrate: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
-      /* speculative migrate found a location to move to */
+      Logger.Invoke.finest(s"prospective migrate: ${safeToString(target)}(${arguments.map(safeToString(_)).mkString(",")}): intersection of current locations=$intersectLocs")
+      /* Prospective migrate found a location to move to */
       intersectLocs.nonEmpty && !(intersectLocs contains execution.runtime.here)
-    } else if (target.isInstanceOf[RemoteRef] || arguments.exists(_.isInstanceOf[RemoteRef])) {
-      /* Found a remote reference */
-      true
     } else {
+      //FIXME: lists, refs, cells, etc. can accept RemoteRefs
       /* If everything's local, then stay here */
       !execution.isLocal(target) || arguments.exists(!execution.isLocal(_))
     }
-    Logger.Invoke.finest("Returning " + result + " for types " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
-    //Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", result.toString)
+    Logger.Invoke.exiting(getClass.getName, "shouldInterceptInvocation", "Returning " + result + " for types " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
     result
   }
 
@@ -90,7 +92,6 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
     } else {
       /* Look up current locations, and find their intersection */
       val intersectLocs = arguments.map(execution.currentLocations(_)).fold(execution.currentLocations(target))({ _ & _ })
-      require(!(intersectLocs contains execution.runtime.here), s"intersectLocs contains here on call: $target(${arguments.mkString(",")}")
       Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
 
       if (intersectLocs.nonEmpty) {
@@ -105,15 +106,30 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
         } else {
           /* Case 4: No permitted location, fail */
           val nla = new NoLocationAvailable((target +: arguments.toSeq).map(v => (v, execution.currentLocations(v).map(_.runtimeId))))
-          execution.notifyOrc(CaughtEvent(nla))
+          Logger.Invoke.throwing(getClass.getName, "invokeIntercepted", nla)
           throw nla
         }
       }
     }
     Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): candidateDestinations=$candidateDestinations")
-    val destination = execution.selectLocationForCall(candidateDestinations)
-    Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): selected location for call: $destination")
-    sendCall(callContext, target, arguments, destination)
+    if (!(candidateDestinations contains execution.runtime.here)) {
+      /* Send remote call */
+      val destination = execution.selectLocationForCall(candidateDestinations)
+      Logger.Invoke.fine(s"siteCall: $target(${arguments.mkString(",")}): selected location for call: $destination")
+      sendCall(callContext, target, arguments, destination)
+    } else {
+      /* Call can be local after all, run here */
+      Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): invoking locally")
+      val callInvoker = new Schedulable {
+        override def toString: String = s"execution.invokeCallTarget(${callContext.callSiteId}, ${callContext.p}, ${callContext.c}, ${callContext.t}, ${target}(${arguments.mkString(", ")}))"
+        def run(): Unit = {
+          execution.invokeCallTarget(callContext.callSiteId, callContext.p, callContext.c, callContext.t, target, arguments)
+          //Logger.Downcall.fine(s"Completed local call to $this")
+        }
+      }
+      Logger.Downcall.fine(s"Scheduling local call to $callInvoker")
+      execution.runtime.schedule(callInvoker)
+    }
   }
 
   /* Since we don't have token IDs in PorcE: */

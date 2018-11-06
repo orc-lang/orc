@@ -10,18 +10,19 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.web
 
 import orc.error.runtime.SiteException
 import orc.values.OrcRecord
 import orc.values.sites.{ UntypedSite }
 import orc.values.sites.TotalSite1Simple
-
+import orc.values.sites.LocalSingletonSite
 
 /**
   * @author dkitchin
   */
-object WriteJSON extends TotalSite1Simple[AnyRef] with UntypedSite {
+object WriteJSON extends TotalSite1Simple[AnyRef] with UntypedSite with Serializable with LocalSingletonSite {
 
   def eval(a: AnyRef): AnyRef = {
     convertToJson(a)

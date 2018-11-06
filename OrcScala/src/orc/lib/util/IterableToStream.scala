@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.util
 
 import java.lang.{ Iterable => JIterable }
@@ -17,11 +18,11 @@ import java.lang.{ Iterable => JIterable }
 import orc.OrcRuntime
 import orc.compile.typecheck.Typeloader
 import orc.types.{ FunctionType, SimpleFunctionType, TypeVariable }
-import orc.values.sites.{ PartialSite0Simple, TotalSite1Base, TypedSite }
+import orc.values.sites.{ LocalSingletonSite, PartialSite0Simple, TotalSite1Base, TypedSite }
 
 /** @author dkitchin
   */
-object IterableToStream extends TotalSite1Base[AnyRef] with TypedSite {
+object IterableToStream extends TotalSite1Base[AnyRef] with TypedSite with Serializable with LocalSingletonSite {
 
   final class IterableNext(iter: Iterator[_]) extends PartialSite0Simple {
     def eval() =

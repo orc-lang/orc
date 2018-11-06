@@ -354,7 +354,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
             final Object[] arguments = frame.getArguments();
             if (arguments.length != nArguments + 1) {
                 transferToInterpreter();
-                throw new ArityMismatchException(arguments.length - 1, nArguments);
+                throw new ArityMismatchException(nArguments - 3, arguments.length - 4);
             }
             final Object[] captureds = (Object[]) arguments[0];
             if (captureds.length != nCaptured) {

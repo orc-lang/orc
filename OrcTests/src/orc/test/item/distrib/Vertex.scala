@@ -13,8 +13,7 @@
 
 package orc.test.item.distrib
 
-import orc.lib.state.Ref
-import orc.lib.state.Semaphore
+import orc.lib.state.{ Ref, Semaphore }
 
 /** Generic digraph vertex. */
 trait Vertex[N, E] {
@@ -30,10 +29,22 @@ trait Edge[N, W] {
 }
 
 /** Vertex class for SSSP; includes path length (weight accumulator) Ref and a Semaphore. */
-case class VertexWithPathLen(name: Int, outEdges: List[EdgeWithIntWeight]) extends Vertex[Int, EdgeWithIntWeight] {
+class VertexWithPathLen(val name: Int, val outEdges: List[EdgeWithIntWeight]) extends Vertex[Int, EdgeWithIntWeight] {
   val pathLen: Ref.Instance = new Ref.Instance()
   val pathLenSemaphore: Semaphore.Instance = new Semaphore.Instance(1)
+  override def toString = s"VertexWithPathLen($name, $outEdges)"
+}
+
+object VertexWithPathLen {
+  def apply(name: Int, outEdges: List[EdgeWithIntWeight]) = new VertexWithPathLen(name, outEdges)
 }
 
 /** Edge class for SSSP. */
 case class EdgeWithIntWeight(head: Int, tail: Int, weight: Int) extends Edge[Int, Int] { }
+
+/** Graph storage for VertexWithPathLen */
+class GraphOfVertexWithPathLen(val size: Int) {
+  protected val storage: Array[AnyRef] = new Array(size)
+  def get(index: Int): AnyRef = storage(index)
+  def put(index: Int, vertex: AnyRef): Unit = storage(index) = vertex
+}

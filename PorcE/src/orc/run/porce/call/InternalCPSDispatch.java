@@ -135,7 +135,7 @@ public class InternalCPSDispatch extends Dispatch {
                 }
             } else {
                 CompilerDirectives.transferToInterpreter();
-                throw new ArityMismatchException(arguments.length, frameArguments.length);
+                throw new ArityMismatchException(frameArguments.length - 3, arguments.length - 3);
             }
             //Logger.log(java.util.logging.Level.INFO, () -> "Self tail call: " + target.toString() + " (" + java.util.Arrays.toString(arguments) + ")");
             throw new SelfTailCallException();

@@ -168,4 +168,7 @@ class Future(val raceFreeResolution: Boolean) extends OrcValue with orc.Future {
     _state
   }
 
+  /** For debugging only */
+  protected def numWaiters = _blockedIndex
+
 }

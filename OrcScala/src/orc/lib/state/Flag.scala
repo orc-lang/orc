@@ -4,7 +4,7 @@
 //
 // Created by amp on Sep 8, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,19 +14,9 @@
 package orc.lib.state
 
 import orc.run.distrib.PinnedPlacementPolicy
-import orc.types.{JavaObjectType, SignalType, SimpleFunctionType}
+import orc.types.{ JavaObjectType, SignalType, SimpleFunctionType }
 import orc.values.Signal
-import orc.values.sites.{
-  EffectFreeSite,
-  Effects,
-  FunctionalSite,
-  NonBlockingSite,
-  PartialSite1Simple,
-  TalkativeSite,
-  TotalSite0Simple,
-  TotalSite1Simple,
-  TypedSite
-}
+import orc.values.sites.{ Effects, FunctionalSite, LocalSingletonSite, NonBlockingSite, TalkativeSite, TotalSite0Simple, TotalSite1Simple, TypedSite }
 
 final class Flag extends PinnedPlacementPolicy {
   @volatile
@@ -45,11 +35,7 @@ final class Flag extends PinnedPlacementPolicy {
 
 /** @author amp
   */
-object NewFlag
-    extends TotalSite0Simple
-    with TypedSite
-    with FunctionalSite
-    with TalkativeSite {
+object NewFlag extends TotalSite0Simple with TypedSite with FunctionalSite with TalkativeSite with Serializable with LocalSingletonSite {
   def eval() = {
     new Flag()
   }
@@ -61,11 +47,7 @@ object NewFlag
 
 /** @author amp
   */
-object SetFlag
-    extends TotalSite1Simple[Flag]
-    with TypedSite
-    with TalkativeSite
-    with NonBlockingSite {
+object SetFlag extends TotalSite1Simple[Flag] with TypedSite with TalkativeSite with NonBlockingSite with Serializable with LocalSingletonSite {
   def eval(flag: Flag) = {
     flag.set()
     Signal
@@ -78,11 +60,7 @@ object SetFlag
   override def effects = Effects.BeforePub
 }
 
-object PublishIfNotSet
-    extends PartialSite1Simple[Flag]
-    with TypedSite
-    with NonBlockingSite
-    with EffectFreeSite {
+object PublishIfNotSet extends TotalSite1Simple[Flag] with TypedSite with TalkativeSite with NonBlockingSite with Serializable with LocalSingletonSite {
   def eval(flag: Flag) = {
     if (flag.get())
       None

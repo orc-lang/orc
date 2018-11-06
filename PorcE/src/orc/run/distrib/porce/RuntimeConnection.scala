@@ -212,7 +212,7 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
 
   @throws(classOf[IOException])
   override protected def replaceObject(obj: AnyRef): AnyRef = {
-    //Logger.Marshal.entering(getClass.getName, "replaceObject", Seq(s"${orc.util.GetScalaTypeName(obj)}=$obj"))
+    //Logger.Marshal.entering(getClass.getName, "replaceObject", Seq(s"${if (obj != null) obj.toString.take(60) else "null"}: ${orc.util.GetScalaTypeName(obj)}"))
     val result = obj match {
       case xm: ExecutionContextSerializationMarker => {
         assert(xm.executionId == currExecution.get.executionId)
@@ -220,11 +220,9 @@ protected class RuntimeConnectionOutputStream(out: OutputStream) extends ObjectO
       }
       case _ if currExecution.isDefined && currDestination.isDefined && currExecution.get.marshalExecutionObject.isDefinedAt((currDestination.get, obj)) =>
         currExecution.get.marshalExecutionObject((currDestination.get, obj))
-//      case _ if currExecution.isDefined && currDestination.isDefined /*&& currExecution.get.marshalValueWouldReplace(currDestination.get)(obj)*/ =>
-//          currExecution.get.marshalValue(currDestination.get)(obj)
       case _ => super.replaceObject(obj)
     }
-    //Logger.Marshal.exiting(getClass.getName, "replaceObject", s"${orc.util.GetScalaTypeName(result)}=$result")
+    //Logger.Marshal.exiting(getClass.getName, "replaceObject", s"${if (result != null) result.toString.take(60) else "null"}: ${orc.util.GetScalaTypeName(result)}")
     result
   }
 

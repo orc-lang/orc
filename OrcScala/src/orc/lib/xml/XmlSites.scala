@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.xml
 
 import scala.xml.{ Elem, MetaData, Node, Null, PCData, Text, TopScope, UnprefixedAttribute }
@@ -20,7 +21,6 @@ import orc.types.{ EmptyRecordType, JavaObjectType, SimpleFunctionType, StringTy
 import orc.values.{ OrcRecord, OrcTuple }
 import orc.values.sites._
 
-
 /** XML elements. These sites are not namespace aware. Construction defaults
   * to the empty namespace, and matching discards namespace information.
   *
@@ -30,9 +30,9 @@ import orc.values.sites._
 /* We use Scala's Node class as the underlying type of Orc XML trees */
 object XMLType extends JavaObjectType(classOf[scala.xml.Node])
 
-object XMLElementSite extends StructurePairSite(XMLElementConstructor, XMLElementExtractor)
+object XMLElementSite extends StructurePairSite(XMLElementConstructor, XMLElementExtractor) with Serializable with LocalSingletonSite
 
-object XMLElementConstructor extends TotalSite3Simple[String, OrcRecord, List[_]] with TypedSite {
+object XMLElementConstructor extends TotalSite3Simple[String, OrcRecord, List[_]] with TypedSite with Serializable with LocalSingletonSite {
 
   override def name = "XMLElement"
 
@@ -49,7 +49,7 @@ object XMLElementConstructor extends TotalSite3Simple[String, OrcRecord, List[_]
 
 }
 
-object XMLElementExtractor extends PartialSite1Simple[AnyRef] with TypedSite {
+object XMLElementExtractor extends PartialSite1Simple[AnyRef] with TypedSite with Serializable with LocalSingletonSite {
 
   override def name = "XMLElement.unapply"
 
@@ -72,9 +72,9 @@ object XMLElementExtractor extends PartialSite1Simple[AnyRef] with TypedSite {
 
 }
 
-object XMLTextSite extends StructurePairSite(XMLTextConstructor, XMLTextExtractor)
+object XMLTextSite extends StructurePairSite(XMLTextConstructor, XMLTextExtractor) with Serializable with LocalSingletonSite
 
-object XMLTextConstructor extends TotalSite1Simple[AnyRef] with TypedSite {
+object XMLTextConstructor extends TotalSite1Simple[AnyRef] with TypedSite with Serializable with LocalSingletonSite {
 
   override def name = "XMLText"
 
@@ -89,7 +89,7 @@ object XMLTextConstructor extends TotalSite1Simple[AnyRef] with TypedSite {
 
 }
 
-object XMLTextExtractor extends PartialSite1Simple[AnyRef] with TypedSite {
+object XMLTextExtractor extends PartialSite1Simple[AnyRef] with TypedSite with Serializable with LocalSingletonSite {
 
   override def name = "XMLText.unapply"
 
@@ -103,9 +103,9 @@ object XMLTextExtractor extends PartialSite1Simple[AnyRef] with TypedSite {
   def orcType() = SimpleFunctionType(XMLType, StringType)
 }
 
-object XMLCDataSite extends StructurePairSite(XMLCDataConstructor, XMLCDataExtractor)
+object XMLCDataSite extends StructurePairSite(XMLCDataConstructor, XMLCDataExtractor) with Serializable with LocalSingletonSite
 
-object XMLCDataConstructor extends TotalSite1Simple[AnyRef] with TypedSite {
+object XMLCDataConstructor extends TotalSite1Simple[AnyRef] with TypedSite with Serializable with LocalSingletonSite {
 
   override def name = "XMLCData"
 
@@ -120,7 +120,7 @@ object XMLCDataConstructor extends TotalSite1Simple[AnyRef] with TypedSite {
 
 }
 
-object XMLCDataExtractor extends PartialSite1Simple[AnyRef] with TypedSite {
+object XMLCDataExtractor extends PartialSite1Simple[AnyRef] with TypedSite with Serializable with LocalSingletonSite {
 
   override def name = "XMLCData.unapply"
 
@@ -135,7 +135,7 @@ object XMLCDataExtractor extends PartialSite1Simple[AnyRef] with TypedSite {
 
 }
 
-object IsXMLSite extends PartialSite1Simple[AnyRef] with TypedSite {
+object IsXMLSite extends PartialSite1Simple[AnyRef] with TypedSite with Serializable with LocalSingletonSite {
 
   override def name = "IsXML"
 

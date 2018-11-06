@@ -26,9 +26,10 @@ import orc.types.{ RecordType, SimpleCallableType, StrictCallableType, Top, Tupl
 import orc.util.ArrayExtensions.{ Array2, ArrayN }
 import orc.util.OptionMapExtension.addOptionMapToList
 import orc.values.{ Field, OrcRecord, OrcTuple, OrcValue }
-import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, PartialSite, TotalSite, TypedSite }
+import orc.values.sites.{ FunctionalSite, LocalSingletonSite, IllegalArgumentInvoker, PartialSite, TotalSite, TypedSite }
 
-object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
+@SerialVersionUID(-4970620914536871147L)
+object RecordConstructor extends TotalSite with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Record"
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
@@ -78,7 +79,8 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite {
   }
 }
 
-object RecordMatcher extends PartialSite with TypedSite with FunctionalSite {
+@SerialVersionUID(-7652586938987434961L)
+object RecordMatcher extends PartialSite with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "RecordMatcher"
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {

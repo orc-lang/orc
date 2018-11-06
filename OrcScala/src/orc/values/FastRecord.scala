@@ -13,7 +13,7 @@
 
 package orc.values
 
-import orc.{ OrcRuntime, Accessor }
+import orc.{ Accessor, OrcRuntime }
 import orc.run.distrib.DOrcMarshalingReplacement
 
 object FastObject {
@@ -30,7 +30,7 @@ object FastObject {
   def members(members: String*): Array[Field] = members.map(Field(_)).toArray
 }
 
-abstract class FastObject(val members: Array[Field]) extends HasMembers with DOrcMarshalingReplacement {
+abstract class FastObject(val members: Array[Field]) extends HasMembers with Serializable with DOrcMarshalingReplacement {
   protected val values: Array[AnyRef]
 
   final def getAccessor(runtime: OrcRuntime, field: Field): Accessor = {

@@ -10,19 +10,20 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.time
 
 import scala.math.BigInt.int2bigInt
 
-import orc.{ VirtualCallContext, OrcRuntime, DirectInvoker }
+import orc.{ DirectInvoker, OrcRuntime, VirtualCallContext }
 import orc.run.extensions.RwaitEvent
 import orc.types.{ IntegerType, RecordType, SignalType, SimpleFunctionType }
 import orc.values.{ Field, OrcRecord, Signal, HasMembersMetadata }
-import orc.values.sites.{ EffectFreeSite, FunctionalSite, Site1Base, SiteMetadata, TalkativeSite, TotalSite0Base, TypedSite }
+import orc.values.sites.{ EffectFreeSite, FunctionalSite, LocalSingletonSite, Site1Base, SiteMetadata, TalkativeSite, TotalSite0Base, TypedSite }
 
 /**
   */
-object Rclock extends TotalSite0Base with TypedSite with FunctionalSite with TalkativeSite {
+object Rclock extends TotalSite0Base with TypedSite with FunctionalSite with TalkativeSite with Serializable with LocalSingletonSite {
   def getInvoker(runtime: OrcRuntime): DirectInvoker = {
     invoker(this) { _ =>
       new OrcRecord(
@@ -58,7 +59,7 @@ class Rtime(val startTime: Long) extends TotalSite0Base with FunctionalSite {
 
 /**
   */
-object Rwait extends Site1Base[Number] with EffectFreeSite {
+object Rwait extends Site1Base[Number] with EffectFreeSite with Serializable with LocalSingletonSite {
   final def doit(callContext: VirtualCallContext, delay: BigInt) = {
     if (delay > 0) {
       val ctx = callContext.materialize()

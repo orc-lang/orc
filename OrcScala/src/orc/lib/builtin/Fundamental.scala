@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.lib.builtin
 
 import orc.OrcRuntime
@@ -18,9 +19,10 @@ import orc.types.{ BooleanType, FunctionType, SignalType, SimpleCallableType, Si
 import orc.util.ArrayExtensions.{ Array0, Array1 }
 import orc.util.TypeListEnrichment.enrichTypeList
 import orc.values.{ OrcTuple, Signal }
-import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2, TalkativeSite, TotalSiteBase, TypedSite }
+import orc.values.sites.{ FunctionalSite, LocalSingletonSite, OverloadedDirectInvokerMethod1, OverloadedDirectInvokerMethod2, TalkativeSite, TotalSiteBase, TypedSite }
 
-case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
+@SerialVersionUID(1713576028304864566L)
+case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Ift"
 
   def getInvokerSpecialized(a: java.lang.Boolean) = {
@@ -34,7 +36,8 @@ case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
-case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite {
+@SerialVersionUID(7595428578485445916L)
+case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Iff"
 
   def getInvokerSpecialized(a: java.lang.Boolean) = {
@@ -48,7 +51,8 @@ case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
   def orcType() = SimpleFunctionType(BooleanType, SignalType)
 }
 
-case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite {
+@SerialVersionUID(7152101636414367959L)
+case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with TalkativeSite with Serializable with LocalSingletonSite {
   override def name = "Eq"
 
   def getInvokerSpecialized(a: Any, b: Any) = {
@@ -63,7 +67,8 @@ case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalS
   def orcType() = SimpleFunctionType(Top, Top, BooleanType)
 }
 
-object Let extends TotalSiteBase with TypedSite with FunctionalSite {
+@SerialVersionUID(5555898947968354991L)
+object Let extends TotalSiteBase with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "let"
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) =
     args match {

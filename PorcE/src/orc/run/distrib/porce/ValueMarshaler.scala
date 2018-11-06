@@ -35,7 +35,7 @@ trait ValueMarshaler {
   def marshalValueWouldReplace(destination: PeerLocation)(value: Any): Boolean = {
     value match {
       /* keep in sync with cases in marshalValue */
-      //FIXME: Handle circular references
+      //FIXME: Handle circular references in DOrcMarshalingReplacement calls
       case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForMarshaling(marshalValueWouldReplace(destination)(_)) => true
       case st: scala.collection.Traversable[Any] if st.exists(marshalValueWouldReplace(destination)(_)) => true //FIXME:Scala-specific, generalize
       case null => false
@@ -50,7 +50,7 @@ trait ValueMarshaler {
 
     val replacedValue = value match {
       /* keep in sync with cases in marshalValueWouldReplace */
-      //FIXME: Handle circular references
+      //FIXME: Handle circular references in DOrcMarshalingReplacement calls
       case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForMarshaling(marshalValueWouldReplace(destination)(_)) => dmr.replaceForMarshaling(marshalValue(destination)(_))
       case st: scala.collection.Traversable[Any] => st.map(_ match { //FIXME:Scala-specific, generalize
         case o: AnyRef => marshalValue(destination)(o)
@@ -58,11 +58,11 @@ trait ValueMarshaler {
       })
       case v => v
     }
+    val executionMashalerWillHandle = execution.marshalExecutionObject.isDefinedAt((destination, replacedValue))
     val marshaledValue = replacedValue match {
       /* keep in sync with cases in marshalValueWouldReplace */
       case null => null
-      case xo if execution.marshalExecutionObject.isDefinedAt((destination, xo)) =>
-        execution.marshalExecutionObject((destination, xo))
+      case xo if executionMashalerWillHandle => /* Leave for ExecutionMashaler to handle */ xo
       case ro: RemoteObjectRef => ro.marshal()
       case v: java.io.Serializable if execution.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => v
       case v /* Cannot be marshaled to this destination */ => {
@@ -74,7 +74,7 @@ trait ValueMarshaler {
       case _ => { /* Nothing to do */ }
     }
     Logger.Marshal.finest(s"marshalValue($destination)($value): ${orc.util.GetScalaTypeName(value)} = $marshaledValue")
-    assert(execution.marshalExecutionObject.isDefinedAt((destination, replacedValue)) || (marshaledValue != value) == marshalValueWouldReplace(destination)(value), s"marshaledValue disagrees with marshalValueWouldReplace for value=$value, marshaledValue=$marshaledValue")
+    assert(executionMashalerWillHandle || (marshaledValue != value) == marshalValueWouldReplace(destination)(value), s"marshaledValue disagrees with marshalValueWouldReplace for value=$value, marshaledValue=$marshaledValue")
     marshaledValue
   }
 
@@ -119,10 +119,13 @@ trait ValueMarshaler {
       try {
         nullOos synchronized {
           nullOos.setContext(execution, destination)
-          nullOos.writeObject(v)
-          nullOos.flush()
-          nullOos.clearContext()
-          nullOos.reset()
+          try {
+            nullOos.writeObject(v)
+            nullOos.flush()
+          } finally {
+            nullOos.clearContext()
+            nullOos.reset()
+          }
         }
         synchronized { knownGoodSerializables.put(v, ()) }
         true
@@ -144,7 +147,7 @@ trait ValueMarshaler {
     value match {
       /* keep in sync with cases in unmarshalValue */
       case rrr: RemoteObjectRefReplacement => true
-      //FIXME: Handle circular references
+      //FIXME: Handle circular references in DOrcMarshalingReplacement calls
       case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace(_)) => true
       case st: scala.collection.Traversable[Any] if st.exists(unmarshalValueWouldReplace(_)) => true //FIXME:Scala-specific, generalize
       case _ => false
@@ -159,9 +162,7 @@ trait ValueMarshaler {
     }
     val replacedValue = unmarshaledValue match {
       /* keep in sync with cases in unmarshalValueWouldReplace */
-      case xo if execution.unmarshalExecutionObject.isDefinedAt((origin, xo)) =>
-        execution.unmarshalExecutionObject((origin, xo))
-      //FIXME: Handle circular references
+      //FIXME: Handle circular references in DOrcMarshalingReplacement calls
       case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace(_)) => dmr.replaceForUnmarshaling(unmarshalValue(origin)(_))
       case st: scala.collection.Traversable[Any] => st.map(_ match { //FIXME:Scala-specific, generalize
         case o: AnyRef => unmarshalValue(origin)(o)

@@ -10,6 +10,7 @@
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.values
 
 import java.util.Arrays
@@ -21,7 +22,7 @@ import orc.values.sites.{ NonBlockingSite, PartialSite, UntypedSite, IllegalArgu
 
 /** @author dkitchin
   */
-case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite with NonBlockingSite with DOrcMarshalingReplacement with Product {
+case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite with NonBlockingSite with Serializable with DOrcMarshalingReplacement with Product {
   assert(values.length > 1)
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {

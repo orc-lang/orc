@@ -15,6 +15,7 @@ package orc.test.item.distrib
 
 import orc.run.distrib.porce.{ CallLocationOverrider, DOrcExecution, PeerLocation, ValueLocator, ValueLocatorFactory }
 import orc.values.sites.JavaStaticMemberProxy
+import orc.values.sites.JavaMemberProxy
 
 /** A ValueLocator that maps VertexWithPathLen instances to a location base
   * on the vertex name.
@@ -30,14 +31,17 @@ class VertexValueLocator(execution: DOrcExecution) extends ValueLocator with Cal
 
   override val currentLocations: PartialFunction[Any, Set[PeerLocation]] = {
     case v: VertexWithPathLen => Set(execution.locationForFollowerNum(locationFromVertexName(v.name)))
+    case jmp: JavaMemberProxy if jmp.javaClass == classOf[VertexWithPathLen] && jmp.theObject != null => Set(execution.locationForFollowerNum(locationFromVertexName(jmp.theObject.asInstanceOf[VertexWithPathLen].name)))
   }
 
   override val valueIsLocal: PartialFunction[Any, Boolean] = {
     case v: VertexWithPathLen => locationFromVertexName(v.name) == execution.runtime.here.runtimeId
+    case jmp: JavaMemberProxy if jmp.javaClass == classOf[VertexWithPathLen] && jmp.theObject != null => locationFromVertexName(jmp.theObject.asInstanceOf[VertexWithPathLen].name) == execution.runtime.here.runtimeId
   }
 
   override val permittedLocations: PartialFunction[Any, Set[PeerLocation]] = {
     case v: VertexWithPathLen => Set(execution.locationForFollowerNum(locationFromVertexName(v.name)))
+    case jmp: JavaMemberProxy if jmp.javaClass == classOf[VertexWithPathLen] && jmp.theObject != null => Set(execution.locationForFollowerNum(locationFromVertexName(jmp.theObject.asInstanceOf[VertexWithPathLen].name)))
   }
 
   override def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Option[Boolean] = {
@@ -48,6 +52,8 @@ class VertexValueLocator(execution: DOrcExecution) extends ValueLocator with Cal
         orc.run.distrib.porce.Logger.Invoke.finer("VertexValueLocator.callLocationMayNeedOverride JavaStaticMemberProxy returning " + mustMigrate)
         Some(mustMigrate)
       }
+      case _: orc.test.item.distrib.GraphOfVertexWithPathLen => Some(0 != execution.runtime.here.runtimeId)
+      case jmp: JavaMemberProxy if jmp.javaClass == classOf[GraphOfVertexWithPathLen] => Some(0 != execution.runtime.here.runtimeId)
       case _ => {
         None
       }
@@ -63,6 +69,8 @@ class VertexValueLocator(execution: DOrcExecution) extends ValueLocator with Cal
         orc.run.distrib.porce.Logger.Invoke.finer("VertexValueLocator.callLocationMayNeedOverride JavaStaticMemberProxy callLocationOverride location:" + loc)
         Set(execution.locationForFollowerNum(loc))
       }
+      case _: orc.test.item.distrib.GraphOfVertexWithPathLen => Set(execution.locationForFollowerNum(0))
+      case jmp: JavaMemberProxy if jmp.javaClass == classOf[GraphOfVertexWithPathLen] => Set(execution.locationForFollowerNum(0))
       case _ => {
         Set.empty
       }

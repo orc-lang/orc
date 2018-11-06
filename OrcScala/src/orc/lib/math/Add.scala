@@ -4,7 +4,7 @@
 //
 // Created by amp on Sept 25, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,9 +14,9 @@
 package orc.lib.math
 
 import orc.values.OrcRecord
-import orc.values.sites.{ FunctionalSite, OverloadedDirectInvokerMethod2, IllegalArgumentInvoker }
+import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, LocalSingletonSite, OverloadedDirectInvokerMethod2 }
 
-object Add extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite {
+object Add extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Any, arg2: Any) = {
     // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
     (arg1, arg2) match {
