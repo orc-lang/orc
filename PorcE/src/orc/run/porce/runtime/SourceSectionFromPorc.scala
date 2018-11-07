@@ -18,10 +18,12 @@ import orc.run.porce.Logger
 import com.oracle.truffle.api.source.{ Source, SourceSection }
 
 /** Function to build a Truffle SourceSection from a Porc node.
- * 
+ *
  */
 object SourceSectionFromPorc {
   val sourceCache = new java.util.WeakHashMap[OrcInputContext, Source]()
+
+  def apply(e: PorcAST.Z): SourceSection = this(e.value)
 
   def apply(e: PorcAST): SourceSection = synchronized {
     e.sourceTextRange match {
@@ -36,7 +38,7 @@ object SourceSectionFromPorc {
             val url = res.toURL
             val start = range.start.offset
             val end = range.end.offset
-            val source = sourceCache.computeIfAbsent(res, (_) => Source.newBuilder(url).build())
+            val source = sourceCache.computeIfAbsent(res, (_) => Source.newBuilder("Orc", url).build())
             source.createSection(start, end - start)
         }
       case None =>

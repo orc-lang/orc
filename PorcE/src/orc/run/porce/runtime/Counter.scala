@@ -21,6 +21,7 @@ import com.oracle.truffle.api.CompilerDirectives.{ CompilationFinal, TruffleBoun
 import com.oracle.truffle.api.CompilerDirectives
 import java.util.logging.Level
 import com.oracle.truffle.api.profiles.ConditionProfile
+import com.oracle.truffle.api.profiles.ValueProfile
 
 @CompilationFinal
 object Counter {
@@ -132,7 +133,7 @@ object Counter {
     var nextCounterOffset: CounterOffset = null
 
     override def toString(): String = {
-      f"CounterOffset@${hashCode()}%x(inThreadList=$inThreadList, value=$value, globalCountHeld=$globalCountHeld)"
+      f"CounterOffset@${hashCode()}%08x(inThreadList=$inThreadList, value=$value, globalCountHeld=$globalCountHeld)"
     }
   }
 
@@ -210,6 +211,7 @@ object Counter {
   }
 
   sealed trait FlushContext extends GetCounterOffsetContext {
+    def profileCounterType[T <: Counter](ctr: T): T
     def profileNonzeroOffset(b: Boolean): Boolean
     def profileHalted(b: Boolean): Boolean
   }
@@ -231,20 +233,32 @@ object Counter {
 
     def profileCreateCounterOffset(b: Boolean): Boolean = createCounterOffsetProfile.profile(b)
     def profileInThreadList(b: Boolean): Boolean = inThreadListProfile.profile(b)
+
+    protected def innerString = s"createCounterOffset=$createCounterOffsetProfile, inThreadList=$inThreadListProfile"
+    protected def prefixString = "GetCounterOffsetContext"
+    override def toString() = s"$prefixString($innerString)"
   }
 
   final class NewTokenContextImpl(runtime: PorcERuntime) extends GetCounterOffsetContextImpl(runtime) with NewTokenContext {
     val globalCountHeldProfile = ConditionProfile.createCountingProfile()
 
     def profileGlobalCountHeld(b: Boolean): Boolean = globalCountHeldProfile.profile(b)
+
+    protected override def innerString = s"${super.innerString}, globalCountHeld=$globalCountHeldProfile"
+    protected override def prefixString = "NewTokenContext"
   }
 
   final class FlushContextImpl(runtime: PorcERuntime) extends GetCounterOffsetContextImpl(runtime) with FlushContext {
+    val typeProfile = ValueProfile.createClassProfile()
     val nonzeroOffsetProfile = ConditionProfile.createCountingProfile()
     val haltedProfile = ConditionProfile.createCountingProfile()
 
+    def profileCounterType[T <: Counter](ctr: T): T = typeProfile.profile(ctr)
     def profileNonzeroOffset(b: Boolean): Boolean = nonzeroOffsetProfile.profile(b)
     def profileHalted(b: Boolean): Boolean = haltedProfile.profile(b)
+
+    protected override def innerString = s"${super.innerString}, nonzeroOffset=$nonzeroOffsetProfile, halted=$haltedProfile"
+    protected override def prefixString = "FlushContext"
   }
 
   object NoOpContext extends FlushContext with NewTokenContext {
@@ -253,6 +267,7 @@ object Counter {
     def profileCreateCounterOffset(b: Boolean): Boolean = b
     def profileInThreadList(b: Boolean): Boolean = b
 
+    def profileCounterType[T <: Counter](ctr: T): T = ctr
     def profileNonzeroOffset(b: Boolean): Boolean = b
     def profileHalted(b: Boolean): Boolean = b
 
@@ -272,7 +287,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   incrCounter()
 
   protected def handleHaltToken(optimized: Boolean) = {
-    if (false && execution.runtime.logNoninlinableSchedules) {
+    if (false && PorcERuntime.logNoninlinableSchedules) {
       if (!optimized && get() == -counterOffsets.map({
           case null => (0).toInt
           case coh => coh.value.toInt
@@ -394,7 +409,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     if (thread.isInstanceOf[SimpleWorkStealingScheduler#Worker]) {
       val worker = thread.asInstanceOf[SimpleWorkStealingScheduler#Worker]
       if (ctx.profileCreateCounterOffset(counterOffsets(worker.workerID) == null)) {
-        @TruffleBoundary(allowInlining = false) @noinline
+        @TruffleBoundary(allowInlining = true) @noinline
         def newCOH() = {
           val r = new CounterOffset(this)
           counterOffsets(worker.workerID) = r
@@ -428,7 +443,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     if (ctx.profileNonzeroOffset(coh.value != 0)) {
       val n = flushCounterOffsetAndGet(coh)
       if (ctx.profileHalted(n == 0)) {
-        onHaltOptimized()
+        ctx.profileCounterType(this).onHaltOptimized()
       } else {
         null
       }
@@ -441,15 +456,6 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   @TruffleBoundary(allowInlining = true) @noinline
   final def flushCounterOffsetAndHandle(coh: CounterOffset): Unit = {
     scheduleHaltClosureIfNeeded(flushCounterOffsetAndHandleOptimized(coh)(NoOpContext))
-  }
-
-  private final def flushCounterOffsetIfLocalHalt(coh: CounterOffset): Boolean = {
-    if (coh.value == -get() && coh.value < 0) {
-      val n = flushCounterOffsetAndGet(coh)
-      n == 0
-    } else {
-      false
-    }
   }
 
   @volatile
@@ -493,11 +499,13 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
       }
     }
 
-    val r = if (coh != null) {
+    val r = if (CompilerDirectives.injectBranchProbability(CompilerDirectives.FASTPATH_PROBABILITY,
+        coh != null)) {
       coh.value -= 1
-      handleHaltToken(false)
+      //handleHaltToken(false)
       null
     } else {
+      ctx.enterOffWorker()
       decrGlobal()
     }
     stopTimer(s)
@@ -553,7 +561,7 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   override def toString(): String = {
     val n = getClass.getSimpleName
     val h = System.identityHashCode(this)
-    f"$n%s@$h%x"
+    f"$n%s@$h%08x"
   }
 
   /** Called when this whole context has halted.

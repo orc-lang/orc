@@ -14,22 +14,17 @@
 package orc.lib.time
 
 import orc.types.{ FunctionType, IntegerType, StrictCallableType }
-import orc.values.sites.{ LocalSingletonSite, TypedSite }
-import orc.values.sites.compatibility.TotalSite2
+import orc.values.sites.{ TotalSite2Simple, LocalSingletonSite, TypedSite }
 
 /** For use with Vtime, this is the time scale using integer points.
   *
   * @author dkitchin
   */
-object IntegerTimeOrder extends TotalSite2 with TypedSite with Serializable with LocalSingletonSite {
+object IntegerTimeOrder extends TotalSite2Simple[Number, Number] with TypedSite with Serializable with LocalSingletonSite {
 
-  def eval(x: AnyRef, y: AnyRef): AnyRef = {
-    // TODO: use more conventional dynamic typing
-    val i = x.asInstanceOf[BigInt]
-    val j = y.asInstanceOf[BigInt]
-    (i compare j).asInstanceOf[AnyRef]
+  def eval(x: Number, y: Number) = {
+    x.longValue compare y.longValue
   }
 
   lazy val orcType = new FunctionType(Nil, List(IntegerType, IntegerType), IntegerType) with StrictCallableType
-
 }

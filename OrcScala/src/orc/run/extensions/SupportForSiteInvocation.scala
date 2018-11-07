@@ -12,9 +12,9 @@
 //
 package orc.run.extensions
 
-import orc.{ DirectInvoker, ErrorAccessor, ErrorInvoker, InvocationBehavior, Invoker, OrcRuntime }
-import orc.values.{ HasMembers, Field }
-import orc.values.sites.{ Site }
+import orc.{ ErrorAccessor, ErrorInvoker, InvocationBehavior, OrcRuntime }
+import orc.values.{ Field, HasMembers }
+import orc.values.sites.Site
 
 /** @author dkitchin
   */

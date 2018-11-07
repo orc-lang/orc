@@ -11,11 +11,10 @@
 
 package orc.lib.math
 
-import orc.Invoker
 import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, LocalSingletonSite, OverloadedDirectInvokerMethod1 }
 
 object Abs extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
-  def getInvokerSpecialized(arg1: Number): Invoker = {
+  def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
       case a: java.lang.Double => invoker(a)(a => Math.abs(a.doubleValue()))
       case a: java.lang.Integer => invoker(a)(a => Math.abs(a.intValue()))

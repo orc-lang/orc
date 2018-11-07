@@ -14,6 +14,7 @@ package orc.run.porce;
 import java.util.Map;
 
 import orc.run.extensions.SimpleWorkStealingScheduler;
+import orc.run.porce.call.Dispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.Counter.CounterOffset;
 import orc.run.porce.runtime.PorcEClosure;
@@ -58,7 +59,7 @@ public class FlushAllCounters extends Expression {
             @Cached("createCountingProfile()") LoopConditionProfile loopProfile,
             @Cached("createCountingProfile()") ConditionProfile isInterestingProfile,
             @Cached("createBinaryProfile()") ConditionProfile isInListProfile,
-            @Cached("create(execution)") StackCheckingDispatch dispatch) {
+            @Cached("createInternal(execution)") Dispatch dispatch) {
         //ensureTail(dispatch);
         final int tc = totalCount;
         final int hc = haltCount;
@@ -72,7 +73,8 @@ public class FlushAllCounters extends Expression {
         }
 
         if (flushPolarity >= 0 ||
-                prob > SpecializationConfiguration.MinimumEarlyHaltProbability ||
+                hc > 0 ||
+                //prob > SpecializationConfiguration.MinimumEarlyHaltProbability ||
                 CompilerDirectives.inInterpreter()) {
             final SimpleWorkStealingScheduler.Worker worker = (SimpleWorkStealingScheduler.Worker)thread;
             Counter.incrFlushAllCount();
@@ -142,7 +144,7 @@ public class FlushAllCounters extends Expression {
 
     private static double getProbability(int haltCount, int totalCount) {
         if (totalCount <= 0) {
-            return 0.0;
+            return 1.0;
         } else {
             return (double)haltCount / totalCount;
         }

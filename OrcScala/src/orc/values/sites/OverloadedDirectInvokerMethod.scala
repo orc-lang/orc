@@ -14,9 +14,8 @@
 package orc.values.sites
 
 import scala.reflect.ClassTag
-import orc.DirectInvoker
-import orc.OrcRuntime
-import orc.Invoker
+
+import orc.{ DirectInvoker, OrcRuntime }
 
 // FIXME: This semi-duplicates TotalSite{1,2}
 
@@ -88,7 +87,7 @@ abstract class OverloadedDirectInvokerMethod1[BaseArgumentType1 : ClassTag] exte
     }
   }
 
-  def getInvokerSpecialized(arg1: BaseArgumentType1): Invoker
+  def getInvokerSpecialized(arg1: BaseArgumentType1): DirectInvoker
 
   override def publications: Range = Range(0, 1)
 }
@@ -155,7 +154,7 @@ abstract class OverloadedDirectInvokerMethod2[BaseArgumentType1 : ClassTag, Base
     }
   }
 
-  def getInvokerSpecialized(arg1: BaseArgumentType1, arg2: BaseArgumentType2): Invoker
+  def getInvokerSpecialized(arg1: BaseArgumentType1, arg2: BaseArgumentType2): DirectInvoker
 
   override def publications: Range = Range(0, 1)
 }

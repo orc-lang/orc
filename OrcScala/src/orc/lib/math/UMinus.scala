@@ -13,11 +13,10 @@ package orc.lib.math
 
 import java.math.{ BigDecimal => JBigDecimal, BigInteger => JBigInteger }
 
-import orc.Invoker
 import orc.values.sites.{ FunctionalSite, LocalSingletonSite, OverloadedDirectInvokerMethod1 }
 
 object UMinus extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
-  def getInvokerSpecialized(arg1: Number): Invoker = {
+  def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
       case a: java.lang.Double => invoker(a)(a => -a.doubleValue())
       case a: java.lang.Float => invoker(a)(a => -a.floatValue())

@@ -1,4 +1,4 @@
 <factorypath>
-    <factorypathentry kind="VARJAR" id="GRAALVM_JRE/lib/truffle/truffle-api.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="GRAALVM_JRE/lib/truffle/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="GRAALVM_JRE/jre/lib/truffle/truffle-api.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="GRAALVM_JRE/jre/lib/truffle/truffle-dsl-processor.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

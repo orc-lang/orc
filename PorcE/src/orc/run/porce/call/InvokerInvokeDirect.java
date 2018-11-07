@@ -21,6 +21,7 @@ import orc.compile.orctimizer.OrcAnnotation;
 import orc.error.runtime.JavaException;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
+import orc.run.porce.runtime.CallAdapter;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.values.NumericsConfig;
 import orc.values.sites.InvocableInvoker;
@@ -29,12 +30,15 @@ import orc.values.sites.OverloadedDirectInvokerBase1;
 import orc.values.sites.OverloadedDirectInvokerBase2;
 
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
+import com.oracle.truffle.api.profiles.BranchProfile;
 
 /**
  * A node to call canInvoke on invokers.
@@ -47,6 +51,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 @Introspectable
 abstract class InvokerInvokeDirect extends NodeBase {
     protected final PorcEExecution execution;
+    private final BranchProfile exceptionProfile = BranchProfile.create();
 
     protected InvokerInvokeDirect(PorcEExecution execution) {
         this.execution = execution;
@@ -115,8 +120,10 @@ abstract class InvokerInvokeDirect extends NodeBase {
 
     @Specialization(guards = { "!invoker.invocable().isVarArgs()", "KnownSiteSpecialization",
             "invoker.invocable().parameterTypes() == parameterTypes" })
+    @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
     public Object invocableInvoker(InvocableInvoker invoker, Object target, Object[] arguments,
-            @Cached(value = "invoker.invocable().parameterTypes()", dimensions = 1) final Class<?>[] parameterTypes) {
+            @Cached(value = "invoker.invocable().parameterTypes()", dimensions = 1) final Class<?>[] parameterTypes,
+            @Cached("apply(invoker.invocable())") CallAdapter callAdapter) {
         CompilerAsserts.compilationConstant(invoker);
         Object theObject = invoker.getRealTarget(target);
         OrcJavaCompatibility.Invocable invocable = invoker.invocable();
@@ -127,13 +134,18 @@ abstract class InvokerInvokeDirect extends NodeBase {
         }
         try {
             if (theObject == null && !invocable.isStatic()) {
+                CompilerDirectives.transferToInterpreter();
                 throw new NullPointerException(
                         "Instance method called without a target object (i.e. non-static method called on a class)");
             }
-            for (int i = 0; i < arguments.length; i++) {
+            for (int i = 0; i < parameterTypes.length; i++) {
                 final Object a = arguments[i];
                 final Class<?> cls = parameterTypes[i];
-                arguments[i] = orc2javaOpt(a, cls);
+                if (!cls.isPrimitive()) {
+                    arguments[i] = cls.cast(orc2javaOpt(a, cls));
+                } else {
+                    arguments[i] = orc2javaOpt(a, cls);
+                }
             }
             long jis = 0;
             if (orc.run.StopWatches.callsEnabled()) {
@@ -141,16 +153,18 @@ abstract class InvokerInvokeDirect extends NodeBase {
             }
             Object r;
             try {
-                r = invoker.boxedReturnType().cast(callMethodHandle(invoker.mh(), theObject, arguments));
+                r = invoker.boxedReturnType().cast(callAdapter.invoke(theObject, arguments));
             } finally {
                 if (orc.run.StopWatches.callsEnabled()) {
                     orc.run.StopWatches.javaImplTime().stop(jis);
                 }
             }
             return java2orcOpt(r);
-        } catch (InvocationTargetException | ExceptionInInitializerError e) {
+        } catch (ExceptionInInitializerError e) {
+            exceptionProfile.enter();
             throw new JavaException(e.getCause());
         } catch (Throwable e) {
+            exceptionProfile.enter();
             throw new JavaException(e);
         } finally {
             if (orc.run.StopWatches.callsEnabled()) {
@@ -204,8 +218,10 @@ abstract class InvokerInvokeDirect extends NodeBase {
                 }
             }
         } catch (InvocationTargetException | ExceptionInInitializerError e) {
+            exceptionProfile.enter();
             throw new JavaException(e.getCause());
         } catch (Throwable e) {
+            exceptionProfile.enter();
             throw new JavaException(e);
         } finally {
             if (orc.run.StopWatches.callsEnabled()) {
@@ -236,8 +252,10 @@ abstract class InvokerInvokeDirect extends NodeBase {
             }
             return java2orcOpt(r);
         } catch (InvocationTargetException | ExceptionInInitializerError e) {
+            exceptionProfile.enter();
             throw new JavaException(e.getCause());
         } catch (Throwable e) {
+            exceptionProfile.enter();
             throw new JavaException(e);
         } finally {
             if (orc.run.StopWatches.callsEnabled()) {
@@ -268,8 +286,10 @@ abstract class InvokerInvokeDirect extends NodeBase {
                 }
             }
         } catch (InvocationTargetException | ExceptionInInitializerError e) {
+            exceptionProfile.enter();
             throw new JavaException(e.getCause());
         } catch (Throwable e) {
+            exceptionProfile.enter();
             throw new JavaException(e);
         } finally {
             if (orc.run.StopWatches.callsEnabled()) {
@@ -300,8 +320,10 @@ abstract class InvokerInvokeDirect extends NodeBase {
             }
             return java2orcOpt(r);
         } catch (InvocationTargetException | ExceptionInInitializerError e) {
+            exceptionProfile.enter();
             throw new JavaException(e.getCause());
         } catch (Throwable e) {
+            exceptionProfile.enter();
             throw new JavaException(e);
         } finally {
             if (orc.run.StopWatches.callsEnabled()) {
@@ -320,27 +342,18 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return OrcJavaCompatibility.java2orc(v);
     }
 
-    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-    private static Object callMethodHandle(MethodHandle mh, Object theObject, Object[] arguments) throws Throwable {
-        return mh.invokeExact(theObject, arguments);
-    }
-
-    //@TruffleBoundary(allowInlining = true)
     private static Object callMethodHandleGetter(MethodHandle mh, Object theObject) throws Throwable {
         return mh.invokeExact(theObject);
     }
 
-    //@TruffleBoundary(allowInlining = true)
     private static void callMethodHandleSetter(MethodHandle mh, Object theObject, Object arg) throws Throwable {
         mh.invokeExact(theObject, arg);
     }
 
-    //@TruffleBoundary(allowInlining = true)
     private static Object callMethodHandleArrayGetter(MethodHandle mh, Object theObject, int arg) throws Throwable {
         return mh.invokeExact(theObject, arg);
     }
 
-    //@TruffleBoundary(allowInlining = true)
     private static void callMethodHandleArraySetter(MethodHandle mh, Object theObject, int arg1, Object arg2) throws Throwable {
         mh.invokeExact(theObject, arg1, arg2);
     }
@@ -351,81 +364,8 @@ abstract class InvokerInvokeDirect extends NodeBase {
     }
 
     protected static boolean isPartiallyEvaluable(DirectInvoker invoker) {
-        return invoker instanceof OrcAnnotation.Invoker ||
-                invoker instanceof orc.values.sites.JavaArrayLengthPseudofield.Invoker;
+        return invoker instanceof orc.values.sites.InlinableInvoker;
     }
-
-//    private static final class GotValue {
-//        final Object value;
-//        final MaterializedCPSCallContext r;
-//        public GotValue(MaterializedCPSCallContext r, Object value) {
-//            this.r = r;
-//            this.value = value;
-//        }
-//    }
-//
-//    @Specialization(guards = { "isChannelPut(invoker)", "KnownSiteSpecialization" })
-//    public Object channelPut(VirtualFrame frame, DirectInvoker invoker, Object target, Object[] arguments,
-//            @Cached("create(execution)") StackCheckingDispatch dispatch) {
-//        orc.lib.state.Channel.ChannelInstance.PutSite putSite = (orc.lib.state.Channel.ChannelInstance.PutSite)target;
-//        GotValue p = performChannelPut(arguments, putSite);
-//        if (p != null) {
-//            if (p.r.publishOptimized()) {
-//                dispatch.dispatch(frame, p.r.p(), p.value);
-//            }
-//        } else {
-//            throw new orc.error.runtime.HaltException();
-//        }
-//        // Since this is an asynchronous channel, a put call
-//        // always returns.
-//        return Signal$.MODULE$;
-//    }
-//
-//    @TruffleBoundary(allowInlining = true)
-//    private GotValue performChannelPut(Object[] arguments, orc.lib.state.Channel.ChannelInstance.PutSite putSite) {
-//        synchronized (putSite.channel) {
-//            final Object item = arguments[0];
-//            if (putSite.channel.closed) {
-//                return null;
-//            }
-//            while (true) { // Contains break. Loops until a live reader is removed or readers is empty.
-//                if (putSite.channel.readers.isEmpty()) {
-//                    // If there are no waiting callers, queue this item.
-//                    putSite.channel.contents.addLast(item);
-//                    break;
-//                } else {
-//                    // If there are callers waiting, give this item to
-//                    // the top caller.
-//                    CallContext receiver = putSite.channel.readers.removeFirst();
-//                    if (receiver.isLive()) { // If the reader is live then publish into it.
-//                        Object v = orc.values.sites.compatibility.SiteAdaptor.object2value(item);
-//                        if (receiver instanceof MaterializedCPSCallContext) {
-//                            return new GotValue((MaterializedCPSCallContext) receiver, v);
-//                        } else {
-//                            receiver.publish(v);
-//                        }
-//                        break;
-//                    } else { // If the reader is dead then go through the loop again to get another reader.
-//                    }
-//                }
-//            }
-//        }
-//        return null;
-//    }
-//
-//    protected static boolean isChannelPut(DirectInvoker invoker) {
-//        return invoker.siteCls() == orc.lib.state.Channel.ChannelInstance.PutSite.class;
-//    }
-
-//    @Specialization
-//    public Object directSiteInvoker(DirectInvoker invoker, Object target, Object[] arguments) {
-//        return calldirect(invoker.siteCls().cast(target), arguments);
-//    }
-//
-//    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-//    private static Object calldirect(DirectSite target, Object[] arguments) {
-//        return target.calldirect(arguments);
-//    }
 
     @Specialization
     @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)

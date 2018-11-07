@@ -28,16 +28,66 @@ import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
 
-public abstract class NodeBase extends Node implements HasPorcNode {
+public abstract class NodeBase extends Node implements HasPorcNode, NodeBaseInterface {
     @CompilationFinal
-    private Option<PorcAST> porcNode = Option.apply(null);
+    private RootNode rootNode = null;
 
-    public void setPorcAST(final PorcAST ast) {
+    public RootNode getCachedRootNode() {
+        if (rootNode == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            rootNode = getRootNode();
+        }
+        return rootNode;
+    }
+
+    /**
+     * @return The PorcE root node containing this node.
+     */
+    @Override
+    public ProfilingScope getProfilingScope() {
+        if (this instanceof ProfilingScope) {
+            return (ProfilingScope) this;
+        } else {
+            return getProfilingScopeHelper(this.getParent());
+        }
+    }
+
+    private static ProfilingScope getProfilingScopeHelper(Node n) {
+        if (n == null) {
+            return ProfilingScope.DISABLED;
+        } else if (n instanceof NodeBaseInterface) {
+            return ((NodeBaseInterface) n).getProfilingScope();
+        } else {
+            Node parent = n.getParent();
+            return getProfilingScopeHelper(parent);
+        }
+    }
+
+    @Override
+    public String getContainingPorcCallableName() {
+        return getContainingPorcCallableNameHelper(this);
+    }
+
+    private static String getContainingPorcCallableNameHelper(Node n) {
+        Node parent = n.getParent();
+        if(parent instanceof NodeBaseInterface) {
+            return ((NodeBaseInterface)parent).getContainingPorcCallableName();
+        } else {
+            return getContainingPorcCallableNameHelper(parent);
+        }
+    }
+
+    @CompilationFinal
+    private Option<PorcAST.Z> porcNode = Option.apply(null);
+
+    @Override
+    public void setPorcAST(final PorcAST.Z ast) {
         CompilerAsserts.neverPartOfCompilation();
         porcNode = Option.apply(ast);
-        section = SourceSectionFromPorc.apply(ast);
+        sourceSection = SourceSectionFromPorc.apply(ast);
         getChildren().forEach((n) -> {
             if (n instanceof NodeBase) {
                 final NodeBase e = (NodeBase) n;
@@ -49,16 +99,16 @@ public abstract class NodeBase extends Node implements HasPorcNode {
     }
 
     @Override
-    public Option<PorcAST> porcNode() {
+    public Option<PorcAST.Z> porcNode() {
         return porcNode;
     }
 
     @CompilationFinal
-    private SourceSection section = null;
+    private SourceSection sourceSection = null;
 
     @Override
     public SourceSection getSourceSection() {
-        return section;
+        return sourceSection;
     }
 
     @SuppressWarnings("boxing")
@@ -66,16 +116,34 @@ public abstract class NodeBase extends Node implements HasPorcNode {
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
         if (isTail) {
-            properties.put("tail", true);
+            properties.put("isTail", true);
         }
-        if (section != null) {
-            properties.put("sourceSection", section);
+        if (sourceSection != null) {
+            properties.put("sourceSection", sourceSection);
         }
         if (porcNode.isDefined()) {
-            String s = porcNode.get().toString().replaceAll("(\n| |\t)+", " ");
-            properties.put("porcNode", s.substring(0, Math.min(100, s.length())));
+            Object nodePrefixStub = new PorcASTDebugStub((PorcAST)porcNode.get().value());
+            properties.put("porcNode", nodePrefixStub);
         }
         return properties;
+    }
+
+    /**
+     * Wrapper class for PorcAST to perform the correct toString conversion when needed.
+     *
+     * @author amp
+     */
+    private static final class PorcASTDebugStub {
+        private final PorcAST porcAST;
+
+        public PorcASTDebugStub(PorcAST porcAST) {
+            this.porcAST = porcAST;
+        }
+
+        @Override
+        public String toString() {
+            return porcAST.prettyprintWithoutNested();
+        }
     }
 
     @Override
@@ -102,7 +170,7 @@ public abstract class NodeBase extends Node implements HasPorcNode {
         if (tag == TailTag.class) {
             return isTail;
         } else if (tag == ProfiledPorcNodeTag.class) {
-            return porcNode().isDefined() && ProfiledPorcNodeTag.isProfiledPorcNode(porcNode().get());
+            return porcNode().isDefined() && ProfiledPorcNodeTag.isProfiledPorcNode((PorcAST)porcNode().get().value());
         } else if (tag == ProfiledPorcENodeTag.class) {
             return ProfiledPorcENodeTag.isProfiledPorcENode(this);
         } else {
@@ -146,7 +214,7 @@ public abstract class NodeBase extends Node implements HasPorcNode {
         if (e instanceof HasPorcNode) {
             HasPorcNode pn = (HasPorcNode) e;
             if (pn.porcNode().isDefined()) {
-                final PorcAST ast = pn.porcNode().get();
+                final PorcAST ast = (PorcAST) pn.porcNode().get().value();
                 if (ast instanceof ASTWithIndex && ((ASTWithIndex) ast).optionalIndex().isDefined()) {
                     return ((Integer) ((ASTWithIndex) ast).optionalIndex().get()).intValue();
                 }
@@ -159,6 +227,24 @@ public abstract class NodeBase extends Node implements HasPorcNode {
             return findCallSiteId(p);
         }
         return -1;
+    }
+
+    @SuppressWarnings("boxing")
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        Map<String, Object> properties = getDebugProperties();
+        boolean hasProperties = false;
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            sb.append(hasProperties ? "," : "<");
+            hasProperties = true;
+            sb.append(entry.getKey()).append("=").append(entry.getValue());
+        }
+        if (hasProperties) {
+            sb.append(">");
+        }
+        sb.append(String.format("@%08x", hashCode()));
+        return sb.toString();
     }
 
     /**
@@ -176,13 +262,13 @@ public abstract class NodeBase extends Node implements HasPorcNode {
      *            a function to compute the value when needed.
      */
     protected <T> void computeAtomicallyIfNull(Supplier<T> read, Consumer<T> write, Supplier<T> compute) {
-        CompilerDirectives
-                .bailout("computeAtomicallyIfNull is called from compiled code. This will not work correctly.");
+        CompilerAsserts
+                .neverPartOfCompilation("computeAtomicallyIfNull is called from compiled code");
         atomic(() -> {
             if (read.get() == null) {
                 T v = compute.get();
                 // TODO: Use the new Java 9 fence when we start requiring Java 9
-                // for PorcE.
+                // for PorcE. The needed fence is VarHandle.releaseFence().
                 UNSAFE.fullFence();
                 write.accept(v);
             }

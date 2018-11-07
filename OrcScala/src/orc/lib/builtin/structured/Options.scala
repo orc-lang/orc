@@ -13,10 +13,11 @@
 
 package orc.lib.builtin.structured
 
-import orc.types.{ Bot, Covariant, FunctionType, SignalType, SimpleFunctionType, SimpleTypeConstructor, Top, TypeVariable }
-import orc.values.Signal
+import orc.OrcRuntime
+import orc.types._
+import orc.values._
 import orc.values.sites.{ FunctionalSite, LocalSingletonSite, TypedSite }
-import orc.values.sites.compatibility.{ PartialSite1, StructurePairSite, TotalSite0, TotalSite1 }
+import orc.values.sites.{ TotalSite0Base, TotalSite1Base, PartialSite1Base, StructurePairSite }
 
 object OptionType extends SimpleTypeConstructor("Option", Covariant)
 
@@ -24,20 +25,19 @@ object OptionType extends SimpleTypeConstructor("Option", Covariant)
 object NoneSite extends StructurePairSite(NoneConstructor, NoneExtractor) with Serializable with LocalSingletonSite
 
 @SerialVersionUID(-427078783776597086L)
-object NoneConstructor extends TotalSite0 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+object NoneConstructor extends TotalSite0Base with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "None"
-  def eval() = None
+  def getInvoker(runtime: OrcRuntime) = invoker(this) { _ => None }
   def orcType() = SimpleFunctionType(OptionType(Bot))
 }
 
 @SerialVersionUID(1097292286490160503L)
-object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+object NoneExtractor extends PartialSite1Base[Option[AnyRef]] with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "None.unapply"
-  def eval(a: AnyRef) = {
+  def getInvoker(runtime: OrcRuntime, arg: Option[AnyRef]) = invoker(this, arg) { (_, a) =>
     a match {
       case None => Some(Signal)
       case Some(_) => None
-      case _ => None
     }
   }
   def orcType() = SimpleFunctionType(OptionType(Top), SignalType)
@@ -47,9 +47,11 @@ object NoneExtractor extends PartialSite1 with TypedSite with FunctionalSite wit
 object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor) with Serializable with LocalSingletonSite
 
 @SerialVersionUID(3009000043854264802L)
-object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+object SomeConstructor extends TotalSite1Base[AnyRef] with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Some"
-  def eval(a: AnyRef) = Some(a)
+  def getInvoker(runtime: OrcRuntime, arg: AnyRef) = invoker(this, arg) { (_, a) =>
+    Some(a)
+  }
   def orcType() = {
     val X = new TypeVariable()
     new FunctionType(List(X), List(X), OptionType(X))
@@ -57,13 +59,12 @@ object SomeConstructor extends TotalSite1 with TypedSite with FunctionalSite wit
 }
 
 @SerialVersionUID(-8183246747813035072L)
-object SomeExtractor extends PartialSite1 with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+object SomeExtractor extends PartialSite1Base[Option[AnyRef]] with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Some.unapply"
-  def eval(arg: AnyRef) = {
-    arg match {
+  def getInvoker(runtime: OrcRuntime, arg: Option[AnyRef]) = invoker(this, arg) { (_, a) =>
+    a match {
       case Some(v: AnyRef) => Some(v)
       case None => None
-      case _ => None
     }
   }
   def orcType() = {

@@ -21,7 +21,6 @@ import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
 import orc.run.distrib.token.{ DOrcExecution, NoLocationAvailable, PeerLocation }
 import orc.values.{ Field, OrcObject, Signal }
-import orc.values.sites.TotalSite
 
 /** Token represents a "process" executing in the Orc program.
   *
@@ -579,7 +578,7 @@ class Token protected (
 
   def newVclock(orderingArg: AnyRef, body: Expression) = {
     orderingArg match {
-      case orderingSite: orc.values.sites.compatibility.TotalSite => {
+      case orderingSite: orc.values.sites.TotalSite => {
         def ordering(x: AnyRef, y: AnyRef) = {
           // TODO: Add error handling, either here or in the scheduler.
           // A comparator error should kill the engine.

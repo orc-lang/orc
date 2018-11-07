@@ -17,7 +17,8 @@ import orc.error.runtime.RuntimeSupportException
 import orc.run.core.VirtualClockOperation
 import orc.types.{ FunctionType, StrictCallableType, Top }
 import orc.values.sites.{ LocalSingletonSite, TypedSite }
-import orc.values.sites.compatibility.{ CallContext, Site0 }
+import orc.values.sites.compatibility.Site0
+import orc.values.sites.compatibility.CallContext
 
 /** @author dkitchin
   */

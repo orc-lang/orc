@@ -14,10 +14,10 @@ package orc.lib.util
 import java.math.BigInteger
 import java.util.concurrent.ThreadLocalRandom
 
-import orc.{ DirectInvoker, Invoker, OrcRuntime }
-import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, LocalSingletonSite, Range, Site, SiteMetadata }
+import orc.{ DirectInvoker, OrcRuntime }
+import orc.values.sites.{ DirectSite, FunctionalSite, IllegalArgumentInvoker, LocalSingletonSite, Range, SiteMetadata }
 
-object Random extends Site with SiteMetadata with FunctionalSite with Serializable with LocalSingletonSite {
+object Random extends DirectSite with SiteMetadata with FunctionalSite with Serializable with LocalSingletonSite {
   class ArgInvoker extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == Random && arguments.length == 1 && arguments(0).isInstanceOf[Number]
@@ -45,7 +45,7 @@ object Random extends Site with SiteMetadata with FunctionalSite with Serializab
     }
   }
 
-  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
     args.length match {
       case 0 => new NoArgInvoker()
       case 1 =>
@@ -63,7 +63,7 @@ object Random extends Site with SiteMetadata with FunctionalSite with Serializab
   override def publications: Range = Range(0, 1)
 }
 
-object URandom extends Site with SiteMetadata with FunctionalSite with Serializable with LocalSingletonSite {
+object URandom extends DirectSite with SiteMetadata with FunctionalSite with Serializable with LocalSingletonSite {
   class NoArgInvoker extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == URandom && arguments.length == 0
@@ -76,7 +76,7 @@ object URandom extends Site with SiteMetadata with FunctionalSite with Serializa
     }
   }
 
-  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
     args.length match {
       case 0 => new NoArgInvoker()
       case _ =>

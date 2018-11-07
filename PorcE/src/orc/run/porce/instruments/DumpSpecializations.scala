@@ -13,19 +13,36 @@ package orc.run.porce.instruments
 
 import java.io.{ PrintWriter, StringWriter }
 
-import scala.collection.JavaConverters.asScalaBufferConverter
+import scala.collection.JavaConverters._
 
-import orc.run.porce.{ HasPorcNode, PorcERootNode }
+import orc.run.porce.{ CalledRootsProfile, HasCalledRoots, HasPorcNode, PorcERootNode }
 
 import com.oracle.truffle.api.dsl.Introspection
 import com.oracle.truffle.api.nodes.{ Node, NodeVisitor }
 
 object DumpSpecializations {
+  def formatNumWOMax(v: Long): String = {
+    if (v == Long.MaxValue) {
+      "(n/a)"
+    } else {
+      v.toString
+    }
+  }
+
   def apply(node: Node, callsRequired: Int, out: PrintWriter): Unit = {
-    out.println(s"=== ${node}:")
     val calledEnough = node match {
-      case r: PorcERootNode if r.getTotalCalls >= callsRequired =>
-        out.println(s"    timePerCall = ${r.getTimePerCall}, totalSpawnedCalls = ${r.getTotalSpawnedCalls}, totalSpawnedTime = ${r.getTotalSpawnedTime}")
+      case r: PorcERootNode if (r.getTotalCalls max r.getTotalSpawnedCalls) >= callsRequired =>
+        out.println(s"=== ${node}:")
+        out.println("    " +
+          f"timePerCall (spawned) = ${formatNumWOMax(r.getTimePerCall)}ns " +
+          f"(${r.getTotalSpawnedTime.toDouble / r.getTotalSpawnedCalls}%.1f = ${r.getTotalSpawnedTime}/${r.getTotalSpawnedCalls}), " +
+          f"timePerCall (all) = ${r.getTotalTime.toDouble / r.getTotalCalls}%.1fns (${r.getTotalTime}/${r.getTotalCalls}), " +
+          f"siteCalls = ${r.getSiteCalls.toDouble / r.getTotalCalls}%.1f (${r.getSiteCalls}/${r.getTotalCalls})")
+        out.println(s"    All Called Roots = {${CalledRootsProfile.getAllCalledRoots(r).asScala.map(p => {
+          val n = p.getLeft
+          val r = p.getRight
+          s"<${n}*${n.getTotalCalls} -> $r>"
+        }).mkString(", ")}}")
         true
       case _ => false
     }
@@ -47,7 +64,7 @@ object DumpSpecializations {
         })
       doVisiting(node)
     } else {
-      out.println(s"   Omitted due to not enough calls.")
+      //      out.println(s"   Omitted due to not enough calls.")
     }
   }
 
@@ -56,17 +73,22 @@ object DumpSpecializations {
       if (doPrintHeader) {
         out.print("--- ")
         findNodeWithSource(node) match {
-          case p: HasPorcNode if p.porcNode.isDefined && p.porcNode.get.sourceTextRange.isDefined =>
-            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.sourceTextRange.get.lineContentWithCaret}")
+          case p: HasPorcNode if p.porcNode.isDefined && p.porcNode.get.value.sourceTextRange.isDefined =>
+            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.value.sourceTextRange.get.lineContentWithCaret}")
           case p: HasPorcNode if p.porcNode.isDefined =>
-            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get}")
+            out.println(s"$prefix${node.getClass} $specsStr\n${p.porcNode.get.value.prettyprintWithoutNested()}")
           case _ if node.getSourceSection != null =>
             val ss = node.getSourceSection
             out.println(s"$prefix${node.getClass} ${ss.getSource.getName}:${ss.getStartLine} (${ss}) $specsStr")
           case _ =>
             out.println(s"$prefix${node.getClass} $specsStr")
         }
-        out.println(s"$prefix$prefix| $node")
+        node match {
+          case d: HasCalledRoots if !d.getAllCalledRoots.isEmpty =>
+            out.println(s"${prefix}Called Roots = {${d.getAllCalledRoots.asScala.mkString(", ")}}")
+          case _ => ()
+        }
+        out.println(s"$prefix$prefix| ${node}")
       }
     }
 

@@ -16,49 +16,41 @@ package orc.values
 import orc.{ Accessor, OrcRuntime }
 import orc.run.distrib.DOrcMarshalingReplacement
 
-class FastRecordFactory(_members: Seq[String]) {
-  def this(_members: Array[String]) = this(_members.toSeq)
-
-  /** The canonical member ordering for FastRecords produced by this factory.
-    */
-  val members: Array[Field] = _members.map(Field(_)).toArray
-
-  def apply(values: Seq[AnyRef]) = {
-    FastRecord(members, values.toArray)
-  }
-  def apply(values: Array[AnyRef]) = {
-    FastRecord(members, values)
-  }
-}
-
-object FastRecord {
+object FastObject {
   final class AccessorImpl(members: Array[Field], index: Int) extends Accessor {
     def canGet(target: AnyRef): Boolean = {
-      target.isInstanceOf[FastRecord] &&
-        (target.asInstanceOf[FastRecord].members eq members)
+      target.isInstanceOf[FastObject] &&
+        (target.asInstanceOf[FastObject].members eq members)
     }
     def get(target: AnyRef): AnyRef = {
-      target.asInstanceOf[FastRecord].values(index)
+      target.asInstanceOf[FastObject].values(index)
     }
   }
+
+  def members(members: String*): Array[Field] = members.map(Field(_)).toArray
 }
 
-case class FastRecord(members: Array[Field], values: Array[AnyRef]) extends HasMembers with Serializable with DOrcMarshalingReplacement {
+abstract class FastObject(val members: Array[Field]) extends HasMembers with Serializable with DOrcMarshalingReplacement {
+  protected val values: Array[AnyRef]
 
-  def getAccessor(runtime: OrcRuntime, field: Field): Accessor = {
+  final def getAccessor(runtime: OrcRuntime, field: Field): Accessor = {
     val index = members.indexOf(field)
-    new FastRecord.AccessorImpl(members, index)
+    new FastObject.AccessorImpl(members, index)
   }
 
   override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean =
     values.exists(marshalValueWouldReplace)
 
+  // FIXME: By rights, this should return a new instance of this.getClass. But that's tricky to do. So rewrap in a FastRecord. It should be indistiguishable.
   override def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef =
     FastRecord(members, values map marshaler)
 
   override def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean =
     values.exists(unmarshalValueWouldReplace)
 
+  // FIXME: By rights, this should return a new instance of this.getClass. But that's tricky to do. So rewrap in a FastRecord. It should be indistiguishable.
   override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef =
     FastRecord(members, values map unmarshaler)
 }
+
+case class FastRecord(_members: Array[Field], values: Array[AnyRef]) extends FastObject(_members)

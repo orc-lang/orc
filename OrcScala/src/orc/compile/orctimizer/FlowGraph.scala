@@ -61,9 +61,9 @@ class FlowGraph(val root: Expression.Z, val location: Option[Method.Z] = None) e
   }
 
   // TODO: addEdges is a surprisingly large time sink. It may be useful to optimize it somehow.
-  // If we are not accessing the sets during processing maybe we could actually build a simpler 
+  // If we are not accessing the sets during processing maybe we could actually build a simpler
   // data structure and then dump it more efficiently into the HashMaps.
-  // If this turns into a large problem we could even use a bloom filter (modified to only have 
+  // If this turns into a large problem we could even use a bloom filter (modified to only have
   // false negatives) to approximate the sets and check the bloom filter before inserting into
   // the actual HastSet.
   protected[this] def addEdges(es: Edge*): Unit = {
@@ -88,7 +88,7 @@ class FlowGraph(val root: Expression.Z, val location: Option[Method.Z] = None) e
 
       // Add nodes that we process even if they don't have edges
       nodeSet ++= Set(entry, exit)
-      
+
       addEdges(EntryExitEdge(e))
 
       e match {
@@ -348,9 +348,9 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
   }
 
   /** A node through which tokens flow.
-   *  
+   *
    *  These tokens may still produce values representing their publications.
-   *  
+   *
    *  These nodes are pinned in the token flow graph, and perform their operations exactly when a token reaches them.
    */
   sealed trait TokenFlowNode extends Node with WithSpecificAST {
@@ -363,7 +363,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
   }
 
   /** A node representing a token positioned before an expression.
-   *  
+   *
    *  These nodes may not produce values.
    */
   case class EntryNode(location: Expression.Z) extends Node with TokenFlowNode {
@@ -371,7 +371,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
   }
 
   /** A node representing a token positioned after an expression.
-   *  
+   *
    *  These nodes must produce a value.
    */
   case class ExitNode(location: Expression.Z) extends Node with TokenFlowNode {
@@ -379,7 +379,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
   }
 
   /** A node which provides or processes a value.
-   *  
+   *
    *  These nodes need not execute at any specific point and in general do not execute at all.
    */
   sealed trait ValueNode extends Node {
@@ -408,12 +408,12 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
     // This stores the class of the value along with it so that nodes with equal values of different types (2.0 == 2) are not collapsed into a single node.
     override def label = ast.toString()
   }
-  
+
   /** A node which represents a variable in the program, with its value taken from another value and potentially processed.
-   *  
+   *
    *  These nodes are used to represent, for example, the output variables of futures. In that case, the input to this node
    *  may be a future and the output will be the value in the future or the input value if it is not a future.
-   *  
+   *
    *  This has manual case class features.
    */
   sealed class VariableNode(val ast: BoundVar, val binder: NamedAST.Z) extends Node with ValueNode with Product {
@@ -429,15 +429,18 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
       case Force.Z(_, _, _) => s"♭ $ast"
       case _ => s"$ast from ${shortString(binder.value)}"
     }
-    
+
     override val hashCode = ast.hashCode
     override def canEqual(o: Any): Boolean = o.isInstanceOf[VariableNode]
     override def equals(o: Any): Boolean = o match {
       case o: MethodNode => o == this
-      case o: VariableNode => o.ast == ast && o.binder == binder
+      case o: VariableNode => o.ast == ast
+        // TODO: This previous also checked `o.binder == binder`. But this breaks optimizations because any change will invalidate the analysis results.
+        //       It SHOULD be safe to ignore the binding site since all variables are supposed to be unique.
+        //       However, if inlining goes wrong then this could FUBAR everything.
       case _ => false
     }
-    
+
     def productElement(n: Int): Any = n match {
       case 0 => ast
       case 1 => binder
@@ -451,11 +454,11 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
       VariableNode(ast, path.find(_.boundVars contains ast).getOrElse(
         throw new IllegalArgumentException(s"$ast should be a variable bound on the path:\n${path.head}")))
     }
-    
+
     def apply(ast: BoundVar, binder: NamedAST.Z): VariableNode = {
       new VariableNode(ast, binder)
     }
-    
+
     def unapply(v: VariableNode): Option[(BoundVar, NamedAST.Z)] = {
       if (v == null) {
         None
@@ -466,7 +469,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
   }
 
   /** A special variable node for methods.
-   *  
+   *
    *  This node exists to carry the flowgraph instance. Most users can treat it as a normar VariableNode.
    */
   case class MethodNode(location: Method.Z, flowgraph: FlowGraph) extends { override val ast: BoundVar = location.name } with VariableNode(location.name, location.parent.get) with WithSpecificAST {
@@ -504,19 +507,19 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
   }
 
   // Control flow edges
-  
+
   /** Any edge that represents the fact that the a the source must be reached ("executed") before the destination.
    */
   sealed trait HappensBeforeEdge extends Edge {
     this: Product =>
 
   }
-  
+
   /** Any edge along which tokens flow within Orctimizer.
-   *  
+   *
    *  These edges represent potential rewrites in the token semantics. However, not all rewrites are
    *  TransitionEdges. TransitionEdge are not used to represent transition which involve executing
-   *  actions outside of Orc (such as site calls). TransitionEdge are used for futures reads (which 
+   *  actions outside of Orc (such as site calls). TransitionEdge are used for futures reads (which
    *  depend on an implicit context).
    */
   case class TransitionEdge(from: Node, trans: String, to: Node) extends Edge with HappensBeforeEdge {
@@ -525,17 +528,17 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
   }
 
   /** An ordering edge that does not directly carry tokens.
-   *  
+   *
    *  This is used to represent such things as calls to external or unknown methods which
    *  may perform any action.
    */
   sealed abstract class AfterEdge extends Edge with HappensBeforeEdge  {
     this: Product =>
-      
+
     override def style: String = "solid"
     override def color: String = "grey"
     override def label = "then"
-    
+
     /*
     override val hashCode = from.hashCode + to.hashCode*31
     override def canEqual(o: Any): Boolean = o.isInstanceOf[AfterEdge]
@@ -544,7 +547,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
       case _ => false
     }
     override def toString() = s"AfterEdge($from, $to)"
-    
+
     def productElement(n: Int): Any = n match {
       case 0 => from
       case 1 => to
@@ -553,7 +556,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
     override def productPrefix = "AfterEdge"
     */
   }
-  
+
   /*
   object AfterEdge {
     def apply(from: Node, to: Node): AfterEdge = {
@@ -568,7 +571,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
     }
   }
   */
-  
+
   /** An ordering edge attaching related parts inside an AST nodes graph.
    */
   case class CombinatorInternalOrderEdge(from: Node, trans: String, to: Node) extends AfterEdge {
@@ -579,7 +582,7 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
 
   /*
   /** An ordering edge which specifically states that the destination will execute after the Orctimizer AST node associated with the source is halted.
-   *  
+   *
    *  The destination node may not execute every time the source halts.
    */
   case class AfterHaltEdge(val from: Node, trans: String, val to: Node) extends AfterEdge {
@@ -588,16 +591,16 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
     override def label = "halt"
   }
   */
-  
+
   /** An ordering edge attaching an entry node to the exit of the same AST.
-   *  
+   *
    *  Every AST node is associated with such an edge.
    */
   case class EntryExitEdge(val ast: Expression.Z) extends AfterEdge {
     override def style: String = "dashed"
     override def color: String = "lavender"
     override def label = ""
-    
+
     val from = EntryNode(ast)
     val to = ExitNode(ast)
   }
@@ -614,30 +617,30 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
     */
   case class FutureValueSourceEdge(from: Node, to: TokenFlowNode) extends Edge {
     require(from.isInstanceOf[ExitNode] || from.isInstanceOf[ValueNode] || from == EverywhereNode)
-    
+
     override def style: String = "dotted"
     override def color: String = "blue"
     override def label = "⤸"
   }
 
   /** An edge which represents the flow of a value from one node to another.
-   *  
+   *
    *  Nodes may only have one output value, but they are allowed to have an arbitrary number
-   *  of inputs and may distinguish those inputs based on their source (usually based on 
-   *  variable names or value as compared to the arguments in the Orctimizer AST node). 
+   *  of inputs and may distinguish those inputs based on their source (usually based on
+   *  variable names or value as compared to the arguments in the Orctimizer AST node).
    */
   case class ValueEdge(from: Node, to: Node) extends Edge {
     override def style: String = "dashed"
     override def label = "▾"
   }
-  
+
   // TODO:
-  
+
   /*
   Add a value edge subtype which represents incoming values which will be published
   AND/OR
   Add a value edge subtype which represents incoming values which are arguments; They effect execution, but will not be published directly.
-  
+
   It is difficult to operate without these since it is very hard to tell the difference between ↧ call node values which are arguments and which are returns.
   What about seperating by which node they are attached to: Entry, Exit.
   The problem still exists for Force and Resolve, but those are much easier to handle.
@@ -645,6 +648,6 @@ object FlowGraph extends AnalysisRunner[(Expression.Z, Option[Method.Z]), FlowGr
   The entry node would need to have real information on it's output. It would still require another edge: connecting Force Entry with Exit.
   Without that there is no way to get the information since we cannot flow it through the intervening nodes in all cases (Delay).
   Maybe an AfterEdge. It is semantically correct (though not needed) and would be easy to find the other end of.
-  
+
   */
 }

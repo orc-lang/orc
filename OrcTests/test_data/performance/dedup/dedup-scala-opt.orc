@@ -33,6 +33,7 @@ val readChunkSize = 128 * 1024 * 1024
 
 val sha1 = DedupOrc.sha1 
 
+-- Lines: 12
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
 def readSegements(minimumSegmentSize, in) =
@@ -50,7 +51,7 @@ def readSegements(minimumSegmentSize, in) =
 			)
 	process(Chunk.empty(), 0)
 
-	
+-- Lines: 7
 {-- Publish some number of subchunks of chunk where each chunk is at least minimumSegmentSize long.  
 -}
 def segment(minimumSegmentSize, chunk) =
@@ -62,6 +63,7 @@ def segment(minimumSegmentSize, chunk) =
 		)
 	process(chunk, 0)
 
+-- Lines: 7
 {-- Compress a chunk with deduplication by publishing an existing compressed chuck if an identical one exists.
 -} 
 def compress(chunk, dedupPool, id) = (
@@ -73,10 +75,11 @@ def compress(chunk, dedupPool, id) = (
 	compChunk
 	)
 
+-- Lines: 2
 def getCompressedDataD(cchunk) =
     cchunk.compressedDataD() ; Rwait(100) >> getCompressedDataD(cchunk)
 
-
+-- Lines: 9
 def writeChunk(out, cchunk, isAlreadyOutput) = (
 	if isAlreadyOutput then
 		--printLogLine("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
@@ -90,6 +93,7 @@ def writeChunk(out, cchunk, isAlreadyOutput) = (
 		out.write(d)
 	)
 
+-- Lines: 20
 {-- Read sequential elements from the pool and write to the provided OutputStream.
 -}
 def write(out, outputPool) =
@@ -120,6 +124,7 @@ def write(out, outputPool) =
 	process((0, 0), 0) >> stop ;
 	printLogLine("Done: write")
 
+-- Lines: 8
 {-- Connect the various stages using branch combinators
 -}
 def dedup(in, out) =

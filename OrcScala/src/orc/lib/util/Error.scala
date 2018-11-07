@@ -13,21 +13,17 @@
 
 package orc.lib.util
 
-import orc.error.runtime.{ ArgumentTypeMismatchException, ProgramSignalledError }
+import orc.error.runtime.ProgramSignalledError
 import orc.types.{ Bot, SimpleFunctionType, StringType }
-import orc.values.sites.{ LocalSingletonSite, TypedSite }
-import orc.values.sites.compatibility.{ TotalSite, TotalSite1 }
+import orc.values.sites.{ LocalSingletonSite, TotalSite1Simple, TypedSite }
 
 /** The Error site throws an Orc runtime exception with a program supplied message.
   *
   * @author jthywiss
   */
-object Error extends TotalSite with TotalSite1 with TypedSite with Serializable with LocalSingletonSite {
-  def eval(x: AnyRef) = {
-    x match {
-      case s: String => throw new ProgramSignalledError(s)
-      case _ => throw new ArgumentTypeMismatchException(0, "String", orc.util.GetScalaTypeName(x))
-    }
+object Error extends TotalSite1Simple[String] with TypedSite with Serializable with LocalSingletonSite {
+  def eval(s: String) = {
+    throw new ProgramSignalledError(s)
   }
 
   def orcType = SimpleFunctionType(StringType, Bot)

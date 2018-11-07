@@ -288,7 +288,7 @@ final class Join(val p: PorcEClosure, val c: Counter, val t: Terminator, val val
     *
     * This may be called in multi-threaded mode.
     */
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary(allowInlining = true) @noinline
   def done(): Unit = {
     execution.runtime.potentiallySchedule(fastDone())
   }

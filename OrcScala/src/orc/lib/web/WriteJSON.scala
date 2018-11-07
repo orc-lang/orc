@@ -15,13 +15,14 @@ package orc.lib.web
 
 import orc.error.runtime.SiteException
 import orc.values.OrcRecord
-import orc.values.sites.{ LocalSingletonSite, UntypedSite }
-import orc.values.sites.compatibility.TotalSite1
+import orc.values.sites.{ UntypedSite }
+import orc.values.sites.TotalSite1Simple
+import orc.values.sites.LocalSingletonSite
 
 /**
   * @author dkitchin
   */
-object WriteJSON extends TotalSite1 with UntypedSite with Serializable with LocalSingletonSite {
+object WriteJSON extends TotalSite1Simple[AnyRef] with UntypedSite with Serializable with LocalSingletonSite {
 
   def eval(a: AnyRef): AnyRef = {
     convertToJson(a)

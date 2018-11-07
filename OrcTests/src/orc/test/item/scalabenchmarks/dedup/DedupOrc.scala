@@ -16,17 +16,18 @@ import java.security.MessageDigest
 import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration.Duration
 
+// Lines: 12
 case class CompressedChunkOrc(uncompressedSHA1: ArrayKey, uncompressedSize: Int) {
   private var outputChunkID: Int = -1
   def setOutputChunkID(i: Int) = synchronized {
-    if (outputChunkID < 0) { 
+    if (outputChunkID < 0) {
       outputChunkID = i
     }
   }
   def getOutputChunkID(): Int = synchronized {
     outputChunkID
   }
-  
+
   private val compressPromise = Promise[Array[Byte]]()
   def compressedData() = Await.result(compressPromise.future, Duration.Inf)
   def compressedDataD() = compressPromise.future.value.get.get
@@ -35,12 +36,13 @@ case class CompressedChunkOrc(uncompressedSHA1: ArrayKey, uncompressedSize: Int)
   }
 }
 
+// Lines: 5
 object DedupOrc {
   def sha1(chunk: Chunk): ArrayKey = new ArrayKey({
-  	val m = MessageDigest.getInstance("SHA-1")
-  	m.update(chunk.buffer, chunk.start, chunk.size)
-  	m.digest()
-	})
+    val m = MessageDigest.getInstance("SHA-1")
+    m.update(chunk.buffer, chunk.start, chunk.size)
+    m.digest()
+  })
 
   val rabin = new Rabin()
   val largeChunkMin = 2 * 1024 * 1024

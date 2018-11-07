@@ -17,32 +17,28 @@ is used by Truffle and may eventually replace the C2 JVM compiler. Also, the
 SubstrateVM (also occasionally called the GraalVM) is a separate non-JVM way
 to use Graal (the backend compiler) and not directly related to Truffle.
 
-You will note that this ecosystem is very confusing and a total mess. That is
-because it is currently a technology demo which is expected to be included in
-Java 9. For the moment, here are instructions on how to install a GraalVM that
-can run PorcE and how to connect it to this project. In addition, there are 
+You will note that this ecosystem is very confusing and a total mess. For 
+the moment, here are instructions on how to install a GraalVM that can run 
+PorcE and how to connect it to this project. In addition, there are 
 instructions for setting up a launch configuration for PorcE.
 
 Setup instructions
 ------------------
 
 1. Download GraalVM EE (Enterprise Edition) 1.0.0-rc7 from 
-   http://www.oracle.com/technetwork/oracle-labs/program-languages/downloads/index.html 
+   https://www.oracle.com/technetwork/oracle-labs/program-languages/downloads/index.html 
    (requires login) and unpack it to $UNPACK (any directory). You will need to replace 
    "$UNPACK" with the absolute path you unpacked to in all the further instructions.
 2. Add a new JRE in Eclipse (Eclipse Preferences -> Java / Installed JREs -> Add),
    type "Standard VM".
 3. Set:
-    * JRE home: $UNPACK/graalvm-ee-1.0.0-rc7/jre (NOT the root graalvm-ee-1.0.0-rc7 directory)
+    * JRE home: $UNPACK/graalvm-ee-1.0.0-rc7
     * JRE name: graalvm-ee-1.0.0-rc7
     * Default VM arguments: -XX:-UseJVMCIClassLoader
-4. Under JRE system libraries, Add External JARs:
-    * $UNPACK/graalvm-ee-1.0.0-rc7/jre/lib/truffle/truffle-api.jar
-    * $UNPACK/graalvm-ee-1.0.0-rc7/jre/lib/jvmci/graal.jar
-5. Add a Classpath Variable (Eclipse Preferences -> Java -> Build Path -> Classpath 
-   Variables) named GRAALVM_JRE and set it to "$UNPACK/graalvm-ee-1.0.0-rc7/jre". This allows
-   PorcE to find the annotation processor used by the Truffle code.
-6. Rebuild the PorcE project.
+4. Add/Update a Classpath Variable (Eclipse Preferences -> Java -> Build Path -> Classpath 
+   Variables) named GRAALVM_JRE and set it to "$UNPACK/graalvm-ee-1.0.0-rc7". This allows
+   PorcE to find the annotation processor and libraries used by the Truffle code.
+5. Rebuild the PorcE project.
 
 Launch instructions
 -------------------
@@ -62,4 +58,5 @@ Launch instructions
 Running PorcE from the Orc Eclipse plug-in is unsupported for now.
 
 
-NOTE: All of this will change when eventually when amp gets this all working on Java 10+.
+NOTE: All of this will change when eventually when GraalVM support JDK10+ and amp gets 
+this all working on Java 10+.

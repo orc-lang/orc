@@ -191,7 +191,7 @@ def simAll(data) =
 	eachArray(data) >swaption> sim(swaption) >> stop ;
 	data
 
-benchmarkSized("Swaptions-naive-scala-subroutines-opt", SwaptionData.nSwaptions() * SwaptionData.nTrials(),
+benchmarkSized("Swaptions-naive-opt", SwaptionData.nSwaptions() * SwaptionData.nTrials(),
 	{ loadData() }, simAll, SwaptionData.check)
 
 {-

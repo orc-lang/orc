@@ -255,7 +255,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
 
   /** Handle a successful completion.
     */
-  @TruffleBoundary(allowInlining = true)
+  @TruffleBoundary(allowInlining = true) @noinline
   def done(): Unit = {
     val s = CallClosureSchedulable(fastDone(), execution)
     SimpleWorkStealingSchedulerWrapper.shareSchedulableID(s, this)

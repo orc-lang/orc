@@ -13,19 +13,21 @@
 
 package orc.lib.util
 
+import orc.OrcRuntime
 import orc.types.SignalType
 import orc.values.Signal
-import orc.values.sites.{ LocalSingletonSite, TypedSite }
-import orc.values.sites.compatibility.{ CallContext, Site0 }
+import orc.values.sites.{ Site0Base, LocalSingletonSite, TypedSite }
 
 /** Cause the execution to dump the token state.
   *
   * @author amp
   */
-object DumpState extends Site0 with TypedSite with Serializable with LocalSingletonSite {
-  def call(callContext: CallContext) {
-    callContext.notifyOrc(orc.run.core.DumpState)
-    callContext.publish(Signal)
+object DumpState extends Site0Base with TypedSite with Serializable with LocalSingletonSite {
+  def getInvoker(runtime: OrcRuntime) = {
+    invoker(this) {  (callContext, _) =>
+      callContext.notifyOrc(orc.run.core.DumpState)
+      callContext.publish(Signal)
+    }
   }
 
   def orcType() = SignalType

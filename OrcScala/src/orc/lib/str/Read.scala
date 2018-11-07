@@ -16,25 +16,17 @@ package orc.lib.str
 import orc.ast.ext.{ Constant, Expression, ListExpr, RecordExpr, TupleExpr }
 import orc.compile.parse.{ OrcLiteralParser, ToTextRange }
 import orc.error.compiletime.ParsingException
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException }
 import orc.types.{ SimpleFunctionType, StringType, Top, Type }
-import orc.util.ArrayExtensions.Array1
 import orc.values.{ OrcRecord, OrcTuple }
-import orc.values.sites.{ LocalSingletonSite, TypedSite }
-import orc.values.sites.compatibility.TotalSite
+import orc.values.sites.{ TotalSite1Simple, LocalSingletonSite, TypedSite }
 
-object Read extends TotalSite with TypedSite with Serializable with LocalSingletonSite {
-  def evaluate(args: Array[AnyRef]): AnyRef = {
-    val parsedValue = args match {
-      case Array1(s: String) => {
+object Read extends TotalSite1Simple[String] with TypedSite with Serializable with LocalSingletonSite {
+  def eval(s: String): AnyRef = {
+    val parsedValue =
         OrcLiteralParser(s) match {
           case r: OrcLiteralParser.SuccessT[_] => r.get.asInstanceOf[Expression]
           case n: OrcLiteralParser.NoSuccess => throw new ParsingException(n.msg + " when reading \"" + s + "\"", ToTextRange(n.next.pos))
         }
-      }
-      case Array1(a) => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
     convertToOrcValue(parsedValue)
   }
   def convertToOrcValue(v: Expression): AnyRef = v match {

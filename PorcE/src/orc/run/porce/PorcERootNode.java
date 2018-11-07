@@ -14,6 +14,7 @@ package orc.run.porce;
 import static com.oracle.truffle.api.CompilerDirectives.transferToInterpreter;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.logging.Level;
 
 import scala.Option;
@@ -25,59 +26,145 @@ import orc.ast.porc.Variable;
 import orc.error.runtime.ArityMismatchException;
 import orc.error.runtime.HaltException;
 import orc.run.porce.call.CatchSelfTailCall;
+import orc.run.porce.profiles.VisibleConditionProfile;
 import orc.run.porce.runtime.KilledException;
+import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.SourceSectionFromPorc;
+import orc.run.porce.runtime.CallPorcERootNodeSchedulable;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.utilities.AssumedValue;
 
-public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
+public class PorcERootNode extends RootNode implements HasPorcNode, HasId, ProfilingScope, NodeBaseInterface {
 
-    // TODO: PERFORMANCE: All these counters should probably just be volatile and let the accesses be racy (like the JVM does for call counters).
+    // TODO: PERFORMANCE: Replace these with CountSumValue.
     // The challenge of using racy counters is to make sure that the values in them are never invalid to the point of breaking the semantics.
     private final AtomicLong totalSpawnedTime = new AtomicLong(0);
     private final AtomicLong totalSpawnedCalls = new AtomicLong(0);
-    private final AtomicLong totalCalls = new AtomicLong(0);
 
-    /*
-     *  The solution for a racy version is to use a long and split it into two "fields" one for each value (as an int).
-     *  To make sure the write is a single atomic 64-bit write I may need to use opaque writes from JRE 9. Volatile is
-     *  enough, but also includes a memory barrier that we don't need to want.
-    private volatile long both = 0;
-    private final int getTotalSpawnedTime(long both) {
-	return (int) (both & 0xffffffff);
+    private final LongAdder totalTime = new LongAdder();
+    private final LongAdder totalSiteCalls = new LongAdder();
+    private final LongAdder totalContinuationSpawns = new LongAdder();
+    private final LongAdder totalCalls = new LongAdder();
+
+    @SuppressWarnings("boxing")
+    private static final AssumedValue<Boolean> isProfilingFlag =
+        new AssumedValue<Boolean>(SpecializationConfiguration.ProfileCallGraph);
+    private static final boolean profileTime = SpecializationConfiguration.ProfileFunctionTime;
+
+    @Override
+    public ProfilingScope getProfilingScope() {
+        return this;
     }
-    private final int getTotalSpawnedCalls(long both) {
-	return (int) (both >> 32);
-    }
-    */
 
     public final long getTotalSpawnedTime() {
-	return totalSpawnedTime.get();
-    }
-    public final long getTotalSpawnedCalls() {
-	return totalSpawnedCalls.get();
-    }
-    public final long getTotalCalls() {
-	return totalCalls.get();
+        return totalSpawnedTime.get();
     }
 
+    public final long getTotalSpawnedCalls() {
+        return totalSpawnedCalls.get();
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = false)
+    public final long getTotalTime() {
+        return totalTime.sum();
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = false)
+    public final long getTotalCalls() {
+        return totalCalls.sum();
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = false)
+    public long getSiteCalls() {
+        return totalSiteCalls.sum();
+    }
+
+    @Override
+    @TruffleBoundary(allowInlining = false)
+    public long getContinuationSpawns() {
+        return totalContinuationSpawns.sum();
+    }
+
+    @Override
+    @SuppressWarnings("boxing")
+    public final boolean isProfilingComplete() {
+        return !isProfilingFlag.get();
+    }
+
+    @Override
+    @SuppressWarnings("boxing")
+    public final boolean isProfiling() {
+        return CompilerDirectives.inCompiledCode() && isProfilingFlag.get();
+    }
+
+    @Override
+    public long getTime() {
+        if (profileTime && isProfiling()) {
+            return System.nanoTime();
+        } else {
+            return 0;
+        }
+    }
+
+    @TruffleBoundary(allowInlining = false)
+    private static void longAdderAdd(LongAdder adder, long n) {
+        adder.add(n);
+    }
+
+
+    @Override
+    public void removeTime(long start) {
+        if (profileTime && isProfiling()) {
+            longAdderAdd(totalTime, -(getTime() - start));
+        }
+    }
+
+    @Override
+    final public void addTime(long start) {
+        if (isProfiling()) {
+            longAdderAdd(totalCalls, 1);
+            if (profileTime) {
+                longAdderAdd(totalTime, getTime() - start);
+            }
+        }
+    }
+
+    @Override
+    final public void incrSiteCall() {
+        if (isProfiling()) {
+            longAdderAdd(totalSiteCalls, 1);
+        }
+    }
+
+    @Override
+    final public void incrContinuationSpawn() {
+        if (isProfiling()) {
+            longAdderAdd(totalContinuationSpawns, 1);
+        }
+    }
+
+
     @CompilationFinal
-    private boolean internal = false;
+    private boolean internal = true;
 
     @CompilationFinal
     private long timePerCall = -1;
-    @CompilationFinal
-    private boolean totalCallsDone = false;
 
     final public void addSpawnedCall(long time) {
         if (timePerCall < 0) {
@@ -85,12 +172,13 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             long v = totalSpawnedCalls.getAndIncrement();
             if (v >= SpecializationConfiguration.MinCallsForTimePerCall) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
+                getTimePerCall();
             }
         }
     }
 
     final public boolean shouldTimeCall() {
-    	return /*CompilerDirectives.inCompiledCode() &&*/ timePerCall < 0;
+    	return timePerCall < 0;
     }
 
     final public long getTimePerCall() {
@@ -113,13 +201,15 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         }
     }
 
-    private Option<PorcAST> porcNode = Option.apply(null);
+    private Option<PorcAST.Z> porcNode = Option.apply(null);
 
-    public void setPorcAST(final PorcAST ast) {
+    @Override
+    public void setPorcAST(final PorcAST.Z ast) {
         CompilerAsserts.neverPartOfCompilation();
         porcNode = Option.apply(ast);
         section = SourceSectionFromPorc.apply(ast);
-        internal = !(ast instanceof orc.ast.porc.Method);
+        internal = !(ast.value() instanceof orc.ast.porc.Method);
+        internedName = getName().intern();
     }
 
     @Override
@@ -128,8 +218,15 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     }
 
     @Override
-    public Option<PorcAST> porcNode() {
+    public Option<PorcAST.Z> porcNode() {
         return porcNode;
+    }
+
+    @CompilationFinal
+    private String internedName;
+    @Override
+    public String getContainingPorcCallableName() {
+        return internedName;
     }
 
     @CompilationFinal
@@ -143,9 +240,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     @Override
     public String getName() {
         String name = "<no AST>";
-        scala.Option<PorcAST> optAst = porcNode();
+        scala.Option<PorcAST.Z> optAst = porcNode();
         if (optAst.isDefined()) {
-            final PorcAST ast = optAst.get();
+            final PorcAST ast = (PorcAST) optAst.get().value();
             name = "<N/A>";
             if (ast instanceof orc.ast.hasOptionalVariableName) {
                 scala.Option<String> optName = ((orc.ast.hasOptionalVariableName) ast).optionalVariableName();
@@ -161,7 +258,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     @Override
     public int getId() {
-        return ((Integer) ((ASTWithIndex) porcNode().get()).optionalIndex().get()).intValue();
+        return ((Integer) ((ASTWithIndex) porcNode().get().value()).optionalIndex().get()).intValue();
     }
 
     @Child
@@ -181,12 +278,12 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     }
 
     public Seq<Variable> getArgumentVariables() {
-        assert this.argumentVariables != null;
+        assert this.argumentVariables != null : this;
         return this.argumentVariables;
     }
 
     public Seq<Variable> getClosureVariables() {
-        assert this.closureVariables != null;
+        assert this.closureVariables != null : this;
         return this.closureVariables;
     }
 
@@ -197,19 +294,21 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
     private RootCallTarget trampolineCallTarget;
 
     public RootCallTarget getTrampolineCallTarget() {
-	if (trampolineCallTarget == null) {
-	    CompilerDirectives.transferToInterpreterAndInvalidate();
-	    atomic(() -> {
-		if (trampolineCallTarget == null) {
-		    RootCallTarget v = Truffle.getRuntime().createCallTarget(new InvokeWithTrampolineRootNode(getLanguage(PorcELanguage.class), this, execution));
-		    // TODO: Use the new Java 9 fence when we start requiring Java 9
-		    // for PorcE.
-		    NodeBase.UNSAFE.fullFence();
-		    trampolineCallTarget = v;
-		}
-	    });
-	}
-	return trampolineCallTarget;
+        if (trampolineCallTarget == null) {
+            CompilerDirectives.transferToInterpreterAndInvalidate();
+            atomic(() -> {
+                if (trampolineCallTarget == null) {
+                    // TODO: This should return this root node directly once we are no longer using getTimePerCall and when UniversalTCO is off.
+                    RootCallTarget v = Truffle.getRuntime().createCallTarget(
+                            new InvokeWithTrampolineRootNode(getLanguage(PorcELanguage.class), this, execution));
+                    // TODO: Use the new Java 9 fence when we start requiring Java 9
+                    // for PorcE.
+                    NodeBase.UNSAFE.fullFence();
+                    trampolineCallTarget = v;
+                }
+            });
+        }
+        return trampolineCallTarget;
     }
 
     private final PorcEExecution execution;
@@ -222,14 +321,23 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
         this.body = insert(body);
         this.nArguments = nArguments;
         this.nCaptured = nCaptured;
-	this.execution = execution;
+        this.execution = execution;
         this.methodKey = methodKey;
-	this.flushAllCounters = insert(FlushAllCounters.create(-1, execution));
-	this.flushAllCounters.setTail(true);
+        this.flushAllCounters = insert(FlushAllCounters.create(-1, execution));
+        this.flushAllCounters.setTail(true);
     }
 
+    /**
+     * @return An object which is unique to the Orc method containing this root node.
+     *
+     * The returned object is generally the Porc method name as a porc.Var.
+     */
     public Object getMethodKey() {
         return methodKey;
+    }
+
+    public PorcEExecution getExecution() {
+        return execution;
     }
 
     public Expression getBody() {
@@ -242,7 +350,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
 
     @Override
     public Object execute(final VirtualFrame frame) {
-	if (!SpecializationConfiguration.UniversalTCO) {
+        if (!SpecializationConfiguration.UniversalTCO) {
             final Object[] arguments = frame.getArguments();
             if (arguments.length != nArguments + 1) {
                 transferToInterpreter();
@@ -252,19 +360,24 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             if (captureds.length != nCaptured) {
                 throw InternalPorcEError.capturedLengthError(nCaptured, captureds.length);
             }
-	}
+        }
 
-	if (!totalCallsDone) {
-	    if (totalCalls.incrementAndGet() >= 290) {
-		CompilerDirectives.transferToInterpreterAndInvalidate();
-		totalCallsDone = true;
-	    }
-	}
+        final PorcERuntime r = execution.runtime();
+        PorcERuntime.StackDepthState state = r.incrementAndCheckStackDepth(inlineProfile);
+        final int previousStackHeight = state.previousDepth();
+        final boolean doSpawn = !inlineProfile.profile(state.growthAllowed());
+        if (CompilerDirectives.injectBranchProbability(CompilerDirectives.SLOWPATH_PROBABILITY, doSpawn)) {
+            createSchedulableAndSchedule(frame.getArguments());
+            return PorcEUnit.SINGLETON;
+        }
+
+        long startTime = getTime();
 
         try {
             final Object ret = body.execute(frame);
             // Flush all negative counters to trigger halts quickly
             flushAllCounters.execute(frame);
+            addTime(startTime);
             return ret;
         } catch (KilledException | HaltException e) {
             transferToInterpreter();
@@ -276,7 +389,18 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId {
             transferToInterpreter();
             execution.notifyOfException(e, this);
             return PorcEUnit.SINGLETON;
+        } finally {
+            r.decrementStackDepth(previousStackHeight, unrollProfile);
         }
+    }
+
+    private final VisibleConditionProfile inlineProfile = VisibleConditionProfile.createBinaryProfile();
+    private final ConditionProfile unrollProfile = ConditionProfile.createBinaryProfile();
+
+    @TruffleBoundary(allowInlining = false)
+    private void createSchedulableAndSchedule(final Object[] args) {
+//        Logger.info(() -> "Trampolining " + this + " " + java.util.Arrays.toString(args));
+        execution.runtime().schedule(new CallPorcERootNodeSchedulable(this.getTrampolineCallTarget(), args));
     }
 
     public static PorcERootNode create(final PorcELanguage language, final FrameDescriptor descriptor,

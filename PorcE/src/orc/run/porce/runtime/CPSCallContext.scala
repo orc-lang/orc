@@ -171,6 +171,6 @@ class MaterializedCPSCallContext(_execution: PorcEExecution, _p: PorcEClosure, _
   }
 
   override def toString() = {
-    s"MaterializedCPSCallContext@${hashCode().formatted("%x")}(${halted.get()})"
+    s"MaterializedCPSCallContext@${hashCode().formatted("%08x")}(${halted.get()})"
   }
 }

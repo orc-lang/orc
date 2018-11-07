@@ -13,13 +13,12 @@
 
 package orc.values.sites.compatibility
 
-import orc.error.{ NotYetImplementedException, OrcException }
-import orc.error.compiletime.typing.TypeException
+import orc.error.OrcException
 import orc.error.runtime.{ ArityMismatchException, HaltException, RightException }
-import orc.types.{ Bot, RecordType, Type }
+import orc.types.RecordType
 import orc.util.ArrayExtensions.{ Array0, Array1, Array2, Array3 }
-import orc.values.{ OrcRecord, OrcValue }
-import orc.values.sites.{ SiteMetadata, Range, SpecificArity, TypedSite }
+import orc.values.OrcRecord
+import orc.values.sites.{ Range, SpecificArity, TypedSite }
 
 trait Site extends orc.values.sites.Site {
     self =>
@@ -125,16 +124,6 @@ trait ScalaPartialSite extends DirectSite with EffectFreeAfterPubSite {
   def evaluate(args: Array[AnyRef]): Option[AnyRef]
 
   override def publications: Range = super.publications intersect Range(0, 1)
-}
-
-trait UnimplementedSite extends Site {
-  override def name = "(unimplemented)"
-  def orcType(argTypes: List[Type]): Nothing = {
-    throw new NotYetImplementedException("Site " + this + " is unimplemented.")
-  }
-  def call(args: Array[AnyRef], callContext: CallContext): Nothing = {
-    throw new NotYetImplementedException("Site " + this + " is unimplemented.")
-  }
 }
 
 /* Enforce arity only */

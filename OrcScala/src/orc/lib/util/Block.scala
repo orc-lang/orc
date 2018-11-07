@@ -13,18 +13,20 @@
 
 package orc.lib.util
 
+import orc.OrcRuntime
 import orc.types.Bot
-import orc.values.sites.{ LocalSingletonSite, TypedSite }
-import orc.values.sites.compatibility.{ CallContext, Site0 }
+import orc.values.sites.{ Site0Base, LocalSingletonSite, TypedSite }
 
 /** A site that just blocks forever. However it does so in a way that the interpreter knows
-  * about so it is handled more efficiently and will not prevent hte interpreter from exiting.
+  * about so it is handled more efficiently and will not prevent the interpreter from exiting.
   *
   * @author amp
   */
-object Block extends Site0 with TypedSite with Serializable with LocalSingletonSite {
-  def call(callContext: CallContext) {
-    callContext.discorporate()
+object Block extends Site0Base with TypedSite with Serializable with LocalSingletonSite {
+  def getInvoker(runtime: OrcRuntime) = {
+    invoker(this) {  (callContext, _) =>
+      callContext.discorporate()
+    }
   }
 
   def orcType() = Bot

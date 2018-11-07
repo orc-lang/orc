@@ -20,7 +20,7 @@ import orc.error.runtime.UncallableValueException
 
 import InvocationBehaviorUtilities._
 
-abstract class TargetValueAndArgumentClassSpecializedInvoker(target: AnyRef, argumentClss: Array[Class[_]]) extends Invoker {
+abstract class TargetValueAndArgumentClassSpecializedInvoker(val target: AnyRef, val argumentClss: Array[Class[_]]) extends Invoker {
   def this(target: AnyRef, initialArgument: Array[AnyRef]) = {
     this(target, initialArgument.map(valueType))
   }
@@ -31,7 +31,7 @@ abstract class TargetValueAndArgumentClassSpecializedInvoker(target: AnyRef, arg
   }
 }
 
-abstract class TargetClassAndArgumentClassSpecializedInvoker(targetCls: Class[_], argumentClss: Array[Class[_]]) extends Invoker {
+abstract class TargetClassAndArgumentClassSpecializedInvoker(val targetCls: Class[_], val argumentClss: Array[Class[_]]) extends Invoker {
   def this(initialTarget: AnyRef, initialArgument: Array[AnyRef]) = {
     this(valueType(initialTarget), initialArgument.map(valueType))
   }

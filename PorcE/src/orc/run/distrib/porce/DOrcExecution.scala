@@ -50,7 +50,7 @@ abstract class DOrcExecution(
     options: OrcExecutionOptions,
     eventHandler: OrcEvent => Unit,
     override val runtime: DOrcRuntime)
-  extends PorcEExecution( /* node, options,*/ runtime, eventHandler)
+  extends PorcEExecution( /* node, options,*/ runtime, eventHandler, options)
   with DistributedInvocationInterceptor
   with ValueMarshaler
   with ExecutionMashaler
@@ -62,7 +62,7 @@ abstract class DOrcExecution(
 
   Logger.ProgLoad.fine("PorcToPorcE compile start")
   val startTime = System.nanoTime
-  val (programPorceAst, programCallTargetMap) = PorcToPorcE.method(programAst, this)
+  val (programPorceAst, programCallTargetMap) = porcToPorcE.method(programAst)
   Logger.ProgLoad.fine(s"PorcToPorcE compile finish (compile duration ${(System.nanoTime - startTime) / 1.0e9} s)")
 
   type ExecutionId = String
@@ -232,7 +232,7 @@ class DOrcFollowerExecution(
   }
 
   {
-    val (_, map) = PorcToPorcE.method(programAst, this)
+    val (_, map) = porcToPorcE.method(programAst)
 
     setCallTargetMap(map)
 

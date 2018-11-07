@@ -35,6 +35,7 @@ public class CatchTailDispatch extends Dispatch {
         this.loop = TailCallLoop.create(execution);
     }
 
+    @SuppressWarnings("boxing")
     @Override
     public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
         CompilerAsserts.compilationConstant(isTail);
@@ -49,6 +50,7 @@ public class CatchTailDispatch extends Dispatch {
         }
     }
 
+    @SuppressWarnings("boxing")
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
         CompilerAsserts.compilationConstant(isTail);

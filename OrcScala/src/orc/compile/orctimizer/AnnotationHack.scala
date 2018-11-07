@@ -17,7 +17,15 @@ import orc.values.sites.DirectSite
 import orc.DirectInvoker
 import orc.OrcRuntime
 import orc.values.sites.Effects
+import orc.values.sites.InlinableInvoker
 import orc.values.Signal
+
+object OrcAnnotation {
+  object Invoker extends DirectInvoker with InlinableInvoker {
+    def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = true
+    def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = Signal
+  }
+}
 
 class OrcAnnotation extends DirectSite {
   override def publications: orc.values.sites.Range = orc.values.sites.Range(1, 1)
@@ -25,12 +33,7 @@ class OrcAnnotation extends DirectSite {
   override def timeToHalt: orc.values.sites.Delay = orc.values.sites.Delay.NonBlocking
   override def effects: Effects = Effects.BeforePub
 
-  class Invoker extends DirectInvoker {
-    def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = true
-    def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = Signal
-  }
-
-  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = new Invoker
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = OrcAnnotation.Invoker
 }
 
 // FIXME: Sequentialize causes objects to fail to ever fill their fields. This results in what appears to be deadlock.

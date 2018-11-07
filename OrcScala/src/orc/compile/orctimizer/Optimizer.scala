@@ -147,7 +147,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               e3
           }
         })
-      }      
+      }
       override val onArgument = {
         case e => {
           val e1 = performOpts(e) match {
@@ -174,7 +174,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         }
       }
     }
-  
+
     val r = optimizationTransform(e)
 
     r
@@ -192,9 +192,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   val FutureElim = OptFull("future-elim") { (e, a) =>
     def isFutureEliminable(future: NamedAST.Z, body: Expression.Z): Boolean = {
       def byNonBlocking1 = a.delayOf(body).maxFirstPubDelay == ComputationDelay() && (a.publicationsOf(body) only 1)
-      
+
       def surroundingFutureIsForced = {
-        val surroundingFuture = future.parents.tail.collectFirst({ case FieldFuture.Z(b) => b; case Future.Z(b) => b })        
+        val surroundingFuture = future.parents.tail.collectFirst({ case FieldFuture.Z(b) => b; case Future.Z(b) => b })
         surroundingFuture match {
           case None => false
           case Some(surroundingF) =>
@@ -202,12 +202,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             alreadyForced contains surroundingF
         }
       }
-      
+
       val sequentialize = AnnotationHack.inAnnotation[Sequentialize](body)
-      
+
       sequentialize || (byNonBlocking1 && !surroundingFutureIsForced)
     }
-    
+
     e match {
       case Future.Z(body) => {
         if (isFutureEliminable(e, body))
@@ -216,8 +216,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           None
       }
       case n @ New.Z(self, _, fields, _) => {
-        // FIXME: Allow future elimination on fields that reference one another. 
-        //  At least if they form a DAG. This would still require a way to 
+        // FIXME: Allow future elimination on fields that reference one another.
+        //  At least if they form a DAG. This would still require a way to
         //  reference the new object before it is initialized.
         var changed = false
         val newFields = fields.map({
@@ -275,7 +275,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           //Logger.info(s"Failed to apply future-force-elim $fforces $publications\nfuture { ${e.value.toString.take(100)} }\n>$x>\n${f.value.toString.take(100)}")
           None
         }
-      case _ => 
+      case _ =>
         None
     }
   }
@@ -286,7 +286,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         def eliminateNonFutures() = {
           val values = (xs zip vs).map(v => (v._1, v._2.value, a.valuesOf(v._2)))
           val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).futures.nonEmpty)
-          
+
           val (newXs, newVs) = fs.unzip
           lazy val argumentMapping = nfs.map(p => (p._1, p._2.value)).toMap[Argument, Argument]
           lazy val newBody = body.value.substAll(argumentMapping)
@@ -299,24 +299,24 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
             Some(newBody)
           }
         }
-        
+
         def eliminateDuplicateForces() = {
           def findParentForce(v: Argument) = {
             def isV(w: Argument.Z) = w.value == v
             val parents = e.parents.tail
-            parents.collectFirst({ 
-              case Force.Z(xs, vs, _) if vs.exists(isV) => xs(vs.indexWhere(isV)) 
+            parents.collectFirst({
+              case Force.Z(xs, vs, _) if vs.exists(isV) => xs(vs.indexWhere(isV))
             })
           }
-  
+
           val allInformation = (xs, vs.view.force, vs.map(v => findParentForce(v.value)).view.force).zipped
-          val nfs = allInformation.collect({ 
+          val nfs = allInformation.collect({
             case (x, _, Some(y)) => (x, y)
           }).toMap[Argument, Argument]
-          val fs = allInformation.collect({ 
+          val fs = allInformation.collect({
             case (x, v, None) => (x, v.value)
           }).toSeq
-          
+
           val (newXs, newVs) = fs.unzip
           val newBody = body.value.substAll(nfs)
           if (nfs.isEmpty)
@@ -331,7 +331,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
-  
+
   val UnforcedRefElim = OptFull("unforced-ref-elim") { (e, a) =>
     // Remove references to variables that are not forced when a forced version exists in scope
     e match {
@@ -349,8 +349,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
-  
-  val SequentializeForce = OptFull("sequentialize-force") { (e, a) =>    
+
+  val SequentializeForce = OptFull("sequentialize-force") { (e, a) =>
     e match {
       case Force.Z(xs, vs, body) if xs.size > 1 => {
         val pairs = xs zip vs
@@ -493,11 +493,11 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
-  
+
   val OtherwiseElim = OptFull("otherwise-elim") { (e, a) =>
     e match {
       case Otherwise.Z(f, g) if a.publicationsOf(f) > 0 => Some(f.value)
-      case Otherwise.Z(f, g) if !a.effects(f) && (a.publicationsOf(f) only 0) && 
+      case Otherwise.Z(f, g) if !a.effects(f) && (a.publicationsOf(f) only 0) &&
         a.delayOf(f).maxHaltDelay == ComputationDelay() => Some(g.value)
       case _ => None
     }
@@ -508,7 +508,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     // FIXME: Reenable this when DelayAnalysis is fixed for recursive functions.
     //case (Trim.Z(f), a) if a.publicationsOf(f) <= 1 && a.delayOf(f).maxHaltDelay == ComputationDelay() && !a.effects(f) => f.value
   }
-  
+
   def newName(x: BoundVar) = {
     new BoundVar(Some(id"$x~"))
   }
@@ -602,16 +602,18 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     var n = 0
     val countExpressions = new Transform {
       override val onExpression = {
-        case e: Argument.Z => e.value 
+        case e: Argument.Z => e.value
         case e => n += 1; e.value
       }
     }
     countExpressions(e)
     n
   }
-  
+
   val inlineCostThreshold = co.options.optimizationFlags("orct:inline-threshold").asInt(15)
   val higherOrderInlineCostThreshold = co.options.optimizationFlags("orct:higher-order-inline-threshold").asInt(200)
+
+  // TODO: Add cloning optimization which is applicable to recursive functions.
 
   val Inline = OptFull("inline") { (e, a) =>
     // True if e.parent is `iflenient`
@@ -634,16 +636,47 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                     case Zipper(`name`, _) => n += 1000; name
                   }
                   override val onExpression = {
-                    case Call.Z(Zipper(`name`, _), _, _) => n += 1; e.value 
+                    case Call.Z(Zipper(`name`, _), _, _) => n += 1; e.value
                     case a: Argument.Z if onArgument.isDefinedAt(a) => onArgument(a)
                   }
                 }
                 countCalls(scope)
                 n
               }
-              
+
               lazy val hasCapturedVariables = {
-                (body.freeVars -- formals).nonEmpty 
+                (body.freeVars -- formals).nonEmpty
+              }
+              lazy val localClosureInstance = {
+                // Trace back through simple operations (force and branch) and look for a direct reference to the function.
+                // If we find it then we are directly using a local instance instead of one stored or passed by parameter.
+
+                def traceLocalReferences(e: Expression.Z, x: BoundVar): Boolean = {
+                  // Logger.info(s"$x\n${e.value.toString.take(50)}\n${e.parents.find(_.boundVars.contains(x)).map(_.value).toString.take(50)}")
+                  e.parents.find(_.boundVars.contains(x)) match {
+                    case Some(e1 @ Force.Z(xs, vs, _)) if xs contains x =>
+                      vs(xs.indexOf(x)).value match {
+                        case x1: BoundVar =>
+                          traceLocalReferences(e1, x1)
+                        case _ => false
+                      }
+                    case Some(e1 @ Branch.Z(x1: BoundVar.Z, `x`, _)) =>
+                      traceLocalReferences(e1, x1.value)
+                    case Some(e1 @ Branch.Z(GetMethod.Z(x1: BoundVar.Z), `x`, _)) =>
+                      traceLocalReferences(e1, x1.value)
+                    case Some(e1 @ Branch.Z(Future.Z(x1: BoundVar.Z), `x`, _)) =>
+                      traceLocalReferences(e1, x1.value)
+                    case Some(e1 @ Branch.Z(Future.Z(Resolve.Z(_, x1: BoundVar.Z)), `x`, _)) =>
+                      traceLocalReferences(e1, x1.value)
+                    case Some(Zipper(d: DeclareMethods, _)) if d.boundVars contains name =>
+                      true
+                    case _ => false
+                  }
+                }
+                target.value match {
+                  case t: BoundVar => traceLocalReferences(e, t)
+                  case _ => false
+                }
               }
               lazy val isRecursive1 = e.parents.exists {
                 case Routine.Z(`name`, _, _, _, _, _) => true
@@ -678,13 +711,13 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                 }
                 a.valuesOf(arg).exists(isMethod)
               }
-              
-              //Logger.finer(s"Attempting inline of $name at ${e.value}: $isRecursive1 $isRecursive2 $cost $hasClosureArgument $hasCapturedVariables")
-              if (isRecursive || (target != name && hasCapturedVariables)) {
+
+              Logger.finer(s"Attempting inline of $name at ${e.value}: $isRecursive1 $isRecursive2 $cost (< $inlineCostThreshold) $hasClosureArgument $localClosureInstance $hasCapturedVariables")
+              if (isRecursive || (!localClosureInstance && hasCapturedVariables)) {
                 // Never inline recursive functions or functions with captured variables where we are not referencing the function directly.
                 None
               } else if (directCallCount <= 1 || cost < inlineCostThreshold || (cost < higherOrderInlineCostThreshold && hasClosureArgument)) {
-                Some(renameVariables(body)(Map() ++ (formals zip args.map(_.value)), 
+                Some(renameVariables(body)(Map() ++ (formals zip args.map(_.value)),
                     Map() ++ (tformals zip targs.getOrElse(Seq()).map(_.value))))
               } else {
                 None
@@ -699,7 +732,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
-  
+
   val MethodElim = Opt("method-elim") {
     case (DeclareMethods.Z(methods, b), a) if (b.freeVars & methods.map(_.name).toSet).isEmpty => b.value
   }
@@ -707,7 +740,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   case object OptimizationNotApplicableException extends RuntimeException
   def abortOptimization() = throw OptimizationNotApplicableException
   def attemptOptimization[T](f: => Option[T]): Option[T] = try { f } catch { case OptimizationNotApplicableException => None }
-  
+
   val TupleElim = OptFull("tuple-elim") { (e, a) =>
     // We use exceptions for flow control (see abortOptimization and attemptOptimization). Think in ML-style and you should feel OK about it.
     e match {
@@ -721,17 +754,17 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                 //Logger.finer(s"Tuple arity: failed due to size node value $v")
                 abortOptimization()
             }
-            case v => 
+            case v =>
               //Logger.finer(s"Tuple arity: failed due to size value $v")
               abortOptimization()
           })
           if (sizeVs.size != 1) abortOptimization()
           val size = sizeVs.head
-          
+
           //Logger.finer(s"TupleArityChecker(${tupleArg.value}, $size)")
-          
+
           val tupleSizes = a.valuesOf(tupleArg).toSet.map({
-            case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), elements, _))) => 
+            case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), elements, _))) =>
               elements.size
             case _ => abortOptimization()
           })
@@ -755,18 +788,18 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           })
           if (indexVs.size != 1) abortOptimization()
           val index = indexVs.head
-          
+
           //Logger.finer(s"Tuple get ${e.value}: target = ${a.valuesOf(targetArg)} index = $index")
 
           val values = a.valuesOf(targetArg).toSet.map({
-            case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), elements, _))) if elements.size > index => 
+            case NodeValue(ExitNode(Call.Z(Constant.Z(TupleConstructor), elements, _))) if elements.size > index =>
               elements(index)
             case v =>
               //Logger.finer(s"Tuple get ${e.value}: failed due to tuple value $v")
               abortOptimization()
           })
           //Logger.finer(s"Tuple get ${e.value}: values = ${values.map(_.value)}")
-          
+
           if (values.size != 1) abortOptimization()
           val value = values.head
 
@@ -787,7 +820,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
-  
+
   /*
   val LiftForce = OptFull("lift-force") { (e, a) =>
     import a.ImplicitResults._

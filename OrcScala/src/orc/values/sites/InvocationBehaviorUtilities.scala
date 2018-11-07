@@ -24,8 +24,9 @@ object InvocationBehaviorUtilities {
     */
   @inline
   final def valueHasType(arg: AnyRef, cls: Class[_]): Boolean = {
-    (arg == null && (arg == null || !cls.isPrimitive())) ||
-    (arg != null && cls.isInstance(arg))
+    (arg == null && cls == null) ||
+    (arg == null && cls != null && !cls.isPrimitive()) ||
+    (arg != null && cls != null && cls.isInstance(arg))
   }
 
   @inline

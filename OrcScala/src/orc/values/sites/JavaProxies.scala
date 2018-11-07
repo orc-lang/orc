@@ -109,7 +109,7 @@ object JavaCall {
       val memberName = _memberName.intern()
       val cls = this.cls
       val javaField = cls.getFieldOption(memberName)
-      new SimpleAccessor {
+      new InlinableAccessor {
         def canGet(target: AnyRef): Boolean = {
           cls.isInstance(target)
         }
@@ -123,7 +123,7 @@ object JavaCall {
     def getStaticMemberAccessor(memberName: String): Accessor = {
       val cls = this.cls
       val javaField = cls.getFieldOption(memberName)
-      new SimpleAccessor {
+      new InlinableAccessor {
         def canGet(target: AnyRef): Boolean = {
           cls == target
         }
@@ -145,7 +145,7 @@ object JavaCall {
 
         // ARRAYS
         case (_, Array1(l: java.lang.Long)) if targetCls.isArray() => {
-          Some(new DirectInvoker {
+          Some(new DirectInvoker with InlinableInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
               target.getClass().isArray() && arguments.length == 1 && arguments(0).isInstanceOf[java.lang.Long]
             }
@@ -159,7 +159,7 @@ object JavaCall {
           })
         }
         case (_, Array1(_: BigInt | _: java.lang.Integer)) if targetCls.isArray() => {
-          Some(new DirectInvoker {
+          Some(new DirectInvoker with InlinableInvoker {
             def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
               target.getClass().isArray() && arguments.length == 1 &&
               (arguments(0).isInstanceOf[BigInt] || arguments(0).isInstanceOf[java.lang.Long] || arguments(0).isInstanceOf[java.lang.Integer])
@@ -229,8 +229,6 @@ object JavaCall {
   }
 }
 
-trait SimpleAccessor extends Accessor
-
 /**
   * @author jthywiss, amp
   */
@@ -296,7 +294,7 @@ sealed abstract class InvocableInvoker(
           }
           arguments
         }
-        Logger.finer(s"Invoking Java method ${JavaCall.classNameAndSignature(targetCls, invocable.getName, invocable.parameterTypes.toList)} with (${finalArgs.map(JavaCall.valueAndType).mkString(", ")})")
+        // Some Java Proxy code is partially evaluated and Logging breaks that: Logger.finer(s"Invoking Java method ${JavaCall.classNameAndSignature(targetCls, invocable.getName, invocable.parameterTypes.toList)} with (${finalArgs.map(JavaCall.valueAndType).mkString(", ")})")
         val r = orc.run.StopWatches.javaImplementation {
           // The returnType cast does not add any static information, but it enables runtime optimizations in Graal.
           boxedReturnType.cast(mh.invokeExact(theObject, finalArgs)).asInstanceOf[AnyRef]
@@ -319,7 +317,7 @@ sealed abstract class InvocableInvoker(
   * @author jthywiss, amp
   */
 class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: String, @inline val javaField: Option[JavaField]) extends Site with HasMembers {
-  def javaClass = theObject.getClass()
+  final var javaClass = if (theObject != null) theObject.getClass() else null
 
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     import JavaCall._
@@ -354,7 +352,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
 
     // In violation of JLS §10.7, arrays don't really have a length field!  Java bug 5047859
     if (memberName == "length" && submemberName == "read" && javaClass.isArray()) {
-      new SimpleAccessor {
+      new InlinableAccessor {
         def canGet(target: AnyRef): Boolean = {
           target match {
             case p: JavaMemberProxy if (p.memberName eq "length") && p.javaClass.isArray() => true
@@ -362,14 +360,14 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
           }
         }
         def get(target: AnyRef): AnyRef = {
-          Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName.read")
+          // Some Java Proxy code is partially evaluated and Logging breaks that: Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName.read")
           new JavaArrayLengthPseudofield(target.asInstanceOf[JavaMemberProxy].theObject)
         }
       }
     } else if (javaField.isEmpty) {
       val memberName = this.memberName
       val javaClass = this.javaClass
-      new ErrorAccessor with SimpleAccessor {
+      new ErrorAccessor with InlinableAccessor {
         @throws[NoSuchMemberException]
         def get(target: AnyRef): AnyRef = {
           throw new NoSuchMemberException(javaClass, memberName)
@@ -398,7 +396,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
         def get(target: AnyRef): AnyRef = {
           val value = jf.get(target.asInstanceOf[JavaMemberProxy].theObject)
           def valueCls = value.getClass()
-          Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
+          // Some Java Proxy code is partially evaluated and Logging breaks that: Logger.finer(s"Getting field (${target.asInstanceOf[JavaMemberProxy].theObject}: $javaClass).$memberName = $value ($jf)")
           import JavaCall._
           // TODO:PERFORMANCE: The has*Member checks on value will actually be quite expensive. However for these semantics they are required. Maybe we could change the semantics. Or maybe I've missed a way to implement it so that all reflection is JIT time constant.
           if ((submemberName eq "read") && (value == null || !valueCls.hasInstanceMember("read"))) {
@@ -423,7 +421,7 @@ class JavaMemberProxy(@inline val theObject: Object, @inline val memberName: Str
   * @author jthywiss, amp
   */
 class JavaStaticMemberProxy(declaringClass: Class[_ <: java.lang.Object], _memberName: String, javaField: Option[JavaField]) extends JavaMemberProxy(null, _memberName, javaField) with Serializable {
-  override def javaClass = declaringClass
+  javaClass = declaringClass
   override def toString() = s"JavaStaticMemberProxy($javaClass.$memberName)"
 
   @throws(classOf[java.io.ObjectStreamException])
@@ -546,7 +544,7 @@ case class JavaArrayElementProxy(@inline val theArray: AnyRef, @inline val index
   }
 }
 
-abstract class ArrayAccessor extends SimpleAccessor {
+abstract class ArrayAccessor extends InlinableAccessor {
   def methodInstance(theArray: AnyRef, index: Int): AnyRef
 
   def canGet(target: AnyRef): Boolean = {
@@ -561,7 +559,7 @@ abstract class ArrayAccessor extends SimpleAccessor {
 
 
 object JavaArrayDerefSite {
-  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends DirectInvoker {
+  final class Invoker(val cls: Class[_], val mh: MethodHandle) extends DirectInvoker with InlinableInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaArrayDerefSite] && arguments.length == 0 && cls.isInstance(target.asInstanceOf[JavaArrayDerefSite].theArray)
     }
@@ -644,7 +642,7 @@ case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends Site with Fu
 }
 
 object JavaArrayLengthPseudofield {
-  final class Invoker(val cls: Class[_]) extends DirectInvoker {
+  final class Invoker(val cls: Class[_]) extends DirectInvoker with InlinableInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target.isInstanceOf[JavaArrayLengthPseudofield] &&
       arguments.length == 0 &&

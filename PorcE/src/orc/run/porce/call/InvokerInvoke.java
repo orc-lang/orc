@@ -19,6 +19,7 @@ import orc.VirtualCallContext;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.runtime.PorcEExecution;
+import orc.values.sites.InlinableInvoker;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.ImportStatic;
@@ -56,61 +57,13 @@ abstract class InvokerInvoke extends NodeBase {
      */
     public abstract SiteResponseSet executeInvoke(VirtualFrame frame, Invoker invoker, VirtualCallContext callContext, Object target, Object[] arguments);
 
-//    @Specialization(guards = { "isChannelGet(invoker)", "KnownSiteSpecialization" })
-//    public void channelGet(VirtualFrame frame, SiteInvoker invoker, MaterializedCPSCallContext callContext,
-//            Object target, Object[] arguments,
-//            @Cached("create(execution)") StackCheckingDispatch dispatch) {
-//        orc.lib.state.Channel.ChannelInstance.GetSite getSite = (orc.lib.state.Channel.ChannelInstance.GetSite)target;
-//        Object v = performChannelGet(callContext, getSite);
-//        if (v != this) {
-//            dispatch.dispatch(frame, callContext.p(), v);
-//        }
-//    }
-//
-//    @TruffleBoundary(allowInlining = true)
-//    private Object performChannelGet(MaterializedCPSCallContext callContext,
-//            orc.lib.state.Channel.ChannelInstance.GetSite getSite) {
-//        Object v = this;
-//        synchronized (getSite.channel) {
-//            if (getSite.channel.contents.isEmpty()) {
-//                if (getSite.channel.closed) {
-//                    callContext.halt();
-//                } else {
-//                    callContext.setQuiescent();
-//                    getSite.channel.readers.addLast(callContext);
-//                }
-//            } else {
-//                // If there is an item available, pop it and return
-//                // it.
-//                Object v1 = orc.values.sites.compatibility.SiteAdaptor.object2value(getSite.channel.contents.removeFirst());
-//                if (getSite.channel.closer != null && getSite.channel.contents.isEmpty()) {
-//                    getSite.channel.closer.publish(Signal$.MODULE$);
-//                    getSite.channel.closer = null;
-//                }
-//                if (callContext.publishOptimized()) {
-//                    v = v1;
-//                }
-//            }
-//        }
-//        return v;
-//    }
-//
-//    protected static boolean isChannelGet(SiteInvoker invoker) {
-//        return invoker.siteCls() == orc.lib.state.Channel.ChannelInstance.GetSite.class;
-//    }
-//
-//    @Specialization
-//    public void siteInvoker(SiteInvoker invoker, CallContext callContext, Object target, Object[] arguments) {
-//        callSite(callContext, invoker.siteCls().cast(target), arguments);
-//    }
-//
-//    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
-//    private static void callSite(CallContext callContext, Site target, Object[] arguments) {
-//        target.call(arguments, callContext);
-//    }
+    @Specialization(guards = { "KnownSiteSpecialization" })
+    public SiteResponseSet partiallyEvaluable(InlinableInvoker invoker, VirtualCallContext callContext, Object target, Object[] arguments) {
+        return invoker.invoke(callContext, target, arguments);
+    }
 
     @Specialization
-    @TruffleBoundary(allowInlining = true, transferToInterpreterOnException = false)
+    @TruffleBoundary(allowInlining = true)
     public SiteResponseSet unknown(Invoker invoker, VirtualCallContext callContext, Object target, Object[] arguments) {
         return invoker.invoke(callContext, target, arguments);
     }

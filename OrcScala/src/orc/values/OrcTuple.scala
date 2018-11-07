@@ -13,12 +13,12 @@
 
 package orc.values
 
+import java.util.Arrays
+
 import orc.{ DirectInvoker, OrcRuntime }
-import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, TupleIndexOutOfBoundsException }
 import orc.run.distrib.DOrcMarshalingReplacement
 import orc.util.ArrayExtensions.Array1
-import orc.values.sites.{ IllegalArgumentInvoker, UntypedSite, NonBlockingSite, PartialSite }
-import java.util.Arrays
+import orc.values.sites.{ NonBlockingSite, PartialSite, UntypedSite, IllegalArgumentInvoker, InlinableInvoker }
 
 /** @author dkitchin
   */
@@ -50,7 +50,7 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
       case Array1(i: java.lang.Long) => {
         val size = values.length
 
-        new DirectInvoker {
+        new DirectInvoker with InlinableInvoker {
           def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
             (target, args) match {
               case (t: OrcTuple, Array1(bi: java.lang.Long)) =>
@@ -71,24 +71,6 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
         IllegalArgumentInvoker(this, args)
     }
   }
-
-  def evaluate(args: Array[AnyRef]) =
-    args match {
-      case Array1(bi: BigInt) => {
-        val i: Int = bi.intValue
-        // TODO: PERFORMANCE: It would probably be faster to let the array reference throw IndexOutOfBounds. The JVM will guess better branch probabilities.
-        if (0 <= i && i < values.size) { Some(values(i)) }
-        else { throw new TupleIndexOutOfBoundsException(i) }
-      }
-      case Array1(l: java.lang.Long) => {
-        val i: Int = l.intValue
-        // TODO: PERFORMANCE: It would probably be faster to let the array reference throw IndexOutOfBounds. The JVM will guess better branch probabilities.
-        if (0 <= i && i < values.size) { Some(values(i)) }
-        else { throw new TupleIndexOutOfBoundsException(i) }
-      }
-      case Array1(a) => throw new ArgumentTypeMismatchException(0, "Integer", if (a != null) a.getClass().toString() else "null")
-      case _ => throw new ArityMismatchException(1, args.size)
-    }
 
   override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean =
     values exists marshalValueWouldReplace

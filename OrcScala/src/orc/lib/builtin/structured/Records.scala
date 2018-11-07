@@ -19,30 +19,52 @@
 
 package orc.lib.builtin.structured
 
+import orc.{ DirectInvoker, OrcRuntime }
 import orc.error.compiletime.typing.{ ArgumentTypecheckingException, ExpectedType, RecordShapeMismatchException }
-import orc.error.runtime.ArgumentTypeMismatchException
-import orc.types.{ FieldType, RecordType, SimpleCallableType, StrictCallableType, Top, TupleType, Type }
-import orc.util.ArrayExtensions.ArrayN
+import orc.error.runtime.HaltException
+import orc.types.{ RecordType, SimpleCallableType, StrictCallableType, Top, TupleType, Type, FieldType }
+import orc.util.ArrayExtensions.{ Array2, ArrayN }
 import orc.util.OptionMapExtension.addOptionMapToList
 import orc.values.{ Field, OrcRecord, OrcTuple, OrcValue }
-import orc.values.sites.{ FunctionalSite, LocalSingletonSite, TypedSite }
-import orc.values.sites.compatibility.{ ScalaPartialSite, TotalSite }
+import orc.values.sites.{ FunctionalSite, LocalSingletonSite, IllegalArgumentInvoker, PartialSite, TotalSite, TypedSite }
 
 @SerialVersionUID(-4970620914536871147L)
 object RecordConstructor extends TotalSite with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Record"
-  override def evaluate(args: Array[AnyRef]) = {
-    val valueMap = new scala.collection.mutable.HashMap[String, AnyRef]()
-    args.zipWithIndex map
-      {
-        case (v: AnyRef, i: Int) =>
-          v match {
-            case OrcTuple(Array(Field(key), value: AnyRef)) =>
-              valueMap += ((key, value))
-            case _ => throw new ArgumentTypeMismatchException(i, "(Field, _)", orc.util.GetScalaTypeName(v))
+
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
+    val nArgs = args.size
+    val invoker = new DirectInvoker {
+      def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+        arguments.length == nArgs && {
+          (0 until nArgs).forall { v =>
+            arguments(v) match {
+              case OrcTuple(Array2(Field(_), _)) =>
+                true
+              case _ =>
+                false
+            }
           }
+        }
       }
-    OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)
+
+      def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+        val valueMap = new scala.collection.mutable.HashMap[String, AnyRef]()
+        args.zipWithIndex foreach {
+          case (v: AnyRef, i: Int) =>
+            v match {
+              case OrcTuple(Array2(Field(key), value: AnyRef)) =>
+                valueMap += ((key, value))
+            }
+        }
+        OrcRecord(scala.collection.immutable.HashMap.empty ++ valueMap)
+      }
+    }
+    if (invoker.canInvoke(this, args)) {
+      invoker
+    } else {
+      new IllegalArgumentInvoker(this, args)
+    }
   }
 
   def orcType() = new SimpleCallableType with StrictCallableType {
@@ -58,22 +80,36 @@ object RecordConstructor extends TotalSite with TypedSite with FunctionalSite wi
 }
 
 @SerialVersionUID(-7652586938987434961L)
-object RecordMatcher extends ScalaPartialSite with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+object RecordMatcher extends PartialSite with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "RecordMatcher"
 
-  override def evaluate(args: Array[AnyRef]): Option[AnyRef] =
-    args match {
-      case ArrayN(OrcRecord(entries), shape @ _*) => {
-        val matchedValues: Option[List[AnyRef]] =
-          shape.toList.zipWithIndex optionMap {
-            case (Field(f), _) => entries get f
-            case (a, i) => throw new ArgumentTypeMismatchException(i + 1, "Field", if (a != null) a.getClass().toString() else "null")
-          }
-        matchedValues map { OrcValue.letLike }
+  def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
+    val nArgs = args.size
+    val invoker = new DirectInvoker {
+      def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
+        arguments.length == nArgs && {
+          (1 until nArgs).forall { arguments(_).isInstanceOf[Field] }
+        }
       }
-      case ArrayN(_, _*) => None
-      case _ => throw new AssertionError("Record match internal failure (RecordMatcher.evaluate match error on args list)")
+
+      def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
+        arguments match {
+          case ArrayN(OrcRecord(entries), shape @ _*) => {
+            val matchedValues: Option[List[AnyRef]] = shape.toList optionMap {
+                case Field(f) => entries get f
+              }
+            matchedValues map { OrcValue.letLike } getOrElse { throw new HaltException }
+          }
+          case _ => throw new HaltException
+        }
+      }
     }
+    if (invoker.canInvoke(this, args)) {
+      invoker
+    } else {
+      new IllegalArgumentInvoker(this, args)
+    }
+  }
 
   def orcType() = new SimpleCallableType with StrictCallableType {
     def call(argTypes: List[Type]): Type = {

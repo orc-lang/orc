@@ -51,6 +51,7 @@ public abstract class ExternalDirectDispatch extends DirectDispatch {
             @Cached("getInvokerWithBoundary(target, arguments)") DirectInvoker invoker,
             @Cached("create()") InvokerCanInvoke canInvoke,
             @Cached("create(execution)") InvokerInvokeDirect invokeDirect) {
+        getProfilingScope().incrSiteCall();
         // DUPLICATION: This code is duplicated (mostly) in ExternalCPSDispatch.specificDirect.
         try {
             return invokeDirect.executeInvokeDirect(frame, invoker, target, argumentClassesProfile.profile(arguments));

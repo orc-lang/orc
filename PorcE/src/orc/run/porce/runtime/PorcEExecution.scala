@@ -22,16 +22,22 @@ import orc.error.runtime.{ HaltException, TokenError }
 import orc.run.core.EventHandler
 import orc.run.distrib.porce.CallTargetManager
 import orc.run.porce.{ HasId, InvokeCallRecordRootNode, InvokeWithTrampolineRootNode, Logger, PorcERootNode, PorcEUnit, SimpleWorkStealingSchedulerWrapper }
-import orc.run.porce.instruments.DumpSpecializations
+import orc.run.porce.instruments.{ DumpRuntimeProfile, DumpSpecializations }
 import orc.util.{ DumperRegistry, ExecutionLogOutputStream }
 
 import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.{ Node, RootNode }
+import orc.OrcExecutionOptions
+import orc.run.porce.SpecializationConfiguration
+import orc.compiler.porce.PorcToPorcE
 
-abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
+abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit, val options: OrcExecutionOptions)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
+
+  val porcToPorcE = PorcToPorcE(this, runtime.language)
+
   val truffleRuntime = Truffle.getRuntime()
 
   runtime.installHandlers(this)
@@ -128,36 +134,60 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
 
   private val extraRegisteredRootNodes = Collections.synchronizedList(new ArrayList[WeakReference[RootNode]]())
 
+  @TruffleBoundary(allowInlining = true) @noinline
   def registerRootNode(root: RootNode): Unit = {
     extraRegisteredRootNodes.add(WeakReference(root))
   }
 
   private val specializationsFile = ExecutionLogOutputStream.getFile(s"truffle-node-specializations", "txt")
+  private val profileResultsFile = ExecutionLogOutputStream.getFile(s"profile-results", "dot")
   private var lastGoodRepNumber = 0
 
-  specializationsFile foreach { specializationsFile =>
-    DumperRegistry.register { name =>
-      val repNum = try {
-        name.drop(3).toInt + 1
-      } catch {
-        case _: NumberFormatException =>
-          lastGoodRepNumber + 1
-      }
-      lastGoodRepNumber = repNum
-      import scala.collection.JavaConverters._
+  DumperRegistry.register { name =>
+    val repNum = try {
+      name.drop(3).toInt + 1
+    } catch {
+      case _: NumberFormatException =>
+        lastGoodRepNumber + 1
+    }
+    lastGoodRepNumber = repNum
+    import scala.collection.JavaConverters._
+    specializationsFile foreach { specializationsFile =>
       specializationsFile.delete()
       val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
-      val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
+        val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
       for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
-        DumpSpecializations(r, repNum, out)
+        DumpSpecializations(r, 1, out)
       }
       out.close()
+    }
+    profileResultsFile foreach { profileResultsFile =>
+      profileResultsFile.delete()
+      val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(profileResultsFile)))
+      val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
+        val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
+      val hasNodes = DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), 1, out)
+      out.close()
+      if (hasNodes) {
+        import orc.util.DotUtils._
+        display(render(profileResultsFile))
+      }
     }
   }
 
   def onProgramHalted() = {
   }
+
+  import CallKindDecision._
+  final val callKindTable: CallKindDecision.Table = new CallKindDecision.Table(
+      ("seqPhase", "`compseqPhase_seqPhase_1") -> INLINE,
+
+      ("parPhase", "`compparPhase_0") -> SPAWN,
+      ("parPhase", "`compparPhase_1") -> INLINE,
+      ("parPhase", "`compparPhase_parPhase_3") -> INLINE,
+      ("`compparPhase_1", "`compparPhase_parPhase_1") -> INLINE,
+      )
 }
 
 trait PorcEExecutionWithLaunch extends PorcEExecution {
@@ -218,15 +248,10 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
 
     Logger.finest(s"Loaded program. CallTagetMap:\n${callTargetMap.mkString("\n")}")
 
-    val nStarts = System.getProperty("porce.nStarts", "1").toInt
     // Token: From initial.
-    for (_ <- 0 until nStarts) {
-      c.newToken()
-      val s = CallClosureSchedulable.varArgs(prog, Array(null, p, c, t), execution)
-      SimpleWorkStealingSchedulerWrapper.traceTaskParent(-1, SimpleWorkStealingSchedulerWrapper.getSchedulableID(s))
-      runtime.schedule(s)
-    }
-    c.haltToken()
+    val s = CallClosureSchedulable.varArgs(prog, Array(null, p, c, t), execution)
+    SimpleWorkStealingSchedulerWrapper.traceTaskParent(-1, SimpleWorkStealingSchedulerWrapper.getSchedulableID(s))
+    runtime.schedule(s)
   }
 
   override def kill(): Unit = {

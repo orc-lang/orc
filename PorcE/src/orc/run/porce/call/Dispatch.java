@@ -55,4 +55,11 @@ public abstract class Dispatch extends DispatchBase {
     public final void dispatch(final VirtualFrame frame, final PorcEClosure computation, Object arg1, Object arg2) {
         executeDispatchWithEnvironment(frame, computation, new Object[] { null, arg1, arg2 });
     }
+
+    // Convenience constructors
+
+    public static Dispatch createInternal(PorcEExecution execution) {
+        return InternalCPSDispatch.create(execution, false);
+    }
+
 }

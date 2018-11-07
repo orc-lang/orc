@@ -25,6 +25,7 @@ val sieveFragementSize = 300
 
 val counter = Counter()
 
+-- Lines: 18
 def sieveFragment(outChan) =
 	val inChan = Channel() 
 	val list = ArrayList[Number](sieveFragementSize)
@@ -51,6 +52,7 @@ def sforBy(low, high, step, f) =
   def h(i) = f(i) >> h(i + step)
   h(low)
 
+-- Lines: 5
 def primes(Number) :: List[Number]
 def primes(n) =
 	val out = Channel() #

@@ -31,26 +31,26 @@ abstract class VirtualCallController extends VirtualCallContext with Blocker {
   def empty(): SiteResponseSet = new SiteResponseSet {
     // FIXME: These casts will fail if the functions are called with VirtualCallController as ctx.
     def publishNonterminal(ctx: CallContext, v: AnyRef): SiteResponseSet = {
-      ctx.asInstanceOf[CallController].publishNonterminal(v)
+      ctx.materialize().asInstanceOf[CallController].publishNonterminal(v)
       this
     }
     override def publish(ctx: CallContext, v: AnyRef): SiteResponseSet =  {
-      ctx.asInstanceOf[CallController].publish(v)
+      ctx.materialize().asInstanceOf[CallController].publish(v)
       this
     }
 
     def halt(ctx: CallContext): SiteResponseSet = {
-      ctx.asInstanceOf[CallController].halt()
+      ctx.materialize().asInstanceOf[CallController].halt()
       this
     }
 
     def halt(ctx: CallContext, e: OrcException): SiteResponseSet = {
-      ctx.asInstanceOf[CallController].halt(e)
+      ctx.materialize().asInstanceOf[CallController].halt(e)
       this
     }
 
     def discorporate(ctx: CallContext): SiteResponseSet = {
-      ctx.asInstanceOf[CallController].discorporate()
+      ctx.materialize().asInstanceOf[CallController].discorporate()
       this
     }
   }

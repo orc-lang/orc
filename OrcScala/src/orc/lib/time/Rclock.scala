@@ -18,7 +18,7 @@ import scala.math.BigInt.int2bigInt
 import orc.{ DirectInvoker, OrcRuntime, VirtualCallContext }
 import orc.run.extensions.RwaitEvent
 import orc.types.{ IntegerType, RecordType, SignalType, SimpleFunctionType }
-import orc.values.{ Field, HasMembersMetadata, OrcRecord, Signal }
+import orc.values.{ Field, OrcRecord, Signal, HasMembersMetadata }
 import orc.values.sites.{ EffectFreeSite, FunctionalSite, LocalSingletonSite, Site1Base, SiteMetadata, TalkativeSite, TotalSite0Base, TypedSite }
 
 /**

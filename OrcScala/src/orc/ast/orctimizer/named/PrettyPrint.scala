@@ -12,15 +12,10 @@
 //
 package orc.ast.orctimizer.named
 
-import java.util.logging.Level
+import scala.collection.mutable.{ HashMap, Map }
 
-import scala.collection.mutable.{Map, HashMap}
-
-import orc.values.Format
-import orc.values.Field
-import orc.util.PrettyPrintInterpolator
-import orc.util.FragmentAppender
-import orc.compile.Logger
+import orc.util.{ FragmentAppender, PrettyPrintInterpolator }
+import orc.values.{ Field, Format }
 
 /** Nicer printing for named OIL syntax trees.
   *

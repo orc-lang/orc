@@ -13,11 +13,9 @@
 
 package orc.lib.util
 
-import orc.OrcEvent
-import orc.error.runtime.ArgumentTypeMismatchException
+import orc.{ OrcEvent, OrcRuntime }
 import orc.types.{ SimpleFunctionType, StringType }
-import orc.values.sites.{ LocalSingletonSite, TypedSite }
-import orc.values.sites.compatibility.{ CallContext, Site1 }
+import orc.values.sites.{ LocalSingletonSite, Site1Base, TypedSite }
 
 /** Generic site for presenting the user with a prompt for input.
   * Different runtimes will present different prompts depending
@@ -32,22 +30,19 @@ trait PromptCallback {
 
 case class PromptEvent(val prompt: String, val callback: PromptCallback) extends OrcEvent
 
-object Prompt extends Site1 with TypedSite with Serializable with LocalSingletonSite {
+object Prompt extends Site1Base[String] with TypedSite with Serializable with LocalSingletonSite {
 
-  def call(arg: AnyRef, callContext: CallContext) {
-    arg match {
-      case prompt: String => {
-        val ctx = callContext.materialize()
-        val callback = new PromptCallback() {
-          def respondToPrompt(response: String) = ctx.publish(response)
-          def cancelPrompt() = ctx.halt()
-        }
-        callContext.notifyOrc(PromptEvent(prompt, callback))
+  def getInvoker(runtime: OrcRuntime, arg1: String) = {
+    invoker(this, arg1) { (callContext, _, prompt) =>
+      val ctx = callContext.materialize()
+      val callback = new PromptCallback() {
+        def respondToPrompt(response: String) = ctx.publish(response)
+        def cancelPrompt() = ctx.halt()
       }
-      case a => throw new ArgumentTypeMismatchException(0, "String", if (a != null) a.getClass().toString() else "null")
+      callContext.notifyOrc(PromptEvent(prompt, callback))
+      callContext.empty
     }
   }
 
   def orcType = SimpleFunctionType(StringType, StringType)
-
 }

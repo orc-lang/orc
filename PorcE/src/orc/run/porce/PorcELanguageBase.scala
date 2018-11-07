@@ -60,13 +60,11 @@ class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
     assert(ctx.thread == null)
     // println(s"initializeThread: $thread $ctx")
     ctx.thread = thread
-    ctx.depth = 0
   }
   override def disposeThread(ctx: PorcEContext, thread: Thread) = {
     assert(ctx.thread == thread)
     //println(s"disposeThread: $thread $ctx")
     ctx.thread = null
-    ctx.depth = 0
   }
 
   private class SourceInputContext(val source: Source, override val descr: String) extends OrcInputContext {

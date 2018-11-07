@@ -244,7 +244,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     import orc.ast.porc._
     val phaseName = "porc-index"
     override def apply(co: CompilerOptions) = { ast =>
-      IndexAST(ast)
+      IndexAST(ast.toZipper)
 
       if (writeCompilerStatistics) ExecutionLogOutputStream("porc-ast-indicies", "csv", "Porc AST index dump") foreach { out =>
         val traceCsv = new OutputStreamWriter(out, "UTF-8")

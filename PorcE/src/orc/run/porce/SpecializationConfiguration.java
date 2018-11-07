@@ -31,7 +31,7 @@ public abstract class SpecializationConfiguration {
 
     @CompilationFinal
     public static final int TruffleASTInliningLimit = Integer
-                .parseInt(System.getProperty("orc.porce.truffleASTInliningLimit", "1000"));
+                .parseInt(System.getProperty("orc.porce.truffleASTInliningLimit", "600"));
 
     @CompilationFinal
     public static final int GetFieldMaxCacheSize = Integer
@@ -55,6 +55,7 @@ public abstract class SpecializationConfiguration {
     @CompilationFinal
     public static final int InlineAverageTimeLimit = (int) (Double
             .parseDouble(System.getProperty("orc.porce.inlineAverageTimeLimit", "0.1")) * 1000000);
+
     /**
      * The number of calls before computing the time per call.
      *
@@ -113,6 +114,20 @@ public abstract class SpecializationConfiguration {
             .parseDouble(System.getProperty("orc.porce.minimumEarlyHaltProbability", "0.5"));
 
     @CompilationFinal
-    public static final boolean UseVirtualCallContexts = Boolean
-            .parseBoolean(System.getProperty("orc.porce.optimizations.useVirtualCallContexts", "true"));
+    public static final boolean UseExternalCallKindDecision = Boolean
+            .parseBoolean(System.getProperty("orc.porce.useExternalCallKindDecision", "false"));
+
+    @CompilationFinal
+    public static final boolean ProfileCallGraph = Boolean
+            .parseBoolean(System.getProperty("orc.porce.profileCallGraph", "false"));
+
+    @CompilationFinal
+    public static final boolean ProfileFunctionTime = Boolean
+            .parseBoolean(System.getProperty("orc.porce.profileFunctionTime", "false"));
+
+    {
+        if(ProfileFunctionTime && !ProfileCallGraph) {
+            Logger.warning(() -> "orc.porce.profileFunctionTime requires orc.porce.profileCallGraph, but profileCallGraph=false");
+        }
+    }
 }

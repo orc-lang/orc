@@ -132,18 +132,18 @@ trait ExpectedBenchmarkResult[R] {
 
   def check(results: R): Boolean = {
     if (System.getProperty("orc.test.benchmark.summarizeResults", "false").toBoolean)
-      println(s"Hash: ${hash(results).formatted("0x%x")}\n${summarizeResults(results)}")
+      println(s"Hash: ${hash(results).formatted("0x%08x")}\n${summarizeResults(results)}")
     if (BenchmarkConfig.checkResults) {
       lazy val actual = hash(results)
       val expected = try {
         this.expected
       } catch {
         case e: AssertionError => 
-          throw new AssertionError(s"Failed to check result. The hash for problem size ${BenchmarkConfig.problemSize} -> ${actual.formatted("0x%x")}.", e) 
+          throw new AssertionError(s"Failed to check result. The hash for problem size ${BenchmarkConfig.problemSize} -> ${actual.formatted("0x%08x")}.", e) 
       }
       val r = actual == expected
       if (!r) {
-        throw new AssertionError(s"The actual result (${actual.formatted("0x%x")}) does not match the expected (${expected.formatted("0x%x")}) for problem size ${BenchmarkConfig.problemSize}.\n${summarizeDifference(results)}")
+        throw new AssertionError(s"The actual result (${actual.formatted("0x%08x")}) does not match the expected (${expected.formatted("0x%08x")}) for problem size ${BenchmarkConfig.problemSize}.\n${summarizeDifference(results)}")
       }
       if (doSummarizeDifference) {
         previousResults = Some(results)

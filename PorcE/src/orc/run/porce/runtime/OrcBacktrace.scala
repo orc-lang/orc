@@ -66,7 +66,7 @@ object OrcBacktrace {
 
   private def findRange(n: Node): Option[OrcSourceRange] = n match {
     case n: HasPorcNode if n.porcNode.isDefined =>
-      n.porcNode flatMap { _.sourceTextRange }
+      n.porcNode flatMap { _.value.sourceTextRange }
     case n: Node =>
       findRange(n.getParent)
     case null =>

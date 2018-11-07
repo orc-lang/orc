@@ -13,7 +13,6 @@
 
 package orc.lib.math
 
-import orc.Invoker
 import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, LocalSingletonSite, OverloadedDirectInvokerMethod2 }
 
 object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with FunctionalSite with Serializable with LocalSingletonSite {
@@ -30,8 +29,8 @@ object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with Func
     }
     accum
   }
-  
-  def getInvokerSpecialized(arg1: Number, arg2: Number): Invoker = {
+
+  def getInvokerSpecialized(arg1: Number, arg2: Number) = {
     // TODO: This does not handle all possible reasonable cases and some of the priorities are weird. When we improve the numeric stack we should fix this.
     (arg1, arg2) match {
       case (a: BigDecimal, b: BigInt) =>
@@ -44,15 +43,15 @@ object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with Func
         })
       case (a: BigDecimal, b: BigDecimal) =>
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
-      case (a: java.lang.Double, b: java.lang.Double) => 
+      case (a: java.lang.Double, b: java.lang.Double) =>
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
-      case (a: java.lang.Double, b: java.lang.Long) => 
+      case (a: java.lang.Double, b: java.lang.Long) =>
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
-      case (a: java.lang.Long, b: java.lang.Long) => 
+      case (a: java.lang.Long, b: java.lang.Long) =>
         invoker(a, b)((a, b) => lpow(a.longValue(), b.longValue()))
-      case (a: java.lang.Integer, b: java.lang.Integer) => 
+      case (a: java.lang.Integer, b: java.lang.Integer) =>
         invoker(a, b)((a, b) => lpow(a.intValue(), b.intValue()))
-      case (a: BigInt, b: BigInt) => 
+      case (a: BigInt, b: BigInt) =>
         invoker(a, b)((a, b) => {
           if (b.isValidInt) {
             a pow b.intValue()
@@ -60,7 +59,7 @@ object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with Func
             throw new ArithmeticException("Exponent out of range");
           }
         })
-      case (a: BigInt, b: java.lang.Long) => 
+      case (a: BigInt, b: java.lang.Long) =>
         invoker(a, b)((a, b) => {
           if (b < Int.MaxValue) {
             a pow b.intValue()
@@ -68,18 +67,18 @@ object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with Func
             throw new ArithmeticException("Exponent out of range");
           }
         })
-      case (a: BigDecimal, b: Number) => 
+      case (a: BigDecimal, b: Number) =>
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
-      case (a: Number, b: BigDecimal) => 
+      case (a: Number, b: BigDecimal) =>
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
       case (a: java.lang.Double, b: Number) =>
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
-      case (a: Number, b: java.lang.Double) => 
+      case (a: Number, b: java.lang.Double) =>
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
       case (a: Number, b: Number) =>
         IllegalArgumentInvoker(this, Array(a, b))
     }
   }
-  
+
   override def toString = "Exponent"
 }

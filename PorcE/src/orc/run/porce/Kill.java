@@ -35,7 +35,7 @@ public class Kill extends Expression {
 
     @Specialization
     public PorcEUnit run(final VirtualFrame frame, final Counter counter, final Terminator terminator, final PorcEClosure continuation,
-    		@Cached("createCallNode(execution, isTail)") final Dispatch callNode) {
+    		@Cached("createInternal(execution)") final Dispatch callNode) {
         ensureTail(callNode);
     	// Token: This passes a token on counter to the continuation if kill returns false.
         if (terminator.kill(counter, continuation)) {
@@ -43,10 +43,6 @@ public class Kill extends Expression {
         }
 
         return PorcEUnit.SINGLETON;
-    }
-
-    protected static Dispatch createCallNode(final PorcEExecution execution, boolean isTail) {
-    	return InternalCPSDispatch.create(execution, isTail);
     }
 
     public static Kill create(final Expression counter, final Expression terminator, final Expression continuation, final PorcEExecution execution) {

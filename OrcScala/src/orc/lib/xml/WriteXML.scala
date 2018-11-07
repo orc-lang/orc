@@ -12,23 +12,21 @@
 //
 package orc.lib.xml
 
-import orc.values.sites.compatibility.TotalSite1
+
 import orc.values.sites.TypedSite
 import orc.types.StringType
 import orc.types.SimpleFunctionType
 import scala.xml.Node
 import orc.error.runtime.ArgumentTypeMismatchException
+import orc.values.sites.TotalSite1Simple
 
 /**
   * @author dkitchin
   */
-class WriteXML extends TotalSite1 with TypedSite {
+object WriteXML extends TotalSite1Simple[Node] with TypedSite {
 
-  def eval(arg: AnyRef): AnyRef = {
-    arg match {
-      case xml: Node => { xml.toString }
-      case z => throw new ArgumentTypeMismatchException(0, "scala.xml.Node", z.getClass().toString())
-    }
+  def eval(xml: Node): AnyRef = {
+    xml.toString
   }
 
   def orcType() = SimpleFunctionType(XMLType, StringType)

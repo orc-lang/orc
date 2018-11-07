@@ -17,7 +17,7 @@ orct:getmethod-elim
 orct:trim-elim
 orct:trim-compiler-choice
 orct:inline
-orct:inline-threshold=50
+orct:inline-threshold=200
 orct:higher-order-inline-threshold=400
 orct:future-elim
 orct:unused-future-elim
