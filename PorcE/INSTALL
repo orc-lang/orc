@@ -25,18 +25,18 @@ instructions for setting up a launch configuration for PorcE.
 Setup instructions
 ------------------
 
-1. Download GraalVM EE (Enterprise Edition) 1.0.0-rc7 from 
+1. Download GraalVM EE (Enterprise Edition) 1.0.0-rc9 from 
    https://www.oracle.com/technetwork/oracle-labs/program-languages/downloads/index.html 
    (requires login) and unpack it to $UNPACK (any directory). You will need to replace 
    "$UNPACK" with the absolute path you unpacked to in all the further instructions.
 2. Add a new JRE in Eclipse (Eclipse Preferences -> Java / Installed JREs -> Add),
    type "Standard VM".
 3. Set:
-    * JRE home: $UNPACK/graalvm-ee-1.0.0-rc7
-    * JRE name: graalvm-ee-1.0.0-rc7
+    * JRE home: $UNPACK/graalvm-ee-1.0.0-rc9
+    * JRE name: graalvm-ee-1.0.0-rc9
     * Default VM arguments: -XX:-UseJVMCIClassLoader
 4. Add/Update a Classpath Variable (Eclipse Preferences -> Java -> Build Path -> Classpath 
-   Variables) named GRAALVM_JRE and set it to "$UNPACK/graalvm-ee-1.0.0-rc7". This allows
+   Variables) named GRAALVM_JRE and set it to "$UNPACK/graalvm-ee-1.0.0-rc9". This allows
    PorcE to find the annotation processor and libraries used by the Truffle code.
 5. Rebuild the PorcE project.
 
@@ -58,5 +58,5 @@ Launch instructions
 Running PorcE from the Orc Eclipse plug-in is unsupported for now.
 
 
-NOTE: All of this will change when eventually when GraalVM support JDK10+ and amp gets 
-this all working on Java 10+.
+NOTE: All of this will change eventually when GraalVM supports JDK11 and amp gets 
+this all working on JDK11.
