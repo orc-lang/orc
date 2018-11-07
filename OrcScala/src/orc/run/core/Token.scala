@@ -604,7 +604,7 @@ class Token protected (
         case BoundReadable(f: orc.Future) => f
         case BoundStop => StoppedFuture
         case BoundReadable(v) =>
-          throw new Error(s"WTF: $v")
+          throw new AssertionError(s"binding2MaybeFuture: bound to a ReadableBlocker that is not a Future: $v")
       }
     }
 

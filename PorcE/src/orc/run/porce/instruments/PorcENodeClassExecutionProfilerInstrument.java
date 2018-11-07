@@ -97,7 +97,7 @@ public final class PorcENodeClassExecutionProfilerInstrument extends TruffleInst
 									state.pushStartTime(-1);
 								}
 							} catch (FrameSlotTypeException e) {
-								throw new Error(e);
+								throw new AssertionError(e);
 							}
 						}
 	
@@ -124,7 +124,7 @@ public final class PorcENodeClassExecutionProfilerInstrument extends TruffleInst
 									// The entry failed to push
 								}
 							} catch (FrameSlotTypeException e) {
-								throw new Error(e);
+								throw new AssertionError(e);
 							}
 						}
 					};

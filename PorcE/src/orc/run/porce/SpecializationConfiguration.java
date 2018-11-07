@@ -21,7 +21,7 @@ public abstract class SpecializationConfiguration {
 
     /*static {
         if (System.getProperty("orc.porce.truffleASTInlining") != null) {
-            throw new Error("truffleASTInlining is disabled in the source code. See InternalCPSDispatch.java.");
+            throw new IllegalStateException("truffleASTInlining is disabled in the source code. See InternalCPSDispatch.java.");
         }
     }*/
 

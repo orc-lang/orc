@@ -11,9 +11,7 @@
 
 package orc.test.item.scalabenchmarks
 
-import java.io.File
-import java.io.BufferedReader
-import java.io.FileReader
+import java.io.{ BufferedReader, File, FileNotFoundException, FileReader }
 
 object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedBenchmarkResult[Long] {
   val numInputFiles = 24 // problemSizeScaledInt(1.2) -- Read(JavaSys.getProperty("orc.test.numInputFiles", "12"))
@@ -26,7 +24,7 @@ object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedB
 
   def checkReadableFile(file: File): Unit = {
     if (!file.canRead())
-      throw new Error("Cannot read file: "+file+" in dir "+System.getProperty("user.dir"))
+      throw new FileNotFoundException("Cannot read file: "+file+" in dir "+System.getProperty("user.dir"))
   }
 
   def listFileNamesRecursively(dirPathName: String): List[String] = {

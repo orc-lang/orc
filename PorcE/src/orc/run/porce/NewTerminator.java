@@ -35,7 +35,7 @@ public class NewTerminator extends Expression {
         try {
             return new TerminatorNested(parent.executeTerminator(frame));
         } catch (final UnexpectedResultException e) {
-            throw new Error(e);
+            throw new AssertionError(e);
         }
     }
 

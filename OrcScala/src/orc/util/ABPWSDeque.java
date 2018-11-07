@@ -41,8 +41,8 @@ public final class ABPWSDeque<T> implements SchedulingQueue<T> {
       U = (Unsafe) f.get(null);
       Class<?> k = ABPWSDeque.class;
       AGE = U.objectFieldOffset(k.getDeclaredField("age"));
-    } catch (Exception e) {
-      throw new Error(e);
+    } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+      throw new ExceptionInInitializerError(e);
     }
   }
 

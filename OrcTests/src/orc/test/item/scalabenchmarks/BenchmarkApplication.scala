@@ -45,7 +45,7 @@ trait BenchmarkApplication[T, R] {
 
   def setupOutput() = {
     if (System.getProperty("orc.executionlog.dir", "").isEmpty())
-      throw new Error("java system property orc.executionlog.dir must be set")
+      throw new IllegalStateException("java system property orc.executionlog.dir must be set")
     val outDir = new File(System.getProperty("orc.executionlog.dir"))
     if (outDir.mkdirs())
       println("Created output directory: " + outDir.getCanonicalPath())

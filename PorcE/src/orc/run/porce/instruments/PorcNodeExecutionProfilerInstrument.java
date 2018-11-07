@@ -126,7 +126,7 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 									// The entry failed to push
 								}
 							} catch (FrameSlotTypeException e) {
-								throw new Error(e);
+								throw new AssertionError(e);
 							}
 						}
 					};

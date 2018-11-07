@@ -73,9 +73,13 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
       System.exit(exitStatus).asInstanceOf[Nothing]
       /* Cast to let type checker know System.exit never returns. */
     } else {
-      throw new Error("failureExit called during a shutdown -- ignored") with ControlThrowable {}
+      throw new ShutdownDuringShutdown("failureExit called during a shutdown -- ignored")
     }
   }
+  
+  /* Typed as an Error + ControlThrowable to reduce chances of being
+   * caught by callers who expect no return from a call to exit(). */
+  class ShutdownDuringShutdown(message: String) extends Error(message) with ControlThrowable {}
 
   /** Write a HALT diagnostic message to stderr.
     *
