@@ -47,7 +47,7 @@ class RunMainMethodTestCase(
 
     val orcVersion = orc.Main.versionProperties.getProperty("orc.version")
     val javaCmd = "java"
-    val dOrcClassPath = s"../OrcScala/build/orc-${orcVersion}.jar:../OrcScala/lib/*:../PorcE/build/classes:../OrcTests/build" //DistribTestConfig.expanded.getIterableFor("dOrcClassPath").get().mkString(File.pathSeparator)
+    val dOrcClassPath = s"../OrcScala/build/orc-${orcVersion}.jar:../OrcScala/lib/*:../PorcE/build/classes:../PorcE/lib/*:../OrcTests/build" //DistribTestConfig.expanded.getIterableFor("dOrcClassPath").get().mkString(File.pathSeparator)
 
     val javaRunCommand = Seq(
       javaCmd,
