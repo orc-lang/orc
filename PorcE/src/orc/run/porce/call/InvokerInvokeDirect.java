@@ -72,6 +72,16 @@ abstract class InvokerInvokeDirect extends NodeBase {
     public abstract Object executeInvokeDirect(VirtualFrame frame, DirectInvoker invoker, Object target,
             Object[] arguments);
 
+
+    @Specialization(guards = { "isPartiallyEvaluable(invoker)" })
+    public Object partiallyEvaluable(DirectInvoker invoker, Object target, Object[] arguments) {
+        return invoker.invokeDirect(target, arguments);
+    }
+
+    protected static boolean isPartiallyEvaluable(DirectInvoker invoker) {
+        return invoker instanceof orc.values.sites.InlinableInvoker;
+    }
+
     // TODO: SMELL: Most of this class reimplementations various sites to specialize them to
     //   PorcE by using partial evaluation or inlining publications.
 
@@ -356,15 +366,6 @@ abstract class InvokerInvokeDirect extends NodeBase {
 
     private static void callMethodHandleArraySetter(MethodHandle mh, Object theObject, int arg1, Object arg2) throws Throwable {
         mh.invokeExact(theObject, arg1, arg2);
-    }
-
-    @Specialization(guards = { "isPartiallyEvaluable(invoker)", "KnownSiteSpecialization" })
-    public Object partiallyEvaluable(DirectInvoker invoker, Object target, Object[] arguments) {
-        return invoker.invokeDirect(target, arguments);
-    }
-
-    protected static boolean isPartiallyEvaluable(DirectInvoker invoker) {
-        return invoker instanceof orc.values.sites.InlinableInvoker;
     }
 
     @Specialization

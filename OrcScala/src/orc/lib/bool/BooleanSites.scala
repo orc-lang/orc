@@ -20,7 +20,7 @@ object Not extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with Functi
   override def name = "Not"
 
   def getInvokerSpecialized(a: java.lang.Boolean) = {
-    invoker(a)(a => !a)
+    invokerInline(a)(a => !a)
   }
 
   def orcType() = SimpleFunctionType(BooleanType, BooleanType)
@@ -30,7 +30,7 @@ object Or extends OverloadedDirectInvokerMethod2[java.lang.Boolean, java.lang.Bo
   override def name = "Or"
 
   def getInvokerSpecialized(a: java.lang.Boolean, b: java.lang.Boolean) = {
-    invoker(a, b)((a, b) => a || b)
+    invokerInline(a, b)((a, b) => a || b)
   }
 }
 
@@ -38,6 +38,6 @@ object And extends OverloadedDirectInvokerMethod2[java.lang.Boolean, java.lang.B
   override def name = "And"
 
   def getInvokerSpecialized(a: java.lang.Boolean, b: java.lang.Boolean) = {
-    invoker(a, b)((a, b) => a && b)
+    invokerInline(a, b)((a, b) => a && b)
   }
 }

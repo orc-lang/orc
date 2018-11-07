@@ -14,6 +14,7 @@
 package orc.values.sites
 
 import scala.reflect.ClassTag
+import java.lang.ClassCastException
 
 /** A collection of utility methods for writing invokers and accessors.
   */
@@ -27,6 +28,21 @@ object InvocationBehaviorUtilities {
     (arg == null && cls == null) ||
     (arg == null && cls != null && !cls.isPrimitive()) ||
     (arg != null && cls != null && cls.isInstance(arg))
+  }
+
+  /** Cast arg to type cls explicitly.
+    *
+    * cls may be null in which case arg must be null.
+    */
+  @inline
+  final def castValue[T](arg: AnyRef, cls: Class[T]): T = {
+    if (cls == null) {
+      if(arg != null)
+        throw new ClassCastException(arg.toString)
+      null.asInstanceOf[T]
+    } else {
+      cls.cast(arg)
+    }
   }
 
   @inline
@@ -58,7 +74,7 @@ object InvocationBehaviorUtilities {
   /** Get the class of v, or null if v == null.
     */
   @inline
-  final def valueType(v: AnyRef): Class[_] = {
+  final def valueType(v: Any): Class[_] = {
     if (v == null)
       null
     else

@@ -24,13 +24,13 @@ abstract class ComparisonSite extends OverloadedDirectInvokerMethod2[AnyRef, Any
       case (a: BigDecimal, b: BigDecimal) =>
         invoker(a, b)((a, b) => compare(a.compareTo(b)))
       case (a: java.lang.Double, b: java.lang.Double) =>
-        invoker(a, b)((a, b) => compare(a.compareTo(b)))
+        invokerInline(a, b)((a, b) => compare(a.compareTo(b)))
       case (a: java.math.BigDecimal, b: java.math.BigDecimal) =>
         invoker(a, b)((a, b) => compare(a.compareTo(b)))
       case (a: java.lang.Long, b: java.lang.Long) =>
-        invoker(a, b)((a, b) => compare(a.compareTo(b)))
+        invokerInline(a, b)((a, b) => compare(a.compareTo(b)))
       case (a: java.lang.Integer, b: java.lang.Integer) =>
-        invoker(a, b)((a, b) => compare(a.compareTo(b)))
+        invokerInline(a, b)((a, b) => compare(a.compareTo(b)))
       case (a: BigInt, b: BigInt) =>
         invoker(a, b)((a, b) => compare(a.compareTo(b)))
       case (a: java.math.BigInteger, b: java.math.BigInteger) =>
@@ -73,11 +73,11 @@ case object Greater extends ComparisonSite with LocalSingletonSite {
       case (a: BigDecimal, b: BigDecimal) =>
         invoker(a, b)((a, b) => a > b)
       case (a: java.lang.Double, b: java.lang.Double) =>
-        invoker(a, b)((a, b) => a > b)
+        invokerInline(a, b)((a, b) => a > b)
       case (a: java.lang.Long, b: java.lang.Long) =>
-        invoker(a, b)((a, b) => a > b)
+        invokerInline(a, b)((a, b) => a > b)
       case (a: java.lang.Integer, b: java.lang.Integer) =>
-        invoker(a, b)((a, b) => a > b)
+        invokerInline(a, b)((a, b) => a > b)
       case (a: BigInt, b: BigInt) =>
         invoker(a, b)((a, b) => a > b)
       case _ =>
@@ -96,11 +96,11 @@ case object Greq extends ComparisonSite with LocalSingletonSite {
       case (a: BigDecimal, b: BigDecimal) =>
         invoker(a, b)((a, b) => a >= b)
       case (a: java.lang.Double, b: java.lang.Double) =>
-        invoker(a, b)((a, b) => a >= b)
+        invokerInline(a, b)((a, b) => a >= b)
       case (a: java.lang.Long, b: java.lang.Long) =>
-        invoker(a, b)((a, b) => a >= b)
+        invokerInline(a, b)((a, b) => a >= b)
       case (a: java.lang.Integer, b: java.lang.Integer) =>
-        invoker(a, b)((a, b) => a >= b)
+        invokerInline(a, b)((a, b) => a >= b)
       case (a: BigInt, b: BigInt) =>
         invoker(a, b)((a, b) => a >= b)
       case _ =>
@@ -119,11 +119,11 @@ case object Leq extends ComparisonSite with LocalSingletonSite {
       case (a: BigDecimal, b: BigDecimal) =>
         invoker(a, b)((a, b) => a <= b)
       case (a: java.lang.Double, b: java.lang.Double) =>
-        invoker(a, b)((a, b) => a <= b)
+        invokerInline(a, b)((a, b) => a <= b)
       case (a: java.lang.Long, b: java.lang.Long) =>
-        invoker(a, b)((a, b) => a <= b)
+        invokerInline(a, b)((a, b) => a <= b)
       case (a: java.lang.Integer, b: java.lang.Integer) =>
-        invoker(a, b)((a, b) => a <= b)
+        invokerInline(a, b)((a, b) => a <= b)
       case (a: BigInt, b: BigInt) =>
         invoker(a, b)((a, b) => a <= b)
       case _ =>
@@ -142,11 +142,11 @@ case object Less extends ComparisonSite with LocalSingletonSite {
       case (a: BigDecimal, b: BigDecimal) =>
         invoker(a, b)((a, b) => a < b)
       case (a: java.lang.Double, b: java.lang.Double) =>
-        invoker(a, b)((a, b) => a < b)
+        invokerInline(a, b)((a, b) => a < b)
       case (a: java.lang.Long, b: java.lang.Long) =>
-        invoker(a, b)((a, b) => a < b)
+        invokerInline(a, b)((a, b) => a < b)
       case (a: java.lang.Integer, b: java.lang.Integer) =>
-        invoker(a, b)((a, b) => a < b)
+        invokerInline(a, b)((a, b) => a < b)
       case (a: BigInt, b: BigInt) =>
         invoker(a, b)((a, b) => a < b)
       case _ =>

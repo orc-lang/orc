@@ -122,6 +122,14 @@ abstract class TotalSiteBase extends TotalSite {
       val impl = _impl
     }
   }
+
+  protected def invokerInline[T <: TotalSiteBase](exampleTarget: T, examplesArguments: AnyRef*)
+        (_impl: (T, Array[AnyRef]) => Any): DirectInvoker = {
+    new TargetClassAndArgumentClassSpecializedInvoker(exampleTarget, examplesArguments.toArray)
+          with TotalSiteBase.ImplInvoker[T] with InlinableInvoker {
+      val impl = _impl
+    }
+  }
 }
 
 object TotalSiteBase {

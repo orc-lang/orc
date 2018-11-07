@@ -26,7 +26,7 @@ case object Ift extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
   override def name = "Ift"
 
   def getInvokerSpecialized(a: java.lang.Boolean) = {
-    invoker(a)(a =>
+    invokerInline(a)(a =>
       if (a)
         Signal
       else
@@ -41,7 +41,7 @@ case object Iff extends OverloadedDirectInvokerMethod1[java.lang.Boolean] with F
   override def name = "Iff"
 
   def getInvokerSpecialized(a: java.lang.Boolean) = {
-    invoker(a)(a =>
+    invokerInline(a)(a =>
       if (!a)
         Signal
       else
@@ -72,7 +72,7 @@ object Let extends TotalSiteBase with TypedSite with FunctionalSite with Seriali
   override def name = "let"
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) =
     args match {
-      case Array0() => invoker(this)((_, _) => Signal)
+      case Array0() => invokerInline(this)((_, _) => Signal)
       case Array1(v) => invoker(this)((_, vs) => vs(0))
       case vs => invoker(this)((_, vs) => OrcTuple(vs))
     }

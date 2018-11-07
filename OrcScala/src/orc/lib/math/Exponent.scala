@@ -44,13 +44,13 @@ object Exponent extends OverloadedDirectInvokerMethod2[Number, Number] with Func
       case (a: BigDecimal, b: BigDecimal) =>
         invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
       case (a: java.lang.Double, b: java.lang.Double) =>
-        invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
+        invokerInline(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
       case (a: java.lang.Double, b: java.lang.Long) =>
-        invoker(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
+        invokerInline(a, b)((a, b) => math.pow(a.doubleValue(), b.doubleValue()))
       case (a: java.lang.Long, b: java.lang.Long) =>
-        invoker(a, b)((a, b) => lpow(a.longValue(), b.longValue()))
+        invokerInline(a, b)((a, b) => lpow(a.longValue(), b.longValue()))
       case (a: java.lang.Integer, b: java.lang.Integer) =>
-        invoker(a, b)((a, b) => lpow(a.intValue(), b.intValue()))
+        invokerInline(a, b)((a, b) => lpow(a.intValue(), b.intValue()))
       case (a: BigInt, b: BigInt) =>
         invoker(a, b)((a, b) => {
           if (b.isValidInt) {

@@ -17,13 +17,15 @@ import scala.reflect.ClassTag
 
 import orc.{ DirectInvoker, OrcRuntime }
 
+import InvocationBehaviorUtilities._
+
 // FIXME: This semi-duplicates TotalSite{1,2}
 
 // FIXME: It may be possible and useful to use some kind of coercion support to allow sites to specify conversions for some cases to eliminate full cross product of types.
 // However, it's not clear to me how to allow this while still having full speculation on the input types and correct type checks at call time.
 // Also the old version also had this problem, so this is mostly something to fix when we fix the numeric stack which is the only thing that has this problem.
 
-final class OverloadedDirectInvokerBase1[-T1](
+class OverloadedDirectInvokerBase1[-T1](
     final val method: DirectSite,
     final val clsBaseT1: Class[_],
     final val clsT1: Class[_],
@@ -31,21 +33,21 @@ final class OverloadedDirectInvokerBase1[-T1](
     ) extends DirectInvoker {
 
   final def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    val argumentTypeCorrect = clsT1.isInstance(arguments(0)) || (clsT1 eq clsBaseT1) && arguments(0) == null
+    val argumentTypeCorrect = valueHasType(arguments(0), clsT1) || (clsT1 eq clsBaseT1) && arguments(0) == null
     ((method eq target) || method == target) && arguments.length == 1 && argumentTypeCorrect
   }
 
   final def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     if (orc.run.StopWatches.callsEnabled) {
       orc.run.StopWatches.implementation {
-        implementation(clsT1.cast(arguments(0)).asInstanceOf[T1]).asInstanceOf[AnyRef]
+        implementation(castValue(arguments(0), clsT1).asInstanceOf[T1]).asInstanceOf[AnyRef]
       }
     } else {
-      implementation(clsT1.cast(arguments(0)).asInstanceOf[T1]).asInstanceOf[AnyRef]
+      implementation(castValue(arguments(0), clsT1).asInstanceOf[T1]).asInstanceOf[AnyRef]
     }
   }
 
-  override def toString(): String = s"$method<invoker>(${clsT1.getName})"
+  override def toString(): String = s"$method<invoker>(${clsT1})"
 }
 
 /** Base class for implementing 1-argument direct external methods with type based overloading.
@@ -76,7 +78,12 @@ abstract class OverloadedDirectInvokerMethod1[BaseArgumentType1 : ClassTag] exte
     */
   @inline
   final def invoker[T1 <: BaseArgumentType1 : ClassTag](arg1: T1)(f: (T1) => Any) = {
-    new OverloadedDirectInvokerBase1(this, clsBaseArgumentType1, arg1.getClass(), f)
+    new OverloadedDirectInvokerBase1(this, clsBaseArgumentType1, valueType(arg1), f)
+  }
+
+  @inline
+  final def invokerInline[T1 <: BaseArgumentType1 : ClassTag](arg1: T1)(f: (T1) => Any) = {
+    new OverloadedDirectInvokerBase1(this, clsBaseArgumentType1, valueType(arg1), f) with InlinableInvoker
   }
 
   final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {
@@ -92,7 +99,7 @@ abstract class OverloadedDirectInvokerMethod1[BaseArgumentType1 : ClassTag] exte
   override def publications: Range = Range(0, 1)
 }
 
-final class OverloadedDirectInvokerBase2[-T1, -T2](
+class OverloadedDirectInvokerBase2[-T1, -T2](
     final val method: DirectSite,
     final val clsBaseT1: Class[_],
     final val clsT1: Class[_],
@@ -102,22 +109,22 @@ final class OverloadedDirectInvokerBase2[-T1, -T2](
     ) extends DirectInvoker {
 
   final def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
-    val argumentTypeCorrect1 = clsT1.isInstance(arguments(0)) || (clsT1 eq clsBaseT1) && arguments(0) == null
-    val argumentTypeCorrect2 = clsT2.isInstance(arguments(1)) || (clsT2 eq clsBaseT2) && arguments(1) == null
+    val argumentTypeCorrect1 = valueHasType(arguments(0), clsT1) || (clsT1 eq clsBaseT1) && arguments(0) == null
+    val argumentTypeCorrect2 = valueHasType(arguments(1), clsT2) || (clsT2 eq clsBaseT2) && arguments(1) == null
     ((method eq target) || method == target) && arguments.length == 2 && argumentTypeCorrect1 && argumentTypeCorrect2
   }
 
   final def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     if (orc.run.StopWatches.callsEnabled) {
       orc.run.StopWatches.implementation {
-        implementation(clsT1.cast(arguments(0)).asInstanceOf[T1], clsT2.cast(arguments(1)).asInstanceOf[T2]).asInstanceOf[AnyRef]
+        implementation(castValue(arguments(0), clsT1).asInstanceOf[T1], castValue(arguments(1), clsT2).asInstanceOf[T2]).asInstanceOf[AnyRef]
       }
     } else {
-      implementation(clsT1.cast(arguments(0)).asInstanceOf[T1], clsT2.cast(arguments(1)).asInstanceOf[T2]).asInstanceOf[AnyRef]
+      implementation(castValue(arguments(0), clsT1).asInstanceOf[T1], castValue(arguments(1), clsT2).asInstanceOf[T2]).asInstanceOf[AnyRef]
     }
   }
 
-  override def toString(): String = s"$method<invoker>(${clsT1.getName}, ${clsT2.getName})"
+  override def toString(): String = s"$method<invoker>(${clsT1}, ${clsT2})"
 }
 
 /** Base class for implementing 2-argument direct external methods with type based overloading.
@@ -141,7 +148,12 @@ abstract class OverloadedDirectInvokerMethod2[BaseArgumentType1 : ClassTag, Base
     */
   @inline
   final def invoker[T1 <: BaseArgumentType1 : ClassTag, T2 <: BaseArgumentType2 : ClassTag](arg1: T1, arg2: T2)(f: (T1, T2) => Any) = {
-    new OverloadedDirectInvokerBase2(this, clsBaseArgumentType1, arg1.getClass(), clsBaseArgumentType2, arg2.getClass(), f)
+    new OverloadedDirectInvokerBase2(this, clsBaseArgumentType1, valueType(arg1), clsBaseArgumentType2, valueType(arg2), f)
+  }
+
+  @inline
+  final def invokerInline[T1 <: BaseArgumentType1 : ClassTag, T2 <: BaseArgumentType2 : ClassTag](arg1: T1, arg2: T2)(f: (T1, T2) => Any) = {
+    new OverloadedDirectInvokerBase2(this, clsBaseArgumentType1, valueType(arg1), clsBaseArgumentType2, valueType(arg2), f) with InlinableInvoker
   }
 
   final def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) = {

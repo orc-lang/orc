@@ -16,9 +16,9 @@ import orc.values.sites.{ FunctionalSite, IllegalArgumentInvoker, LocalSingleton
 object Abs extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
-      case a: java.lang.Double => invoker(a)(a => Math.abs(a.doubleValue()))
-      case a: java.lang.Integer => invoker(a)(a => Math.abs(a.intValue()))
-      case a: java.lang.Long => invoker(a)(a => Math.abs(a.longValue()))
+      case a: java.lang.Double => invokerInline(a)(a => Math.abs(a.doubleValue()))
+      case a: java.lang.Integer => invokerInline(a)(a => Math.abs(a.intValue()))
+      case a: java.lang.Long => invokerInline(a)(a => Math.abs(a.longValue()))
       case a: BigDecimal => invoker(a)(a => a.abs)
       case a: BigInt => invoker(a)(a => a.abs)
       case a: java.math.BigDecimal => invoker(a)(a => a.abs)

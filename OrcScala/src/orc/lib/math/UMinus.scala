@@ -18,12 +18,12 @@ import orc.values.sites.{ FunctionalSite, LocalSingletonSite, OverloadedDirectIn
 object UMinus extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
-      case a: java.lang.Double => invoker(a)(a => -a.doubleValue())
-      case a: java.lang.Float => invoker(a)(a => -a.floatValue())
-      case a: java.lang.Long => invoker(a)(a => -a.longValue())
-      case a: java.lang.Integer => invoker(a)(a => -a.intValue())
-      case a: java.lang.Byte => invoker(a)(a => -a.byteValue())
-      case a: java.lang.Short => invoker(a)(a => -a.shortValue())
+      case a: java.lang.Double => invokerInline(a)(a => -a.doubleValue())
+      case a: java.lang.Float => invokerInline(a)(a => -a.floatValue())
+      case a: java.lang.Long => invokerInline(a)(a => -a.longValue())
+      case a: java.lang.Integer => invokerInline(a)(a => -a.intValue())
+      case a: java.lang.Byte => invokerInline(a)(a => -a.byteValue())
+      case a: java.lang.Short => invokerInline(a)(a => -a.shortValue())
       case a: BigDecimal => invoker(a)(a => { -a })
       case a: JBigDecimal => invoker(a)(a => { a.negate() })
       case a: BigInt => invoker(a)(a => { -a })

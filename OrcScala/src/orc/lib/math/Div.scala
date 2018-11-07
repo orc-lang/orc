@@ -33,7 +33,7 @@ object Div extends OverloadedDirectInvokerMethod2[Number, Number] with Functiona
           }
         })
       case (a: java.lang.Double, b: java.lang.Double) =>
-        invoker(a, b)(_.doubleValue() / _.doubleValue())
+        invokerInline(a, b)(_.doubleValue() / _.doubleValue())
       case (a: java.math.BigDecimal, b: java.math.BigDecimal) =>
         invoker(a, b)((a, b) => {
           try {
@@ -48,9 +48,9 @@ object Div extends OverloadedDirectInvokerMethod2[Number, Number] with Functiona
           }
         })
       case (a: java.lang.Long, b: java.lang.Long) =>
-        invoker(a, b)(_.longValue() / _.longValue())
+        invokerInline(a, b)(_.longValue() / _.longValue())
       case (a: java.lang.Integer, b: java.lang.Integer) =>
-        invoker(a, b)(_.intValue() / _.intValue())
+        invokerInline(a, b)(_.intValue() / _.intValue())
       case (a: BigInt, b: BigInt) =>
         invoker(a, b)(_ / _)
       case (a: java.math.BigInteger, b: java.math.BigInteger) =>

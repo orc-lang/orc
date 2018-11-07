@@ -16,7 +16,7 @@ import orc.values.sites.{ FunctionalSite, LocalSingletonSite, OverloadedDirectIn
 
 object Log extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Number) = {
-    invoker(arg1)(a => Math.log(a.doubleValue()))
+    invokerInline(arg1)(a => Math.log(a.doubleValue()))
   }
   override def toString = "Log"
 }
