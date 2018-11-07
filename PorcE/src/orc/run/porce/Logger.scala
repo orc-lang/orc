@@ -65,7 +65,4 @@ object Logger {
   final def finer(msg: => String): Unit = underlying.finer(msg)
   @TruffleBoundary @noinline
   final def finest(msg: => String): Unit = underlying.finest(msg)
-
-  @TruffleBoundary @noinline
-  final def check(assertion: Boolean, message: => Any) = underlying.check(assertion, message)
 }
