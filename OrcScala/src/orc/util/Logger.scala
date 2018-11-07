@@ -85,12 +85,6 @@ class Logger(name: String) {
   @inline final def finer(msg: => String): Unit = if (julLogger.isLoggable(Level.FINER)) { val caller = getCaller(); julLogger.logp(Level.FINER, caller._1, caller._2, msg) }
   @inline final def finest(msg: => String): Unit = if (julLogger.isLoggable(Level.FINEST)) { val caller = getCaller(); julLogger.logp(Level.FINEST, caller._1, caller._2, msg) }
 
-  @elidable(elidable.ASSERTION) @inline
-  final def check(assertion: Boolean, message: => Any) {
-    if (!assertion)
-      log(Level.SEVERE, "Check failed.", new java.lang.Exception("check failed: " + message))
-  }
-
   @inline private def getCaller(): (String, String) = {
     val stackTrace = new Throwable().getStackTrace
     var stackIndex = 0;

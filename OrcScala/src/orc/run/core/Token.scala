@@ -100,7 +100,7 @@ class Token protected (
     group: Group = group,
     clock: Option[VirtualClock] = clock,
     state: TokenState = state): Token = {
-    //Logger.check(stack.forall(!_.isInstanceOf[FutureFrame]), "Stack being used in copy contains FutureFrames: " + stack)
+    //assert(stack.forall(!_.isInstanceOf[FutureFrame]), "Stack being used in copy contains FutureFrames: " + stack)
     val newToken = new Token(node, stack, env, group, clock, state)
     Tracer.traceTokenCreation(newToken, state)
     newToken
@@ -167,7 +167,7 @@ class Token protected (
     /*
     val old = isScheduled.getAndSet(true)
     if (!(old == false || group.isKilled())) {
-      Logger.check(false, s"""${System.nanoTime().toHexString}: Failed to set scheduled: ${this.debugId.toHexString}""")
+      assert(false, s"""${System.nanoTime().toHexString}: Failed to set scheduled: ${this.debugId.toHexString}""")
       orc.util.Tracer.dumpOnlyLocation(debugId)
     }
 
@@ -185,7 +185,7 @@ class Token protected (
   override def onComplete() {
     setQuiescent()
     // MULTI_SCHED_DEBUG
-    //Logger.check(isRunning.compareAndSet(true, false) || state == Killed || Token.isRunningAlreadyCleared.get, s"""${System.nanoTime().toHexString}: Failed to clear running: $this""")
+    //assert(isRunning.compareAndSet(true, false) || state == Killed || Token.isRunningAlreadyCleared.get, s"""${System.nanoTime().toHexString}: Failed to clear running: $this""")
     //Token.isRunningAlreadyCleared.set(false)
     Tracer.traceTokenExecStateTransition(this, TokenExecState.DoneRunning)
   }
@@ -663,14 +663,14 @@ class Token protected (
     /*
     val old = isScheduled.getAndSet(false)
     if (!(old == true || state == Killed)) {
-      Logger.check(false, s"""${System.nanoTime().toHexString}: Failed to clear scheduled: ${this.debugId.toHexString}""")
+      assert(false, s"""${System.nanoTime().toHexString}: Failed to clear scheduled: ${this.debugId.toHexString}""")
       orc.util.Tracer.selectLocation(debugId)
     }
     */
     try {
       if (group.isKilled()) { kill() }
       // MULTI_SCHED_DEBUG
-      //Logger.check(isRunning.compareAndSet(false, true) || state == Killed, s"${System.nanoTime().toHexString}: Failed to set running: $this")
+      //assert(isRunning.compareAndSet(false, true) || state == Killed, s"${System.nanoTime().toHexString}: Failed to set running: $this")
       state match {
         case Live => eval(node)
         case Suspending(prevState) => setState(Suspended(prevState))
@@ -703,7 +703,7 @@ class Token protected (
   override def resolveOptional(b: Binding)(k: Option[AnyRef] => Unit) = {
     // MULTI_SCHED_DEBUG
     //Token.isRunningAlreadyCleared.set(true)
-    //Logger.check(isRunning.compareAndSet(true, false) || state == Killed || Token.isRunningAlreadyCleared.get, s"${System.nanoTime().toHexString}: Failed to clear running: $this")
+    //assert(isRunning.compareAndSet(true, false) || state == Killed || Token.isRunningAlreadyCleared.get, s"${System.nanoTime().toHexString}: Failed to clear running: $this")
     super.resolveOptional(b)(k)
   }
 
