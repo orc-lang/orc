@@ -20,7 +20,7 @@ import orc.ast.oil.named._
 import orc.ast.oil.named.Conversions._
 import orc.lib.builtin._
 import orc.lib.builtin.structured._
-import orc.values.{ Field, Signal }
+import orc.values.{ Field, Signal, NumericsConfig }
 import orc.ast.hasOptionalVariableName
 
 object PrimitiveForms {
@@ -60,7 +60,7 @@ object PrimitiveForms {
   }
 
   // TODO: Replace current tuple values with object and _n fields.
-  def makeNth(a: Argument, i: Int) = Call(a, List(Constant(BigInt(i))), None)
+  def makeNth(a: Argument, i: Int) = Call(a, List(Constant(NumericsConfig.toOrcIntegral(i))), None)
   //def makeNth(a: Argument, i: Int) = FieldAccess(a, Field(s"_$i"))
 
   def makeLet(args: List[Argument]): Expression = {
@@ -92,7 +92,7 @@ object PrimitiveForms {
     val datatypePairs =
       for (ext.Constructor(name, types) <- constructors) yield {
         val cname = Constant(name)
-        val carity = Constant(BigInt(types.size))
+        val carity = Constant(NumericsConfig.toOrcIntegral(types.size))
         makeTuple(List(cname, carity))
       }
     val typeParameter =
@@ -113,7 +113,7 @@ object PrimitiveForms {
     val b = new BoundVar(Some(id"${test}_b"))
     val nb = new BoundVar(Some(id"${test}_nb"))
     Graft(b, test, (callIft(b) >> trueBranch) || (
-        Graft(nb, b ow Constant(java.lang.Boolean.FALSE),  
+        Graft(nb, b ow Constant(java.lang.Boolean.FALSE),
         callIff(nb)) >> falseBranch))
   }
 

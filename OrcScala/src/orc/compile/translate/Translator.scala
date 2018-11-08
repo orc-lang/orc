@@ -24,7 +24,7 @@ import orc.compile.translate.PrimitiveForms._
 import orc.error.OrcException
 import orc.error.OrcExceptionExtension._
 import orc.error.compiletime._
-import orc.values.{ Field, Signal }
+import orc.values.{ Field, Signal, NumericsConfig }
 import orc.values.sites.{ JavaSiteForm, OrcSiteForm }
 import orc.error.compiletime.{ CallPatternWithinAsPattern, CompilationException, ContinuableSeverity, DuplicateKeyException, DuplicateTypeFormalException, MalformedExpression, NonlinearPatternException }
 import orc.ast.hasOptionalVariableName._
@@ -73,9 +73,9 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
       case ext.Call(target, gs) => {
         var expr = convert(target)
         for (g <- gs) {
-          expr = unfold(List(expr), { 
+          expr = unfold(List(expr), {
             case List(m) => convertArgumentGroup(m, g)
-            case _ => throw new AssertionError("Translator internal failure (convert Call arg group match error)") 
+            case _ => throw new AssertionError("Translator internal failure (convert Call arg group match error)")
           })
         }
         expr
@@ -402,7 +402,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         }
         case ext.ConstantPattern(c) => {
           val b = new BoundVar(Some(id"isEq_$c"))
-          
+
           { callEq(focus, Constant(c)) > b > callIft(b) >> _ }
         }
         case ext.VariablePattern(name) => {
@@ -419,7 +419,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         }
         case ext.TuplePattern(ps) => {
           /* Test that the pattern's size matches the focus tuple's size */
-          val tuplesize = Constant(BigInt(ps.size))
+          val tuplesize = Constant(NumericsConfig.toOrcIntegral(ps.size))
           val tupletmp = new BoundVar(focus.optionalVariableName)
           val sizecheck = { callTupleArityChecker(focus, tuplesize) > tupletmp > _ }
 
@@ -448,14 +448,14 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
         case ext.ConsPattern(ph, pt) => {
           val y = new BoundVar(Some(id"${focus}_isCons"))
           val p = ext.TuplePattern(List(ph, pt))
-          
+
           { callIsCons(focus) > y > _ } compose unravel(p, y)
         }
         case ext.RecordPattern(elements) => {
           val y = new BoundVar(Some(id"${focus}_recordMatch"))
           val (labels, patterns) = elements.unzip
           val p = ext.TuplePattern(patterns)
-          
+
           { callRecordMatcher(focus, labels) > y > _ } compose unravel(p, y)
         }
         case ext.CallPattern(name, args) => {
@@ -483,7 +483,7 @@ class Translator(val reportProblem: CompilationException with ContinuableSeverit
 
     val sourceVar = new BoundVar(bridge.optionalVariableName)
     val filterInto = unravel(pat, sourceVar)(false)
-    
+
     sourceVar ->> bridge
 
     bindingMap.values.toList.distinct match {
