@@ -99,6 +99,7 @@ public class NewContinuation extends Expression {
 	@ExplodeLoop
 	public Object universal(final VirtualFrame frame) {
 		final Object[] capturedValues = new Object[capturedVariables.length];
+        CompilerAsserts.compilationConstant(capturedValues.length);
 		for (int i = 0; i < capturedVariables.length; i++) {
 			capturedValues[i] = capturedVariables[i].execute(frame);
 		}

@@ -45,8 +45,6 @@ public class MethodDeclaration {
 		protected final int nMethods;
 
 		private volatile MethodClosure closureCache = null;
-		private volatile long closureCacheChangeCount = 0;
-		private volatile long closureCacheUseCount = 0;
 
 		public NewMethodClosure(final Expression capturedTerminator, final Expression[] capturedExprs,
 				final int nMethods) {
@@ -55,28 +53,12 @@ public class MethodDeclaration {
 			this.nMethods = nMethods;
 		}
 
-		boolean isCachable() {
-			if (CompilerDirectives.inInterpreter() && closureCacheChangeCount > 0) {
-				long usePerChange = closureCacheUseCount / closureCacheChangeCount;
-				return usePerChange >= 7 || closureCacheUseCount < 50;
-			} else {
-				return true;
-			}
-		}
-
 		@SuppressWarnings("boxing")
         @Specialization(guards = { "EnvironmentCaching" }, rewriteOn = StopCachingException.class)
 		@ExplodeLoop
 		public Object cached(final VirtualFrame frame) throws StopCachingException {
 			final int len = capturedExprs.length + nMethods;
 			CompilerAsserts.compilationConstant(len);
-
-			/*
-			if (!isCachable()) {
-				CompilerAsserts.neverPartOfCompilation("Cache invalidation should not be in compiled code.");
-				throw new StopCachingException();
-			}
-			*/
 
 			MethodClosure closure = closureCache;
 
@@ -103,24 +85,7 @@ public class MethodDeclaration {
 				closure = new MethodClosure(capturedValues);
 
 				closureCache = closure;
-
-				/*
-				if (CompilerDirectives.inInterpreter())
-					closureCacheChangeCount++;
-					*/
 			}
-
-			/*
-			if (CompilerDirectives.inInterpreter()) {
-				closureCacheUseCount++;
-				long useCount = closureCacheUseCount;
-
-				if (useCount > 5000) {
-					closureCacheUseCount = 0;
-					closureCacheChangeCount = 0;
-				}
-			}
-			 */
 
 			return closure;
 		}
@@ -129,6 +94,7 @@ public class MethodDeclaration {
 		@ExplodeLoop
 		public Object universal(final VirtualFrame frame) {
 			final Object[] capturedValues = new Object[capturedExprs.length + nMethods];
+            CompilerAsserts.compilationConstant(capturedValues.length);
 			for (int i = 0; i < capturedExprs.length; i++) {
 				capturedValues[i] = capturedExprs[i].execute(frame);
 			}
@@ -157,6 +123,7 @@ public class MethodDeclaration {
         	if(closure.environment[index] == null) {
         		// This races with itself if the closure is reused. But that doesn't matter since any instance is equivalent.
 	            final PorcEClosure m = new PorcEClosure(closure.environment, callTarget, isRoutine);
+	            NodeBase.UNSAFE.fullFence();
 	            closure.environment[index] = m;
         	}
             return (PorcEClosure) closure.environment[index];
