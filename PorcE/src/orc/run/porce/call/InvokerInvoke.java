@@ -13,6 +13,7 @@
 
 package orc.run.porce.call;
 
+import orc.DirectInvoker;
 import orc.Invoker;
 import orc.SiteResponseSet;
 import orc.VirtualCallContext;
@@ -57,9 +58,13 @@ abstract class InvokerInvoke extends NodeBase {
      */
     public abstract SiteResponseSet executeInvoke(VirtualFrame frame, Invoker invoker, VirtualCallContext callContext, Object target, Object[] arguments);
 
-    @Specialization(guards = { "KnownSiteSpecialization" })
-    public SiteResponseSet partiallyEvaluable(InlinableInvoker invoker, VirtualCallContext callContext, Object target, Object[] arguments) {
+    @Specialization(guards = { "isPartiallyEvaluable(invoker)" })
+    public SiteResponseSet partiallyEvaluable(Invoker invoker, VirtualCallContext callContext, Object target, Object[] arguments) {
         return invoker.invoke(callContext, target, arguments);
+    }
+
+    static boolean isPartiallyEvaluable(Invoker invoker) {
+        return InvokerInvokeDirect.isPartiallyEvaluable(invoker);
     }
 
     @Specialization

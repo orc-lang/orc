@@ -17,6 +17,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
 
 import orc.DirectInvoker;
+import orc.Invoker;
 import orc.compile.orctimizer.OrcAnnotation;
 import orc.error.runtime.JavaException;
 import orc.run.porce.NodeBase;
@@ -78,8 +79,10 @@ abstract class InvokerInvokeDirect extends NodeBase {
         return invoker.invokeDirect(target, arguments);
     }
 
-    protected static boolean isPartiallyEvaluable(DirectInvoker invoker) {
-        return invoker instanceof orc.values.sites.InlinableInvoker;
+    static boolean isPartiallyEvaluable(Invoker invoker) {
+        return invoker instanceof orc.values.sites.InlinableInvoker ||
+                (invoker instanceof orc.values.sites.MaybeInlinableInvoker &&
+                        ((orc.values.sites.MaybeInlinableInvoker) invoker).inlinable());
     }
 
     // TODO: SMELL: Most of this class reimplementations various sites to specialize them to
