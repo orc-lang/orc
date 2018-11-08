@@ -97,7 +97,7 @@ object PorcEShared {
       "-XX:-RestrictContended",
       //"-XX:+UseParallelGC",
       //"-XX:+UseG1GC",
-      "-Xms4g", "-Xmx4g", "-Xss8m")
+      "-Xms16g", "-Xmx16g", "-Xss8m")
 
   val mainOrcArgs = Seq(
       "-O", "3", "--echo-ir", "0x1000",

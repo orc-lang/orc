@@ -14,6 +14,7 @@
 package orc.test.proc
 
 import java.io.{ File, FileOutputStream }
+import java.net.InetAddress
 
 import orc.test.util.{ ExperimentalCondition, FactorValue, OsCommand, RemoteCommand }
 
@@ -31,7 +32,18 @@ object ArthursBenchmarkEnv {
   /** This is a list of the all the CPU ids in the order they should be assigned.
     *
     */
-  val cpuIDList = (0 until 64).toSeq
+  val cpuIDList = {
+    val runHostName = targetHost.getOrElse(InetAddress.getLocalHost().getHostName())
+    if (runHostName contains "zemaitis") {
+      (0 until 24).toSeq
+    } else if (runHostName contains "zerberus") {
+      (0 until 16 by 2) ++ (1 until 16 by 2)
+    } else if (runHostName contains "lilith") {
+      (0 until 8 by 2) ++ (1 until 8 by 2)
+    } else {
+      (0 until 64).toSeq
+    }
+  }
   // The config should work for zemaitis: (0 until 64).toSeq
   // Configuration for lilith: Seq(0,4,2,6,1,5,3,7)
   // TODO: This needs to be configurable.
@@ -207,6 +219,7 @@ object ArthursBenchmarkEnv {
 import java.time.Duration
 
 import ArthursBenchmarkEnv.{ JVMExperimentalCondition, JVMRunner, targetBinariesDir, targetHost, testRootDir }
+import java.net.InetAddress
 
 trait PorcEBenchmark extends JVMRunner {
   lazy val remoteJavaHome = System.getProperty("orc.test.remoteJavaHome", "LocalInstalls/graalvm-ee-1.0.0-rc7/jre")
