@@ -151,7 +151,8 @@ public class InternalCPSDispatch extends Dispatch {
         }
 
         @Specialization(guards = { "isTail", "copyArgumentsToFrame != null",
-                "getCachedRootNode() != target.body.getRootNode()" })
+                "getCachedRootNode() != target.body.getRootNode()",
+                "expected == target.body" })
         public void inlinedTail(final VirtualFrame frame,
                 final PorcEClosure target, final Object[] arguments,
                 @Cached("target.body") RootCallTarget expected,
