@@ -32,13 +32,14 @@ object Semaphore
     extends TotalSite1Simple[Number]
     with TypedSite
     with FunctionalSite {
+  override val inlinable = true
   def eval(arg: Number) = {
     val initialValue = arg.intValue
     if (initialValue >= 0) {
-      new Semaphore.Instance(initialValue);
+      new Semaphore.Instance(initialValue)
     } else {
       throw new IllegalArgumentException(
-        "Semaphore requires a non-negative argument");
+        "Semaphore requires a non-negative argument")
     }
   }
 
@@ -62,6 +63,7 @@ object Semaphore
     protected val values = Array(
       // "acquire" ->
       new Site0Simple {
+        override val inlinable = true
         def eval(ctx: VirtualCallContext) = instance synchronized {
           if (0 == n) {
             val mat = ctx.materialize()
@@ -81,6 +83,7 @@ object Semaphore
       },
       // "acquireD" ->
       new Site0Simple with NonBlockingSite {
+        override val inlinable = true
         def eval(ctx: VirtualCallContext) = instance synchronized {
           if (0 == n) {
             ctx.halt();
@@ -92,6 +95,7 @@ object Semaphore
       },
       // "release" ->
       new Site0Simple with NonBlockingSite {
+        override val inlinable = true
         def eval(ctx: VirtualCallContext) = instance synchronized {
           val r = if (waiters.isEmpty) {
             n += 1

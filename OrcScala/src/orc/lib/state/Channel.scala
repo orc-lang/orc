@@ -34,6 +34,7 @@ import orc.values.sites.{
   * @author cawellington, dkitchin
   */
 object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
+  override val inlinable = true
   override def eval(): AnyRef = new Channel.Instance()
 
   def orcType() = ChannelType.getBuilder
@@ -41,6 +42,7 @@ object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
   class PutSite(val channel: Instance)
       extends Site1Simple[AnyRef]
       with NonBlockingSite {
+    override val inlinable = true
 
     def eval(ctx: VirtualCallContext, item: AnyRef): SiteResponseSet =
       channel.synchronized {
@@ -70,6 +72,7 @@ object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
   }
 
   class GetSite(val channel: Instance) extends Site0Simple {
+    override val inlinable = true
 
     def eval(reader: VirtualCallContext) = channel.synchronized {
       if (channel.contents.isEmpty) {
@@ -124,6 +127,7 @@ object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
       new PutSite(Instance.this),
       // "getD",
       new Site0Simple with NonBlockingSite {
+        override val inlinable = true
         def eval(reader: VirtualCallContext) = Instance.this.synchronized {
           if (contents.isEmpty) {
             reader.halt()
@@ -141,6 +145,7 @@ object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
       },
       // "getAll",
       new Site0Simple {
+        override val inlinable = true
         def eval(ctx: VirtualCallContext) = Instance.this.synchronized {
           val out: AnyRef = contents.asScala.toList
           contents.clear()
@@ -153,6 +158,7 @@ object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
       },
       // "isClosed",
       new TotalSite0Simple with NonBlockingSite {
+        override val inlinable = true
         def eval() = Instance.this.synchronized { closed }
       },
       // "close",

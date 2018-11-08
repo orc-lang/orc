@@ -55,9 +55,10 @@ object TupleConstructor extends Site with FunctionalSite with TalkativeSite with
 object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "TupleArityChecker"
   def getInvokerSpecialized(t: AnyRef, arity: Number) = {
-    invoker(t, arity)((t, arity) => t match {
+    val realArity = arity.intValue
+    invokerInline(t, arity)((t, arity) => t match {
       case t: OrcTuple =>
-        if (t.values.length == arity.intValue) {
+        if (t.values.length == realArity) {
           t
         } else {
           throw new HaltException

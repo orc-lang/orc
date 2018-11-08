@@ -77,6 +77,8 @@ trait SiteMetadata extends ValueMetadata {
   def timeToHalt: Delay = Delay.Blocking
   def effects: Effects = Effects.Anytime
 
+  def inlinable: Boolean = false
+
   /** Return a metadata about a site returned from a call to this site with args.
     *
     * A None argument says that any value may be passed in this position at runtime.

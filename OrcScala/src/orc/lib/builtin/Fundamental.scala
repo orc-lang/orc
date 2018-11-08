@@ -69,10 +69,11 @@ case object Eq extends OverloadedDirectInvokerMethod2[Any, Any] with FunctionalS
 
 @SerialVersionUID(5555898947968354991L)
 object Let extends TotalSiteBase with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+  override val inlinable = true
   override def name = "let"
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]) =
     args match {
-      case Array0() => invokerInline(this)((_, _) => Signal)
+      case Array0() => invoker(this)((_, _) => Signal)
       case Array1(v) => invoker(this)((_, vs) => vs(0))
       case vs => invoker(this)((_, vs) => OrcTuple(vs))
     }

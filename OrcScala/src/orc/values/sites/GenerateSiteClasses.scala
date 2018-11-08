@@ -170,7 +170,17 @@ abstract class ${prefix}Site${n}Base${bracketed(i => s"A$i : ClassTag")} extends
         (exampleTarget: T${leadingcomma(i => s"example$i: AA$i")})
         (_impl: (${when(hasCtxArg, "VirtualCallContext, ")}T${invokerArgTypes}) => $invokeReturn): ${when(isDirect, "Direct")}Invoker = {
     new TargetClassAndArgumentClassSpecializedInvoker(exampleTarget, Array[Any](${free(i => s"example$i")}).asInstanceOf[Array[AnyRef]])
-          with ${prefix}Site${n}Base.ImplInvoker[T${invokerArgTypes}] {
+          with ${prefix}Site${n}Base.ImplInvoker[T${invokerArgTypes}] with MaybeInlinableInvoker {
+      val impl = _impl
+      final override val inlinable = ${prefix}Site${n}Base.this.inlinable
+    }
+  }
+
+  protected def invokerInline[T <: ${prefix}Site${n}Base${bracketed(i => s"A$i")}${leadingcomma(i => s"AA$i <: A$i")}]
+        (exampleTarget: T${leadingcomma(i => s"example$i: AA$i")})
+        (_impl: (${when(hasCtxArg, "VirtualCallContext, ")}T${invokerArgTypes}) => $invokeReturn): ${when(isDirect, "Direct")}Invoker = {
+    new TargetClassAndArgumentClassSpecializedInvoker(exampleTarget, Array[Any](${free(i => s"example$i")}).asInstanceOf[Array[AnyRef]])
+          with ${prefix}Site${n}Base.ImplInvoker[T${invokerArgTypes}] with InlinableInvoker {
       val impl = _impl
     }
   }

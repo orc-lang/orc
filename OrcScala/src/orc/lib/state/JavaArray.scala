@@ -25,6 +25,7 @@ import orc.values.sites.{
 }
 
 object JavaArray extends TotalSiteBase with TypedSite {
+  override val inlinable = true
   private val types: Map[String, Class[_]] = Map(
     ("double", java.lang.Double.TYPE),
     ("float", java.lang.Float.TYPE),

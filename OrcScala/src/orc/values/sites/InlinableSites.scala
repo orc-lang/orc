@@ -35,3 +35,17 @@ trait InlinableAccessor extends Accessor
   * Inlining applies to `invoke`, `invokeDirect`, and `canInvoke`.
   */
 trait InlinableInvoker extends Invoker
+
+/** A marker trait for invokers which can potentially be aggressively recursively inlined by the runtime.
+  *
+  * The invoker implementation should be general simple and should not perform
+  * recursive calls (either directly or indirectly by calling into other code).
+  * More specifically, the code should be partially evaluation safe for Truffle.
+  *
+  * Inlining applies to `invoke`, `invokeDirect`, and `canInvoke`.
+  */
+trait MaybeInlinableInvoker extends Invoker {
+  /** True if this invoker should be inlined.
+    */
+  val inlinable: Boolean
+}

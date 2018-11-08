@@ -49,6 +49,7 @@ object Ref
     with TypedSite
     with SiteMetadata
     with FunctionalSite {
+  override val inlinable = true
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
     args.size match {
       case 1 => invoker(this, args: _*)((_, args) => new Ref.Instance(args(0)))
@@ -89,6 +90,7 @@ object Ref
       new readMethod(),
       new writeMethod(),
       new PartialSite0Simple with NonBlockingSite {
+        override val inlinable = true
         // readD
         override def eval() = {
           Instance.this.synchronized {
@@ -103,6 +105,7 @@ object Ref
     )
 
     protected class readMethod extends Site0Simple {
+      override val inlinable = true
 
       override def eval(reader: VirtualCallContext) = {
         Instance.this.synchronized {
@@ -126,6 +129,7 @@ object Ref
     }
 
     protected class writeMethod extends Site1Simple[AnyRef]() {
+      override val inlinable = true
 
       override def eval(writer: VirtualCallContext, v: AnyRef) = {
         Instance.this.synchronized {

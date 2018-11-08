@@ -36,6 +36,7 @@ import orc.values.sites.{
   * @author dkitchin
   */
 object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
+  override val inlinable = true
   override def eval(): AnyRef = new Cell.Instance()
 
   override def orcType(): Type = CellType.getBuilder
@@ -53,6 +54,7 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
       new readMethod(),
       new writeMethod(),
       new PartialSite0Simple with NonBlockingSite {
+        override val inlinable = true
         // readD
         override def eval() = {
           Instance.this.synchronized {
@@ -67,6 +69,7 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
     )
 
     protected class readMethod extends Site0Simple {
+      override val inlinable = true
 
       override def eval(reader: VirtualCallContext) = {
         Instance.this.synchronized {
@@ -92,6 +95,7 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
     protected class writeMethod
         extends Site1Simple[AnyRef]
         with NonBlockingSite {
+      override val inlinable = true
 
       override def eval(writer: VirtualCallContext, v: AnyRef) = {
         Instance.this.synchronized {

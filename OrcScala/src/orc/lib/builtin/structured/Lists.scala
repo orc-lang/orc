@@ -24,6 +24,7 @@ object NilSite extends StructurePairSite(NilConstructor, NilExtractor) with Seri
 
 @SerialVersionUID(2703598179440668393L)
 object NilConstructor extends TotalSite0Simple with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+  override val inlinable = true
   override def name = "Nil"
   def eval() = Nil
   def orcType() = SimpleFunctionType(ListType(Bot))
@@ -31,6 +32,7 @@ object NilConstructor extends TotalSite0Simple with TypedSite with FunctionalSit
 
 @SerialVersionUID(3585143907461788057L)
 object NilExtractor extends PartialSite1Simple[AnyRef] with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+  override val inlinable = true
   override def name = "Nil.unapply"
   def eval(arg: AnyRef) = {
     arg match {
@@ -46,6 +48,7 @@ object ConsSite extends StructurePairSite(ConsConstructor, ConsExtractor) with S
 
 @SerialVersionUID(3494959098141772508L)
 object ConsConstructor extends TotalSite2Simple[AnyRef, List[AnyRef]] with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+  override val inlinable = true
   override def name = "Cons"
   def eval(h: AnyRef, t: List[AnyRef]) = {
     h :: t
@@ -58,6 +61,7 @@ object ConsConstructor extends TotalSite2Simple[AnyRef, List[AnyRef]] with Typed
 
 @SerialVersionUID(-6338949926050200496L)
 object ConsExtractor extends PartialSite1Simple[AnyRef] with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
+  override val inlinable = true
   override def name = "Cons.unapply"
   def eval(arg: AnyRef) =
     arg match {

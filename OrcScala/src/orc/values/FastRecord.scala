@@ -15,9 +15,10 @@ package orc.values
 
 import orc.{ Accessor, OrcRuntime }
 import orc.run.distrib.DOrcMarshalingReplacement
+import orc.values.sites.InlinableAccessor
 
 object FastObject {
-  final class AccessorImpl(members: Array[Field], index: Int) extends Accessor {
+  final class AccessorImpl(members: Array[Field], index: Int) extends Accessor with InlinableAccessor {
     def canGet(target: AnyRef): Boolean = {
       target.isInstanceOf[FastObject] &&
         (target.asInstanceOf[FastObject].members eq members)

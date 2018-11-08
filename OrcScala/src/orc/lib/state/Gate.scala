@@ -35,6 +35,7 @@ final class Gate extends PartialSite0Simple
     with TypedSite
     with NonBlockingSite
     with EffectFreeSite with PinnedPlacementPolicy {
+  override val inlinable = true
   // TODO: Use VarHandle in Java 9.
   private val flag = new AtomicBoolean(false)
 
@@ -60,6 +61,7 @@ object NewGate
     with TypedSite
     with FunctionalSite
     with TalkativeSite {
+  override val inlinable = true
   def eval() = {
     new Gate()
   }

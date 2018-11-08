@@ -27,14 +27,14 @@ object NoneSite extends StructurePairSite(NoneConstructor, NoneExtractor) with S
 @SerialVersionUID(-427078783776597086L)
 object NoneConstructor extends TotalSite0Base with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "None"
-  def getInvoker(runtime: OrcRuntime) = invoker(this) { _ => None }
+  def getInvoker(runtime: OrcRuntime) = invokerInline(this) { _ => None }
   def orcType() = SimpleFunctionType(OptionType(Bot))
 }
 
 @SerialVersionUID(1097292286490160503L)
 object NoneExtractor extends PartialSite1Base[Option[AnyRef]] with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "None.unapply"
-  def getInvoker(runtime: OrcRuntime, arg: Option[AnyRef]) = invoker(this, arg) { (_, a) =>
+  def getInvoker(runtime: OrcRuntime, arg: Option[AnyRef]) = invokerInline(this, arg) { (_, a) =>
     a match {
       case None => Some(Signal)
       case Some(_) => None
@@ -49,7 +49,7 @@ object SomeSite extends StructurePairSite(SomeConstructor, SomeExtractor) with S
 @SerialVersionUID(3009000043854264802L)
 object SomeConstructor extends TotalSite1Base[AnyRef] with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Some"
-  def getInvoker(runtime: OrcRuntime, arg: AnyRef) = invoker(this, arg) { (_, a) =>
+  def getInvoker(runtime: OrcRuntime, arg: AnyRef) = invokerInline(this, arg) { (_, a) =>
     Some(a)
   }
   def orcType() = {
@@ -61,7 +61,7 @@ object SomeConstructor extends TotalSite1Base[AnyRef] with TypedSite with Functi
 @SerialVersionUID(-8183246747813035072L)
 object SomeExtractor extends PartialSite1Base[Option[AnyRef]] with TypedSite with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "Some.unapply"
-  def getInvoker(runtime: OrcRuntime, arg: Option[AnyRef]) = invoker(this, arg) { (_, a) =>
+  def getInvoker(runtime: OrcRuntime, arg: Option[AnyRef]) = invokerInline(this, arg) { (_, a) =>
     a match {
       case Some(v: AnyRef) => Some(v)
       case None => None

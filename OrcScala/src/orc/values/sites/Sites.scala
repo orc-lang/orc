@@ -47,7 +47,16 @@ abstract class SiteBase extends Site {
   protected def invoker[T <: SiteBase](exampleTarget: T, examplesArguments: AnyRef*)
         (_impl: (VirtualCallContext, T, Array[AnyRef]) => SiteResponseSet): Invoker = {
     new TargetClassAndArgumentClassSpecializedInvoker(exampleTarget, examplesArguments.toArray)
-          with SiteBase.ImplInvoker[T] {
+          with SiteBase.ImplInvoker[T] with MaybeInlinableInvoker {
+      val impl = _impl
+      final override val inlinable = SiteBase.this.inlinable
+    }
+  }
+
+  protected def invokerInline[T <: SiteBase](exampleTarget: T, examplesArguments: AnyRef*)
+        (_impl: (VirtualCallContext, T, Array[AnyRef]) => SiteResponseSet): Invoker = {
+    new TargetClassAndArgumentClassSpecializedInvoker(exampleTarget, examplesArguments.toArray)
+          with SiteBase.ImplInvoker[T] with InlinableInvoker {
       val impl = _impl
     }
   }
@@ -118,8 +127,9 @@ abstract class TotalSiteBase extends TotalSite {
   protected def invoker[T <: TotalSiteBase](exampleTarget: T, examplesArguments: AnyRef*)
         (_impl: (T, Array[AnyRef]) => Any): DirectInvoker = {
     new TargetClassAndArgumentClassSpecializedInvoker(exampleTarget, examplesArguments.toArray)
-          with TotalSiteBase.ImplInvoker[T] {
+          with TotalSiteBase.ImplInvoker[T] with MaybeInlinableInvoker {
       val impl = _impl
+      final override val inlinable = TotalSiteBase.this.inlinable
     }
   }
 
@@ -163,10 +173,18 @@ abstract class PartialSiteBase extends PartialSite {
     * exampleTarget should be this, examplesArguments should be the arguments
     * with the correct types for this invoker.
     */
-  protected def invoker[T <: TotalSiteBase](exampleTarget: T, examplesArguments: AnyRef*)
+  protected def invoker[T <: PartialSiteBase](exampleTarget: T, examplesArguments: AnyRef*)
         (_impl: (T, Array[AnyRef]) =>  Option[Any]): DirectInvoker = {
     new TargetClassAndArgumentClassSpecializedInvoker(exampleTarget, examplesArguments.toArray)
-          with PartialSiteBase.ImplInvoker[T] {
+          with PartialSiteBase.ImplInvoker[T] with MaybeInlinableInvoker {
+      val impl = _impl
+      final override val inlinable = PartialSiteBase.this.inlinable
+    }
+  }
+  protected def invokerInline[T <: PartialSiteBase](exampleTarget: T, examplesArguments: AnyRef*)
+        (_impl: (T, Array[AnyRef]) =>  Option[Any]): DirectInvoker = {
+    new TargetClassAndArgumentClassSpecializedInvoker(exampleTarget, examplesArguments.toArray)
+          with PartialSiteBase.ImplInvoker[T] with InlinableInvoker {
       val impl = _impl
     }
   }
