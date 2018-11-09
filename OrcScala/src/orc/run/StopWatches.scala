@@ -19,7 +19,7 @@ import orc.util.DumperRegistry
 object StopWatches {
   @inline
   final val workerEnabled = false
-  
+
   /** Total time a worker uses including stealing
     */
   val workerTime = SummingStopWatch.maybe(workerEnabled)
@@ -57,7 +57,7 @@ object StopWatches {
       workerWorkingT - workerSchedulingT,
       nTasks)
   }
-  
+
 
   if (SummingStopWatch.enabled && workerEnabled) {
     DumperRegistry.registerClear(getAndResetWorkerTimes _)
@@ -68,14 +68,14 @@ object StopWatches {
           "Scheduling overhead [schedulingOverhead]",
           "Actual working time [workTime]",
           "Number of tasks [nTasks]",
-          )) { name => 
+          )) { name =>
       val (a, b, c, d) = getAndResetWorkerTimes()
       (name, a, b, c, d)
     }
   }
 
   /* Regions of interest:
-   * 
+   *
    * Call dispatch
    * Java-level dispatch
    * Site implementations
@@ -83,19 +83,19 @@ object StopWatches {
 
   @inline
   final val callsEnabled = false
-  
+
   /** Total time spent performing calls
     */
   val callTime = SummingStopWatch.maybe(callsEnabled)
-  
+
   /** Time spend performing Java calls after transfer out of Orc
     *
     *  Inside callTime
     */
   val javaCallTime = SummingStopWatch.maybe(callsEnabled)
-  
-  @inline 
-  def javaCall[T](f: => T): T = {
+
+  @inline
+  final def javaCall[T](f: => T): T = {
     if (callsEnabled) {
       val s = javaCallTime.start()
       try {
@@ -113,9 +113,9 @@ object StopWatches {
     *  Inside javaCallTime
     */
   val javaImplTime = SummingStopWatch.maybe(callsEnabled)
-  
-  @inline 
-  def javaImplementation[T](f: => T): T = {
+
+  @inline
+  final def javaImplementation[T](f: => T): T = {
     if (callsEnabled) {
       val s = javaImplTime.start()
       try {
@@ -128,15 +128,15 @@ object StopWatches {
     }
   }
 
-  
+
   /** Time spent performing actual external work
     *
     *  Inside callTime
     */
   val implementationTime = SummingStopWatch.maybe(callsEnabled)
-  
-  @inline 
-  def implementation[T](f: => T): T = {
+
+  @inline
+  final def implementation[T](f: => T): T = {
     if (callsEnabled) {
       val s = implementationTime.start()
       try {
@@ -148,7 +148,7 @@ object StopWatches {
       f
     }
   }
-  
+
   /** Get and reset the measured times.
     *
     *  Returns (Orc call overhead, Java dispatch overhead, time in calls, number of calls, number of Java calls)
@@ -158,31 +158,31 @@ object StopWatches {
     val (javaCallT, nJavaCalls) = javaCallTime.getAndReset()
     val (javaImplT, nJavaImpl) = javaImplTime.getAndReset()
     val (implT, nImpl) = implementationTime.getAndReset()
-    
+
     if ((nCalls - (nImpl + nJavaImpl)).abs > 5 || nJavaCalls != nJavaImpl) {
       Logger.warning(s"The number of calls and implementations are mismatched. $nCalls != ${nImpl + nJavaImpl} || $nJavaCalls != $nJavaImpl")
     }
-    
+
     (callT - javaCallT - implT,
      javaCallT - javaImplT,
      javaImplT + implT,
      nCalls,
      nJavaCalls)
   }
-  
+
 
   if (SummingStopWatch.enabled && callsEnabled) {
     DumperRegistry.registerClear(getAndResetCallTimes _)
-    
+
     DumperRegistry.registerCSVLineDumper("call-times", "csv", "Worker time output file",
         Seq(
           "Dump ID [id]",
           "Orc call overhead [orcOverhead]",
           "Java dispatch overhead [javaOverhead]",
           "time in calls [inCalls]",
-          "number of calls [nCalls]", 
+          "number of calls [nCalls]",
           "number of Java calls [nJavaCalls]"
-          )) { name => 
+          )) { name =>
       val (a, b, c, d, e) = getAndResetCallTimes()
       (name, a, b, c, d, e)
     }
