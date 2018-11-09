@@ -18,6 +18,7 @@ import orc.Invoker;
 import orc.SiteResponseSet;
 import orc.error.runtime.HaltException;
 import orc.run.porce.HaltToken;
+import orc.run.porce.HaltToken.KnownCounter;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.profiles.ValueClassesProfile;
@@ -315,7 +316,24 @@ public class ExternalCPSDispatch extends Dispatch {
                   return n;
               });
           }
+          ensureTail(next);
           return next;
+        }
+
+        /**
+         * @param rs
+         * @param haltToken2
+         */
+        private void checkAndEnsureTail(ResponseSet rs, NodeBase n) {
+            if (rs.next() != null) {
+                // For side-effect of constructing next.
+                getNext();
+            }
+            boolean tailCallOK = isTail && next == null && rs.next() == null;
+            // If tail was added in this call then we will be in the interpreter here.
+            CompilerDirectives.interpreterOnly(() -> {
+                n.setTail(tailCallOK);
+            });
         }
 
         public abstract void execute(VirtualFrame frame, SiteResponseSet rs);
@@ -329,6 +347,7 @@ public class ExternalCPSDispatch extends Dispatch {
         public void publishNonterminal(VirtualFrame frame, ResponseSet.PublishNonterminal rs) {
             CallContextCommon ctx = (CallContextCommon)rs.ctx();
             ctx.c().newToken();
+            checkAndEnsureTail(rs, dispatchP);
             dispatchP.dispatch(frame, ctx.p(), rs.v());
             if (rs.next() != null) {
                 getNext().execute(frame, rs.next());
@@ -338,10 +357,11 @@ public class ExternalCPSDispatch extends Dispatch {
         @Specialization
         public void publishTerminal(VirtualFrame frame, ResponseSet.PublishTerminal rs) {
             CallContextCommon ctx = (CallContextCommon)rs.ctx();
-            dispatchP.dispatch(frame, ctx.p(), rs.v());
             if (ctx instanceof MaterializedCPSCallContext) {
                 ctx.t().removeChild((MaterializedCPSCallContext)ctx);
             }
+            checkAndEnsureTail(rs, dispatchP);
+            dispatchP.dispatch(frame, ctx.p(), rs.v());
             if (rs.next() != null) {
                 getNext().execute(frame, rs.next());
             }
@@ -350,10 +370,11 @@ public class ExternalCPSDispatch extends Dispatch {
         @Specialization
         public void halt(VirtualFrame frame, ResponseSet.Halt rs) {
             CallContextCommon ctx = (CallContextCommon)rs.ctx();
-            haltToken.execute(frame, ctx.c());
             if (ctx instanceof MaterializedCPSCallContext) {
                 ctx.t().removeChild((MaterializedCPSCallContext)ctx);
             }
+            checkAndEnsureTail(rs, haltToken);
+            haltToken.execute(frame, ctx.c());
             if (rs.next() != null) {
                 getNext().execute(frame, rs.next());
             }
@@ -362,11 +383,12 @@ public class ExternalCPSDispatch extends Dispatch {
         @Specialization
         public void discorporate(VirtualFrame frame, ResponseSet.Discorporate rs) {
             CallContextCommon ctx = (CallContextCommon)rs.ctx();
-            ctx.c().setDiscorporate();
-            haltToken.execute(frame, ctx.c());
             if (ctx instanceof MaterializedCPSCallContext) {
                 ctx.t().removeChild((MaterializedCPSCallContext)ctx);
             }
+            ctx.c().setDiscorporate();
+            checkAndEnsureTail(rs, haltToken);
+            haltToken.execute(frame, ctx.c());
             if (rs.next() != null) {
                 getNext().execute(frame, rs.next());
             }
