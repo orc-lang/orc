@@ -1,0 +1,29 @@
+var red =  new Color(240, 59, 32);
+var lightRed =  new Color(255, 200, 150);
+var orange = new Color(254, 178, 76);
+var yellow = new Color(255, 237, 160);
+var middleBlue = new Color(100, 147, 224);
+var lightGreen = new Color(173, 221, 142);
+var lightBlue = new Color(200, 200, 250);
+var gray = new Color(220, 220, 220);
+var violet = new Color(201, 148, 199);
+
+//colorize("name", "Sequence", white);
+colorize("name", "Write.*", yellow);
+//colorize("name", "Read.*", yellow);
+colorize("name", "External.*Dispatch.*", lightRed);
+colorize("name", "External.*Dispatch.*Direct.*", lightGreen);
+colorize("name", "ExternalCPSDispatch.*SpecificData", red);
+colorize("name", "Internal.*Dispatch.*", lightRed);
+colorize("name", "Internal.*Dispatch.*SpecificData", red);
+colorize("name", ".*Unknown*", red);
+colorize("name", "InlinedCall.*", lightGreen);
+colorize("name", ".*Tail.*", green);
+colorize("name", "CatchSelfTailCall.*", white);
+
+colorize("name", ".*Token.*", lightBlue);
+colorize("name", ".*Kill.*", lightBlue);
+colorize("name", ".*Counter.*", lightBlue);
+colorize("name", ".*Force.*", lightBlue);
+
+colorize("name", "(^|.*[$])New.*", orange);

@@ -1,0 +1,4 @@
+//colorizeGradientWithMode("relativeFrequency", 0, 2, "linear");
+
+var violet = new Color(201, 148, 199);
+colorizeGradientCustom("relativeFrequency", 0, 20, "linear", [white, yellow, red, violet], [0, 0.025, 0.05, 1], 16);
