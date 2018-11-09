@@ -60,6 +60,7 @@ public class FlushAllCounters extends Expression {
             @Cached("createCountingProfile()") ConditionProfile isInterestingProfile,
             @Cached("createBinaryProfile()") ConditionProfile isInListProfile,
             @Cached("createInternal(execution)") Dispatch dispatch) {
+        // TODO: PERFORMANCE: Dispatching as tail causes odd and unknown errors.
         //ensureTail(dispatch);
         final int tc = totalCount;
         final int hc = haltCount;
@@ -80,6 +81,13 @@ public class FlushAllCounters extends Expression {
             Counter.incrFlushAllCount();
             CounterOffset prev = null;
             CounterOffset current = (CounterOffset)worker.counterOffsets();
+
+            // TODO: This could be significantly optimized by using a chain of nodes to process some number of counters.
+            //  This would allow:
+            //     a) each element to specialize independently,
+            //     b) the loop unroll and compile better,
+            //     c) easily limiting the number of counter we handle at this node.
+            //  C is notable because it may actually be better to leave counters on the stack if they were created by the called and will be completed there as well.
 
             while (loopProfile.profile(current != null)) {
                 if (tc < Integer.MAX_VALUE && hc < Integer.MAX_VALUE && CompilerDirectives.inInterpreter()) {
