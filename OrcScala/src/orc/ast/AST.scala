@@ -170,11 +170,11 @@ object hasOptionalVariableName {
         val p = pi.next()
         val (p1, useVariableName, truncate) = p match {
           case p if p.startsWith("@") => (p.substring(1), true, true)
-          case p if p.startsWith("~") => (p.substring(1), false, false)
-          case p => (p, false, true)
+          case p if p.startsWith("~") => (p.substring(1), true, false)
+          case p => (p, true, true)
         }
         val v = (ai.next match {
-          case Zipper(v, _) => v
+          case z: Zipper => (z.parents.find(_.isInstanceOf[hasOptionalVariableName]) getOrElse z).value
           case v => v
         }) match {
           case v: hasOptionalVariableName if useVariableName && v.optionalVariableName.isDefined => v.optionalVariableName.get
@@ -182,7 +182,7 @@ object hasOptionalVariableName {
           //case p: Positioned if p.sourceTextRange.isDefined => p.sourceTextRange.get.content
           case o => o
         }
-        val s = cleanIdentifierString(if (v == null) "null" else v.toString)
+        val s = cleanIdentifierString(String.valueOf(v))
         bldr append (if (truncate) s.removeMiddleTo(40, "…") else s)
         bldr append treatEscapes(p1)
       }
@@ -192,9 +192,10 @@ object hasOptionalVariableName {
   }
 
   def unusedVariable = id"_"
+  def internalVariable = id"$$v"
 
-  private val BAD_CHARACTERS = new Regex("[^`a-zA-Z0-9'…]+(?=[`a-zA-Z0-9'…])")
-  private val BAD_CHARACTERS_ENDS = new Regex("^[^`a-zA-Z0-9'…]+|[^`a-zA-Z0-9'…]+$")
+  private val BAD_CHARACTERS = new Regex("[^a-zA-Z0-9'…]+(?=[a-zA-Z0-9'…])")
+  private val BAD_CHARACTERS_ENDS = new Regex("^[^a-zA-Z0-9'…]+|[^a-zA-Z0-9'…]+$|_[0-9]+$")
 
   private def cleanIdentifierString(s: String) = BAD_CHARACTERS_ENDS.replaceAllIn(BAD_CHARACTERS.replaceAllIn(s, "_"), "")
 
