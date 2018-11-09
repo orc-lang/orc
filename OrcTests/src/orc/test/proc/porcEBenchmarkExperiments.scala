@@ -17,10 +17,6 @@ import orc.test.util.FactorDescription
 
 object PorcEShared {
   val mainOrcBenchmarks = Seq(
-            "test_data/performance/sieve/savina_sieve.orc",
-            "test_data/performance/sieve/savina_sieve-opt.orc",
-            "test_data/performance/sieve/savina_sieve-scala.orc",
-            "test_data/performance/sieve/savina_sieve-scala-opt.orc",
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
@@ -59,6 +55,10 @@ object PorcEShared {
             "test_data/performance/map-reduce/wordcount-pure-orc-opt.orc",
             "test_data/performance/n-queens/8-queens.orc",
             "test_data/performance/n-queens/8-queens-opt.orc",
+            "test_data/performance/sieve/savina_sieve.orc",
+            "test_data/performance/sieve/savina_sieve-opt.orc",
+            "test_data/performance/sieve/savina_sieve-scala.orc",
+            "test_data/performance/sieve/savina_sieve-scala-opt.orc",
             )
   private val nonOpt = Seq(
             "test_data/performance/threads.orc",

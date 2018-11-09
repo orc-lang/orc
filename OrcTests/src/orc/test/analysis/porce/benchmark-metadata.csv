@@ -1,9 +1,11 @@
 benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline, implType, optimized, microbenchmark
 N-Queens (Orc),                                          Fine,        F,            Naïve,       F,          Orc,      F,        T
+N-Queens-opt (Orc),                                      Fine,        F,            Naïve,       F,          Orc,      T,        T
 N-Queens (Scala),                                        Fine,        NA,           Naïve,       T,          Scala,    F,        T
 BigSort-naive (Orc),                                     Fine,        F,            Naïve,       F,          Orc,      F,        F
 BigSort-opt (Orc),                                       Coarse,      F,            Naïve,       F,          Orc,      T,        F
 BigSort-scala-opt (Orc),                                 Coarse,      T,            Naïve,       F,          Orc+Scala,T,        F
+BigSort-scala (Orc),                                     Coarse,      T,            Naïve,       F,          Orc+Scala,F,        F
 BigSort-par (Scala),                                     Coarse,      NA,           Naïve,       T,          Scala,    F,        F
 Black-Scholes (Orc),                                     Fine,        F,            Naïve,       F,          Orc,      F,        F
 Black-Scholes-opt (Orc),                                 Fine,        F,            Naïve,       F,          Orc,      T,        F
@@ -25,12 +27,14 @@ SSSP-batched-par (Scala),                                Fine,        NA,       
 SSSP-batched-opt (Orc),                                  Coarse,      F,            Naïve,       F,          Orc,      T,        F
 SSSP-batched-scala (Orc),                                Fine,        F,            Naïve,       F,          Orc+Scala,F,        F
 SSSP-batched-scala-opt (Orc),                            Coarse,      F,            Naïve,       F,          Orc+Scala,T,        F
+Swaptions-naive-opt (Orc),                               Fine,        F,            Naïve,       F,          Orc,      T,        F
+Swaptions-naive (Orc),                                   Fine,        F,            Naïve,       F,          Orc,      F,        F
 Swaptions-naive-scala-sim (Orc),                         Coarse,      T,            Naïve,       F,          Orc+Scala,F,        F
 Swaptions-naive-scala-sim-opt (Orc),                     Coarse,      T,            Naïve,       F,          Orc+Scala,T,        F
-Swaptions-naive-scala-subroutines (Orc),                 Fine,        F,            Naïve,       F,          Orc,      F,        F
-Swaptions-naive-scala-subroutines-opt (Orc),             Fine,        F,            Naïve,       F,          Orc,      T,        F
-#Swaptions-naive-scala-swaption (Orc),                    Coarse,      T,            Naïve,       F,          Orc+Scala,T,        F
-#Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F,          Scala,    T,        F
+Swaptions-naive-scala-subroutines (Orc),                 Fine,        T,            Naïve,       F,          Orc+Scala,F,        F
+Swaptions-naive-scala-subroutines-opt (Orc),             Fine,        T,            Naïve,       F,          Orc+Scala,T,        F
+Swaptions-naive-scala-swaption (Orc),                    Coarse,      T,            Naïve,       F,          Orc+Scala,T,        F
+Swaptions-par-swaption (Scala),                          Coarse,      NA,           Par. Col.,   F,          Scala,    T,        F
 Swaptions-par-trial (Scala),                             Coarse,      NA,           Par. Col.,   TRUE,       Scala,    F,        F
 ThreadRing-2 (Orc),                                      Fine,        F,            Thread,      F,          Orc,      T,        T
 ThreadRing (Scala),                                      Fine,        NA,           Thread,      TRUE,       Scala,    F,        T
