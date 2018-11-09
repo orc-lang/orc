@@ -146,11 +146,14 @@ public class InternalCPSDispatch extends Dispatch {
             if (node == null) {
                 return null;
             } else {
+                // We cannot just return node because any @Cached argument on a specialization will be inserted as a
+                // child. Obviously this node is NOT a child.
                 return node::copyArgumentsToFrame;
             }
         }
 
-        @Specialization(guards = { "isTail", "copyArgumentsToFrame != null",
+        @Specialization(guards = { "isTail",
+                "copyArgumentsToFrame != null",
                 "getCachedRootNode() != expected.getRootNode()",
                 "expected == target.body" })
         public void inlinedTail(final VirtualFrame frame,

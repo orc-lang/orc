@@ -106,7 +106,7 @@ public abstract class InlinedCallRoot extends NodeBase {
         }
     }
 
-    public boolean isApplicable(final VirtualFrame frame) {
+    public final boolean isApplicable(final VirtualFrame frame) {
         CompilerAsserts.neverPartOfCompilation("Slow isApplicable");
 
         Seq<Variable> argumentVariables = targetRootNode.getArgumentVariables();
@@ -124,7 +124,7 @@ public abstract class InlinedCallRoot extends NodeBase {
     }
 
     @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
-    void copyArgumentsToFrame(final VirtualFrame frame, final Object[] arguments) {
+    final void copyArgumentsToFrame(final VirtualFrame frame, final Object[] arguments) {
         if (arguments.length != argumentSlots.length + 1) {
             CompilerDirectives.transferToInterpreter();
             throw new ArityMismatchException(arguments.length - 1, argumentSlots.length);
@@ -143,7 +143,7 @@ public abstract class InlinedCallRoot extends NodeBase {
         }
     }
     @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
-    void clearFrame(final VirtualFrame frame) {
+    final void clearFrame(final VirtualFrame frame) {
         for (int i = 0; i < argumentSlots.length; i++) {
             FrameSlot slot = argumentSlots[i];
             frame.setObject(slot, null);
@@ -206,6 +206,13 @@ public abstract class InlinedCallRoot extends NodeBase {
         return Pair.create(this, v);
     }
 
+    /**
+     * Find the InlinedCallRoot ancestor of `node`, if node is in tail position w.r.t. that ancestor.
+     *
+     * @param node The tail node to start searching from.
+     * @param targetRootNode The root node the InlinedCallRoot must have inlined.
+     * @return The InlinedCallRoot ancestor or null
+     */
     public static InlinedCallRoot findInlinedCallRoot(final Node node, final RootNode targetRootNode) {
         if (node instanceof InlinedCallRoot) {
             if (((InlinedCallRoot)node).targetRootNode == targetRootNode) {
