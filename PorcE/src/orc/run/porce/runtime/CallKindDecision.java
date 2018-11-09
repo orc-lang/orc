@@ -13,6 +13,9 @@
 
 package orc.run.porce.runtime;
 
+import java.util.ArrayList;
+import java.util.regex.Pattern;
+
 import orc.run.porce.Logger;
 import orc.run.porce.NodeBase;
 import orc.run.porce.PorcERootNode;
@@ -20,6 +23,7 @@ import orc.run.porce.SpecializationConfiguration;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 
 /**
@@ -47,8 +51,7 @@ public enum CallKindDecision {
     }
 
     public static class Table {
-        @CompilationFinal(dimensions=1)
-        private Entry[] table;
+        private ArrayList<Entry> table;
 
         /**
          * Build a table containing the specified entries.
@@ -56,20 +59,27 @@ public enum CallKindDecision {
          */
         @SuppressWarnings("unchecked")
         public Table(scala.Tuple2<scala.Tuple2<String, String>, CallKindDecision>... entries) {
-            table = new Entry[entries.length];
-            for (int i = 0; i < entries.length; i++) {
-                table[i] = new Entry(entries[i]._1()._1(), entries[i]._1()._2(), entries[i]._2());
-            }
+            table = new ArrayList<Entry>(entries.length);
+            add(entries);
         }
 
-        @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_UNROLL)
+        public Table add(@SuppressWarnings("unchecked") scala.Tuple2<scala.Tuple2<String, String>, CallKindDecision>... entries) {
+            table.ensureCapacity(table.size() + entries.length);
+            for (int i = 0; i < entries.length; i++) {
+                table.add(new Entry(entries[i]._1()._1(), entries[i]._1()._2(), entries[i]._2()));
+            }
+            return this;
+        }
+
+        @TruffleBoundary
         public CallKindDecision get(String source, String target) {
             CompilerAsserts.compilationConstant(table);
             if (SpecializationConfiguration.UseExternalCallKindDecision) {
-                for (int i = 0; i < table.length; i++) {
-                    Entry e = table[i];
+                for (int i = 0; i < table.size(); i++) {
+                    Entry e = table.get(i);
                     CompilerAsserts.compilationConstant(e);
-                    if (e.source == source && e.target == target) {
+                    if (e.source == source && e.target == target ||
+                            e.sourceRE.matcher(source).lookingAt() && e.targetRE.matcher(target).lookingAt()) {
                         return e.kind;
                     }
                 }
@@ -78,13 +88,17 @@ public enum CallKindDecision {
         }
     }
 
-    private static class Entry {
+    private static final class Entry {
         final String source;
         final String target;
+        final Pattern sourceRE;
+        final Pattern targetRE;
         final CallKindDecision kind;
         public Entry(String source, String target, CallKindDecision kind) {
             this.source = source.intern();
+            this.sourceRE = Pattern.compile(source);
             this.target = target.intern();
+            this.targetRE = Pattern.compile(target);
             this.kind = kind;
         }
     }
