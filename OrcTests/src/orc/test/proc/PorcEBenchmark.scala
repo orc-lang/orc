@@ -228,9 +228,11 @@ trait PorcEBenchmark extends JVMRunner {
   def softTimeLimit: Double
 
   def runExperiment(experimentalConditions: Iterable[JVMExperimentalCondition]) = {
+    lazy val actuallyRunTests = Option(System.getProperty("orc.test.benchmark.actuallyRunTests")).map(_.toBoolean).getOrElse(true)
     lazy val runOutputDir = System.getProperty("orc.executionlog.dir")
     if (System.getProperty("orc.executionlog.dir") == null || !(new File(s"$runOutputDir/experimental-conditions.csv").exists())) {
-      ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
+      if (actuallyRunTests)
+        ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
     } else {
       println(s"orc.executionlog.dir is set. Assuming we are continuing an existing run. $runOutputDir/experimental-conditions.csv is not being rewritten. Make sure it's still correct.")
     }
@@ -273,7 +275,7 @@ trait PorcEBenchmark extends JVMRunner {
     //println("Waiting")
     //Thread.sleep(5 * 1000)
 
-    if (Option(System.getProperty("orc.test.benchmark.actuallyRunTests")).map(_.toBoolean).getOrElse(true)) {
+    if (actuallyRunTests) {
       for (expCondition <- filteredExperimentalConditions) {
         runJVM(expCondition, runOutputDir, softTimeLimit, hardTimeLimit)
       }

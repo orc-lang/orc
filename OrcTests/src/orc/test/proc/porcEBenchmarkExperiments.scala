@@ -122,7 +122,7 @@ object PorcEShared {
         "orc.porce.truffleASTInlining" -> true,
         "orc.porce.truffleASTInliningLimit" -> 10000,
         //"orc.porce.universalTCO" -> true,
-        //"orc.porce.useExternalCallKindDecision" -> true,
+        "orc.porce.useExternalCallKindDecision" -> true,
         )
 
 
