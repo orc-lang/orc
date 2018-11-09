@@ -91,7 +91,7 @@ import InvocationBehaviorUtilities._
   case object Raw extends Config("", false, true, "SiteResponseSet") {
     def callImpl(implArguments: String): String = {
       s"""
-      orc.run.StopWatches.implementation {
+      /*orc.run.StopWatches.implementation*/ {
         impl($implArguments)
       }
       """.trim()
@@ -102,7 +102,7 @@ import InvocationBehaviorUtilities._
     def callImpl(implArguments: String): String = {
       s"""
       try {
-        orc.run.StopWatches.implementation {
+        /*orc.run.StopWatches.implementation*/ {
           impl($implArguments).asInstanceOf[AnyRef]
         }
       } catch {
@@ -117,7 +117,7 @@ import InvocationBehaviorUtilities._
     def callImpl(implArguments: String): String = {
       s"""
       (try {
-        orc.run.StopWatches.implementation {
+        /*orc.run.StopWatches.implementation*/ {
           impl($implArguments)
         }
       } catch {

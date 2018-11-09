@@ -32,7 +32,7 @@ object TupleConstructor extends Site with FunctionalSite with TalkativeSite with
         target eq TupleConstructor
       }
       def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-        orc.run.StopWatches.implementation {
+        /*orc.run.StopWatches.implementation*/ {
           OrcTuple(arguments)
         }
       }

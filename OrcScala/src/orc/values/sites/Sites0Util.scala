@@ -63,7 +63,7 @@ object Site0Base {
     val impl: (VirtualCallContext, T) => SiteResponseSet
 
     def invoke(ctx: VirtualCallContext, target: AnyRef, arguments: Array[AnyRef]): SiteResponseSet = {
-      orc.run.StopWatches.implementation {
+      /*orc.run.StopWatches.implementation*/ {
         impl(ctx, target.asInstanceOf[T])
       }
     }
@@ -115,7 +115,7 @@ object PartialSite0Base {
 
     def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
       (try {
-        orc.run.StopWatches.implementation {
+        /*orc.run.StopWatches.implementation*/ {
           impl(target.asInstanceOf[T])
         }
       } catch {
@@ -174,7 +174,7 @@ object TotalSite0Base {
 
     def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
       try {
-        orc.run.StopWatches.implementation {
+        /*orc.run.StopWatches.implementation*/ {
           impl(target.asInstanceOf[T]).asInstanceOf[AnyRef]
         }
       } catch {

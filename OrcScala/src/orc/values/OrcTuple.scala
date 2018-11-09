@@ -41,7 +41,7 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
           }
 
           def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-            orc.run.StopWatches.implementation {
+            /*orc.run.StopWatches.implementation*/ {
               target.asInstanceOf[OrcTuple].values(arguments(0).asInstanceOf[BigInt].intValue())
             }
           }
@@ -61,7 +61,7 @@ case class OrcTuple(values: Array[AnyRef]) extends PartialSite with UntypedSite 
           }
 
           def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
-            orc.run.StopWatches.implementation {
+            /*orc.run.StopWatches.implementation*/ {
               target.asInstanceOf[OrcTuple].values(arguments(0).asInstanceOf[java.lang.Long].intValue())
             }
           }
