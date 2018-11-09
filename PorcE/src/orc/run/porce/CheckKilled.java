@@ -19,9 +19,9 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 @NodeChild("terminator")
-public class CheckKilled extends Expression {
+public abstract class CheckKilled extends Expression {
 	private final BranchProfile killedProfile = BranchProfile.create();
-	
+
     @Specialization
     public PorcEUnit run(final Terminator terminator) {
     	try {

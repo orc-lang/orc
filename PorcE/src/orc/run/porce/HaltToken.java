@@ -26,7 +26,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
 @NodeChild("counter")
-public class HaltToken extends Expression {
+public abstract class HaltToken extends Expression {
 
     protected final PorcEExecution execution;
 

@@ -26,7 +26,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 @NodeChild("counter")
 @NodeChild("terminator")
 @NodeChild("continuation")
-public class Kill extends Expression {
+public abstract class Kill extends Expression {
     protected final PorcEExecution execution;
 
     public Kill(final PorcEExecution execution) {

@@ -12,6 +12,7 @@
 package orc.run.porce.call;
 
 import orc.run.porce.Expression;
+import orc.run.porce.PorcEUnit;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.TailCallException;
 
@@ -40,17 +41,18 @@ public class CatchTailCall extends Expression {
 
     @SuppressWarnings("boxing")
     @Override
-    public void executePorcEUnit(VirtualFrame frame) {
+    public Object execute(VirtualFrame frame) {
         CompilerAsserts.compilationConstant(isTail);
         if (isTail) {
-            body.executePorcEUnit(frame);
+            return body.execute(frame);
         } else {
             try {
-                body.executePorcEUnit(frame);
+                return body.execute(frame);
             } catch (TailCallException e) {
                 // TODO: This does not add an initial target to the set. It probably should in some cases, but it would be
                 // almost impossible to do that here.
                 loop.executeTailCalls(frame, e);
+                return PorcEUnit.SINGLETON;
             }
         }
     }

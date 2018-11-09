@@ -142,7 +142,7 @@ public class Force {
     @NodeChild(value = "p", type = Expression.class)
     @NodeChild(value = "c", type = Expression.class)
     @NodeChild(value = "t", type = Expression.class)
-    public static class New extends Expression {
+    public static abstract class New extends Expression {
 	private final PorcEExecution execution;
 	private final int nFutures;
 
@@ -167,7 +167,7 @@ public class Force {
     @NodeChild(value = "future", type = Expression.class)
     @ImportStatic({ Force.class })
     @Introspectable
-    public static class Future extends Expression {
+    public static abstract class Future extends Expression {
 	protected final PorcEExecution execution;
 	private final int index;
 

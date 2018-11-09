@@ -31,11 +31,11 @@ public class TryFinally extends Expression {
     }
 
     @Override
-    public void executePorcEUnit(final VirtualFrame frame) {
+    public Object execute(final VirtualFrame frame) {
         try {
-            body.executePorcEUnit(frame);
+            return body.execute(frame);
         } finally {
-            handler.executePorcEUnit(frame);
+            handler.execute(frame);
         }
     }
 

@@ -36,7 +36,7 @@ public class MethodDeclaration {
 
     @Introspectable
     @ImportStatic(SpecializationConfiguration.class)
-	public static class NewMethodClosure extends Expression {
+	public static abstract class NewMethodClosure extends Expression {
 		@Children
 		protected final Expression[] capturedExprs;
 		@Child
@@ -107,7 +107,7 @@ public class MethodDeclaration {
     }
 
     @NodeChild("closure")
-    public static class NewMethod extends Expression {
+    public static abstract class NewMethod extends Expression {
     	final int index;
     	final RootCallTarget callTarget;
     	final boolean isRoutine;

@@ -47,7 +47,7 @@ public class Sequence extends Expression {
         try {
             for (int i = 0; i < exprs.length - 1; i++) {
                 final Expression expr = exprs[i];
-                expr.executePorcEUnit(frame);
+                expr.execute(frame);
             }
             return exprs[exprs.length - 1].execute(frame);
         } finally {

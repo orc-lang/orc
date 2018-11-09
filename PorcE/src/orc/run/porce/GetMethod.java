@@ -32,7 +32,7 @@ import static orc.run.porce.GetField.*;
 @NodeChild(value = "object", type = Expression.class)
 @Introspectable
 @ImportStatic({ SpecializationConfiguration.class, GetField.class })
-public class GetMethod extends Expression {
+public abstract class GetMethod extends Expression {
     protected final PorcEExecution execution;
     protected static final Field field = Field.create("apply");
 

@@ -25,7 +25,7 @@ import com.oracle.truffle.api.nodes.RepeatingNode;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.profiles.BranchProfile;
 
-public class CatchSelfTailCall extends Expression {
+public abstract class CatchSelfTailCall extends Expression {
     @Child
     protected LoopNode loop;
 

@@ -24,15 +24,8 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 @NodeInfo(language = "PorcE")
 @TypeSystemReference(PorcETypes.class)
 public abstract class PorcENode extends NodeBase {
-    
-    public Object execute(final VirtualFrame frame) {
-	        executePorcEUnit(frame);
-	        return PorcEUnit.SINGLETON;
-    }
 
-    public void executePorcEUnit(final VirtualFrame frame) {
-        execute(frame);
-    }
+    public abstract Object execute(final VirtualFrame frame);
 
     public PorcEClosure executePorcEClosure(final VirtualFrame frame) throws UnexpectedResultException {
         return PorcETypesGen.expectPorcEClosure(execute(frame));

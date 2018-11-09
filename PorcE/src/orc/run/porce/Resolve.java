@@ -27,7 +27,7 @@ import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-public class Resolve extends Expression {
+public abstract class Resolve {
     public static boolean isNonFuture(final Object v) {
         return !(v instanceof orc.Future);
     }
@@ -37,7 +37,7 @@ public class Resolve extends Expression {
     @NodeChild(value = "t", type = Expression.class)
     @NodeField(name = "nFutures", type = int.class)
     @NodeField(name = "execution", type = PorcEExecution.class)
-    public static class New extends Expression {
+    public static abstract class New extends Expression {
         @Specialization
         public Object run(final int nFutures, final PorcEExecution execution, final PorcEClosure p, final Counter c, final Terminator t) {
             return new Resolver(p, c, t, nFutures, execution);
@@ -52,7 +52,7 @@ public class Resolve extends Expression {
     @NodeChild(value = "future", type = Expression.class)
     @NodeField(name = "index", type = int.class)
     @ImportStatic({ Force.class })
-    public static class Future extends Expression {
+    public static abstract class Future extends Expression {
         @Specialization(guards = { "isNonFuture(future)" })
         public PorcEUnit nonFuture(final int index, final Resolver join, final Object future) {
             join.set(index);

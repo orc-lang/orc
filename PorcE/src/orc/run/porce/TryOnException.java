@@ -39,18 +39,18 @@ public class TryOnException extends Expression {
     }
 
     @Override
-    public void executePorcEUnit(final VirtualFrame frame) {
+    public Object execute(final VirtualFrame frame) {
         try {
-            body.executePorcEUnit(frame);
+            return body.execute(frame);
         } catch (HaltException e) {
             haltCatchProfile.enter();
             // Halt exceptions arriving here should only be for control flow (e.i. they should already be reported to
             // the execution if needed.)
             assert e.getCause() == null;
-            handler.executePorcEUnit(frame);
+            return handler.execute(frame);
         } catch (KilledException e) {
             killCatchProfile.enter();
-            handler.executePorcEUnit(frame);
+            return handler.execute(frame);
         }
     }
 

@@ -21,7 +21,7 @@ import com.oracle.truffle.api.profiles.BranchProfile;
 
 @NodeChild("counter")
 @ImportStatic(SpecializationConfiguration.class)
-public class NewToken extends Expression {
+public abstract class NewToken extends Expression {
     private final BranchProfile resurrectProfile = BranchProfile.create();
     private final Counter.NewTokenContext ctx;
 

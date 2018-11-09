@@ -31,7 +31,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.profiles.LoopConditionProfile;
 
 @Introspectable
-public class FlushAllCounters extends Expression {
+public abstract class FlushAllCounters extends Expression {
 
     protected final PorcEExecution execution;
     protected final int flushPolarity;

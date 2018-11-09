@@ -27,7 +27,7 @@ import com.oracle.truffle.api.nodes.SlowPathException;
 
 @ImportStatic({ SpecializationConfiguration.class })
 @Introspectable
-public class NewContinuation extends Expression {
+public abstract class NewContinuation extends Expression {
 	@Children
 	protected final Expression[] capturedVariables;
 	protected final RootCallTarget callTarget;
