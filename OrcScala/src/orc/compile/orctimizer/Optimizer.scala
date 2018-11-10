@@ -284,7 +284,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     e match {
       case Force.Z(xs, vs, body) => {
         def eliminateNonFutures() = {
-          val values = (xs zip vs).map(v => (v._1, v._2.value, a.valuesOf(v._2)))
+          //val values = (xs zip vs).map(v => (v._1, v._2.value, a.valuesOf(v._2)))
           val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).futures.nonEmpty)
 
           val (newXs, newVs) = fs.unzip
@@ -487,8 +487,15 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case Branch.Z(f, x, g) if !a.effects(f) =>
         val valueExpr = f.value
         val parents = e.parents.tail
-        parents.collectFirst({ case Branch.Z(Zipper(`valueExpr`, _), y, _) => y }) map { y =>
-          g.value.subst(y, x)
+        attemptOptimization {
+          parents.collectFirst({
+            // TODO: This is overly conservative and rejects the optimization if ANY expression in the parent has effects.
+            // The opt could still be useful for effect-free expression trees (for example, math).
+            case expr: Expression.Z if a.effects(expr) => abortOptimization()
+            case Branch.Z(Zipper(`valueExpr`, _), y, _) => y
+          }) map { y =>
+            g.value.subst(y, x)
+          }
         }
       case _ => None
     }
