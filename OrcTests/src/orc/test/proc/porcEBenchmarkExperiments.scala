@@ -110,6 +110,7 @@ object PorcEShared {
         "graal.TruffleCompilationThreshold" -> 300,
         //"graal.TruffleMaximumRecursiveInlining" -> 10,
         "graal.TruffleInliningMaxCallerSize" -> 200,
+        "graal.InliningDepthError" -> 5000,
         //"graal.MaximumInliningSize" -> 5000,
         //"graal.TrivialInliningSize" -> 1000,
         //"graal.MaximumDesiredSize" -> 30000,
@@ -176,7 +177,8 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = Seq(24, 12, 1, 6, 18)
+      //val nCPUsValues = Seq(16, 8, 4, 12, 1)
+      val nCPUsValues = Seq(24, 12, 6, 18, 1)
       val nRuns = 1
       val porce = for {
         run <- 0 until nRuns
