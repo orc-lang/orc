@@ -111,5 +111,5 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array
 
   val name: String = "Black-Scholes-naive"
 
-  val size: Int = BlackScholesData.data.size
+  lazy val size: Int = BlackScholesData.data.size
 }

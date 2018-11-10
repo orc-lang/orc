@@ -35,5 +35,5 @@ object BlackScholesPar extends BenchmarkApplication[Array[BlackScholesStock], Ar
 
   val name: String = "Black-Scholes-par"
 
-  val size: Int = BlackScholesData.data.size
+  lazy val size: Int = BlackScholesData.data.size
 }
