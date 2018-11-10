@@ -32,7 +32,6 @@ object Semaphore
     extends TotalSite1Simple[Number]
     with TypedSite
     with NonBlockingSite with TalkativeSite {
-  override val inlinable = true
   def eval(arg: Number) = {
     val initialValue = arg.intValue
     if (initialValue >= 0) {

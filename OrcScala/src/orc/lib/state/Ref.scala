@@ -49,7 +49,6 @@ object Ref
     with TypedSite
     with SiteMetadata
     with NonBlockingSite with TalkativeSite {
-  override val inlinable = true
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
     args.size match {
       case 1 => invoker(this, args: _*)((_, args) => new Ref.Instance(args(0)))

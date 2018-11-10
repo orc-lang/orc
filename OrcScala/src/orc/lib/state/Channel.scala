@@ -34,7 +34,6 @@ import orc.values.sites.{
   * @author cawellington, dkitchin
   */
 object Channel extends TotalSite0Simple with TypedSite with NonBlockingSite with TalkativeSite {
-  override val inlinable = true
   override def eval(): AnyRef = new Channel.Instance()
 
   def orcType() = ChannelType.getBuilder

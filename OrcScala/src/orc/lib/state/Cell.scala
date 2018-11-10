@@ -37,7 +37,6 @@ import orc.values.sites.{
   * @author dkitchin
   */
 object Cell extends TotalSite0Simple with TypedSite with NonBlockingSite with TalkativeSite {
-  override val inlinable = true
   override def eval(): AnyRef = new Cell.Instance()
 
   override def orcType(): Type = CellType.getBuilder

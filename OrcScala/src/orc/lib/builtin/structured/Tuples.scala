@@ -55,17 +55,30 @@ object TupleConstructor extends Site with FunctionalSite with TalkativeSite with
 object TupleArityChecker extends OverloadedDirectInvokerMethod2[AnyRef, Number] with FunctionalSite with Serializable with LocalSingletonSite {
   override def name = "TupleArityChecker"
   def getInvokerSpecialized(t: AnyRef, arity: Number) = {
-    val realArity = arity.intValue
-    invokerInline(t, arity)((t, arity) => t match {
-      case t: OrcTuple =>
-        if (t.values.length == realArity) {
-          t
-        } else {
-          throw new HaltException
-        }
+    arity match {
+      case arity: java.lang.Long =>
+        invokerInline(t, arity)((t, arity) => t match {
+          case t: OrcTuple =>
+            if (t.values.length == arity) {
+              t
+            } else {
+              throw new HaltException
+            }
+          case _ =>
+            throw new HaltException
+          })
       case _ =>
-        throw new HaltException
-      })
+        invoker(t, arity)((t, arity) => t match {
+          case t: OrcTuple =>
+            if (t.values.length == arity) {
+              t
+            } else {
+              throw new HaltException
+            }
+          case _ =>
+            throw new HaltException
+          })
+    }
   }
 
   override def publicationMetadata(args: List[Option[AnyRef]]): Option[SiteMetadata] = args match {

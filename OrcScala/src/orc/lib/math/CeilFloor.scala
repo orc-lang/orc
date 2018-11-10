@@ -19,8 +19,12 @@ import orc.values.sites.{ FunctionalSite, LocalSingletonSite, OverloadedDirectIn
 object Ceil extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
-      case a: java.lang.Double => invokerInline(a)(a => NumericsConfig.toOrcIntegral(Math.ceil(a)))
-      case a: java.lang.Float => invokerInline(a)(a => NumericsConfig.toOrcIntegral(Math.ceil(a.toDouble)))
+      case a: java.lang.Double if NumericsConfig.preferLong =>
+        invokerInline(a)(a => NumericsConfig.toOrcIntegral(Math.ceil(a)))
+      case a: java.lang.Float if NumericsConfig.preferLong =>
+        invokerInline(a)(a => NumericsConfig.toOrcIntegral(Math.ceil(a.toDouble)))
+      case a: java.lang.Double => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.ceil(a)))
+      case a: java.lang.Float => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.ceil(a.toDouble)))
       case a: BigDecimal => invoker(a)(a => {
         BigInt(a.bigDecimal.setScale(0, JBigDecimal.ROUND_CEILING).toBigInteger())
       })
@@ -36,8 +40,12 @@ object Ceil extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite w
 object Floor extends OverloadedDirectInvokerMethod1[Number] with FunctionalSite with Serializable with LocalSingletonSite {
   def getInvokerSpecialized(arg1: Number) = {
     arg1 match {
-      case a: java.lang.Double => invokerInline(a)(a => NumericsConfig.toOrcIntegral(Math.floor(a)))
-      case a: java.lang.Float => invokerInline(a)(a => NumericsConfig.toOrcIntegral(Math.floor(a.toDouble)))
+      case a: java.lang.Double if NumericsConfig.preferLong =>
+        invokerInline(a)(a => NumericsConfig.toOrcIntegral(Math.floor(a)))
+      case a: java.lang.Float if NumericsConfig.preferLong =>
+        invokerInline(a)(a => NumericsConfig.toOrcIntegral(Math.floor(a.toDouble)))
+      case a: java.lang.Double => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.floor(a)))
+      case a: java.lang.Float => invoker(a)(a => NumericsConfig.toOrcIntegral(Math.floor(a.toDouble)))
       case a: BigDecimal => invoker(a)(a => {
         BigInt(a.bigDecimal.setScale(0, JBigDecimal.ROUND_FLOOR).toBigInteger())
       })
