@@ -131,11 +131,11 @@ def dedup(in, out) =
 	val dedupPool = Map()
 	val outputPool = Map() #
 	readSegements(largeChunkMin, in) >(roughChunk, roughID)> 
-	printLogLine("Rough chunk: " + roughID + ": " + roughChunk.start() + " " + roughChunk.size()) >>
+	--printLogLine("Rough chunk: " + roughID + ": " + roughChunk.start() + " " + roughChunk.size()) >>
 	segment(0, roughChunk) >(chunk, fineID)> 
-	(signal | (printLogLine("Chunk: " + (roughID, fineID) + " " + chunk.size()) >> stop)) >>
+	--(signal | (printLogLine("Chunk: " + (roughID, fineID) + " " + chunk.size()) >> stop)) >>
 	compress(chunk, dedupPool, (roughID, fineID)) >compressedChunk> 
-	(signal | (printLogLine("Compressed chunk: " + (roughID, fineID) + " " + compressedChunk.uncompressedSHA1() + " " + compressedChunk.compressedData()) >> stop)) >>
+	--(signal | (printLogLine("Compressed chunk: " + (roughID, fineID) + " " + compressedChunk.uncompressedSHA1() + " " + compressedChunk.compressedData()) >> stop)) >>
 	outputPool.put((roughID, fineID), compressedChunk) >> stop |
 	write(out, outputPool)
 
