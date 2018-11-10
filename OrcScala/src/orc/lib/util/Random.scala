@@ -15,9 +15,9 @@ import java.math.BigInteger
 import java.util.concurrent.ThreadLocalRandom
 
 import orc.{ DirectInvoker, OrcRuntime }
-import orc.values.sites.{ DirectSite, FunctionalSite, IllegalArgumentInvoker, LocalSingletonSite, Range, SiteMetadata }
+import orc.values.sites.{ DirectSite, NonBlockingSite, TalkativeSite, IllegalArgumentInvoker, LocalSingletonSite, Range, SiteMetadata }
 
-object Random extends DirectSite with SiteMetadata with FunctionalSite with Serializable with LocalSingletonSite {
+object Random extends DirectSite with SiteMetadata with NonBlockingSite with TalkativeSite with Serializable with LocalSingletonSite {
   class ArgInvoker extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == Random && arguments.length == 1 && arguments(0).isInstanceOf[Number]
@@ -63,7 +63,7 @@ object Random extends DirectSite with SiteMetadata with FunctionalSite with Seri
   override def publications: Range = Range(0, 1)
 }
 
-object URandom extends DirectSite with SiteMetadata with FunctionalSite with Serializable with LocalSingletonSite {
+object URandom extends DirectSite with SiteMetadata with NonBlockingSite with TalkativeSite with Serializable with LocalSingletonSite {
   class NoArgInvoker extends DirectInvoker {
     def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
       target == URandom && arguments.length == 0

@@ -20,8 +20,9 @@ import orc.lib.state.types.CellType
 import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
 import orc.types.Type
 import orc.values.{FastObject, Signal}
+import orc.run.Logger
 import orc.values.sites.{
-  FunctionalSite,
+  TalkativeSite,
   NonBlockingSite,
   PartialSite0Simple,
   Site0Simple,
@@ -35,7 +36,7 @@ import orc.values.sites.{
   *
   * @author dkitchin
   */
-object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
+object Cell extends TotalSite0Simple with TypedSite with NonBlockingSite with TalkativeSite {
   override val inlinable = true
   override def eval(): AnyRef = new Cell.Instance()
 
@@ -49,6 +50,8 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
       new LinkedList[MaterializedCallContext]()
 
     var contents: AnyRef = null
+
+    override def toString() = f"Cell@${System.identityHashCode(this)}%08x(${if (readQueue != null) "<empty>" else contents})"
 
     protected val values = Array(
       new readMethod(),
@@ -65,6 +68,7 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
             }
           }
         }
+        override def toString() = s"${Instance.this}.readD"
       }
     )
 
@@ -90,6 +94,7 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
         }
       }
 
+      override def toString() = s"${Instance.this}.read"
     }
 
     protected class writeMethod
@@ -130,6 +135,8 @@ object Cell extends TotalSite0Simple with TypedSite with FunctionalSite {
           }
         }
       }
+
+      override def toString() = s"${Instance.this}.write"
     }
 
     override def permittedLocations[L <: AbstractLocation](

@@ -21,7 +21,7 @@ import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
 import orc.types.Type
 import orc.values.{FastObject, NumericsConfig, Signal}
 import orc.values.sites.{
-  FunctionalSite,
+  TalkativeSite,
   NonBlockingSite,
   Site0Simple,
   SiteMetadata,
@@ -38,7 +38,7 @@ import orc.values.sites.{
 object Counter
     extends TotalSite1Simple[Number]
     with TypedSite
-    with FunctionalSite {
+    with NonBlockingSite with TalkativeSite {
   override def eval(init: Number): AnyRef = {
     new Counter.Instance(init.intValue)
   }

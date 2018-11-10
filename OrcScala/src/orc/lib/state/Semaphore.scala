@@ -18,7 +18,7 @@ import orc.lib.state.types.SemaphoreType
 import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
 import orc.values.{FastObject, Signal}
 import orc.values.sites.{
-  FunctionalSite,
+  TalkativeSite,
   NonBlockingSite,
   Site0Simple,
   TotalSite1Simple,
@@ -31,7 +31,7 @@ import orc.values.sites.{
 object Semaphore
     extends TotalSite1Simple[Number]
     with TypedSite
-    with FunctionalSite {
+    with NonBlockingSite with TalkativeSite {
   override val inlinable = true
   def eval(arg: Number) = {
     val initialValue = arg.intValue

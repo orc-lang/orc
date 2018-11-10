@@ -29,6 +29,8 @@ abstract class TargetValueAndArgumentClassSpecializedInvoker(val target: AnyRef,
     ((this.target eq target) || this.target == target) &&
     valuesHaveType(arguments, argumentClss)
   }
+
+  override def toString() = s"${target}(${argumentClss.map(_.getSimpleName).mkString(", ")})<Invoker>"
 }
 
 abstract class TargetClassAndArgumentClassSpecializedInvoker(val targetCls: Class[_], val argumentClss: Array[Class[_]]) extends Invoker {
@@ -40,6 +42,8 @@ abstract class TargetClassAndArgumentClassSpecializedInvoker(val targetCls: Clas
     valueHasType(target, targetCls) &&
     valuesHaveType(arguments, argumentClss)
   }
+
+  override def toString() = s"${targetCls.getSimpleName}(${argumentClss.map(_.getSimpleName).mkString(", ")})<Invoker>"
 }
 
 /** An invoker sentinel that throws a deferred Exception for this target and arg values */
@@ -49,6 +53,8 @@ class ThrowsInvoker(initialTarget: AnyRef, initialArgument: Array[AnyRef], e: =>
   def invokeDirect(target: AnyRef, arguments: Array[AnyRef]): AnyRef = {
     throw e
   }
+
+  override def toString() = s"${initialTarget}(${initialArgument.mkString(", ")})@throws$e<Invoker>"
 }
 
 /** An invoker sentinel representing the fact that target is not callable.
@@ -62,6 +68,8 @@ case class UncallableValueInvoker(target: AnyRef) extends ErrorInvoker with Dire
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     this.target == target
   }
+
+  override def toString() = s"$target<UncallableValueInvoker>"
 }
 
 /** An invoker sentinel representing the fact that arguments are not valid for this call.
@@ -75,4 +83,6 @@ case class IllegalArgumentInvoker(target: AnyRef, arguments: Array[AnyRef]) exte
   def canInvoke(target: AnyRef, arguments: Array[AnyRef]): Boolean = {
     this.target == target && this.arguments == arguments
   }
+
+  override def toString() = s"${target}(${arguments.mkString(", ")})<IllegalArgumentInvoker>"
 }

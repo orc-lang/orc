@@ -20,7 +20,7 @@ import orc.lib.state.types.ChannelType
 import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
 import orc.values.{FastObject, Signal}
 import orc.values.sites.{
-  FunctionalSite,
+  TalkativeSite,
   NonBlockingSite,
   Site0Simple,
   Site1Simple,
@@ -33,7 +33,7 @@ import orc.values.sites.{
   *
   * @author cawellington, dkitchin
   */
-object Channel extends TotalSite0Simple with TypedSite with FunctionalSite {
+object Channel extends TotalSite0Simple with TypedSite with NonBlockingSite with TalkativeSite {
   override val inlinable = true
   override def eval(): AnyRef = new Channel.Instance()
 

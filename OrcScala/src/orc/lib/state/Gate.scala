@@ -18,8 +18,6 @@ import orc.types.{ SignalType, SimpleFunctionType}
 import orc.values.Signal
 import java.util.concurrent.atomic.AtomicBoolean
 import orc.values.sites.{
-  EffectFreeSite,
-  FunctionalSite,
   NonBlockingSite,
   PartialSite0Simple,
   TalkativeSite,
@@ -33,8 +31,7 @@ import orc.values.sites.{
   */
 final class Gate extends PartialSite0Simple
     with TypedSite
-    with NonBlockingSite
-    with EffectFreeSite with PinnedPlacementPolicy {
+    with NonBlockingSite with TalkativeSite with PinnedPlacementPolicy {
   override val inlinable = true
   // TODO: Use VarHandle in Java 9.
   private val flag = new AtomicBoolean(false)
@@ -59,7 +56,7 @@ final class Gate extends PartialSite0Simple
 object NewGate
     extends TotalSite0Simple
     with TypedSite
-    with FunctionalSite
+    with NonBlockingSite
     with TalkativeSite {
   override val inlinable = true
   def eval() = {

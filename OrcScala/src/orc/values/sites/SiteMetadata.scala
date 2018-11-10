@@ -75,7 +75,14 @@ trait SiteMetadata extends ValueMetadata {
   def publications: Range = Range(0, None)
   def timeToPublish: Delay = Delay.Blocking
   def timeToHalt: Delay = Delay.Blocking
+
+  /** Specify the effects that a site may have OR OBSERVE.
+    *
+    * This must be at least `BeforePub` for mutable value constructors so that identically
+    * constructed values are not combined.
+    */
   def effects: Effects = Effects.Anytime
+  // TODO: Split effects into caused and observed effects and figure out how to correctly encode mutable object construction.
 
   def inlinable: Boolean = false
 

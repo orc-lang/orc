@@ -27,7 +27,7 @@ import orc.run.distrib.{AbstractLocation, ClusterLocations, DOrcPlacementPolicy}
 import orc.types.Type
 import orc.values.{FastObject, Signal}
 import orc.values.sites.{
-  FunctionalSite,
+  TalkativeSite,
   NonBlockingSite,
   PartialSite0Simple,
   Site0Simple,
@@ -48,7 +48,7 @@ object Ref
     extends TotalSiteBase
     with TypedSite
     with SiteMetadata
-    with FunctionalSite {
+    with NonBlockingSite with TalkativeSite {
   override val inlinable = true
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): DirectInvoker = {
     args.size match {
@@ -76,6 +76,8 @@ object Ref
 
     var contents: AnyRef = null
 
+    override def toString() = f"Ref@${System.identityHashCode(this)}%08x(${if (readQueue != null) "<empty>" else contents})"
+
     /*
      * Create the reference with an initial value already assigned. In this
      * case, we don't need a reader queue.
@@ -101,6 +103,7 @@ object Ref
             }
           }
         }
+        override def toString() = s"${Instance.this}.readD"
       }
     )
 
@@ -126,6 +129,7 @@ object Ref
         }
       }
 
+      override def toString() = s"${Instance.this}.read"
     }
 
     protected class writeMethod extends Site1Simple[AnyRef]() {
@@ -158,9 +162,9 @@ object Ref
           }
         }
       }
-    }
 
-    override def toString(): String = "Ref(" + contents + ")"
+      override def toString() = s"${Instance.this}.write"
+    }
 
     override def permittedLocations[L <: AbstractLocation](
         locations: ClusterLocations[L]): scala.collection.immutable.Set[L] =

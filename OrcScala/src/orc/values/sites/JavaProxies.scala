@@ -460,7 +460,7 @@ object JavaFieldDerefSite {
   *
   * @author jthywiss, amp
   */
-case class JavaFieldDerefSite(@inline val theObject: Object, @inline val javaField: JavaField) extends Site with FunctionalSite {
+case class JavaFieldDerefSite(@inline val theObject: Object, @inline val javaField: JavaField) extends Site with NonBlockingSite with TalkativeSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     import MethodHandles._
     if (args.length == 0) {
@@ -579,7 +579,7 @@ object JavaArrayDerefSite {
   *
   * @author jthywiss, amp
   */
-case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: Int) extends Site with FunctionalSite {
+case class JavaArrayDerefSite(@inline val theArray: AnyRef, @inline val index: Int) extends Site with NonBlockingSite with TalkativeSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 0) {
       val cls = theArray.getClass
@@ -630,7 +630,7 @@ case class JavaArrayAssignSite(@inline val theArray: AnyRef, @inline val index: 
   *
   * @author jthywiss, amp
   */
-case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends Site with FunctionalSite {
+case class JavaArrayLengthPseudofield(val theArray: AnyRef) extends Site with NonBlockingSite with TalkativeSite {
   def getInvoker(runtime: OrcRuntime, args: Array[AnyRef]): Invoker = {
     if (args.length == 0) {
       val cls = theArray.getClass

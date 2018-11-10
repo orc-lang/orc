@@ -19,11 +19,11 @@ import orc.{ DirectInvoker, OrcRuntime, VirtualCallContext }
 import orc.run.extensions.RwaitEvent
 import orc.types.{ IntegerType, RecordType, SignalType, SimpleFunctionType }
 import orc.values.{ Field, OrcRecord, Signal, HasMembersMetadata }
-import orc.values.sites.{ EffectFreeSite, FunctionalSite, LocalSingletonSite, Site1Base, SiteMetadata, TalkativeSite, TotalSite0Base, TypedSite }
+import orc.values.sites.{ NonBlockingSite, LocalSingletonSite, Site1Base, SiteMetadata, TalkativeSite, TotalSite0Base, TypedSite }
 
 /**
   */
-object Rclock extends TotalSite0Base with TypedSite with FunctionalSite with TalkativeSite with Serializable with LocalSingletonSite {
+object Rclock extends TotalSite0Base with TypedSite with NonBlockingSite with TalkativeSite with Serializable with LocalSingletonSite {
   def getInvoker(runtime: OrcRuntime): DirectInvoker = {
     invoker(this) { _ =>
       new OrcRecord(
@@ -49,7 +49,7 @@ object Rclock extends TotalSite0Base with TypedSite with FunctionalSite with Tal
 
 /**
   */
-class Rtime(val startTime: Long) extends TotalSite0Base with FunctionalSite {
+class Rtime(val startTime: Long) extends TotalSite0Base with NonBlockingSite with TalkativeSite {
   def getInvoker(runtime: OrcRuntime): DirectInvoker = {
     invoker(this) { self =>
       System.currentTimeMillis() - self.startTime
@@ -59,7 +59,7 @@ class Rtime(val startTime: Long) extends TotalSite0Base with FunctionalSite {
 
 /**
   */
-object Rwait extends Site1Base[Number] with EffectFreeSite with Serializable with LocalSingletonSite {
+object Rwait extends Site1Base[Number] with NonBlockingSite with TalkativeSite with Serializable with LocalSingletonSite {
   final def doit(callContext: VirtualCallContext, delay: BigInt) = {
     if (delay > 0) {
       val ctx = callContext.materialize()

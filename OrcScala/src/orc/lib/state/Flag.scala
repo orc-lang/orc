@@ -35,7 +35,7 @@ final class Flag extends PinnedPlacementPolicy {
 
 /** @author amp
   */
-object NewFlag extends TotalSite0Simple with TypedSite with FunctionalSite with TalkativeSite with Serializable with LocalSingletonSite {
+object NewFlag extends TotalSite0Simple with TypedSite with NonBlockingSite with TalkativeSite with Serializable with LocalSingletonSite {
   override val inlinable = true
   def eval() = {
     new Flag()
