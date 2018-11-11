@@ -49,7 +49,7 @@ object BlackScholesData extends ExpectedBenchmarkResult[Array[BlackScholesStock]
   val volatility: D = 0.14810754832231288
 
   val expectedMap: Map[Int, Int] = Map(
-      10  -> 0x0c37bac4,
+      10  -> 0xd35396e8,
       100 -> 0x2518b767,
       )
 
