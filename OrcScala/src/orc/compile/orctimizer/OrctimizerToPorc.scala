@@ -62,11 +62,11 @@ class OrctimizerToPorc(co: CompilerOptions) {
 
   /** Spawn if we are not in a sequentialized section.
     */
-  def probablySpawn(scope: Expression.Z)(mustSpawn: Boolean, comp: porc.Argument)(implicit ctx: ConversionContext): porc.Expression = {
-    if (AnnotationHack.inAnnotation[Sequentialize](scope) && !mustSpawn) {
+  def probablySpawn(scope: Expression.Z)(comp: porc.Argument)(implicit ctx: ConversionContext): porc.Expression = {
+    if (AnnotationHack.inAnnotation[Sequentialize](scope)) {
       comp()
     } else {
-      porc.Spawn(ctx.c, ctx.t, mustSpawn, comp)
+      porc.Spawn(ctx.c, ctx.t, false, comp)
     }
   }
 
@@ -117,7 +117,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
         porc.NewToken(ctx.c) :::
           // TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
           catchExceptions {
-            probablySpawn(f)(false, comp)
+            probablySpawn(f)(comp)
           }
       }
   }
@@ -196,13 +196,13 @@ class OrctimizerToPorc(co: CompilerOptions) {
             let(
               (newP, porc.Continuation(Seq(v), {
                 let((comp1, porc.Continuation(Seq(), ctx.p(v)))) {
-                  catchExceptions { probablySpawn(expr)(true, comp1) }
+                  catchExceptions { probablySpawn(expr)(comp1) }
                 }
               })),
               (comp2, porc.Continuation(Seq(), {
                 catchExceptions { porc.MethodCPSCall(isExternal, argument(target), newP, ctx.c, ctx.t, args.map(argument(_)).view.force) }
               }))) {
-                catchExceptions { probablySpawn(expr)(true, comp2) }
+                catchExceptions { probablySpawn(expr)(comp2) }
               }
           }
         } else {
@@ -225,7 +225,7 @@ class OrctimizerToPorc(co: CompilerOptions) {
           }))) {
             porc.NewToken(ctx.c) :::
               // TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
-              catchExceptions { probablySpawn(expr)(false, comp) } :::
+              catchExceptions { probablySpawn(expr)(comp) } :::
               expression(right)
           }
       }

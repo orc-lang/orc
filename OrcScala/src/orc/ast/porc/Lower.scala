@@ -66,8 +66,7 @@ object Lower {
       }))) {
         NewToken(ctx.c) :::
           catchExceptions {
-            // TODO: The `false` could actually cause semantic problems in the case of sites which block the calling thread. Metadata is probably needed.
-            Spawn(ctx.c, ctx.t, false, comp)
+            Spawn(ctx.c, ctx.t, true, comp)
           } :::
           ctx.p(fut)
       }
