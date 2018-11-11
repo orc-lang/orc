@@ -70,21 +70,27 @@ object DumpRuntimeProfile {
     val methods = nodes.collect({ case r: PorcERootNode => r.getMethodKey }).toSet
     val displayedNodes = collection.mutable.Set[PorcERootNode]()
     val inEdgeCounts = collection.mutable.Map[PorcERootNode, Int]().withDefaultValue(0)
+    var totalCallEdgeUses = 0L
+    var totalCallEdges = 0L
 
-    for (n <- nodes) {
-      n match {
+    def callEdges = nodes.flatMap {
         case r: PorcERootNode =>
           val edges = CalledRootsProfile.getAllCalledRoots(r).asScala
-          for (p <- edges if !p.getLeft.isScheduled()) {
-            val to = p.getRight
-            inEdgeCounts(to) = inEdgeCounts(to) + 1
-          }
-        case _ => ()
-      }
+          for (p <- edges if !p.getLeft.isScheduled()) yield p
+        case _ => Seq()
     }
 
-    /** Render a node to the output dot if it has not yet been rendered.
-      */
+    for (p <- callEdges) {
+      val to = p.getRight
+      inEdgeCounts(to) = inEdgeCounts(to) + 1
+      totalCallEdgeUses += p.getLeft.getTotalCalls
+      totalCallEdges += 1
+    }
+
+    val meanCallEdgeUses = totalCallEdgeUses.toDouble / totalCallEdges
+
+    /* Render a node to the output dot if it has not yet been rendered.
+     */
     def displayNode(r: PorcERootNode): Unit = {
       if (displayedNodes contains r)
         return
@@ -165,6 +171,7 @@ object DumpRuntimeProfile {
         case _ => ()
       }
     }
+    /*
     val txt = inEdgeCounts.toSeq.sortBy(_._1.getTotalCalls).map({ case (n, ins) =>
       val outs = CalledRootsProfile.getAllCalledRoots(n).asScala.count(!_.getLeft.isScheduled())
       if (ins > 1 || outs > 1)
@@ -172,7 +179,35 @@ object DumpRuntimeProfile {
       else
         ""
     }).mkString("")
-    out.println(s"""  label = "$txt(not including scheduled)\\l";\n  labelloc = "t";""")
+    */
+    val targetSpawnCount = totalCallEdgeUses / 100
+    val orderedEdges = callEdges.filter(p => {
+      try {
+        val specs = Introspection.getSpecializations(p.getLeft.asInstanceOf[Node]).asScala
+        specs.filter(_.isActive()).map(_.getMethodName()).contains("specific")
+      } catch {
+        case _: IllegalArgumentException => true
+      }
+    }).toSeq.sortBy(_.getLeft.getTotalCalls)
+    val prefixLen = orderedEdges.scanLeft(0L)(_ + _.getLeft.getTotalCalls).indexWhere(_ > targetSpawnCount)
+
+    val txt = (for (p <- orderedEdges.take(prefixLen + 3)) yield {
+      val callnode = p.getLeft
+      val from = callnode.getProfilingScope.asInstanceOf[PorcERootNode]
+      val to = p.getRight
+      val specNames = try {
+        val specs = Introspection.getSpecializations(callnode.asInstanceOf[Node]).asScala
+        specs.filter(_.isActive()).map(_.getMethodName())
+      } catch {
+        case _: IllegalArgumentException => List()
+      }
+      if (specNames contains "specific") {
+        s"""(\\"${from.getName}\\", \\"${to.getName}\\") -> SPAWN, // ${callnode.getTotalCalls unit " calls"}\\l"""
+      } else ""
+    }).mkString("")
+    println(s"new CallKindDecision.Table(\n${txt.replace("\\l", "\n").replace("\\\"", "\"")})")
+
+    out.println(s"""  label = "total ${totalCallEdgeUses unit " uses"}, mean ${meanCallEdgeUses unit " uses"}, target ${targetSpawnCount unit " uses"}\\l$txt";\n  labelloc = "t";""")
     out.println("}")
     displayedNodes.nonEmpty
   }
