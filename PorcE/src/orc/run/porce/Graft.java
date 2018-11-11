@@ -55,16 +55,14 @@ public abstract class Graft extends Expression {
         }
     }
 
-    @Specialization(guards = { "!shouldInlineSpawn" })
-    public Object fullFuture(final VirtualFrame frame,
-            @Cached("shouldInlineSpawn(frame)") boolean shouldInlineSpawn) {
+    @Specialization(guards = { "!shouldInlineSpawn(frame)" })
+    public Object fullFuture(final VirtualFrame frame) {
         ensureTail(fullFuture);
         return fullFuture.execute(frame);
     }
 
-    @Specialization(guards = { "shouldInlineSpawn" }, replaces = { "fullFuture" })
-    public Object noFuture(final VirtualFrame frame,
-            @Cached("shouldInlineSpawn(frame)") boolean shouldInlineSpawn) {
+    @Specialization(guards = { "shouldInlineSpawn(frame)" }, replaces = { "fullFuture" })
+    public Object noFuture(final VirtualFrame frame) {
         ensureTail(noFuture);
         return noFuture.execute(frame);
     }
@@ -73,7 +71,7 @@ public abstract class Graft extends Expression {
     // by adding this specialization.
     @Specialization()
     public Object fullAfterNoFuture(final VirtualFrame frame) {
-        return fullFuture(frame, false);
+        return fullFuture(frame);
     }
 
     private static final boolean allowSpawnInlining = PorcERuntime.allowSpawnInlining();
