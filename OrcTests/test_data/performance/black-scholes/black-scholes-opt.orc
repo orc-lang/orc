@@ -7,7 +7,6 @@ include "benchmark.inc"
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 import site Abs = "orc.lib.math.Abs"
 
-import class BlackScholesResult = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesResult"
 import class BlackScholesData = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesData"
 import class BlackScholes = "orc.test.item.scalabenchmarks.blackscholes.BlackScholes"
 
@@ -35,29 +34,28 @@ def cnd(x) = Sequentialize() >> ( -- Inferable
       w
     ))
 
--- Lines: 6
-def compute(s, x, t, r, v) = Sequentialize() >> ( -- Inferable (propogation from cnd)
+-- Lines: 8
+def compute(option, r, v) = Sequentialize() >> ( -- Inferable (propogation from cnd)
+    val (s, x, t) = (option.price(), option.strike(), option.maturity())
     round((Log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t))) >d1>
     round(d1 - v * sqrt(t)) >d2>
 
     s * cnd(d1) - x * Exp(-r * t) * cnd(d2) >call>
     x * Exp(-r * t) * cnd(-d2) - s * cnd(-d1) >put>
     
-    BlackScholesResult(call, put)
+    (option.setCall(call) |
+    option.setPut(put))
     )
   
 
--- Lines: 9  
+-- Lines: 8
 def run(data) =
     val riskless = BlackScholesData.riskless()
     val volatility = BlackScholesData.volatility()
-	val res = Array(data.length?)
-	riskless >> volatility >> res >>
+	riskless >> volatility >>
 	for(0, data.length?) >i> Sequentialize() >> -- Inferable (by propogation from compute)
-	  data(i)? >option>
-	  res(i) := compute(option.price(), option.strike(), option.maturity(), riskless, volatility) 
-	  >> stop ;
-	res
+	  compute(data(i)?, riskless, volatility) >> stop ;
+	data
 
 
 val data = BlackScholesData.data()

@@ -28,7 +28,7 @@ def queens(N) =
   def extend(n) = extend(n-1) >y> upto(N) >j> addqueen((n,j), y)
   extend(N)
 
-val N = Floor(8 + Log(problemSize)/Log(10))
+val N = NQueens.N()
 
 def factorial(0) = 1
 def factorial(1) = 1

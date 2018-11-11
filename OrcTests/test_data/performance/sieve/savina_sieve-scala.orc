@@ -21,8 +21,6 @@ import class Collections = "java.util.Collections"
 
 val sieveFragementSize = 300
 
-val counter = Counter()
-
 def sieveFragment(outChan) =
 	val inChan = Channel() 
 	val list = ArrayList[Number](sieveFragementSize)

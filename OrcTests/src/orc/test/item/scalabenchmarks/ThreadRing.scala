@@ -39,7 +39,7 @@ object ThreadRing extends BenchmarkApplication[Unit, Int] with ExpectedBenchmark
     }
   }
 
-  val N = 503
+  val N = 1019
 
   // Lines: 14 (5)
   def threadRingRunner(p: Int) = {

@@ -4,7 +4,6 @@
 
 include "benchmark.inc"
 
-import class BlackScholesResult = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesResult"
 import class BlackScholesData = "orc.test.item.scalabenchmarks.blackscholes.BlackScholesData"
 import class BlackScholes = "orc.test.item.scalabenchmarks.blackscholes.BlackScholes"
 
@@ -27,25 +26,27 @@ def cnd(x) =
     else
       w
 
-def compute(s, x, t, r, v) = 
+-- Lines: 8
+def compute(option, r, v) = 
+    val (s, x, t) = (option.price(), option.strike(), option.maturity())
     val d1 = round((Log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t)))
     val d2 = round(d1 - v * sqrt(t))
 
     val call = s * cnd(d1) - x * Exp(-r * t) * cnd(d2)
     val put = x * Exp(-r * t) * cnd(-d2) - s * cnd(-d1)
     
-    BlackScholesResult(call, put)
+    option.setCall(call) |
+    option.setPut(put)
   
-  
+
+-- Lines: 7
 def run(data) =
     val riskless = BlackScholesData.riskless()
     val volatility = BlackScholesData.volatility()
-	val res = Array(data.length?)
-	for(0, data.length?) >i>
-	  res(i) := compute(data(i)?.price(), data(i)?.strike(), data(i)?.maturity(), riskless, volatility) 
-	  >> stop ;
-	res
-
+    for(0, data.length?) >i>
+      compute(data(i)?, riskless, volatility) >> stop ;
+    data
+    
 val data = BlackScholesData.data()
 
 benchmarkSized("Black-Scholes", data.length?, { data }, run, BlackScholesData.check)

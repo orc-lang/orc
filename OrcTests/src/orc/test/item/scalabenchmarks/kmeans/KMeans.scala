@@ -29,20 +29,19 @@ object KMeansData extends ExpectedBenchmarkResult[Array[Point]] {
   }
 
   lazy val dataBase = readPoints(s"${System.getProperty("orc.test.benchmark.datadir", "")}test_data/performance/points.json")
-  
-  def data = dataSized(BenchmarkConfig.problemSize / 50.0)
-  
+
+  def data = dataSized(BenchmarkConfig.problemSize / 4.0)
+
   private def dataSized(n: Double) = {
-    (0 until n.floor.toInt).foldLeft(Array[Point]())((acc, _) => acc ++ dataBase) ++ 
+    (0 until n.floor.toInt).foldLeft(Array[Point]())((acc, _) => acc ++ dataBase) ++
       dataBase.take((dataBase.size * (n - n.toInt)).toInt)
   }
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0x4bc0c891,
-      10 -> 0x89fc5f12,
+      10 -> 0x3c4dbd64,
       100 -> 0xe2e07226,
       )
-  
+
   // println(s"Loaded ${dataBase.size} points from JSON")
 }
 
@@ -51,31 +50,31 @@ case class Point(val x: D, val y: D) {
 
   def +(p: Point) = new Point(x + p.x, y + p.y)
   def -(p: Point) = new Point(x - p.x, y - p.y)
-  
+
   def add(p: Point) = this + p
   def sub(p: Point) = this - p
   def div(k: Int) = this / k
 
   def modulus: D = sqrt((sq(x) + sq(y)).toDouble)
-  
+
   def sq(x: D) = x * x
-  
+
   override def hashCode(): Int = {
     val prec = 1e6
-    (x * prec).toLong.## * 37 ^ (y * prec).toLong.## 
+    (x * prec).toLong.## * 37 ^ (y * prec).toLong.##
   }
 }
 
 object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with HashBenchmarkResult[Array[Point]] {
   val expected = KMeansData
-  
+
   type D = Double
   object D {
     def apply(x: Integer): Double = x.toDouble
     def apply(x: Double): Double = x
-    def valueOf(x: Double): Double = x    
+    def valueOf(x: Double): Double = x
   }
-  
+
   val n = 10
   val iters = 5
 
@@ -86,7 +85,7 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
   def setup(): Array[Point] = {
     KMeansData.data
   }
-  
+
   val size: Int = KMeansData.data.size
   val name: String = "KMeans"
 
@@ -98,9 +97,9 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
     }
     centroids
   }
-  
+
   def takePointArray(n: Int, xs: Array[Point]) = xs take n
-  
+
   /*
   def updateCentroids(data: List[Point], centroids: List[Point]): List[Point] = {
     val state = new collection.mutable.HashMap() ++ centroids.map(c => (c, (0.0, 0.0, 0)))
@@ -128,10 +127,10 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
     }
     (xs, ys, counts)
   }
-  
-  def updateCentroids(data: Array[Point], centroids: Array[Point]): Array[Point] = 
+
+  def updateCentroids(data: Array[Point], centroids: Array[Point]): Array[Point] =
     updateCentroids(data, centroids, 0, data.size)
-    
+
   def updateCentroids(data: Array[Point], centroids: Array[Point], start: Int, end: Int): Array[Point] = {
     val (xs, ys, counts) = sumAndCountClusters(data, centroids, start, end)
     centroids.indices.map({ i =>
@@ -144,12 +143,12 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
   def split(n: Int, xs: Array[Point]): Array[Array[Point]] = {
     xs.grouped(xs.size / n).toArray
   }
-    
+
   def appendMultiple(ls: Array[Array[Array[Point]]]) = {
     ls.reduce((x, y) => (x zip y).map({ case (a, b) => a ++ b }))
   }
   */
-    
+
   def clusters(xs: Array[Point], centroids: Array[Point]) =
     (xs groupBy { x => closest(x, centroids) }).values.toList
 
@@ -187,7 +186,7 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
 
   def dist(x: Point, y: Point) = (x - y).modulus
 
-  
+
   def average(xs: Array[Point]) = xs.reduce(_ + _) / xs.size
   def sum(xs: Array[Point]) = xs.reduce(_ + _)
 }

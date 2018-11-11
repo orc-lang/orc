@@ -17,7 +17,7 @@ import scala.concurrent.duration.Duration
 object Threads extends BenchmarkApplication[Unit, Unit] {
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  val N = BenchmarkConfig.problemSizeLogScaledInt(10000, 2)
+  val N = BenchmarkConfig.problemSizeLogScaledInt(200000, 2)
 
   // Lines: 6
   def threads(n: Int): Unit = {

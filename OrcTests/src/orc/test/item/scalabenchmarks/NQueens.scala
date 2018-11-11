@@ -23,7 +23,7 @@ object NQueensTypes {
 // Solves the n-queens problem for an arbitrary board size
 // Run for a board size of ten: scala nqueen.scala 10
 object NQueens extends BenchmarkApplication[Unit, Solutions] with ExpectedBenchmarkResult[Solutions] {
-  val N: Int = (8 + math.log10(BenchmarkConfig.problemSize)).toInt
+  val N: Int = (9 + math.log10(BenchmarkConfig.problemSize)).toInt
 
   def isSafe(queen: Queen, others: List[Queen]) =
     others forall (!isAttacked(queen, _))
@@ -62,8 +62,8 @@ object NQueens extends BenchmarkApplication[Unit, Solutions] with ExpectedBenchm
   override def hash(results: Solutions): Int = results.toSet.##()
 
   val expectedMap: Map[Int, Int] = Map(
-      10 -> 0xae0ba7ef,
-      100 -> 0xdcf13a95,
-      //100 -> 0xabcb3752,
+      1 -> 0xae0ba7ef,
+      10 -> 0xdcf13a95,
+      100 -> 0xabcb3752,
       )
 }

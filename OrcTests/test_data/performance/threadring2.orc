@@ -25,7 +25,7 @@ def threadRing(id, m, in, next) =
      else
        next.put(x+1) >> stop)
 
-val N = 503
+val N = ThreadRing.N()
 
 -- Lines: 6
 def threadRingRunner(Integer) :: Signal

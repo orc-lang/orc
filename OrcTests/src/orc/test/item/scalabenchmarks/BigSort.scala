@@ -16,8 +16,8 @@ import java.util.Random
 import scala.annotation.tailrec
 
 object BigSortData extends ExpectedBenchmarkResult[IndexedSeq[Number]] {
-  // TODO: We may need to be increased by 10x.
-  val arraySize = BenchmarkConfig.problemSizeScaledInt(10000)
+  // TODO: We may need to be increased by 5x.
+  val arraySize = BenchmarkConfig.problemSizeScaledInt(40000)
 
   def makeRandomArray(n: Int): Array[Number] = {
     val rng = new Random(n)
@@ -100,9 +100,8 @@ object BigSortData extends ExpectedBenchmarkResult[IndexedSeq[Number]] {
   }
 
   val expectedMap: Map[Int, Int] = Map(
-      1 -> 0xc63f1164,
-      10 -> 0x98189f1b,
-      100 -> 0xaa7a1f70,
+      10 -> 0xad9dd255,
+      100 -> 0x771acbb9,
       )
 }
 

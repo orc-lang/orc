@@ -18,26 +18,29 @@ import scala.util.Random
 import orc.test.item.scalabenchmarks.{ BenchmarkApplication, BenchmarkConfig, ExpectedBenchmarkResult, HashBenchmarkResult }
 
 import BlackScholes.D
+import scala.beans.BeanProperty
 
-case class BlackScholesStock(price: D, strike: D, maturity: D)
-case class BlackScholesResult(var call: D, var put: D) {
+class BlackScholesStock(val price: D, val strike: D, val maturity: D) {
+  @BeanProperty var call: D = 0
+  @BeanProperty var put: D = 0
+
   override def hashCode(): Int = {
     val prec = 1e6
     (call * prec).toLong.## * 37 ^ (put * prec).toLong.##
   }
 }
 
-object BlackScholesData extends ExpectedBenchmarkResult[Array[BlackScholesResult]] {
+object BlackScholesData extends ExpectedBenchmarkResult[Array[BlackScholesStock]] {
   def seededStream(seed: Long, l: Double, h: Double): Stream[D] = {
     val rand = new Random(seed)
     Stream.continually(rand.nextDouble() * (h - l) + l)
   }
 
-  val dataSize = BenchmarkConfig.problemSizeScaledInt(50000)
+  val dataSize = BenchmarkConfig.problemSizeScaledInt(150000)
 
   private def makeData(s: Int): Array[BlackScholesStock] = {
     (seededStream(1, 0.01, 100), seededStream(2, 0.01, 100), seededStream(3, 0.1, 5)).zipped
-      .take(s).map({ case (s, x, t) => BlackScholesStock(s, x, t) }).toArray
+      .take(s).map({ case (s, x, t) => new BlackScholesStock(s, x, t) }).toArray
   }
 
   lazy val data = makeData(dataSize)
@@ -46,15 +49,14 @@ object BlackScholesData extends ExpectedBenchmarkResult[Array[BlackScholesResult
   val volatility: D = 0.14810754832231288
 
   val expectedMap: Map[Int, Int] = Map(
-      1   -> 0xf52fcf7,
-      10  -> 0x62c42cc1,
-      100 -> 0xb8277521,
+      10  -> 0x0c37bac4,
+      100 -> 0x2518b767,
       )
 
 }
 
-object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array[BlackScholesResult]] with HashBenchmarkResult[Array[BlackScholesResult]] {
-  val expected: ExpectedBenchmarkResult[Array[BlackScholesResult]] = BlackScholesData
+object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array[BlackScholesStock]] with HashBenchmarkResult[Array[BlackScholesStock]] {
+  val expected: ExpectedBenchmarkResult[Array[BlackScholesStock]] = BlackScholesData
 
   type D = Double
 
@@ -64,8 +66,9 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array
 
   def round(x: D): Double = x //.doubleValue()
 
-  // Lines: 6
-  def compute(s: D, x: D, t: D, r: D, v: D): BlackScholesResult = {
+  // Lines: 8
+  def compute(stock: BlackScholesStock, r: D, v: D): Unit = {
+    val (s, x, t) = (stock.price, stock.strike, stock.maturity)
     val d1 = round((log(s / x) + (r + v * v / 2) * t) / (v * sqrt(t)))
     val d2 = round(d1 - v * sqrt(t))
 
@@ -74,7 +77,8 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array
     val call = s * cnd(d1) - x * exp(-r * t) * cnd(d2)
     val put = x * exp(-r * t) * cnd(-d2) - s * cnd(-d1)
 
-    BlackScholesResult(call, put)
+    stock.setCall(call)
+    stock.setPut(put)
   }
 
   // Lines: 6
@@ -100,9 +104,10 @@ object BlackScholes extends BenchmarkApplication[Array[BlackScholesStock], Array
   }
 
   def benchmark(data: Array[BlackScholesStock]) = {
-    for (BlackScholesStock(s, x, t) <- data) yield {
-      compute(s, x, t, BlackScholesData.riskless, BlackScholesData.volatility)
+    for (s <- data) {
+      compute(s, BlackScholesData.riskless, BlackScholesData.volatility)
     }
+    data
   }
 
   def setup(): Array[BlackScholesStock] = {
