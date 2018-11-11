@@ -12,15 +12,15 @@
 package orc.run.porce.runtime
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 import orc.run.porce.{ Logger, ParallelismNode, PorcERootNode, SpecializationConfiguration }
 
 import com.oracle.truffle.api.CompilerAsserts
 import com.oracle.truffle.api.nodes.NodeUtil
+import java.util.{ TimerTask }
 
 class ParallelismController(execution: PorcEExecution) {
-  //val rootsToUpdate = mutable.Buffer[PorcERootNode]()
+  def timer = execution.runtime.timer
 
   def enqueue(root: PorcERootNode): Unit = synchronized {
     CompilerAsserts.neverPartOfCompilation("ParallelismController")
@@ -28,11 +28,24 @@ class ParallelismController(execution: PorcEExecution) {
     // If there is no parallelism choice, just turn off profiling immediately.
     if (!NodeUtil.findAllNodeInstances(root, classOf[ParallelismNode]).asScala.exists(_.isParallelismChoiceNode)) {
       root.setProfiling(false)
-      Logger.info(s"Ignored: ${root}")
+      Logger.finest(s"Ignored: ${root}")
       return
     }
 
-    //rootsToUpdate += root
+    Logger.finest(s"Enqueued: ${root}")
+
+    check()
+  }
+
+  private def newCheckTask() = new TimerTask {
+    override def run(): Unit = ParallelismController.this synchronized {
+      checkTask = null
+      check()
+    }
+  }
+  private var checkTask: TimerTask = null
+
+  private def check(): Unit = {
     val rootsToUpdate = (Seq() ++ execution.allPorcERootNodes).filter(r => r.getTotalCalls > 0)
 
     // Check the profiling data and potentially perform control
@@ -42,7 +55,7 @@ class ParallelismController(execution: PorcEExecution) {
     }).filter(_.isParallelismChoiceNode)
     val totalExecutionCount = parallelismNodes.map(_.getExecutionCount).sum
 
-    Logger.info(s"Enqueued: ${root} (totalExecutionCount = $totalExecutionCount)")
+    Logger.info(s"Checking: totalExecutionCount = $totalExecutionCount")
 
     if (totalExecutionCount > SpecializationConfiguration.MinimumExecutionCountForParallelismController) {
       val sortedNodes = parallelismNodes.sortBy(_.getExecutionCount)
@@ -59,10 +72,13 @@ class ParallelismController(execution: PorcEExecution) {
         n.setParallel(i < prefixLen)
       }
 
-      Logger.info(s"Finished profiling: n roots = ${rootsToUpdate.size}, n parallel = $prefixLen, n nodes = ${sortedNodes.size}")
-
-      // Clear roots for next pass.
-      //rootsToUpdate.clear()
+      Logger.info(s"totalExecutionCount = $totalExecutionCount, new parallel ExecutionCount = ${sortedNodes.take(prefixLen).map(_.getExecutionCount).sum}, n roots = ${rootsToUpdate.size}, n parallel = $prefixLen, n nodes = ${sortedNodes.size}")
+    } else {
+      // If it's not time yet, schedule a check
+      if (checkTask == null) {
+        checkTask = newCheckTask()
+        timer.schedule(checkTask, 5000) // in 5s
+      }
     }
   }
 }

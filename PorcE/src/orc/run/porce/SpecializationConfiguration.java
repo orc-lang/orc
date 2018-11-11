@@ -147,5 +147,5 @@ public abstract class SpecializationConfiguration {
 
     @CompilationFinal
     public static final long MinimumExecutionCountForParallelismController = Long
-            .parseLong(System.getProperty("orc.porce.minimumExecutionCountForParallelismController", "2000000"));
+            .parseLong(System.getProperty("orc.porce.minimumExecutionCountForParallelismController", "100000"));
 }
