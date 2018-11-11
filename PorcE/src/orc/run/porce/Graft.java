@@ -11,6 +11,8 @@
 
 package orc.run.porce;
 
+import java.util.Map;
+
 import orc.run.porce.runtime.CallKindDecision;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
@@ -18,16 +20,52 @@ import orc.run.porce.runtime.PorcERuntime;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.ValueProfile;
+import com.oracle.truffle.api.utilities.AssumedValue;
 
 @Introspectable
-public abstract class Graft extends Expression {
+@ImportStatic(SpecializationConfiguration.class)
+public abstract class Graft extends Expression implements ParallelismNode {
     protected final PorcEExecution execution;
+
+    private volatile long executionCount = 0;
+    @SuppressWarnings("boxing")
+    private final AssumedValue<Boolean> isParallel =
+            new AssumedValue<>("Graft.isParallel", SpecializationConfiguration.InitiallyParallel);
+
+    @Override
+    public boolean isParallelismChoiceNode() {
+        return true;
+    }
+
+    @Override
+    public long getExecutionCount() {
+        return executionCount;
+    }
+
+    @Override
+    public void incrExecutionCount() {
+        if (isParallelismChoiceNode() && getProfilingScope().isProfiling()) {
+            executionCount++;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("boxing")
+    public void setParallel(boolean isParallel) {
+        this.isParallel.set(isParallel);
+    }
+
+    @Override
+    @SuppressWarnings("boxing")
+    public boolean getParallel() {
+        return isParallel.get();
+    }
 
     protected final ValueProfile targetRootProfile = ValueProfile.createIdentityProfile();
 
@@ -55,15 +93,26 @@ public abstract class Graft extends Expression {
         }
     }
 
+    @Specialization(guards = { "UseControlledParallelism" })
+    public Object controlled(final VirtualFrame frame) {
+        if (getParallel()) {
+            return fullFuture(frame);
+        } else {
+            return noFuture(frame);
+        }
+    }
+
     @Specialization(guards = { "!shouldInlineSpawn(frame)" })
     public Object fullFuture(final VirtualFrame frame) {
         ensureTail(fullFuture);
+        incrExecutionCount();
         return fullFuture.execute(frame);
     }
 
     @Specialization(guards = { "shouldInlineSpawn(frame)" }, replaces = { "fullFuture" })
     public Object noFuture(final VirtualFrame frame) {
         ensureTail(noFuture);
+        incrExecutionCount();
         return noFuture.execute(frame);
     }
 
@@ -93,15 +142,22 @@ public abstract class Graft extends Expression {
     }
 
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
+        boolean b;
         if (SpecializationConfiguration.UseExternalCallKindDecision) {
-            return allowSpawnInlining &&
-                    getCallKindDecision(computation) != CallKindDecision.SPAWN;
+            b = getCallKindDecision(computation) != CallKindDecision.SPAWN;
         } else {
-            return allowSpawnInlining &&
-                    computation.getTimePerCall(targetRootProfile) < SpecializationConfiguration.InlineAverageTimeLimit;
+            b = computation.getTimePerCall(targetRootProfile) < SpecializationConfiguration.InlineAverageTimeLimit;
         }
+        return allowSpawnInlining && b;
     }
 
+    @SuppressWarnings("boxing")
+    @Override
+    public Map<String, Object> getDebugProperties() {
+        Map<String, Object> properties = super.getDebugProperties();
+        properties.put("isParallel", getParallel());
+        return properties;
+    }
 
     public static Graft create(PorcEExecution execution, Expression v, Expression fullFuture, Expression noFuture) {
         return GraftNodeGen.create(execution, v, fullFuture, noFuture);

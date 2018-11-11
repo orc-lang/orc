@@ -72,13 +72,13 @@ public class CalledRootsProfile {
     }
 
     public void addCalledRoot(HasCalledRoots self, CallTarget t) {
-        if (self.getProfilingScope().isProfiling() && t instanceof RootCallTarget) {
+        if (SpecializationConfiguration.ProfileCallGraph && self.getProfilingScope().isProfiling() && t instanceof RootCallTarget) {
             addCalledRoot(self, ((RootCallTarget) t).getRootNode());
         }
     }
 
     public void addCalledRoot(HasCalledRoots self, RootNode r) {
-        if (self.getProfilingScope().isProfiling() && r instanceof PorcERootNode) {
+        if (SpecializationConfiguration.ProfileCallGraph && self.getProfilingScope().isProfiling() && r instanceof PorcERootNode) {
             addCallRootImpl(self, (PorcERootNode) r);
         }
     }

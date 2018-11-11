@@ -60,9 +60,8 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     private final LongAdder totalCalls = new LongAdder();
 
     @SuppressWarnings("boxing")
-    private static final AssumedValue<Boolean> isProfilingFlag =
-        new AssumedValue<Boolean>(SpecializationConfiguration.ProfileCallGraph);
-    private static final boolean profileTime = SpecializationConfiguration.ProfileFunctionTime;
+    private final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<Boolean>("PorcERootNode.isProfiling", true);
+    private volatile boolean isEnqueuedWithParallelismController = false;
 
     @Override
     public ProfilingScope getProfilingScope() {
@@ -110,12 +109,17 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     @Override
     @SuppressWarnings("boxing")
     public final boolean isProfiling() {
-        return CompilerDirectives.inCompiledCode() && isProfilingFlag.get();
+        return isProfilingFlag.get();
+    }
+
+    @SuppressWarnings("boxing")
+    public final void setProfiling(boolean isProfiling) {
+        isProfilingFlag.set(isProfiling);
     }
 
     @Override
     public long getTime() {
-        if (profileTime && isProfiling()) {
+        if (SpecializationConfiguration.ProfileFunctionTime && isProfiling()) {
             return System.nanoTime();
         } else {
             return 0;
@@ -130,7 +134,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     @Override
     public void removeTime(long start) {
-        if (profileTime && isProfiling()) {
+        if (SpecializationConfiguration.ProfileFunctionTime && isProfiling()) {
             longAdderAdd(totalTime, -(getTime() - start));
         }
     }
@@ -139,7 +143,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     final public void addTime(long start) {
         if (isProfiling()) {
             longAdderAdd(totalCalls, 1);
-            if (profileTime) {
+            if (SpecializationConfiguration.ProfileFunctionTime) {
                 longAdderAdd(totalTime, getTime() - start);
             }
         }
@@ -147,14 +151,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     @Override
     final public void incrSiteCall() {
-        if (isProfiling()) {
+        if (SpecializationConfiguration.ProfileCallGraph && isProfiling()) {
             longAdderAdd(totalSiteCalls, 1);
         }
     }
 
     @Override
     final public void incrContinuationSpawn() {
-        if (isProfiling()) {
+        if (SpecializationConfiguration.ProfileCallGraph && isProfiling()) {
             longAdderAdd(totalContinuationSpawns, 1);
         }
     }
@@ -167,7 +171,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     private long timePerCall = -1;
 
     final public void addSpawnedCall(long time) {
-        if (timePerCall < 0) {
+        if (shouldTimeCall()) {
             totalSpawnedTime.getAndAdd(time);
             long v = totalSpawnedCalls.getAndIncrement();
             if (v >= SpecializationConfiguration.MinCallsForTimePerCall) {
@@ -178,7 +182,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     }
 
     final public boolean shouldTimeCall() {
-    	return timePerCall < 0;
+    	return timePerCall < 0 &&
+    	        !SpecializationConfiguration.UseExternalCallKindDecision &&
+    	        !SpecializationConfiguration.UseControlledParallelism;
     }
 
     final public long getTimePerCall() {
@@ -378,6 +384,15 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
             // Flush all negative counters to trigger halts quickly
             flushAllCounters.execute(frame);
             addTime(startTime);
+            if (isProfiling() && !isEnqueuedWithParallelismController && getTotalCalls() > SpecializationConfiguration.MinCallsForTimePerCall) {
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+                synchronized(this) {
+                    if (!isEnqueuedWithParallelismController) {
+                        execution.parallelismController().enqueue(this);
+                        isEnqueuedWithParallelismController = true;
+                    }
+                }
+            }
             return ret;
         } catch (KilledException | HaltException e) {
             transferToInterpreter();
@@ -416,6 +431,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     @Override
     public String toString() {
-        return String.format("PorcE[%s%s].%s", isInternal() ? "<" : "", methodKey, getName());
+        return String.format("PorcE[%s%s].%s%s", isInternal() ? "<" : "", methodKey, getName(), isProfiling() ? "<profiling>" : "");
     }
 }

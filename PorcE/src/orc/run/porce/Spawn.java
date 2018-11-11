@@ -11,6 +11,7 @@
 
 package orc.run.porce;
 
+import java.util.Map;
 import java.util.Set;
 
 import orc.run.porce.call.Dispatch;
@@ -23,25 +24,60 @@ import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.Terminator;
 
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.ImportStatic;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.profiles.ValueProfile;
+import com.oracle.truffle.api.utilities.AssumedValue;
 import org.graalvm.collections.Pair;
 
 @NodeChild(value = "c", type = Expression.class)
 @NodeChild(value = "t", type = Expression.class)
 @NodeChild(value = "computation", type = Expression.class)
 @Introspectable
-public abstract class Spawn extends Expression implements HasCalledRoots {
+@ImportStatic(SpecializationConfiguration.class)
+public abstract class Spawn extends Expression implements HasCalledRoots, ParallelismNode {
     private final boolean mustSpawn;
     private final PorcEExecution execution;
+
+    private volatile long executionCount = 0;
+    @SuppressWarnings("boxing")
+    private final AssumedValue<Boolean> isParallel =
+            new AssumedValue<Boolean>("Spawn.isParallel", SpecializationConfiguration.InitiallyParallel);
+
+    @Override
+    public boolean isParallelismChoiceNode() {
+        return !mustSpawn;
+    }
+
+    @Override
+    public long getExecutionCount() {
+        return executionCount;
+    }
+
+    @Override
+    public void incrExecutionCount() {
+        if (isParallelismChoiceNode() && getProfilingScope().isProfiling()) {
+            executionCount++;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("boxing")
+    public void setParallel(boolean isParallel) {
+        this.isParallel.set(isParallel);
+    }
+
+    @Override
+    @SuppressWarnings("boxing")
+    public boolean getParallel() {
+        return isParallel.get();
+    }
 
     protected final ConditionProfile moreTasksNeeded = ConditionProfile.createCountingProfile();
     protected final ValueProfile targetRootProfile = ValueProfile.createIdentityProfile();
@@ -89,12 +125,23 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
         dispatch.setTail(v);
     }
 
+    @Specialization(guards = { "UseControlledParallelism" })
+    public PorcEUnit controlled(final VirtualFrame frame, final Counter c, final Terminator t,
+            final PorcEClosure computation) {
+        if (getParallel()) {
+            return spawn(frame, c, t, computation);
+        } else {
+            return inline(frame, c, t, computation);
+        }
+    }
+
     @Specialization(guards = { "!shouldInlineSpawn(computation)" })
     public PorcEUnit spawn(final VirtualFrame frame, final Counter c, final Terminator t,
             final PorcEClosure computation) {
         final PorcERuntime r = execution.runtime();
         t.checkLive();
-        if (!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize()))) {
+        incrExecutionCount();
+        if (!moreTasksNeeded.profile(r.isWorkQueueUnderful(PorcERuntime.minQueueSize()))) {
             dispatch.dispatch(frame, computation);
         } else {
             addCalledRoot(computation.body);
@@ -106,6 +153,7 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     @Specialization(guards = { "shouldInlineSpawn(computation)" }, replaces = { "spawn" })
     public PorcEUnit inline(final VirtualFrame frame, final Counter c, final Terminator t,
             final PorcEClosure computation) {
+        incrExecutionCount();
         dispatch.dispatch(frame, computation);
         return PorcEUnit.SINGLETON;
     }
@@ -137,13 +185,21 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
     }
 
     protected boolean shouldInlineSpawn(final PorcEClosure computation) {
+        boolean b;
         if (SpecializationConfiguration.UseExternalCallKindDecision) {
-            return allowSpawnInlining &&
-                    getCallKindDecision(computation) != CallKindDecision.SPAWN;
+            b = getCallKindDecision(computation) != CallKindDecision.SPAWN;
         } else {
-            return allowSpawnInlining &&
-                    computation.getTimePerCall(targetRootProfile) < SpecializationConfiguration.InlineAverageTimeLimit;
+            b = computation.getTimePerCall(targetRootProfile) < SpecializationConfiguration.InlineAverageTimeLimit;
         }
+        return allowSpawnInlining && !mustSpawn && b;
+    }
+
+    @SuppressWarnings("boxing")
+    @Override
+    public Map<String, Object> getDebugProperties() {
+        Map<String, Object> properties = super.getDebugProperties();
+        properties.put("isParallel", getParallel());
+        return properties;
     }
 
     public static Spawn create(final Expression c, final Expression t, final boolean mustSpawn,

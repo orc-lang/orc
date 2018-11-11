@@ -14,17 +14,16 @@ package orc.run.porce.instruments
 import java.io.PrintWriter
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable.SortedMap
 import scala.collection.mutable
 
-import orc.run.porce.{ CalledRootsProfile, PorcERootNode }
+import orc.run.porce.{ CalledRootsProfile, PorcERootNode, SpecializationConfiguration }
 
-import com.oracle.truffle.api.nodes.Node
-import scala.collection.immutable.SortedMap
-import orc.util.DotUtils
 import com.oracle.truffle.api.dsl.Introspection
+import com.oracle.truffle.api.nodes.Node
 
 object DumpRuntimeProfile {
-  import DotUtils._
+  import orc.util.DotUtils._
 
   val metricPrefixMap = SortedMap(
     1.0e18 -> "E",
@@ -60,6 +59,10 @@ object DumpRuntimeProfile {
   }
 
   def apply(nodes: Iterable[Node], callsRequired: Int, out: PrintWriter): Boolean = {
+    if (!SpecializationConfiguration.ProfileCallGraph) {
+      return false
+    }
+
     val idMap = mutable.HashMap[AnyRef, String]()
     def idFor(s: String, o: AnyRef) = idMap.getOrElseUpdate(o, {
       val nextID = idMap.size
@@ -181,29 +184,14 @@ object DumpRuntimeProfile {
     }).mkString("")
     */
     val targetSpawnCount = totalCallEdgeUses / 100
-    val orderedEdges = callEdges.filter(p => {
-      try {
-        val specs = Introspection.getSpecializations(p.getLeft.asInstanceOf[Node]).asScala
-        specs.filter(_.isActive()).map(_.getMethodName()).contains("specific")
-      } catch {
-        case _: IllegalArgumentException => true
-      }
-    }).toSeq.sortBy(_.getLeft.getTotalCalls)
+    val orderedEdges = callEdges.toSeq.sortBy(_.getLeft.getTotalCalls)
     val prefixLen = orderedEdges.scanLeft(0L)(_ + _.getLeft.getTotalCalls).indexWhere(_ > targetSpawnCount)
 
-    val txt = (for (p <- orderedEdges.take(prefixLen + 3)) yield {
+    val txt = (for (p <- orderedEdges.take(prefixLen + 10)) yield {
       val callnode = p.getLeft
       val from = callnode.getProfilingScope.asInstanceOf[PorcERootNode]
       val to = p.getRight
-      val specNames = try {
-        val specs = Introspection.getSpecializations(callnode.asInstanceOf[Node]).asScala
-        specs.filter(_.isActive()).map(_.getMethodName())
-      } catch {
-        case _: IllegalArgumentException => List()
-      }
-      if (specNames contains "specific") {
-        s"""(\\"${from.getName}\\", \\"${to.getName}\\") -> SPAWN, // ${callnode.getTotalCalls unit " calls"}\\l"""
-      } else ""
+      s"""(\\"${from.getName}\\", \\"${to.getName}\\") -> SPAWN, // ${callnode.getTotalCalls unit " calls"}\\l"""
     }).mkString("")
     println(s"new CallKindDecision.Table(\n${txt.replace("\\l", "\n").replace("\\\"", "\"")})")
 

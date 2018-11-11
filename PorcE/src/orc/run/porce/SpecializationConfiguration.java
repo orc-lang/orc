@@ -130,4 +130,22 @@ public abstract class SpecializationConfiguration {
             Logger.warning(() -> "orc.porce.profileFunctionTime requires orc.porce.profileCallGraph, but profileCallGraph=false");
         }
     }
+
+    @CompilationFinal
+    public static final boolean InitiallyParallel = Boolean
+            .parseBoolean(System.getProperty("orc.porce.initiallyParallel", "true"));
+
+    @CompilationFinal
+    public static final boolean UseControlledParallelism = Boolean
+            .parseBoolean(System.getProperty("orc.porce.useControlledParallelism", "false"));
+
+    {
+        if(UseExternalCallKindDecision && UseControlledParallelism) {
+            Logger.warning(() -> "Both orc.porce.useControlledParallelism and orc.porce.useExternalCallKindDecision are set. orc.porce.useControlledParallelism wins.");
+        }
+    }
+
+    @CompilationFinal
+    public static final long MinimumExecutionCountForParallelismController = Long
+            .parseLong(System.getProperty("orc.porce.minimumExecutionCountForParallelismController", "2000000"));
 }

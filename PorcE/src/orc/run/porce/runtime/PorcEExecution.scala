@@ -15,6 +15,7 @@ import java.io.{ FileOutputStream, OutputStreamWriter, PrintWriter }
 import java.util.{ ArrayList, Collections }
 import java.util.logging.Level
 
+import scala.collection.JavaConverters._
 import scala.ref.WeakReference
 
 import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
@@ -40,6 +41,8 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
   val porcToPorcE = PorcToPorcE(this, runtime.language)
 
   val truffleRuntime = Truffle.getRuntime()
+
+  val parallelismController = new ParallelismController(this)
 
   runtime.installHandlers(this)
 
@@ -138,10 +141,17 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
   }
 
   private val extraRegisteredRootNodes = Collections.synchronizedList(new ArrayList[WeakReference[RootNode]]())
+  // The above could be cleaned with: extraRegisteredRootNodes.removeIf(_.get.isEmpty)
 
   @TruffleBoundary(allowInlining = true) @noinline
   def registerRootNode(root: RootNode): Unit = {
     extraRegisteredRootNodes.add(WeakReference(root))
+  }
+
+  def allPorcERootNodes: Set[PorcERootNode] = {
+    val callTargets = callTargetMap.values.toSet
+    val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r: PorcERootNode) => r })
+    callTargets.map(_.getRootNode).collect({ case r: PorcERootNode => r }) ++ ers
   }
 
   private val specializationsFile = ExecutionLogOutputStream.getFile(s"truffle-node-specializations", "txt")
@@ -156,12 +166,11 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
         lastGoodRepNumber + 1
     }
     lastGoodRepNumber = repNum
-    import scala.collection.JavaConverters._
     specializationsFile foreach { specializationsFile =>
       specializationsFile.delete()
       val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
-        val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
+      val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
       for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
         DumpSpecializations(r, 1, out)
       }
@@ -171,7 +180,7 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
       profileResultsFile.delete()
       val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(profileResultsFile)))
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
-        val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
+      val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
       val hasNodes = DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), 1, out)
       out.close()
       if (hasNodes) {
@@ -185,15 +194,30 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
   }
 
   import CallKindDecision._
-  final val callKindTable: CallKindDecision.Table = new CallKindDecision.Table(
-      ("seqPhase", "`compseqPhase_seqPhase_1") -> INLINE,
+  final val callKindTable: CallKindDecision.Table = {
+    import java.io.File
+    val forBySupport = Array(
+      ("`seqPhase_", "`compseqPhase_seqPhase_") -> INLINE,
 
-      ("parPhase", "`compparPhase_0") -> SPAWN,
-      ("parPhase", "`compparPhase_1") -> INLINE,
-      ("parPhase", "`compparPhase_parPhase_3") -> INLINE,
-      ("`compparPhase_1", "`compparPhase_parPhase_1") -> INLINE,
+      ("`parPhase_[0-9]+$", "`compparPhase_parPhase_[0-9]+$") -> SPAWN,
+      ("`compparPhase_", "`seqPhase_") -> INLINE,
       )
+
+    new File(options.filename).getName match {
+      case _ if !SpecializationConfiguration.UseExternalCallKindDecision =>
+        new CallKindDecision.Table()
+//      case "black-scholes-opt.orc" =>
+//      case "savina_sieve-opt.orc" =>
+//      case "k-means-opt.orc" =>
+//      case "sssp-batched-opt.orc" =>
+//      case "dedup.orc" | "dedup-opt.orc" =>
+      case fn =>
+        Logger.warning(s"CallKindDecision table not available for $fn. Using empty table.");
+        new CallKindDecision.Table()
+    }
+  }
 }
+
 
 trait PorcEExecutionWithLaunch extends PorcEExecution {
   execution =>
