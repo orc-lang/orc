@@ -30,7 +30,7 @@ abstract class TargetValueAndArgumentClassSpecializedInvoker(val target: AnyRef,
     valuesHaveType(arguments, argumentClss)
   }
 
-  override def toString() = s"${target}(${argumentClss.map(_.getSimpleName).mkString(", ")})<Invoker>"
+  override def toString() = s"${target}(${argumentClss.mkString(", ")})<Invoker>"
 }
 
 abstract class TargetClassAndArgumentClassSpecializedInvoker(val targetCls: Class[_], val argumentClss: Array[Class[_]]) extends Invoker {
@@ -43,7 +43,7 @@ abstract class TargetClassAndArgumentClassSpecializedInvoker(val targetCls: Clas
     valuesHaveType(arguments, argumentClss)
   }
 
-  override def toString() = s"${targetCls.getSimpleName}(${argumentClss.map(_.getSimpleName).mkString(", ")})<Invoker>"
+  override def toString() = s"${targetCls}(${argumentClss.mkString(", ")})<Invoker>"
 }
 
 /** An invoker sentinel that throws a deferred Exception for this target and arg values */
