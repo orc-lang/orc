@@ -37,9 +37,9 @@ public abstract class FlushAllCounters extends Expression {
     protected final int flushPolarity;
 
     @CompilationFinal
-    private int haltCount = 0;
+    private volatile int haltCount = 0;
     @CompilationFinal
-    private int totalCount = 0;
+    private volatile int totalCount = 0;
 
     private final Counter.FlushContext ctx;
 

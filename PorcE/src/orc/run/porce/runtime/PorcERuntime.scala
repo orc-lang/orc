@@ -173,10 +173,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         StackDepthState(r, prev)
       } catch {
         case _: ClassCastException => {
-          if (allExecutionOnWorkers.isValid()) {
-            CompilerDirectives.transferToInterpreterAndInvalidate()
-            allExecutionOnWorkers.invalidate()
-          }
+//          if (allExecutionOnWorkers.isValid()) {
+//            CompilerDirectives.transferToInterpreterAndInvalidate()
+//            allExecutionOnWorkers.invalidate()
+//          }
           incrementAndCheckStackDepthWithThreadLocal()
         }
       }
@@ -211,10 +211,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         t.stackDepth = replaceDepthValue(t.stackDepth, prev, unrollProfile)
       } catch {
         case _: ClassCastException => {
-          if (allExecutionOnWorkers.isValid()) {
-            CompilerDirectives.transferToInterpreterAndInvalidate()
-            allExecutionOnWorkers.invalidate()
-          }
+//          if (allExecutionOnWorkers.isValid()) {
+//            CompilerDirectives.transferToInterpreterAndInvalidate()
+//            allExecutionOnWorkers.invalidate()
+//          }
           decrementStackDepthWithThreadLocal()
         }
       }
@@ -232,10 +232,10 @@ class PorcERuntime(engineInstanceName: String, val language: PorcELanguage) exte
         t.stackDepth = 0
       } catch {
         case _: ClassCastException => {
-          if (allExecutionOnWorkers.isValid()) {
-            CompilerDirectives.transferToInterpreterAndInvalidate()
-            allExecutionOnWorkers.invalidate()
-          }
+//          if (allExecutionOnWorkers.isValid()) {
+//            CompilerDirectives.transferToInterpreterAndInvalidate()
+//            allExecutionOnWorkers.invalidate()
+//          }
           resetStackDepthWithThreadLocal()
         }
       }
