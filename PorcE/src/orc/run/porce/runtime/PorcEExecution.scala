@@ -148,9 +148,9 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
   }
 
   def allPorcERootNodes: Set[PorcERootNode] = {
-    val callTargets = callTargetMap.values.toSet
-    val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r: PorcERootNode) => r })
-    callTargets.map(_.getRootNode).collect({ case r: PorcERootNode => r }) ++ ers
+    val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
+    callTargets.map(_.getRootNode).collect({ case r: PorcERootNode => r }) ++
+      extraRegisteredRootNodes.asScala.collect({ case WeakReference(r: PorcERootNode) => r })
   }
 
   private val specializationsFile = ExecutionLogOutputStream.getFile(s"truffle-node-specializations", "txt")

@@ -125,7 +125,7 @@ public abstract class SpecializationConfiguration {
     public static final boolean ProfileFunctionTime = Boolean
             .parseBoolean(System.getProperty("orc.porce.profileFunctionTime", "false"));
 
-    {
+    static {
         if(ProfileFunctionTime && !ProfileCallGraph) {
             Logger.warning(() -> "orc.porce.profileFunctionTime requires orc.porce.profileCallGraph, but profileCallGraph=false");
         }
@@ -139,10 +139,19 @@ public abstract class SpecializationConfiguration {
     public static final boolean UseControlledParallelism = Boolean
             .parseBoolean(System.getProperty("orc.porce.useControlledParallelism", "false"));
 
-    {
+    static {
         if(UseExternalCallKindDecision && UseControlledParallelism) {
             Logger.warning(() -> "Both orc.porce.useControlledParallelism and orc.porce.useExternalCallKindDecision are set. orc.porce.useControlledParallelism wins.");
         }
+        String parallelismMode;
+        if (UseControlledParallelism) {
+            parallelismMode = "execution count ordering heuristic";
+        } else if (UseExternalCallKindDecision) {
+            parallelismMode = "external table";
+        } else {
+            parallelismMode = "combined runtime heuristic (old and noisy!!)";
+        }
+        Logger.info(() -> "Parallelism mode is: " + parallelismMode);
     }
 
     @CompilationFinal

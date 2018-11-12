@@ -331,6 +331,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
         this.methodKey = methodKey;
         this.flushAllCounters = insert(FlushAllCounters.create(-1, execution));
         this.flushAllCounters.setTail(true);
+        execution.registerRootNode(this);
     }
 
     /**
