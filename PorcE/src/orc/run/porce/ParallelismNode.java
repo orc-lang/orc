@@ -13,6 +13,7 @@
 
 package orc.run.porce;
 
+import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.utilities.AssumedValue;
 
 /**
@@ -50,6 +51,8 @@ public interface ParallelismNode {
      * @return true if this node can create parallelism.
      */
     boolean getParallel();
+
+    RootNode getRootNode();
 
     /* Trait implementation:
     private volatile long executionCount = 0;

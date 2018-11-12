@@ -58,7 +58,9 @@ public abstract class Graft extends Expression implements ParallelismNode {
     @Override
     @SuppressWarnings("boxing")
     public void setParallel(boolean isParallel) {
-        this.isParallel.set(isParallel);
+        if (isParallel != getParallel()) {
+            this.isParallel.set(isParallel);
+        }
     }
 
     @Override
@@ -156,6 +158,7 @@ public abstract class Graft extends Expression implements ParallelismNode {
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
         properties.put("isParallel", getParallel());
+        properties.put("executionCount", getExecutionCount());
         return properties;
     }
 

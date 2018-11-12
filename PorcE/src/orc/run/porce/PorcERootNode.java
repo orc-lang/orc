@@ -109,12 +109,14 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     @Override
     @SuppressWarnings("boxing")
     public final boolean isProfiling() {
-        return isProfilingFlag.get();
+        return CompilerDirectives.inInterpreter() || isProfilingFlag.get();
     }
 
     @SuppressWarnings("boxing")
     public final void setProfiling(boolean isProfiling) {
-        isProfilingFlag.set(isProfiling);
+        if (isProfiling != isProfilingFlag.get()) {
+            isProfilingFlag.set(isProfiling);
+        }
     }
 
     @Override
@@ -385,15 +387,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
             // Flush all negative counters to trigger halts quickly
             flushAllCounters.execute(frame);
             addTime(startTime);
-            if (isProfiling() && !isEnqueuedWithParallelismController && getTotalCalls() > SpecializationConfiguration.MinCallsForTimePerCall) {
-                CompilerDirectives.transferToInterpreterAndInvalidate();
-                synchronized(this) {
-                    if (!isEnqueuedWithParallelismController) {
-                        execution.parallelismController().enqueue(this);
-                        isEnqueuedWithParallelismController = true;
-                    }
-                }
-            }
+//            if (isProfiling() && !isEnqueuedWithParallelismController && getTotalCalls() > SpecializationConfiguration.MinCallsForTimePerCall) {
+//                enqueueWithParallelismController();
+//            }
             return ret;
         } catch (KilledException | HaltException e) {
             transferToInterpreter();
@@ -408,6 +404,16 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
         } finally {
             r.decrementStackDepth(previousStackHeight, unrollProfile);
         }
+    }
+
+    @TruffleBoundary(allowInlining = false)
+    private void enqueueWithParallelismController() {
+        atomic(() -> {
+            if (!isEnqueuedWithParallelismController) {
+                execution.parallelismController().enqueue(this);
+                isEnqueuedWithParallelismController = true;
+            }
+        });
     }
 
     private final VisibleConditionProfile inlineProfile = VisibleConditionProfile.createBinaryProfile();
@@ -430,8 +436,9 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
         return r;
     }
 
+    @SuppressWarnings("boxing")
     @Override
     public String toString() {
-        return String.format("PorcE[%s%s].%s%s", isInternal() ? "<" : "", methodKey, getName(), isProfiling() ? "<profiling>" : "");
+        return String.format("PorcE[%s%s].%s%s", isInternal() ? "<" : "", methodKey, getName(), isProfilingFlag.get() ? "<profiling>" : "");
     }
 }

@@ -70,7 +70,9 @@ public abstract class Spawn extends Expression implements HasCalledRoots, Parall
     @Override
     @SuppressWarnings("boxing")
     public void setParallel(boolean isParallel) {
-        this.isParallel.set(isParallel);
+        if (isParallel != getParallel()) {
+            this.isParallel.set(isParallel);
+        }
     }
 
     @Override
@@ -125,7 +127,7 @@ public abstract class Spawn extends Expression implements HasCalledRoots, Parall
         dispatch.setTail(v);
     }
 
-    @Specialization(guards = { "UseControlledParallelism" })
+    @Specialization(guards = { "UseControlledParallelism", "isParallelismChoiceNode()" })
     public PorcEUnit controlled(final VirtualFrame frame, final Counter c, final Terminator t,
             final PorcEClosure computation) {
         if (getParallel()) {
@@ -198,7 +200,10 @@ public abstract class Spawn extends Expression implements HasCalledRoots, Parall
     @Override
     public Map<String, Object> getDebugProperties() {
         Map<String, Object> properties = super.getDebugProperties();
-        properties.put("isParallel", getParallel());
+        if (isParallelismChoiceNode()) {
+            properties.put("isParallel", getParallel());
+            properties.put("executionCount", getExecutionCount());
+        }
         return properties;
     }
 
