@@ -13,6 +13,7 @@ package orc.run.porce;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import orc.run.porce.call.Dispatch;
 import orc.run.porce.runtime.CallClosureSchedulable;
@@ -42,13 +43,13 @@ import org.graalvm.collections.Pair;
 @Introspectable
 @ImportStatic(SpecializationConfiguration.class)
 public abstract class Spawn extends Expression implements HasCalledRoots, ParallelismNode {
-    private final boolean mustSpawn;
+    protected final boolean mustSpawn;
     private final PorcEExecution execution;
 
-    private volatile long executionCount = 0;
+    private final AtomicLong executionCount = new AtomicLong(0);
     @SuppressWarnings("boxing")
     private final AssumedValue<Boolean> isParallel =
-            new AssumedValue<Boolean>("Spawn.isParallel", SpecializationConfiguration.InitiallyParallel);
+            new AssumedValue<>("Spawn.isParallel", SpecializationConfiguration.InitiallyParallel);
 
     @Override
     public boolean isParallelismChoiceNode() {
@@ -57,13 +58,13 @@ public abstract class Spawn extends Expression implements HasCalledRoots, Parall
 
     @Override
     public long getExecutionCount() {
-        return executionCount;
+        return executionCount.get();
     }
 
     @Override
     public void incrExecutionCount() {
         if (isParallelismChoiceNode() && getProfilingScope().isProfiling()) {
-            executionCount++;
+            executionCount.incrementAndGet();
         }
     }
 

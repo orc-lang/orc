@@ -12,6 +12,7 @@
 package orc.run.porce;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import orc.run.porce.runtime.CallKindDecision;
 import orc.run.porce.runtime.PorcEClosure;
@@ -33,7 +34,7 @@ import com.oracle.truffle.api.utilities.AssumedValue;
 public abstract class Graft extends Expression implements ParallelismNode {
     protected final PorcEExecution execution;
 
-    private volatile long executionCount = 0;
+    private final AtomicLong executionCount = new AtomicLong(0);
     @SuppressWarnings("boxing")
     private final AssumedValue<Boolean> isParallel =
             new AssumedValue<>("Graft.isParallel", SpecializationConfiguration.InitiallyParallel);
@@ -45,13 +46,13 @@ public abstract class Graft extends Expression implements ParallelismNode {
 
     @Override
     public long getExecutionCount() {
-        return executionCount;
+        return executionCount.get();
     }
 
     @Override
     public void incrExecutionCount() {
         if (isParallelismChoiceNode() && getProfilingScope().isProfiling()) {
-            executionCount++;
+            executionCount.incrementAndGet();
         }
     }
 
