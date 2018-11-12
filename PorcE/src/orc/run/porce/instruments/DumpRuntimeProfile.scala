@@ -24,39 +24,7 @@ import com.oracle.truffle.api.nodes.Node
 
 object DumpRuntimeProfile {
   import orc.util.DotUtils._
-
-  val metricPrefixMap = SortedMap(
-    1.0e18 -> "E",
-    1.0e15 -> "P",
-    1.0e12 -> "T",
-    1.0e9 -> "G",
-    1.0e6 -> "M",
-    1.0e3 -> "k",
-    1.0 -> "",
-    1.0e-3 -> "m",
-    1.0e-6 -> "µ",
-    1.0e-9 -> "n",
-    1.0e-12 -> "p",
-    1.0e-15 -> "f",
-    1.0e-18 -> "a",
-  )
-  val metricPrefixSearchMap = metricPrefixMap.map({ case (m, p) => (m * 999, (m, p))}) +
-        (0.0 -> metricPrefixMap.head) + (Double.MaxValue -> metricPrefixMap.last)
-
-  implicit class NumberAdds(v: Double) {
-    def unit(unit: String): String = {
-      v match {
-        case Long.MaxValue | Long.MinValue => s"? $unit"
-        case 0 => s"0 $unit"
-        case _ if v < 0 => "-" + (-v unit unit)
-        case _ if v.isNaN => s"NaN $unit"
-        case _ if v.isInfinity => s"∞ $unit"
-        case _ =>
-          val (mult, prefix) = metricPrefixSearchMap.from(v.toDouble).head._2
-          f"${v.toDouble / mult}%3.1f $prefix$unit"
-      }
-    }
-  }
+  import orc.util.NumberFormatting._
 
   def apply(nodes: Iterable[Node], callsRequired: Int, out: PrintWriter): Boolean = {
     if (!SpecializationConfiguration.ProfileCallGraph) {
