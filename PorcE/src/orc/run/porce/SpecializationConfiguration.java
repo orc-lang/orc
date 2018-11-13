@@ -139,6 +139,10 @@ public abstract class SpecializationConfiguration {
     public static final boolean UseControlledParallelism = Boolean
             .parseBoolean(System.getProperty("orc.porce.useControlledParallelism", "false"));
 
+    @CompilationFinal
+    public static final boolean UseRepTime = Boolean
+            .parseBoolean(System.getProperty("orc.porce.useRepTime", "false"));
+
     static {
         if(UseExternalCallKindDecision && UseControlledParallelism) {
             Logger.warning(() -> "Both orc.porce.useControlledParallelism and orc.porce.useExternalCallKindDecision are set. orc.porce.useControlledParallelism wins.");

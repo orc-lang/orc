@@ -61,7 +61,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
 
     @SuppressWarnings("boxing")
     private final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<Boolean>("PorcERootNode.isProfiling", true);
-    private volatile boolean isEnqueuedWithParallelismController = false;
 
     @Override
     public ProfilingScope getProfilingScope() {
@@ -387,9 +386,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
             // Flush all negative counters to trigger halts quickly
             flushAllCounters.execute(frame);
             addTime(startTime);
-//            if (isProfiling() && !isEnqueuedWithParallelismController && getTotalCalls() > SpecializationConfiguration.MinCallsForTimePerCall) {
-//                enqueueWithParallelismController();
-//            }
             return ret;
         } catch (KilledException | HaltException e) {
             transferToInterpreter();
@@ -404,16 +400,6 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
         } finally {
             r.decrementStackDepth(previousStackHeight, unrollProfile);
         }
-    }
-
-    @TruffleBoundary(allowInlining = false)
-    private void enqueueWithParallelismController() {
-        atomic(() -> {
-            if (!isEnqueuedWithParallelismController) {
-                execution.parallelismController().enqueue(this);
-                isEnqueuedWithParallelismController = true;
-            }
-        });
     }
 
     private final VisibleConditionProfile inlineProfile = VisibleConditionProfile.createBinaryProfile();

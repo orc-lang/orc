@@ -12,45 +12,67 @@
 package orc.run.porce.runtime
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 
 import orc.run.porce.{ Logger, ParallelismNode, PorcERootNode, SpecializationConfiguration }
 
-import com.oracle.truffle.api.CompilerAsserts
 import com.oracle.truffle.api.nodes.NodeUtil
 import java.util.{ TimerTask }
-import orc.util.DumperRegistry
 import java.lang.management.ManagementFactory
+import orc.values.sites.TotalSite2Simple
+import orc.values.Signal
+
+object ReportPerformance extends TotalSite2Simple[Number, Number] {
+  def eval(time: Number, reps: Number): Any = {
+    ParallelismController.active.reportPerformance((time.doubleValue*1000000000).toLong, reps.longValue)
+    Signal
+  }
+}
+
+object ParallelismController {
+  var _active: ParallelismController = null
+  def active_=(v: ParallelismController) = {
+    require(_active == null)
+    _active = v
+  }
+  def active = _active
+}
 
 class ParallelismController(execution: PorcEExecution) {
   import orc.util.NumberFormatting._
 
+  ParallelismController.active = this
+
   private def timer = execution.runtime.timer
 
-  def enqueue(root: PorcERootNode): Unit = synchronized {
-    CompilerAsserts.neverPartOfCompilation("ParallelismController")
-//
-//    if (checkTask != null) {
-//      return
-//    }
-//
-//    // If there is no parallelism choice, just turn off profiling immediately.
-//    if (!NodeUtil.findAllNodeInstances(root, classOf[ParallelismNode]).asScala.exists(_.isParallelismChoiceNode)) {
-//      root.setProfiling(false)
-//      Logger.finest(s"Ignored: ${root}")
-//      return
-//    }
-//
-//    Logger.finest(s"Enqueued: ${root}")
-    //check()
-    scheduleCheck()
+  var reportedTime = 0L
+  var reportedReps = 0L
+
+  def reportPerformance(time: Long, reps: Long): Unit = synchronized {
+    reportedTime += time
+    reportedReps += reps
+    scheduleCheck(true)
   }
 
   val parallelFractionValuesTable = Seq(1.0, 0.6, 0.3, 0.1, 0.01)
-  var parallelFractionData = parallelFractionValuesTable.map((_, Time(0, 0, 0, 0)))
+  var parallelFractionData = parallelFractionValuesTable.map((_, Time(0, 0, 0, 0, 0, 0)))
   var parallelFraction = 1.0
 
-  private def timeMetric(t: Time) = t.cpuUtilization
+  private def timeMetric(t: Time) = {
+    if (SpecializationConfiguration.UseRepTime) {
+      t.timePerRep
+    } else {
+      -t.cpuUtilization
+    }
+  }
+  private def timeMeasurementComplete(t: Time): Boolean = {
+    if (SpecializationConfiguration.UseRepTime) {
+      t.performanceTime > 3*1000000000L && t.performanceReps >= 3 ||
+      t.performanceTime > 20*1000000000L
+    } else {
+      t.realTime > 20*1000000000L
+    }
+  }
+
   private def getParallelFractionTime(f: Double) = parallelFractionData.find(_._1 == f).get._2
 
   private def newCheckTask() = new TimerTask {
@@ -69,52 +91,58 @@ class ParallelismController(execution: PorcEExecution) {
     }
 
     val timeDiff = getTime() - lastTime
+    val isWarn = lastTime.performanceReps >= 1
     val startTime = System.nanoTime()
     def timeSpent = s"(${(System.nanoTime() - startTime) / 1000000000.0 unit "s"})"
 
     // Only process roots that have run.
-    val rootsToUpdate = (Seq() ++ execution.allPorcERootNodes).filter(r => r.getTotalCalls > 0)
+    lazy val rootsToUpdate = (Seq() ++ execution.allPorcERootNodes).filter(r => r.getTotalCalls > 0)
 
     // Check the profiling data and potentially perform control
-    val parallelismNodes = rootsToUpdate.flatMap(r => {
+    lazy val parallelismNodes = rootsToUpdate.flatMap(r => {
       val ps = NodeUtil.findAllNodeInstances(r, classOf[ParallelismNode]).asScala
       ps
     }).filter(_.isParallelismChoiceNode)
-    val totalCalls = rootsToUpdate.map(_.getTotalCalls).sum
-    val totalExecutionCount = parallelismNodes.map(_.getExecutionCount).sum
+    lazy val totalCalls = rootsToUpdate.map(_.getTotalCalls).sum
+    lazy val totalExecutionCount = parallelismNodes.map(_.getExecutionCount).sum
+
+    def parallelFractionDataSorted = parallelFractionData.sortBy(p => timeMetric(p._2))
 
     Logger.info(f"Checking: totalExecutionCount=${totalExecutionCount unit " execs"}, totalCalls=${totalCalls unit " calls"}, timeDiff=$timeDiff $timeSpent")
     lastTime = getTime()
 
-    if (totalExecutionCount > SpecializationConfiguration.MinimumExecutionCountForParallelismController ||
+    if (isWarn ||
+        totalExecutionCount > SpecializationConfiguration.MinimumExecutionCountForParallelismController ||
         totalCalls > SpecializationConfiguration.MinimumExecutionCountForParallelismController*100) {
       // Once we get here we are ready to do real updates.
 
-      if (timeDiff.compilationTime / timeDiff.cpuTime < 0.25) {
+      if (timeDiff.compilationTime / timeDiff.cpuTime < 0.1) {
         // If we used less than 10% of the time for compilation then add this chunk to the appropriate data
         parallelFractionData = parallelFractionData map {
           case (f, old) if f == parallelFraction => (f, old + timeDiff)
           case x => x
         }
-        Logger.info(s"$parallelFraction parallelFractionData: " + parallelFractionData.sortBy(p => timeMetric(p._2)).reverse)
+        Logger.info(s"Added to $parallelFraction. parallelFractionData:\n" +
+            parallelFractionDataSorted.mkString("\n"))
       }
 
       // Find the first parallelFraction without enough data if any.
-      val (newParallelFraction, stillCollecting) = parallelFractionData.find(_._2.realTime < 20*1000000000L) match {
+      val (newParallelFraction, stillCollecting) = parallelFractionData.find(p => !timeMeasurementComplete(p._2)) match {
           case Some((fract, _)) =>
             // We are still collecting data.
             (fract, true)
           case None =>
             // We have all our data. Pick the best.
             // TODO: If we are allowed to use the actual run time of the operation we could use that here.
-            (parallelFractionData.sortBy(_._2.cpuUtilization).last._1, false)
+            (parallelFractionDataSorted.head._1, false)
       }
 
       val metricDiff =
         timeMetric(getParallelFractionTime(newParallelFraction)) - timeMetric(getParallelFractionTime(parallelFraction))
       if (metricDiff.abs > 0.1 || stillCollecting) {
         parallelFraction = newParallelFraction
-        Logger.info(s"Switching to $newParallelFraction, parallelFractionData: " + parallelFractionData.sortBy(_._2.cpuUtilization).reverse)
+        Logger.info(s"Switching to $newParallelFraction, parallelFractionData:\n" +
+            parallelFractionDataSorted.mkString("\n"))
       }
 
       // Build node lists and find prefix length which has parallelFraction executions
@@ -148,16 +176,13 @@ class ParallelismController(execution: PorcEExecution) {
     }
   }
 
-  // TODO: This is a hack. The checks should be scheduled some other way.
-  DumperRegistry.register { name => check() }
-
-  private def scheduleCheck() = {
+  private def scheduleCheck(now: Boolean = false) = {
     if (lastTime == null) {
       lastTime = getTime()
     }
     if (checkTask == null) {
       checkTask = newCheckTask()
-      timer.schedule(checkTask, 10 /* s */ * 1000)
+      timer.schedule(checkTask, if (now) 100 else 10 /* s */ * 1000)
     }
   }
 
@@ -173,18 +198,30 @@ class ParallelismController(execution: PorcEExecution) {
   def getCPUTime() = osmxbean.getProcessCpuTime()
   def getRealTime() = System.nanoTime()
 
-  case class Time(realTime: Long, cpuTime: Long, compilationTime: Long, gcTime: Long) {
+  case class Time(realTime: Long, cpuTime: Long,
+      compilationTime: Long, gcTime: Long,
+      performanceTime: Long, performanceReps: Long) {
     def cpuUtilization = (cpuTime - compilationTime - gcTime).toDouble / realTime
     def machineUtilization = cpuUtilization / osmxbean.getAvailableProcessors
+    def timePerRep = performanceTime.toDouble / performanceReps
 
-    def -(o: Time) = Time(realTime - o.realTime, cpuTime - o.cpuTime, compilationTime - o.compilationTime, gcTime - o.gcTime)
-    def +(o: Time) = Time(realTime + o.realTime, cpuTime + o.cpuTime, compilationTime + o.compilationTime, gcTime + o.gcTime)
+    def -(o: Time) = Time(realTime - o.realTime, cpuTime - o.cpuTime,
+        compilationTime - o.compilationTime, gcTime - o.gcTime,
+        performanceTime - o.performanceTime, performanceReps - o.performanceReps)
+    def +(o: Time) = Time(realTime + o.realTime, cpuTime + o.cpuTime,
+        compilationTime + o.compilationTime, gcTime + o.gcTime,
+        performanceTime + o.performanceTime, performanceReps + o.performanceReps)
 
     override def toString() =
-      f"Time(${realTime/1000000000.0 unit "s"}, ${cpuTime/1000000000.0 unit "s"}, ${compilationTime/1000000000.0 unit "s"}, ${gcTime/1000000000.0 unit "s"}, $machineUtilization%.4f)"
+      f"Time(${realTime/1000000000.0 unit "s"}, ${cpuTime/1000000000.0 unit "s"}, " +
+      f"${compilationTime/1000000000.0 unit "s"},  ${gcTime/1000000000.0 unit "s"}, " +
+      f"${performanceTime/1000000000.0 unit "s"}, ${performanceReps unit ""}, " +
+      f"[$machineUtilization%.3f, ${timePerRep/1000000000.0 unit "s"}])"
   }
 
-  def getTime() = Time(getRealTime(), getCPUTime(), getCompilationTime(), getGCTime())
+  def getTime() = Time(getRealTime(), getCPUTime(),
+      getCompilationTime(), getGCTime(),
+      reportedTime, reportedReps)
 
 
   // Schedule initial check.

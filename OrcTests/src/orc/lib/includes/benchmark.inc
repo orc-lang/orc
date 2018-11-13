@@ -11,6 +11,9 @@ import site StartBenchmark = "orc.lib.StartBenchmark"
 import class OrcTracer = "orc.util.Tracer"
 import class DumperRegistry = "orc.util.DumperRegistry"
 
+-- TODO: This is a dependency on the internals of PorcE. This should be made generic.
+import site ReportPerformance = "orc.run.porce.runtime.ReportPerformance"
+
 
 val nPartitions = BenchmarkConfig.nPartitions()
 
@@ -102,6 +105,8 @@ def benchmarkSized[A, B](name :: String, size :: Number, setup :: lambda() :: A,
         setRepStartTime() >>
 		timeItSinglePub({ benchmark(d) }, i, size) >(r, pub)>
         DumperRegistry.dump("rep" + i) >> -- Run Dumpers as soon as possible after the end of the benchmark to avoid including extra stuff.
+        ReportPerformance(r.runTime(), 1) >>
+        -- TODO: Submit the elapsed time form r as speed to the runtime for parallelism control.
 		(if check(pub) then Println(name + " results are correct up to hash collision.") else Error(name + " results are WRONG.")) >> (
 			val results' = r : results
 			writeCsvFileOverwrite(buildOutputPathname("benchmark-times", "csv"), "Benchmark times output file",
