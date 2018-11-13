@@ -24,8 +24,8 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 # dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
 #dataDir <- file.path(localExperimentDataDir, "20180730-a010")
-dataDir <- file.path(localExperimentDataDir, "20181109-a001")
-scalaDataDir <- file.path(localExperimentDataDir, "20181108-a001")
+dataDir <- file.path(localExperimentDataDir, "20181112-a001")
+scalaDataDir <- file.path(localExperimentDataDir, "20181111-a004")
 
 if(!exists("processedData")) {
   scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = F) %>%
@@ -88,7 +88,20 @@ p <- processedData %>% ggplot(aes(
   x = factor(nCPUs),
   fill = benchmarkName)) +
   labs(x = "Number of CPUs", color = "Benchmark", fill = "Benchmark") +
-  theme_minimal() + scale_color_brewer("Dark2")
+  theme_minimal() + scale_color_brewer("Dark2") +
+  facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 1) +
+  theme(
+    #legend.justification = c("right", "top"),
+    #legend.box.just = "top",
+    legend.margin = margin(-18, 0, 0, -30),
+    legend.direction = "horizontal",
+    #legend.box = "vertical",
+    legend.box = "horizontal",
+    legend.spacing = grid::unit(45, "points"),
+    text = element_text(size=9),
+    legend.text = element_text(size=8),
+    strip.text = element_text(size=9, angle = 10)
+  ) + theme(legend.position = "bottom")
 
 timeAndUtilizationPlot <- p +
   geom_col_errorbar(aes(y = elapsedTime_mean,
@@ -425,3 +438,11 @@ print(
   )
 )
 
+
+
+
+qs <- data %>% group_by(benchmarkName, nCPUs) %>%
+  summarise(quantile(elapsedTime, 0.01), quantile(elapsedTime, 0.1),quantile(elapsedTime, 0.25), quantile(elapsedTime, 0.25),
+            mean(elapsedTime), mean(head(sort(elapsedTime), 5))) %>% full_join(processedData) %>%
+  select(benchmarkName, nCPUs, `quantile(elapsedTime, 0.1)`, `mean(head(sort(elapsedTime), 5))`, elapsedTime_mean) %>%
+  mutate(potentialImprovement = elapsedTime_mean / `quantile(elapsedTime, 0.1)`)
