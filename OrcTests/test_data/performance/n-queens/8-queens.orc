@@ -34,7 +34,7 @@ def factorial(0) = 1
 def factorial(1) = 1
 def factorial(n) = n * factorial(n - 1)
 
-benchmarkSized("N-Queens-opt", factorial(N), { signal }, { _ >> collect({ queens(N) }) }, NQueens.check)
+benchmarkSized("N-Queens", factorial(N), { signal }, { _ >> collect({ queens(N) }) }, NQueens.check)
 
 {-
 BENCHMARK
