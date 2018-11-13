@@ -118,12 +118,15 @@ object PorcEShared {
 
         "orc.numerics.preferLP" -> true,
         "orc.porce.maxStackDepth" -> 128,
-        "orc.porce.optimizations.knownSiteSpecialization" -> true,
+        //"orc.porce.optimizations.knownSiteSpecialization" -> true,
+        //"orc.porce.optimizations.environmentCaching" -> false,
         "orc.ast.generateUniqueVariableNames" -> true,
         "orc.porce.truffleASTInlining" -> true,
         "orc.porce.truffleASTInliningLimit" -> 10000,
         //"orc.porce.universalTCO" -> true,
-        "orc.porce.useExternalCallKindDecision" -> true,
+        //"orc.porce.useExternalCallKindDecision" -> true,
+        "orc.porce.useControlledParallelism" -> true,
+        "orc.porce.useRepTime" -> true,
         )
 
 

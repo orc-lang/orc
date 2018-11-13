@@ -66,7 +66,8 @@ class ParallelismController(execution: PorcEExecution) {
   }
   private def timeMeasurementComplete(t: Time): Boolean = {
     if (SpecializationConfiguration.UseRepTime) {
-      t.performanceTime > 3*1000000000L && t.performanceReps >= 3 ||
+      t.performanceReps >= 5 ||
+      t.performanceTime > 2*1000000000L && t.performanceReps >= 3 ||
       t.performanceTime > 20*1000000000L
     } else {
       t.realTime > 20*1000000000L

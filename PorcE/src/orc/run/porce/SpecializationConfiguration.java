@@ -13,6 +13,7 @@ package orc.run.porce;
 
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 
+@SuppressWarnings("boxing")
 public abstract class SpecializationConfiguration {
     public static abstract class StopWatches {
         public static final boolean workerEnabled = orc.run.StopWatches.workerEnabled();
@@ -107,7 +108,7 @@ public abstract class SpecializationConfiguration {
 
     @CompilationFinal
     public static final boolean EnvironmentCaching = Boolean
-            .parseBoolean(System.getProperty("orc.porce.optimizations.environmentCaching", "true"));
+            .parseBoolean(System.getProperty("orc.porce.optimizations.environmentCaching", "false"));
 
     @CompilationFinal
     public static final double MinimumEarlyHaltProbability = Double
@@ -143,13 +144,17 @@ public abstract class SpecializationConfiguration {
     public static final boolean UseRepTime = Boolean
             .parseBoolean(System.getProperty("orc.porce.useRepTime", "false"));
 
+    @CompilationFinal
+    public static final long MinimumExecutionCountForParallelismController = Long
+            .parseLong(System.getProperty("orc.porce.minimumExecutionCountForParallelismController", "100000"));
+
     static {
         if(UseExternalCallKindDecision && UseControlledParallelism) {
             Logger.warning(() -> "Both orc.porce.useControlledParallelism and orc.porce.useExternalCallKindDecision are set. orc.porce.useControlledParallelism wins.");
         }
         String parallelismMode;
         if (UseControlledParallelism) {
-            parallelismMode = "execution count ordering heuristic";
+            parallelismMode = String.format("execution count ordering heuristic (%d execs, useRepTime=%b)", MinimumExecutionCountForParallelismController, UseRepTime);
         } else if (UseExternalCallKindDecision) {
             parallelismMode = "external table";
         } else {
@@ -157,8 +162,4 @@ public abstract class SpecializationConfiguration {
         }
         Logger.info(() -> "Parallelism mode is: " + parallelismMode);
     }
-
-    @CompilationFinal
-    public static final long MinimumExecutionCountForParallelismController = Long
-            .parseLong(System.getProperty("orc.porce.minimumExecutionCountForParallelismController", "4000000"));
 }
