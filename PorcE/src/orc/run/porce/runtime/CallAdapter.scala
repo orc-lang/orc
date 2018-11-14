@@ -154,6 +154,7 @@ object CallAdapter {
       {
         val av0 = mv.visitAnnotation(Type.getType(classOf[TruffleBoundary]).getDescriptor, true)
         av0.visit("allowInlining", true)
+        av0.visit("transferToInterpreterOnException", false)
         av0.visitEnd()
       }
 

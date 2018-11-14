@@ -70,7 +70,6 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
   def notifyOfException(e: Throwable, node: Node): Unit = {
     var realE = e
     if (e.isInstanceOf[HaltException] && e.getCause != null) {
-      CompilerDirectives.transferToInterpreter()
       realE = e.getCause()
     } else if (e.isInstanceOf[HaltException]) {
       return
