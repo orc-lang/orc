@@ -53,7 +53,7 @@ class ParallelismController(execution: PorcEExecution) {
     scheduleCheck(true)
   }
 
-  val parallelFractionValuesTable = Seq(0.9, 0.6, 0.3, 0.1, 0.01) //, 1.0)
+  val parallelFractionValuesTable = Seq(0.9, 0.6, 0.3, 0.1, 0.01)
   var parallelFractionData = (parallelFractionValuesTable).map((_, Time(0, 0, 0, 0, 0, 0)))
   var parallelFraction = 0.9 // This is a white lie. It's really 1.0.
 
@@ -63,18 +63,18 @@ class ParallelismController(execution: PorcEExecution) {
         t.timePerRep
       } else {
         // Offset cpu utilization metric by 1000 to make it greater than (worse than) time metric values.
-        1000.0-t.cpuUtilization
+        1000.0 - t.cpuUtilization
       }
     } else {
-      1000.0-t.cpuUtilization
+      1000.0 - t.cpuUtilization
     }
   }
+
   private def timeMeasurementComplete(t: Time): Boolean = {
     if (SpecializationConfiguration.UseRepTime) {
       t.performanceReps >= 5 ||
       t.performanceTime > 2*1000000000L && t.performanceReps >= 3 ||
-      t.performanceTime > 20*1000000000L ||
-      t.realTime > 30*1000000000L
+      t.performanceTime > 20*1000000000L
     } else {
       t.realTime > 20*1000000000L
     }
@@ -173,7 +173,7 @@ class ParallelismController(execution: PorcEExecution) {
       for ((n, i) <- sortedNodes.zipWithIndex) {
         val b = i < prefixLen
         if (n.getParallel != b) {
-          Logger.info(s"Changing to ${if (b) "par" else "seq"} ${n.getExecutionCount unit " execs"} ${n.getRootNode().asInstanceOf[PorcERootNode].getTotalCalls unit " calls"}\t| $n\n")
+          Logger.info(s"${if (b) "PAR" else "SEQ"}: ${n.getExecutionCount unit " exs"} ${n.getRootNode().asInstanceOf[PorcERootNode].getTotalCalls unit " cls"}\t| $n")
         }
         n.setParallel(b)
       }
