@@ -53,22 +53,28 @@ class ParallelismController(execution: PorcEExecution) {
     scheduleCheck(true)
   }
 
-  val parallelFractionValuesTable = Seq(1.0, 0.6, 0.3, 0.1, 0.01)
-  var parallelFractionData = parallelFractionValuesTable.map((_, Time(0, 0, 0, 0, 0, 0)))
-  var parallelFraction = 1.0
+  val parallelFractionValuesTable = Seq(0.9, 0.6, 0.3, 0.1, 0.01) //, 1.0)
+  var parallelFractionData = (parallelFractionValuesTable).map((_, Time(0, 0, 0, 0, 0, 0)))
+  var parallelFraction = 0.9 // This is a white lie. It's really 1.0.
 
   private def timeMetric(t: Time) = {
     if (SpecializationConfiguration.UseRepTime) {
-      t.timePerRep
+      if (t.performanceReps > 0) {
+        t.timePerRep
+      } else {
+        // Offset cpu utilization metric by 1000 to make it greater than (worse than) time metric values.
+        1000.0-t.cpuUtilization
+      }
     } else {
-      -t.cpuUtilization
+      1000.0-t.cpuUtilization
     }
   }
   private def timeMeasurementComplete(t: Time): Boolean = {
     if (SpecializationConfiguration.UseRepTime) {
       t.performanceReps >= 5 ||
       t.performanceTime > 2*1000000000L && t.performanceReps >= 3 ||
-      t.performanceTime > 20*1000000000L
+      t.performanceTime > 20*1000000000L ||
+      t.realTime > 30*1000000000L
     } else {
       t.realTime > 20*1000000000L
     }
@@ -91,13 +97,16 @@ class ParallelismController(execution: PorcEExecution) {
       return
     }
 
-    val timeDiff = getTime() - lastTime
-    val isWarn = lastTime.performanceReps >= 1
+    val now = getTime()
+    val timeDiff = now - lastTime
+    val isWarm = lastTime.performanceReps >= 1
+    lastTime = now
+
     val startTime = System.nanoTime()
     def timeSpent = s"(${(System.nanoTime() - startTime) / 1000000000.0 unit "s"})"
 
     // Only process roots that have run.
-    lazy val rootsToUpdate = (Seq() ++ execution.allPorcERootNodes).filter(r => r.getTotalCalls > 0)
+    lazy val rootsToUpdate = Seq() ++ execution.allPorcERootNodes
 
     // Check the profiling data and potentially perform control
     lazy val parallelismNodes = rootsToUpdate.flatMap(r => {
@@ -110,9 +119,8 @@ class ParallelismController(execution: PorcEExecution) {
     def parallelFractionDataSorted = parallelFractionData.sortBy(p => timeMetric(p._2))
 
     Logger.info(f"Checking: totalExecutionCount=${totalExecutionCount unit " execs"}, totalCalls=${totalCalls unit " calls"}, timeDiff=$timeDiff $timeSpent")
-    lastTime = getTime()
 
-    if (isWarn ||
+    if (isWarm ||
         totalExecutionCount > SpecializationConfiguration.MinimumExecutionCountForParallelismController ||
         totalCalls > SpecializationConfiguration.MinimumExecutionCountForParallelismController*100) {
       // Once we get here we are ready to do real updates.
@@ -130,7 +138,8 @@ class ParallelismController(execution: PorcEExecution) {
       // Find the first parallelFraction without enough data if any.
       val (newParallelFraction, stillCollecting) = parallelFractionData.find(p => !timeMeasurementComplete(p._2)) match {
           case Some((fract, _)) =>
-            // We are still collecting data.
+            // We are still collecting data. Make sure we run again soon.
+            scheduleCheck()
             (fract, true)
           case None =>
             // We have all our data. Pick the best.
@@ -142,23 +151,31 @@ class ParallelismController(execution: PorcEExecution) {
         timeMetric(getParallelFractionTime(newParallelFraction)) - timeMetric(getParallelFractionTime(parallelFraction))
       if (metricDiff.abs > 0.1 || stillCollecting) {
         parallelFraction = newParallelFraction
-        Logger.info(s"Switching to $newParallelFraction, parallelFractionData:\n" +
-            parallelFractionDataSorted.mkString("\n"))
+        Logger.info(s"Switching to $newParallelFraction")
       }
 
       // Build node lists and find prefix length which has parallelFraction executions
       val sortedNodes = parallelismNodes.sortBy(_.getExecutionCount)
       val targetCount = (totalExecutionCount * parallelFraction).toLong
-      val prefixLen = sortedNodes.scanLeft(0L)(_ + _.getExecutionCount).indexWhere(_ > targetCount)
+      val prefixLen = {
+        val n = sortedNodes.scanLeft(0L)(_ + _.getExecutionCount).indexWhere(_ > targetCount)
+        if (n < 0) sortedNodes.size else n
+      }
 
-      // Disable profiling in roots have already dealth with.
-      for (r <- rootsToUpdate) {
-        r.setProfiling(false)
+      // Disable profiling in roots.
+      if (!stillCollecting) {
+        for (r <- rootsToUpdate) {
+          r.setProfiling(false)
+        }
       }
 
       // Set the initial prefixLen nodes to be parallel and all others not to be
       for ((n, i) <- sortedNodes.zipWithIndex) {
-        n.setParallel(i < prefixLen)
+        val b = i < prefixLen
+        if (n.getParallel != b) {
+          Logger.info(s"Changing to ${if (b) "par" else "seq"} ${n.getExecutionCount unit " execs"} ${n.getRootNode().asInstanceOf[PorcERootNode].getTotalCalls unit " calls"}\t| $n\n")
+        }
+        n.setParallel(b)
       }
 
       Logger.info(s"new parallel ExecutionCount=${sortedNodes.take(prefixLen).map(_.getExecutionCount).sum unit " execs"}, n roots = ${rootsToUpdate.size}, n parallel=${prefixLen unit " nodes"}, n nodes=${sortedNodes.size unit " nodes"} $timeSpent\n" +
@@ -177,13 +194,19 @@ class ParallelismController(execution: PorcEExecution) {
     }
   }
 
-  private def scheduleCheck(now: Boolean = false) = {
+  private def scheduleCheck(now: Boolean = false): Unit = {
+    if (!now) {
+      return
+    }
     if (lastTime == null) {
       lastTime = getTime()
     }
-    if (checkTask == null) {
+    if (checkTask == null || now) {
+      if (checkTask != null) {
+        checkTask.cancel()
+      }
       checkTask = newCheckTask()
-      timer.schedule(checkTask, if (now) 100 else 10 /* s */ * 1000)
+      timer.schedule(checkTask, if (now) 1 else 10 /* s */ * 1000)
     }
   }
 
@@ -226,6 +249,6 @@ class ParallelismController(execution: PorcEExecution) {
 
 
   // Schedule initial check.
-  scheduleCheck()
+//  scheduleCheck()
 }
 
