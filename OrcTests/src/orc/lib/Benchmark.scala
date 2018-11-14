@@ -63,19 +63,27 @@ object Benchmark {
   val maxFraction: Double = 1.0 / 100
   val waitTime = 1000
   val maxWaits = 5
+  var lastCompTime = compilermxbean.getTotalCompilationTime
+  var lastTime = System.currentTimeMillis
 
   def waitForCompilation(): Unit = {
-    def h(last: Long, i: Long): Unit = {
+    def h(i: Long): Unit = {
       val now = compilermxbean.getTotalCompilationTime
-      if (i < maxWaits && (now - last).abs > waitTime * maxFraction) {
+      val nowT = System.currentTimeMillis
+      if (i < maxWaits && (now - lastCompTime).abs > (nowT - lastTime) * maxFraction) {
         if (i > 1) {
           println(s"Waiting for compilation to finish (up to ${((maxWaits - i) * waitTime / 1000).toInt} more seconds)...")
         }
+        lastCompTime = now
+        lastTime = nowT
         Thread.sleep(waitTime)
-        h(now, i+1)
+        h(i+1)
+      } else {
+        lastCompTime = now
+        lastTime = nowT
       }
     }
-    h(0, 0)
+    h(0)
   }
 }
 
