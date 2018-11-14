@@ -18,7 +18,7 @@ import orc.test.util.FactorDescription
 object PorcEShared {
   val mainOrcBenchmarks = Seq(
             "test_data/performance/threads.orc",
-            "test_data/performance/threadring2.orc",
+//            "test_data/performance/threadring2.orc",
             //"test_data/performance/Wide.orc",
             "test_data/performance/black-scholes/black-scholes-scala-opt.orc",
             "test_data/performance/black-scholes/black-scholes-scala.orc",
@@ -39,10 +39,10 @@ object PorcEShared {
             "test_data/performance/swaptions/swaptions-naive.orc",
             //"test_data/performance/swaptions/swaptions-naive-scala-subroutines-opt.orc",
             //"test_data/performance/swaptions/swaptions-naive-scala-subroutines.orc",
-            "test_data/performance/sssp/sssp-batched-opt.orc",
-            "test_data/performance/sssp/sssp-batched.orc",
-            "test_data/performance/sssp/sssp-batched-scala-opt.orc",
-            "test_data/performance/sssp/sssp-batched-scala.orc",
+//            "test_data/performance/sssp/sssp-batched-opt.orc",
+//            "test_data/performance/sssp/sssp-batched.orc",
+//            "test_data/performance/sssp/sssp-batched-scala-opt.orc",
+//            "test_data/performance/sssp/sssp-batched-scala.orc",
             //"test_data/performance/canneal/canneal-naive.orc",
             //"test_data/performance/canneal/canneal-partitioned.orc",
             //"test_data/performance/dedup/dedup-boundedchannel.orc",
@@ -77,25 +77,26 @@ object PorcEShared {
             //orc.test.item.scalabenchmarks.Mandelbrot,
             orc.test.item.scalabenchmarks.NQueens,
             orc.test.item.scalabenchmarks.SavinaSieve,
-            orc.test.item.scalabenchmarks.ThreadRing,
+//            orc.test.item.scalabenchmarks.ThreadRing,
             orc.test.item.scalabenchmarks.blackscholes.BlackScholesPar,
             orc.test.item.scalabenchmarks.kmeans.KMeansPar,
             //orc.test.item.scalabenchmarks.kmeans.KMeansParManual,
             orc.test.item.scalabenchmarks.BigSortPar,
             orc.test.item.scalabenchmarks.swaptions.SwaptionsParTrial,
             //orc.test.item.scalabenchmarks.swaptions.SwaptionsParSwaption,
-            orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar,
+//            orc.test.item.scalabenchmarks.sssp.SSSPBatchedPar,
             //orc.test.item.scalabenchmarks.canneal.Canneal,
             orc.test.item.scalabenchmarks.dedup.DedupNestedPar,
             //orc.test.item.scalabenchmarks.dedup.DedupBoundedQueue,
-            orc.test.item.scalabenchmarks.Threads,
+            //orc.test.item.scalabenchmarks.Threads, // Don't bother running. It will time out.
             orc.test.item.scalabenchmarks.WordCount,
             )
 
   val mainJvmOpts = Seq(
       "-javaagent:../ScalaGraalAgent/build/ScalaGraalAgent-0.1.jar",
       "-XX:-RestrictContended",
-      //"-XX:+UseParallelGC",
+      "-XX:+UseParallelGC",
+      "-XX:+UseNUMA",
       //"-XX:+UseG1GC",
       "-Xms16g", "-Xmx16g", "-Xss8m")
 
@@ -140,7 +141,7 @@ object PorcEShared {
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   import PorcEShared._
 
-  def softTimeLimit: Double = 60 * 10
+  def softTimeLimit: Double = 60 * 13
 
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -167,7 +168,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       benchmarkClass: Class[_],
       nCPUs: Int)
       extends ArthursBenchmarkEnv.ScalaExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
-    //override def nRuns = super.nRuns / 2 max 1
+    override def nRuns = super.nRuns / 2 max 1
 
     override def factorDescriptions = Seq(
       FactorDescription("run", "Run Number", "", ""),
@@ -180,8 +181,10 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      //val nCPUsValues = Seq(16, 8, 4, 12, 1)
-      val nCPUsValues = Seq(24, 12, 6, 18, 1)
+      //val nCPUsValues = Seq(16, 1, 8)
+      //val nCPUsValues = Seq(16, 1, 8, 12, 4)
+      //val nCPUsValues = Seq(24, 12, 6, 18, 1)
+      val nCPUsValues = Seq(24, 16, 1, 8)
       val nRuns = 1
       val porce = for {
         run <- 0 until nRuns
@@ -201,11 +204,11 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
       (porce ++ scala).sortBy(v => (v.run,
+          nCPUsValues.indexOf(v.nCPUs),
           (v match {
             case v: MyPorcEExperimentalCondition => -v.optLevel
             case _ => -0
           }),
-          nCPUsValues.indexOf(v.nCPUs),
           ))
     }
     runExperiment(experimentalConditions)

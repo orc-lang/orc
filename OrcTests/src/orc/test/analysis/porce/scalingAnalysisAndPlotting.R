@@ -7,6 +7,8 @@
 # URL: http://orc.csres.utexas.edu/license.shtml .
 #
 
+options(boot.parallel=T)
+
 library(knitr)
 library(tidyr)
 library(stringr)
@@ -24,8 +26,8 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 # dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
 #dataDir <- file.path(localExperimentDataDir, "20180730-a010")
-dataDir <- file.path(localExperimentDataDir, "20181112-a001")
-scalaDataDir <- file.path(localExperimentDataDir, "20181111-a004")
+dataDir <- file.path(localExperimentDataDir, "20181114-a001")
+scalaDataDir <- file.path(localExperimentDataDir, "20181112-a001")
 
 if(!exists("processedData")) {
   scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = F) %>%
@@ -36,13 +38,13 @@ if(!exists("processedData")) {
     addBenchmarkProblemName()
 
   prunedData <- data %>%
-    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 5, 20, 120, minRemaining = 1, maxRemaining = 20) %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 7, 25, 300, minRemaining = 1, maxRemaining = 20) %>%
     # Drop any reps which have more than 1% compilation time.
-    filter(rtCompTime < cpuTime * 0.01)
+    filter(rtCompTime < cpuTime * 0.05)
 
   processedData <- prunedData %>%
     group_by(benchmarkProblemName, language, benchmarkName, nCPUs, optLevel) %>%
-    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), mean, confidence = 0.95, R = 1) %>%
+    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), c(mean=mean, median=median), confidence = 0.95, R = 10000) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
@@ -62,8 +64,11 @@ processedData <- processedData %>%
   group_by(benchmarkProblemName) %>%
   addBaseline(elapsedTime_mean, c(language="Scala", nCPUs=1, isBaseline = T), baseline = elapsedTime_mean_problembaseline) %>%
   mutate(elapsedTime_mean_problembaseline = replace_na(elapsedTime_mean_problembaseline, 60*10)) %>%
+  addBaseline(elapsedTime_median, c(language="Scala", nCPUs=1, isBaseline = T), baseline = elapsedTime_median_problembaseline) %>%
+  mutate(elapsedTime_median_problembaseline = replace_na(elapsedTime_median_problembaseline, 60*10)) %>%
   group_by(benchmarkName) %>%
   addBaseline(elapsedTime_mean, c(nCPUs=24), baseline = elapsedTime_mean_selfbaseline) %>%
+  addBaseline(elapsedTime_median, c(nCPUs=24), baseline = elapsedTime_median_selfbaseline) %>%
   ungroup()
 
 #processedData <- processedData %>% filter(is.element(benchmarkName, includedBenchmarks))
@@ -328,12 +333,12 @@ overallScalingPlot <- processedData %>%
   ggplot(aes(
     x = nCPUs,
     y = elapsedTime_mean_problembaseline / elapsedTime_mean,
-    #ymin = elapsedTime_mean_problembaseline / elapsedTime_mean_lowerBound,
-    #ymax = elapsedTime_mean_problembaseline / elapsedTime_mean_upperBound,
+    ymin = elapsedTime_mean_problembaseline / elapsedTime_mean_lowerBound,
+    ymax = elapsedTime_mean_problembaseline / elapsedTime_mean_upperBound,
     shape = implType,
     color = implType,
-    group = benchmarkName,
-    linetype = recode(factor(optimized), `TRUE` = "Opt.", `FALSE` = "Idiom.")
+    group = benchmarkName
+    #linetype = recode(factor(optimized), `TRUE` = "Opt.", `FALSE` = "Idiom.")
     )) +
   labs(y = "Speed Up", x = "", color = "Language", linetype = "") +
   theme_minimal() +
@@ -345,11 +350,12 @@ overallScalingPlot <- processedData %>%
   scale_shape_manual(name = "Language",
                      labels = c("Orc", "Orc+Scala", "Scala"),
                      values = c(0, 1, 2)) +
-# geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
+  # geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
   # geom_point(aes(shape = granularity), processedData, alpha = 0.7) +
   #geom_line(aes(y = gcTime_mean), linetype = "dotted") +
   geom_line() +
   geom_point() +
+  geom_errorbar(alpha=0.5) +
   geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
   scale_y_continuous(limits = c(0, NA)) +
   scale_x_continuous(breaks = c(1, 12, 24), minor_breaks = c(6, 18)) +
@@ -370,6 +376,46 @@ overallScalingPlot <- processedData %>%
 
 print(overallScalingPlot + theme(legend.position = "bottom"))
 
+
+overallScalingViolinPlot <- prunedData %>%
+  left_join(processedData %>% select(benchmarkName, nCPUs, optLevel, elapsedTime_median_problembaseline, elapsedTime_median_selfbaseline), by = c("benchmarkName", "nCPUs", "optLevel")) %>%
+  addBenchmarkMetadata() %>%
+  ggplot(aes(
+    x = nCPUs,
+    y = elapsedTime_median_problembaseline / elapsedTime,
+    color = implType,
+    group = interaction(benchmarkName, factor(nCPUs))
+  )) +
+  labs(y = "Speed Up", x = "", color = "Language", linetype = "") +
+  theme_minimal() +
+  scale_color_manual(name = "Language",
+                     labels = c("Orc", "Orc+Scala", "Scala"),
+                     values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
+  scale_fill_manual(name = "Language",
+                     labels = c("Orc", "Orc+Scala", "Scala"),
+                     values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
+  geom_violin(aes(fill = implType), position=position_dodge(width = 1), alpha = 0.5, scale="width") +
+  geom_point(data=processedData, aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
+  geom_line(data=processedData, aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
+  scale_y_continuous(limits = c(0, NA)) +
+  scale_x_continuous(breaks = c(1, 12, 24), minor_breaks = c(6, 18)) +
+  geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
+  facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 3) +
+  theme(
+    #legend.justification = c("right", "top"),
+    #legend.box.just = "top",
+    legend.margin = margin(-18, 0, 0, -30),
+    legend.direction = "horizontal",
+    #legend.box = "vertical",
+    legend.box = "horizontal",
+    legend.spacing = grid::unit(45, "points"),
+    text = element_text(size=9),
+    legend.text = element_text(size=8),
+    strip.text = element_text(size=9, angle = 10)
+  )
+
+print(overallScalingViolinPlot + theme(legend.position = "bottom"))
+
 #print(overallScalingPlot + scale_y_log10() + theme(legend.position = "bottom"))
 
 ggsave(file.path(outputDir, "allScalingPlot.svg"), device = "svg", overallScalingPlot + theme(legend.position = "bottom"), width = 10, height = 1.9, units = "in")
@@ -380,7 +426,7 @@ ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(le
 # print(overallScalingPlot + theme(legend.position = "bottom"))
 # dev.off()
 
-kable(processedData %>% select(benchmarkName, nCPUs, elapsedTime_mean) %>% spread(nCPUs, elapsedTime_mean), digits = 2)
+kable(processedData %>% select(benchmarkName, nCPUs, elapsedTime_median) %>% spread(nCPUs, elapsedTime_median), digits = 2)
 
 
 
@@ -398,7 +444,7 @@ longT <- processedData %>% filter(nCPUs == useNCPUs) %>%
 
 t <- longT %>%
   filter(optimized | language == "Scala") %>%
-  select(benchmarkProblemName, implType, elapsedTime_mean) %>% spread(implType, elapsedTime_mean)
+  select(benchmarkProblemName, implType, elapsedTime_median) %>% spread(implType, elapsedTime_median)
 
 write.csv(t, file = file.path(timeOutputDir, "mean_elapsed_time.csv"), row.names = F)
 
@@ -408,33 +454,33 @@ print(kable(t, "latex"))
 filledInData <- processedData %>%
   full_join(processedData %>%
               filter(optLevel == 3, implType == "Orc") %>%
-              transmute(benchmarkProblemName, benchmarkName, optLevel = 0, elapsedTime_mean = 8 * 60),
+              transmute(benchmarkProblemName, benchmarkName, optLevel = 0, elapsedTime_median = 8 * 60),
             by = c("benchmarkProblemName", "benchmarkName", "optLevel")) %>%
-  mutate(elapsedTime_mean = if_else(is.na(elapsedTime_mean.x), elapsedTime_mean.y, elapsedTime_mean.x), elapsedTime_mean.x = NULL, elapsedTime_mean.y = NULL)
+  mutate(elapsedTime_median = if_else(is.na(elapsedTime_median.x), elapsedTime_median.y, elapsedTime_median.x), elapsedTime_median.x = NULL, elapsedTime_median.y = NULL)
 
 times2 <-
   full_join(filledInData,
             processedData %>%
               filter(implType == "Orc", optLevel == 3) %>%
-              transmute(benchmarkProblemName, orc3Time = elapsedTime_mean)) %>%
+              transmute(benchmarkProblemName, orc3Time = elapsedTime_median)) %>%
   full_join(processedData %>%
               filter(implType == "Scala") %>%
-              transmute(benchmarkProblemName, scalaTime = elapsedTime_mean))
+              transmute(benchmarkProblemName, scalaTime = elapsedTime_median))
 #filter(implType == "Orc") %>%
-#mutate(normalizedTime = elapsedTime_mean / orc3Time)
+#mutate(normalizedTime = elapsedTime_median / orc3Time)
 
 print(
   list(
     O0_to_O3 =
-      geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / orc3Time) %>% filter(optLevel == 0))$normalizedTime),
+      geomean((times2 %>% mutate(normalizedTime = elapsedTime_median / orc3Time) %>% filter(optLevel == 0))$normalizedTime),
     Orc_to_total_Scala_with_timeouts =
-      geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / if_else(is.na(scalaTime), 8 * 60, scalaTime)) %>% filter(implType == "Orc", optLevel == 3))$normalizedTime),
+      geomean((times2 %>% mutate(normalizedTime = elapsedTime_median / if_else(is.na(scalaTime), 8 * 60, scalaTime)) %>% filter(implType == "Orc", optLevel == 3))$normalizedTime),
     Orc_Scala_to_total_Scala_with_timeouts =
-      geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / if_else(is.na(scalaTime), 8 * 60, scalaTime)) %>% filter(implType == "Orc+Scala", optLevel == 3))$normalizedTime),
+      geomean((times2 %>% mutate(normalizedTime = elapsedTime_median / if_else(is.na(scalaTime), 8 * 60, scalaTime)) %>% filter(implType == "Orc+Scala", optLevel == 3))$normalizedTime),
     Orc_to_total_Scala =
-      geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / scalaTime) %>% filter(implType == "Orc", optLevel == 3, normalizedTime > 1))$normalizedTime),
+      geomean((times2 %>% mutate(normalizedTime = elapsedTime_median / scalaTime) %>% filter(implType == "Orc", optLevel == 3, normalizedTime > 1))$normalizedTime),
     Orc_Scala_to_total_Scala =
-      geomean((times2 %>% mutate(normalizedTime = elapsedTime_mean / scalaTime) %>% filter(implType == "Orc+Scala", optLevel == 3, normalizedTime > 1))$normalizedTime)
+      geomean((times2 %>% mutate(normalizedTime = elapsedTime_median / scalaTime) %>% filter(implType == "Orc+Scala", optLevel == 3, normalizedTime > 1))$normalizedTime)
   )
 )
 
@@ -444,5 +490,5 @@ print(
 qs <- data %>% group_by(benchmarkName, nCPUs) %>%
   summarise(quantile(elapsedTime, 0.01), quantile(elapsedTime, 0.1),quantile(elapsedTime, 0.25), quantile(elapsedTime, 0.25),
             mean(elapsedTime), mean(head(sort(elapsedTime), 5))) %>% full_join(processedData) %>%
-  select(benchmarkName, nCPUs, `quantile(elapsedTime, 0.1)`, `mean(head(sort(elapsedTime), 5))`, elapsedTime_mean) %>%
-  mutate(potentialImprovement = elapsedTime_mean / `quantile(elapsedTime, 0.1)`)
+  select(benchmarkName, nCPUs, `quantile(elapsedTime, 0.1)`, `mean(head(sort(elapsedTime), 5))`, elapsedTime_median) %>%
+  mutate(potentialImprovement = elapsedTime_median / `quantile(elapsedTime, 0.1)`)
