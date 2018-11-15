@@ -242,7 +242,7 @@ trait PorcEBenchmark extends JVMRunner {
     val filteredExperimentalConditions = experimentalConditions filter { cond =>
       val outputFile = s"$runOutputDir/${cond.toFilePrefix}_factor-values_0.csv"
       if (new File(outputFile).exists()) {
-        println(s"Skipping benchmark because output already exists: $cond")
+        println(s"Skipping benchmark because output already exists: '${cond.toFilePrefix}' ($cond)")
         false
       } else if (excludedCond contains cond.toFilePrefix) {
         println(s"Skipping benchmark because it is excluded: $cond")
@@ -250,7 +250,7 @@ trait PorcEBenchmark extends JVMRunner {
       } else if (selectedCond.isDefined && (selectedCond.get contains cond.toFilePrefix)) {
         true
       } else if (selectedCond.isDefined) {
-        println(s"Skipping benchmark because it is NOT selected: $cond")
+        println(s"Skipping benchmark because it is NOT selected: '${cond.toFilePrefix}' ($cond)")
         false
       } else {
         true

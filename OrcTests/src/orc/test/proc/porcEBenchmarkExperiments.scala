@@ -141,7 +141,7 @@ object PorcEShared {
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   import PorcEShared._
 
-  def softTimeLimit: Double = 60 * 13
+  def softTimeLimit: Double = 60 * 16
 
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -176,7 +176,11 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use")
     )
 
-    override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs
+    override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs ++ Seq(
+        s"-Dorc.test.benchmark.softTimeLimit=${softTimeLimit / 2}",
+        s"-Dorc.test.benchmark.hardTimeLimit=${hardTimeLimit / 2}",
+        )
+
   }
 
   def main(args: Array[String]): Unit = {
