@@ -125,7 +125,7 @@ class ParallelismController(execution: PorcEExecution) {
         totalCalls > SpecializationConfiguration.MinimumExecutionCountForParallelismController*100) {
       // Once we get here we are ready to do real updates.
 
-      if (timeDiff.compilationTime / timeDiff.cpuTime < 0.1) {
+      if (timeDiff.compilationTime / (timeDiff.cpuTime + 0.0000001) < 0.1) {
         // If we used less than 10% of the time for compilation then add this chunk to the appropriate data
         parallelFractionData = parallelFractionData map {
           case (f, old) if f == parallelFraction => (f, old + timeDiff)
