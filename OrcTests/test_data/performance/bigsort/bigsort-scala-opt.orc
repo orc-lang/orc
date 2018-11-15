@@ -16,7 +16,6 @@ def splitSortMerge(input) = input >>
       val sorted = BigSortData.sort(input, start, min(partitionSize, input.length? - start))
       sorted
     )
-    
   }) >sortedPartitions>
   cfold(BigSortData.mergeSorted, sortedPartitions)
 

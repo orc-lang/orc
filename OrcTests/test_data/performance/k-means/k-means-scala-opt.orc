@@ -66,7 +66,8 @@ def PointAdder() =
 def run(xs) =
   def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> centroids
   def run'(i, centroids) = run'(i - 1, updateCentroids(xs, centroids))
-  run'(iters, KMeans.takePointArray(n, xs))
+  xs >> KMeans.takePointArray(n, xs) >cs> run' >>
+  run'(iters, cs)
 
 def eachArray(a) = upto(a.length?) >i> a(i)?
 def fillArray(n, f) = 
@@ -79,7 +80,8 @@ def mapArray(f, a) =
     tabulateArray(a.length?, { f(a(_)?) })
 
 def updateCentroids(xs, centroids) = 
-  val pointAdders = fillArray(centroids.length?, { PointAdder() }) --listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
+  val pointAdders = fillArray(centroids.length?, { PointAdder() }) --listToArray(map({ _ >> PointAdder() }, arrayToList(centroids))) 
+  pointAdders >>
   forBy(0, xs.length?, 1) >i> Sequentialize() >> ( -- Inferable
     val p = xs(i)?
     pointAdders(KMeans.closestIndex(p, centroids))?.add(p)

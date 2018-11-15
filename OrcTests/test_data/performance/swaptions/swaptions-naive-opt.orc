@@ -177,7 +177,7 @@ def simulate(swaption, seed) :: Number = Sequentialize() >> ( -- Inferable (if t
 def sim(swaption) =
 	val sum = DoubleAdder()
 	val sumsq = DoubleAdder()
-	sum >> sumsq >>
+	sum >> sumsq >> swaption >>
     upto(nTrials) >i> Sequentialize() >>
     	simulate(swaption, i) >p>
     	sum.add(p) >>
