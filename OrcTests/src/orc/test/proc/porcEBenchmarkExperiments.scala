@@ -185,10 +185,10 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      //val nCPUsValues = Seq(16, 1, 8)
+      val nCPUsValues = Seq(16, 1, 8)
       //val nCPUsValues = Seq(16, 1, 8, 12, 4)
       //val nCPUsValues = Seq(24, 12, 6, 18, 1)
-      val nCPUsValues = Seq(24, 16, 1, 8)
+      //val nCPUsValues = Seq(24, 16, 1, 8)
       val nRuns = 1
       val porce = for {
         run <- 0 until nRuns

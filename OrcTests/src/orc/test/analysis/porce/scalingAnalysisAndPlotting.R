@@ -26,8 +26,8 @@ source(file.path(scriptDir, "porce", "utils.R"))
 
 # dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
 #dataDir <- file.path(localExperimentDataDir, "20180730-a010")
-dataDir <- file.path(localExperimentDataDir, "20181114-a001")
-scalaDataDir <- file.path(localExperimentDataDir, "20181112-a001")
+dataDir <- file.path(localExperimentDataDir, "20181115-a001")
+scalaDataDir <- file.path(localExperimentDataDir, "20181114-edited")
 
 if(!exists("processedData")) {
   scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = F) %>%
@@ -37,10 +37,14 @@ if(!exists("processedData")) {
     bind_rows(scalaData) %>%
     addBenchmarkProblemName()
 
+  includedBenchmarks <- c("Big Sort", "Black-Scholes", "Dedup", "Fork Bomb", "K-Means", "Savina Sieve", "Swaptions", "Word Count")
+  includedNCPUs <- c(1, 8, 16)
+  data <- data %>% filter(is.element(benchmarkProblemName, includedBenchmarks) & is.element(nCPUs, includedNCPUs))
+
   prunedData <- data %>%
-    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run"), rep, elapsedTime, 7, 25, 300, minRemaining = 1, maxRemaining = 20) %>%
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run", "optLevel"), rep, elapsedTime, 7, 25, 300, minRemaining = 1, maxRemaining = 20) %>%
     # Drop any reps which have more than 1% compilation time.
-    filter(rtCompTime < cpuTime * 0.05)
+    filter(rtCompTime < cpuTime * 0.25)
 
   processedData <- prunedData %>%
     group_by(benchmarkProblemName, language, benchmarkName, nCPUs, optLevel) %>%
@@ -66,12 +70,10 @@ processedData <- processedData %>%
   mutate(elapsedTime_mean_problembaseline = replace_na(elapsedTime_mean_problembaseline, 60*10)) %>%
   addBaseline(elapsedTime_median, c(language="Scala", nCPUs=1, isBaseline = T), baseline = elapsedTime_median_problembaseline) %>%
   mutate(elapsedTime_median_problembaseline = replace_na(elapsedTime_median_problembaseline, 60*10)) %>%
-  group_by(benchmarkName) %>%
-  addBaseline(elapsedTime_mean, c(nCPUs=24), baseline = elapsedTime_mean_selfbaseline) %>%
-  addBaseline(elapsedTime_median, c(nCPUs=24), baseline = elapsedTime_median_selfbaseline) %>%
+  # group_by(benchmarkName) %>%
+  addBaseline(elapsedTime_mean, c(nCPUs=1), baseline = elapsedTime_mean_selfbaseline) %>%
+  addBaseline(elapsedTime_median, c(nCPUs=1), baseline = elapsedTime_median_selfbaseline) %>%
   ungroup()
-
-#processedData <- processedData %>% filter(is.element(benchmarkName, includedBenchmarks))
 
 plotAllData <- function(data) {
   paletteValues <- rep(c(rbind(brewer.pal(8, "Dark2"), rev(brewer.pal(12, "Set3")))), 10)
@@ -285,7 +287,7 @@ normalizedPerformancePlots <- lapply(levels(processedData$benchmarkProblemName),
 
 # print(normalizedPerformancePlots)
 
-sampleCountData <- processedData %>% select(benchmarkName, nCPUs, nSamples) %>% spread(nCPUs, nSamples)
+sampleCountData <- processedData %>% transmute(benchmarkName, nCPUs_optLevel = paste(factor(nCPUs), factor(replace_na(optLevel, 3))), nSamples) %>% spread(nCPUs_optLevel, nSamples)
 
 sampleCountsPlot <- sampleCountData %>% ggplot(aes(
   x = factor(nCPUs),
@@ -329,7 +331,35 @@ sampleCountTable("rst")
 
 # Combined faceted plot for all benchmarks.
 
+trappings <- list(
+  labs(y = "Speed Up", x = "Cores", color = "Language", linetype = ""),
+  geom_hline(yintercept = 1, alpha = 0.6, color = "#111111"),
+  scale_y_continuous(limits = c(0, NA)),
+  # scale_y_log10(),
+  scale_x_continuous(breaks = c(1, 8, 16)),
+  theme_minimal(),
+  scale_color_manual(name = "Language",
+                     labels = levels(processedData$implType),
+                     values = c("#1b9e77","#7570b3","#d95f02")),
+  scale_fill_manual(name = "Language",
+                    labels = levels(processedData$implType),
+                    values = c("#1b9e77","#7570b3","#d95f02")),
+  theme(
+    #legend.justification = c("right", "top"),
+    #legend.box.just = "top",
+    legend.margin = margin(-10, 0, 0, -30),
+    legend.direction = "horizontal",
+    #legend.box = "vertical",
+    legend.box = "horizontal",
+    legend.spacing = grid::unit(45, "points"),
+    text = element_text(size=9),
+    legend.text = element_text(size=8),
+    strip.text = element_text(size=9) # , angle = 10
+  )
+)
+
 overallScalingPlot <- processedData %>%
+  filter(is.na(optLevel) | optLevel == 3) %>%
   ggplot(aes(
     x = nCPUs,
     y = elapsedTime_mean_problembaseline / elapsedTime_mean,
@@ -340,79 +370,36 @@ overallScalingPlot <- processedData %>%
     group = benchmarkName
     #linetype = recode(factor(optimized), `TRUE` = "Opt.", `FALSE` = "Idiom.")
     )) +
-  labs(y = "Speed Up", x = "", color = "Language", linetype = "") +
-  theme_minimal() +
-  #scale_fill_brewer(palette="Set3") +
-  #scale_color_brewer(palette="PuBuGn", direction = -1) +
-  scale_color_manual(name = "Language",
-                     labels = c("Orc", "Orc+Scala", "Scala"),
-                     values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
-  scale_shape_manual(name = "Language",
-                     labels = c("Orc", "Orc+Scala", "Scala"),
-                     values = c(0, 1, 2)) +
   # geom_point(data = processedData %>% filter(benchmarkProblemName != "Swaptions"), alpha = 0.5, shape = 4) +
   # geom_point(aes(shape = granularity), processedData, alpha = 0.7) +
   #geom_line(aes(y = gcTime_mean), linetype = "dotted") +
   geom_line() +
   geom_point() +
   geom_errorbar(alpha=0.5) +
-  geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
-  scale_y_continuous(limits = c(0, NA)) +
-  scale_x_continuous(breaks = c(1, 12, 24), minor_breaks = c(6, 18)) +
+  geom_hline(yintercept = 1, alpha = 0.4, color = "#111111") +
   # scale_x_continuous_breaks_from(breaks_from = processedData$nCPUs) +
   facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 1) +
-  theme(
-    #legend.justification = c("right", "top"),
-    #legend.box.just = "top",
-    legend.margin = margin(-18, 0, 0, -30),
-    legend.direction = "horizontal",
-    #legend.box = "vertical",
-    legend.box = "horizontal",
-    legend.spacing = grid::unit(45, "points"),
-    text = element_text(size=9),
-    legend.text = element_text(size=8),
-    strip.text = element_text(size=9, angle = 10)
-  )
+  trappings
 
 print(overallScalingPlot + theme(legend.position = "bottom"))
 
+implTypes <- c("Orc -O0", "Orc -O3", "Orc+Scala", "Scala")
 
 overallScalingViolinPlot <- prunedData %>%
   left_join(processedData %>% select(benchmarkName, nCPUs, optLevel, elapsedTime_median_problembaseline, elapsedTime_median_selfbaseline), by = c("benchmarkName", "nCPUs", "optLevel")) %>%
   addBenchmarkMetadata() %>%
+  filter(is.na(optLevel) | optLevel == 3) %>%
   ggplot(aes(
     x = nCPUs,
     y = elapsedTime_median_problembaseline / elapsedTime,
     color = implType,
     group = interaction(benchmarkName, factor(nCPUs))
   )) +
-  labs(y = "Speed Up", x = "", color = "Language", linetype = "") +
-  theme_minimal() +
-  scale_color_manual(name = "Language",
-                     labels = c("Orc", "Orc+Scala", "Scala"),
-                     values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
-  scale_fill_manual(name = "Language",
-                     labels = c("Orc", "Orc+Scala", "Scala"),
-                     values = c("#555555", "#E69F00", "#56B4E9")) + # "#67a9cf", "#1c9099", "#016c59"
   geom_violin(aes(fill = implType), position=position_dodge(width = 1), alpha = 0.5, scale="width") +
-  geom_point(data=processedData, aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
-  geom_line(data=processedData, aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
-  scale_y_continuous(limits = c(0, NA)) +
-  scale_x_continuous(breaks = c(1, 12, 24), minor_breaks = c(6, 18)) +
-  geom_hline(yintercept = 1, alpha = 0.4, color = "blue") +
-  facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 3) +
-  theme(
-    #legend.justification = c("right", "top"),
-    #legend.box.just = "top",
-    legend.margin = margin(-18, 0, 0, -30),
-    legend.direction = "horizontal",
-    #legend.box = "vertical",
-    legend.box = "horizontal",
-    legend.spacing = grid::unit(45, "points"),
-    text = element_text(size=9),
-    legend.text = element_text(size=8),
-    strip.text = element_text(size=9, angle = 10)
-  )
+  geom_point(data=processedData %>% filter(is.na(optLevel) | optLevel == 3), aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
+  geom_line(data=processedData %>% filter(is.na(optLevel) | optLevel == 3), aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
+  facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 2) +
+  trappings
 
 print(overallScalingViolinPlot + theme(legend.position = "bottom"))
 
@@ -422,11 +409,13 @@ ggsave(file.path(outputDir, "allScalingPlot.svg"), device = "svg", overallScalin
 
 ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 12, height = 2.1, units = "in")
 
-# svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
+ggsave(file.path(outputDir, "allScalingViolinPlot.pdf"), overallScalingViolinPlot + theme(legend.position = "bottom"), width = 9, height = 4, units = "in")
+
+svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
 # print(overallScalingPlot + theme(legend.position = "bottom"))
 # dev.off()
 
-kable(processedData %>% select(benchmarkName, nCPUs, elapsedTime_median) %>% spread(nCPUs, elapsedTime_median), digits = 2)
+kable(processedData %>% transmute(paste(benchmarkName, optLevel), nCPUs, elapsedTime_median) %>% spread(nCPUs, elapsedTime_median), digits = 2)
 
 
 
@@ -449,7 +438,7 @@ t <- longT %>%
 write.csv(t, file = file.path(timeOutputDir, "mean_elapsed_time.csv"), row.names = F)
 
 print(t)
-print(kable(t, "latex"))
+print(kable(t, "latex", linesep = ""))
 
 filledInData <- processedData %>%
   full_join(processedData %>%
