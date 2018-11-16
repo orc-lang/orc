@@ -37,7 +37,7 @@ val sha1 = DedupOrc.sha1
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
 def readSegements(minimumSegmentSize, in) =
-	def process(currentChunk, i) = (
+	def process(currentChunk, i) = SinglePublication() >> (
 		val splitPoint = rabin.segment(currentChunk, minimumSegmentSize)
 		if splitPoint = currentChunk.size() then
 			-- TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
@@ -56,7 +56,7 @@ def readSegements(minimumSegmentSize, in) =
 -}
 def segment(minimumSegmentSize, chunk) =
 	def process(chunk, i) if (chunk.size() = 0) = {- printLogLine("segment " + i) >> -} (Chunk.empty(), i)
-	def process(chunk, i) = Sequentialize() >> (
+	def process(chunk, i) = SinglePublication() >> Sequentialize() >> (
 		val splitPoint = rabin.segment(chunk, minimumSegmentSize) #
 		(chunk.slice(0, splitPoint), i) |
 		process(chunk.slice(splitPoint, chunk.size()), i + 1)
@@ -77,10 +77,10 @@ def compress(chunk, dedupPool, id) = (
 
 -- Lines: 2
 def getCompressedDataD(cchunk) =
-    cchunk.compressedDataD() ; Rwait(100) >> getCompressedDataD(cchunk)
+    SinglePublication() >> cchunk.compressedDataD() ; Rwait(100) >> getCompressedDataD(cchunk)
 
 -- Lines: 9
-def writeChunk(out, cchunk, isAlreadyOutput) = (
+def writeChunk(out, cchunk, isAlreadyOutput) = SinglePublication() >> (
 	if isAlreadyOutput then
 		--printLogLine("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
 		out.writeBytes("R") >> 
@@ -99,7 +99,7 @@ def writeChunk(out, cchunk, isAlreadyOutput) = (
 def write(out, outputPool) =
 	val _ = printLogLine("Start: write")
 	val alreadyOutput = Map()
-	def process((roughID, fineID), id) = (
+	def process((roughID, fineID), id) = SinglePublication() >> (
 		val cchunk = outputPool.get((roughID, fineID))
 		if cchunk = null then
 			--printLogLine("Poll: " + (roughID, fineID) + " " + outputPool) >>

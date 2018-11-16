@@ -50,21 +50,21 @@ def run(xs) =
   xs >> KMeans.takePointArray(n, xs) >cs> run' >>
   run'(iters, cs)
 
-def eachArray(a) = upto(a.length?) >i> a(i)?
-def fillArray(n, f) = 
+def eachArray(a) = upto(a.length?) >i> SinglePublication() >> a(i)?
+def fillArray(n, f) =
     Array(n) >a> 
-    (upto(n) >i> a(i) := f() >> stop ; a)
+    (upto(n) >i> SinglePublication() >> a(i) := f() >> stop ; a)
 def tabulateArray(n, f) = 
     Array(n) >a> 
-    (upto(n) >i> a(i) := f(i) >> stop ; a)
+    (upto(n) >i> SinglePublication() >> a(i) := f(i) >> stop ; a)
 def mapArray(f, a) =
-    tabulateArray(a.length?, { f(a(_)?) })
+    tabulateArray(a.length?, { SinglePublication() >> f(a(_)?) })
 
 def updateCentroids(xs, centroids) = 
   val pointAdders = fillArray(centroids.length?, { PointAdder() }) 
   --listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
   pointAdders >>
-  forBy(0, xs.length?, 1) >i> Sequentialize() >> ( -- Inferable (types)
+  forBy(0, xs.length?, 1) >i> SinglePublication() >> Sequentialize() >> ( -- Inferable (types)
     val p = xs(i)?
     pointAdders(closestIndex(p, centroids))?.add(p)
   ) >> stop ;
@@ -85,7 +85,7 @@ def minBy(f, l) = Sequentialize() >> ( -- Inferable (recursion)
   )
 -}
 
-def closestIndex(x :: Point, choices) = Sequentialize() >> ( -- Inferable (recursion)
+def closestIndex(x :: Point, choices) = SinglePublication() >> Sequentialize() >> x >> choices >> ( -- Inferable (recursion)
   def h(-1, minV, minI) = minI 
   def h(i, minV, minI) =
     val newV = dist(x, choices(i)?) 
@@ -93,6 +93,7 @@ def closestIndex(x :: Point, choices) = Sequentialize() >> ( -- Inferable (recur
       h(i - 1, newV, i)
     else
       h(i - 1, minV, minI) 
+  h >>
   h(choices.length? - 1, 10000000000, -1)
   )
   

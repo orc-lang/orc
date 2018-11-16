@@ -22,7 +22,7 @@ def signals(n) = Ift(n :> 0) >> (signal | signals(n-1))
 def sim(processor, swaption) =
     val sum = DoubleAdder()
     val sumsq = DoubleAdder()
-    sum >> sumsq >> processor >> swaption >>
+    SinglePublication() >> sum >> sumsq >> processor >> swaption >>
     upto(nTrials) >i> 
         processor.simulate(swaption, i) >p>
         sum.add(p) >>

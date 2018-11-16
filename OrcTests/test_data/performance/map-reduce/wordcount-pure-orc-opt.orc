@@ -14,25 +14,28 @@
 include "wordcount.inc"
 
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+import class BreakIterator = "java.text.BreakIterator"
+import class Character = "java.lang.Character"
 
-def containsAlphabetic(s, startPos, endPos) = Sequentialize() >> startPos >> -- Inferable
+def containsAlphabetic(s, startPos, endPos) = SinglePublication() >> Sequentialize() >> startPos >> -- Inferable
   Character.isAlphabetic(s.codePointAt(startPos)) || (if startPos+1 <: endPos then containsAlphabetic(s, startPos+1, endPos) else false)
-  
-def wordCount'(startPos, wb, accumCount) = Sequentialize() >> accumCount >> -- Inferable (recursion)
-  wb.next()  >endPos>
-  (if endPos <: 0 then accumCount else (if containsAlphabetic(line, startPos, endPos) then wordCount'(endPos, wb, accumCount + 1) else wordCount'(endPos, wb, accumCount))) #
+
+  def wordCount'(line, startPos, wb, accumCount) = SinglePublication() >> Sequentialize() >> accumCount >> -- Inferable (recursion)
+    wb.next()  >endPos>
+    (if endPos <: 0 then accumCount else (if containsAlphabetic(line, startPos, endPos) then wordCount'(line, endPos, wb, accumCount + 1) else wordCount'(line, endPos, wb, accumCount))) #
 
 -- Lines: 10 (1)
-def countLine(line) =
-  import class BreakIterator = "java.text.BreakIterator"
-  import class Character = "java.lang.Character"
+def countLine(line) = SinglePublication() >> 
+  line >> (
+  wordCount' >>
   Sequentialize() >> ( -- Inferable
   BreakIterator.getWordInstance() >wb>
   wb.setText(line)  >>
-  wordCount'(0, wb, 0)
+  wordCount'(line, 0, wb, 0)
+  )
   )
 
-def countLinesFrom(in, accumCount) = accumCount >>
+def countLinesFrom(in, accumCount) = SinglePublication() >> accumCount >>
   (in.readLine() ; null)  >nextLine> Sequentialize() >> -- Inferable (recursion)
   (if nextLine = null then accumCount else countLinesFrom(in, accumCount + countLine(nextLine)))
 

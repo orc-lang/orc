@@ -29,9 +29,9 @@ class CompressedChunk {
   
   val outputChunkID = Cell() 
   
-  def compress(chunk) = compressedDataCell := chunk.deflate()
+  def compress(chunk) = SinglePublication() >> compressedDataCell := chunk.deflate()
   
-  def compressedData() = compressedDataCell?.buffer()
+  def compressedData() = SinglePublication() >> compressedDataCell?.buffer()
   
   val uncompressedSHA1
   val uncompressedSize
@@ -45,7 +45,7 @@ val largeChunkMin = 2 * 1024 * 1024
 val readChunkSize = 128 * 1024 * 1024
 
 -- Lines: 4
-def sha1(chunk) = Sequentialize() >> ArrayKey( -- Inferable (type)
+def sha1(chunk) = SinglePublication() >> Sequentialize() >> ArrayKey( -- Inferable (type)
 	val m = MessageDigest.getInstance("SHA-1")
 	m.update(chunk.buffer(), chunk.start(), chunk.size()) >>
 	m.digest())
@@ -54,7 +54,7 @@ def sha1(chunk) = Sequentialize() >> ArrayKey( -- Inferable (type)
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
 def readSegements(minimumSegmentSize, in) =
-	def process(currentChunk, i) = (
+	def process(currentChunk, i) = SinglePublication() >> (
 		val splitPoint = rabin.segment(currentChunk, minimumSegmentSize)
 		if splitPoint = currentChunk.size() then
 			-- TODO: PERFORMANCE: This repeatedly reallocates a 128MB buffer. Even the JVM GC cannot handle that well, probably.
@@ -75,7 +75,7 @@ def readSegements(minimumSegmentSize, in) =
 -}
 def segment(minimumSegmentSize, chunk) =
 	def process(chunk, i) if (chunk.size() = 0) = {- printLogLine("segment " + i) >> -} (Chunk.empty(), i)
-	def process(chunk, i) = Sequentialize() >> ( -- Inferable (multiple publications)
+	def process(chunk, i) = SinglePublication() >> Sequentialize() >> ( -- Inferable (multiple publications)
 		val splitPoint = rabin.segment(chunk, minimumSegmentSize) #
 		(chunk.slice(0, splitPoint), i) |
 		process(chunk.slice(splitPoint, chunk.size()), i + 1)
@@ -85,7 +85,7 @@ def segment(minimumSegmentSize, chunk) =
 -- Lines: 7
 {-- Compress a chunk with deduplication by publishing an existing compressed chuck if an identical one exists.
 -} 
-def compress(chunk, dedupPool, id) = (
+def compress(chunk, dedupPool, id) = SinglePublication() >> (
 	val hash = sha1(chunk)
 	val old = dedupPool.putIfAbsent(hash, CompressedChunk(hash, chunk.size()))
 	val compChunk = old >> dedupPool.get(hash)
@@ -95,7 +95,7 @@ def compress(chunk, dedupPool, id) = (
 	)
 
 -- Lines: 8
-def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> ( -- Inferable
+def writeChunk(out, cchunk, isAlreadyOutput) = SinglePublication() >> Sequentialize() >> ( -- Inferable
 	if isAlreadyOutput then
 		--printLogLine("R chunk: " + (roughID, fineID) + cchunk.uncompressedSHA1) >>
 		out.writeBytes("R") >> 
@@ -113,7 +113,7 @@ def writeChunk(out, cchunk, isAlreadyOutput) = Sequentialize() >> ( -- Inferable
 def write(out, outputPool) =
 	val _ = printLogLine("Start: write")
 	val alreadyOutput = Map()
-	def process((roughID, fineID), id) = (
+	def process((roughID, fineID), id) = SinglePublication() >> (
 		val cchunk = outputPool.get((roughID, fineID))
 		if cchunk = null then
 			--printLogLine("Poll: " + (roughID, fineID) + " " + outputPool) >>

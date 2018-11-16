@@ -32,13 +32,13 @@ def sieveFragment(outChan) =
 		--val _ = Println("Checking " + x + " " + p) #
 		(p >None()> signal) |
 		(p >Some(p)>
-			Iff(x % p = 0) >> 
-			check(x, iter))
-	)
-	def filter(x) = 
-		val v = Sequentialize() >> -- Inferable 
-			(check(x, IterableToStream(list)) >> true ; false)
-		v >true> (
+        Iff(x % p = 0) >> 
+        check(x, iter))
+)
+def filter(x, next, list, outChan) = SinglePublication() >> x >> next >> list >> outChan >> (
+    val v = Sequentialize() >> -- Inferable 
+        (check(x, IterableToStream(list)) >> true ; false)
+    v >true> (
 			if list.size() <: sieveFragementSize then
 				Sequentialize() >> -- Inferable 
 				list.add(x) >> outChan.put(x)
@@ -62,8 +62,10 @@ def sforBy(low, high, step, f) =
 def primes(Number) :: List[Number]
 def primes(n) =
 	val out = Channel() #
+	out >>
 	(
 	val filter = sieveFragment(out)
+	filter >>
 	sforBy(3, n, 2, filter.put) >> filter.close() >> stop
 	) ; 2 : out.getAll()
 

@@ -34,41 +34,41 @@ val nTrials = SwaptionData.nTrials()
 val nSteps = SwaptionData.nSteps()
 
 def eachArray(a) = Sequentialize() >> (
-	upto(a.length?) >i> a(i)?
+	upto(a.length?) >i> SinglePublication() >> a(i)?
 	)
 
 def tabulateArrayDouble(n, f) = Sequentialize() >> (
     val a = Array(n, "double")
-    upto(n) >i> a(i) := f(i) >> stop ;
+    upto(n) >i> SinglePublication() >> a(i) := f(i) >> stop ;
     a
     )
 
 def tabulateArrayDoubleSeq(n, f) = Sequentialize() >> (
     val a = Array(n, "double")
-    sfor(0, n, lambda(i) = a(i) := f(i)) >>
+    sfor(0, n, lambda(i) = SinglePublication() >> a(i) := f(i)) >>
     a
     )
 
 def tabulateArrayObject(n, f) = Sequentialize() >> (
 	val a = Array(n)
-	upto(n) >i> a(i) := f(i) >> stop ;
+	upto(n) >i> SinglePublication() >> a(i) := f(i) >> stop ;
 	a
 	)
 
 def mapArrayDouble(a, f) = Sequentialize() >> (
 	val n = a.length?
-	tabulateArrayDouble(n, { f(a(_)?) })
+	tabulateArrayDouble(n, { f(SinglePublication() >> a(_)?) })
 	)
 
 -- Lines: 4
-def sumPubs(f) = Sequentialize() >> (
+def sumPubs(f) = SinglePublication() >> Sequentialize() >> (
 	val sum = DoubleAdder()
 	f() >v> sum.add(v) >> stop ;
 	sum.sum()
 	)
 
 -- Lines: 8
-def yieldToForward(yields :: Array[Double]) :: Array[Double] = Sequentialize() >>
+def yieldToForward(yields :: Array[Double]) :: Array[Double] = SinglePublication() >> Sequentialize() >>
     tabulateArrayDouble(yields.length?, lambda (i) =
       val now = yields(i)?
       if i = 0 then
@@ -80,7 +80,7 @@ def yieldToForward(yields :: Array[Double]) :: Array[Double] = Sequentialize() >
     )
 
 -- Lines: 16
-def computeDrifts(swaption :: Swaption) :: Array[Double] = Sequentialize() >> (
+def computeDrifts(swaption :: Swaption) :: Array[Double] = SinglePublication() >> Sequentialize() >> (
     val timeDelta = swaption.years() / nSteps
     val drifts = Array(swaption.factors().length?)
     sfor(0, swaption.factors().length?,
@@ -105,11 +105,11 @@ def computeDrifts(swaption :: Swaption) :: Array[Double] = Sequentialize() >> (
 
 -- Lines: 11
 def simPathForward(swaption :: Swaption, forwards :: Array[Double], totalDrift :: Array[Double], seed :: Integer) :: Array[Array[Double]] = Sequentialize() >> (
-    val rng = JURandom(seed + swaption.id())
+    val rng = SinglePublication() >> JURandom(seed + swaption.id())
     
-    val timeDelta = swaption.years() / nSteps
+    val timeDelta = SinglePublication() >> swaption.years() / nSteps
     val path = tabulateArrayObject(nSteps, lambda(i) = Array(nSteps, "double"))
-    path(0) := forwards >>
+    SinglePublication() >> path(0) := forwards >>
     sfor(1, nSteps, lambda(j) = 
       tabulateArrayDoubleSeq(swaption.factors().length?, { _ >> CumNormalInv(rng.nextDouble()) }) >shocks> 
 	  sfor(0, nSteps - (j + 1), lambda(l) = 
@@ -126,7 +126,7 @@ def discountFactors(nSteps :: Integer, years :: Double, path :: Array[Double]) :
     val discountFactors = tabulateArrayDouble(nSteps, lambda(_) = 1.0)
     
     sfor(1, nSteps, lambda(i) = 
-    	sfor(0, i, lambda(j) = 
+    	sfor(0, i, lambda(j) = SinglePublication() >> 
 	      discountFactors(i) := discountFactors(i)? * Exp(-(path(j)?) * timeDelta)
 	      )
       ) >>
@@ -135,7 +135,7 @@ def discountFactors(nSteps :: Integer, years :: Double, path :: Array[Double]) :
     )
 
 -- Lines: 27
-def simulate(swaption, seed) :: Number = Sequentialize() >> ( -- Inferable (if tabulate array is sequential)
+def simulate(swaption, seed) :: Number = SinglePublication() >> Sequentialize() >> ( -- Inferable (if tabulate array is sequential)
     val timeDelta = swaption.years() / nSteps
     val freqRatio = Ceil(swaption.paymentInterval() / timeDelta)
     val swapPathStart = Ceil(swaption.maturity() / timeDelta)

@@ -9,7 +9,7 @@ include "benchmark.inc"
 import class BigSortData = "orc.test.item.scalabenchmarks.BigSortData"
 
 -- Lines: 8
-def splitSortMerge(input) = input >>
+def splitSortMerge(input) = SinglePublication() >> input >>
   Floor(input.length? / nPartitions) >partitionSize>
   collect({
     forBy(0, input.length?, partitionSize) >start> Sequentialize() >> ( -- Inferable

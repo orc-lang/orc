@@ -53,7 +53,7 @@ def quicksort(slice) = Sequentialize() >> ( -- Inferable
 
 -- Lines: 15
 def mergeSorted(a :: ArraySlice, b :: ArraySlice) =
-	Sequentialize() >> (
+	SinglePublication() >> Sequentialize() >> a >> b >> (
     val outputLen = a.length + b.length
     val output = Array(outputLen)
     

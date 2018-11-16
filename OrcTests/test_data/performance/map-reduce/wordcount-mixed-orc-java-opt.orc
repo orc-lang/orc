@@ -13,10 +13,11 @@ include "wordcount.inc"
 
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
-def countFile(file) =
-  import class BufferedReader = "java.io.BufferedReader"
-  import class FileReader = "java.io.FileReader"
-  import class WordCount = "orc.test.item.distrib.WordCount"
+import class BufferedReader = "java.io.BufferedReader"
+import class FileReader = "java.io.FileReader"
+import class WordCount = "orc.test.item.distrib.WordCount"
+
+def countFile(file) = SinglePublication() >> 
   Sequentialize() >> -- Inferable
   BufferedReader(FileReader(file))  >in>
   WordCount.countReader(in)  >count>
