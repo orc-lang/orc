@@ -20,6 +20,7 @@ import class LongAdder = "java.util.concurrent.atomic.LongAdder"
 val n = KMeans.n()
 val iters = KMeans.iters()
 
+-- Lines: 5
 class PointAdder {
   val x
   val y
@@ -38,12 +39,14 @@ class PointAdder {
   def toString() = "<" + x + "," + y + ">"
 }
 
+-- Lines: 5
 def PointAdder() =
   DoubleAdder() >x'>
   DoubleAdder() >y'>
   LongAdder() >count'>
   new PointAdder { val x = x' # val y = y' # val count = count' }
 
+-- Lines: 5
 def run(xs) =
   def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> centroids
   def run'(i, centroids) = updateCentroids(xs, centroids) >cs> run'(i - 1, cs)
@@ -60,6 +63,9 @@ def tabulateArray(n, f) =
 def mapArray(f, a) =
     tabulateArray(a.length?, { SinglePublication() >> f(a(_)?) })
 
+-- TODO: This should be implemented using map and afold. The issue is that the reduction value is quite complicated since it includes sums for every centroid.
+
+-- Lines: 8
 def updateCentroids(xs, centroids) = 
   val pointAdders = fillArray(centroids.length?, { PointAdder() }) 
   --listToArray(map({ _ >> PointAdder() }, arrayToList(centroids)))
@@ -71,20 +77,7 @@ def updateCentroids(xs, centroids) =
   mapArray({ _.average() }, pointAdders)
   --listToArray(map({ _.average() }, arrayToList(pointAdders)))  
 
-{-
-def minBy(f, l) = Sequentialize() >> ( -- Inferable (recursion)
-  def minBy'([x]) = (f(x), x)
-  def minBy'(x:xs) =
-    val (min, v) = minBy'(xs)
-    val m = f(x)
-    if min :> m then
-      (m, x)
-    else
-      (min, v)
-  minBy'(l)(1)
-  )
--}
-
+-- Lines: 10
 def closestIndex(x :: Point, choices) = SinglePublication() >> Sequentialize() >> x >> choices >> ( -- Inferable (recursion)
   def h(-1, minV, minI) = minI 
   def h(i, minV, minI) =
@@ -97,6 +90,7 @@ def closestIndex(x :: Point, choices) = SinglePublication() >> Sequentialize() >
   h(choices.length? - 1, 10000000000, -1)
   )
   
+-- Lines: 1
 def dist(x :: Point, y :: Point) = x.sub(y).modulus()
 
 val points = KMeansData.data()

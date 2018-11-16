@@ -155,6 +155,7 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
   def closest(x: Point, choices: Array[Point]) =
     choices minBy { y => dist(x, y) }
 
+  // Lines: 11
   def closestIndex(x: Point, choices: Array[Point]): Int = {
     var index = 0
     var closestIndex = -1
@@ -169,6 +170,8 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
     }
     closestIndex
   }
+
+  // Lines: 11
   def closestIndex(x: Point, choices: Array[Object]): Int = {
     var index = 0
     var closestIndex = -1
@@ -184,6 +187,7 @@ object KMeans extends BenchmarkApplication[Array[Point], Array[Point]] with Hash
     closestIndex
   }
 
+  // Lines: 1
   def dist(x: Point, y: Point) = (x - y).modulus
 
 
