@@ -198,9 +198,14 @@ public class InternalCPSDispatch extends Dispatch {
             }
             CallKindDecision decision = CallKindDecision.get(this, (PorcERootNode)target.getRootNode());
             int nodeCount = computeNodeCount();
+            int truffleASTInliningLimit = SpecializationConfiguration.TruffleASTInliningLimit;
+            /*if (getProfilingScope().isProfiling()) {
+                truffleASTInliningLimit = truffleASTInliningLimit / 10;
+            }*/
             boolean inlineGuess =
-                    InlinedCallRoot.isInMethod(this, target.getRootNode()) &&
-                    nodeCount < SpecializationConfiguration.TruffleASTInliningLimit;
+                    (InlinedCallRoot.isInMethod(this, target.getRootNode()) ||
+                            target.getRootNode().isInternal()) &&
+                    nodeCount < truffleASTInliningLimit;
             return inlinedCall.isApplicable(frame) &&
                     InlinedCallRoot.findInlinedCallRoot(this, target.getRootNode()) == null &&
                     (decision == CallKindDecision.INLINE ||
