@@ -32,21 +32,22 @@ class ArraySlice {
 def ArraySlice(a, s, l) = a >a'> s >s'> l >l'> s + l >e'> Sequentialize() >> new ArraySlice { val array = a' # val start = s' # val length = l' # val end = e' }
 
     def lr(a, p, i, t) = SinglePublication() >> Sequentialize() >> a >> p >> i >> t >> 
-        (if i <: t && a(i)? <= p then lr(a, p, i+1, t) else i) 
+        (if ~(i <: t && a(i)? <= p) then i else lr(a, p, i+1, t)) 
     def rl(a, p, i) = SinglePublication() >> Sequentialize() >> a >> p >> i >> 
-        (if a(i)? :> p then rl(a, p, i-1) else i) #
+        (if ~(a(i)? :> p) then i else rl(a, p, i-1)) #
 
   def part(a, p, s, t) = SinglePublication() >> Sequentialize() >> a >> p >> s >> t >>
     (lr(a, p, s, t), rl(a, p, t)) >(s', t')>
-    ( Ift(s' + 1 <: t') >> swap(a(s'),a(t')) >> part(a, p,s'+1,t'-1)  
-    | Ift(s' + 1 = t') >> swap(a(s'),a(t')) >> s'
+    ( Ift(s' + 1 = t') >> swap(a(s'),a(t')) >> s'
     | Ift(s' + 1 :> t') >> t'
+    | Ift(s' + 1 <: t') >> swap(a(s'),a(t')) >> part(a, p,s'+1,t'-1)  
     )
   def sort(a, s, t) = SinglePublication() >> Sequentialize() >> a >> s >> t >> (
     if s >= t then signal
     else part(a, a(s)?, s+1, t) >m>
          swap(a(m), a(s)) >>
-         (sort(a, s, m-1), sort(a, m+1, t)) >>
+         sort(a, s, m-1) >>
+         sort(a, m+1, t) >>
          signal
          )
 
