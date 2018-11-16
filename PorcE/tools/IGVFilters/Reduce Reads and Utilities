@@ -1,0 +1,7 @@
+remove("class", "orc\\..*Read\\$.*");
+split("class", "orc\\..*(Force|Resolve)\\$HandleFuture$");
+split("class", "orc\\..*Invoker[A-Za-z]*NodeGen$");
+split("class", "orc\\..*Accessor[A-Za-z]*NodeGen$");
+//split("class", "orc\\..*[.$]New.*$");
+split("class", "org\\.graalvm\\..*Optimized[A-Za-z]*CallNode$");
+//split("class", "orc\\..*\\$RunData$");
