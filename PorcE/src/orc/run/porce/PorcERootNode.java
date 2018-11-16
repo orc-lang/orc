@@ -305,9 +305,17 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
             CompilerDirectives.transferToInterpreterAndInvalidate();
             atomic(() -> {
                 if (trampolineCallTarget == null) {
-                    // TODO: This should return this root node directly once we are no longer using getTimePerCall and when UniversalTCO is off.
-                    RootCallTarget v = Truffle.getRuntime().createCallTarget(
-                            new InvokeWithTrampolineRootNode(getLanguage(PorcELanguage.class), this, execution));
+                    RootCallTarget v;
+                    if (!SpecializationConfiguration.UseExternalCallKindDecision &&
+                            !SpecializationConfiguration.UseControlledParallelism ||
+                            SpecializationConfiguration.UniversalTCO) {
+                        // If we need spawn timing OR if we want universal TCO then we need a trampoline.
+                        v = Truffle.getRuntime().createCallTarget(
+                                new InvokeWithTrampolineRootNode(getLanguage(PorcELanguage.class), this, execution));
+                    } else {
+                        // Otherwise, we can directly call this root node.
+                        v = this.getCallTarget();
+                    }
                     // TODO: Use the new Java 9 fence when we start requiring Java 9
                     // for PorcE.
                     NodeBase.UNSAFE.fullFence();
