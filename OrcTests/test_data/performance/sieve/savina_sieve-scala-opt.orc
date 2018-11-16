@@ -23,26 +23,27 @@ import class Collections = "java.util.Collections"
 
 val sieveFragementSize = 300
 
+def filter(x, next, list, outChan) = SinglePublication() >> x >> next >> list >> outChan >> (
+    val v = SavinaSieve.check(list, x)
+    v >true> (
+        if list.size() <: sieveFragementSize then
+            Sequentialize() >> -- Inferable 
+            list.add(x) >> outChan.put(x)
+        else
+            -- create a new fragment
+            (next.readD() ;
+                next.write(sieveFragment(outChan))) >> stop |
+            next.read().put(x)
+    ) |
+    v >false> signal)
+
 -- Lines: 18
-def sieveFragment(outChan) =
+def sieveFragment(outChan) = 
 	val inChan = Channel() 
 	val list = ArrayList[Number](sieveFragementSize)
 	val next = Cell()
-	def filter(x) = 
-		val v = SavinaSieve.check(list, x)
-		v >true> (
-			if list.size() <: sieveFragementSize then
-				Sequentialize() >> -- Inferable 
-				list.add(x) >> outChan.put(x)
-			else
-				-- create a new fragment
-				(next.readD() ;
-					next.write(sieveFragment(outChan))) >> stop |
-				next.read().put(x)
-		) |
-		v >false> signal #
-	repeat({ Sequentialize() >> -- Hard (otherwise) 
-		(inChan.get() ; next.readD().close() >> stop) >x> filter(x) }) >> stop |
+    SinglePublication() >> inChan >> list >> next >> outChan >>
+    repeat({ (inChan.get() ; next.readD().close() >> stop) >x> filter(x, next, list, outChan) }) >> stop |
 	inChan
 	
 def sforBy(low, high, step, f) =

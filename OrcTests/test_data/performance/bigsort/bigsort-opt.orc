@@ -29,26 +29,31 @@ class ArraySlice {
   def toString() =
     "ArraySlice(" + start + " + " + toList() + ")" 
 }
-def ArraySlice(a, s, l) = a >a'> s >s'> l >l'> s + l >e'> new ArraySlice { val array = a' # val start = s' # val length = l' # val end = e' }
+def ArraySlice(a, s, l) = a >a'> s >s'> l >l'> s + l >e'> Sequentialize() >> new ArraySlice { val array = a' # val start = s' # val length = l' # val end = e' }
 
--- Lines: 16
-def quicksort(slice) = Sequentialize() >> ( -- Inferable
-  val a = slice.array
-  def part(p, s, t) =
-    def lr(i) = if i <: t && a(i)? <= p then lr(i+1) else i 
-    def rl(i) = if a(i)? :> p then rl(i-1) else i #
-    (lr(s), rl(t)) >(s', t')>
-    ( Ift(s' + 1 <: t') >> swap(a(s'),a(t')) >> part(p,s'+1,t'-1)  
+    def lr(a, p, i, t) = SinglePublication() >> Sequentialize() >> a >> p >> i >> t >> 
+        (if i <: t && a(i)? <= p then lr(a, p, i+1, t) else i) 
+    def rl(a, p, i) = SinglePublication() >> Sequentialize() >> a >> p >> i >> 
+        (if a(i)? :> p then rl(a, p, i-1) else i) #
+
+  def part(a, p, s, t) = SinglePublication() >> Sequentialize() >> a >> p >> s >> t >>
+    (lr(a, p, s, t), rl(a, p, t)) >(s', t')>
+    ( Ift(s' + 1 <: t') >> swap(a(s'),a(t')) >> part(a, p,s'+1,t'-1)  
     | Ift(s' + 1 = t') >> swap(a(s'),a(t')) >> s'
     | Ift(s' + 1 :> t') >> t'
     )
-  def sort(s, t) =
+  def sort(a, s, t) = SinglePublication() >> Sequentialize() >> a >> s >> t >> (
     if s >= t then signal
-    else part(a(s)?, s+1, t) >m>
+    else part(a, a(s)?, s+1, t) >m>
          swap(a(m), a(s)) >>
-         (sort(s, m-1), sort(m+1, t)) >>
+         (sort(a, s, m-1), sort(a, m+1, t)) >>
          signal
-  sort(slice.start, slice.end - 1) >> slice
+         )
+
+-- Lines: 16
+def quicksort(slice) = SinglePublication() >> Sequentialize() >> slice >> ( -- Inferable
+  val a = slice.array
+  sort(a, slice.start, slice.end - 1) >> slice
   )
 
 -- Lines: 15
@@ -60,10 +65,10 @@ def mergeSorted(a :: ArraySlice, b :: ArraySlice) =
     def h(aI, bI, oI) if (oI >= outputLen) = ArraySlice(output, 0, outputLen)
     def h(aI, bI, oI) =
       if orderedAnd(aI <: a.length, lambda() = orderedOr(bI >= b.length, lambda() = a(aI)? <: b(bI)?)) then
-        output(oI) := a(aI)? >> stop |
+        output(oI) := a(aI)? >>
         h(aI+1, bI, oI+1)
       else if bI <: b.length then
-        output(oI) := b(bI)? >> stop |
+        output(oI) := b(bI)? >>
         h(aI, bI+1, oI+1)
       else
         Error("IPE")

@@ -22,16 +22,11 @@ import class Collections = "java.util.Collections"
 
 val sieveFragementSize = 300
 
--- Lines: 23
-def sieveFragment(outChan) =
-	val inChan = Channel() 
-	val list = ArrayList[Number](sieveFragementSize)
-	val next = Cell()
-	def check(x, iter) = Sequentialize() >> ( -- Inferable (recursion)
-		val p = Some(iter()) ; None() #
-		--val _ = Println("Checking " + x + " " + p) #
-		(p >None()> signal) |
-		(p >Some(p)>
+def check(x, iter) = SinglePublication() >> Sequentialize() >> x >> iter >> ( -- Inferable (recursion)
+    val p = Some(iter()) ; None() #
+    --val _ = Println("Checking " + x + " " + p) #
+    (p >None()> signal) |
+    (p >Some(p)>
         Iff(x % p = 0) >> 
         check(x, iter))
 )
@@ -39,17 +34,24 @@ def filter(x, next, list, outChan) = SinglePublication() >> x >> next >> list >>
     val v = Sequentialize() >> -- Inferable 
         (check(x, IterableToStream(list)) >> true ; false)
     v >true> (
-			if list.size() <: sieveFragementSize then
-				Sequentialize() >> -- Inferable 
-				list.add(x) >> outChan.put(x)
-			else
-				-- create a new fragment
-				(next.readD() ;
-					next.write(sieveFragment(outChan))) >> stop |
-				next.read().put(x)
-		) |
-		v >false> signal #
-	repeat({ (inChan.get() ; next.readD().close() >> stop) >x> filter(x) }) >> stop |
+        if list.size() <: sieveFragementSize then
+            Sequentialize() >> -- Inferable 
+            list.add(x) >> outChan.put(x)
+        else
+            -- create a new fragment
+            (next.readD() ;
+                next.write(sieveFragment(outChan))) >> stop |
+            next.read().put(x)
+    ) |
+    v >false> signal ) #
+
+-- Lines: 23
+def sieveFragment(outChan) =
+	val inChan = Channel() 
+	val list = ArrayList[Number](sieveFragementSize)
+	val next = Cell()
+    SinglePublication() >> inChan >> list >> next >> outChan >>
+	repeat({ (inChan.get() ; next.readD().close() >> stop) >x> filter(x, next, list, outChan) }) >> stop |
 	inChan
 
 -- Lines: 4	
