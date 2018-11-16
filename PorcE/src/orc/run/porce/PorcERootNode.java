@@ -60,7 +60,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     private final LongAdder totalCalls = new LongAdder();
 
     @SuppressWarnings("boxing")
-    private final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<Boolean>("PorcERootNode.isProfiling", true);
+    private static final AssumedValue<Boolean> isProfilingFlag = new AssumedValue<>("PorcERootNode.isProfiling", true);
 
     @Override
     public ProfilingScope getProfilingScope() {
@@ -112,7 +112,7 @@ public class PorcERootNode extends RootNode implements HasPorcNode, HasId, Profi
     }
 
     @SuppressWarnings("boxing")
-    public final void setProfiling(boolean isProfiling) {
+    public static final synchronized void setProfiling(boolean isProfiling) {
         if (isProfiling != isProfilingFlag.get()) {
             isProfilingFlag.set(isProfiling);
         }

@@ -20,6 +20,7 @@ import java.util.{ TimerTask }
 import java.lang.management.ManagementFactory
 import orc.values.sites.TotalSite2Simple
 import orc.values.Signal
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 
 object ReportPerformance extends TotalSite2Simple[Number, Number] {
   def eval(time: Number, reps: Number): Any = {
@@ -35,6 +36,8 @@ object ParallelismController {
     _active = v
   }
   def active = _active
+
+  def initiallyParallel = active._initiallyParallel
 }
 
 class ParallelismController(execution: PorcEExecution) {
@@ -43,6 +46,9 @@ class ParallelismController(execution: PorcEExecution) {
   ParallelismController.active = this
 
   private def timer = execution.runtime.timer
+
+  @CompilationFinal @volatile
+  private var _initiallyParallel = System.getProperty("orc.porce.initiallyParallel", "true").toBoolean
 
   var reportedTime = 0L
   var reportedReps = 0L
@@ -91,9 +97,11 @@ class ParallelismController(execution: PorcEExecution) {
   private var checkTask: TimerTask = null
   private var lastTime: Time = null
 
+  private var profilingDone = false
+
   private def check(): Unit = synchronized {
     require(lastTime != null)
-    if (checkTask != null) {
+    if (checkTask != null || profilingDone) {
       return
     }
 
@@ -149,7 +157,7 @@ class ParallelismController(execution: PorcEExecution) {
 
       val metricDiff =
         timeMetric(getParallelFractionTime(newParallelFraction)) - timeMetric(getParallelFractionTime(parallelFraction))
-      if (metricDiff.abs > 0.1 || stillCollecting) {
+      if ((metricDiff.abs > 0.1 || stillCollecting) && parallelFraction != newParallelFraction) {
         parallelFraction = newParallelFraction
         Logger.info(s"Switching to $newParallelFraction")
       }
@@ -164,8 +172,9 @@ class ParallelismController(execution: PorcEExecution) {
 
       // Disable profiling in roots.
       if (!stillCollecting) {
+        _initiallyParallel = false
         for (r <- rootsToUpdate) {
-          r.setProfiling(false)
+          PorcERootNode.setProfiling(false)
         }
       }
 
@@ -188,6 +197,9 @@ class ParallelismController(execution: PorcEExecution) {
         }
         sb.toString
       })
+      if (!stillCollecting) {
+        profilingDone = true
+      }
     } else {
       // If it's not time yet, schedule a check
       scheduleCheck()

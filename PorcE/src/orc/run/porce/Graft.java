@@ -18,6 +18,7 @@ import orc.run.porce.runtime.CallKindDecision;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
+import orc.run.porce.runtime.ParallelismController;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
@@ -37,7 +38,7 @@ public abstract class Graft extends Expression implements ParallelismNode {
     private final AtomicLong executionCount = new AtomicLong(0);
     @SuppressWarnings("boxing")
     private final AssumedValue<Boolean> isParallel =
-            new AssumedValue<>("Graft.isParallel", SpecializationConfiguration.InitiallyParallel);
+            new AssumedValue<>("Graft.isParallel", ParallelismController.initiallyParallel());
 
     @Override
     public boolean isParallelismChoiceNode() {

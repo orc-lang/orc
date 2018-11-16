@@ -132,9 +132,9 @@ public abstract class SpecializationConfiguration {
         }
     }
 
-    @CompilationFinal
-    public static final boolean InitiallyParallel = Boolean
-            .parseBoolean(System.getProperty("orc.porce.initiallyParallel", "true"));
+//    @CompilationFinal
+//    public static final boolean InitiallyParallel = Boolean
+//            .parseBoolean(System.getProperty("orc.porce.initiallyParallel", "true"));
 
     @CompilationFinal
     public static final boolean UseControlledParallelism = Boolean

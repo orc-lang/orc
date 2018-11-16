@@ -23,6 +23,7 @@ import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.Terminator;
+import orc.run.porce.runtime.ParallelismController;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -49,7 +50,7 @@ public abstract class Spawn extends Expression implements HasCalledRoots, Parall
     private final AtomicLong executionCount = new AtomicLong(0);
     @SuppressWarnings("boxing")
     private final AssumedValue<Boolean> isParallel =
-            new AssumedValue<>("Spawn.isParallel", SpecializationConfiguration.InitiallyParallel);
+            new AssumedValue<>("Spawn.isParallel", ParallelismController.initiallyParallel());
 
     @Override
     public boolean isParallelismChoiceNode() {

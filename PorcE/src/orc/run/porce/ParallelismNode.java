@@ -53,41 +53,4 @@ public interface ParallelismNode {
     boolean getParallel();
 
     RootNode getRootNode();
-
-    /* Trait implementation:
-    private volatile long executionCount = 0;
-    @SuppressWarnings("boxing")
-    private final AssumedValue<Boolean> isParallel =
-            new AssumedValue<Boolean>("Spawn.isParallel", SpecializationConfiguration.InitiallyParallel);
-
-    @Override
-    public boolean isParallelismChoiceNode() {
-        return true;
-    }
-
-    @Override
-    public long getExecutionCount() {
-        return executionCount;
-    }
-
-    @Override
-    public void incrExecutionCount() {
-        if (isParallelismChoiceNode() && getProfilingScope().isProfiling()) {
-            executionCount++;
-        }
-    }
-
-    @Override
-    @SuppressWarnings("boxing")
-    public void setParallel(boolean isParallel) {
-        this.isParallel.set(isParallel);
-    }
-
-    @Override
-    @SuppressWarnings("boxing")
-    public boolean getParallel() {
-        return isParallel.get();
-    }
-     */
-
 }
