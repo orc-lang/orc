@@ -11,14 +11,20 @@
 
 package orc.run.porce;
 
+import static orc.run.porce.SpecializationConfiguration.InlineForceHalted;
+import static orc.run.porce.SpecializationConfiguration.InlineForceResolved;
+
+import orc.FutureState;
 import orc.run.porce.call.Dispatch;
 import orc.run.porce.call.InternalCPSDispatch;
+import orc.run.porce.profiles.ResettableBranchProfile;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;
 import orc.run.porce.runtime.Resolver;
 import orc.run.porce.runtime.Terminator;
 
+import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.ImportStatic;
@@ -26,10 +32,85 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.profiles.ConditionProfile;
 
 public abstract class Resolve {
     public static boolean isNonFuture(final Object v) {
         return !(v instanceof orc.Future);
+    }
+
+    protected static final class HandleFuture extends Node {
+        final ResettableBranchProfile boundFuture = ResettableBranchProfile.create();
+        final ResettableBranchProfile unboundFuture = ResettableBranchProfile.create();
+        private final ConditionProfile orcFuture = ConditionProfile.createBinaryProfile();
+        private final ConditionProfile porcEFuture = ConditionProfile.createBinaryProfile();
+        private final ConditionProfile nonFuture = ConditionProfile.createBinaryProfile();
+
+        public Object handleFuture(PorcENode self, final Object future) {
+            CompilerAsserts.compilationConstant(self);
+            CompilerAsserts.compilationConstant(this);
+            CompilerAsserts.compilationConstant(nonFuture);
+
+            if (InlineForceResolved && nonFuture.profile(isNonFuture(future))) {
+                return null;
+            } else if (porcEFuture.profile(future instanceof orc.run.porce.runtime.Future)) {
+                final Object state = ((orc.run.porce.runtime.Future) future).getInternal();
+                if (InlineForceResolved && state != orc.run.porce.runtime.FutureConstants.Unbound) {
+                    if (boundFuture.enter()) {
+                        unboundFuture.reset();
+                    }
+                    // No need to return actual value.
+                    return orc.run.porce.runtime.FutureConstants.Halt;
+                } else {
+                    unboundFuture.enter();
+                    return orc.run.porce.runtime.FutureConstants.Unbound;
+                }
+            } else if (orcFuture.profile(future instanceof orc.Future)) {
+                final FutureState state = ((orc.Future) future).get();
+                if (InlineForceResolved && (state instanceof orc.FutureState.Bound
+                        || state == orc.run.porce.runtime.FutureConstants.Orc_Stopped)) {
+                    if (boundFuture.enter()) {
+                        unboundFuture.reset();
+                    }
+                    // No need to return actual value.
+                    return orc.run.porce.runtime.FutureConstants.Halt;
+                } else {
+                    unboundFuture.enter();
+                    return orc.run.porce.runtime.FutureConstants.Unbound;
+                }
+            } else if (!InlineForceResolved || !InlineForceHalted) {
+                if (isNonFuture(future)) {
+                    return future;
+                } else {
+                    return orc.run.porce.runtime.FutureConstants.Unbound;
+                }
+            } else {
+                throw InternalPorcEError.unreachable(self);
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("HandleFuture(");
+            sb.append("nonFuture=");
+            sb.append(nonFuture);
+            sb.append(",porcEFuture=");
+            sb.append(porcEFuture);
+            sb.append(",orcFuture=");
+            sb.append(orcFuture);
+            sb.append(",boundFuture=");
+            sb.append(boundFuture);
+            sb.append(",unboundFuture=");
+            sb.append(unboundFuture);
+            sb.append(")");
+            return sb.toString();
+        }
+
+        public static HandleFuture create() {
+            return new HandleFuture();
+        }
     }
 
     @NodeChild(value = "p", type = Expression.class)
@@ -59,12 +140,19 @@ public abstract class Resolve {
             return PorcEUnit.SINGLETON;
         }
 
-        // TODO: PERFORMANCE: It may be worth playing with specializing by
-        // future states. Futures that are always bound may be common.
-        // This would only be worth it if resolve is called frequently.
         @Specialization
-        public PorcEUnit porceFuture(final int index, final Resolver join, final orc.run.porce.runtime.Future future) {
-            join.force(index, future);
+        public PorcEUnit porceFuture(final int index, final Resolver join, final orc.run.porce.runtime.Future future,
+                @Cached("create()") HandleFuture handleFuture) {
+            Object v = handleFuture.handleFuture(this, future);
+
+            if (v == orc.run.porce.runtime.FutureConstants.Unbound) {
+                handleFuture.unboundFuture.enter();
+                join.force(index, future);
+            } else {
+                // Handle bound and halted the same.
+                handleFuture.boundFuture.enter();
+                join.set(index);
+            }
             return PorcEUnit.SINGLETON;
         }
 
@@ -108,16 +196,16 @@ public abstract class Resolve {
 
         @Specialization(guards = { "InlineForceResolved", "join.isResolved()" }, replaces = { "blocked" })
         public PorcEUnit resolved(final VirtualFrame frame, final PorcEExecution execution, final Resolver join) {
-                if (call == null) {
-                        CompilerDirectives.transferToInterpreterAndInvalidate();
-                        computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
-                                Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
-                                n.setTail(isTail);
-                                n.forceInline();
-                                notifyInserted(n);
-                                return n;
-                        });
-                }
+            if (call == null) {
+                CompilerDirectives.transferToInterpreterAndInvalidate();
+                computeAtomicallyIfNull(() -> call, (v) -> call = v, () -> {
+                    Dispatch n = insert(InternalCPSDispatch.create(execution, isTail));
+                    n.setTail(isTail);
+                    n.forceInline();
+                    notifyInserted(n);
+                    return n;
+                });
+            }
             call.dispatch(frame, join.p());
             return PorcEUnit.SINGLETON;
         }

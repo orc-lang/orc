@@ -283,11 +283,7 @@ final class Resolver(val p: PorcEClosure, val c: Counter, val t: Terminator, val
 }
 
 object Resolver {
-  val unsafe = {
-    val theUnsafe = classOf[Unsafe].getDeclaredField("theUnsafe");
-    theUnsafe.setAccessible(true);
-    theUnsafe.get(null).asInstanceOf[Unsafe];
-  }
+  val unsafe = Join.unsafe
 
   val resolverStateOffset = {
     unsafe.objectFieldOffset(classOf[Resolver].getDeclaredField("state"))
