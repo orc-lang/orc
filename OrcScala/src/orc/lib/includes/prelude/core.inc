@@ -9,6 +9,8 @@
 -- URL: http://orc.csres.utexas.edu/license.shtml .
 --
 
+import site SinglePublication__ = "orc.compile.orctimizer.SinglePublication"
+
 {--
 Fundamental sites and operators.
 

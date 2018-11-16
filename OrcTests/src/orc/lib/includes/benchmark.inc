@@ -1,6 +1,9 @@
 include "write-csv-file.inc"
 include "test-output-util.inc"
 
+import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
+import site SinglePublication = "orc.compile.orctimizer.SinglePublication"
+
 import class System = "java.lang.System"
 import class JString = "java.lang.String"
 

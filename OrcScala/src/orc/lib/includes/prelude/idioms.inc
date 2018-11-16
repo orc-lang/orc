@@ -338,7 +338,7 @@ collect(defer(signals, 5))]]></programlisting>
 @implementation
 --}
 def collect[A](lambda () :: A) :: List[A]
-def collect(p) =
+def collect(p) = SinglePublication__() >> (
   val b = Channel[A]()
   p() >x> b.put(x) >> stop
-  ; b.getAll()
+  ; b.getAll())

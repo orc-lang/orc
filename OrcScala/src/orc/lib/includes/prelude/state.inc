@@ -122,7 +122,7 @@ Get the value held by a reference.
 @implementation
 --}
 def (?)[A](Ref[A]) :: A
-def (?)(r) = r.read()
+def (?)(r) = SinglePublication__() >> r.read()
 
 {--
 @def (:=)[A](Ref[A], A) :: Signal
@@ -132,7 +132,7 @@ Set the value held by a reference.
 @implementation
 --}
 def (:=)[A](Ref[A], A) :: Signal
-def (:=)(r,v) = r.write(v)
+def (:=)(r,v) = SinglePublication__() >> r.write(v)
 
 {--
 @def swap[A](Ref[A], Ref[A]) :: Signal
@@ -141,7 +141,7 @@ Swap the values in two references, then return a <link linkend="ref.data.signal"
 @implementation
 --}
 def swap[A](Ref[A], Ref[A]) :: Signal
-def swap(r,s) = (r?,s?) >(rval,sval)> (r := sval, s := rval) >> signal
+def swap(r,s) = SinglePublication__() >> (r?,s?) >(rval,sval)> (r := sval, s := rval) >> signal
 
 
 {--
