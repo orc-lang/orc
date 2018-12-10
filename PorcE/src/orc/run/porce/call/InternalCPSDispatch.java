@@ -74,12 +74,24 @@ public class InternalCPSDispatch extends Dispatch {
     @Override
     public void executeDispatchWithEnvironment(VirtualFrame frame, Object target, Object[] arguments) {
         arguments[0] = ((PorcEClosure) target).environment;
+
+        Logger.fine(() -> "Call dispatch "+target);
+
         internal.execute(frame, target, arguments);
+
+        Logger.fine(() -> "Call complete "+target);
+
     }
 
     @Override
     public void executeDispatch(VirtualFrame frame, Object target, Object[] arguments) {
+
+        Logger.fine(() -> "Call dispatch "+target);
+
         internal.execute(frame, target, buildArguments((PorcEClosure) target, arguments));
+
+        Logger.fine(() -> "Call complete "+target);
+
     }
 
     protected static Object[] buildArguments(PorcEClosure target, Object[] arguments) {
@@ -213,8 +225,9 @@ public class InternalCPSDispatch extends Dispatch {
                     FrameSlot slot = closureSlots[i];
                     frame.setObject(slot, ((Object[]) arguments[0])[i]);
                 }
-
+                Logger.finest(() -> "execute body begin: "+body);
                 body.execute(frame);
+                Logger.finest(() -> "execute body end: "+body);
             } catch (final SelfTailCallException e) {
                 throw e;
             } catch (final TailCallException e) {
@@ -246,7 +259,9 @@ public class InternalCPSDispatch extends Dispatch {
             CompilerDirectives.ensureVirtualized(arguments);
             try {
                 final VirtualFrame nestedFrame = Truffle.getRuntime().createVirtualFrame(arguments, fd);
+                Logger.finest(() -> "execute body begin: "+body);
                 body.execute(nestedFrame);
+                Logger.finest(() -> "execute body end: "+body);
             } catch(NullPointerException e) {
                 CompilerDirectives.transferToInterpreter();
                 Logger.log(java.util.logging.Level.WARNING, () -> "UGLY HACK: Creating virtual frame failed. Hopefully this is just as the program exits.", e);

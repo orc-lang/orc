@@ -19,10 +19,18 @@ package orc.util
   * @author jthywiss
   */
 object GetScalaTypeName {
-  def apply(v: Any) = {
+  def apply(v: Boolean): String = "Boolean"
+  def apply(v: Byte): String = "Byte"
+  def apply(v: Char): String = "Char"
+  def apply(v: Double): String = "Double"
+  def apply(v: Float): String = "Float"
+  def apply(v: Int): String = "Int"
+  def apply(v: Long): String = "Long"
+  def apply(v: Short): String = "Short"
+
+  def apply(v: Any): String = {
     v match {
       case null => "Null"
-      case o: Object => Option(o.getClass.getCanonicalName).getOrElse(o.getClass.getName).stripSuffix("$") /*TODO: Convert arrays etc. to Scala syntax? */
       case _: Boolean => "Boolean"
       case _: Byte => "Byte"
       case _: Char => "Char"
@@ -32,7 +40,36 @@ object GetScalaTypeName {
       case _: Long => "Long"
       case _: Short => "Short"
       case _: Unit => "Unit"
+      case o: Object => ofClass(o.getClass)
       case _ => "[type of \"" + v + "\"]"
     }
   }
+
+  def ofClass(clazz: Class[_]): String = {
+    clazz match {
+      case java.lang.Boolean.TYPE => "Boolean"
+      case java.lang.Byte.TYPE => "Byte"
+      case java.lang.Character.TYPE => "Char"
+      case java.lang.Double.TYPE => "Double"
+      case java.lang.Float.TYPE => "Float"
+      case java.lang.Integer.TYPE => "Int"
+      case java.lang.Long.TYPE => "Long"
+      case java.lang.Short.TYPE => "Short"
+      case java.lang.Void.TYPE => "Unit"
+      case _ if clazz.isArray => "Array[" + ofClass(clazz.getComponentType) + "]"
+      case _ => (clazz.getEnclosingClass match {
+        case null => { // Top-level class: Name is OK
+          stripPackageName(clazz.getName) 
+        }
+        case ec if clazz.getDeclaringClass != null => { // Nested or inner class
+          ofClass(ec) + "." + clazz.getName.substring(ec.getName.length + 1)
+        }
+        case _ => { // Local or anonymous class: Just use JVM binary name
+          stripPackageName(clazz.getName)
+        }
+      }).stripSuffix("$")
+    }
+  }
+
+  private def stripPackageName(binaryName: String): String = binaryName.substring(binaryName.lastIndexOf(".")+1)
 }

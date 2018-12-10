@@ -29,6 +29,9 @@ import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.{ Node, RootNode }
+import java.lang.reflect.WeakCache
+import java.util.WeakHashMap
+import scala.collection.mutable.WeakHashMap
 
 abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -42,6 +45,9 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
     case e @ CaughtEvent(_: TokenError) => { oldHandler(e); kill() }
     case e => oldHandler(e)
   }
+
+  protected val allCounters = scala.collection.mutable.WeakHashMap[Counter,Unit]()
+  def trackCounter(c: Counter) = allCounters synchronized { allCounters.put(c, ()) }
 
   /** Kill this execution */
   def kill()
@@ -212,6 +218,13 @@ trait PorcEExecutionWithLaunch extends PorcEExecution {
   }
 
   val t = new Terminator()
+
+  private val dumperTimer = new java.util.Timer("Execution dumper", true)
+  dumperTimer.scheduleAtFixedRate(new java.util.TimerTask() { override def run() = { dumpExecutionState() } } , 10*1000, 10*1000)
+
+  def dumpExecutionState() = {
+    println(orc.util.GetScalaTypeName(this) + ":\n  counters=" + allCounters.keys.mkString("\n    ") + "\n  terminator=" + t)
+  }
 
   def scheduleProgram(prog: PorcEClosure, callTargetMap: collection.Map[Int, RootCallTarget]): Unit = {
     setCallTargetMap(callTargetMap)

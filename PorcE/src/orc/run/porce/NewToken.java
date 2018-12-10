@@ -34,6 +34,7 @@ public class NewToken extends Expression {
 
     @Specialization(guards = { "SpecializeOnCounterStates" })
     public PorcEUnit specialized(final Counter counter) {
+      System.out.println("NewToken " + Integer.toHexString(System.identityHashCode(counter)) + getDebugProperties());
         if (counter.newTokenOptimized(ctx)) {
             resurrectProfile.enter();
             counter.doResurrect();

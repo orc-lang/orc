@@ -69,6 +69,13 @@ object PorcEBackend {
   */
 case class PorcEBackend(language: PorcELanguage = null) extends PorcBackend {
   override def modifyCompilationOptions(options: OrcCompilationOptions): OrcCompilationOptions = {
+    val oos = options.optimizationOptions
+    // Add options to prevent the use of features which are incompatible with DOrc.
+    oos.add("porc:directgetfields=false")
+    oos.add("porc:directcalls=false")
+    oos.add("porc:usegraft=false")
+    options.optimizationOptions = oos
+
     PorcEBackend.loadOptOpts(options)
     options
   }

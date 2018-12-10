@@ -38,6 +38,7 @@ public class HaltToken extends Expression {
     public PorcEUnit any(VirtualFrame frame, final Counter counter,
             @Cached("create(execution)") KnownCounter known) {
         ensureTail(known);
+        System.out.println("HaltToken "+Integer.toHexString(System.identityHashCode(counter)));
         known.execute(frame, counter);
         return PorcEUnit.SINGLETON;
     }

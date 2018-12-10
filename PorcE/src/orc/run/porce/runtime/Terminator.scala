@@ -57,6 +57,8 @@ class Terminator(val depth: Int) extends Terminatable {
   protected[this] val children = new AtomicReference(java.util.concurrent.ConcurrentHashMap.newKeySet[Terminatable]())
   private var _isLive = true
 
+  override def toString: String = s"${orc.util.GetScalaTypeName(this)}(children=${children.get})"
+
   /** Add a child to this terminator.
     *
     * All children are notified (with a kill() call) when the terminator is killed. child.kill may

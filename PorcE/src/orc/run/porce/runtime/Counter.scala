@@ -271,6 +271,10 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
   incrCounter()
 
+  //val constructorStack = new Throwable().getStackTrace().mkString("\n      ", "\n      ", "\n")
+  execution.trackCounter(this)
+  override def toString: String = f"${orc.util.GetScalaTypeName(this)}@${System.identityHashCode(this)}%x(value=$get,depth=$depth,isDiscorporated=$isDiscorporated,counterOffsets=[${counterOffsets.filter(_ != null).mkString(",")}])"
+
   protected def handleHaltToken(optimized: Boolean) = {
     if (false && execution.runtime.logNoninlinableSchedules) {
       if (!optimized && get() == -counterOffsets.map({
@@ -550,11 +554,11 @@ abstract class Counter protected (n: Int, val depth: Int, execution: PorcEExecut
     onResurrect()
   }
 
-  override def toString(): String = {
-    val n = getClass.getSimpleName
-    val h = System.identityHashCode(this)
-    f"$n%s@$h%x"
-  }
+//  override def toString(): String = {
+//    val n = getClass.getSimpleName
+//    val h = System.identityHashCode(this)
+//    f"$n%s@$h%x"
+//  }
 
   /** Called when this whole context has halted.
     *
@@ -594,6 +598,8 @@ final class CounterNested(execution: PorcEExecution, val parent: Counter, haltCo
     require(parent != null)
     require(haltContinuation != null)
   }
+
+  override def toString: String = f"${orc.util.GetScalaTypeName(this)}@${System.identityHashCode(this)}%x(parent=@${System.identityHashCode(parent)}%x,value=$get,depth=$depth,isDiscorporated=$isDiscorporated,counterOffsets=[${counterOffsets.filter(_ != null).mkString(",")}])"
 
   def onResurrect() = {
     if (tracingEnabled) {
@@ -648,6 +654,8 @@ final class CounterService(execution: PorcEExecution, val parentCalling: Counter
     // Token: We were not passed a token for parentContaining so we need to get one.
     parentContaining.newToken()
   }
+
+  override def toString: String = f"${orc.util.GetScalaTypeName(this)}@${System.identityHashCode(this)}%x(parentCalling=@${System.identityHashCode(parentCalling)}%x,parentContaining=@${System.identityHashCode(parentContaining)}%x,value=$get,depth=$depth,isDiscorporated=$isDiscorporated,counterOffsets=[${counterOffsets.filter(_ != null).mkString(",")}])"
 
   def onResurrect() = {
     if (haveTokens.compareAndSet(false, true)) {
@@ -712,6 +720,8 @@ final class CounterTerminator(execution: PorcEExecution, val parent: Counter, te
     terminator.addChild(this)
   }
 
+  override def toString: String = f"${getClass.getSimpleName}@${System.identityHashCode(this)}%x(parent=@${System.identityHashCode(parent)}%x,terminator=$terminator,state=$state,value=$get,depth=$depth,isDiscorporated=$isDiscorporated,counterOffsets=[${counterOffsets.mkString(",")}])"
+  
   def onResurrect() = {
     if (state.compareAndSet(CounterTerminator.HasNoTokens, CounterTerminator.HasTokens)) {
       parent.newToken()

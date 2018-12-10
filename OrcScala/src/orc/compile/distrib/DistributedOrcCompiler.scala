@@ -44,7 +44,7 @@ class DistributedOrcCompiler() extends StandardOrcCompiler() {
     removeUnusedDefs.timePhase >>>
     removeUnusedTypes.timePhase >>>
     outputIR(3, "oil-pruned") >>>
-    valueSetAnalysis.timePhase >>>
+    //valueSetAnalysis.timePhase >>>
     deBruijn.timePhase >>>
     outputOil
 }
@@ -77,7 +77,7 @@ class DistributedPorcOrcCompiler() extends PorcOrcCompiler() {
         removeUnusedDefs.timePhase >>>
         removeUnusedTypes.timePhase >>>
         outputIR(3, "oil-pruned") >>>
-        valueSetAnalysis.timePhase >>>
+        //valueSetAnalysis.timePhase >>>
         abortOnError >>>
         toOrctimizer.timePhase >>>
         outputIR(4, "orct") >>>

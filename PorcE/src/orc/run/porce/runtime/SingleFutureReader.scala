@@ -27,6 +27,8 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execu
 
   SimpleWorkStealingSchedulerWrapper.traceTaskParent(SimpleWorkStealingSchedulerWrapper.currentSchedulable, this)
 
+  override def toString = f"${orc.util.GetScalaTypeName(this)}@${System.identityHashCode(this)}%x(halted? ${get},p=$p)"
+
   def publish(v: AnyRef): Unit = {
     if (compareAndSet(false, true)) {
       t.removeChild(this)
@@ -49,9 +51,9 @@ final class SingleFutureReader(p: PorcEClosure, c: Counter, t: Terminator, execu
     halt()
   }
 
-  override def toString() = {
-    s"SingleFutureReader@${hashCode().formatted("%x")}(${get()})"
-  }
+//  override def toString() = {
+//    s"SingleFutureReader@${hashCode().formatted("%x")}(${get()})"
+//  }
 
   def fastHalt(): PorcEClosure = {
     halt()

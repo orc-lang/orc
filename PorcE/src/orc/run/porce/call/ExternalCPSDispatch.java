@@ -18,6 +18,7 @@ import orc.Invoker;
 import orc.SiteResponseSet;
 import orc.error.runtime.HaltException;
 import orc.run.porce.HaltToken;
+import orc.run.porce.Logger;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;
 import orc.run.porce.StackCheckingDispatch;
@@ -71,7 +72,13 @@ public class ExternalCPSDispatch extends Dispatch {
         PorcEClosure pub = (PorcEClosure) arguments[0];
         Counter counter = (Counter) arguments[1];
         Terminator term = (Terminator) arguments[2];
+
+        Logger.fine(() -> "Call dispatch "+target);
+
         internal.execute(frame, target, pub, counter, term, buildArguments(0, arguments));
+
+        Logger.fine(() -> "Call complete "+target);
+
     }
 
     @Override
@@ -79,7 +86,13 @@ public class ExternalCPSDispatch extends Dispatch {
         PorcEClosure pub = (PorcEClosure) arguments[1];
         Counter counter = (Counter) arguments[2];
         Terminator term = (Terminator) arguments[3];
+
+        Logger.fine(() -> "Call dispatch "+target);
+
         internal.execute(frame, target, pub, counter, term, buildArguments(1, arguments));
+
+        Logger.fine(() -> "Call complete "+target);
+
     }
 
     @SuppressWarnings({ "boxing" })
@@ -331,6 +344,7 @@ public class ExternalCPSDispatch extends Dispatch {
         @Specialization
         public void publishNonterminal(VirtualFrame frame, ResponseSet.PublishNonterminal rs) {
             CallContextCommon ctx = (CallContextCommon)rs.ctx();
+            Logger.fine(() -> "Publish nonterminal " + rs.v());
             ctx.c().newToken();
             dispatchP.dispatch(frame, ctx.p(), rs.v());
             if (rs.next() != null) {
@@ -341,6 +355,7 @@ public class ExternalCPSDispatch extends Dispatch {
         @Specialization
         public void publishTerminal(VirtualFrame frame, ResponseSet.PublishTerminal rs) {
             CallContextCommon ctx = (CallContextCommon)rs.ctx();
+            Logger.fine(() -> "Publish terminal " + rs.v());
             dispatchP.dispatch(frame, ctx.p(), rs.v());
             if (ctx instanceof MaterializedCPSCallContext) {
                 ctx.t().removeChild((MaterializedCPSCallContext)ctx);
@@ -353,6 +368,7 @@ public class ExternalCPSDispatch extends Dispatch {
         @Specialization
         public void halt(VirtualFrame frame, ResponseSet.Halt rs) {
             CallContextCommon ctx = (CallContextCommon)rs.ctx();
+            Logger.fine(() -> "Halt " + rs.e());
             haltToken.execute(frame, ctx.c());
             if (ctx instanceof MaterializedCPSCallContext) {
                 ctx.t().removeChild((MaterializedCPSCallContext)ctx);
@@ -365,6 +381,7 @@ public class ExternalCPSDispatch extends Dispatch {
         @Specialization
         public void discorporate(VirtualFrame frame, ResponseSet.Discorporate rs) {
             CallContextCommon ctx = (CallContextCommon)rs.ctx();
+            Logger.fine(() -> "Discorporate");
             ctx.c().setDiscorporate();
             haltToken.execute(frame, ctx.c());
             if (ctx instanceof MaterializedCPSCallContext) {
