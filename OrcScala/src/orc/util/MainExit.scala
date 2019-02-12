@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Nov 7, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -63,7 +63,7 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
     writeHaltMessage(pathName, message)
 
     /*
-     * Unfortunately, the JRE does not exposes its "shutdown in progress"
+     * Unfortunately, the JRE does not expose its "shutdown in progress"
      * status, so we keep our own.  This is approximate -- if a shutdown is
      * initiated somewhere else, and failureExit is invoked from a shutdown
      * hook or finalizer, System.exit will be called a a second time, and

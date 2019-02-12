@@ -1,10 +1,10 @@
 //
 // Logger.scala -- Scala object Logger
-// Project project_name
+// Project OrcScala
 //
 // Created by jthywiss on Oct 15, 2018.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at

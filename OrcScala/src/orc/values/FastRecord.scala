@@ -41,14 +41,14 @@ abstract class FastObject(val members: Array[Field]) extends HasMembers with Ser
   override def isReplacementNeededForMarshaling(marshalValueWouldReplace: AnyRef => Boolean): Boolean =
     values.exists(marshalValueWouldReplace)
 
-  // FIXME: By rights, this should return a new instance of this.getClass. But that's tricky to do. So rewrap in a FastRecord. It should be indistiguishable.
+  // FIXME: By rights, this should return a new instance of this.getClass. But that's tricky to do. So rewrap in a FastRecord. It should be indistinguishable.
   override def replaceForMarshaling(marshaler: AnyRef => AnyRef): AnyRef =
     FastRecord(members, values map marshaler)
 
   override def isReplacementNeededForUnmarshaling(unmarshalValueWouldReplace: AnyRef => Boolean): Boolean =
     values.exists(unmarshalValueWouldReplace)
 
-  // FIXME: By rights, this should return a new instance of this.getClass. But that's tricky to do. So rewrap in a FastRecord. It should be indistiguishable.
+  // FIXME: By rights, this should return a new instance of this.getClass. But that's tricky to do. So rewrap in a FastRecord. It should be indistinguishable.
   override def replaceForUnmarshaling(unmarshaler: AnyRef => AnyRef): AnyRef =
     FastRecord(members, values map unmarshaler)
 }
