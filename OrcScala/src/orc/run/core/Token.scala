@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -19,7 +19,8 @@ import orc.error.OrcException
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, DoesNotHaveMembersException, JavaStackLimitReachedError, NoSuchMemberException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
-import orc.run.distrib.token.{ DOrcExecution, NoLocationAvailable, PeerLocation }
+import orc.run.distrib.NoLocationAvailable
+import orc.run.distrib.token.{ DOrcExecution, PeerLocation }
 import orc.values.{ Field, OrcObject, Signal }
 
 /** Token represents a "process" executing in the Orc program.
@@ -470,7 +471,7 @@ class Token protected (
         //orc.run.distrib.token.Logger.entering(getClass.getName, "siteCall", Seq(s.getClass.getName, s, actuals))
         val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)) { _ & _ }
         if (!(intersectLocs contains dOrcExecution.runtime.here)) {
-          orc.run.distrib.token.Logger.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
+          orc.run.distrib.Logger.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
           val candidateDestinations = {
             if (intersectLocs.nonEmpty) {
               intersectLocs
@@ -479,11 +480,11 @@ class Token protected (
               if (intersectPermittedLocs.nonEmpty) {
                 intersectPermittedLocs
               } else {
-                throw new NoLocationAvailable(s +: actuals)
+                throw new NoLocationAvailable((s +: actuals.toSeq).map(v => (v, dOrcExecution.currentLocations(v).map(_.runtimeId.longValue))))
               }
             }
           }
-          orc.run.distrib.token.Logger.finest(s"candidateDestinations=$candidateDestinations")
+          orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
           val destination = pickLocation(candidateDestinations)
           dOrcExecution.sendToken(this, destination)
           return

@@ -1,19 +1,21 @@
 //
-// RemoteRef.scala -- Scala traits RemoteRef and RemoteRefIdManager, and classes RemoteObjectRef and RemoteObjectRefReplacement
-// Project PorcE
+// RemoteRef.scala -- Scala traits RemoteRef, RemoteRefIdManager, FollowerNumLocationMapping, and RemoteObjectManager; and classes RemoteObjectRef, RemoteObjectRefReplacement, and ObjectRemoteRefIdMapping
+// Project OrcScala
 //
 // Created by jthywiss on Jan 5, 2016.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib.porce
+package orc.run.distrib.common
 
 import java.util.concurrent.atomic.AtomicLong
+
+import orc.run.distrib.Logger
 
 /** A reference to a value or future at another Location.
   *
@@ -32,14 +34,14 @@ trait RemoteRef {
   *
   * @author jthywiss
   */
-trait RemoteRefIdManager {
-  execution: DOrcExecution =>
+trait RemoteRefIdManager[Location] {
+  execution: FollowerNumLocationMapping[Location] =>
 
   private val remoteRefIdCounter = new AtomicLong(execution.followerExecutionNum.toLong << 32)
 
   protected def freshRemoteRefId(): RemoteRef#RemoteRefId = remoteRefIdCounter.getAndIncrement()
 
-  protected def homeLocationForRemoteRef(id: RemoteRef#RemoteRefId): PeerLocation = {
+  protected def homeLocationForRemoteRef(id: RemoteRef#RemoteRefId): Location = {
     val followerNum = id.asInstanceOf[Long] >> 32
     assert(followerNum <= Int.MaxValue && followerNum >= Int.MinValue)
     val home = execution.locationForFollowerNum(followerNum.toInt)
@@ -47,6 +49,11 @@ trait RemoteRefIdManager {
     home
   }
 
+}
+
+trait FollowerNumLocationMapping[Location] {
+  val followerExecutionNum: Int
+  def locationForFollowerNum(followerNum: Int): Location
 }
 
 /** A reference to an Orc value at another Location.
@@ -70,14 +77,34 @@ case class RemoteObjectRefReplacement(remoteRefId: RemoteObjectRef#RemoteRefId) 
 
   override def toString: String = f"$productPrefix(remoteRefId=$remoteRefId%#x)"
 
-  def unmarshal(rmtObjMgr: RemoteObjectManager): AnyRef = {
+  def unmarshal(rmtObjMgr: RemoteObjectManager[_]): AnyRef = {
     rmtObjMgr.localObjectForRemoteId(remoteRefId).getOrElse(new RemoteObjectRef(remoteRefId))
   }
+}
+
+/** The manager for remote object references that is mixed into the DOrcExecution.
+  */
+trait RemoteObjectManager[Location] {
+  idmgr: RemoteRefIdManager[Location] =>
+
+  type RemoteRefId = RemoteRef#RemoteRefId
+
+  protected val objectMapping = new ObjectRemoteRefIdMapping[AnyRef](() => idmgr.freshRemoteRefId())
+
+  /** Get the Id for an opaque object.
+    */
+  def remoteIdForObject(obj: AnyRef): RemoteRefId = objectMapping.idForObject(obj)
+  /** Get an opaque object for a previously created Id.
+    */
+  def localObjectForRemoteId(objectId: RemoteRefId): Option[AnyRef] = objectMapping.objectForId(objectId)
+
 }
 
 /** A utility class to store a bidirectional mapping between object and Id.
   *
   * It provides thread-safe get-or-update operations.
+  *
+  * @author amp
   */
 class ObjectRemoteRefIdMapping[T >: Null](freshRemoteRefId: () => RemoteRef#RemoteRefId) {
   // These two maps are inverses of each other
@@ -106,22 +133,4 @@ class ObjectRemoteRefIdMapping[T >: Null](freshRemoteRefId: () => RemoteRef#Remo
   }
 
   def objectForId(objectId: RemoteRef#RemoteRefId): Option[T] = Option(remoteIdToObject.get(objectId))
-}
-
-/** The manager for remote object references that is mixed into the DOrcExecution.
-  */
-trait RemoteObjectManager {
-  idmgr: RemoteRefIdManager =>
-
-  type RemoteRefId = RemoteRef#RemoteRefId
-
-  protected val objectMapping = new ObjectRemoteRefIdMapping[AnyRef](() => idmgr.freshRemoteRefId())
-
-  /** Get the Id for an opaque object.
-    */
-  def remoteIdForObject(obj: AnyRef): RemoteRefId = objectMapping.idForObject(obj)
-  /** Get an opaque object for a previously created Id.
-    */
-  def localObjectForRemoteId(objectId: RemoteRefId): Option[AnyRef] = objectMapping.objectForId(objectId)
-
 }

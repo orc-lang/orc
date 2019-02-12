@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Oct 9, 2018.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -38,10 +38,10 @@ object ValueSetAnalysis extends NamedASTTransform {
   override def apply(e: Expression): Expression = {
     val annotatedExpressionDirty = super.apply(e)
     val annotatedExpression = PostProcess(annotatedExpressionDirty)
-    val annotatedExpressionWithDefs = e ->> subAstValueSetDefNames.toList.foldRight(annotatedExpression)({(arityAndName, e) =>
+    val annotatedExpressionWithDefs = e ->> subAstValueSetDefNames.toList.foldRight(annotatedExpression)({ (arityAndName, e) =>
       DeclareCallables(List(Def(arityAndName._2, List.fill(arityAndName._1)(new BoundVar(Some(hasOptionalVariableName.unusedVariable))), Constant(Signal), Nil, Some(List.fill(arityAndName._1)(Top())), Some(ImportedType("orc.types.SignalType")))), e)
     })
-    println(annotatedExpressionWithDefs)
+    // println(annotatedExpressionWithDefs)
     annotatedExpressionWithDefs
   }
 
@@ -165,30 +165,29 @@ object ValueSetAnalysis extends NamedASTTransform {
     })
   }
 
-
-//  override def transform(a: Argument, context: List[BoundVar]): Argument = {
-//    val ta = super.transform(a, context)
-//    println(s"Argument $a -> $ta")
-//    ta
-//  }
-//
-//  override def transform(e: Expression, context: List[BoundVar], typecontext: List[BoundTypevar]): Expression = {
-//    val te = super.transform(e, context, typecontext)
-//    println(s"Expression $e -> $te")
-//    te
-//  }
-//
-//  override def transform(t: Type, typecontext: List[BoundTypevar]): Type = {
-//    val tt = super.transform(t, typecontext)
-//    println(s"Type $t -> $tt")
-//    tt
-//  }
-//
-//  override def transform(d: Callable, context: List[BoundVar], typecontext: List[BoundTypevar]): Callable = {
-//    val td = super.transform(d, context, typecontext)
-//    println(s"Callable $d -> $td")
-//    td
-//  }
+  //override def transform(a: Argument, context: List[BoundVar]): Argument = {
+  //  val ta = super.transform(a, context)
+  //  println(s"Argument $a -> $ta")
+  //  ta
+  //}
+  //
+  //override def transform(e: Expression, context: List[BoundVar], typecontext: List[BoundTypevar]): Expression = {
+  //  val te = super.transform(e, context, typecontext)
+  //  println(s"Expression $e -> $te")
+  //  te
+  //}
+  //
+  //override def transform(t: Type, typecontext: List[BoundTypevar]): Type = {
+  //  val tt = super.transform(t, typecontext)
+  //  println(s"Type $t -> $tt")
+  //  tt
+  //}
+  //
+  //override def transform(d: Callable, context: List[BoundVar], typecontext: List[BoundTypevar]): Callable = {
+  //  val td = super.transform(d, context, typecontext)
+  //  println(s"Callable $d -> $td")
+  //  td
+  //}
 
   object PostProcess extends NamedASTTransform {
     override def onExpression(context: List[BoundVar], typecontext: List[BoundTypevar]): PartialFunction[Expression, Expression] = {
@@ -202,8 +201,8 @@ object ValueSetAnalysis extends NamedASTTransform {
       case Sequence(c: Constant, x, Sequence(Call(target: BoundVar, vs, None), _: BoundVar, innerExpr)) if isSubAstValueSetTarget(target) && x == innerExpr =>
         c
       /* Sub-ASTs that are just " x >y> ...", where x & y are Variables */
-      case Sequence(annotation1 @ Call(target1: BoundVar, vs1, None), dummy1: BoundVar, Sequence(x: BoundVar, y: BoundVar, Sequence(Call(target2: BoundVar, vs2, None),_: BoundVar, innerExpr))) if isSubAstValueSetTarget(target1) && isSubAstValueSetTarget(target2) =>
-        Sequence(annotation1,  dummy1, Sequence(x: BoundVar, y: BoundVar, innerExpr))
+      case Sequence(annotation1 @ Call(target1: BoundVar, vs1, None), dummy1: BoundVar, Sequence(x: BoundVar, y: BoundVar, Sequence(Call(target2: BoundVar, vs2, None), _: BoundVar, innerExpr))) if isSubAstValueSetTarget(target1) && isSubAstValueSetTarget(target2) =>
+        Sequence(annotation1, dummy1, Sequence(x: BoundVar, y: BoundVar, innerExpr))
     }
   }
 }

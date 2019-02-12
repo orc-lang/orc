@@ -1,8 +1,8 @@
 //
-// package.scala -- Scala package object for package orc.run.distrib.token
+// CloseableConnection.scala -- Scala trait CloseableConnection
 // Project OrcScala
 //
-// Created by jthywiss on Jan 19, 2016.
+// Created by jthywiss on Feb 10, 2019.
 //
 // Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
@@ -11,8 +11,9 @@
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib
+package orc.run.distrib.common
 
-package object token {
-  type PeerLocation = RuntimeRef[OrcPeerCmd]
+trait ClosableConnection {
+  def close(): Unit
+  def abort(): Unit
 }

@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Feb 21, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,6 +12,8 @@
 //
 
 package orc.run.distrib.porce
+
+import orc.run.distrib.common.RemoteRef
 
 /** Tracer utility for orc.run.distrib.porce package.
   *
@@ -66,79 +68,79 @@ object Tracer {
   final val traceEventNotifications = false
 
   @inline
-  def traceCallSend(tokenId: Long, origin: Location[_], destination: Location[_]): Unit = {
+  def traceCallSend(tokenId: Long, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(CallSend, tokenId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(CallSend, tokenId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def traceCallReceive(tokenId: Long, origin: Location[_], destination: Location[_]): Unit = {
+  def traceCallReceive(tokenId: Long, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(CallReceive, tokenId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(CallReceive, tokenId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def tracePublishSend(groupProxyId: RemoteRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def tracePublishSend(groupProxyId: RemoteRef#RemoteRefId, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(PublishSend, groupProxyId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(PublishSend, groupProxyId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def tracePublishReceive(groupMemberProxyId: RemoteRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def tracePublishReceive(groupMemberProxyId: RemoteRef#RemoteRefId, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceTokenMigration) {
-      orc.util.Tracer.trace(PublishReceive, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(PublishReceive, groupMemberProxyId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def traceKillGroupSend(groupProxyId: RemoteRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def traceKillGroupSend(groupProxyId: RemoteRef#RemoteRefId, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceGroupMessaging) {
-      orc.util.Tracer.trace(KillGroupSend, groupProxyId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(KillGroupSend, groupProxyId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def traceHaltGroupMemberSend(groupMemberProxyId: RemoteRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def traceHaltGroupMemberSend(groupMemberProxyId: RemoteRef#RemoteRefId, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceGroupMessaging) {
-      orc.util.Tracer.trace(HaltGroupMemberSend, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(HaltGroupMemberSend, groupMemberProxyId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def traceDiscorporateGroupMemberSend(groupMemberProxyId: RemoteRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def traceDiscorporateGroupMemberSend(groupMemberProxyId: RemoteRef#RemoteRefId, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceGroupMessaging) {
-      orc.util.Tracer.trace(DiscorporateGroupMemberSend, groupMemberProxyId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(DiscorporateGroupMemberSend, groupMemberProxyId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def traceFutureReadSend(futureId: RemoteFutureRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def traceFutureReadSend(futureId: RemoteFutureRef#RemoteRefId, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceFutureRemoteReads) {
-      orc.util.Tracer.trace(ReadFutureSend, futureId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(ReadFutureSend, futureId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def traceFutureResultSend(futureId: RemoteFutureRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def traceFutureResultSend(futureId: RemoteFutureRef#RemoteRefId, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceFutureRemoteReads) {
-      orc.util.Tracer.trace(DeliverFutureResultSend, futureId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(DeliverFutureResultSend, futureId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def traceFutureResolveSend(futureId: RemoteFutureRef#RemoteRefId, origin: Location[_], destination: Location[_]): Unit = {
+  def traceFutureResolveSend(futureId: RemoteFutureRef#RemoteRefId, origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceFutureRemoteReads) {
-      orc.util.Tracer.trace(ResolveFutureSend, futureId, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(ResolveFutureSend, futureId, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 
   @inline
-  def traceOrcEventSend(origin: Location[_], destination: Location[_]): Unit = {
+  def traceOrcEventSend(origin: RuntimeRef[_], destination: RuntimeRef[_]): Unit = {
     if (traceEventNotifications) {
-      orc.util.Tracer.trace(OrcEventSend, 0L, origin.runtimeId, destination.runtimeId)
+      orc.util.Tracer.trace(OrcEventSend, 0L, origin.runtimeId.longValue, destination.runtimeId.longValue)
     }
   }
 

@@ -1,21 +1,25 @@
 //
-// ValueMarshaler.scala -- Scala traits ValueMarshaler, DOrcMarshalingNotifications, and DOrcMarshalingReplacement
-// Project PorcE
+// ValueMarshaler.scala -- Scala traits ValueMarshaler and MashalingAndRemoteRefSupport
+// Project OrcScala
 //
 // Created by jthywiss on Mar 3, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib.porce
+package orc.run.distrib.common
 
 import scala.collection.mutable.WeakHashMap
 
-import orc.run.distrib.{ DOrcMarshalingNotifications, DOrcMarshalingReplacement }
+import orc.run.distrib.{ DOrcMarshalingNotifications, DOrcMarshalingReplacement, Logger }
+
+trait MashalingAndRemoteRefSupport[Location] extends RemoteObjectManager[Location] with RemoteRefIdManager[Location] with ExecutionMarshaling[Location] with FollowerNumLocationMapping[Location] {
+  def permittedLocations(v: Any): Set[Location]
+}
 
 /** A DOrcExecution mix-in to marshal and unmarshal Orc program values.
   *
@@ -29,23 +33,24 @@ import orc.run.distrib.{ DOrcMarshalingNotifications, DOrcMarshalingReplacement 
   *
   * @author jthywiss
   */
-trait ValueMarshaler {
-  execution: DOrcExecution =>
+trait ValueMarshaler[Execution <: MashalingAndRemoteRefSupport[Location], Location] {
+  execution: Execution =>
 
-  def marshalValueWouldReplace(destination: PeerLocation)(value: Any): Boolean = {
+  def marshalValueWouldReplace(destination: Location)(value: Any): Boolean = {
     value match {
       /* keep in sync with cases in marshalValue */
       //FIXME: Handle circular references in DOrcMarshalingReplacement calls
       case dmr: DOrcMarshalingReplacement if dmr.isReplacementNeededForMarshaling(marshalValueWouldReplace(destination)(_)) => true
       case st: scala.collection.Traversable[Any] if st.exists(marshalValueWouldReplace(destination)(_)) => true //FIXME:Scala-specific, generalize
       case null => false
+      case xo: AnyRef if execution.marshalExecutionObject.isDefinedAt((destination, xo)) => /* ExecutionMashaler handles, instead of ValueMarshaler */ false
       case ro: RemoteObjectRef => true
       case v: java.io.Serializable if execution.permittedLocations(v).contains(destination) && canReallySerialize(destination)(v) => false
       case _ /* Cannot be marshaled to this destination */ => true
     }
   }
 
-  def marshalValue(destination: PeerLocation)(value: AnyRef): AnyRef = {
+  def marshalValue(destination: Location)(value: AnyRef): AnyRef = {
     //Logger.Marshal.finest(s"marshalValue: $value: ${orc.util.GetScalaTypeName(value)}.isInstanceOf[java.io.Serializable]=${value.isInstanceOf[java.io.Serializable]}")
 
     val replacedValue = value match {
@@ -74,13 +79,15 @@ trait ValueMarshaler {
       case _ => { /* Nothing to do */ }
     }
     Logger.Marshal.finest(s"marshalValue($destination)($value): ${orc.util.GetScalaTypeName(value)} = $marshaledValue")
+    //Logger.Marshal.finest(s"executionMashalerWillHandle = $executionMashalerWillHandle; (marshaledValue != value) = ${(marshaledValue != value)}; marshalValueWouldReplace(destination)(value) = ${marshalValueWouldReplace(destination)(value)}")
+
     assert(executionMashalerWillHandle || (marshaledValue != value) == marshalValueWouldReplace(destination)(value), s"marshaledValue disagrees with marshalValueWouldReplace for value=$value, marshaledValue=$marshaledValue")
     marshaledValue
   }
 
   private val knownGoodSerializables = new WeakHashMap[java.io.Serializable, Unit]()
   private val knownBadSerializables = new WeakHashMap[java.io.Serializable, Unit]()
-  private val nullOos = new RuntimeConnectionOutputStream(new java.io.OutputStream { def write(b: Int): Unit = {} })
+  private val nullOos = new RuntimeConnectionOutputStream[Execution, Location, Execution#ExecutionId](new java.io.OutputStream { def write(b: Int): Unit = {} })
   /** Many, many objects violate the java.io.Serializable interface by
     * implementing Serializable, but then holding references to
     * non-Serializable values without using any of the compensating
@@ -89,7 +96,7 @@ trait ValueMarshaler {
     * So we have to detect these broken objects before they cause I/O
     * exceptions during serialization.
     */
-  private def canReallySerialize(destination: PeerLocation)(v: java.io.Serializable): Boolean = {
+  private def canReallySerialize(destination: Location)(v: java.io.Serializable): Boolean = {
     if (isAlwaysSerializable(v))
       true
     else if (synchronized { knownGoodSerializables.contains(v) })
@@ -98,14 +105,6 @@ trait ValueMarshaler {
       false
     else {
       //FIXME: Terribly slow.  Leaks objects (refs in nullOos).  Just BadBadBad.
-      //   amp: I would not spend much time on this. I suspect we will want to
-      //        move away from Serializable anyway since it is so slow and
-      //        unreliable. And classes will need to be white listed anyway
-      //        because of the mutibility. We might be able to statically detect
-      //        a FEW objects as immutable (by checking for writes to private
-      //        fields and final-ness of all non-private fields and such like.
-      //        However, a large proportion of java code uses objects which are
-      //        only dynamically immutable without any static guarantees.
       /* Ideally, we'd do this via reflection, but the serialization logic is
        * intricate and complex enough that it's unlikely we'd re-implement it
        * consistently.
@@ -154,7 +153,7 @@ trait ValueMarshaler {
     }
   }
 
-  def unmarshalValue(origin: PeerLocation)(value: AnyRef): AnyRef = {
+  def unmarshalValue(origin: Location)(value: AnyRef): AnyRef = {
     val unmarshaledValue = value match {
       /* keep in sync with cases in unmarshalValueWouldReplace */
       case rrr: RemoteObjectRefReplacement => rrr.unmarshal(execution)

@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jan 13, 2016.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,6 +14,8 @@
 package orc.run.distrib.porce
 
 import orc.FutureReader
+import orc.run.distrib.Logger
+import orc.run.distrib.common.RemoteRef
 import orc.run.porce.runtime.Future
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
@@ -141,13 +143,13 @@ trait RemoteFutureManager {
   def sendReadFuture(futureId: RemoteFutureId): Unit = {
     val homeLocation = execution.homeLocationForRemoteRef(futureId)
     Tracer.traceFutureReadSend(futureId, execution.runtime.here, homeLocation)
-    homeLocation.sendInContext(execution)(ReadFutureCmd(executionId, futureId, followerExecutionNum))
+    homeLocation.sendInContext(execution)(ReadFutureCmd(executionId, futureId, execution.runtime.runtimeId))
   }
 
   /** Record remote request to be sent the resolution of a future we're serving. */
-  def readFuture(futureId: RemoteFutureId, readerFollowerNum: DOrcRuntime#RuntimeId): Unit = {
-    Logger.Futures.fine(f"Posting read on $futureId%#x, with reader at follower number $readerFollowerNum")
-    servingRemoteFutures.get(futureId).addReader(execution.locationForFollowerNum(readerFollowerNum))
+  def readFuture(futureId: RemoteFutureId, readerFollowerRuntimeId: DOrcRuntime.RuntimeId): Unit = {
+    Logger.Futures.fine(f"Posting read on $futureId%#x, with reader at runtime ${readerFollowerRuntimeId.longValue}%x")
+    servingRemoteFutures.get(futureId).addReader(execution.runtime.locationForRuntimeId(readerFollowerRuntimeId))
   }
 
   /** Send the resolution of a future we're serving. */

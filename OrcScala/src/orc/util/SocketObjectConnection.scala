@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Nov 15, 2015.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -22,7 +22,7 @@ import java.net.{ InetAddress, InetSocketAddress, ServerSocket, Socket, SocketEx
   *
   * @author jthywiss
   */
-class SocketObjectConnection[+R, -S](val socket: Socket) {
+class SocketObjectConnection[+ReceivableMessage, -SendableMessage](val socket: Socket) {
 
   SocketObjectConnectionLogger.entering(getClass.getName, "<init>", Seq(socket))
 
@@ -34,9 +34,9 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     * available, block until one becomes available. If the stream is closed and
     * no object is available, throw.
     */
-  def receive(): R = ois synchronized {
+  def receive(): ReceivableMessage = ois synchronized {
     val obj = try {
-      ois.readObject().asInstanceOf[R]
+      ois.readObject().asInstanceOf[ReceivableMessage]
     } catch {
       case e: SocketException if e.getMessage == "Socket closed" => throw new EOFException()
       case e: SocketException if e.getMessage == "Connection reset" => throw new EOFException()
@@ -47,12 +47,15 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
 
   /** Put an object in the stream. If the stream is closed, throw.
     */
-  def send(obj: S) = oos synchronized {
+  def send(obj: SendableMessage) = oos synchronized {
     SocketObjectConnectionLogger.finest(s"SocketObjectConnection.send: Sending $obj on $socket")
-    oos.writeObject(obj)
-    oos.flush()
+    try {
+      oos.writeObject(obj)
+    } finally {
+      oos.flush()
+      /* Need to do a TCP push, but can't from Java */
+    }
     //SocketObjectConnectionLogger.finest(s"SocketObjectConnection.send: Sent")
-    /* Need to do a TCP push, but can't from Java */
   }
 
   /** Close the stream and block until until all data is transmitted. Any
@@ -62,10 +65,19 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     */
   def close() {
     SocketObjectConnectionLogger.finer(s"SocketObjectConnection.close on $socket")
-    oos.flush()
-    oos.close()
-    ois.close()
-    socket.close()
+    try {
+      oos.flush()
+    } finally {
+      try {
+        oos.close()
+      } finally {
+        try {
+          ois.close()
+        } finally {
+          socket.close()
+        }
+      }
+    }
   }
 
   /** Close the stream immediately and return. Discard buffered
@@ -75,8 +87,11 @@ class SocketObjectConnection[+R, -S](val socket: Socket) {
     SocketObjectConnectionLogger.finer(s"SocketObjectConnection.abort on $socket")
     socket synchronized { if (!closed) socket.setSoLinger(false, 0) }
     /* Intentionally not closing oos -- causes a flush */
-    ois.close()
-    socket.close()
+    try {
+      ois.close()
+    } finally {
+      socket.close()
+    }
   }
 
   /** If the stream is currently closed, return true, otherwise return false.
@@ -96,7 +111,7 @@ object SocketObjectConnection {
     socket.setTcpNoDelay(true)
     socket.setKeepAlive(true)
     /* Socket's PerformancePreferences hasn't been
-     * implemented yet, but set is for future use. */
+     * implemented yet, but set it for future use. */
     socket.setPerformancePreferences(1, 2, 0)
     socket.setTrafficClass(0xA0) /* DSCP CS5 */
     socket.setSoLinger(true, closeTimeout)
@@ -111,7 +126,7 @@ object SocketObjectConnection {
   *
   * @author jthywiss
   */
-class ConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) {
+class ConnectionListener[+ReceivableMessage, -SendableMessage](bindSockAddr: InetSocketAddress) {
 
   val serverSocket = new ServerSocket()
   try {
@@ -124,7 +139,7 @@ class ConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) {
     val acceptedSocket = serverSocket.accept()
     SocketObjectConnectionLogger.finer(s"ConnectionListener accepted $acceptedSocket")
     SocketObjectConnection.configSocket(acceptedSocket)
-    new SocketObjectConnection[R, S](acceptedSocket)
+    new SocketObjectConnection[ReceivableMessage, SendableMessage](acceptedSocket)
   }
 
   def close() = serverSocket.close()
@@ -141,7 +156,7 @@ class ConnectionListener[+R, -S](bindSockAddr: InetSocketAddress) {
   */
 object ConnectionInitiator {
 
-  def apply[R, S](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null) = {
+  def apply[ReceivableMessage, SendableMessage](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null) = {
     try {
       val socket = new Socket()
       SocketObjectConnection.configSocket(socket)
@@ -150,15 +165,15 @@ object ConnectionInitiator {
       }
       socket.connect(remoteSockAddr)
       SocketObjectConnectionLogger.finer(s"ConnectionInitiator socket $socket")
-      new SocketObjectConnection[R, S](socket)
+      new SocketObjectConnection[ReceivableMessage, SendableMessage](socket)
     } catch {
       case ioe: IOException => throw new IOException(s"Unable to connect to $remoteSockAddr: ${ioe.getMessage}", ioe)
     }
   }
 
-  def apply[R, S](remoteHostAddr: InetAddress, remotePort: Int): SocketObjectConnection[R, S] = apply[R, S](new InetSocketAddress(remoteHostAddr, remotePort))
+  def apply[ReceivableMessage, SendableMessage](remoteHostAddr: InetAddress, remotePort: Int): SocketObjectConnection[ReceivableMessage, SendableMessage] = apply[ReceivableMessage, SendableMessage](new InetSocketAddress(remoteHostAddr, remotePort))
 
-  def apply[R, S](remoteHostname: String, remotePort: Int): SocketObjectConnection[R, S] = apply[R, S](new InetSocketAddress(remoteHostname, remotePort))
+  def apply[ReceivableMessage, SendableMessage](remoteHostname: String, remotePort: Int): SocketObjectConnection[ReceivableMessage, SendableMessage] = apply[ReceivableMessage, SendableMessage](new InetSocketAddress(remoteHostname, remotePort))
 
 }
 

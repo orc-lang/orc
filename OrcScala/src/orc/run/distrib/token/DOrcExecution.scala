@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 29, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,9 +14,9 @@
 package orc.run.distrib.token
 
 import orc.{ OrcEvent, OrcExecutionOptions }
-import orc.ast.oil.nameless.Expression
 import orc.run.core.{ Execution, Token }
-import orc.run.distrib.DOrcPlacementPolicy
+import orc.run.distrib.Logger
+import orc.run.distrib.common.{ MashalingAndRemoteRefSupport, RemoteObjectManager, RemoteRefIdManager, ValueMarshaler, PlacementController }
 
 /** Top level Group, associated with a program running in a dOrc runtime
   * engine.  dOrc executions have an ID, the program AST and OrcOptions,
@@ -35,18 +35,22 @@ import orc.run.distrib.DOrcPlacementPolicy
   */
 abstract class DOrcExecution(
     val executionId: DOrcExecution#ExecutionId,
-    val followerExecutionNum: Int,
-    programAst: Expression,
+    override val followerExecutionNum: Int,
+    programAst: DOrcRuntime#ProgramAST,
     options: OrcExecutionOptions,
     eventHandler: OrcEvent => Unit,
     override val runtime: DOrcRuntime)
   extends Execution(programAst, options, eventHandler, runtime)
-  with ValueLocator
-  with ValueMarshaler
+  /* Implemented interfaces: */
+  with MashalingAndRemoteRefSupport[PeerLocation]
+  /* Mixed-in implementation fragments: */
+  with RemoteObjectManager[PeerLocation]
+  with RemoteRefIdManager[PeerLocation]
+  with PlacementController[PeerLocation]
+  with ValueMarshaler[DOrcExecution, PeerLocation]
+  with ExecutionMashaler
   with GroupProxyManager
-  with RemoteFutureManager
-  with RemoteObjectManager
-  with RemoteRefIdManager {
+  with RemoteFutureManager {
 
   //TODO: Move to superclass
   def runProgram() {
@@ -55,36 +59,18 @@ abstract class DOrcExecution(
     runtime.schedule(t)
   }
 
-  type ExecutionId = String
+  override type ExecutionId = String
 
-  def locationForFollowerNum(followerNum: DOrcRuntime#RuntimeId): PeerLocation = runtime.locationForRuntimeId(followerNum)
+  /* For now, runtime IDs and Execution follower numbers are the same.  When
+   * we host more than one execution in an engine, they will be different. */
+  override def locationForFollowerNum(followerNum: Int): PeerLocation = runtime.locationForRuntimeId(new DOrcRuntime.RuntimeId(followerNum))
 
-  private val hereSet: Set[PeerLocation] = Set(runtime.here)
-  override def currentLocations(v: Any) = {
-    val cl = v match {
-      //TODO: Replace this with location tracking
-      case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime)
-      case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
-      case _ => hereSet
-    }
-    //Logger.finer(s"currentLocations($v: ${v.getClass.getName})=$cl")
-    cl
-  }
-  override def permittedLocations(v: Any): Set[PeerLocation] = {
-    val pl = v match {
-      case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime)
-      case rmt: RemoteRef => Set(homeLocationForRemoteRef(rmt.remoteRefId))
-      case _ => runtime.allLocations
-    }
-    //Logger.finest(s"permittedLocations($v: ${v.getClass.getName})=$pl")
-    pl
-  }
+  def selectLocationForCall(candidateLocations: Set[PeerLocation]): PeerLocation = candidateLocations.head
 
 }
 
 object DOrcExecution {
-  def freshExecutionId() = java.util.UUID.randomUUID().toString
-  val noGroupProxyId: DOrcExecution#GroupProxyId = 0L
+  def freshExecutionId(): String = java.util.UUID.randomUUID().toString
 }
 
 /** DOrcExecution in the dOrc LeaderRuntime.  This is the "true" root group.
@@ -92,16 +78,34 @@ object DOrcExecution {
   * @author jthywiss
   */
 class DOrcLeaderExecution(
-  executionId: DOrcExecution#ExecutionId,
-  programAst: Expression,
-  options: OrcExecutionOptions,
-  eventHandler: OrcEvent => Unit,
-  runtime: LeaderRuntime)
+    executionId: DOrcExecution#ExecutionId,
+    programAst: DOrcRuntime#ProgramAST,
+    options: OrcExecutionOptions,
+    eventHandler: OrcEvent => Unit,
+    runtime: LeaderRuntime)
   extends DOrcExecution(executionId, 0, programAst, options, eventHandler, runtime) {
 
-  override def notifyOrc(event: OrcEvent) {
+  protected val startingFollowers = java.util.concurrent.ConcurrentHashMap.newKeySet[DOrcRuntime.RuntimeId]()
+  protected val readyFollowers = java.util.concurrent.ConcurrentHashMap.newKeySet[DOrcRuntime.RuntimeId]()
+  protected val followerStartWait = new Object()
+
+  def followerStarting(followerNum: DOrcRuntime.RuntimeId): Unit = {
+    startingFollowers.add(followerNum)
+  }
+
+  def followerReady(followerNum: DOrcRuntime.RuntimeId): Unit = {
+    readyFollowers.add(followerNum)
+    startingFollowers.remove(followerNum)
+    followerStartWait synchronized followerStartWait.notifyAll()
+  }
+
+  def awaitAllFollowersReady(): Unit = {
+    while (!startingFollowers.isEmpty()) followerStartWait synchronized followerStartWait.wait()
+  }
+
+  override def notifyOrc(event: OrcEvent): Unit = {
     super.notifyOrc(event)
-    Logger.info(event.toString)
+    Logger.Downcall.fine(event.toString)
   }
 
 }
@@ -112,12 +116,12 @@ class DOrcLeaderExecution(
   * @author jthywiss
   */
 class DOrcFollowerExecution(
-  executionId: DOrcExecution#ExecutionId,
-  followerExecutionNum: Int,
-  programAst: Expression,
-  options: OrcExecutionOptions,
-  eventHandler: OrcEvent => Unit,
-  runtime: FollowerRuntime)
+    executionId: DOrcExecution#ExecutionId,
+    followerExecutionNum: Int,
+    programAst: DOrcRuntime#ProgramAST,
+    options: OrcExecutionOptions,
+    eventHandler: OrcEvent => Unit,
+    runtime: FollowerRuntime)
   extends DOrcExecution(executionId, followerExecutionNum, programAst, options, eventHandler, runtime) {
 
   override def onHalt() { /* Group halts are not significant here, disregard */ }

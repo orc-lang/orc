@@ -1,10 +1,10 @@
 //
-// CounterProxy.scala -- Scala trait CounterProxyManager, and classes RemoteCounterProxy and RemoteCounterMembersProxy
+// CounterProxy.scala -- Scala trait CounterProxyManager
 // Project PorcE
 //
 // Created by jthywiss on Aug 15, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -18,6 +18,8 @@ import java.lang.ref.{ ReferenceQueue, WeakReference }
 import scala.annotation.tailrec
 
 import orc.Schedulable
+import orc.run.distrib.Logger
+import orc.run.distrib.common.RemoteRef
 import orc.run.porce.runtime.{ Counter, PorcEClosure }
 import orc.util.SparseBinaryFraction
 
@@ -119,7 +121,7 @@ trait CounterProxyManager {
       *
       * Token: Returns a token on this counter to the caller.
       */
-    final def activate(credits: Int): Unit = synchronized {
+    override final def activate(credits: Int): Unit = synchronized {
       Logger.Proxy.entering(getClass.getName, s"activate $credits")
       incrementAndGet()
       if (this.credits < 0) {
@@ -151,7 +153,7 @@ trait CounterProxyManager {
       *
       * Return the credit for the remove node to use.
       */
-    def convertToken(): Int = synchronized {
+    override def convertToken(): Int = synchronized {
       // TODO: PERFORMANCE: This could be specialized for the final decrement case to pass the whole value to avoid the need for a message back to the root.
       credits += 1
       val r = credits
@@ -160,7 +162,7 @@ trait CounterProxyManager {
     }
 
     /** Return the local counter associated with this. */
-    def counter: Counter = this
+    override def counter: Counter = this
 
     private[CounterProxyManager] def returnCredits(credits: Int): Unit = {
       if (isDiscorporated) {
@@ -232,7 +234,7 @@ trait CounterProxyManager {
       *
       * Return the credit for the remove node to use.
       */
-    def convertToken(): Int = synchronized {
+    override def convertToken(): Int = synchronized {
       Logger.Proxy.entering(getClass.getName, "takeToken")
       remoteTokens += 1
       val (b, n) = credits.split()
@@ -248,7 +250,7 @@ trait CounterProxyManager {
       *
       *  Token: Provides a local token to the caller.
       */
-    def activate(credits: Int): Unit = synchronized {
+    override def activate(credits: Int): Unit = synchronized {
       Logger.Proxy.entering(getClass.getName, s"halt $credits")
       enclosingCounter.newToken()
       addCreditAndCheck(credits) {
@@ -352,9 +354,9 @@ trait CounterProxyManager {
       Logger.Proxy.fine(s"Created local proxy for id $id")
       assert(id.controller != runtime.runtimeId)
       new DistributedCounterFragment(id) {
-        private[CounterProxyManager] def returnCreditsHalt(n: Int): Unit = sendHalt(id)(n)
-        private[CounterProxyManager] def returnCreditsDiscorporate(n: Int): Unit = sendDiscorporate(id)(n)
-        private[CounterProxyManager] def requestCredits(): Unit = sendResurrect(id)()
+        override private[CounterProxyManager] def returnCreditsHalt(n: Int): Unit = sendHalt(id)(n)
+        override private[CounterProxyManager] def returnCreditsDiscorporate(n: Int): Unit = sendDiscorporate(id)(n)
+        override private[CounterProxyManager] def requestCredits(): Unit = sendResurrect(id)()
       }
     })
   }
@@ -438,7 +440,7 @@ trait CounterProxyManager {
       case g: DistributedCounterFragment => {
         Logger.Downcall.fine(s"Scheduling $g.provideCredit($n)")
         execution.runtime.schedule(new Schedulable {
-          def run(): Unit = {
+          override def run(): Unit = {
             // Credit: Give credit to local counter representation.
             g.provideCredit(n)
           }
@@ -453,7 +455,7 @@ trait CounterProxyManager {
 
 object CounterProxyManager {
   type CounterId = RemoteRef#RemoteRefId
-  case class DistributedCounterId(id: CounterId, controller: DOrcRuntime#RuntimeId) extends Serializable {
-    override def toString() = f"DistributedCounterId($id%#x @ $controller%#x)"
+  case class DistributedCounterId(id: CounterId, controller: DOrcRuntime.RuntimeId) extends Serializable {
+    override def toString() = f"DistributedCounterId($id%#x @ ${controller.longValue}%#x)"
   }
 }

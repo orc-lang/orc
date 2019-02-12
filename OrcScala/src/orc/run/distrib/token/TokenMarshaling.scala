@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 26, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -56,7 +56,6 @@ abstract class TokenReplacementBase(token: Token, val tokenProxyId: DOrcExecutio
   val debugId: Long = token.debugId
 }
 
-
 @SerialVersionUID(-655352528693128511L)
 class TokenReplacement(token: Token, tokenProxyId: DOrcExecution#GroupProxyId, destination: PeerLocation) extends TokenReplacementBase(token, tokenProxyId, destination) {
 
@@ -65,11 +64,10 @@ class TokenReplacement(token: Token, tokenProxyId: DOrcExecution#GroupProxyId, d
     val _node = AstNodeIndexing.lookupNodeInTree(newGroup.execution.node, astNodeIndex).asInstanceOf[Expression]
     val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.unmarshalFrame(dorcExecution, origin, stackTop) }
 
-    new MigratedToken(_node, _stack, env.toList map { _.unmarshalBinding(dorcExecution, origin) }, newGroup, None /* clock */, TokenState.Live, debugId)
+    new MigratedToken(_node, _stack, env.toList map { _.unmarshalBinding(dorcExecution, origin) }, newGroup, None /* clock */ , TokenState.Live, debugId)
   }
 
 }
-
 
 @SerialVersionUID(7131096891671375273L)
 class PublishingTokenReplacement(token: Token, tokenProxyId: DOrcExecution#GroupProxyId, destination: PeerLocation, publishingValue: Option[AnyRef]) extends TokenReplacementBase(token, tokenProxyId, destination) {
@@ -82,14 +80,13 @@ class PublishingTokenReplacement(token: Token, tokenProxyId: DOrcExecution#Group
     val dorcExecution = newGroup.execution.asInstanceOf[DOrcExecution]
     val _node = AstNodeIndexing.lookupNodeInTree(newGroup.execution.node, astNodeIndex).asInstanceOf[Expression]
     val _stack = stack.foldLeft[Frame](EmptyFrame) { (stackTop, addFrame) => addFrame.unmarshalFrame(dorcExecution, origin, stackTop) }
-    val _v = pubValue.map(dorcExecution.unmarshalValue(_))
+    val _v = pubValue.map(dorcExecution.unmarshalValue(origin)(_))
 
     //FIXME: Hack: push a GroupFrame to compensate for the one consumed incorrectly by publishing through the GroupProxy
     new MigratedToken(_node, GroupFrame(_stack), env.toList map { _.unmarshalBinding(dorcExecution, origin) }, newGroup, None /*clock*/ , TokenState.Publishing(_v), debugId)
   }
 
 }
-
 
 /** A Token that was moved to this runtime engine from another.
   * Class exists just to provide a constructor for this situation.
@@ -98,16 +95,15 @@ class PublishingTokenReplacement(token: Token, tokenProxyId: DOrcExecution#Group
   * @author jthywiss
   */
 class MigratedToken(
-  _node: Expression,
-  _stack: Frame,
-  _env: List[Binding],
-  _group: Group,
-  _clock: Option[VirtualClock],
-  _state: TokenState,
-  _debugId: Long)
+    _node: Expression,
+    _stack: Frame,
+    _env: List[Binding],
+    _group: Group,
+    _clock: Option[VirtualClock],
+    _state: TokenState,
+    _debugId: Long)
   extends Token(_node, _stack, _env, _group, _clock, _state, _debugId) {
 }
-
 
 object TokenFieldMarshaling {
 
@@ -174,7 +170,6 @@ object TokenFieldMarshaling {
 
 }
 
-
 /** Utility functions for node addresses in trees.
   *
   * @author jthywiss
@@ -201,7 +196,6 @@ object AstNodeIndexing {
   }
 }
 
-
 /** Replacement for a Binding for use in serialization.
   *
   * @author jthywiss
@@ -212,7 +206,7 @@ protected abstract sealed class BindingReplacement() {
 
 protected final case class BoundValueReplacement(boundValue: AnyRef) extends BindingReplacement() {
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation) = {
-    BoundValue(execution.unmarshalValue(boundValue))
+    BoundValue(execution.unmarshalValue(origin)(boundValue))
   }
 }
 
@@ -235,7 +229,6 @@ protected final case object BoundStopReplacement extends BindingReplacement() {
   }
 }
 
-
 /** Replacement for a ClosureGroup for use in serialization.
   *
   * @author jthywiss
@@ -250,7 +243,6 @@ protected final case class ClosureGroupReplacement(defNodesIndicies: List[Seq[In
     cg
   }
 }
-
 
 /** Replacement for a Frame for use in serialization.
   *

@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 21, 2015.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -16,6 +16,7 @@ package orc.run.distrib.porce
 import java.net.InetSocketAddress
 
 import orc.{ OrcEvent, OrcExecutionOptions }
+import orc.run.distrib.common.{ ExecutionContextSerializationMarker, RemoteRef }
 
 /** Command sent to dOrc runtime engines.
   *
@@ -40,12 +41,12 @@ abstract sealed class OrcPeerCmdInExecutionContext(executionId: DOrcExecution#Ex
 ////////
 
 /** A new peer has joined this cluster */
-case class AddPeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId, peerListenAddress: InetSocketAddress) extends OrcLeaderToFollowerCmd {
+case class AddPeerCmd(peerRuntimeId: DOrcRuntime.RuntimeId, peerListenAddress: InetSocketAddress) extends OrcLeaderToFollowerCmd {
   override def toString(): String = s"${getClass.getSimpleName}($peerRuntimeId, $peerListenAddress)"
 }
 
 /** A peer has left this cluster */
-case class RemovePeerCmd(peerRuntimeId: DOrcRuntime#RuntimeId) extends OrcLeaderToFollowerCmd {
+case class RemovePeerCmd(peerRuntimeId: DOrcRuntime.RuntimeId) extends OrcLeaderToFollowerCmd {
   override def toString(): String = s"${getClass.getSimpleName}($peerRuntimeId)"
 }
 
@@ -82,7 +83,7 @@ case class NotifyLeaderCmd(executionId: DOrcExecution#ExecutionId, event: OrcEve
 ////////
 
 /** Header -- always the first message on a new connection */
-case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime#RuntimeId, receivingRuntimeId: DOrcRuntime#RuntimeId, senderListenSocketAddress: InetSocketAddress) extends OrcPeerCmd {
+case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime.RuntimeId, receivingRuntimeId: DOrcRuntime.RuntimeId, senderListenSocketAddress: InetSocketAddress) extends OrcPeerCmd {
   override def toString(): String = s"${getClass.getSimpleName}($sendingRuntimeId, $receivingRuntimeId, $senderListenSocketAddress)"
 }
 
@@ -140,8 +141,8 @@ case class ProvideCounterCreditCmd(executionId: DOrcExecution#ExecutionId, count
 }
 
 /** Post a read request on this future */
-case class ReadFutureCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureManager#RemoteFutureId, readerFollowerNum: Int) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $futureId%#x, $readerFollowerNum)"
+case class ReadFutureCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureManager#RemoteFutureId, readerFollowerRuntimeId: DOrcRuntime.RuntimeId) extends OrcPeerCmdInExecutionContext(executionId) {
+  override def toString(): String = f"${getClass.getSimpleName}($executionId, $futureId%#x, $readerFollowerRuntimeId)"
 }
 
 /** The given future has resolved to a value */

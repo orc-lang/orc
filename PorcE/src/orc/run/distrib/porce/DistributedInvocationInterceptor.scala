@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Aug 15, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -20,11 +20,13 @@ import scala.util.control.NonFatal
 import orc.Future
 import orc.FutureState.Bound
 import orc.Schedulable
+import orc.run.distrib.{ Logger, NoLocationAvailable }
+import orc.run.distrib.common.RemoteRef
 import orc.run.porce.runtime.{ CallClosureSchedulable, InvocationInterceptor, MaterializedCPSCallContext, PorcEClosure }
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 
-/** Intercept external calls from a DOrcExecution, and possibly migrate them to another Location.
+/** Intercept external calls from a DOrcExecution, and possibly migrate them to another Runtime.
   *
   * @author jthywiss
   * @author amp
@@ -105,7 +107,7 @@ trait DistributedInvocationInterceptor extends InvocationInterceptor {
           intersectPermittedLocs
         } else {
           /* Case 4: No permitted location, fail */
-          val nla = new NoLocationAvailable((target +: arguments.toSeq).map(v => (v, execution.currentLocations(v).map(_.runtimeId))))
+          val nla = new NoLocationAvailable((target +: arguments.toSeq).map(v => (v, execution.currentLocations(v).map(_.runtimeId.longValue))))
           Logger.Invoke.throwing(getClass.getName, "invokeIntercepted", nla)
           throw nla
         }

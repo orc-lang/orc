@@ -1,10 +1,10 @@
 //
-// DOrcExecution.scala -- Scala classes DOrcExecution, DOrcLeaderExecution, and DOrcFollowerExecution
+// DOrcExecution.scala -- Scala classes DOrcExecution, DOrcLeaderExecution, DOrcFollowerExecution, CallMemento, PublishMemento, and KillingMemento
 // Project PorcE
 //
 // Created by jthywiss on Dec 29, 2015.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,14 +13,10 @@
 
 package orc.run.distrib.porce
 
-import java.util.ServiceLoader
-
-import scala.collection.JavaConverters.iterableAsScalaIterableConverter
-
 import orc.{ OrcEvent, OrcExecutionOptions, PublishedEvent }
 import orc.compile.parse.OrcSourceRange
-import orc.compiler.porce.PorcToPorcE
-import orc.run.distrib.DOrcPlacementPolicy
+import orc.run.distrib.Logger
+import orc.run.distrib.common.{ MashalingAndRemoteRefSupport, PlacementController, RemoteObjectManager, RemoteRefIdManager, ValueMarshaler }
 import orc.run.porce.{ HasId, PorcEUnit }
 import orc.run.porce.runtime.{ MaterializedCPSCallContext, PorcEClosure, PorcEExecution, PorcEExecutionWithLaunch }
 
@@ -45,96 +41,35 @@ import com.oracle.truffle.api.nodes.RootNode
   */
 abstract class DOrcExecution(
     val executionId: DOrcExecution#ExecutionId,
-    val followerExecutionNum: Int,
+    override val followerExecutionNum: Int,
     programAst: DOrcRuntime#ProgramAST,
     options: OrcExecutionOptions,
     eventHandler: OrcEvent => Unit,
     override val runtime: DOrcRuntime)
-  extends PorcEExecution( /* node, options,*/ runtime, eventHandler, options)
+  extends PorcEExecution( /* programAst, */ runtime, eventHandler, options)
+  /* Implemented interfaces: */
+  with MashalingAndRemoteRefSupport[PeerLocation]
+  /* Mixed-in implementation fragments: */
+  with RemoteObjectManager[PeerLocation]
+  with RemoteRefIdManager[PeerLocation]
+  with PlacementController[PeerLocation]
+  with ValueMarshaler[DOrcExecution, PeerLocation]
   with DistributedInvocationInterceptor
-  with ValueMarshaler
   with ExecutionMashaler
   with CounterProxyManager
   with TerminatorProxyManager
-  with RemoteFutureManager
-  with RemoteObjectManager
-  with RemoteRefIdManager {
+  with RemoteFutureManager {
 
   Logger.ProgLoad.fine("PorcToPorcE compile start")
   val startTime = System.nanoTime
   val (programPorceAst, programCallTargetMap) = porcToPorcE.method(programAst)
   Logger.ProgLoad.fine(s"PorcToPorcE compile finish (compile duration ${(System.nanoTime - startTime) / 1.0e9} s)")
 
-  type ExecutionId = String
+  override type ExecutionId = String
 
-  def locationForFollowerNum(followerNum: DOrcRuntime#RuntimeId): PeerLocation = runtime.locationForRuntimeId(followerNum)
-
-  private val hereSet: Set[PeerLocation] = Set(runtime.here)
-
-  protected val valueLocatorFactoryServiceLoader: ServiceLoader[ValueLocatorFactory] = ServiceLoader.load(classOf[ValueLocatorFactory])
-
-  protected val valueLocators: Set[ValueLocator] = valueLocatorFactoryServiceLoader.asScala.map(_(this)).toSet
-
-  protected val callLocationOverriders: Set[CallLocationOverrider] = valueLocators.filter(_.isInstanceOf[CallLocationOverrider]).asInstanceOf[Set[CallLocationOverrider]]
-
-  def currentLocations(v: Any): Set[PeerLocation] = {
-    def pfc(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
-      { case vl if vl.currentLocations.isDefinedAt(v) => vl.currentLocations(v) }
-    val cl = v match {
-      case ro: RemoteObjectRef => Set(homeLocationForRemoteRef(ro.remoteRefId))
-      case rf: RemoteFutureRef => Set(homeLocationForRemoteRef(rf.remoteRefId), runtime.here)
-      case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.collect(pfc(v)).reduce(_.union(_))
-      case _ => hereSet
-    }
-    //Logger.ValueLocation.finer(s"currentLocations($v: ${orc.util.GetScalaTypeName(v)})=$cl")
-    cl
-  }
-
-  def isLocal(v: Any): Boolean = {
-    val result = v match {
-      case ro: RemoteObjectRef => false
-      case rf: RemoteFutureRef => true
-      case _ if valueLocators.exists(_.currentLocations.isDefinedAt(v)) => valueLocators.exists({ vl => vl.currentLocations.isDefinedAt(v) && vl.valueIsLocal(v) })
-      case _ => true
-    }
-    //Logger.ValueLocation.finer(s"isLocal($v: ${orc.util.GetScalaTypeName(v)})=$result")
-    result
-  }
-
-  def permittedLocations(v: Any): Set[PeerLocation] = {
-    def pfp(v: Any): PartialFunction[ValueLocator, Set[PeerLocation]] =
-      { case vl if vl.permittedLocations.isDefinedAt(v) => vl.permittedLocations(v) }
-    val pl = v match {
-      case plp: DOrcPlacementPolicy => plp.permittedLocations(runtime)
-      case ro: RemoteObjectRef => Set(homeLocationForRemoteRef(ro.remoteRefId))
-      case rf: RemoteFutureRef => runtime.allLocations
-      case _ if valueLocators.exists(_.permittedLocations.isDefinedAt(v)) => valueLocators.collect(pfp(v)).reduce(_.intersect(_))
-      case _ => runtime.allLocations
-    }
-    //Logger.ValueLocation.finest(s"permittedLocations($v: ${orc.util.GetScalaTypeName(v)})=$pl")
-    pl
-  }
-
-  def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Option[Boolean] = {
-    //val cloResults = callLocationOverriders.map(_.callLocationMayNeedOverride(target, arguments)).filter(_.isDefined).map(_.get)
-    //assert(cloResults.size <= 1, "Multiple CallLocationOverriders responded for " + orc.util.GetScalaTypeName(target) + arguments.map(orc.util.GetScalaTypeName(_)).mkString("(", ",", ")"))
-    //cloResults.headOption
-    for (clo <- callLocationOverriders) {
-      val needsOverride = clo.callLocationMayNeedOverride(target, arguments)
-      /* Short-circuit: First clo to answer wins.  Masks multiple clo bugs, though. */
-      if (needsOverride.isDefined) return needsOverride
-    }
-    None
-  }
-
-  def callLocationOverride(target: AnyRef, arguments: Array[AnyRef]): Set[PeerLocation] = {
-    for (clo <- callLocationOverriders) {
-      val needsOverride = clo.callLocationMayNeedOverride(target, arguments)
-      /* Short-circuit: First clo to answer wins.  Masks multiple clo bugs, though. */
-      if (needsOverride.isDefined) return clo.callLocationOverride(target, arguments)
-    }
-    Set.empty
-  }
+  /* For now, runtime IDs and Execution follower numbers are the same.  When
+   * we host more than one execution in an engine, they will be different. */
+  override def locationForFollowerNum(followerNum: Int): PeerLocation = runtime.locationForRuntimeId(new DOrcRuntime.RuntimeId(followerNum))
 
   def selectLocationForCall(candidateLocations: Set[PeerLocation]): PeerLocation = candidateLocations.head
 
@@ -142,7 +77,6 @@ abstract class DOrcExecution(
 
 object DOrcExecution {
   def freshExecutionId(): String = java.util.UUID.randomUUID().toString
-  val noGroupProxyId: RemoteRef#RemoteRefId = 0L
 }
 
 /** DOrcExecution in the dOrc LeaderRuntime.  This is the "true" root group.
@@ -157,15 +91,15 @@ class DOrcLeaderExecution(
     runtime: LeaderRuntime)
   extends DOrcExecution(executionId, 0, programAst, options, eventHandler, runtime) with PorcEExecutionWithLaunch {
 
-  protected val startingFollowers = java.util.concurrent.ConcurrentHashMap.newKeySet[DOrcRuntime#RuntimeId]()
-  protected val readyFollowers = java.util.concurrent.ConcurrentHashMap.newKeySet[DOrcRuntime#RuntimeId]()
+  protected val startingFollowers = java.util.concurrent.ConcurrentHashMap.newKeySet[DOrcRuntime.RuntimeId]()
+  protected val readyFollowers = java.util.concurrent.ConcurrentHashMap.newKeySet[DOrcRuntime.RuntimeId]()
   protected val followerStartWait = new Object()
 
-  def followerStarting(followerNum: DOrcRuntime#RuntimeId): Unit = {
+  def followerStarting(followerNum: DOrcRuntime.RuntimeId): Unit = {
     startingFollowers.add(followerNum)
   }
 
-  def followerReady(followerNum: DOrcRuntime#RuntimeId): Unit = {
+  def followerReady(followerNum: DOrcRuntime.RuntimeId): Unit = {
     readyFollowers.add(followerNum)
     startingFollowers.remove(followerNum)
     followerStartWait synchronized followerStartWait.notifyAll()
@@ -182,7 +116,7 @@ class DOrcLeaderExecution(
 
   override def notifyOrc(event: OrcEvent): Unit = {
     super.notifyOrc(event)
-    Logger.fine(event.toString)
+    Logger.Downcall.fine(event.toString)
   }
 
 }
@@ -207,7 +141,7 @@ class DOrcFollowerExecution(
   val counter = getDistributedCounterForId(rootCounterId).counter
 
   val pRootNode = new RootNode(null) with HasId {
-    def execute(frame: VirtualFrame): Object = {
+    override def execute(frame: VirtualFrame): Object = {
       // Skip the first argument since it is our captured value array.
       val v = frame.getArguments()(1)
       notifyOrcWithBoundary(PublishedEvent(v))
@@ -216,7 +150,7 @@ class DOrcFollowerExecution(
       PorcEUnit.SINGLETON
     }
 
-    def getId() = -1
+    override def getId() = -1
   }
 
   val pCallTarget = truffleRuntime.createCallTarget(pRootNode)

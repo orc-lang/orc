@@ -1,10 +1,10 @@
 //
-// ExecutionMashaler.scala -- Scala trait ExecutionMashaler, and classes ClosureReplacement, CounterReplacement, TerminatorReplacement, and FutureReplacement
+// ExecutionMashaler.scala -- Scala trait ExecutionMashaler, and classes ClosureMarshaledFieldData, CounterReplacement, TerminatorReplacement, and FutureReplacement
 // Project PorcE
 //
 // Created by jthywiss on Aug 21, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,6 +14,8 @@
 package orc.run.distrib.porce
 
 import orc.PublishedEvent
+import orc.run.distrib.Logger
+import orc.run.distrib.common.ExecutionMarshaling
 import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
 
 /** A DOrcExecution mix-in to marshal and unmarshal dOrc execution-internal
@@ -24,10 +26,10 @@ import orc.run.porce.runtime.{ Counter, Future, PorcEClosure, Terminator }
   *
   * @author jthywiss
   */
-trait ExecutionMashaler {
+trait ExecutionMashaler extends ExecutionMarshaling[PeerLocation] {
   execution: DOrcExecution =>
 
-  val marshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
+  override val marshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
     case (destination, closure: PorcEClosure) => {
       val callTargetIndex = execution.callTargetToId(closure.body)
       /* Invoke ValueMarshaler.marshalValue on values in environments. */
@@ -62,7 +64,7 @@ trait ExecutionMashaler {
     }
   }
 
-  val unmarshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
+  override val unmarshalExecutionObject: PartialFunction[(PeerLocation, AnyRef), AnyRef] = {
     case (origin, closure: PorcEClosure) => {
       val cmfd = closure.getMarshaledFieldData.asInstanceOf[ClosureMarshaledFieldData]
       val callTarget = execution.idToCallTarget(cmfd.callTargetIndex)

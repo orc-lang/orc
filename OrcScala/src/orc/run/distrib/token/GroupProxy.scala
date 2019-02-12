@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Dec 25, 2015.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,6 +15,7 @@ package orc.run.distrib.token
 
 import orc.{ CaughtEvent, OrcEvent, Schedulable }
 import orc.run.core.{ Execution, Group, GroupMember, Token }
+import orc.run.distrib.Logger
 
 /** Proxy for a group the resides on a remote dOrc node.
   * RemoteGroupProxy is created locally when a token has been migrated from
@@ -25,10 +26,11 @@ import orc.run.core.{ Execution, Group, GroupMember, Token }
   *
   * @author jthywiss
   */
-class RemoteGroupProxy(override val execution: Execution, 
-    val remoteProxyId: DOrcExecution#GroupProxyId, 
-    pubFunc: (Token, Option[AnyRef]) => Unit, 
-    onHaltFunc: () => Unit, 
+class RemoteGroupProxy(
+    override val execution: Execution,
+    val remoteProxyId: DOrcExecution#GroupProxyId,
+    pubFunc: (Token, Option[AnyRef]) => Unit,
+    onHaltFunc: () => Unit,
     onDiscorporateFunc: () => Unit) extends Group {
 
   /** An expensive walk-to-root check for alive state */
@@ -143,7 +145,7 @@ trait GroupProxyManager { self: DOrcExecution =>
     val group = token.getGroup
     val proxyId = group match {
       case rgp: RemoteGroupProxy => rgp.remoteProxyId
-      case _ => freshGroupProxyId()
+      case _ => freshRemoteRefId()
     }
     val rmtProxy = new RemoteGroupMembersProxy(group, () => sendKill(destination, proxyId)(), proxyId)
     proxiedGroupMembers.put(proxyId, rmtProxy)
@@ -231,7 +233,7 @@ trait GroupProxyManager { self: DOrcExecution =>
   def killGroupProxy(proxyId: GroupProxyId) {
     val g = proxiedGroups.get(proxyId)
     if (g != null) {
-      runtime.schedule(new Schedulable { def run() = { g.kill() } })
+      runtime.schedule(new Schedulable { override def run() = { g.kill() } })
       proxiedGroups.remove(proxyId)
     } else {
       Logger.fine(f"Kill group on unknown group $proxyId%#x")

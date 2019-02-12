@@ -1,17 +1,17 @@
 //
 // NoLocationAvailable.scala -- Scala class NoLocationAvailable
-// Project PorcE
+// Project OrcScala
 //
 // Created by jthywiss on Dec 29, 2015.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
 
-package orc.run.distrib.porce
+package orc.run.distrib
 
 import orc.error.runtime.TokenException
 
@@ -19,5 +19,5 @@ import orc.error.runtime.TokenException
   *
   * @author jthywiss
   */
-class NoLocationAvailable(valLocations: Seq[(AnyRef, Set[Int])])
-  extends TokenException("No common location for: " + valLocations.map(p => s"${p._1}: ${orc.util.GetScalaTypeName(p._1)} at ${p._2.mkString(", ")}").mkString("; "))
+class NoLocationAvailable(valLocations: Seq[(AnyRef, Set[Long])])
+  extends TokenException("No common location for: " + valLocations.map(p => s"${p._1}: ${orc.util.GetScalaTypeName(p._1)} at ${p._2.map(_.toHexString).mkString(", ")}").mkString("; "))
