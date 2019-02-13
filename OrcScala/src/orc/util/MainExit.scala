@@ -83,33 +83,38 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
 
   /** Write a HALT diagnostic message to stderr.
     *
-    * Diagnostic message recommended format from POSIX:
-    * progname: pathname: SEVERITY: Message
-    * Where progname is the basename of the program; pathname (if applicable)
-    * is the path to the input file with the problem; SEVERITY is HALT, ERROR,
-    * WARNING, or INFO; and Message is a description of the failure.
+    * @param pathName path to the input file with the problem
+    * @param message description of the failure
     */
-  def writeHaltMessage(pathName: String, message: String): Unit = {
-    /* Trying to avoid allocation here, since the JVM may be in a broken state */
-    try {
-      System.out.flush()
+  def writeHaltMessage(pathName: String, message: String): Unit =
+    writeDiagnosticMessage(pathName, "HALT", message)
 
-      if (progName != null && !progName.isEmpty()) {
-        System.err.print(progName)
-        System.err.print(": ")
-      }
-      if (pathName != null && !pathName.isEmpty()) {
-        System.err.print(pathName)
-        System.err.print(": ")
-      }
-      System.err.print("HALT: ")
-      System.err.println(message)
+  /** Write an ERROR diagnostic message to stderr.
+    *
+    * @param pathName path to the input file with the problem
+    * @param message description of the failure
+    */
+  def writeErrorMessage(pathName: String, message: String): Unit =
+    writeDiagnosticMessage(pathName, "ERROR", message)
 
-      System.err.flush()
-    } catch {
-      case _: Throwable => /* Ignore and continue halting */
-    }
-  }
+  /** Write a WARNING diagnostic message to stderr.
+    *
+    * @param pathName path to the input file with the problem
+    * @param message description of the failure
+    */
+  def writeWarningMessage(pathName: String, message: String): Unit =
+    writeDiagnosticMessage(pathName, "WARNING", message)
+
+  /** Write a INFO diagnostic message to stderr.
+    *
+    * @param pathName path to the input file with the problem
+    * @param message description of the failure
+    */
+  def writeInfoMessage(pathName: String, message: String): Unit =
+    writeDiagnosticMessage(pathName, "INFO", message)
+
+  protected def writeDiagnosticMessage(pathName: String, severity: String, message: String): Unit = 
+    MainExit.writeDiagnosticMessage(progName, pathName, severity, message)
 
   /** Call to set this JVM's defaultUncaughtExceptionHandler to halt the JVM
     * when an exception it thrown, but not caught.
@@ -125,23 +130,7 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
     */
   override def uncaughtException(t: Thread, e: Throwable): Unit = {
     if (!propagateThrowableQuietly(e)) {
-      System.err.print("Exception in thread \"" + t.getName() + "\" ")
-      e.printStackTrace(System.err)
-      if (orc.Logger.julLogger.isLoggable(Level.SEVERE)) {
-        /* Log using the top stack trace frame as the "source" of the log record */
-        val logRecord = new LogRecord(Level.SEVERE, "Exception in thread \"" + t.getName + "\" #" + t.getId)
-        if (e != null && e.getStackTrace != null && e.getStackTrace().length > 0) {
-          logRecord.setSourceClassName(e.getStackTrace()(0).getClassName)
-          logRecord.setSourceMethodName(e.getStackTrace()(0).getMethodName)
-        } else {
-          logRecord.setSourceClassName(null)
-          logRecord.setSourceMethodName(null)
-        }
-        logRecord.setThreadID(t.getId.asInstanceOf[Int])
-        logRecord.setThrown(e)
-        logRecord.setLoggerName(orc.Logger.julLogger.getName)
-        orc.Logger.julLogger.log(logRecord)
-      }
+      MainExit.printAndLogException(t, e, Level.SEVERE)
       if (mainUncaughtExceptionHandler.isDefinedAt(e)) {
         mainUncaughtExceptionHandler(e)
       } else {
@@ -160,6 +149,8 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
     */
   val mainUncaughtExceptionHandler: PartialFunction[Throwable, Unit]
 
+  /** Should the given Throwable be allowed to continue up the handler stack,
+    * without any logging/diagnostic messages?  */
   def propagateThrowableQuietly(t: Throwable): Boolean = t match {
     case _: ThreadDeath | _: InterruptedException | _: ControlThrowable => true
     case _ => false
@@ -181,6 +172,65 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
   }
 
 }
+
+object MainExit {
+
+  /** Write a diagnostic message to stderr.
+    *
+    * Diagnostic message recommended format from POSIX:
+    * progname: pathname: SEVERITY: Message
+    * Where progname is the basename of the program; pathname (if applicable)
+    * is the path to the input file with the problem; SEVERITY is HALT, ERROR,
+    * WARNING, or INFO; and Message is a description of the failure.
+    */
+  def writeDiagnosticMessage(progName: String, pathName: String, severity: String, message: String): Unit = {
+    /* Trying to avoid allocation here, since the JVM may be in a broken state */
+    try {
+      System.out.flush()
+
+      if (progName != null && !progName.isEmpty()) {
+        System.err.print(progName)
+        System.err.print(": ")
+      }
+      if (pathName != null && !pathName.isEmpty()) {
+        System.err.print(pathName)
+        System.err.print(": ")
+      }
+      System.err.print(severity)
+      System.err.print(": ")
+      System.err.println(message)
+
+      System.err.flush()
+    } catch {
+      case _: Throwable => /* Ignore and continue halting */
+    }
+  }
+
+  /** Print an exception to stderr, and log to the "orc" logger at the given
+    * severity level.
+    */
+  def printAndLogException(t: Thread, e: Throwable, level: Level): Unit = {
+    System.err.print("Exception in thread \"" + t.getName() + "\" ")
+    e.printStackTrace(System.err)
+    if (orc.Logger.julLogger.isLoggable(level)) {
+      /* Log using the top stack trace frame as the "source" of the log record */
+      val logRecord = new LogRecord(level, "Exception in thread \"" + t.getName + "\" #" + t.getId)
+      if (e != null && e.getStackTrace != null && e.getStackTrace().length > 0) {
+        logRecord.setSourceClassName(e.getStackTrace()(0).getClassName)
+        logRecord.setSourceMethodName(e.getStackTrace()(0).getMethodName)
+      } else {
+        logRecord.setSourceClassName(null)
+        logRecord.setSourceMethodName(null)
+      }
+      logRecord.setThreadID(t.getId.asInstanceOf[Int])
+      logRecord.setThrown(e)
+      logRecord.setLoggerName(orc.Logger.julLogger.getName)
+      orc.Logger.julLogger.log(logRecord)
+    }
+  }
+
+}
+
 
 /** Program exit statuses.  0 indicates success. 1 to 63 are application-
   * specific failure reasons, although 1 is also used by the shell.  63 to 127
