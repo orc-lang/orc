@@ -4,7 +4,7 @@
 //
 // Created by amp on Feb, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,24 +12,15 @@
 //
 package orc.run.extensions
 
+import java.util.{ Collections, WeakHashMap }
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.logging.Level
+import java.util.concurrent.atomic.AtomicLong
 
 import scala.collection.mutable.ArrayBuffer
 
 import orc.{ OrcExecutionOptions, Schedulable }
-import orc.run.Orc
-import orc.util.ABPWSDeque
-import java.util.concurrent.atomic.AtomicLong
-import java.util.Collections
-import java.util.WeakHashMap
-import orc.util.DumperRegistry
-import orc.util.SchedulingQueue
-import orc.run.StopWatches
-import orc.Schedulable
-import orc.util.ExecutionLogOutputStream
-import java.io.OutputStreamWriter
-import orc.util.CsvWriter
+import orc.run.{ Orc, StopWatches }
+import orc.util.{ ABPWSDeque, DumperRegistry, SchedulingQueue }
 
 /** @param monitorInterval The interval at which the monitor thread runs and checks that the thread pool is the correct size.
   * @param goalExtraThreads The ideal number of extra idle threads that the pool should contain.
@@ -227,42 +218,58 @@ class SimpleWorkStealingScheduler(
     private[this] var wasIdle = true
 
     override def run() = {
-      while (!isSchedulerShuttingDown && !isShuttingDown) {
-        val workerStart = StopWatches.workerTime.start()
-        val t = next()
-        if (t != null) {
-          isInternallyBlocked = false
-          beforeExecute(this, t)
+      try {
+        while (!isSchedulerShuttingDown && !isShuttingDown) {
+          val workerStart = StopWatches.workerTime.start()
           try {
-            SimpleWorkStealingScheduler.enterSchedulable(t, SimpleWorkStealingScheduler.SchedulerExecution)
-            if (t.nonblocking) {
-              val workStart = StopWatches.workerWorkingTime.start()
-              t.run()
-              StopWatches.workerWorkingTime.stop(workStart)
-            } else {
-              // PERFORMANCE: Manually inlined from potentiallyBlocking.
-              val workStart = StopWatches.workerWorkingTime.start()
-              isPotentiallyBlocked = true
+            val t = next()
+            if (t != null) {
+              isInternallyBlocked = false
+              beforeExecute(this, t)
               try {
-                t.run()
+                SimpleWorkStealingScheduler.enterSchedulable(t, SimpleWorkStealingScheduler.SchedulerExecution)
+                if (t.nonblocking) {
+                  val workStart = StopWatches.workerWorkingTime.start()
+                  t.run()
+                  StopWatches.workerWorkingTime.stop(workStart)
+                } else {
+                  // PERFORMANCE: Manually inlined from potentiallyBlocking.
+                  val workStart = StopWatches.workerWorkingTime.start()
+                  isPotentiallyBlocked = true
+                  try {
+                    t.run()
+                  } finally {
+                    isPotentiallyBlocked = false
+                    StopWatches.workerWorkingTime.stop(workStart)
+                  }
+                }
+                SimpleWorkStealingScheduler.exitSchedulable(t)
+
+                Thread.interrupted  /* Clear interrupted status */
+
+                afterExecute(this, t, null)
+              } catch {
+                case e: Throwable =>
+                  afterExecute(this, t, e)
+                  throw e
+                  e match {
+                    case _: InterruptedException =>
+                      /* Consume thread interrupts, and move on to next task */
+                    case _ =>
+                      throw e
+                  }
               } finally {
-                isPotentiallyBlocked = false
-                StopWatches.workerWorkingTime.stop(workStart)
+                isInternallyBlocked = true
+                tasksRun += 1
               }
             }
-            SimpleWorkStealingScheduler.exitSchedulable(t)
-
-            afterExecute(this, t, null)
-          } catch {
-            case ex: Exception =>
-              afterExecute(this, t, ex)
+          } finally {
+            StopWatches.workerTime.stop(workerStart)
           }
-          isInternallyBlocked = true
-          tasksRun += 1
         }
-        StopWatches.workerTime.stop(workerStart)
+      } finally {
+        onCompleteStealingFailure(this)
       }
-      onCompleteStealingFailure(this)
     }
 
     @inline
@@ -748,9 +755,6 @@ trait OrcWithWorkStealingScheduler extends Orc {
         val stage = OrcWithWorkStealingScheduler.stagedTasks.get
         stage.foreach(w.scheduleLocal)
         stage.clear()
-        if (t != null) {
-          Logger.log(Level.WARNING, s"Schedulable threw exception.", t)
-        }
       }
     }
 
