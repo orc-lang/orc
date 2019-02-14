@@ -13,6 +13,8 @@
 
 package orc.run.distrib.token
 
+import java.io.IOException
+
 import orc.error.OrcException
 import orc.run.core.{ Blockable, Blocker, Future, LocalFuture }
 import orc.run.distrib.Logger
@@ -161,7 +163,12 @@ trait RemoteFutureManager {
     readers foreach { reader =>
       val mv = value.map(execution.marshalValue(reader)(_))
       Tracer.traceFutureResultSend(futureId, execution.runtime.here, reader)
-      reader.sendInContext(execution)(DeliverFutureResultCmd(executionId, futureId, mv))
+      try {
+        reader.sendInContext(execution)(DeliverFutureResultCmd(executionId, futureId, mv))
+      } catch {
+        case e: IOException if !execution.currentlyActiveLocation(reader) =>
+          /* Disregard send failures to closed destinations */
+      }
     }
   }
 
