@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Aug 12, 2011.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -27,54 +27,53 @@ import orc.run.extensions.SupportForCallsIntoOrc
   * @author dkitchin
   */
 class Execution(
-  val node: Expression,
-  override val options: OrcExecutionOptions,
-  protected var eventHandler: OrcEvent => Unit,
-  override val runtime: OrcRuntime)
+    val node: Expression,
+    override val options: OrcExecutionOptions,
+    protected var eventHandler: OrcEvent => Unit,
+    override val runtime: OrcRuntime)
   extends Group with ExecutionRoot with SupportForCallsIntoOrc with EventHandler {
 
   override val execution = this
 
   val tokenCount = new java.util.concurrent.atomic.AtomicInteger(0);
 
-  //  def node = _node;
-
-  def publish(t: Token, v: Option[AnyRef]) = synchronized {
+  override def publish(t: Token, v: Option[AnyRef]): Unit = synchronized {
     notifyOrc(PublishedEvent(v.get))
     t.halt()
   }
 
-  override def kill() = {
+  override def kill(): Unit = {
     /* Clean up the roots map when this is killed.
      * This cannot be an event handler because only one handler is allowed to
      * handle any event.
-     * 
+     *
      * In the past roots contained weak references. However this combined with
      * the OrcSiteCallTargets resulted in entire group trees being collected all
-     * at once without actually halting, which makes the interpreter hang 
-     * without exiting. 
+     * at once without actually halting, which makes the interpreter hang
+     * without exiting.
      */
     runtime.removeRoot(this)
     if (!isKilled) notifyOrc(HaltedOrKilledEvent)
     super.kill()
   }
 
-  def onHalt() {
-    // It's all the same at this level, so just deligate.
+  override def onHalt(): Unit = {
+    // It's all the same at this level, so just delegate.
     onDiscorporate()
   }
-  def onDiscorporate() {
+
+  override def onDiscorporate(): Unit = {
     /* Clean up the roots map when this is killed.
      * This cannot be an event handler because only one handler is allowed to
      * handle any event.
      *
-     * See kill for more details. 
+     * See kill for more details.
      */
     runtime.removeRoot(this)
     if (!isKilled) notifyOrc(HaltedOrKilledEvent)
   }
 
-  def run() = { throw new AssertionError("Execution scheduled") }
+  override def run(): Unit = { throw new AssertionError("Execution scheduled") }
 
   val oldHandler = eventHandler
   eventHandler = {
@@ -83,13 +82,13 @@ class Execution(
     case e => oldHandler(e)
   }
 
-  override def notifyOrc(event: OrcEvent) {
+  override def notifyOrc(event: OrcEvent): Unit = {
     if (event == DumpState) dumpState()
     super.notifyOrc(event)
   }
 
-  def dumpState() {
-    def printGroupMember(currMember: GroupMember, level: Int, sb: StringBuilder) {
+  def dumpState(): Unit = {
+    def printGroupMember(currMember: GroupMember, level: Int, sb: StringBuilder): Unit = {
       for { i <- 1 until level * 2 } sb.append(' ')
       currMember match {
         case t: Token => {
@@ -142,4 +141,4 @@ class Execution(
   }
 }
 
-object DumpState extends OrcEvent
+object DumpState extends OrcEvent {}
