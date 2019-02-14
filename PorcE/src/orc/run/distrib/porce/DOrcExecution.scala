@@ -71,6 +71,8 @@ abstract class DOrcExecution(
    * we host more than one execution in an engine, they will be different. */
   override def locationForFollowerNum(followerNum: Int): PeerLocation = runtime.locationForRuntimeId(new DOrcRuntime.RuntimeId(followerNum))
 
+  override def currentlyActiveLocation(location: PeerLocation): Boolean = runtime.allLocations.contains(location)
+
   def selectLocationForCall(candidateLocations: Set[PeerLocation]): PeerLocation = candidateLocations.head
 
 }

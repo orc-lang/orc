@@ -19,6 +19,7 @@ import orc.run.distrib.{ DOrcMarshalingNotifications, DOrcMarshalingReplacement,
 
 trait MashalingAndRemoteRefSupport[Location] extends RemoteObjectManager[Location] with RemoteRefIdManager[Location] with ExecutionMarshaling[Location] with FollowerNumLocationMapping[Location] {
   def permittedLocations(v: Any): Set[Location]
+  def currentlyActiveLocation(location: Location): Boolean
 }
 
 /** A DOrcExecution mix-in to marshal and unmarshal Orc program values.
@@ -79,9 +80,8 @@ trait ValueMarshaler[Execution <: MashalingAndRemoteRefSupport[Location], Locati
       case _ => { /* Nothing to do */ }
     }
     Logger.Marshal.finest(s"marshalValue($destination)($value): ${orc.util.GetScalaTypeName(value)} = $marshaledValue")
-    //Logger.Marshal.finest(s"executionMashalerWillHandle = $executionMashalerWillHandle; (marshaledValue != value) = ${(marshaledValue != value)}; marshalValueWouldReplace(destination)(value) = ${marshalValueWouldReplace(destination)(value)}")
 
-    assert(executionMashalerWillHandle || (marshaledValue != value) == marshalValueWouldReplace(destination)(value), s"marshaledValue disagrees with marshalValueWouldReplace for value=$value, marshaledValue=$marshaledValue")
+    assert(executionMashalerWillHandle || (marshaledValue != value) == marshalValueWouldReplace(destination)(value) || !execution.currentlyActiveLocation(destination), s"marshaledValue disagrees with marshalValueWouldReplace for value=$value: ${orc.util.GetScalaTypeName(value)}, marshaledValue=$marshaledValue: ${orc.util.GetScalaTypeName(marshaledValue)}, marshalValueWouldReplace=${marshalValueWouldReplace(destination)(value)}")
     marshaledValue
   }
 
