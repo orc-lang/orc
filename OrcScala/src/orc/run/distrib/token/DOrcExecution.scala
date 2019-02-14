@@ -67,7 +67,7 @@ abstract class DOrcExecution(
 
   override def currentlyActiveLocation(location: PeerLocation): Boolean = runtime.allLocations.contains(location)
 
-  override def selectLocationForCall(candidateLocations: Set[PeerLocation]): PeerLocation = candidateLocations.head
+  def selectLocationForCall(candidateLocations: Set[PeerLocation]): PeerLocation = candidateLocations.head
 
 }
 
