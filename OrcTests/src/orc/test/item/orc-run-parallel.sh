@@ -5,7 +5,7 @@
 #
 # Created by jthywiss on Sep 8, 2017.
 #
-# Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+# Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 #
 # Use and redistribution of this file is governed by the license terms in
 # the LICENSE file found in the project's top-level directory and also found at
@@ -17,16 +17,6 @@ set -o nounset
 progname=$(basename "$0")
 
 CONDOR_CHIRP="$(condor_config_val libexec)/condor_chirp"
-
-cleanfilename ()
-{
-  ( shopt -s extglob
-    clean="${1//+([!A-Za-z0-9._-])/_}"
-    trimfront="${clean/#+(_)}"
-    trimback="${trimfront/%+(_)}"
-    printf "%s\n" "$trimback"
-  )
-}
 
 get_job_attr ()
 {
@@ -58,7 +48,7 @@ get_job_attr_substituted ()
 main ()
 {
 
-  ${CONDOR_CHIRP} ulog "Greetings and felicitations from node ${_CONDOR_PROCNO} of ${_CONDOR_NPROCS}, running ${progname} on $(uname -n)"
+  ${CONDOR_CHIRP} ulog "Orc HTCondor startup script running as node ${_CONDOR_PROCNO} of ${_CONDOR_NPROCS}, host: $(uname -n), Orc program: ${progname}"
 
   job_status_timestamp="$(get_job_attr_at_submit EnteredCurrentStatus)"
 
