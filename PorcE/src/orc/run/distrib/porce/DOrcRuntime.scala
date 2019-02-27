@@ -13,6 +13,8 @@
 
 package orc.run.distrib.porce
 
+import scala.collection.convert.Wrappers.JConcurrentMapWrapper
+
 import orc.ast.porc.MethodCPS
 import orc.run.distrib.{ AbstractLocation, ClusterLocations }
 import orc.run.porce.runtime.PorcERuntime
@@ -44,6 +46,11 @@ abstract class DOrcRuntime(val runtimeId: DOrcRuntime.RuntimeId, engineInstanceN
     */
   override def runtimeDebugThreadId: Int = runtimeId.longValue.toInt << 24 | Thread.currentThread().getId.asInstanceOf[Int]
 
+  class ExecutionMap[X]() extends JConcurrentMapWrapper(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, X]) {
+    override def default(key: DOrcExecution#ExecutionId): X =
+      throw new NoSuchElementException("Execution not found (program not loaded): " + key)
+  }
+  
 }
 
 object DOrcRuntime {

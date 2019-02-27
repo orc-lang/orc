@@ -18,7 +18,6 @@ import java.net.{ InetAddress, InetSocketAddress, SocketException }
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
-import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
 import scala.xml.XML
 
@@ -380,8 +379,8 @@ class FollowerRuntime(runtimeId: DOrcRuntime.RuntimeId) extends DOrcRuntime(runt
   ////////
   // Load & unload programs
   ////////
-
-  val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcFollowerExecution])
+  
+  val programs = new ExecutionMap[DOrcFollowerExecution]()
 
   def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programOil: String, options: OrcExecutionOptions) {
     Logger.ProgLoad.entering(getClass.getName, "loadProgram")

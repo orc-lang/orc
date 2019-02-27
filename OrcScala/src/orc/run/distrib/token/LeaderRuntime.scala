@@ -18,7 +18,6 @@ import java.net.{ InetAddress, InetSocketAddress, SocketException }
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
-import scala.collection.JavaConverters.mapAsScalaConcurrentMap
 import scala.util.control.NonFatal
 
 import orc.{ HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, Schedulable }
@@ -222,7 +221,7 @@ class LeaderRuntime() extends DOrcRuntime(new DOrcRuntime.RuntimeId(0L), "dOrc l
   // Run & stop programs
   ////////
 
-  val programs = mapAsScalaConcurrentMap(new java.util.concurrent.ConcurrentHashMap[DOrcExecution#ExecutionId, DOrcLeaderExecution])
+  val programs = new ExecutionMap[DOrcLeaderExecution]()
 
   override def run(programAst: DOrcRuntime#ProgramAST, eventHandler: OrcEvent => Unit, options: OrcExecutionOptions) {
     /* TODO: run's programAst type needs to be parameterized */
