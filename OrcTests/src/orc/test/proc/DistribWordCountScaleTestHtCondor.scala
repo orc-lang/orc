@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Nov 2, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -104,6 +104,8 @@ object DistribWordCountScaleTestHtCondor {
       val remoteRunOutputDir = DistribTestConfig.expanded("runOutputDir").stripSuffix("/")
 
       val jobEventNotification = HtCondorConfig("jobEventNotification")
+      val jobRequirements = HtCondorConfig("jobRequirements")
+      val jobRequestCpus = HtCondorConfig("jobRequestCpus")
 
       ("""# HTCondor submit description file for Orc run """ + testRunNumber + ", program " + testProgram.getName + ", factors " + experimentalCondition.toString + """
         |#
@@ -211,9 +213,9 @@ object DistribWordCountScaleTestHtCondor {
         |# Placement policy
         |##
         |
-        |requirements = TARGET.HasJava && NPR
+        |requirements = """ + jobRequirements + """
         |
-        |request_cpus = 8
+        |request_cpus = """ + jobRequestCpus + """
         |
         |
         |##
@@ -257,6 +259,8 @@ object DistribWordCountScaleTestHtCondor {
       val remoteRunOutputDir = DistribTestConfig.expanded("runOutputDir").stripSuffix("/")
 
       val jobEventNotification = HtCondorConfig("jobEventNotification")
+      val jobRequirements = HtCondorConfig("jobRequirements")
+      val jobRequestCpus = HtCondorConfig("jobRequestCpus")
 
       ("""# HTCondor submit description file for Orc run """ + testRunNumber + ", class " + testItem.getName + ", factors " + experimentalCondition.toString + """
         |#
@@ -338,9 +342,9 @@ object DistribWordCountScaleTestHtCondor {
         |# Placement policy
         |##
         |
-        |requirements = TARGET.HasJava && NPR
+        |requirements = """ + jobRequirements + """
         |
-        |request_cpus = 8
+        |request_cpus = """ + jobRequestCpus + """
         |
         |
         |##
