@@ -118,7 +118,7 @@ object TokenFieldMarshaling {
       /* Optimization: Treat resolved local futures as just values */
       case BoundReadable(lfut: LocalFuture) => {
         lfut.get match {
-          case FutureState.Unbound => BoundStop
+          case FutureState.Stopped => BoundStop
           case FutureState.Bound(v) => BoundValue(v)
           case FutureState.Unbound => b
         }
