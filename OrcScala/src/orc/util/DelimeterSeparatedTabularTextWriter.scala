@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 3, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,6 +12,9 @@
 //
 
 package orc.util
+
+import java.text.{ DecimalFormat, DecimalFormatSymbols }
+import java.util.Locale
 
 /* Trick for union types using implicits until we are using Dotty */
 protected class TraversableOrProduct[-T]
@@ -57,6 +60,9 @@ abstract class DelimeterSeparatedTabularTextWriter(write: String => Unit) {
 
   /** A set of characters that might be trimmed from the beginning or end of cell values. */
   val whitespace: String
+
+  /** A function to apply to [[Double]] values */
+  val doubleFormat: Double => String = _.toString
 
   def writeTable[R: TraversableOrProduct](columnTitles: TraversableOnce[_], rows: TraversableOnce[R]): Unit = {
     writeHeader(columnTitles)
@@ -114,9 +120,13 @@ abstract class DelimeterSeparatedTabularTextWriter(write: String => Unit) {
         write(str)
       }
     }
-    val str = if (value != null) value.toString else ""
+    val str = value match {
+      case d: Double => doubleFormat(d)
+      case null => ""
+      case _ => value.toString
+    }
     val mustQuote =
-        (str.nonEmpty && (whitespace.contains(str.head) || whitespace.contains(str.last))) ||
+      (str.nonEmpty && (whitespace.contains(str.head) || whitespace.contains(str.last))) ||
         (requiresQuotes.nonEmpty && requiresQuotes.exists(str.contains(_)))
     if (mustQuote) {
       write(quoteCharacter)
@@ -164,6 +174,12 @@ class CsvWriter(write: String => Unit) extends DelimeterSeparatedTabularTextWrit
 
   /** The string that is used around escaped cells. */
   val whitespace: String = " \t"
+
+  /** A [[java.text.DecimalFormat]] to use for [[Double]] values */
+  protected val decimalFormat: DecimalFormat = new DecimalFormat("0E0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+  decimalFormat.setMaximumFractionDigits(12) /* CSV readers treat long numbers as non-numeric data */
+
+  override val doubleFormat = decimalFormat.format(_)
 }
 
 /** Tab-separated value writer, per http://www.iana.org/assignments/media-types/text/tab-separated-values
