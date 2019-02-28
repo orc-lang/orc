@@ -13,6 +13,7 @@
 
 package orc.run.distrib.token
 
+import orc.FutureState
 import orc.ast.AST
 import orc.ast.oil.nameless.{ Def, Expression }
 import orc.run.core.{ Binding, BindingFrame, BoundReadable, BoundStop, BoundValue, Closure, ClosureGroup, EmptyFrame, Frame, FunctionFrame, Future, FutureFrame, Group, GroupFrame, LocalFuture, SequenceFrame, Token, TokenState, VirtualClock }
@@ -116,10 +117,10 @@ object TokenFieldMarshaling {
     val result = (b match {
       /* Optimization: Treat resolved local futures as just values */
       case BoundReadable(lfut: LocalFuture) => {
-        lfut.readIfResolved() match {
-          case Some(None) => BoundStop
-          case Some(Some(v)) => BoundValue(v)
-          case None => b
+        lfut.get match {
+          case FutureState.Unbound => BoundStop
+          case FutureState.Bound(v) => BoundValue(v)
+          case FutureState.Unbound => b
         }
       }
       case _ => b

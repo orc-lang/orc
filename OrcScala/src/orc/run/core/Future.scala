@@ -4,7 +4,7 @@
 //
 // Created by amp on Dec 6, 2014.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -56,7 +56,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
       scheduleBlocked(st)
     }
   }
-    
+
   def stop() = {
     val (didIt, st) = synchronized {
       if (_state == Unbound) {
@@ -74,7 +74,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
 
   private def scheduleBlocked(st: Int): Unit = {
     assert(st != Unbound)
-    
+
     for (j <- _blocked) {
       j match {
         case Left(j) =>
@@ -117,15 +117,6 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     }
   }
 
-  // TODO: Replace this with the get() method from orc.Future. We could rename get() if desired.
-  def readIfResolved() = {
-    synchronized { _state } match {
-      case Unbound => None
-      case Bound => Some(Some(_value))
-      case Halt => Some(None)
-    }
-  }
-
   override def toOrcSyntax() = {
     synchronized { _state } match {
       case Bound => Format.formatValue(_value)
@@ -135,7 +126,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
   }
 
   // orc.Future API
-  
+
   def get: FutureState = {
     synchronized { _state } match {
       case Unbound => FutureState.Unbound
