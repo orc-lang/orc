@@ -1,5 +1,5 @@
 //
-// Future.scala -- Scala class Future
+// Future.scala -- Scala trait Future and class LocalFuture
 // Project OrcScala
 //
 // Created by amp on Dec 6, 2014.
@@ -26,22 +26,21 @@ trait Future extends ReadableBlocker with OrcValue with orc.Future {
   def stop(): Unit
 }
 
-/** A future value that can be bound or unbound or halted.
-  *
-  * Note: This implementation is from the Porc implementation, so
-  * it is slightly more optimized than most of the token interpreter.
-  * Specifically the states are Ints to avoid the need for objects
-  * in the critical paths. The trade off is that Future contains an
-  * extra couple of pointers.
-  */
+/** A future value that can be bound or unbound or halted. */
 class LocalFuture(val runtime: OrcRuntime) extends Future {
   import LocalFuture._
+  /* Note: This implementation is from the Porc implementation, so
+   * it is slightly more optimized than most of the token interpreter.
+   * Specifically the states are Ints to avoid the need for objects
+   * in the critical paths. The trade off is that Future contains an
+   * extra couple of pointers.
+   */
 
   var _state = Unbound
   var _value: AnyRef = null
   var _blocked: List[Either[Blockable, FutureReader]] = Nil
 
-  def bind(v: AnyRef) = {
+  def bind(v: AnyRef): Unit = {
     val (didIt, st) = synchronized {
       if (_state == Unbound) {
         _state = Bound
@@ -54,10 +53,11 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     if (didIt) {
       //Logger.finest(s"$this bound to $v")
       scheduleBlocked(st)
+      onResolve()
     }
   }
 
-  def stop() = {
+  def stop(): Unit = {
     val (didIt, st) = synchronized {
       if (_state == Unbound) {
         //Logger.finest(s"$this halted")
@@ -69,6 +69,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     }
     if (didIt) {
       scheduleBlocked(st)
+      onResolve()
     }
   }
 
@@ -90,7 +91,9 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     _blocked = null
   }
 
-  def read(blockable: Blockable) = {
+  protected def onResolve(): Unit = {}
+
+  def read(blockable: Blockable): Unit = {
     val st = synchronized {
       _state match {
         case Unbound => {
@@ -117,7 +120,7 @@ class LocalFuture(val runtime: OrcRuntime) extends Future {
     }
   }
 
-  override def toOrcSyntax() = {
+  override def toOrcSyntax(): String = {
     synchronized { _state } match {
       case Bound => Format.formatValue(_value)
       case Halt => "stop"

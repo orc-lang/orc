@@ -19,6 +19,7 @@ import orc.error.OrcException
 import orc.run.core.{ Blockable, Blocker, Future, LocalFuture }
 import orc.run.distrib.Logger
 import orc.run.distrib.common.RemoteRef
+import orc.util.Profiler
 
 /** A reference to an GraftGroup value at another Location.
   *
@@ -29,6 +30,14 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
   override def toString: String = super.toString + f"(remoteRefId=$remoteRefId%#x)"
 
   execution.sendReadFuture(remoteRefId)
+
+  val beginResolve = Profiler.beginInterval(remoteRefId, 'RemoteFuture_resolve)
+  
+  override protected def onResolve(): Unit = {
+    Profiler.endInterval(remoteRefId, 'RemoteFuture_resolve, beginResolve)
+    System.err.println(s"$this resolved to $toOrcSyntax")
+  }
+
 }
 
 /** A remote reader that is blocked awaiting a local Future value.
@@ -39,6 +48,8 @@ class RemoteFutureReader(val fut: Future, val futureManager: RemoteFutureManager
 
   protected val readerLocations = new scala.collection.mutable.HashSet[PeerLocation]()
 
+  val beginResolve = Profiler.beginInterval(futureId, 'RemoteFutureReader_localResolve)
+  
   override def toString: String = f"${getClass.getName}(fut=$fut, futureManager=$futureManager, futureId=$futureId%#x)"
 
   def addReader(l: PeerLocation): Unit = synchronized {
@@ -59,12 +70,14 @@ class RemoteFutureReader(val fut: Future, val futureManager: RemoteFutureManager
   }
 
   override def awakeTerminalValue(v: AnyRef): Unit = synchronized {
-    //Logger.Futures.entering(getClass.getName, "awakeNonterminalValue")
+    //Logger.Futures.entering(getClass.getName, "awakeNonterminalValue", Seq(v))
+    Profiler.endInterval(futureId, 'RemoteFutureReader_localResolve, beginResolve)
     futureManager.sendFutureResult(getAndClearReaders(), futureId, Some(v))
   }
 
   override def awakeStop(): Unit = synchronized {
     //Logger.Futures.entering(getClass.getName, "awakeStop")
+    Profiler.endInterval(futureId, 'RemoteFutureReader_localResolve, beginResolve)
     futureManager.sendFutureResult(getAndClearReaders(), futureId, None)
   }
 
