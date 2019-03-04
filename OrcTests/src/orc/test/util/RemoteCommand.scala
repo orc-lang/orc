@@ -1,10 +1,10 @@
 //
-// RemoteCommand.scala -- Scala object RemoteCommand
+// RemoteCommand.scala -- Scala object RemoteCommand and class RemoteCommandException
 // Project OrcTests
 //
 // Created by amp on Oct, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,6 +14,7 @@
 package orc.test.util
 
 import java.io.File
+import java.net.{ InetAddress, NetworkInterface, SocketException }
 
 /** Utility methods to interact with remote systems.
   *
@@ -22,6 +23,7 @@ import java.io.File
   * @author jthywiss
   */
 object RemoteCommand {
+
   @throws[RemoteCommandException]
   def mkdirAndRsync(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
     val localFile = new File(localFilename)
@@ -44,8 +46,9 @@ object RemoteCommand {
   def rsyncToRemote(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
     val localFile = new File(localFilename)
     val localFileCanonicalName = localFile.getCanonicalPath + (if (localFile.isDirectory) "/" else "")
-    checkExitValue(s"rsync of $localFileCanonicalName to $remoteHostname:$remoteFilename",
-        OsCommand.getResultFrom(Seq("rsync", "-rlpt", "--exclude=.orcache", localFileCanonicalName, s"${remoteHostname}:${remoteFilename}")))
+    checkExitValue(
+      s"rsync of $localFileCanonicalName to $remoteHostname:$remoteFilename",
+      OsCommand.getResultFrom(Seq("rsync", "-rlpt", "--exclude=.orcache", localFileCanonicalName, s"${remoteHostname}:${remoteFilename}")))
   }
 
   @throws[RemoteCommandException]
@@ -55,7 +58,6 @@ object RemoteCommand {
     checkExitValue(s"rsync of $remoteHostname:$remoteFilename to $localFileCanonicalName", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"${remoteHostname}:${remoteFilename}", localFileCanonicalName)))
   }
 
-
   @throws[RemoteCommandException]
   def checkExitValue(description: String, result: OsCommandResult): Unit = {
     if (result.exitStatus != 0) {
@@ -64,6 +66,16 @@ object RemoteCommand {
       throw new RemoteCommandException(s"${description} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
     }
   }
+
+  def isLocalAddress(address: InetAddress): Boolean = {
+    (address == null) || address.isLoopbackAddress || address.isAnyLocalAddress ||
+      (try {
+        NetworkInterface.getByInetAddress(address) != null
+      } catch {
+        case _: SocketException => false
+      })
+  }
+
 }
 
 class RemoteCommandException(message: String, cause: Throwable) extends OsCommandException(message, cause) {

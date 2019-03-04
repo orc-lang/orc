@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Oct 6, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -71,7 +71,7 @@ object DistribWordCountScaleTestCase {
         programPaths)
       if (experimentalCondition.dOrcNumRuntimes == 1) {
         /* Special case: Measure the Java WordCount in the 1 runtime (non-distributed) experimental condition */
-        suiteForOneCondition.addTest(new RunMainMethodTestCase(s"WordCount_${experimentalCondition.productIterator.mkString("_")}", testContext, classOf[WordCount]))
+        suiteForOneCondition.addTest(new RunMainMethodTestCase(s"WordCount_${experimentalCondition.productIterator.mkString("_")}", testContext, DistribTestConfig.expanded("leaderHostname"), DistribTestConfig.expanded("leaderWorkingDir"), classOf[WordCount]))
       }
       suiteForOneCondition.setName(experimentalCondition.toString)
       testRunSuite.addTest(suiteForOneCondition)

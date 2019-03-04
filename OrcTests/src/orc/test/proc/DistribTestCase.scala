@@ -14,7 +14,7 @@
 package orc.test.proc
 
 import java.io.{ File, FileOutputStream }
-import java.net.{ InetAddress, NetworkInterface, SocketException }
+import java.net.InetAddress
 import java.nio.file.Paths
 
 import orc.error.compiletime.{ CompilationException, FeatureNotSupportedException }
@@ -121,19 +121,10 @@ class DistribTestCase(
 
 object DistribTestCase {
 
-  def isLocalAddress(address: InetAddress): Boolean = {
-    (address == null) || address.isLoopbackAddress || address.isAnyLocalAddress ||
-      (try {
-        NetworkInterface.getByInetAddress(address) != null
-      } catch {
-        case _: SocketException => false
-      })
-  }
-
   case class DOrcRuntimePlacement(hostname: String, port: Int, isLocal: Boolean, workingDir: String, javaCmd: String, classPath: String, jvmOptions: Seq[String]) {}
 
   lazy val leaderHostname = DistribTestConfig.expanded("leaderHostname")
-  lazy val leaderIsLocal = isLocalAddress(InetAddress.getByName(leaderHostname))
+  lazy val leaderIsLocal = RemoteCommand.isLocalAddress(InetAddress.getByName(leaderHostname))
   lazy val remoteRunOutputDir = DistribTestConfig.expanded("runOutputDir").stripSuffix("/")
 
   def setUpTestSuite(): Unit = {
@@ -198,7 +189,7 @@ object DistribTestCase {
 
     val followerSpecs = for (followerNum <- 1 until numRuntimes) yield {
       val hostname = followerHostnames((followerNum - 1) % followerHostnames.size + 1)
-      DOrcRuntimePlacement(hostname, dOrcPortBase + followerNum, isLocalAddress(InetAddress.getByName(hostname)), followerWorkingDir, javaCmd, dOrcClassPath, jvmOpts)
+      DOrcRuntimePlacement(hostname, dOrcPortBase + followerNum, RemoteCommand.isLocalAddress(InetAddress.getByName(hostname)), followerWorkingDir, javaCmd, dOrcClassPath, jvmOpts)
     }
 
     (leaderSpec, followerSpecs)
