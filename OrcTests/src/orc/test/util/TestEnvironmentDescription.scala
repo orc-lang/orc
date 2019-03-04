@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 4, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -159,7 +159,7 @@ class TestEnvironmentDescription() extends FieldsToMap {
 
     val gitDescribe = {
       try {
-        OsCommand.getResultFrom(Seq("git", "describe", "--dirty", "--tags", "--always")).stdout.stripLineEnd
+        OsCommand.runAndGetResult(Seq("git", "describe", "--dirty", "--tags", "--always")).stdout.stripLineEnd
       } catch {
         case _: IOException => null
       }
@@ -167,7 +167,7 @@ class TestEnvironmentDescription() extends FieldsToMap {
 
     val gitLastCommit = {
       try {
-        OsCommand.getResultFrom(Seq("git", "log", "-1", "--format=%H")).stdout.stripLineEnd
+        OsCommand.runAndGetResult(Seq("git", "log", "-1", "--format=%H")).stdout.stripLineEnd
       } catch {
         case _: IOException => null
       }
@@ -175,7 +175,7 @@ class TestEnvironmentDescription() extends FieldsToMap {
 
     val gitStatus = {
       try {
-        OsCommand.getResultFrom(Seq("git", "status", "-vv")).stdout.stripLineEnd
+        OsCommand.runAndGetResult(Seq("git", "status", "-vv")).stdout.stripLineEnd
       } catch {
         case _: IOException => null
       }

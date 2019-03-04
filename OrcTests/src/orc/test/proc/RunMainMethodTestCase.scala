@@ -69,9 +69,9 @@ class RunMainMethodTestCase(
     val isLocal = RemoteCommand.isLocalAddress(InetAddress.getByName(hostname))
     val exitStatus =
       if (isLocal) {
-        OsCommand.getStatusFrom(javaRunCommand, directory = new File(workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(testOutFile)), stderrTee = Seq(System.err, new FileOutputStream(testErrFile)))
+        OsCommand.runAndGetStatus(javaRunCommand, workingDir = new File(workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(testOutFile)), stderrTee = Seq(System.err, new FileOutputStream(testErrFile)))
       } else {
-        OsCommand.getStatusFrom(Seq("ssh", hostname, s"cd '${workingDir}'; { { ${javaRunCommand.mkString("'", "' '", "'")} | tee '$testOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee 'testErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"), teeStdOutErr = true)
+        OsCommand.runAndGetStatus(Seq("ssh", hostname, s"cd '${workingDir}'; { { ${javaRunCommand.mkString("'", "' '", "'")} | tee '$testOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee 'testErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"), teeStdOutErr = true)
       }
 
     if (exitStatus != 0) {

@@ -34,12 +34,12 @@ object RemoteCommand {
 
   @throws[RemoteCommandException]
   def mkdir(remoteHostname: String, remoteDirname: String): Unit = {
-    checkExitValue(s"mkdir -p $remoteDirname on $remoteHostname", OsCommand.getResultFrom(Seq("ssh", remoteHostname, s"mkdir -p $remoteDirname")))
+    checkExitValue(s"mkdir -p $remoteDirname on $remoteHostname", OsCommand.runAndGetResult(Seq("ssh", remoteHostname, s"mkdir -p $remoteDirname")))
   }
 
   @throws[RemoteCommandException]
   def deleteDirectory(remoteHostname: String, remoteDirname: String): Unit = {
-    checkExitValue(s"rm -rf $remoteDirname on $remoteHostname", OsCommand.getResultFrom(Seq("ssh", remoteHostname, s"rm -rf $remoteDirname")))
+    checkExitValue(s"rm -rf $remoteDirname on $remoteHostname", OsCommand.runAndGetResult(Seq("ssh", remoteHostname, s"rm -rf $remoteDirname")))
   }
 
   @throws[RemoteCommandException]
@@ -48,14 +48,14 @@ object RemoteCommand {
     val localFileCanonicalName = localFile.getCanonicalPath + (if (localFile.isDirectory) "/" else "")
     checkExitValue(
       s"rsync of $localFileCanonicalName to $remoteHostname:$remoteFilename",
-      OsCommand.getResultFrom(Seq("rsync", "-rlpt", "--exclude=.orcache", localFileCanonicalName, s"${remoteHostname}:${remoteFilename}")))
+      OsCommand.runAndGetResult(Seq("rsync", "-rlpt", "--exclude=.orcache", localFileCanonicalName, s"${remoteHostname}:${remoteFilename}")))
   }
 
   @throws[RemoteCommandException]
   def rsyncFromRemote(remoteHostname: String, remoteFilename: String, localFilename: String): Unit = {
     val localFile = new File(localFilename)
     val localFileCanonicalName = localFile.getCanonicalPath + (if (localFile.isDirectory) "/" else "")
-    checkExitValue(s"rsync of $remoteHostname:$remoteFilename to $localFileCanonicalName", OsCommand.getResultFrom(Seq("rsync", "-rlpt", s"${remoteHostname}:${remoteFilename}", localFileCanonicalName)))
+    checkExitValue(s"rsync of $remoteHostname:$remoteFilename to $localFileCanonicalName", OsCommand.runAndGetResult(Seq("rsync", "-rlpt", s"${remoteHostname}:${remoteFilename}", localFileCanonicalName)))
   }
 
   @throws[RemoteCommandException]
@@ -66,6 +66,18 @@ object RemoteCommand {
       throw new RemoteCommandException(s"${description} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
     }
   }
+
+  //TODO
+  //def runRemote(hostname: String, command: Seq[String], directory: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8) = {
+  //  //... quote command properly ...
+  //  OsCommand.run(Seq("ssh", hostname, s"cd $directory; command >stdout 2>stderr"), null, stdin, charset)
+  //}
+
+  //TODO
+  //def getRemoteResultFrom(hostname: String, command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: OutputStream = java.lang.System.out, stderrTee: OutputStream = java.lang.System.err) = {
+  //  //... quote command properly ...
+  //  OsCommand.runAndGetResult(Seq("ssh", hostname, s"cd $directory; command >stdout 2>stderr"), null, stdin, charset, teeStdOutErr, stdoutTee, stderrTee)
+  //}
 
   def isLocalAddress(address: InetAddress): Boolean = {
     (address == null) || address.isLoopbackAddress || address.isAnyLocalAddress ||

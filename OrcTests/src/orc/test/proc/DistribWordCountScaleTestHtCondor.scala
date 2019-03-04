@@ -51,7 +51,7 @@ object DistribWordCountScaleTestHtCondor {
     //val currentJvmOpts = java.lang.management.ManagementFactory.getRuntimeMXBean.getInputArguments.asScala
     //DistribTestConfig.expanded.addVariable("currentJvmOpts", currentJvmOpts)
     DistribTestConfig.expanded.addVariable("currentWorkingDir", System.getProperty("user.dir"))
-    DistribTestConfig.expanded.addVariable("leaderHomeDir", OsCommand.getResultFrom(Seq("ssh", submitHostname, "pwd")).stdout.stripLineEnd)
+    DistribTestConfig.expanded.addVariable("leaderHomeDir", OsCommand.runAndGetResult(Seq("ssh", submitHostname, "pwd")).stdout.stripLineEnd)
     DistribTestConfig.expanded.addVariable("orcVersion", orc.Main.versionProperties.getProperty("orc.version"))
     DistribTestConfig.expanded.addVariable("testRunNumber", testRunNumber)
 
@@ -376,7 +376,7 @@ object DistribWordCountScaleTestHtCondor {
     val localRunOutputDir = "../" + pathRelativeToTestRoot(remoteRunOutputDir)
     val orcConfigDir = "../" + pathRelativeToTestRoot(DistribTestConfig.expanded("orcConfigDir")).stripSuffix("/")
     new File(localRunOutputDir).mkdirs()
-    OsCommand.checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.getResultFrom(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir + "/../")))
+    OsCommand.checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.runAndGetResult(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir + "/../")))
 
     copyFiles()
 

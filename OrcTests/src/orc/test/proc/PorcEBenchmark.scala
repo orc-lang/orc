@@ -1,10 +1,10 @@
 //
-// DistribTestCase.scala -- Scala class DistribTestCase
+// PorcEBenchmark.scala -- Scala class DistribTestCase and object ArthursBenchmarkEnv
 // Project OrcTests
 //
-// Created by jthywiss on Jul 29, 2017.
+// Created by amp on Oct 12, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -122,9 +122,9 @@ object ArthursBenchmarkEnv {
 
       val maybeQuotedCommandLine = if (targetHost.isDefined) commandLine.map(quoteForShell) else commandLine
 
-      OsCommand.getResultFrom(
+      OsCommand.runAndGetResult(
         sshCommand ++ maybeQuotedCommandLine,
-        directory = new File(workingDir),
+        workingDir = new File(workingDir),
         teeStdOutErr = true,
         stdoutTee = Seq(System.out, new FileOutputStream(outFile)),
         stderrTee = Seq(System.err, new FileOutputStream(errFile)))

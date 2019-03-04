@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 16, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -26,8 +26,8 @@ object TestRunNumber {
     val getNewRunNumCmdName = Config.get("testRunNumberCommandName").getOrElse("build/orc/test/util/get-new-run-seq-num.sh")
     val getNewRunNumCmd = if (runCounterFilename.isDefined) Seq(getNewRunNumCmdName, runCounterFilename.get) else Seq(getNewRunNumCmdName)
     val result = Config.get("testRunNumberServer") match {
-      case None => OsCommand.getResultFrom(getNewRunNumCmd)
-      case Some(hostname) => OsCommand.getResultFrom(Seq("ssh", hostname) ++ getNewRunNumCmd)
+      case None => OsCommand.runAndGetResult(getNewRunNumCmd)
+      case Some(hostname) => OsCommand.runAndGetResult(Seq("ssh", hostname) ++ getNewRunNumCmd)
     }
     if (result.exitStatus != 0) {
       print(result.stdout)

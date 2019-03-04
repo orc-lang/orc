@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 29, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -70,9 +70,9 @@ class DistribTestCase(
     val leaderErrFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_0.err"
 
     if (leaderSpec.isLocal) {
-      OsCommand.getStatusFrom(Seq(leaderSpec.javaCmd, "-cp", leaderSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--listen=${leaderSpec.hostname}:${leaderSpec.port}", s"--follower-count=${bindings.followerCount}", orcFile.getPath), directory = new File(leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
+      OsCommand.runAndGetStatus(Seq(leaderSpec.javaCmd, "-cp", leaderSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--listen=${leaderSpec.hostname}:${leaderSpec.port}", s"--follower-count=${bindings.followerCount}", orcFile.getPath), workingDir = new File(leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
     } else {
-      OsCommand.getStatusFrom(Seq("ssh", leaderSpec.hostname, s"cd '${leaderSpec.workingDir}'; { { '${leaderSpec.javaCmd}' -cp '${leaderSpec.classPath}' ${jvmOptions.map("'" + _ + "'").mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_0 ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --listen=${leaderSpec.hostname}:${leaderSpec.port} --follower-count=${bindings.followerCount} '$orcFile' | tee '$leaderOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee '$leaderErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"), teeStdOutErr = true)
+      OsCommand.runAndGetStatus(Seq("ssh", leaderSpec.hostname, s"cd '${leaderSpec.workingDir}'; { { '${leaderSpec.javaCmd}' -cp '${leaderSpec.classPath}' ${jvmOptions.map("'" + _ + "'").mkString(" ")} -Dorc.executionlog.fileprefix=${outFilenamePrefix}_ -Dorc.executionlog.filesuffix=_0 ${DistribTestConfig.expanded("leaderClass")} ${leaderOpts.mkString(" ")} --listen=${leaderSpec.hostname}:${leaderSpec.port} --follower-count=${bindings.followerCount} '$orcFile' | tee '$leaderOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee '$leaderErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"), teeStdOutErr = true)
     }
   }
 
@@ -88,7 +88,7 @@ class DistribTestCase(
       if (followerSpec.isLocal) {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
         val command = Seq(followerSpec.javaCmd, "-cp", followerSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", s"-Dorc.executionlog.filesuffix=_$followerNumber", DistribTestConfig.expanded("followerClass")) ++ followerOpts.toSeq ++ Seq(s"--listen=${followerSpec.hostname}:${followerSpec.port}", followerNumber.toString, leaderSpec.hostname + ":" + leaderSpec.port)
-        OsCommand.runNoWait(command, directory = new File(followerWorkingDir), stdout = new File(followerOutFile), stderr = new File(followerErrFile))
+        OsCommand.runNoWait(command, workingDir = new File(followerWorkingDir), stdout = new File(followerOutFile), stderr = new File(followerErrFile))
       } else {
         println(s"Launching follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
         /* FIXME: Escape strings for shell */
@@ -103,13 +103,13 @@ class DistribTestCase(
       val followerSpec = followerSpecs(followerNumber - 1)
 
       if (followerSpec.isLocal) {
-        val lsofResult = OsCommand.getResultFrom(Seq("lsof", "-t", "-a", s"-i:${followerSpec.port}", "-sTCP:LISTEN"))
+        val lsofResult = OsCommand.runAndGetResult(Seq("lsof", "-t", "-a", s"-i:${followerSpec.port}", "-sTCP:LISTEN"))
         if (lsofResult.exitStatus == 0) {
           println(s"Terminating follower $followerNumber on port ${followerSpec.port}")
-          OsCommand.getResultFrom(Seq("kill", lsofResult.stdout.stripLineEnd))
+          OsCommand.runAndGetResult(Seq("kill", lsofResult.stdout.stripLineEnd))
         }
       } else {
-        val termResult = OsCommand.getResultFrom(Seq("ssh", followerSpec.hostname, "PID=`lsof -t -a -i:" + followerSpec.port + " -sTCP:LISTEN` && kill $PID"))
+        val termResult = OsCommand.runAndGetResult(Seq("ssh", followerSpec.hostname, "PID=`lsof -t -a -i:" + followerSpec.port + " -sTCP:LISTEN` && kill $PID"))
         if (termResult.exitStatus == 0) {
           println(s"Terminated follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
         }
@@ -134,7 +134,7 @@ object DistribTestCase {
     //val currentJvmOpts = java.lang.management.ManagementFactory.getRuntimeMXBean.getInputArguments.asScala
     //DistribTestConfig.expanded.addVariable("currentJvmOpts", currentJvmOpts)
     DistribTestConfig.expanded.addVariable("currentWorkingDir", System.getProperty("user.dir"))
-    DistribTestConfig.expanded.addVariable("leaderHomeDir", if (leaderIsLocal) System.getProperty("user.home") else OsCommand.getResultFrom(Seq("ssh", leaderHostname, "pwd")).stdout.stripLineEnd)
+    DistribTestConfig.expanded.addVariable("leaderHomeDir", if (leaderIsLocal) System.getProperty("user.home") else OsCommand.runAndGetResult(Seq("ssh", leaderHostname, "pwd")).stdout.stripLineEnd)
     DistribTestConfig.expanded.addVariable("orcVersion", orc.Main.versionProperties.getProperty("orc.version"))
     DistribTestConfig.expanded.addVariable("testRunNumber", TestRunNumber.singletonNumber)
 
@@ -142,7 +142,7 @@ object DistribTestCase {
     val localRunOutputDir = "../" + pathRelativeToTestRoot(remoteRunOutputDir)
     val orcConfigDir = "../" + pathRelativeToTestRoot(DistribTestConfig.expanded("orcConfigDir")).stripSuffix("/")
     new File(localRunOutputDir).mkdirs()
-    OsCommand.checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.getResultFrom(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir + "/../")))
+    OsCommand.checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.runAndGetResult(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir + "/../")))
     if (!leaderIsLocal) {
       copyFiles()
       RemoteCommand.mkdir(leaderHostname, remoteRunOutputDir)
@@ -216,18 +216,6 @@ object DistribTestCase {
     RemoteCommand.mkdirAndRsync("../" + pathRelativeToTestRoot(testDataDir), leaderHostname, testDataDir)
     println("done")
   }
-
-  //TODO
-  //def runRemote(hostname: String, command: Seq[String], directory: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8) = {
-  //  //... quote command properly ...
-  //  OsCommand.run(Seq("ssh", hostname, s"cd $directory; command >stdout 2>stderr"), null, stdin, charset)
-  //}
-
-  //TODO
-  //def getRemoteResultFrom(hostname: String, command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: OutputStream = java.lang.System.out, stderrTee: OutputStream = java.lang.System.err) = {
-  //  //... quote command properly ...
-  //  OsCommand.getResultFrom(Seq("ssh", hostname, s"cd $directory; command >stdout 2>stderr"), null, stdin, charset, teeStdOutErr, stdoutTee, stderrTee)
-  //}
 
   private object DistribTestCopyBackThread extends Thread("DistribTestCopyBackThread") {
     override def run = synchronized {
