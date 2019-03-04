@@ -15,6 +15,8 @@ library(ggplot2)
 
 source("analysis.R")
 
+options(echo = TRUE)
+
 runNumber <- commandArgs(trailingOnly = TRUE)[1]
 warmupReps <- 9
 fileSize <- 0.151945899 # GB

@@ -259,7 +259,7 @@ public class WordCount {
 
         final Long[][] repetitionTimes = timeRepetitions(numRepetitions);
 
-        final String[] repetitionTitles = { "Repetition number", "Elapsed time (µs)", "CPU time (ms)" };
+        final String[] repetitionTitles = { "Repetition number", "Elapsed time (µs)", "Leader CPU time (ms)" };
         writeCsvFile("repetition-times", "Repetitions' elapsed times output file", repetitionTitles, repetitionTimes);
     }
 
