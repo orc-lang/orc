@@ -71,7 +71,7 @@ class RunMainMethodTestCase(
       if (isLocal) {
         OsCommand.runAndGetStatus(javaRunCommand, workingDir = new File(workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(testOutFile)), stderrTee = Seq(System.err, new FileOutputStream(testErrFile)))
       } else {
-        OsCommand.runAndGetStatus(Seq("ssh", hostname, s"cd '${workingDir}'; { { ${javaRunCommand.mkString("'", "' '", "'")} | tee '$testOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee 'testErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"), teeStdOutErr = true)
+        RemoteCommand.runWithEcho(hostname, javaRunCommand, workingDir, testOutFile.getPath, testErrFile.getPath)
       }
 
     if (exitStatus != 0) {

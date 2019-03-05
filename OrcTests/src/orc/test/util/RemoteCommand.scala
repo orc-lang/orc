@@ -13,7 +13,7 @@
 
 package orc.test.util
 
-import java.io.File
+import java.io.{ File, IOException, UnsupportedEncodingException }
 import java.net.{ InetAddress, NetworkInterface, SocketException }
 
 /** Utility methods to interact with remote systems.
@@ -25,6 +25,9 @@ import java.net.{ InetAddress, NetworkInterface, SocketException }
 object RemoteCommand {
 
   @throws[RemoteCommandException]
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
   def mkdirAndRsync(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
     val localFile = new File(localFilename)
     val remoteDirPath = if (localFile.isDirectory) remoteFilename else new File(remoteFilename).getParent
@@ -33,16 +36,25 @@ object RemoteCommand {
   }
 
   @throws[RemoteCommandException]
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
   def mkdir(remoteHostname: String, remoteDirname: String): Unit = {
-    checkExitValue(s"mkdir -p $remoteDirname on $remoteHostname", OsCommand.runAndGetResult(Seq("ssh", remoteHostname, s"mkdir -p $remoteDirname")))
+    checkExitValue(s"mkdir -p $remoteDirname on $remoteHostname", runAndGetResult(remoteHostname, Seq("mkdir", "-p", remoteDirname)))
   }
 
   @throws[RemoteCommandException]
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
   def deleteDirectory(remoteHostname: String, remoteDirname: String): Unit = {
-    checkExitValue(s"rm -rf $remoteDirname on $remoteHostname", OsCommand.runAndGetResult(Seq("ssh", remoteHostname, s"rm -rf $remoteDirname")))
+    checkExitValue(s"rm -rf $remoteDirname on $remoteHostname", runAndGetResult(remoteHostname, Seq("rm", "-rf", remoteDirname)))
   }
 
   @throws[RemoteCommandException]
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
   def rsyncToRemote(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
     val localFile = new File(localFilename)
     val localFileCanonicalName = localFile.getCanonicalPath + (if (localFile.isDirectory) "/" else "")
@@ -52,10 +64,74 @@ object RemoteCommand {
   }
 
   @throws[RemoteCommandException]
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
   def rsyncFromRemote(remoteHostname: String, remoteFilename: String, localFilename: String): Unit = {
     val localFile = new File(localFilename)
     val localFileCanonicalName = localFile.getCanonicalPath + (if (localFile.isDirectory) "/" else "")
     checkExitValue(s"rsync of $remoteHostname:$remoteFilename to $localFileCanonicalName", OsCommand.runAndGetResult(Seq("rsync", "-rlpt", s"${remoteHostname}:${remoteFilename}", localFileCanonicalName)))
+  }
+
+  /** Run the given command, with an empty stdin, and using this process'
+    * stdout and stderr.  Return the command's exit value.
+    */
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
+  def runWithEcho(remoteHostname: String, command: Seq[String], remoteWorkingDir: String): Int = {
+    OsCommand.run(Seq("ssh", remoteHostname, s"cd '${remoteWorkingDir}'; ${OsCommand.toQuotedShellWords(command)}"))
+  }
+
+  /** Run the given command, with an empty stdin, saving stdout and stderr to
+    * the given remote files, and echoing stdout and stderr to this process'
+    * stdout and stderr.  Return the command's exit value.
+    */
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
+  def runWithEcho(remoteHostname: String, command: Seq[String], remoteWorkingDir: String, remoteOutFile: String, remoteErrFile: String): Int = {
+    OsCommand.run(Seq("ssh", remoteHostname, s"cd '${remoteWorkingDir}'; { { ${OsCommand.toQuotedShellWords(command)} | tee '$remoteOutFile'; exit $${PIPESTATUS[0]}; } 2>&1 1>&3 | tee '$remoteErrFile'; exit $${PIPESTATUS[0]}; } 3>&1 1>&2"))
+  }
+
+  /** Run the given command, with an empty stdin, saving stdout and stderr to
+    * the given remote files.  Return the command's Process instance.
+    */
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
+  def runNoEcho(remoteHostname: String, command: Seq[String], remoteWorkingDir: String, remoteOutFile: String, remoteErrFile: String): Process = {
+    OsCommand.runNoWait(Seq("ssh", remoteHostname, s"cd '${remoteWorkingDir}' >'$remoteOutFile' 2>'$remoteErrFile'; ${OsCommand.toQuotedShellWords(command)} >'$remoteOutFile' 2>'$remoteErrFile'"))
+  }
+
+  /** Run the given command, saving stdout and stderr, with an empty stdin.
+    *
+    * Note: This should be used for commands with known small amounts of
+    * output, since all of stdout and stderr will be buffered and returned
+    * as part of the OsCommandResult value.
+    *
+    * @see OsCommandResult
+    */
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
+  def runAndGetResult(remoteHostname: String, command: Seq[String], remoteWorkingDir: String): OsCommandResult = {
+    OsCommand.runAndGetResult(Seq("ssh", remoteHostname, s"cd '${remoteWorkingDir}'; ${OsCommand.toQuotedShellWords(command)}"))
+  }
+
+  /** Run the given command, saving stdout and stderr, with an empty stdin.
+    *
+    * Note: This should be used for commands with known small amounts of
+    * output, since all of stdout and stderr will be buffered and returned
+    * as part of the OsCommandResult value.
+    *
+    * @see OsCommandResult
+    */
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
+  def runAndGetResult(remoteHostname: String, command: Seq[String]): OsCommandResult = {
+    OsCommand.runAndGetResult(Seq("ssh", remoteHostname, OsCommand.toQuotedShellWords(command)))
   }
 
   @throws[RemoteCommandException]
@@ -66,18 +142,6 @@ object RemoteCommand {
       throw new RemoteCommandException(s"${description} failed: exitStatus=${result.exitStatus}, stderr=${result.stderr}")
     }
   }
-
-  //TODO
-  //def runRemote(hostname: String, command: Seq[String], directory: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8) = {
-  //  //... quote command properly ...
-  //  OsCommand.run(Seq("ssh", hostname, s"cd $directory; command >stdout 2>stderr"), null, stdin, charset)
-  //}
-
-  //TODO
-  //def getRemoteResultFrom(hostname: String, command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: OutputStream = java.lang.System.out, stderrTee: OutputStream = java.lang.System.err) = {
-  //  //... quote command properly ...
-  //  OsCommand.runAndGetResult(Seq("ssh", hostname, s"cd $directory; command >stdout 2>stderr"), null, stdin, charset, teeStdOutErr, stdoutTee, stderrTee)
-  //}
 
   def isLocalAddress(address: InetAddress): Boolean = {
     (address == null) || address.isLoopbackAddress || address.isAnyLocalAddress ||

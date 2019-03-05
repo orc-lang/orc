@@ -99,8 +99,6 @@ object ArthursBenchmarkEnv {
 
       val outputDir = if (targetHost.isDefined) remoteOutputDir else runOutputDir
 
-      val sshCommand = targetHost.toSeq.flatMap(host => Seq("ssh", host))
-
       val commandLine = expCondition.wrapperCmd ++
           Seq(javaCmd, "-cp", classPath, s"-Xbootclasspath/a:$bootPath") ++
           //jvmOptions ++
@@ -120,14 +118,17 @@ object ArthursBenchmarkEnv {
       println(s"\n==== Starting $expCondition ====")
       println(s"With command line:\n${commandLine.mkString(" ")}")
 
-      val maybeQuotedCommandLine = if (targetHost.isDefined) commandLine.map(quoteForShell) else commandLine
-
-      OsCommand.runAndGetResult(
-        sshCommand ++ maybeQuotedCommandLine,
-        workingDir = new File(workingDir),
-        teeStdOutErr = true,
-        stdoutTee = Seq(System.out, new FileOutputStream(outFile)),
-        stderrTee = Seq(System.err, new FileOutputStream(errFile)))
+      targetHost match {
+        case None =>
+          OsCommand.runAndGetResult(
+            commandLine,
+            workingDir = new File(workingDir),
+            teeStdOutErr = true,
+            stdoutTee = Seq(System.out, new FileOutputStream(outFile)),
+            stderrTee = Seq(System.err, new FileOutputStream(errFile)))
+        case Some(host) =>
+          RemoteCommand.runWithEcho(host, commandLine, workingDir, outFile, errFile)
+      }
 
       targetHost match {
         case Some(host) =>

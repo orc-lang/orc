@@ -27,7 +27,7 @@ object TestRunNumber {
     val getNewRunNumCmd = if (runCounterFilename.isDefined) Seq(getNewRunNumCmdName, runCounterFilename.get) else Seq(getNewRunNumCmdName)
     val result = Config.get("testRunNumberServer") match {
       case None => OsCommand.runAndGetResult(getNewRunNumCmd)
-      case Some(hostname) => OsCommand.runAndGetResult(Seq("ssh", hostname) ++ getNewRunNumCmd)
+      case Some(hostname) => RemoteCommand.runAndGetResult(hostname, getNewRunNumCmd)
     }
     if (result.exitStatus != 0) {
       print(result.stdout)

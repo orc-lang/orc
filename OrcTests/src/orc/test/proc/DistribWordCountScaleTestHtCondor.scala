@@ -51,7 +51,7 @@ object DistribWordCountScaleTestHtCondor {
     //val currentJvmOpts = java.lang.management.ManagementFactory.getRuntimeMXBean.getInputArguments.asScala
     //DistribTestConfig.expanded.addVariable("currentJvmOpts", currentJvmOpts)
     DistribTestConfig.expanded.addVariable("currentWorkingDir", System.getProperty("user.dir"))
-    DistribTestConfig.expanded.addVariable("leaderHomeDir", OsCommand.runAndGetResult(Seq("ssh", submitHostname, "pwd")).stdout.stripLineEnd)
+    DistribTestConfig.expanded.addVariable("leaderHomeDir", RemoteCommand.runAndGetResult(submitHostname, Seq("pwd")).stdout.stripLineEnd)
     DistribTestConfig.expanded.addVariable("orcVersion", orc.Main.versionProperties.getProperty("orc.version"))
     DistribTestConfig.expanded.addVariable("testRunNumber", testRunNumber)
 
@@ -419,10 +419,10 @@ object DistribWordCountScaleTestHtCondor {
         subFileWriter.close()
       }
       val remoteRunOutputDir = DistribTestConfig.expanded("runOutputDir").stripSuffix("/")
-      RemoteCommand.rsyncToRemote(subFile.toString, submitHostname, remoteRunOutputDir + "/" + condorSubmissionName)
+      RemoteCommand.rsyncToRemote(subFile.getPath, submitHostname, remoteRunOutputDir + "/" + condorSubmissionName)
 
       val leaderWorkingDir = DistribTestConfig.expanded("leaderWorkingDir")
-      OsCommand.run(Seq("ssh", submitHostname, s"cd '${leaderWorkingDir}'; condor_submit '${remoteRunOutputDir}/${condorSubmissionName}'"))
+      RemoteCommand.runWithEcho(submitHostname, Seq("condor_submit", s"$remoteRunOutputDir/$condorSubmissionName"), leaderWorkingDir)
     }
     println(s"Orc run $testRunNumber HTCondor submission complete.  ${currentDateTimeString()}")
   }

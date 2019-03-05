@@ -13,7 +13,7 @@
 
 package orc.test.util
 
-import java.io.{ ByteArrayOutputStream, File, InputStream, OutputStream }
+import java.io.{ ByteArrayOutputStream, File, IOException, InputStream, OutputStream, UnsupportedEncodingException }
 import java.nio.charset.{ Charset, StandardCharsets }
 
 import scala.collection.JavaConverters.seqAsJavaListConverter
@@ -33,6 +33,9 @@ object OsCommand {
     *
     * @see #runAndGetStatus
     */
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
   def run(command: Seq[String], workingDir: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8): Int = {
     val p = runNoWait(command, workingDir, stdin, stdout, stderr, charset)
 
@@ -45,6 +48,8 @@ object OsCommand {
     * empty stdin; and using this process' stdout and stderr, or to the
     * given Files.  Return the command's Process instance.
     */
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
   def runNoWait(command: Seq[String], workingDir: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8): Process = {
     val pb = new ProcessBuilder(command.asJava)
     if (workingDir != null) pb.directory(workingDir)
@@ -68,6 +73,9 @@ object OsCommand {
     *
     * @see #run
     */
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
   def runAndGetStatus(command: Seq[String], workingDir: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)): Int = {
     val pb = new ProcessBuilder(command.asJava)
     if (workingDir != null) pb.directory(workingDir)
@@ -107,6 +115,9 @@ object OsCommand {
     *
     * @see OsCommandResult
     */
+  @throws[InterruptedException]
+  @throws[IOException]
+  @throws[UnsupportedEncodingException]
   def runAndGetResult(command: Seq[String], workingDir: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)): OsCommandResult = {
 
     val outBAOS = new ByteArrayOutputStream()
@@ -153,6 +164,14 @@ object OsCommand {
     */
   def quoteShellAllowExpansion(str: String): String = {
     "\"" + str.replaceAllLiterally("\"", "\\\"") + "\""
+  }
+
+  /** Transform the given command (string sequence) to a space-separated
+    * string that the shell would parse as the given command.  E.g.:
+    *  {"a", "b b b", "c'c"} -> "'a' 'b b b' 'c'\''c'"
+    */
+  def toQuotedShellWords(command: Seq[String]): String = {
+    command.map(OsCommand.quoteShellLiterally(_)).mkString(" ")
   }
 
   private class StreamDrainThread(sourceStream: InputStream, targetStreams: Traversable[OutputStream], name: String) extends Thread(name) {
