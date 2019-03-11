@@ -46,24 +46,24 @@ import orc.values.{ Field, OrcObject, Signal }
   * @author dkitchin
   */
 class Token protected (
-  protected var node: Expression,
-  protected var stack: Frame,
-  protected var env: List[Binding],
-  protected var group: Group,
-  protected var clock: Option[VirtualClock],
-  protected var state: TokenState,
-  val debugId: Long)
+    protected var node: Expression,
+    protected var stack: Frame,
+    protected var env: List[Binding],
+    protected var group: Group,
+    protected var clock: Option[VirtualClock],
+    protected var state: TokenState,
+    val debugId: Long)
   extends GroupMember with Schedulable with Blockable with Resolver {
   import TokenState._
 
   /** Convenience constructor with defaults  */
   protected def this(
-    node: Expression,
-    stack: Frame = EmptyFrame,
-    env: List[Binding] = Nil,
-    group: Group,
-    clock: Option[VirtualClock] = None,
-    state: TokenState = TokenState.Live) = {
+      node: Expression,
+      stack: Frame = EmptyFrame,
+      env: List[Binding] = Nil,
+      group: Group,
+      clock: Option[VirtualClock] = None,
+      state: TokenState = TokenState.Live) = {
     this(node, stack, env, group, clock, state, Token.getNextTokenDebugId(group.runtime))
   }
 
@@ -95,12 +95,12 @@ class Token protected (
 
   /** Copy constructor with defaults */
   private def copy(
-    node: Expression = node,
-    stack: Frame = stack,
-    env: List[Binding] = env,
-    group: Group = group,
-    clock: Option[VirtualClock] = clock,
-    state: TokenState = state): Token = {
+      node: Expression = node,
+      stack: Frame = stack,
+      env: List[Binding] = env,
+      group: Group = group,
+      clock: Option[VirtualClock] = clock,
+      state: TokenState = state): Token = {
     //assert(stack.forall(!_.isInstanceOf[FutureFrame]), "Stack being used in copy contains FutureFrames: " + stack)
     val newToken = new Token(node, stack, env, group, clock, state)
     Tracer.traceTokenCreation(newToken, state)
@@ -338,7 +338,7 @@ class Token protected (
     val removeSucceeded = oldGroup.remove(this)
     // If the remove failed we kill instead of switching groups.
     // We also remove ourselves from the new group.
-    if(removeSucceeded) {
+    if (removeSucceeded) {
       group = newGroup
     } else {
       newGroup.remove(this)
@@ -430,7 +430,8 @@ class Token protected (
       val env = (params map BoundValue).reverse ::: s.context
 
       // Build a token that is in a group nested inside the declaration context.
-      val t = new Token(s.code.body,
+      val t = new Token(
+        s.code.body,
         env = env,
         group = new OrcSiteCallGroup(s.group, sh),
         stack = GroupFrame(EmptyFrame),
@@ -468,10 +469,10 @@ class Token protected (
 
     group.execution match {
       case dOrcExecution: DOrcExecution => {
-        //orc.run.distrib.token.Logger.entering(getClass.getName, "siteCall", Seq(s.getClass.getName, s, actuals))
+        //orc.run.distrib.Logger.Invoke.entering(getClass.getName, "siteCall", Seq(s.getClass.getName, s, actuals))
         val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)) { _ & _ }
         if (!(intersectLocs contains dOrcExecution.runtime.here)) {
-          orc.run.distrib.Logger.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
+          orc.run.distrib.Logger.Invoke.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
           val candidateDestinations = {
             if (intersectLocs.nonEmpty) {
               intersectLocs
@@ -484,7 +485,7 @@ class Token protected (
               }
             }
           }
-          orc.run.distrib.Logger.finest(s"candidateDestinations=$candidateDestinations")
+          orc.run.distrib.Logger.Invoke.finest(s"candidateDestinations=$candidateDestinations")
           val destination = pickLocation(candidateDestinations)
           dOrcExecution.sendToken(this, destination)
           return
@@ -609,7 +610,6 @@ class Token protected (
       }
     }
 
-
     val self = new OrcObject()
 
     Logger.fine(s"Instantiating class: ${bindings}")
@@ -631,7 +631,8 @@ class Token protected (
           val pg = new GraftGroup(group)
 
           // A binding frame is not needed since publishing will trigger the token to halt.
-          val t = new Token(expr,
+          val t = new Token(
+            expr,
             env = objenv,
             group = pg,
             stack = GroupFrame(EmptyFrame),

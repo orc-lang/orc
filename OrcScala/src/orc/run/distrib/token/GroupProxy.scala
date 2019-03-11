@@ -37,33 +37,33 @@ class RemoteGroupProxy(
   override def checkAlive(): Boolean = ???
 
   override def publish(t: Token, v: Option[AnyRef]) = synchronized {
-    //Logger.entering(getClass.getName, "publish", Seq(t, v))
+    //Logger.Proxy.entering(getClass.getName, "publish", Seq(t, v))
     pubFunc(t, v)
     t.halt()
   }
 
   override def kill() = {
-    //Logger.entering(getClass.getName, "kill")
+    //Logger.Proxy.entering(getClass.getName, "kill")
     /* All RemoteGroupProxy kills come from the remote side */
     super.kill()
   }
 
   override def onHalt() {
-    //Logger.entering(getClass.getName, "onHalt")
+    //Logger.Proxy.entering(getClass.getName, "onHalt")
     if (!isKilled) onHaltFunc()
   }
 
   override def onDiscorporate() {
-    //Logger.entering(getClass.getName, "onDiscorporate")
+    //Logger.Proxy.entering(getClass.getName, "onDiscorporate")
     if (!isKilled) onDiscorporateFunc()
   }
 
   override def run() = throw new AssertionError("RemoteGroupProxy scheduled")
 
   override def notifyOrc(event: OrcEvent) = {
-    Logger.entering(getClass.getName, "notifyOrc", Seq(event))
+    Logger.Proxy.entering(getClass.getName, "notifyOrc", Seq(event))
     execution.notifyOrc(event)
-    Logger.exiting(getClass.getName, "notifyOrc")
+    Logger.Proxy.exiting(getClass.getName, "notifyOrc")
   }
 
 }
@@ -84,7 +84,7 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
 
   /** Remote group members all halted, so halt this. */
   def halt() = synchronized {
-    //Logger.entering(getClass.getName, "halt")
+    //Logger.Proxy.entering(getClass.getName, "halt")
     if (alive) {
       alive = false
       parent.remove(this)
@@ -93,7 +93,7 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
 
   /** Remote group members all halted, but there was discorporates, so discorporate this. */
   def discorporate() = synchronized {
-    //Logger.entering(getClass.getName, "discorporate")
+    //Logger.Proxy.entering(getClass.getName, "discorporate")
     if (alive) {
       alive = false
       parent.discorporate(this)
@@ -102,11 +102,11 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
 
   /** The group is killing its members; pass it on. */
   override def kill() = synchronized {
-    //Logger.entering(getClass.getName, "kill")
+    //Logger.Proxy.entering(getClass.getName, "kill")
     if (alive) {
       alive = false
       sendKillFunc()
-      Logger.finer(s"RemoteGroupMembersProxy.kill: parent.members=${parent.members}")
+      Logger.Proxy.finer(s"RemoteGroupMembersProxy.kill: parent.members=${parent.members}")
       parent.remove(this)
     }
   }
@@ -120,7 +120,7 @@ class RemoteGroupMembersProxy(val parent: Group, sendKillFunc: () => Unit, val t
   override def checkAlive(): Boolean = synchronized { alive } && parent.checkAlive()
 
   def run() {
-    //Logger.entering(getClass.getName, "run")
+    //Logger.Proxy.entering(getClass.getName, "run")
     try {
       if (parent.isKilled()) { kill() }
     } catch {
@@ -141,7 +141,7 @@ trait GroupProxyManager { self: DOrcExecution =>
   protected val proxiedGroupMembers = new java.util.concurrent.ConcurrentHashMap[GroupProxyId, RemoteGroupMembersProxy]
 
   def sendToken(token: Token, destination: PeerLocation) {
-    Logger.fine(s"sendToken $token")
+    Logger.Proxy.fine(s"sendToken $token")
     val group = token.getGroup
     val proxyId = group match {
       case rgp: RemoteGroupProxy => rgp.remoteProxyId
@@ -177,22 +177,22 @@ trait GroupProxyManager { self: DOrcExecution =>
 
     Tracer.traceTokenReceive(newToken, origin)
 
-    Logger.fine(s"scheduling $newToken")
+    Logger.Downcall.fine(s"scheduling $newToken")
     runtime.schedule(newToken)
   }
 
   def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(token: Token, pv: Option[AnyRef]) {
-    Logger.fine(s"sendPublish: publish by token $token")
+    Logger.Proxy.fine(s"sendPublish: publish by token $token")
     Tracer.tracePublishSend(token, destination)
     destination.sendInContext(self)(PublishGroupCmd(executionId, proxyId, new PublishingTokenReplacement(token, proxyId, destination, pv)))
   }
 
   def publishInGroup(origin: PeerLocation, groupMemberProxyId: GroupProxyId, publishingToken: PublishingTokenReplacement) {
-    Logger.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishingToken))
+    Logger.Proxy.entering(getClass.getName, "publishInGroup", Seq(groupMemberProxyId.toString, publishingToken))
     val newTokenGroup = proxiedGroupMembers.get(publishingToken.tokenProxyId).parent
     val newToken = publishingToken.asPublishingToken(origin, newTokenGroup)
     Tracer.tracePublishReceive(newToken, origin)
-    Logger.fine(s"publishInGroup $newToken")
+    Logger.Downcall.fine(s"publishInGroup $newToken")
     runtime.schedule(newToken)
   }
 
@@ -209,19 +209,21 @@ trait GroupProxyManager { self: DOrcExecution =>
   def haltGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
+      Logger.Downcall.fine(s"scheduling halt of $g")
       runtime.schedule(new Schedulable { def run() = { g.halt() } })
     } else {
-      Logger.fine(f"Halt group member proxy on unknown group member proxy $groupMemberProxyId%#x")
+      Logger.Proxy.fine(f"Halt group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }
   }
 
   def discorporateGroupMemberProxy(groupMemberProxyId: GroupProxyId) {
     val g = proxiedGroupMembers.get(groupMemberProxyId)
     if (g != null) {
+      Logger.Downcall.fine(s"scheduling discorporate of $g")
       runtime.schedule(new Schedulable { def run() = { g.discorporate() } })
       proxiedGroupMembers.remove(groupMemberProxyId)
     } else {
-      Logger.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
+      Logger.Proxy.fine(f"Discorporate group member proxy on unknown group member proxy $groupMemberProxyId%#x")
     }
   }
 
@@ -233,10 +235,11 @@ trait GroupProxyManager { self: DOrcExecution =>
   def killGroupProxy(proxyId: GroupProxyId) {
     val g = proxiedGroups.get(proxyId)
     if (g != null) {
+      Logger.Downcall.fine(s"scheduling kill of $g")
       runtime.schedule(new Schedulable { override def run() = { g.kill() } })
       proxiedGroups.remove(proxyId)
     } else {
-      Logger.fine(f"Kill group on unknown group $proxyId%#x")
+      Logger.Proxy.fine(f"Kill group on unknown group $proxyId%#x")
     }
   }
 }

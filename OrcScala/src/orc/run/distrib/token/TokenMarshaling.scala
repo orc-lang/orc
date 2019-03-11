@@ -113,7 +113,7 @@ object TokenFieldMarshaling {
   }
 
   def marshalBinding(execution: DOrcExecution, destination: PeerLocation)(b: Binding): BindingReplacement = {
-    //Logger.entering(getClass.getName, "marshalBinding", Seq(b))
+    //Logger.Marshal.entering(getClass.getName, "marshalBinding", Seq(b))
     val result = (b match {
       /* Optimization: Treat resolved local futures as just values */
       case BoundReadable(lfut: LocalFuture) => {
@@ -144,7 +144,7 @@ object TokenFieldMarshaling {
         BoundValueReplacement(execution.marshalValue(destination)(v))
       }
     }
-    //Logger.exiting(getClass.getName, "marshalBinding", result)
+    //Logger.Marshal.exiting(getClass.getName, "marshalBinding", result)
     result
   }
 
@@ -162,7 +162,7 @@ object TokenFieldMarshaling {
   def marshalClosureGroup(cg: ClosureGroup, execution: DOrcExecution, destination: PeerLocation) = {
     assert(cg.isResolved, "Closure group must be resolved")
 
-    //Logger.fine("Creating new CGR for " + cg + ": " + (cg.definitions map { _.optionalVariableName.getOrElse("") }).mkString(","))
+    //Logger.Marshal.fine("Creating new CGR for " + cg + ": " + (cg.definitions map { _.optionalVariableName.getOrElse("") }).mkString(","))
     val defNodesIndicies = cg.definitions map { AstNodeIndexing.nodeIndexInTree(_, execution.node).get }
     val lexicalContext = (cg.lexicalContext map marshalBinding(execution, destination)).toArray
     val cgr = new ClosureGroupReplacement(defNodesIndicies, lexicalContext)
