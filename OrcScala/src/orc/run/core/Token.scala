@@ -20,7 +20,7 @@ import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException
 import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
 import orc.run.distrib.NoLocationAvailable
-import orc.run.distrib.token.{ DOrcExecution, PeerLocation }
+import orc.run.distrib.token.DOrcExecution
 import orc.values.{ Field, OrcObject, Signal }
 
 /** Token represents a "process" executing in the Orc program.
@@ -459,42 +459,63 @@ class Token protected (
     }
   }
 
-  protected def siteCall(s: AnyRef, actuals: List[AnyRef]) {
-    Logger.fine(s"Calling $s with $actuals")
-    assert(!s.isInstanceOf[Binding])
+  protected def siteCall(target: AnyRef, actuals: List[AnyRef]) {
+    Logger.fine(s"Calling $target with $actuals")
+    assert(!target.isInstanceOf[Binding])
     //FIXME:Refactor: Place in correct classes, not all here
     /* Maybe there's an extension mechanism we need to add to Orc here.
      * 'Twould be nice to also move the Vclock hook below to this mechanism. */
-    def pickLocation(ls: Set[PeerLocation]) = ls.head
 
     group.execution match {
       case dOrcExecution: DOrcExecution => {
-        //orc.run.distrib.Logger.Invoke.entering(getClass.getName, "siteCall", Seq(s.getClass.getName, s, actuals))
-        val intersectLocs = (actuals map dOrcExecution.currentLocations).fold(dOrcExecution.currentLocations(s)) { _ & _ }
-        if (!(intersectLocs contains dOrcExecution.runtime.here)) {
-          orc.run.distrib.Logger.Invoke.finest(s"siteCall($s,$actuals): intersection of current locations=$intersectLocs")
-          val candidateDestinations = {
-            if (intersectLocs.nonEmpty) {
-              intersectLocs
+        orc.run.distrib.Logger.Invoke.entering(getClass.getName, "siteCall", Seq(target.getClass.getName, target, actuals))
+
+        val arguments = actuals.toArray
+
+        /* Case 1: If there's a call location override, use it */
+        val clo = dOrcExecution.callLocationOverride(target, arguments)
+        val candidateDestinations = if (clo.nonEmpty) {
+          orc.run.distrib.Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): callLocationOverride=$clo")
+          clo
+        } else {
+          /* Look up current locations, and find their intersection */
+          val intersectLocs = arguments.map(dOrcExecution.currentLocations(_)).fold(dOrcExecution.currentLocations(target))({ _ & _ })
+          orc.run.distrib.Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): intersection of current locations=$intersectLocs")
+
+          if (intersectLocs.nonEmpty) {
+            /* Case 2: If the intersection of current locations is non-empty, use it */
+            intersectLocs
+          } else {
+            /* Look up permitted locations, and find their intersection */
+            val intersectPermittedLocs = (arguments map dOrcExecution.permittedLocations).fold(dOrcExecution.permittedLocations(target)) { _ & _ }
+            if (intersectPermittedLocs.nonEmpty) {
+              /* Case 3: If the intersection of permitted locations is non-empty, use it */
+              intersectPermittedLocs
             } else {
-              val intersectPermittedLocs = (actuals map dOrcExecution.permittedLocations).fold(dOrcExecution.permittedLocations(s)) { _ & _ }
-              if (intersectPermittedLocs.nonEmpty) {
-                intersectPermittedLocs
-              } else {
-                throw new NoLocationAvailable((s +: actuals.toSeq).map(v => (v, dOrcExecution.currentLocations(v).map(_.runtimeId.longValue))))
-              }
+              /* Case 4: No permitted location, fail */
+              val nla = new NoLocationAvailable((target +: arguments.toSeq).map(v => (v, dOrcExecution.currentLocations(v).map(_.runtimeId.longValue))))
+              orc.run.distrib.Logger.Invoke.throwing(getClass.getName, "invokeIntercepted", nla)
+              throw nla
             }
           }
-          orc.run.distrib.Logger.Invoke.finest(s"candidateDestinations=$candidateDestinations")
-          val destination = pickLocation(candidateDestinations)
+        }
+        orc.run.distrib.Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): candidateDestinations=$candidateDestinations")
+        if (!(candidateDestinations contains dOrcExecution.runtime.here)) {
+          /* Send remote call */
+          val destination = dOrcExecution.selectLocationForCall(candidateDestinations)
+          orc.run.distrib.Logger.Invoke.fine(s"siteCall: $target(${arguments.mkString(",")}): selected location for call: $destination")
           dOrcExecution.sendToken(this, destination)
           return
+        } else {
+          /* Call can be local after all, run here */
+          orc.run.distrib.Logger.Invoke.finest(s"siteCall: $target(${arguments.mkString(",")}): invoking locally")
+          /* Fall through */
         }
       }
       case _ => /* Not a distributed execution */
     }
     //End of code needing refactoring
-    s match {
+    target match {
       case vc: VirtualClockOperation => {
         clockCall(vc, actuals)
       }
@@ -502,7 +523,7 @@ class Token protected (
         orcSiteCall(s, actuals)
       }
       case _ => {
-        val scc = new VirtualExternalSiteCallController(this, s, actuals)
+        val scc = new VirtualExternalSiteCallController(this, target, actuals)
         blockOn(scc.materialized)
         runtime.stage(scc.materialized)
       }
