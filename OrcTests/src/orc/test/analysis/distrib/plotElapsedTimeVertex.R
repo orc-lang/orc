@@ -3,11 +3,11 @@
 #
 # Created by jthywiss on Nov 5, 2018.
 #
-# Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+# Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 #
 # Use and redistribution of this file is governed by the license terms in
 # the LICENSE file found in the project's top-level directory and also found at
-# URL: http:#orc.csres.utexas.edu/license.shtml .
+# URL: http://orc.csres.utexas.edu/license.shtml .
 #
 
 library(dplyr, warn.conflicts = FALSE)
@@ -15,8 +15,10 @@ library(ggplot2)
 
 source("analysis.R")
 
+options(echo = TRUE)
+
 runNumber <- commandArgs(trailingOnly = TRUE)[1]
-warmupReps <- 1
+warmupReps <- 9
 
 allRepetitionTimes <- read.csv("repetition-times.csv")
 names(allRepetitionTimes) <- c("program", "numVertices", "probEdge", "dOrcNumRuntimes", "repetitionNumber", "elapsedTime", "cpuTime")
