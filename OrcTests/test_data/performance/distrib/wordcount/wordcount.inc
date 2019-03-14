@@ -18,7 +18,7 @@ val holmesDataDirPath = "../OrcTests/test_data/functional_valid/distrib/holmes_t
 
 val inputDataDirPath = "../OrcTests/test_data/performance/distrib/wordcount/wordcount-input-data/"
 
-val targetFileSize = 17895697 {- bytes -} -- = 2 GiB / 120
+val targetFileSize = 66076420 {- bytes -} -- = 8 GiB / 130
 
 val numCopiesInputFiles = 130 -- can be numInputFiles, if we delete and re-gen input files for every condition
 
