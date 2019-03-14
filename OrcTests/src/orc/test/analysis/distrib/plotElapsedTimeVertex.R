@@ -74,7 +74,24 @@ for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNum
   theme_minimal() +
   theme(legend.justification = c(0, 1), legend.position = c(0, 1))
 
-  ggsave(paste0("speedup_", currProgram, ".pdf"), width = 7, height = 7)
+  ggsave(paste0("speedup_v_numRuntime_", currProgram, ".pdf"), width = 7, height = 7)
+}
+
+for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNumRuntimes > 1 & !is.na(elapsedTimeSummary$dOrcNumRuntimes)])) {
+  
+  ggplot(elapsedTimeSummary[elapsedTimeSummary$program == currProgram & elapsedTimeSummary$dOrcNumRuntimes > 1,], aes(x = numVertices, y = speedup, group = factor(dOrcNumRuntimes), colour = factor(dOrcNumRuntimes), shape = factor(dOrcNumRuntimes))) +
+  geom_line() +
+  geom_point(size = 3) +
+  ggtitle(paste(currProgram, "Run", runNumber)) +
+  xlab("Number of vertices") +
+  labs(colour = "Cluster size [Number of d-Orc runtimes]", shape = "Cluster size [Number of d-Orc runtimes]") +
+  scale_y_continuous(name = "Speed-up factor over cluster size 1", labels = function(n){format(n, scientific = FALSE)}) +
+  expand_limits(x = 1, y = 1.0) +
+  # geom_errorbar(aes(ymax = speedupSeMax, ymin = speedupSeMin), width = 0.2, alpha = 0.35) +
+  theme_minimal() +
+  theme(legend.justification = c(0, 1), legend.position = c(0, 1))
+  
+  ggsave(paste0("speedup_v_inputSize_", currProgram, ".pdf"), width = 7, height = 7)
 }
 
 # Small version of max-vertex case only, for printing at a small size
@@ -94,5 +111,5 @@ for (currProgram in unique(elapsedTimeSummary$program[elapsedTimeSummary$dOrcNum
   theme_minimal() +
   theme(legend.position = "none", axis.text=element_text(size=24), axis.title=element_text(size=28))
 
-  ggsave(paste0("speedup_", currProgram, "_", maxNumVertices, "_sm.pdf"), width = 7, height = 7)
+  ggsave(paste0("speedup_v_numRuntime_", currProgram, "_", maxNumVertices, "_sm.pdf"), width = 7, height = 7)
 }
