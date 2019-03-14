@@ -249,10 +249,12 @@ public class WordCount {
         final ArrayList<File> files = new ArrayList<>();
         listFilesRecursively(new File(dataDir), files);
         inputList = files.subList(0, numInputFiles);
+        final Long inputFileSize = Long.valueOf(Files.size(inputList.get(0).toPath()));
 
         final Object[][] factorValues = {
                 {"Program", "WordCount.java", "", "", ""},
                 {"Number of files read", Integer.valueOf(inputList.size()), "", "numInputFiles", "Words counted in this number of input text files"},
+                {"Input file size", inputFileSize, "B", "inputFileSize", "Size of each input text file"},
                 {"Reads per file", Integer.valueOf(repeatRead), "", "repeatRead", "Number of sequential re-reads of each file"}
         };
         FactorValue.writeFactorValuesTable(factorValues);

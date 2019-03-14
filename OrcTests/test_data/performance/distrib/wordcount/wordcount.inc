@@ -22,6 +22,8 @@ val targetFileSize = 17895697 {- bytes -} -- = 2 GiB / 120
 
 val numCopiesInputFiles = 130 -- can be numInputFiles, if we delete and re-gen input files for every condition
 
+val inputFileSize = Cell[Integer]()
+
 
 {--------
  - I/O Utilities
@@ -38,7 +40,7 @@ def listFileNamesRecursively(dirPathName :: String) :: List[String] =
 
 def createTestDataFiles() =
   import class WordCount = "orc.test.item.distrib.WordCount"
-  WordCount.createTestFiles(holmesDataDirPath, inputDataDirPath, targetFileSize, numCopiesInputFiles)
+  inputFileSize :=  WordCount.createTestFiles(holmesDataDirPath, inputDataDirPath, targetFileSize, numCopiesInputFiles)
 
 def deleteTestDataFiles() =
   import class WordCount = "orc.test.item.distrib.WordCount"
@@ -85,6 +87,7 @@ def executeTest(programName, setUpTest, setUpTestRep, runTestRep, tearDownTestRe
     --Factor name, Value, Units, ID, Comments
     ("Program", programName, "", "", ""),
     ("Number of files read", length(inputList), "", "numInputFiles", "Words counted in this number of input text files"),
+    ("Input file size", inputFileSize?, "B", "inputFileSize", "Size of each input text file"),
     ("Reads per file", repeatRead, "", "repeatRead", "Number of concurrent reads of the file"),
     ("Cluster size", NumberOfRuntimeEngines(), "", "dOrcNumRuntimes", "Number of d-Orc runtime engines running")
   ])  >>

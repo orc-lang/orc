@@ -19,17 +19,16 @@ options(echo = TRUE)
 
 runNumber <- commandArgs(trailingOnly = TRUE)[1]
 warmupReps <- 9
-fileSize <- 0.151945899 # GB
 
 allRepetitionTimes <- read.csv("repetition-times.csv")
-names(allRepetitionTimes) <- c("program", "repeatRead", "numInputFiles", "dOrcNumRuntimes", "repetitionNumber", "elapsedTime", "cpuTime")
+names(allRepetitionTimes) <- c("program", "inputFileSize", "repeatRead", "numInputFiles", "dOrcNumRuntimes", "repetitionNumber", "elapsedTime", "cpuTime")
 
 warmRepetitionTimes <- allRepetitionTimes[allRepetitionTimes$repetitionNumber >= (warmupReps + 1),]
 
 baselineTimeSummary <- warmRepetitionTimes[warmRepetitionTimes$dOrcNumRuntimes == 1 | is.na(warmRepetitionTimes$dOrcNumRuntimes),] %>%
-  group_by(program, repeatRead, numInputFiles, dOrcNumRuntimes) %>%
+  group_by(program, inputFileSize, repeatRead, numInputFiles, dOrcNumRuntimes) %>%
   summarise(nElapsedTime = length(elapsedTime), meanElapsedTime = mean(elapsedTime), sdElapsedTime = sd(elapsedTime), seElapsedTime = sdElapsedTime / sqrt(nElapsedTime)) %>%
-  rowwise() %>% mutate(sizeInput = numInputFiles * fileSize)
+  rowwise() %>% mutate(sizeInput = numInputFiles * inputFileSize / 1000000000)
 
 # Plot baseline elapsed times
 
@@ -53,11 +52,11 @@ for (currProgram in unique(baselineTimeSummary$program)) {
 # Plot speedups
 
 elapsedTimeSummary <- warmRepetitionTimes[!is.na(warmRepetitionTimes$dOrcNumRuntimes),] %>%
-  group_by(program, repeatRead, numInputFiles, dOrcNumRuntimes) %>%
+  group_by(program, inputFileSize, repeatRead, numInputFiles, dOrcNumRuntimes) %>%
   summarise(nElapsedTime = length(elapsedTime), meanElapsedTime = mean(elapsedTime), sdElapsedTime = sd(elapsedTime), seElapsedTime = sdElapsedTime / sqrt(nElapsedTime)) %>%
   addBaseline(meanElapsedTime, c(dOrcNumRuntimes = 1)) %>%
   mutate(speedup = meanElapsedTime_baseline / meanElapsedTime) %>%
-  rowwise() %>% mutate(sizeInput = numInputFiles * fileSize)
+  rowwise() %>% mutate(sizeInput = numInputFiles * inputFileSize / 1000000000)
 
 options(tibble.print_max = Inf, tibble.width = Inf)
 
