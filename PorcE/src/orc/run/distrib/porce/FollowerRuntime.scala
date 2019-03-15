@@ -203,6 +203,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime.RuntimeId) extends DOrcRuntime(runt
       }
     } finally {
       runtimeLocationRegister.remove(peerLocation.runtimeId)
+      initiatedPeers synchronized initiatedPeers.remove(peerLocation.runtimeId)
     }
   }
 

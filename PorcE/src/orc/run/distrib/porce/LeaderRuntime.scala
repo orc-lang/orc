@@ -14,7 +14,7 @@
 package orc.run.distrib.porce
 
 import java.io.{ EOFException, FileWriter }
-import java.net.{ InetAddress, InetSocketAddress, SocketException }
+import java.net.{ InetAddress, InetSocketAddress, SocketException, SocketTimeoutException }
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
@@ -248,7 +248,7 @@ class LeaderRuntime() extends DOrcRuntime(new DOrcRuntime.RuntimeId(0L), "dOrc l
       case None =>
     }
 
-    awaitFollowers(options.followerCount)
+    awaitFollowers(options.followerCount, System.getProperty("orc.distrib.leaderTimeout", "240000" /* ms = 4 min */).toInt)
 
     val thisExecutionId = DOrcExecution.freshExecutionId()
 
@@ -282,11 +282,13 @@ class LeaderRuntime() extends DOrcRuntime(new DOrcRuntime.RuntimeId(0L), "dOrc l
     Logger.exiting(getClass.getName, "run")
   }
 
-  def awaitFollowers(count: Int): Unit = {
+  def awaitFollowers(count: Int, timeout: Long): Unit = {
+    val awaitTimeoutTime = System.currentTimeMillis + timeout
     /* runtimeLocationMap.size includes leader */
-    while (runtimeLocationRegister.size <= count) {
-      runtimeLocationRegister synchronized runtimeLocationRegister.wait()
+    while (runtimeLocationRegister.size <= count && System.currentTimeMillis < awaitTimeoutTime) {
+      runtimeLocationRegister synchronized runtimeLocationRegister.wait(awaitTimeoutTime - System.currentTimeMillis)
     }
+    if (runtimeLocationRegister.size <= count) throw new SocketTimeoutException(s"Timed out waiting for all followers to connect.  Received ${runtimeLocationRegister.size - 1} of $count connections.")
   }
 
   @throws(classOf[ExecutionException])
