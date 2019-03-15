@@ -28,7 +28,7 @@ warmRepetitionTimes <- allRepetitionTimes[allRepetitionTimes$repetitionNumber >=
 baselineTimeSummary <- warmRepetitionTimes[warmRepetitionTimes$dOrcNumRuntimes == 1 | is.na(warmRepetitionTimes$dOrcNumRuntimes),] %>%
   group_by(program, inputFileSize, repeatRead, numInputFiles, dOrcNumRuntimes) %>%
   summarise(nElapsedTime = length(elapsedTime), meanElapsedTime = mean(elapsedTime), sdElapsedTime = sd(elapsedTime), seElapsedTime = sdElapsedTime / sqrt(nElapsedTime)) %>%
-  rowwise() %>% mutate(sizeInput = numInputFiles * inputFileSize / 1000000000)
+  rowwise() %>% mutate(sizeInput = numInputFiles * as.numeric(inputFileSize) / 1.0e9)
 
 # Plot baseline elapsed times
 
@@ -56,7 +56,7 @@ elapsedTimeSummary <- warmRepetitionTimes[!is.na(warmRepetitionTimes$dOrcNumRunt
   summarise(nElapsedTime = length(elapsedTime), meanElapsedTime = mean(elapsedTime), sdElapsedTime = sd(elapsedTime), seElapsedTime = sdElapsedTime / sqrt(nElapsedTime)) %>%
   addBaseline(meanElapsedTime, c(dOrcNumRuntimes = 1)) %>%
   mutate(speedup = meanElapsedTime_baseline / meanElapsedTime) %>%
-  rowwise() %>% mutate(sizeInput = numInputFiles * inputFileSize / 1000000000)
+  rowwise() %>% mutate(sizeInput = numInputFiles * as.numeric(inputFileSize) / 1.0e9)
 
 options(tibble.print_max = Inf, tibble.width = Inf)
 
