@@ -247,7 +247,7 @@ class LeaderRuntime() extends DOrcRuntime(new DOrcRuntime.RuntimeId(0L), "dOrc l
       case None =>
     }
 
-    awaitFollowers(options.followerCount, System.getProperty("orc.distrib.leaderTimeout", "240000" /* ms = 4 min */).toInt)
+    awaitFollowers(options.followerCount, System.getProperty("orc.distrib.leaderTimeout", "240000" /* ms = 4 min */).toLong)
 
     val thisExecutionId = DOrcExecution.freshExecutionId()
 
