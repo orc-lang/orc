@@ -35,7 +35,6 @@ class RemoteFutureRef(execution: DOrcExecution, override val remoteRefId: Remote
   
   override protected def onResolve(): Unit = {
     Profiler.endInterval(remoteRefId, 'RemoteFuture_resolve, beginResolve)
-    System.err.println(s"$this resolved to $toOrcSyntax")
   }
 
 }
