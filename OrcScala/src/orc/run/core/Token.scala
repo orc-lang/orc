@@ -825,6 +825,11 @@ class Token protected (
       case FieldAccess(o, f) => {
         resolve(lookup(o)) {
           _ match {
+            /*FIXME: Factor out this d-Orc case */
+            /*TODO: Do we need to do a full token migrate, or can we do a remote read? */
+            case rr: orc.run.distrib.common.RemoteObjectRef =>
+              val dOrcExecution = execution.asInstanceOf[DOrcExecution]
+              dOrcExecution.sendToken(this, dOrcExecution.currentLocations(rr).head)
             case s: AnyRef =>
               val v = runtime.getAccessor(s, f).get(s)
               v match {
