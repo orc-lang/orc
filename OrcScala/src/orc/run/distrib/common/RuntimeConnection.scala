@@ -26,9 +26,12 @@ import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
   * @author jthywiss
   */
 class RuntimeConnection[+ReceivableMessage, -SendableMessage, Execution <: ExecutionMarshaling[Location], Location](socket: Socket) extends SocketObjectConnection[ReceivableMessage, SendableMessage](socket) {
+  private var lastObjectStreamReset = System.currentTimeMillis()
+  private val objectStreamResetPeriod = System.getProperty("orc.distrib.objectStreamResetPeriod", "5000").toLong /* ms */
 
   /* Note: Always get output before input */
-  override val oos = new RuntimeConnectionOutputStream[Execution, Location, Execution#ExecutionId](socket.getOutputStream())
+  val cos = new CountingOutputStream(socket.getOutputStream())
+  override val oos = new RuntimeConnectionOutputStream[Execution, Location, Execution#ExecutionId](cos)
   override val ois = new RuntimeConnectionInputStream[Execution, Location, Execution#ExecutionId](socket.getInputStream())
 
   override def receive(): ReceivableMessage = {
@@ -48,12 +51,15 @@ class RuntimeConnection[+ReceivableMessage, -SendableMessage, Execution <: Execu
 
   override def send(obj: SendableMessage): Unit = {
     Logger.Message.finest(s"RuntimeConnection.send: Sending $obj on $socket")
+    val startCount = cos.bytecount
     try {
       super.send(obj)
     } catch {
       case srfe: SerializationReplacementFailureException => /* Unwrap */ throw srfe.getCause
     }
+    Logger.Message.finest(s"message size = ${cos.bytecount - startCount}")
     EventCounter.count(Symbol("send " + orc.util.GetScalaTypeName(obj)))
+    maybeReset()
   }
 
   def receiveInContext(executionLookup: (Execution#ExecutionId) => Execution, origin: Location)(): ReceivableMessage = ois synchronized {
@@ -71,6 +77,17 @@ class RuntimeConnection[+ReceivableMessage, -SendableMessage, Execution <: Execu
       send(obj)
     } finally {
       oos.clearContext()
+    }
+  }
+
+  private def maybeReset() = {
+    /*FIXME:HACK: Clear ObjectOutputStream replacement and handle maps to reduce object leaks. 
+     * This breaks reference graph integrity, and leads to periodic resending of duplicate objects.
+     * Time to manage our own handles? */
+    val now = System.currentTimeMillis()
+    if (now > lastObjectStreamReset + objectStreamResetPeriod) {
+      oos.reset()
+      lastObjectStreamReset = now
     }
   }
 
@@ -270,3 +287,35 @@ protected class RuntimeConnectionOutputStream[Execution <: ExecutionMarshaling[L
   * ObjectStream machinery.
   */
 class SerializationReplacementFailureException(objString: String, e: Throwable) extends IOException("Failure when replacing object for serialization, object: " + objString, e)
+
+/** OutputStream wrapper that counts bytes written to the stream.
+  *
+  * @author jthywiss
+  */
+class CountingOutputStream(out: OutputStream) extends OutputStream {
+  var bytecount: Long = 0L
+
+  @throws(classOf[IOException])
+  override def write(b: Int): Unit = {
+    bytecount += 1
+    out.write(b)
+  }
+
+  @throws(classOf[IOException])
+  override def write(b: Array[Byte]): Unit = {
+    bytecount += b.length
+    out.write(b, 0, b.length)
+  }
+
+  @throws(classOf[IOException])
+  override def write(b: Array[Byte], off: Int, len: Int): Unit = {
+    bytecount += len
+    out.write(b, off, len)
+  }
+
+  @throws(classOf[IOException])
+  override def flush(): Unit = out.flush()
+
+  @throws(classOf[IOException])
+  override def close(): Unit = out.close()
+}
