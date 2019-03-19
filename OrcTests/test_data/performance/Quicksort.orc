@@ -41,4 +41,4 @@ BENCHMARK
 {-
 OUTPUT:
 signal
-}
+-}
