@@ -2,7 +2,7 @@
 // WordCount.scala -- Scala benchmark WordCount
 // Project OrcTests
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,7 +11,8 @@
 
 package orc.test.item.scalabenchmarks
 
-import java.io.{ BufferedReader, File, FileNotFoundException, FileReader }
+import java.io.FileNotFoundException
+import java.nio.file.{ Files, Path, Paths }
 
 object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedBenchmarkResult[Long] {
   val numInputFiles = 24 // problemSizeScaledInt(1.2) -- Read(JavaSys.getProperty("orc.test.numInputFiles", "12"))
@@ -22,13 +23,13 @@ object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedB
   val targetFileSize = 17895697 // {- bytes -} = 2 GiB / 120
   val numCopiesInputFiles = 120 // can be numInputFiles, if we delete and re-gen input files for every condition
 
-  def checkReadableFile(file: File): Unit = {
-    if (!file.canRead())
+  def checkReadableFile(file: Path): Unit = {
+    if (!Files.isReadable(file))
       throw new FileNotFoundException("Cannot read file: "+file+" in dir "+System.getProperty("user.dir"))
   }
 
   def listFileNamesRecursively(dirPathName: String): List[String] = {
-    orc.test.item.distrib.WordCount.listFileNamesRecursively(new File(dirPathName)).toList
+    orc.test.item.distrib.WordCount.listFileNamesRecursively(Paths.get(dirPathName)).toList
   }
 
   def createTestDataFiles() = {
@@ -36,9 +37,9 @@ object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedB
   }
 
   // Lines: 6
-  def countFile(file: File): Long = {
+  def countFile(file: Path): Long = {
     checkReadableFile(file)
-    val in = new BufferedReader(new FileReader(file))
+    val in = Files.newBufferedReader(file)
     val count = orc.test.item.distrib.WordCount.countReader(in)
     in.close()
     count
@@ -47,7 +48,7 @@ object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedB
   // Lines: 4
   def repeatCountFilename(filename: String) = {
     def sumN(n: Int, f: () => Long): Long = if (n > 0) f() + sumN(n-1, f) else 0
-    val file = new File(filename)
+    val file = Paths.get(filename)
     sumN(repeatRead, () => countFile(file))
   }
 

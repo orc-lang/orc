@@ -14,18 +14,19 @@
 package orc.test.proc
 
 import java.io.{ File, FileOutputStream }
+import java.nio.file.{ Files, Path, Paths }
 
 import orc.test.util.{ ExperimentalCondition, FactorValue, OsCommand, RemoteCommand }
 
 // FIXME: This object contains a total mess. But I wanted to at least slightly abstract what I'm doing below. Needs to be refactored.
 object ArthursBenchmarkEnv {
   val workingDir = System.getProperty("user.dir", ".")
-  val testRootDir = new File(workingDir).getParent
+  val testRootDir = Paths.get(workingDir).getParent
   val targetHost = Option(System.getProperty("orc.test.benchmarkingHost"))
   val targetBinariesDir = if (targetHost.isDefined) "orc-binaries" else testRootDir
 
   def makePathRemotable(p: String) = {
-    targetBinariesDir + "/" + p.stripPrefix(testRootDir).stripPrefix("/")
+    targetBinariesDir + "/" + p.stripPrefix(testRootDir.toString).stripPrefix("/")
   }
 
   /** This is a list of the all the CPU ids in the order they should be assigned.
@@ -89,7 +90,7 @@ object ArthursBenchmarkEnv {
       runOutputDir: String,
       softTimeLimit: Double,
       hardTimeLimit: Double) = {
-      new File(runOutputDir).mkdirs()
+      Files.createDirectories(Paths.get(runOutputDir))
       targetHost.foreach(RemoteCommand.mkdir(_, remoteOutputDir))
 
       val outFilenamePrefix = s"${expCondition.toFilePrefix}"
@@ -122,7 +123,7 @@ object ArthursBenchmarkEnv {
         case None =>
           OsCommand.runAndGetResult(
             commandLine,
-            workingDir = new File(workingDir),
+            workingDir = Paths.get(workingDir),
             teeStdOutErr = true,
             stdoutTee = Seq(System.out, new FileOutputStream(outFile)),
             stderrTee = Seq(System.err, new FileOutputStream(errFile)))
@@ -176,13 +177,13 @@ object ArthursBenchmarkEnv {
           Seq("orc.Main",
             "--backend", "porc") ++
           toOrcArgs ++
-          Seq(makePathRemotable(orcFile.getPath))
+          Seq(makePathRemotable(orcFile.toString))
 
     def toOrcArgs: Iterable[String] = Seq()
 
-    def toFilePrefix = orcFile.getName.stripSuffix(".orc") + "_orc_" + productIterator.filterNot(v => v.asInstanceOf[AnyRef] eq orcFile).mkString("_")
+    def toFilePrefix = orcFile.getFileName.toString.stripSuffix(".orc") + "_orc_" + productIterator.filterNot(v => v.asInstanceOf[AnyRef] eq orcFile).mkString("_")
 
-    val orcFile: File
+    val orcFile: Path
   }
 
   trait ScalaExperimentalCondition extends JVMExperimentalCondition {
@@ -217,7 +218,7 @@ trait PorcEBenchmark extends JVMRunner {
 
   def runExperiment(experimentalConditions: Iterable[JVMExperimentalCondition]) = {
     lazy val runOutputDir = System.getProperty("orc.executionlog.dir")
-    if (System.getProperty("orc.executionlog.dir") == null || !(new File(s"$runOutputDir/experimental-conditions.csv").exists())) {
+    if (System.getProperty("orc.executionlog.dir") == null || Files.notExists(Paths.get(s"$runOutputDir/experimental-conditions.csv"))) {
       ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
     } else {
       println(s"orc.executionlog.dir is set. Assuming we are continuing an existing run. $runOutputDir/experimental-conditions.csv is not being rewritten. Make sure it's still correct.")
@@ -228,7 +229,7 @@ trait PorcEBenchmark extends JVMRunner {
 
     val filteredExperimentalConditions = experimentalConditions filter { cond =>
       val outputFile = s"$runOutputDir/${cond.toFilePrefix}_factor-values_0.csv"
-      if (new File(outputFile).exists()) {
+      if (Files.exists(Paths.get(outputFile))) {
         println(s"Skipping benchmark because output already exists: $cond")
         false
       } else if (excludedCond contains cond.toFilePrefix) {

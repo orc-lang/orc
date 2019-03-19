@@ -74,8 +74,7 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
     public static final boolean TYPE_CHECK_DEFAULT = defaultConfig.typecheck();
     public static final boolean RECURSION_CHECK_DEFAULT = !defaultConfig.disableRecursionCheck();
     public static final boolean ECHO_OIL_DEFAULT = defaultConfig.echoOil();
-    // public static final String OIL_OUT_DEFAULT =
-    // defaultConfig.oilOutputFile().getPath();
+    //public static final String OIL_OUT_DEFAULT = defaultConfig.oilOutputFile().getPath();
     public static final String SITE_CLASSPATH_DEFAULT = defaultConfig.classPath().isEmpty() ? "" : listMkString(defaultConfig.classPath(), PATH_SEPARATOR).concat(PATH_SEPARATOR); //Eclipse path pref entries always have a trailing : //$NON-NLS-1$
     public static final boolean SHOW_JAVA_STACK_TRACE_DEFAULT = defaultConfig.showJavaStackTrace();
     public static final boolean NO_TCO_DEFAULT = defaultConfig.disableTailCallOpt();
@@ -122,11 +121,9 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
         disableRecursionCheck_$eq(!prefSvc.getBoolean(ORC_PREFS_QUALIFIER, RECURSION_CHECK_ATTR_NAME, disableRecursionCheck(), scopeContexts));
         echoOil_$eq(prefSvc.getBoolean(ORC_PREFS_QUALIFIER, ECHO_OIL_ATTR_NAME, echoOil(), scopeContexts));
 
-        // if (prefSvc.getString(ORC_PREFS_QUALIFIER, OIL_OUT_ATTR_NAME, null,
-        // scopeContexts) != null) {
-        // oilOutputFile_$eq(new File(prefSvc.getString(ORC_PREFS_QUALIFIER,
-        // OIL_OUT_ATTR_NAME, null, scopeContexts)));
-        // }
+        //if (prefSvc.getString(ORC_PREFS_QUALIFIER, OIL_OUT_ATTR_NAME, null, scopeContexts) != null) {
+        //    oilOutputFile_$eq(Paths.get(prefSvc.getString(ORC_PREFS_QUALIFIER, OIL_OUT_ATTR_NAME, null, scopeContexts)));
+        //}
         if (prefSvc.getString(ORC_PREFS_QUALIFIER, SITE_CLASSPATH_ATTR_NAME, null, scopeContexts) != null) {
             classPath_$eq(performSubstitutions(stringToPathList(prefSvc.getString(ORC_PREFS_QUALIFIER, SITE_CLASSPATH_ATTR_NAME, null, scopeContexts))));
         }
@@ -149,11 +146,9 @@ public class OrcConfigSettings extends OrcCmdLineOptions {
         typecheck_$eq(launchConfig.getAttribute(TYPE_CHECK_ATTR_NAME, typecheck()));
         disableRecursionCheck_$eq(!launchConfig.getAttribute(RECURSION_CHECK_ATTR_NAME, !disableRecursionCheck()));
         echoOil_$eq(launchConfig.getAttribute(ECHO_OIL_ATTR_NAME, echoOil()));
-        // if (launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null) !=
-        // null) {
-        // oilOutputFile_$eq(new
-        // File(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null)));
-        // }
+        //if (launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null) != null) {
+        //    oilOutputFile_$eq(Paths.get(launchConfig.getAttribute(OIL_OUT_ATTR_NAME, (String) null)));
+        //}
         classPath_$eq(launchConfig.getAttribute(SITE_CLASSPATH_ATTR_NAME, classPath()));
         showJavaStackTrace_$eq(launchConfig.getAttribute(SHOW_JAVA_STACK_TRACE_ATTR_NAME, showJavaStackTrace()));
         disableTailCallOpt_$eq(launchConfig.getAttribute(NO_TCO_ATTR_NAME, disableTailCallOpt()));

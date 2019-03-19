@@ -2,7 +2,7 @@
 // Webservice.java -- Java class Webservice
 // Project OrcSites
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,17 +11,20 @@
 
 package orc.lib.net;
 
-import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
-import orc.values.sites.compatibility.CallContext;
 import orc.error.runtime.JavaException;
 import orc.error.runtime.TokenException;
 import orc.values.sites.compatibility.Args;
+import orc.values.sites.compatibility.CallContext;
 import orc.values.sites.compatibility.SiteAdaptor;
 
 import org.apache.axis.wsdl.toJava.Emitter;
@@ -49,7 +52,7 @@ public class Webservice extends SiteAdaptor {
     /**
      * Compile class files.
      */
-    private static void javac(final File tmpdir, final List<?> sourcesList) {
+    private static void javac(final Path tmpdir, final List<?> sourcesList) {
         // build argument list
         @SuppressWarnings("unchecked")
         final String[] sources = ((List<String>) sourcesList).toArray(new String[] {});
@@ -90,9 +93,9 @@ public class Webservice extends SiteAdaptor {
                 if (!url.getProtocol().startsWith("file")) {
                     continue;
                 }
-                final File file = new File(url.getPath());
-                if (file.exists()) {
-                    out.append(file.getAbsolutePath());
+                final Path file = Paths.get(url.getPath());
+                if (Files.exists(file)) {
+                    out.append(file.toAbsolutePath());
                     out.append(pathsep);
                     // If the file is a JAR we should
                     // include its classpath as well,
@@ -108,9 +111,13 @@ public class Webservice extends SiteAdaptor {
     public void callSite(final Args args, final CallContext caller) {
         try {
             // Create a temporary directory to host compilation of stubs
-            final File tmpdir = new File(System.getProperty("java.io.tmpdir"), "orc-" + UUID.randomUUID().toString());
+            final Path tmpdir = Paths.get(System.getProperty("java.io.tmpdir"), "orc-" + UUID.randomUUID().toString());
             final Object out = evaluate(args, tmpdir);
-            deleteDirectory(tmpdir);
+            try {
+              deleteDirectory(tmpdir);
+            } catch (IOException e) {
+              throw new RuntimeException("Failed to clean up temporary directory", e);
+            }
             if (out == null) {
                 caller.halt();
             } else {
@@ -121,19 +128,16 @@ public class Webservice extends SiteAdaptor {
         }
     }
 
-    /** Delete a directory recursively */
-    private final boolean deleteDirectory(final File directory) {
-        boolean out = true;
-        final File[] fileArray = directory.listFiles();
-        if (fileArray != null) {
-            for (final File f : fileArray) {
-                out = deleteDirectory(f) && out;
-            }
+    /** Delete a directory recursively 
+     * @throws IOException */
+    private final void deleteDirectory(final Path directory) throws IOException {
+        for (final Path f : Files.newDirectoryStream(directory)) {
+            deleteDirectory(f);
         }
-        return directory.delete() && out;
+        Files.delete(directory);
     }
 
-    public Object evaluate(final Args args, final File tmpdir) throws TokenException {
+    public Object evaluate(final Args args, final Path tmpdir) throws TokenException {
         try {
             // Generate stub source files.
             // Emitter is the class that does all of the file creation for the
@@ -147,7 +151,7 @@ public class Webservice extends SiteAdaptor {
             // Compile stub source files
             javac(tmpdir, info.getFileNames());
 
-            final URLClassLoader cl = new URLClassLoader(new URL[] { tmpdir.toURI().toURL() }, Webservice.class.getClassLoader());
+            final URLClassLoader cl = new URLClassLoader(new URL[] { tmpdir.toUri().toURL() }, Webservice.class.getClassLoader());
             // ensure all of the service's classes are loaded into the VM
             // FIXME: is this necessary?
             for (final Object name : info.getClassNames()) {

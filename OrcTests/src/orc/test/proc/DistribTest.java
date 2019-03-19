@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 29, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,8 @@
 
 package orc.test.proc;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import junit.framework.Test;
 
@@ -30,7 +31,7 @@ public class DistribTest {
      */
     public static Test suite() {
         DistribTestCase.setUpTestSuite();
-        final File[] programPaths = { new File("test_data/functional_valid/distrib") };
+        final Path[] programPaths = { Paths.get("test_data/functional_valid/distrib") };
         return DistribTestCase.buildSuite(programPaths);
     }
 }

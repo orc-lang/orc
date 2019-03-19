@@ -13,8 +13,8 @@
 
 package orc.run.distrib.common
 
-import java.io.File
 import java.net.InetSocketAddress
+import java.nio.file.Path
 
 import orc.util.CmdLineParser
 
@@ -32,9 +32,9 @@ class FollowerRuntimeCmdLineOptions() extends CmdLineParser {
   private var listenSocketAddress_ : InetSocketAddress = null
   def listenSocketAddress: InetSocketAddress = listenSocketAddress_
   def listenSocketAddress_=(newVal: InetSocketAddress): Unit = listenSocketAddress_ = newVal
-  private var listenSockAddrFile_ : Option[File] = None
-  def listenSockAddrFile: Option[File] = listenSockAddrFile_
-  def listenSockAddrFile_=(newVal: Option[File]): Unit = listenSockAddrFile_ = newVal
+  private var listenSockAddrFile_ : Option[Path] = None
+  def listenSockAddrFile: Option[Path] = listenSockAddrFile_
+  def listenSockAddrFile_=(newVal: Option[Path]): Unit = listenSockAddrFile_ = newVal
 
   IntOprd(() => runtimeId, runtimeId = _, position = 0, argName = "runtime-id", required = true, usage = "d-Orc runtime (follower) ID")
 

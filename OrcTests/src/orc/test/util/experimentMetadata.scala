@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Oct 9, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,8 @@
 
 package orc.test.util
 
-import java.io.{ BufferedReader, File, FileReader, IOException, OutputStreamWriter }
+import java.io.{ IOException, OutputStreamWriter }
+import java.nio.file.{ Files, Path, Paths }
 
 import scala.collection.JavaConverters.{ asScalaIteratorConverter, propertiesAsScalaMapConverter }
 import scala.collection.mutable.{ Buffer, StringBuilder }
@@ -94,7 +95,8 @@ object FactorValue {
   def writeFactorValuesTableWithPropertyFactors(factorValues: Traversable[Product]): Unit = {
     val properties = System.getProperties.asScala
     val propertyFactors = properties.filterKeys(s => s.startsWith(factorPropertyPrefix) && s.indexOf(".", factorPropertyPrefix.size) == -1)
-      .map { case (k, v) =>
+      .map {
+        case (k, v) =>
           val id = k.substring(factorPropertyPrefix.size)
           val name = System.getProperty(s"$k.name", id)
           val comments = System.getProperty(s"$k.comments", "")
@@ -116,10 +118,11 @@ object FactorValue {
   @throws[IOException]
   def writeFactorValuesTable(factorValues: Array[Array[AnyRef]]): Unit = {
     writeFactorValuesTable(_.writeRowsOfTraversables(factorValues.map({
-      e => if (e.length == 5) 
-        e.toTraversable
-      else 
-        throw new IllegalArgumentException("writeFactorValuesTable: factorValues must be either FactorValue instances or 5-tuples") 
+      e =>
+        if (e.length == 5)
+          e.toTraversable
+        else
+          throw new IllegalArgumentException("writeFactorValuesTable: factorValues must be either FactorValue instances or 5-tuples")
     })))
   }
 
@@ -182,7 +185,7 @@ object ExperimentalCondition {
     */
   def writeExperimentalConditionsTable(experimentalConditions: Traversable[ExperimentalCondition]): Unit = {
     System.setProperty("orc.executionlog.dir", Option(System.getProperty("orc.executionlog.dir")).getOrElse("runs/" + TestRunNumber.singletonNumber + "/raw-output"))
-    new File(System.getProperty("orc.executionlog.dir")).mkdirs()
+    Files.createDirectories(Paths.get(System.getProperty("orc.executionlog.dir")))
 
     val tableColumnTitles = experimentalConditions.head.factorDescriptions.map(_.toString)
 
@@ -208,7 +211,7 @@ object ExperimentalCondition {
     * The file must be in CSV format, with a header row of factor descriptions,
     * each formatted as "Factor name (unit) [id]".
     */
-  def readFrom[EC <: ExperimentalCondition](experimentalConditionsFile: File, factors: Seq[FactorDescription], parseEcLine: Seq[String] => EC): Traversable[EC] = {
+  def readFrom[EC <: ExperimentalCondition](experimentalConditionsFile: Path, factors: Seq[FactorDescription], parseEcLine: Seq[String] => EC): Traversable[EC] = {
     import State._
 
     /* Split a CSV file record into fields. Slightly more liberal than RFC 4180, accepting more then just pure-ASCII printable chars. */
@@ -236,19 +239,19 @@ object ExperimentalCondition {
               fields += currField.toString()
               currField.clear()
               currState = StartOfField
-            } else if (ch == '\"')  {
+            } else if (ch == '\"') {
               barf(ch)
             } else {
               currField += ch
             }
           case InEscapedField =>
-            if (ch == '\"')  {
+            if (ch == '\"') {
               currState = InEscapedFieldQuote
             } else {
               currField += ch
             }
           case InEscapedFieldQuote =>
-            if (ch == '\"')  {
+            if (ch == '\"') {
               /* Doubled quote */
               currField += ch
               currState = InEscapedField
@@ -268,26 +271,21 @@ object ExperimentalCondition {
       fields += currField.toString()
       fields
     }
-    val ecReader = new FileReader(experimentalConditionsFile)
+    val ecBufReader = Files.newBufferedReader(experimentalConditionsFile)
     try {
-      val ecBufReader = new BufferedReader(ecReader)
-      try {
-        val lines = ecBufReader.lines().iterator
-        if (!lines.hasNext()) {
-          throw new DataFormatException(experimentalConditionsFile, "Empty file")
-        }
-        val headerRow = splitCsvRecord(lines.next()).mkString(",")
-        val expectedHeaderRow = factors.map(_.toString).mkString(",")
-        if (headerRow != expectedHeaderRow) {
-          throw new DataFormatException(experimentalConditionsFile, s"Unexpected header -- Expected $expectedHeaderRow, got $headerRow")
-        }
-        val experimentalConditions = lines.asScala.map(line => parseEcLine(splitCsvRecord(line)))
-        experimentalConditions.toList
-      } finally {
-        ecBufReader.close()
+      val lines = ecBufReader.lines().iterator
+      if (!lines.hasNext()) {
+        throw new DataFormatException(experimentalConditionsFile, "Empty file")
       }
+      val headerRow = splitCsvRecord(lines.next()).mkString(",")
+      val expectedHeaderRow = factors.map(_.toString).mkString(",")
+      if (headerRow != expectedHeaderRow) {
+        throw new DataFormatException(experimentalConditionsFile, s"Unexpected header -- Expected $expectedHeaderRow, got $headerRow")
+      }
+      val experimentalConditions = lines.asScala.map(line => parseEcLine(splitCsvRecord(line)))
+      experimentalConditions.toList
     } finally {
-      ecReader.close()
+      ecBufReader.close()
     }
   }
 
@@ -300,7 +298,7 @@ object ExperimentalCondition {
   }
 
   class DataFormatException(message: String) extends Exception(message) {
-    def this(file: File, message: String) = this(file.getPath + ": " + message)
+    def this(file: Path, message: String) = this(file.toString + ": " + message)
   }
 
 }

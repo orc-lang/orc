@@ -13,7 +13,7 @@
 
 package orc.test.proc
 
-import java.io.File
+import java.nio.file.{ Path, Paths }
 
 import orc.script.OrcBindings
 import orc.test.item.distrib.WordCount
@@ -29,7 +29,7 @@ class DistribWordCountScaleTestCase(
     val factorValues: DistribWordCountScaleTestCase.WordCountExperimentalCondition,
     suiteName: String,
     testName: String,
-    orcFile: File,
+    orcFile: Path,
     expecteds: ExpectedOutput,
     bindings: OrcBindings,
     testContext: Map[String, AnyRef],
@@ -56,10 +56,10 @@ class DistribWordCountScaleTestCase(
 object DistribWordCountScaleTestCase {
 
   def buildTestSuite(): Test = {
-    val experimentalConditions = ExperimentalCondition.readFrom(new File("test_data/performance/distrib/wordcount/experimental-conditions.csv"), factors, WordCountExperimentalCondition.parse(_))
+    val experimentalConditions = ExperimentalCondition.readFrom(Paths.get("test_data/performance/distrib/wordcount/experimental-conditions.csv"), factors, WordCountExperimentalCondition.parse(_))
     ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
     DistribTestCase.setUpTestSuite()
-    val programPaths = Array(new File("test_data/performance/distrib/wordcount/"))
+    val programPaths = Array(Paths.get("test_data/performance/distrib/wordcount/"))
     val testRunSuite = new TestSuite("DistribWordCountScaleTest")
     for (experimentalCondition <- experimentalConditions) {
 

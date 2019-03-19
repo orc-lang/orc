@@ -2,7 +2,7 @@
 // PorcELanguageBase.scala -- Truffle language implementation PorcELanguageBase
 // Project PorcE
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,7 +11,8 @@
 
 package orc.run.porce
 
-import java.io.{ BufferedReader, File, PrintStream, PrintWriter }
+import java.io.{ BufferedReader, PrintStream, PrintWriter }
+import java.nio.file.Paths
 
 import orc.{ OrcOptions, PorcEBackend, PorcEPolyglotLauncher }
 import orc.compile.parse.OrcInputContext
@@ -25,7 +26,7 @@ import com.oracle.truffle.api.nodes.RootNode
 import com.oracle.truffle.api.source.Source
 
 class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
-    this: PorcELanguage =>
+  this: PorcELanguage =>
 
   val options: OrcOptions = PorcEPolyglotLauncher.orcOptions.getOrElse(new OrcBindings())
   val backend = PorcEBackend(this)
@@ -68,7 +69,7 @@ class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
   }
 
   private class SourceInputContext(val source: Source, override val descr: String) extends OrcInputContext {
-    val file = new File(descr)
+    val file = Paths.get(descr)
     override val reader = orc.compile.parse.OrcReader(this, new BufferedReader(source.getReader()))
     override def toURI = source.getURI
     override def toURL = toURI.toURL
@@ -80,8 +81,9 @@ class PorcELanguageBase extends TruffleLanguage[PorcEContext] {
     import orc.progress.NullProgressMonitor
 
     val logger = new PrintWriterCompileLogger(new PrintWriter(System.err, true))
-    val code = compiler.compile(new SourceInputContext(request.getSource,
-      new File(request.getSource.getURI).getCanonicalPath()), options,
+    val code = compiler.compile(new SourceInputContext(
+      request.getSource,
+      Paths.get(request.getSource.getURI).toAbsolutePath.toString), options,
       logger, NullProgressMonitor)
     val launchNode = new RootNode(this) {
       def execute(frame: VirtualFrame): Object = {

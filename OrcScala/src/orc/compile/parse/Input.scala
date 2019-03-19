@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jun 6, 2010.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,8 +13,10 @@
 
 package orc.compile.parse
 
-import java.io.{ File, FileInputStream, IOException, InputStreamReader, StringReader }
+import java.io.{ IOException, InputStreamReader, StringReader }
 import java.net.{ URI, URL }
+import java.nio.charset.Charset
+import java.nio.file.{ Files, Path, Paths }
 
 // TODO: This should be replaced with: import scala.util.parsing.input.PagedSeq. However that will not exist until at least scala-parser-combinators 1.0.7.
 import scala.collection.immutable.PagedSeq
@@ -74,13 +76,13 @@ trait OrcInputContext {
       (s.length >= 2 && s(0).isLetter && s(1) == ':') || // CP/M style drive letter
         !s.filterNot(allowedURIchars.contains(_)).isEmpty // Illegal URI chars
     def nameToURI(s: String): URI = {
-      if (!looksLikeFilename(s)) new URI(s) else new File(s).toURI()
+      if (!looksLikeFilename(s)) new URI(s) else Paths.get(s).toUri()
     }
     /** Ensure that "file:" URIs that refer to directories have a trailing slash.
       * This is necessary per URI parsing and resolution rules.
       */
     def slashifyDir(u: URI) = {
-      if (u != null && u.getScheme != null && u.getScheme.equals("file")) new File(u).toURI() else u
+      if (u != null && u.getScheme != null && u.getScheme.equals("file")) Paths.get(u).toUri() else u
     }
     pathElements.foldLeft(slashifyDir(baseURI))((x, y) => slashifyDir(x.resolve(nameToURI(y))))
   }
@@ -159,8 +161,8 @@ object OrcInputContext {
   // Factory method
   def apply(inputURI: URI): OrcInputContext = {
     inputURI.getScheme match {
-      case "file" => new OrcFileInputContext(new File(inputURI), "UTF-8")
-      case null => new OrcFileInputContext(new File(inputURI.getPath()), "UTF-8")
+      case "file" => new OrcFileInputContext(Paths.get(inputURI), "UTF-8")
+      case null => new OrcFileInputContext(Paths.get(inputURI.getPath()), "UTF-8")
       case "data" => { val ssp = inputURI.getSchemeSpecificPart(); new OrcStringInputContext(ssp.drop(ssp.indexOf(',') + 1)) }
       //case "jar"  => { val ssp = inputURI.getSchemeSpecificPart(); new OrcResourceInputContext(ssp.drop(ssp.indexOf("!/")+1), ???) }
       case _ => new OrcNetInputContext(inputURI)
@@ -172,11 +174,11 @@ object OrcInputContext {
   *
   * @author jthywiss
   */
-class OrcFileInputContext(val file: File, val charsetName: String) extends OrcInputContext {
+class OrcFileInputContext(val file: Path, val charsetName: String) extends OrcInputContext {
   override val descr: String = file.toString()
-  override def toURI: URI = file.toURI
+  override def toURI: URI = file.toUri
   override def toURL: URL = toURI.toURL
-  override val reader: OrcReader = OrcReader(this, new InputStreamReader(new FileInputStream(file), charsetName))
+  override val reader: OrcReader = OrcReader(this, Files.newBufferedReader(file, Charset.forName(charsetName)))
 }
 
 /** An OrcInputContext that reads from a given string.

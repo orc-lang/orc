@@ -2,7 +2,7 @@
 // Dedup.scala -- Scala benchmark Dedup
 // Project OrcTests
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,10 +11,10 @@
 
 package orc.test.item.scalabenchmarks.dedup
 
-import java.io.{ DataOutputStream, File, FileInputStream, FileOutputStream, IOException }
+import java.io.{ DataOutputStream, FileInputStream, FileOutputStream, IOException }
+import java.nio.file.{ Files, Paths }
 import java.security.MessageDigest
 import java.util.concurrent.{ ConcurrentHashMap, ForkJoinPool }
-import java.lang.ThreadLocal
 
 import scala.concurrent.{ Await, Promise }
 import scala.concurrent.duration.Duration
@@ -69,7 +69,7 @@ object Dedup extends BenchmarkApplication[Unit, Unit] {
         }
       } else {
         (currentChunk.slice(0, splitPoint), i) #::
-          process(currentChunk.slice(splitPoint, currentChunk.size), i+1)
+          process(currentChunk.slice(splitPoint, currentChunk.size), i + 1)
       }
     }
     process(Chunk.empty, 0)
@@ -147,5 +147,5 @@ object Dedup extends BenchmarkApplication[Unit, Unit] {
 
   val name: String = "Dedup"
 
-  val size: Int = new File(DedupData.localInputFile).length().toInt
+  val size: Int = Files.size(Paths.get(DedupData.localInputFile)).toInt
 }

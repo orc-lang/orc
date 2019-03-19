@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Mar 17, 2018.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,7 @@
 
 package orc.test.proc
 
-import java.io.File
+import java.nio.file.{ Path, Paths }
 
 import orc.script.OrcBindings
 import orc.test.util.{ ExpectedOutput, ExperimentalCondition, FactorDescription }
@@ -28,7 +28,7 @@ class DistribVertexScaleTestCase(
     val factorValues: DistribVertexScaleTestCase.VertexExperimentalCondition,
     suiteName: String,
     testName: String,
-    orcFile: File,
+    orcFile: Path,
     expecteds: ExpectedOutput,
     bindings: OrcBindings,
     testContext: Map[String, AnyRef],
@@ -55,10 +55,10 @@ class DistribVertexScaleTestCase(
 object DistribVertexScaleTestCase {
 
   def buildTestSuite(): Test = {
-    val experimentalConditions = ExperimentalCondition.readFrom(new File("test_data/performance/distrib/vertex/experimental-conditions.csv"), factors, VertexExperimentalCondition.parse(_))
+    val experimentalConditions = ExperimentalCondition.readFrom(Paths.get("test_data/performance/distrib/vertex/experimental-conditions.csv"), factors, VertexExperimentalCondition.parse(_))
     ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
     DistribTestCase.setUpTestSuite()
-    val programPaths = Array(new File("test_data/performance/distrib/vertex/"))
+    val programPaths = Array(Paths.get("test_data/performance/distrib/vertex/"))
     val testRunSuite = new TestSuite("DistribVertexScaleTest")
     for (experimentalCondition <- experimentalConditions) {
 

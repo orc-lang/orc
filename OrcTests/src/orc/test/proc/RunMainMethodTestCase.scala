@@ -13,8 +13,8 @@
 
 package orc.test.proc
 
-import java.io.{ File, FileOutputStream }
 import java.net.InetAddress
+import java.nio.file.{ Files, Paths }
 
 import orc.test.util.{ OsCommand, RemoteCommand, TestRunNumber }
 
@@ -45,8 +45,8 @@ class RunMainMethodTestCase(
     println("  " + (for ((k, v) <- testContext) yield s"$k=$v").mkString(", "))
 
     val runOutputDir = "runs/" + TestRunNumber.singletonNumber + "/raw-output"
-    val testOutFile = new File(runOutputDir, outFilenamePrefix + ".out")
-    val testErrFile = new File(runOutputDir, outFilenamePrefix + ".err")
+    val testOutFile = Paths.get(runOutputDir, outFilenamePrefix + ".out")
+    val testErrFile = Paths.get(runOutputDir, outFilenamePrefix + ".err")
 
     val orcVersion = orc.Main.versionProperties.getProperty("orc.version")
     val javaCmd = "java"
@@ -69,9 +69,9 @@ class RunMainMethodTestCase(
     val isLocal = RemoteCommand.isLocalAddress(InetAddress.getByName(hostname))
     val exitStatus =
       if (isLocal) {
-        OsCommand.runAndGetStatus(javaRunCommand, workingDir = new File(workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(testOutFile)), stderrTee = Seq(System.err, new FileOutputStream(testErrFile)))
+        OsCommand.runAndGetStatus(javaRunCommand, workingDir = Paths.get(workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, Files.newOutputStream(testOutFile)), stderrTee = Seq(System.err, Files.newOutputStream(testErrFile)))
       } else {
-        RemoteCommand.runWithEcho(hostname, javaRunCommand, workingDir, testOutFile.getPath, testErrFile.getPath)
+        RemoteCommand.runWithEcho(hostname, javaRunCommand, workingDir, testOutFile.toString, testErrFile.toString)
       }
 
     if (exitStatus != 0) {

@@ -15,7 +15,7 @@ package orc.test.proc
 
 import java.io.{ File, FileOutputStream }
 import java.net.InetAddress
-import java.nio.file.Paths
+import java.nio.file.{ Files, Path, Paths }
 
 import orc.error.compiletime.{ CompilationException, FeatureNotSupportedException }
 import orc.script.OrcBindings
@@ -32,7 +32,7 @@ import org.junit.Assume
 class DistribTestCase(
     suitename: String,
     testname: String,
-    file: File,
+    file: Path,
     expecteds: ExpectedOutput,
     bindings: OrcBindings,
     val testContext: Map[String, AnyRef],
@@ -60,18 +60,18 @@ class DistribTestCase(
     }
   }
 
-  def outFilenamePrefix = orcFile.getName.stripSuffix(".orc")
+  def outFilenamePrefix = orcFile.getFileName.toString.stripSuffix(".orc")
 
   protected def runLeader(): Int = {
     val leaderOpts = DistribTestConfig.expanded.getIterableFor("leaderOpts").getOrElse(Seq())
 
     val jvmOptions = leaderSpec.jvmOptions ++ (if (testContext != null) for ((k, v) <- testContext) yield s"-Dorc.test.$k=$v" else Seq.empty)
-    val leaderCommand = Seq(leaderSpec.javaCmd, "-cp", leaderSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--listen=${leaderSpec.hostname}:${leaderSpec.port}", s"--follower-count=${bindings.followerCount}", orcFile.getPath)
+    val leaderCommand = Seq(leaderSpec.javaCmd, "-cp", leaderSpec.classPath) ++ jvmOptions ++ Seq(s"-Dorc.executionlog.fileprefix=${outFilenamePrefix}_", "-Dorc.executionlog.filesuffix=_0", DistribTestConfig.expanded("leaderClass")) ++ leaderOpts.toSeq ++ Seq(s"--listen=${leaderSpec.hostname}:${leaderSpec.port}", s"--follower-count=${bindings.followerCount}", orcFile.toString)
     val leaderOutFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_0.out"
     val leaderErrFile = s"${DistribTestCase.remoteRunOutputDir}/${outFilenamePrefix}_0.err"
 
     if (leaderSpec.isLocal) {
-      OsCommand.runAndGetStatus(leaderCommand, workingDir = new File(leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
+      OsCommand.runAndGetStatus(leaderCommand, workingDir = Paths.get(leaderSpec.workingDir), teeStdOutErr = true, stdoutTee = Seq(System.out, new FileOutputStream(leaderOutFile)), stderrTee = Seq(System.err, new FileOutputStream(leaderErrFile)))
     } else {
       RemoteCommand.runWithEcho(leaderSpec.hostname, leaderCommand, leaderSpec.workingDir, leaderOutFile, leaderErrFile)
     }
@@ -88,7 +88,7 @@ class DistribTestCase(
 
       if (followerSpec.isLocal) {
         println(s"Launching follower $followerNumber on port ${followerSpec.port}")
-        OsCommand.runNoWait(followerCommand, workingDir = new File(followerSpec.workingDir), stdout = new File(followerOutFile), stderr = new File(followerErrFile))
+        OsCommand.runNoWait(followerCommand, workingDir = Paths.get(followerSpec.workingDir), stdout = Paths.get(followerOutFile), stderr = Paths.get(followerErrFile))
       } else {
         println(s"Launching follower $followerNumber on ${followerSpec.hostname}:${followerSpec.port}")
         RemoteCommand.runNoEcho(followerSpec.hostname, followerCommand, followerSpec.workingDir, followerOutFile, followerErrFile)
@@ -139,25 +139,25 @@ object DistribTestCase {
     /* Copy config dir to runOutputDir/../config */
     val localRunOutputDir = "../" + pathRelativeToTestRoot(remoteRunOutputDir)
     val orcConfigDir = "../" + pathRelativeToTestRoot(DistribTestConfig.expanded("orcConfigDir")).stripSuffix("/")
-    new File(localRunOutputDir).mkdirs()
+    Files.createDirectories(Paths.get(localRunOutputDir))
     OsCommand.checkExitValue(s"rsync of $orcConfigDir to $localRunOutputDir/../", OsCommand.runAndGetResult(Seq("rsync", "-rlpt", orcConfigDir, localRunOutputDir + "/../")))
     if (!leaderIsLocal) {
       copyFiles()
       RemoteCommand.mkdir(leaderHostname, remoteRunOutputDir)
       Runtime.getRuntime().addShutdownHook(DistribTestCopyBackThread)
     } else {
-      new File(remoteRunOutputDir).mkdirs()
+      Files.createDirectories(Paths.get(remoteRunOutputDir))
     }
   }
 
-  type DistribTestCaseFactory = (String, String, File, ExpectedOutput, OrcBindings, Map[String, AnyRef], DOrcRuntimePlacement, Seq[DOrcRuntimePlacement]) => DistribTestCase
+  type DistribTestCaseFactory = (String, String, Path, ExpectedOutput, OrcBindings, Map[String, AnyRef], DOrcRuntimePlacement, Seq[DOrcRuntimePlacement]) => DistribTestCase
 
-  def buildSuite(programPaths: Array[File]): TestSuite = {
+  def buildSuite(programPaths: Array[Path]): TestSuite = {
     val testCaseFactory = (s, t, f, e, b, tc, ls, fs) => new DistribTestCase(s, t, f, e, b, tc, ls, fs)
     buildSuite(testCaseFactory, null, programPaths)
   }
 
-  def buildSuite(testCaseFactory: DistribTestCaseFactory, testContext: Map[String, AnyRef], programPaths: Array[File]): TestSuite = {
+  def buildSuite(testCaseFactory: DistribTestCaseFactory, testContext: Map[String, AnyRef], programPaths: Array[Path]): TestSuite = {
     if (testContext != null) {
       /* XXX */
       for ((key, value) <- testContext) DistribTestConfig.expanded.addVariable(key, value.toString())

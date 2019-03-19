@@ -15,14 +15,14 @@
 val repeatRead = 10
 
 def checkReadableFile(file) =
+  import class Files = "java.nio.file.Files"
   import class JavaSys = "java.lang.System"
-  if file.canRead() then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
+  if Files.isReadable(file) then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
 
 def countFile(file) =
-  import class BufferedReader = "java.io.BufferedReader"
-  import class FileReader = "java.io.FileReader"
+  import class Files = "java.nio.file.Files"
   import class WordCount = "orc.test.item.distrib.WordCount"
-  BufferedReader(FileReader(file))  >in>
+  Files.newBufferedReader(file)  >in>
   WordCount.countReader(in)  >counts>
   in.close()  >>
   counts
@@ -33,8 +33,8 @@ def mapOperation(filename) =
   def loop(1, f) = [f()]
   def loop(n, f) = {| f() |} : loop(n-1, f) 
 
-  import class File = "java.io.File"
-  File(filename)  >f>
+  import class Paths = "java.nio.file.Paths"
+  Paths.get(filename)  >f>
   checkReadableFile(f)  >>
   loop(repeatRead,
     { countFile(f) }

@@ -4,15 +4,16 @@
 //
 // Created by dkitchin on Dec 16, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package docgen
 
-import java.io.File
+import java.nio.file.{ Files, Path }
 
 import scala.language.postfixOps
 import scala.util.parsing.combinator.RegexParsers
@@ -48,8 +49,8 @@ object DocParsers extends RegexParsers {
 
   def parseFullLine: Parser[String] = """[^\n]+""".r <~ "\n"
 
-  def parseFile(f: File): List[DocItem] = {
-    val reader = scala.util.parsing.input.StreamReader(new java.io.FileReader(f))
+  def parseFile(f: Path): List[DocItem] = {
+    val reader = scala.util.parsing.input.StreamReader(Files.newBufferedReader(f))
     phrase(parseDocument)(reader) match {
       case Success(items, _) => items
       case _ => throw new Exception("Parser failure while parsing file " + f.toString() + " in Docgen.")

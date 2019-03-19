@@ -2,17 +2,19 @@
 // Backend.scala -- Abstract trait representing a compiler and runtime
 // Project OrcScala
 //
-// Created by Arthur Peters on Aug 28, 2013.
+// Created by amp on Aug 28, 2013.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc
 
-import java.io.{ BufferedReader, File, IOException, PrintWriter, Writer }
+import java.io.{ BufferedReader, IOException, InputStream, OutputStream, PrintWriter, Writer }
+import java.nio.file.Paths
 import java.util.ServiceLoader
 
 import orc.ast.oil.nameless.Expression
@@ -26,7 +28,7 @@ import orc.progress.{ NullProgressMonitor, ProgressMonitor }
   */
 abstract class BackendType {
   type CompiledCode
-  
+
   def name: String
   final def id: String = name.toLowerCase()
   def newBackend(): Backend[CompiledCode]
@@ -35,7 +37,7 @@ abstract class BackendType {
 
 object BackendType {
   private val serviceLoader: ServiceLoader[BackendType] = ServiceLoader.load(classOf[BackendType])
-  
+
   val backendTypes: Iterable[BackendType] = {
     import collection.JavaConverters._
     serviceLoader.iterator().asScala.toSeq.reverse
@@ -43,7 +45,7 @@ object BackendType {
 
   private val stringToBackendType: Map[String, BackendType] = {
     backendTypes.foldLeft(Map[String, BackendType]()) { (map, typ) =>
-      if(map contains typ.id) {
+      if (map contains typ.id) {
         Logger.warning(s"Ignoring backend ${orc.util.GetScalaTypeName(typ)} (defined in ${typ.getClass.getClassLoader}), because the backend id ${typ.id} is already used by ${map(typ.id).getClass.getCanonicalName} (defined in ${map(typ.id).getClass.getClassLoader}).")
         map
       } else {
@@ -65,7 +67,7 @@ object BackendType {
 /** The standard token interpreter's BackendType. */
 case class TokenInterpreterBackend() extends BackendType {
   type CompiledCode = Expression
-  
+
   val name = "token"
   def newBackend(): Backend[Expression] = new StandardBackend()
 }
@@ -73,7 +75,7 @@ case class TokenInterpreterBackend() extends BackendType {
 /** The Distributed Orc BackendType. */
 case class DistributedBackendType() extends BackendType {
   type CompiledCode = Expression
-  
+
   val name = "distrib"
   def newBackend(): Backend[Expression] = new DistributedBackend()
 }
@@ -90,13 +92,13 @@ trait Compiler[+CompiledCode] {
     */
   @throws(classOf[IOException])
   def compile(source: OrcInputContext, options: OrcCompilationOptions,
-    compileLogger: CompileLogger, progress: ProgressMonitor): CompiledCode
+      compileLogger: CompileLogger, progress: ProgressMonitor): CompiledCode
   // TODO: Because compile does not throw on failure it should return options or have the null return documented like WOW.
 
   private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
-    val file = new File(descr)
+    val file = Paths.get(descr)
     override val reader = orc.compile.parse.OrcReader(this, new BufferedReader(javaReader))
-    override def toURI = file.toURI
+    override def toURI = file.toUri
     override def toURL = toURI.toURL
   }
 
@@ -169,12 +171,12 @@ trait Runtime[-CompiledCode] {
 trait CodeSerializer[CompiledCode] {
   /** Generate a serialized form from <code>code</code>.
     */
-  def serialize(code: CompiledCode, out: java.io.OutputStream): Unit
+  def serialize(code: CompiledCode, out: OutputStream): Unit
 
   /** Take a serialized form and rebuild the original compiled code object.
     */
   @throws(classOf[LoadingException])
-  def deserialize(in: java.io.InputStream): CompiledCode
+  def deserialize(in: InputStream): CompiledCode
 }
 
 /** A backend is a combination of a compiler and a matching runtime.

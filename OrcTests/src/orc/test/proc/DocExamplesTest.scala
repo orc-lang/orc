@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Apr 04, 2010.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,8 +13,9 @@
 
 package orc.test.proc
 
-import java.io.File
+import java.nio.file.{ Files, Path, Paths, StandardOpenOption }
 
+import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 import scala.xml.{ Text, XML }
 import scala.xml.NodeSeq.seqToNodeSeq
 
@@ -30,31 +31,33 @@ import junit.framework.Test
 object DocExamplesTest extends ExamplesTest {
 
   def suite(): Test = {
-    val userguideOutDir = new File("build/docexamples/userguide")
-    val refmanualOutDir = new File("build/docexamples/refmanual")
-    userguideOutDir.mkdirs()
-    refmanualOutDir.mkdirs()
-    extractAllExamples(new File("../OrcDocs/src/userguide"), userguideOutDir)
-    extractAllExamples(new File("../OrcDocs/src/refmanual"), refmanualOutDir)
+    val userguideOutDir = Paths.get("build/docexamples/userguide")
+    val refmanualOutDir = Paths.get("build/docexamples/refmanual")
+    Files.createDirectories(userguideOutDir)
+    Files.createDirectories(refmanualOutDir)
+    extractAllExamples(Paths.get("../OrcDocs/src/userguide"), userguideOutDir)
+    extractAllExamples(Paths.get("../OrcDocs/src/refmanual"), refmanualOutDir)
     val bindings = new OrcBindings()
-    TestUtils.buildSuite(getClass.getSimpleName, (s, t, f, e, b) => new DocExamplesTestCase(s, t, f, e, b), bindings, new File("build/docexamples"))
+    TestUtils.buildSuite(getClass.getSimpleName, (s, t, f, e, b) => new DocExamplesTestCase(s, t, f, e, b), bindings, Paths.get("build/docexamples"))
   }
 
-  class DocExamplesTestCase(suitename: String, testname: String, file: File, expecteds: ExpectedOutput, bindings: OrcBindings) extends TestUtils.OrcTestCase(suitename, testname, file, expecteds, bindings) {}
+  class DocExamplesTestCase(suitename: String, testname: String, file: Path, expecteds: ExpectedOutput, bindings: OrcBindings) extends TestUtils.OrcTestCase(suitename, testname, file, expecteds, bindings) {}
 
-  def extractAllExamples(sourcedir: File, targetdir: File) {
-    val files = sourcedir.listFiles().toList filter { isXmlFile(_) }
+  def extractAllExamples(sourcedir: Path, targetdir: Path) {
+    val files = Files.newDirectoryStream(sourcedir).asScala filter { isXmlFile(_) }
 
     for (f <- files) {
       println("Processing " + f.toString)
       var anyExamples = false
       for ((id, code) <- extractExamples(f)) {
-        val target = new File(targetdir, id + ".orc")
+        val target = targetdir.resolve(id + ".orc")
         println("-> " + id + ".orc")
-        target.createNewFile()
-        val writer = new java.io.FileWriter(target)
-        writer.write(code)
-        writer.close()
+        val writer = Files.newBufferedWriter(target, StandardOpenOption.CREATE_NEW)
+        try {
+          writer.write(code)
+        } finally {
+          writer.close()
+        }
         anyExamples = true
       }
       if (!anyExamples) { println("   No examples found.") }
@@ -63,12 +66,12 @@ object DocExamplesTest extends ExamplesTest {
 
   }
 
-  def isXmlFile(f: File): Boolean = {
-    f.isFile() && """\.xml$""".r.findFirstIn(f.getName()).isDefined
+  def isXmlFile(f: Path): Boolean = {
+    Files.isRegularFile(f) && """\.xml$""".r.findFirstIn(f.getFileName.toString).isDefined
   }
 
-  def extractExamples(f: File): List[(String, String)] = {
-    val root = XML.loadFile(f)
+  def extractExamples(f: Path): List[(String, String)] = {
+    val root = XML.loadFile(f.toFile)
     val xmlPrefix = "http://www.w3.org/XML/1998/namespace"
     val examples =
       (for (example <- root \\ "example") yield {

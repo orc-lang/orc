@@ -4,7 +4,7 @@
 //
 // Created by amshali on Jul 12, 2010.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,6 +13,7 @@
 
 package orc.ast.oil.xml
 
+import java.io.{ Reader, Writer }
 import java.net.URI
 
 import scala.collection.immutable.HashMap
@@ -140,17 +141,15 @@ object OrcXML {
     }
   }
 
-  def readOilFromStream(source: java.io.InputStream): Expression = {
-    xmlToAst(XML.load(source))
+  def readOil(reader: Reader): Expression = {
+    xmlToAst(XML.load(reader))
   }
 
-  def writeOilToStream(ast: Expression, dest: java.io.OutputStream) {
-    val writer = new java.io.OutputStreamWriter(dest)
+  def writeOil(ast: Expression, writer: Writer) {
     val node = astToXml(ast)
     val xml = Utility.serialize(node, preserveWhitespace = true, minimizeTags = MinimizeMode.Always).toString
     writer.write("<?xml version='1.0' encoding='UTF-8'?>\n")
     writer.write(xml)
-    writer.close()
   }
 
   def trimElem(x: Elem): Elem = {
@@ -439,7 +438,7 @@ object OrcXML {
 
     @throws(classOf[java.io.ObjectStreamException])
     protected def writeReplace(): AnyRef = {
-        new PlaceholderPositionMarshalingReplacement(resource.descr, line, column)
+      new PlaceholderPositionMarshalingReplacement(resource.descr, line, column)
     }
   }
 
@@ -450,15 +449,14 @@ object OrcXML {
 
   /** An OrcSourceRange made of two PlaceholderPositions. */
   class PlaceholderSourceRange(filenameStart: String, lineStart: Int, columnStart: Int, filenameEnd: String, lineEnd: Int, columnEnd: Int)
-      extends OrcSourceRange(
-        (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))
-      ) with Serializable {
+    extends OrcSourceRange(
+      (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))) with Serializable {
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
 
     @throws(classOf[java.io.ObjectStreamException])
     protected def writeReplace(): AnyRef = {
-        new PlaceholderSourceRangeMarshalingReplacement(start.resource.descr, start.line, start.column, end.resource.descr, end.line, end.column)
+      new PlaceholderSourceRangeMarshalingReplacement(start.resource.descr, start.line, start.column, end.resource.descr, end.line, end.column)
     }
   }
 
@@ -496,7 +494,7 @@ object OrcXML {
           case _ => None
         }
         val bindings = for (b <- bs) yield {
-          val <binding><expr>{e}</expr></binding> = b
+          val <binding><expr>{ e }</expr></binding> = b
           val name = (b \ "@name").text.trim
           (Field(name), fromXML(e))
         }
@@ -606,7 +604,8 @@ object OrcXML {
         AssertedType(typeFromXML(assertedType))
       case ty @ <functiontype><argtypes>{ argtypes @ _* }</argtypes><returntype>{ returnType }</returntype></functiontype> => {
         val typeFormalArity = (ty \ "@typearity").text.toInt
-        FunctionType(typeFormalArity,
+        FunctionType(
+          typeFormalArity,
           argtypes.toList map typeFromXML,
           typeFromXML(returnType))
       }

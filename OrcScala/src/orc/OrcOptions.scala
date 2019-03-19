@@ -4,7 +4,7 @@
 //
 // Created by amp on July 12, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,8 +13,8 @@
 
 package orc
 
-import java.io.File
 import java.net.InetSocketAddress
+import java.nio.file.Path
 
 import orc.compile.CompilerFlagValue
 
@@ -48,8 +48,8 @@ trait OrcCompilationOptions extends OrcCommonOptions {
   def echoOil_=(newVal: Boolean)
   def echoIR: Int
   def echoIR_=(newVal: Int)
-  def oilOutputFile: Option[File]
-  def oilOutputFile_=(newVal: Option[File])
+  def oilOutputFile: Option[Path]
+  def oilOutputFile_=(newVal: Option[Path])
   def compileOnly: Boolean
   def compileOnly_=(newVal: Boolean)
   def runOil: Boolean
@@ -82,6 +82,6 @@ trait OrcExecutionOptions extends OrcCommonOptions {
   def listenSocketAddress_=(newVal: InetSocketAddress)
   def followerCount: Int
   def followerCount_=(newVal: Int)
-  def listenSockAddrFile: Option[File]
-  def listenSockAddrFile_=(newVal: Option[File])
+  def listenSockAddrFile: Option[Path]
+  def listenSockAddrFile_=(newVal: Option[Path])
 }

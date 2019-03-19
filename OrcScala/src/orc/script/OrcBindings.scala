@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on May 26, 2010.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,6 +15,7 @@ package orc.script
 
 import java.io.File
 import java.net.InetSocketAddress
+import java.nio.file.{ Path, Paths }
 import java.util.Map
 
 import orc.{ BackendType, OrcOptions }
@@ -52,13 +53,13 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def echoOil_=(newVal: Boolean) = putBoolean("orc.echoOil", newVal)
   def echoIR: Int = getInt("orc.echoIR", 0)
   def echoIR_=(newVal: Int) = putInt("orc.echoIR", newVal)
-  def oilOutputFile: Option[File] = {
+  def oilOutputFile: Option[Path] = {
     getString("orc.oilOutputFile", "") match {
       case "" => None
-      case f => Some(new File(f))
+      case f => Some(Paths.get(f))
     }
   }
-  def oilOutputFile_=(newVal: Option[File]) = putString("orc.oilOutputFile", newVal.map(_.toString).getOrElse(""))
+  def oilOutputFile_=(newVal: Option[Path]) = putString("orc.oilOutputFile", newVal.map(_.toString).getOrElse(""))
   def compileOnly: Boolean = getBoolean("orc.onlyCompile", false)
   def compileOnly_=(newVal: Boolean) = putBoolean("orc.onlyCompile", newVal)
   def runOil: Boolean = getBoolean("orc.runOil", false)
@@ -147,13 +148,13 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
   def listenSocketAddress_=(newVal: InetSocketAddress) = putSocket("orc.listenSocketAddress", newVal)
   def followerCount: Int = getInt("orc.followerCount", 0)
   def followerCount_=(newVal: Int) = putInt("orc.followerCount", newVal)
-  def listenSockAddrFile: Option[File] = {
+  def listenSockAddrFile: Option[Path] = {
     getString("orc.listenSockAddrFile", "") match {
       case "" => None
-      case f => Some(new File(f))
+      case f => Some(Paths.get(f))
     }
   }
-  def listenSockAddrFile_=(newVal: Option[File]) = putString("orc.listenSockAddrFile", newVal.map(_.toString).getOrElse(""))
+  def listenSockAddrFile_=(newVal: Option[Path]) = putString("orc.listenSockAddrFile", newVal.map(_.toString).getOrElse(""))
 
   /** @param key
     * @param value

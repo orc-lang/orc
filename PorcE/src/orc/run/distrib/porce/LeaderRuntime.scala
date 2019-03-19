@@ -13,8 +13,9 @@
 
 package orc.run.distrib.porce
 
-import java.io.{ EOFException, FileWriter }
+import java.io.EOFException
 import java.net.{ InetAddress, InetSocketAddress, SocketException, SocketTimeoutException }
+import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
@@ -236,7 +237,7 @@ class LeaderRuntime() extends DOrcRuntime(new DOrcRuntime.RuntimeId(0L), "dOrc l
 
     options.listenSockAddrFile match {
       case Some(f) =>
-        val fw = new FileWriter(f)
+        val fw = Files.newBufferedWriter(f)
         try {
           fw.write(canonicalListenAddress.getHostName)
           fw.write(':')

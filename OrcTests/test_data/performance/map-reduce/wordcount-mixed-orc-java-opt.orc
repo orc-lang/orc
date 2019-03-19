@@ -14,20 +14,19 @@ include "wordcount.inc"
 import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
 
 def countFile(file) =
-  import class BufferedReader = "java.io.BufferedReader"
-  import class FileReader = "java.io.FileReader"
+  import class Files = "java.nio.file.Files"
   import class WordCount = "orc.test.item.distrib.WordCount"
   Sequentialize() >> -- Inferable
-  BufferedReader(FileReader(file))  >in>
+  Files.newBufferedReader(file)  >in>
   WordCount.countReader(in)  >count>
   in.close()  >>
   count
 
 def repeatCountFilename(filename) =
-  import class File = "java.io.File"
+  import class Paths = "java.nio.file.Paths"
   def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0
 
-  File(filename)  >file>
+  Paths.get(filename)  >file>
   checkReadableFile(file)  >>
   sumN(repeatRead, { countFile(file) })
 

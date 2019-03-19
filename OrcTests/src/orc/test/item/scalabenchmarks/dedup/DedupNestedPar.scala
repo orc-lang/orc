@@ -2,7 +2,7 @@
 // DedupNestedPar.scala -- Scala benchmark DedupNestedPar
 // Project OrcTests
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,7 +11,8 @@
 
 package orc.test.item.scalabenchmarks.dedup
 
-import java.io.{ DataOutputStream, File, FileInputStream, FileOutputStream }
+import java.io.{ DataOutputStream, FileInputStream, FileOutputStream }
+import java.nio.file.{ Files, Paths }
 import java.util.concurrent.{ ArrayBlockingQueue, ConcurrentHashMap }
 
 import scala.annotation.tailrec
@@ -90,5 +91,5 @@ object DedupNestedPar extends BenchmarkApplication[Unit, Unit] {
 
   val name: String = "Dedup-nestedpar"
 
-  lazy val size: Int = new File(DedupData.localInputFile).length().toInt
+  lazy val size: Int = Files.size(Paths.get(DedupData.localInputFile)).toInt
 }

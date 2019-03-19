@@ -2,7 +2,7 @@
 // DedupData.scala -- Scala benchmark component DedupData
 // Project OrcTests
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,9 +11,9 @@
 
 package orc.test.item.scalabenchmarks.dedup
 
-import java.io.{ File, FileInputStream }
+import java.io.FileInputStream
 import java.net.URL
-import java.nio.file.Files
+import java.nio.file.{ Files, Paths }
 import java.security.MessageDigest
 import java.util.Arrays
 
@@ -21,16 +21,16 @@ object DedupData {
   val dataURL = new URL("http://old-releases.ubuntu.com/releases/17.04/ubuntu-17.04-server-i386.iso")
   private val localTargetFile = "dedup-input.iso"
   lazy val localInputFile = {
-    val f = new File(localTargetFile)
-    if (!f.isFile()) {
+    val f = Paths.get(localTargetFile)
+    if (!Files.isRegularFile(f)) {
       println(s"Downloading $dataURL as test data")
       val in = dataURL.openStream()
-      Files.copy(in, f.toPath())
+      Files.copy(in, f)
       in.close()
     }
-    f.getAbsolutePath
+    f.toAbsolutePath.toString
   }
-  
+
   val localOutputFile = "dedup-output.dat"
 
   def check() = {
@@ -39,12 +39,12 @@ object DedupData {
     val dst = MessageDigest.getInstance("MD5")
     case object Done extends Exception
     try {
-      while(true) {
+      while (true) {
         val n = dataIn.read(buf)
         if (n > 0)
           dst.update(buf, 0, n)
         else
-          throw Done  
+          throw Done
       }
     } catch {
       case Done => ()

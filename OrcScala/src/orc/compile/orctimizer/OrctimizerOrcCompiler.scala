@@ -2,7 +2,7 @@
 // OrctimizerOrcCompiler.scala -- Scala class OrctimizerOrcCompiler
 // Project OrcScala
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,20 +11,15 @@
 
 package orc.compile.orctimizer
 
-import orc.compile._
-import orc.ast.orctimizer
-import orc.ast.porc
-import orc.ast.ASTWithIndex
-import orc.error.compiletime.CompileLogger
-
-import orc.util.{ ExecutionLogOutputStream, CsvWriter }
-import java.io.OutputStreamWriter
-import orc.ast.porc.CallContinuation
-import orc.ast.porc.MethodDirect
-import orc.ast.porc.TryFinally
-import java.io.{ FileOutputStream, FileInputStream, ObjectOutputStream, ObjectInputStream, File }
+import java.io.{ File, ObjectInputStream, ObjectOutputStream, OutputStreamWriter }
+import java.nio.file.{ Files, Paths }
 import java.util.zip.{ GZIPInputStream, GZIPOutputStream }
-import java.lang.ClassCastException
+
+import orc.ast.{ ASTWithIndex, orctimizer, porc }
+import orc.ast.porc.{ CallContinuation, MethodDirect, TryFinally }
+import orc.compile.{ AnalysisCache, CompilerOptions, CompilerPhase, CoreOrcCompilerPhases, Logger, PhasedOrcCompiler, StandardOrcCompilerEnvInterface }
+import orc.error.compiletime.CompileLogger
+import orc.util.{ CsvWriter, ExecutionLogOutputStream }
 
 abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
   with StandardOrcCompilerEnvInterface[porc.MethodCPS]
@@ -65,7 +60,7 @@ abstract class OrctimizerOrcCompiler() extends PhasedOrcCompiler[porc.MethodCPS]
   }
 
   def optimize(pred: (CompilerOptions) => Boolean = (co) => true) = new CompilerPhase[CompilerOptions, orctimizer.named.Expression, orctimizer.named.Expression] {
-    import orctimizer.named._
+    import orc.ast.orctimizer.named._
     val phaseName = "orctimizer-optimize"
     override def apply(co: CompilerOptions) = { ast =>
       //println(co.options.optimizationFlags)
@@ -288,9 +283,9 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
           o.backend)
     }
     val cacheFile = {
-      val inFile = new File(co.options.filename)
-      val dir = inFile.getParentFile
-      new File(dir, s".orcache${File.separator}${inFile.getName}.porc")
+      val inFile = Paths.get(co.options.filename)
+      val dir = inFile.getParent
+      dir.resolve(s".orcache${File.separator}${inFile.getFileName}.porc")
     }
   }
 
@@ -307,8 +302,8 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
     val phaseName = "save-cached-porc"
     override def apply(co: CompilerOptions) = { ast =>
       val helper = cachedPorcHelper(co)
-      helper.cacheFile.getParentFile.mkdirs()
-      val out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(helper.cacheFile)))
+      Files.createDirectories(helper.cacheFile.getParent)
+      val out = new ObjectOutputStream(new GZIPOutputStream(Files.newOutputStream(helper.cacheFile)))
       try {
         out.writeObject(helper.build)
         out.writeLong(helper.astHash)
@@ -327,7 +322,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
       val helper = cachedPorcHelper(co)
       helper.setAst(ast)
       try {
-        val in = new ObjectInputStream(new GZIPInputStream(new FileInputStream(helper.cacheFile)))
+        val in = new ObjectInputStream(new GZIPInputStream(Files.newInputStream(helper.cacheFile)))
         try {
           val build = in.readObject().asInstanceOf[String]
           val astHash = in.readLong()

@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 19, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -15,8 +15,8 @@ package orc.util
 
 import java.io.File
 import java.net.InetSocketAddress
+import java.nio.file.{ Path, Paths }
 import java.util.NoSuchElementException
-import java.lang.Integer
 
 /** Parses command line arguments per POSIX and GNU command line syntax guidelines.
   * Mix this trait in and add XxxOprd and XxxOpt statements to your class holding
@@ -158,7 +158,7 @@ trait CmdLineParser {
     def setValue(value: String): Unit = { setter(value.split(File.pathSeparator)) }
   }
 
-  case class FileOprd(val getter: Function0[File], val setter: (File => Unit), override val position: Int, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class FileOprd(val getter: Function0[Path], val setter: (Path => Unit), override val position: Int, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
     def getValue: String = {
       getter() match {
@@ -166,13 +166,13 @@ trait CmdLineParser {
         case f => f.toString
       }
     }
-    def setValue(value: String): Unit = { if (value != null && !value.isEmpty) setter(new File(value)) }
+    def setValue(value: String): Unit = { if (value != null && !value.isEmpty) setter(Paths.get(value)) }
   }
 
-  case class PathListOprd(val getter: Function0[Seq[File]], val setter: (Seq[File] => Unit), override val position: Int, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
+  case class PathListOprd(val getter: Function0[Seq[Path]], val setter: (Seq[Path] => Unit), override val position: Int, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
     def getValue: String = { getter().map(_.toString).mkString(File.pathSeparator) }
-    def setValue(value: String): Unit = { setter(value.split(File.pathSeparator).map(new File(_))) }
+    def setValue(value: String): Unit = { setter(value.split(File.pathSeparator).map(Paths.get(_))) }
   }
 
   private def oprdString2socket(s: String, argName: String) = {
@@ -195,7 +195,7 @@ trait CmdLineParser {
 
   case class SocketListOprd(val getter: Function0[Seq[InetSocketAddress]], val setter: (Seq[InetSocketAddress] => Unit), override val position: Int, override val argName: String = "SOCKET-LIST", override val usage: String = "", override val required: Boolean = true, override val hidden: Boolean = false)
     extends CmdLineOprd(position, argName, usage, required, hidden) {
-    def getValue: String = { getter().map( { isa => isa.getHostString + ":" + isa.getPort} ).mkString(",") }
+    def getValue: String = { getter().map({ isa => isa.getHostString + ":" + isa.getPort }).mkString(",") }
     def setValue(value: String): Unit = { setter(if (value.nonEmpty) value.split(",").map(oprdString2socket(_, argName)) else Seq.empty) }
   }
 
@@ -262,7 +262,7 @@ trait CmdLineParser {
     def setValue(value: String): Unit = { setter(value.split(separator)) }
   }
 
-  case class FileOpt(val getter: Function0[File], val setter: (File => Unit), override val shortName: Char, override val longName: String, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class FileOpt(val getter: Function0[Path], val setter: (Path => Unit), override val shortName: Char, override val longName: String, override val argName: String = "FILE", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = {
       getter() match {
@@ -270,13 +270,13 @@ trait CmdLineParser {
         case f => f.toString
       }
     }
-    def setValue(value: String): Unit = { if (value != null && !value.isEmpty) setter(new File(value)) }
+    def setValue(value: String): Unit = { if (value != null && !value.isEmpty) setter(Paths.get(value)) }
   }
 
-  case class PathListOpt(val getter: Function0[List[File]], val setter: (Seq[File] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
+  case class PathListOpt(val getter: Function0[List[Path]], val setter: (Seq[Path] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "PATH", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = { getter().map(_.toString).mkString(File.pathSeparator) }
-    def setValue(value: String): Unit = { setter(value.split(File.pathSeparator).map(new File(_))) }
+    def setValue(value: String): Unit = { setter(value.split(File.pathSeparator).map(Paths.get(_))) }
   }
 
   private def optString2socket(s: String, optLongName: String) = {
@@ -295,7 +295,7 @@ trait CmdLineParser {
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
     def getValue: String = {
       val v = getter()
-      if(v != null)
+      if (v != null)
         v.getHostString + ":" + v.getPort
       else
         null
@@ -307,7 +307,7 @@ trait CmdLineParser {
 
   case class SocketListOpt(val getter: Function0[Seq[InetSocketAddress]], val setter: (Seq[InetSocketAddress] => Unit), override val shortName: Char, override val longName: String, override val argName: String = "SOCKET-LIST", override val usage: String = "", override val required: Boolean = false, override val hidden: Boolean = false)
     extends CmdLineOpt(shortName, longName, argName, usage, required, hidden) {
-    def getValue: String = { getter().map( { isa => isa.getHostString + ":" + isa.getPort} ).mkString(",") }
+    def getValue: String = { getter().map({ isa => isa.getHostString + ":" + isa.getPort }).mkString(",") }
     def setValue(value: String): Unit = { setter(if (value.nonEmpty) value.split(",").map(optString2socket(_, longName)) else Seq.empty) }
   }
 

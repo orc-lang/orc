@@ -13,9 +13,13 @@
 
 package orc.test.item.distrib
 
-import orc.run.distrib.{ AbstractLocation, CallLocationOverrider, ClusterLocations, ValueLocator, ValueLocatorFactory }
+import java.io.File
+import java.nio.file.{ Path, Paths }
 
-/** A ValueLocator that looks up java.io.File names in a filename-to-location
+import orc.run.distrib.{ AbstractLocation, CallLocationOverrider, ClusterLocations, ValueLocator, ValueLocatorFactory }
+import orc.values.sites.JavaStaticMemberProxy
+
+/** A ValueLocator that looks up Path names in a filename-to-location
   * Map.
   *
   * @author jthywiss
@@ -23,11 +27,11 @@ import orc.run.distrib.{ AbstractLocation, CallLocationOverrider, ClusterLocatio
 class FileValueLocator[L <: AbstractLocation](locations: ClusterLocations[L]) extends ValueLocator[L] with CallLocationOverrider[L] {
   /* Assuming follower numbers are contiguous from 0 (leader) to n-1 */
   private val numLocations = locations.allLocations.size
-  
+
   /* Map files to locations 1 ... n-1, skipping leader (0) */
   val filenameLocationMap = {
     /* sort by hashCode to give a stable order */
-    val locIndex = locations.allLocations.toSeq.sortWith({(x, y) => x.hashCode.compareTo(y.hashCode) < 0 })
+    val locIndex = locations.allLocations.toSeq.sortWith({ (x, y) => x.hashCode.compareTo(y.hashCode) < 0 })
     /* wordcount-input-data files */
     1.to(120).map(i => (s"input-copy-$i.txt", locIndex((i % numLocations - 1) + 1))).toMap ++
       /* holmes_test_data files */
@@ -35,25 +39,31 @@ class FileValueLocator[L <: AbstractLocation](locations: ClusterLocations[L]) ex
   }
 
   override val currentLocations: PartialFunction[Any, Set[L]] = {
-    case f: java.io.File if filenameLocationMap.contains(f.getName) => Set(filenameLocationMap(f.getName))
+    case f: File if filenameLocationMap.contains(f.getName) => Set(filenameLocationMap(f.getName))
+    case p: Path if filenameLocationMap.contains(p.getFileName.toString) => Set(filenameLocationMap(p.getFileName.toString))
   }
 
   override val valueIsLocal: PartialFunction[Any, Boolean] = {
-    case f: java.io.File if filenameLocationMap.contains(f.getName) => filenameLocationMap(f.getName) == locations.here
+    case f: File if filenameLocationMap.contains(f.getName) => filenameLocationMap(f.getName) == locations.here
+    case p: Path if filenameLocationMap.contains(p.getFileName.toString) => filenameLocationMap(p.getFileName.toString) == locations.here
   }
 
   override val permittedLocations: PartialFunction[Any, Set[L]] = {
-    case f: java.io.File if filenameLocationMap.contains(f.getName) => Set(filenameLocationMap(f.getName))
+    case f: File if filenameLocationMap.contains(f.getName) => Set(filenameLocationMap(f.getName))
+    case p: Path if filenameLocationMap.contains(p.getFileName.toString) => Set(filenameLocationMap(p.getFileName.toString))
   }
 
   def remoteLocationForFilePath(filePath: String): Option[L] = {
-    val loc = filenameLocationMap.get(filePath.split(java.io.File.separatorChar).last)
+    val loc = filenameLocationMap.get(filePath.split(File.separatorChar).last)
     if (loc.isEmpty) None else Some(loc.get)
   }
 
   override def callLocationMayNeedOverride(target: AnyRef, arguments: Array[AnyRef]): Option[Boolean] = {
     target match {
-      case c: Class[_] if c == classOf[java.io.File] && arguments.length == 1 && arguments(0).isInstanceOf[String] => {
+      case c: Class[_] if c == classOf[File] && arguments.length == 1 && arguments(0).isInstanceOf[String] => {
+        remoteLocationForFilePath(arguments(0).asInstanceOf[String]).map(_ != locations.here)
+      }
+      case jsmp: JavaStaticMemberProxy if jsmp.javaClass == classOf[Paths] && jsmp.memberName == "get" && arguments.length == 1 && arguments(0).isInstanceOf[String] => {
         remoteLocationForFilePath(arguments(0).asInstanceOf[String]).map(_ != locations.here)
       }
       case _ => None
@@ -62,7 +72,11 @@ class FileValueLocator[L <: AbstractLocation](locations: ClusterLocations[L]) ex
 
   override def callLocationOverride(target: AnyRef, arguments: Array[AnyRef]): Set[L] = {
     target match {
-      case c: Class[_] if c == classOf[java.io.File] && arguments.length == 1 && arguments(0).isInstanceOf[String] => {
+      case c: Class[_] if c == classOf[File] && arguments.length == 1 && arguments(0).isInstanceOf[String] => {
+        val loc = remoteLocationForFilePath(arguments(0).asInstanceOf[String])
+        if (loc.isEmpty) Set.empty else Set(loc.get)
+      }
+      case jsmp: JavaStaticMemberProxy if jsmp.javaClass == classOf[Paths] && jsmp.memberName == "get" && arguments.length == 1 && arguments(0).isInstanceOf[String] => {
         val loc = remoteLocationForFilePath(arguments(0).asInstanceOf[String])
         if (loc.isEmpty) Set.empty else Set(loc.get)
       }

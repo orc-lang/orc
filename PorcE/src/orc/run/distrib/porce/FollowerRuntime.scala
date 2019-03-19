@@ -13,8 +13,9 @@
 
 package orc.run.distrib.porce
 
-import java.io.{ EOFException, File, FileWriter, IOException, ObjectOutputStream }
+import java.io.{ EOFException, IOException, ObjectOutputStream }
 import java.net.{ InetAddress, InetSocketAddress, SocketException }
+import java.nio.file.{ Files, Path }
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
@@ -64,7 +65,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime.RuntimeId) extends DOrcRuntime(runt
 
   val orderlyShutdown = new AtomicBoolean(false)
 
-  def listenAndContactLeader(listenAddress: InetSocketAddress, leaderAddress: InetSocketAddress, listenSockAddrFile: Option[File]): Unit = {
+  def listenAndContactLeader(listenAddress: InetSocketAddress, leaderAddress: InetSocketAddress, listenSockAddrFile: Option[Path]): Unit = {
     runtimeLocationRegister.put(runtimeId, here)
 
     listener = new RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd, DOrcExecution, PeerLocation](listenAddress)
@@ -78,7 +79,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime.RuntimeId) extends DOrcRuntime(runt
 
     listenSockAddrFile match {
       case Some(f) =>
-        val fw = new FileWriter(f)
+        val fw = Files.newBufferedWriter(f)
         try {
           fw.write(canonicalListenAddress.getHostName)
           fw.write(':')

@@ -2,7 +2,7 @@
 // Analyzer.scala -- Scala object and abstract class Analyzer and trait AnalyzerEdgeCache
 // Project OrcScala
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,13 +11,15 @@
 
 package orc.compile.flowanalysis
 
-import scala.collection.mutable
-import scala.annotation.tailrec
-import scala.reflect.ClassTag
-import orc.compile.Logger
-import java.io.File
+import java.nio.charset.Charset
+import java.nio.file.Files
 import java.util.logging.Level
-import java.io.FileWriter
+
+import scala.annotation.tailrec
+import scala.collection.mutable
+import scala.reflect.ClassTag
+
+import orc.compile.Logger
 import orc.compile.orctimizer.FlowGraph
 
 object Analyzer {
@@ -45,7 +47,6 @@ abstract class Analyzer {
 
   val level = if (checkAnalysis) Level.INFO else Level.FINER
   val finerLevel = if (checkAnalysis) Level.FINER else Level.FINEST
-
 
   /** The set of nodes to initially process.
     */
@@ -113,7 +114,7 @@ abstract class Analyzer {
       val queueContent = mutable.Set[NodeT]()
       val states: mutable.Map[NodeT, StateT] = mutable.HashMap()
       def smartEnqueue(n: NodeT): Unit = {
-        if (! queueContent.contains(n)) {
+        if (!queueContent.contains(n)) {
           queueContent += n
           queue.enqueue(n)
         } else {
@@ -131,12 +132,11 @@ abstract class Analyzer {
         }
       }
 
-
       @tailrec
       def process(): StateMap = {
         smartDequeue() match {
           case Some(node) => {
-            if(Logger.julLogger.isLoggable(level)) {
+            if (Logger.julLogger.isLoggable(level)) {
               tracePredicateVariable.set(defaultTracePredicate)
             }
 
@@ -151,16 +151,18 @@ abstract class Analyzer {
               states += (node -> newState)
             }
 
-            if(Logger.julLogger.isLoggable(level)) {
+            if (Logger.julLogger.isLoggable(level)) {
               id += 1
               traversal += AnalyzerLogEntry(id, node, inputs(node).map(_.edge), newState, oldState == newState, tracePredicateVariable.get())
             }
 
             if (checkAnalysis) {
-              assert(moreCompleteOrEqual(newState, oldState),
-                  s"The new state (at $node)\n$newState\n is not a refinement of the old state \n$oldState")
-              assert(!(moreCompleteOrEqual(newState, oldState) && moreCompleteOrEqual(oldState, newState) && oldState != newState),
-                  s"The states below are mutually more complete, but not equal\n$newState\n====\n$oldState")
+              assert(
+                moreCompleteOrEqual(newState, oldState),
+                s"The new state (at $node)\n$newState\n is not a refinement of the old state \n$oldState")
+              assert(
+                !(moreCompleteOrEqual(newState, oldState) && moreCompleteOrEqual(oldState, newState) && oldState != newState),
+                s"The states below are mutually more complete, but not equal\n$newState\n====\n$oldState")
             }
 
             process()
@@ -174,18 +176,18 @@ abstract class Analyzer {
       resultStates
     } finally {
       val endTime = System.nanoTime()
-      if(Logger.julLogger.isLoggable(level)) {
+      if (Logger.julLogger.isLoggable(level)) {
         writeSelectedLog(traversal, resultStates)
       }
-      if(Logger.julLogger.isLoggable(finerLevel)) {
+      if (Logger.julLogger.isLoggable(finerLevel)) {
         writeFullLog(traversal, startTime, endTime, avoidedEnqueues)
       }
     }
   }
 
   private def writeSelectedLog(traversal: mutable.Buffer[AnalyzerLogEntry], states: StateMap) = {
-    import orc.util.PrettyPrintInterpolator
     import orc.util.FragmentAppender
+    import orc.util.PrettyPrintInterpolator
 
     class MyPrettyPrintInterpolator extends PrettyPrintInterpolator {
       implicit def implicitInterpolator(sc: StringContext) = new MyInterpolator(sc)
@@ -214,12 +216,12 @@ abstract class Analyzer {
             FragmentAppender.mkString(inputs(e.node).map({
               case ConnectedNode(_, n) =>
                 val (j, e1) = findNodeEntryBefore(n, i)
-                if(j < 0) {
+                if (j < 0) {
                   pp""
                 } else {
                   val in = ">" * depth
                   val out = "<" * depth
-                  pp"NODE: ${e.node}\nSTATE: ${e.newState}\n$in$StartIndent\n${print(e1, j, depth+1)}$EndIndent\n$out"
+                  pp"NODE: ${e.node}\nSTATE: ${e.newState}\n$in$StartIndent\n${print(e1, j, depth + 1)}$EndIndent\n$out"
                 }
             }), "\n")
           } else {
@@ -233,10 +235,10 @@ abstract class Analyzer {
     }).seq
 
     if (selected.nonEmpty) {
-      val traceFile = File.createTempFile("analysis_selected_log_", ".txt")
+      val traceFile = Files.createTempFile("analysis_selected_log_", ".txt")
 
-      val out = new FileWriter(traceFile)
-      for(l <- selected) {
+      val out = Files.newBufferedWriter(traceFile, Charset.forName("UTF-8"))
+      for (l <- selected) {
         out.write(l)
         out.write("\n")
       }
@@ -262,10 +264,10 @@ abstract class Analyzer {
         }
         (b, s"========= Node $n @\n$nn\n=====\n${b.map(entryToString).mkString("\n")}")
     }).seq.toSeq.sortBy(_._1.map(_.id).max).map(_._2)
-    val traceFile = File.createTempFile("analysis_full_log", ".txt")
+    val traceFile = Files.createTempFile("analysis_full_log", ".txt")
 
-    val out = new FileWriter(traceFile)
-    for(l <- traversalTable) {
+    val out = Files.newBufferedWriter(traceFile, Charset.forName("UTF-8"))
+    for (l <- traversalTable) {
       out.write(l)
       out.write("\n")
     }
@@ -282,19 +284,19 @@ abstract class Analyzer {
 }
 
 trait AnalyzerEdgeCache extends Analyzer {
-    val inputsCache = collection.mutable.HashMap[NodeT, Seq[ConnectedNode]]()
+  val inputsCache = collection.mutable.HashMap[NodeT, Seq[ConnectedNode]]()
 
-    def inputsCompute(node: NodeT): collection.Seq[ConnectedNode]
+  def inputsCompute(node: NodeT): collection.Seq[ConnectedNode]
 
-    final def inputs(node: NodeT): collection.Seq[ConnectedNode] = {
-      inputsCache.getOrElseUpdate(node, inputsCompute(node))
-    }
+  final def inputs(node: NodeT): collection.Seq[ConnectedNode] = {
+    inputsCache.getOrElseUpdate(node, inputsCompute(node))
+  }
 
-    val outputsCache = collection.mutable.HashMap[NodeT, Seq[ConnectedNode]]()
+  val outputsCache = collection.mutable.HashMap[NodeT, Seq[ConnectedNode]]()
 
-    def outputsCompute(node: NodeT): collection.Seq[ConnectedNode]
+  def outputsCompute(node: NodeT): collection.Seq[ConnectedNode]
 
-    final def outputs(node: NodeT): collection.Seq[ConnectedNode] = {
-      outputsCache.getOrElseUpdate(node, outputsCompute(node))
-    }
+  final def outputs(node: NodeT): collection.Seq[ConnectedNode] = {
+    outputsCache.getOrElseUpdate(node, outputsCompute(node))
+  }
 }

@@ -2,7 +2,7 @@
 // PorcEPolyglotLauncher.scala -- Scala object PorcEPolyglotLauncher
 // Project PorcE
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,14 +11,12 @@
 
 package orc
 
-//import scala.collection.JavaConverters._
+import java.io.{ File, OutputStreamWriter, PrintWriter }
+
 import orc.run.porce.PorcELanguage
 import orc.script.OrcBindings
-import java.io.File
-import java.io.PrintWriter
-import orc.util.ExecutionLogOutputStream
-import java.io.OutputStreamWriter
-import orc.util.DumperRegistry
+import orc.util.{ DumperRegistry, ExecutionLogOutputStream }
+
 import org.graalvm.polyglot.{ Context, Source }
 
 object PorcEPolyglotLauncher {

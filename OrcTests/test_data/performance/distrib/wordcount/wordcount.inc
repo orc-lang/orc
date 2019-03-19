@@ -30,12 +30,13 @@ val inputFileSize = Cell[Integer]()
  --------}
 
 def checkReadableFile(file) =
-  if file.canRead() then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
+  import class Files = "java.nio.file.Files"
+  if Files.isReadable(file) then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
 
 def listFileNamesRecursively(dirPathName :: String) :: List[String] =
-  import class File = "java.io.File"
+  import class Paths = "java.nio.file.Paths"
   import class WordCount = "orc.test.item.distrib.WordCount"
-  WordCount.listFileNamesRecursively(File(dirPathName))  >fileNameArray>
+  WordCount.listFileNamesRecursively(Paths.get(dirPathName))  >fileNameArray>
   arrayToList(fileNameArray)
 
 def createTestDataFiles() =

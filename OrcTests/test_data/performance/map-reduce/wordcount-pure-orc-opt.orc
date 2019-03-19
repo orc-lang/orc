@@ -32,14 +32,13 @@ def countLine(line) =
 
 -- Lines: 9 (1)
 def countFile(file) =
-  import class BufferedReader = "java.io.BufferedReader"
-  import class FileReader = "java.io.FileReader"
+  import class Files = "java.nio.file.Files"
   (
   def countLinesFrom(in, accumCount) = accumCount >>
     (in.readLine() ; null)  >nextLine> Sequentialize() >> -- Inferable (recursion)
     (if nextLine = null then accumCount else countLinesFrom(in, accumCount + countLine(nextLine))) #
   Sequentialize() >> -- Inferable
-  BufferedReader(FileReader(file))  >in>
+  Files.newBufferedReader(file)  >in>
   countLinesFrom(in, 0)  >count>
   in.close()  >>
   count
@@ -47,10 +46,10 @@ def countFile(file) =
 
 -- Lines: 5
 def repeatCountFilename(filename) =
-  import class File = "java.io.File"
+  import class Paths = "java.nio.file.Paths"
   def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0
 
-  File(filename)  >file>
+  Paths.get(filename)  >file>
   checkReadableFile(file)  >>
   sumN(repeatRead, { countFile(file) })
 

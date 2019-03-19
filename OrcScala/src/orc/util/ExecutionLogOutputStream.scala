@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 29, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,8 +13,9 @@
 
 package orc.util
 
-import java.io.{ File, FileOutputStream, IOException, OutputStream }
+import java.io.{ IOException, OutputStream }
 import java.lang.management.ManagementFactory
+import java.nio.file.{ Files, Path, Paths, StandardOpenOption }
 import java.util.regex.Pattern
 
 /** Factory for execution log OutputStreams.
@@ -35,9 +36,11 @@ object ExecutionLogOutputStream {
   def createOutputDirectoryIfNeeded(): Unit = {
     val out = System.getProperty("orc.executionlog.dir")
     if (out != null) {
-      val outDir = new File(out)
-      if (outDir.mkdirs())
-        OrcUtilLogger.warning("Created output directory: " + outDir.getCanonicalPath())
+      val outDir = Paths.get(out)
+      if (Files.notExists(outDir)) {
+        Files.createDirectories(outDir)
+        OrcUtilLogger.warning("Created output directory: " + outDir.toAbsolutePath)
+      }
     }
   }
 
@@ -55,20 +58,15 @@ object ExecutionLogOutputStream {
     */
   @throws[IOException]
   def apply(basename: String, extension: String, description: String): Option[OutputStream] = {
-    getFile(basename, extension) map { outFile =>
-      if (!outFile.createNewFile()) {
-        throw new IOException(s"$description: File already exists: ${outFile.getAbsolutePath}")
-      }
-      new FileOutputStream(outFile)
-    }
+    getFile(basename, extension) map { Files.newOutputStream(_, StandardOpenOption.CREATE_NEW) }
   }
 
-  def getFile(basename: String, extension: String): Option[File] = {
+  def getFile(basename: String, extension: String): Option[Path] = {
     val outDir = System.getProperty("orc.executionlog.dir")
     if (outDir != null) {
       val fileBasenamePrefix = System.getProperty("orc.executionlog.fileprefix", "")
       val fileBasenameSuffix = Pattern.compile("${jvmName}", Pattern.LITERAL).matcher(System.getProperty("orc.executionlog.filesuffix", "")).replaceAll(ManagementFactory.getRuntimeMXBean.getName)
-      val outFile = new File(outDir, s"$fileBasenamePrefix$basename$fileBasenameSuffix.$extension")
+      val outFile = Paths.get(outDir, s"$fileBasenamePrefix$basename$fileBasenameSuffix.$extension")
       Some(outFile)
     } else {
       None

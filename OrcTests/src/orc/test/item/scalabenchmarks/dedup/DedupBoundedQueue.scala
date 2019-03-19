@@ -2,7 +2,7 @@
 // DedupBoundedQueue.scala -- Scala benchmark DedupBoundedQueue
 // Project OrcTests
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,7 +11,8 @@
 
 package orc.test.item.scalabenchmarks.dedup
 
-import java.io.{ DataOutputStream, File, FileInputStream, FileOutputStream }
+import java.io.{ DataOutputStream, FileInputStream, FileOutputStream }
+import java.nio.file.{ Files, Paths }
 import java.util.concurrent.{ ArrayBlockingQueue, ConcurrentHashMap }
 
 import scala.annotation.tailrec
@@ -24,18 +25,18 @@ import orc.test.item.scalabenchmarks.Util.thread
 
 object DedupBoundedQueue extends BenchmarkApplication[Unit, Unit] {
   import Dedup._
-  
+
   def dedup(inFn: String, outFn: String): Unit = {
     val dedupMap = new ConcurrentHashMap[ArrayKey, CompressedChunk]()
     val roughChunks = new ArrayBlockingQueue[(Chunk, Int)](BenchmarkConfig.nPartitions)
     val fineChunks = new ArrayBlockingQueue[(Chunk, Int, Int)](BenchmarkConfig.nPartitions)
     val compressedChunks = new ArrayBlockingQueue[(CompressedChunk, Int, Int)](BenchmarkConfig.nPartitions)
-        
+
     val in = new FileInputStream(inFn)
-    
+
     val readThread = thread {
       for (p <- readSegments(largeChunkMin, in)) {
-        roughChunks.put(p)   
+        roughChunks.put(p)
       }
     }
     val segmentThreads = for (_ <- 0 until BenchmarkConfig.nPartitions / 2) yield thread {
@@ -56,7 +57,7 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit, Unit] {
     val out = new DataOutputStream(new FileOutputStream(outFn))
     val alreadyOutput = new ConcurrentHashMap[ArrayKey, Boolean]()
     val outputPool = collection.mutable.HashMap[(Int, Int), CompressedChunk]()
-    
+
     @tailrec
     def doOutput(roughID: Int, fineID: Int, id: Int): Unit = {
       outputPool.get((roughID, fineID)) match {
@@ -70,9 +71,9 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit, Unit] {
         case Some(cchunk) => {
           if (cchunk.outputChunkID < 0)
             cchunk.outputChunkID = id
-    			writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1))
-    			alreadyOutput.put(cchunk.uncompressedSHA1, true)
-    			//print(s"$id: ($roughID, $fineID) $roughChunk (${roughChunk.size}), $fineChunk (${fineChunk.size})\r")
+          writeChunk(out, cchunk, alreadyOutput.containsKey(cchunk.uncompressedSHA1))
+          alreadyOutput.put(cchunk.uncompressedSHA1, true)
+          //print(s"$id: ($roughID, $fineID) $roughChunk (${roughChunk.size}), $fineChunk (${fineChunk.size})\r")
           outputPool -= ((roughID, fineID))
           doOutput(roughID, fineID + 1, id + 1)
         }
@@ -83,26 +84,26 @@ object DedupBoundedQueue extends BenchmarkApplication[Unit, Unit] {
         }
       }
     }
-    
+
     doOutput(0, 0, 0)
-    
+
     readThread.join()
     segmentThreads foreach { _.terminate() }
     compressThreads foreach { _.terminate() }
-    
+
     in.close()
     out.close()
   }
-  
+
   def benchmark(ctx: Unit): Unit = {
     dedup(DedupData.localInputFile, DedupData.localOutputFile)
   }
 
   def setup(): Unit = ()
-  
+
   def check(u: Unit) = DedupData.check()
 
   val name: String = "Dedup-boundedqueue"
 
-  lazy val size: Int = new File(DedupData.localInputFile).length().toInt
+  lazy val size: Int = Files.size(Paths.get(DedupData.localInputFile)).toInt
 }

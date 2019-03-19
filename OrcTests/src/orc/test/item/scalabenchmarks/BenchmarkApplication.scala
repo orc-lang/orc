@@ -2,7 +2,7 @@
 // BenchmarkApplication.scala -- Scala trait BenchmarkApplication
 // Project OrcTests
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,15 +11,13 @@
 
 package orc.test.item.scalabenchmarks
 
-import Util._
-import orc.lib.BenchmarkTimes
-import java.io.File
-import orc.test.util.TestEnvironmentDescription
-import orc.test.util.FactorValue
-import java.io.FileOutputStream
-import java.io.OutputStreamWriter
+import java.nio.file.{ Files, Paths, StandardOpenOption }
+
+import orc.lib.{ Benchmark, BenchmarkTimes }
+import orc.test.util.{ FactorValue, TestEnvironmentDescription }
 import orc.util.CsvWriter
-import orc.lib.Benchmark
+
+import Util.time
 
 trait BenchmarkApplication[T, R] {
   def setup(): T
@@ -28,12 +26,12 @@ trait BenchmarkApplication[T, R] {
 
   def size: Int
   val name: String
-  
-  override def toString() = s"BenchmarkApplication($name)" 
+
+  override def toString() = s"BenchmarkApplication($name)"
 
   def runBenchmark(i: Int): BenchmarkTimes = {
     val ctx = setup()
-		Benchmark.waitForCompilation()
+    Benchmark.waitForCompilation()
     val (bt, r) = time(i, size)(benchmark(ctx))
     if (check(r)) {
       println(s"$name results are correct up to hash collision.")
@@ -46,9 +44,11 @@ trait BenchmarkApplication[T, R] {
   def setupOutput() = {
     if (System.getProperty("orc.executionlog.dir", "").isEmpty())
       throw new IllegalStateException("java system property orc.executionlog.dir must be set")
-    val outDir = new File(System.getProperty("orc.executionlog.dir"))
-    if (outDir.mkdirs())
-      println("Created output directory: " + outDir.getCanonicalPath())
+    val outDir = Paths.get(System.getProperty("orc.executionlog.dir"))
+    if (Files.notExists(outDir)) {
+      Files.createDirectories(outDir)
+      println("Created output directory: " + outDir.toAbsolutePath)
+    }
     TestEnvironmentDescription.dumpAtShutdown()
   }
 
@@ -60,16 +60,16 @@ trait BenchmarkApplication[T, R] {
   }
 
   def writeCsvFileOverwrite(pathname: String, description: String, tableColumnTitles: Seq[String], rows: Seq[Seq[_]]) = {
-    val outFile = new File(pathname)
-    outFile.createNewFile()
-    val csvOut = new FileOutputStream(outFile)
-    val csvOsw = new OutputStreamWriter(csvOut, "UTF-8")
-    val csvWriter = new CsvWriter(csvOsw)
-    csvWriter.writeHeader(tableColumnTitles)
-    csvWriter.writeRowsOfTraversables(rows)
-    csvOsw.close()
-    csvOut.close()
-    println(description + " written to " + outFile.getCanonicalPath())
+    val outFile = Paths.get(pathname)
+    val csvOsw = Files.newBufferedWriter(outFile, StandardOpenOption.CREATE_NEW)
+    try {
+      val csvWriter = new CsvWriter(csvOsw)
+      csvWriter.writeHeader(tableColumnTitles)
+      csvWriter.writeRowsOfTraversables(rows)
+    } finally {
+      csvOsw.close()
+    }
+    println(description + " written to " + outFile.toAbsolutePath)
   }
 
   def main(args: Array[String]): Unit = {

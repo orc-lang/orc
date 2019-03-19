@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 17, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,9 +14,7 @@
 package orc.test.item.distrib;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -24,6 +22,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,8 +87,8 @@ public class WordCount {
         return words;
     }
 
-    public static int countFile(final File file) throws IOException {
-        final BufferedReader in = new BufferedReader(new FileReader(file));
+    public static int countFile(final Path file) throws IOException {
+        final BufferedReader in = Files.newBufferedReader(file);
         final int counts = countReader(in);
         in.close();
         return counts;
@@ -97,9 +96,9 @@ public class WordCount {
 
     public static int repeatRead = Integer.parseInt(System.getProperty("orc.test.repeatRead", "1"));
 
-    public static int repeatCountFilename(final File file) throws IOException {
-        if (!file.canRead()) {
-            throw new RuntimeException("Cannot read file: " + file.getCanonicalPath());
+    public static int repeatCountFilename(final Path file) throws IOException {
+        if (!Files.isReadable(file)) {
+            throw new RuntimeException("Cannot read file: " + file.toAbsolutePath());
         }
         int sum = 0;
         for (int i = 0; i < repeatRead; i++) {
@@ -108,35 +107,36 @@ public class WordCount {
         return sum;
     }
 
-    public static List<File> inputList;
+    public static List<Path> inputList;
 
     public static int testPayload() throws IOException {
         int sum = 0;
-        for (final File file : inputList) {
+        for (final Path file : inputList) {
             sum += repeatCountFilename(file);
         }
         return sum;
     }
 
-    public static void listFilesRecursively(final File startFile, final ArrayList<File> foundFiles) {
-        if (startFile.isFile() && !startFile.isHidden()) {
+    public static void listFilesRecursively(final Path startFile, final ArrayList<Path> foundFiles) throws IOException {
+        if (Files.isRegularFile(startFile) && !Files.isHidden(startFile)) {
             foundFiles.add(startFile);
-        } else if (startFile.isDirectory() && !startFile.isHidden()) {
-            for (final File curFile : startFile.listFiles()) {
+        } else if (Files.isDirectory(startFile) && !Files.isHidden(startFile)) {
+            for (final Path curFile : Files.newDirectoryStream(startFile)) {
                 listFilesRecursively(curFile, foundFiles);
             }
         } else {
             /* Skip this dir. entry */
         }
+        foundFiles.sort(null);
     }
 
-    public static String[] listFileNamesRecursively(final File startFile) {
-        final ArrayList<File> files = new ArrayList<>();
+    public static String[] listFileNamesRecursively(final Path startFile) throws IOException {
+        final ArrayList<Path> files = new ArrayList<>();
         listFilesRecursively(startFile, files);
         final String[] fileNames = new String[files.size()];
         int i = 0;
-        for (final File file : files) {
-            fileNames[i] = file.getPath();
+        for (final Path file : files) {
+            fileNames[i] = file.toString();
             ++i;
         }
         return fileNames;
@@ -179,9 +179,9 @@ public class WordCount {
         if (System.getProperty("orc.executionlog.dir", "").isEmpty()) {
             throw new IllegalArgumentException("java system property orc.executionlog.dir must be set");
         }
-        final File outDir = new File(System.getProperty("orc.executionlog.dir"));
-        if (!outDir.exists()) {
-            throw new IOException("Directory must exist: " + outDir.getAbsolutePath());
+        final Path outDir = Paths.get(System.getProperty("orc.executionlog.dir"));
+        if (Files.notExists(outDir)) {
+            throw new IOException("Directory must exist: " + outDir.toAbsolutePath());
         }
         TestEnvironmentDescription.dumpAtShutdown();
     }
@@ -246,17 +246,12 @@ public class WordCount {
 
         final String dataDir = "../OrcTests/test_data/performance/distrib/wordcount/wordcount-input-data/";
         final int numInputFiles = Integer.parseInt(System.getProperty("orc.test.numInputFiles", "12"));
-        final ArrayList<File> files = new ArrayList<>();
-        listFilesRecursively(new File(dataDir), files);
+        final ArrayList<Path> files = new ArrayList<>();
+        listFilesRecursively(Paths.get(dataDir), files);
         inputList = files.subList(0, numInputFiles);
-        final Long inputFileSize = Long.valueOf(Files.size(inputList.get(0).toPath()));
+        final Long inputFileSize = Long.valueOf(Files.size(inputList.get(0)));
 
-        final Object[][] factorValues = {
-                {"Program", "WordCount.java", "", "", ""},
-                {"Number of files read", Integer.valueOf(inputList.size()), "", "numInputFiles", "Words counted in this number of input text files"},
-                {"Input file size", inputFileSize, "B", "inputFileSize", "Size of each input text file"},
-                {"Reads per file", Integer.valueOf(repeatRead), "", "repeatRead", "Number of sequential re-reads of each file"}
-        };
+        final Object[][] factorValues = { { "Program", "WordCount.java", "", "", "" }, { "Number of files read", Integer.valueOf(inputList.size()), "", "numInputFiles", "Words counted in this number of input text files" }, { "Input file size", inputFileSize, "B", "inputFileSize", "Size of each input text file" }, { "Reads per file", Integer.valueOf(repeatRead), "", "repeatRead", "Number of sequential re-reads of each file" } };
         FactorValue.writeFactorValuesTable(factorValues);
 
         final Long[][] repetitionTimes = timeRepetitions(numRepetitions);

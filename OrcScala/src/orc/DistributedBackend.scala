@@ -4,15 +4,16 @@
 //
 // Created by jthywiss on Dec 20, 2016.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc
 
-import java.io.OutputStreamWriter
+import java.io.{ InputStream, InputStreamReader, OutputStream, OutputStreamWriter }
 
 import orc.ast.oil.nameless.Expression
 import orc.ast.oil.xml.OrcXML
@@ -30,19 +31,19 @@ import orc.run.distrib.token.LeaderRuntime
 class DistributedBackend extends Backend[Expression] {
   lazy val compiler: Compiler[Expression] = new DistributedOrcCompiler() with Compiler[Expression] {
     def compile(source: OrcInputContext, options: OrcCompilationOptions,
-      compileLogger: CompileLogger, progress: ProgressMonitor): Expression = this(source, options, compileLogger, progress)
+        compileLogger: CompileLogger, progress: ProgressMonitor): Expression = this(source, options, compileLogger, progress)
   }
 
   val serializer: Option[CodeSerializer[Expression]] = Some(new CodeSerializer[Expression] {
     @throws(classOf[LoadingException])
-    def deserialize(in: java.io.InputStream): orc.ast.oil.nameless.Expression = {
-      OrcXML.readOilFromStream(in) match {
+    def deserialize(in: InputStream): orc.ast.oil.nameless.Expression = {
+      OrcXML.readOil(new InputStreamReader(in, "UTF-8")) match {
         case e: Expression => e
         case _ => throw new OilParsingException("Top-level element of input was not an Expression.")
       }
     }
 
-    def serialize(code: orc.ast.oil.nameless.Expression, out: java.io.OutputStream): Unit = {
+    def serialize(code: orc.ast.oil.nameless.Expression, out: OutputStream): Unit = {
       new OutputStreamWriter(out).write(OrcXML.toXML(code).toString)
     }
   })

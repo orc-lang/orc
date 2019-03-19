@@ -2,7 +2,7 @@
 // PorcSerializedExamplesTest.java -- Java class PorcSerializedExamplesTest
 // Project OrcTests
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,7 +13,8 @@ package orc.test.proc;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import orc.script.OrcBindings;
 import orc.script.OrcScriptEngine;
@@ -39,18 +40,18 @@ public class PorcSerializedExamplesTest {
         bindings.backend_$eq(orc.BackendType.fromString("porc"));
         bindings.optimizationLevel_$eq(2);
 
-        return TestUtils.buildSuite(PorcSerializedExamplesTest.class.getSimpleName(), (s, t, f, e, b) -> new PorcSerializedExamplesTestCase(s, t, f, e, b), bindings, new File("test_data"), new File("../OrcExamples"));
+        return TestUtils.buildSuite(PorcSerializedExamplesTest.class.getSimpleName(), (s, t, f, e, b) -> new PorcSerializedExamplesTestCase(s, t, f, e, b), bindings, Paths.get("test_data"), Paths.get("../OrcExamples"));
     }
 
     public static class PorcSerializedExamplesTestCase extends OrcTestCase {
-        public PorcSerializedExamplesTestCase(final String suiteName1, final String testName, final File orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
+        public PorcSerializedExamplesTestCase(final String suiteName1, final String testName, final Path orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
             super(suiteName1, testName, orcFile1, expecteds1, bindings1);
         }
 
         @Override
         public void runTest() throws Throwable {
             System.out.println("\n==== Starting " + orcFile + " ====");
-            final OrcScriptEngine<Object>.OrcCompiledScript compiledScript = OrcForTesting.compile(orcFile.getPath(), bindings);
+            final OrcScriptEngine<Object>.OrcCompiledScript compiledScript = OrcForTesting.compile(orcFile.toString(), bindings);
             @SuppressWarnings("unchecked")
             final OrcScriptEngine<Object> engine = (OrcScriptEngine<Object>) compiledScript.getEngine();
 

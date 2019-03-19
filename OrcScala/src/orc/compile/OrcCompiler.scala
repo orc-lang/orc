@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on May 26, 2010.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,8 +13,10 @@
 
 package orc.compile
 
-import java.io.{ BufferedReader, File, FileNotFoundException, FileOutputStream, IOException, OutputStreamWriter }
+import java.io.{ BufferedReader, FileNotFoundException, IOException, OutputStreamWriter }
 import java.net.{ MalformedURLException, URI, URISyntaxException }
+import java.nio.charset.Charset
+import java.nio.file.{ Files, Paths }
 
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.compat.Platform.currentTime
@@ -276,7 +278,12 @@ trait CoreOrcCompilerPhases {
 
       co.options.oilOutputFile match {
         case Some(f) => {
-          OrcXML.writeOilToStream(ast, new FileOutputStream(f))
+          val oilWriter = Files.newBufferedWriter(f, Charset.forName("UTF-8"))
+          try {
+            OrcXML.writeOil(ast, oilWriter)
+          } finally {
+            oilWriter.close()
+          }
         }
         case None => {}
       }
@@ -365,9 +372,9 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
   }
 
   private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
-    val file = new File(descr)
+    val file = Paths.get(descr)
     override val reader = orc.compile.parse.OrcReader(this, new BufferedReader(javaReader))
-    override def toURI = file.toURI
+    override def toURI = file.toUri
     override def toURL = toURI.toURL
   }
 

@@ -2,7 +2,7 @@
 // GraphDataProvider.scala -- Scala trait GraphDataProvider and associates
 // Project OrcScala
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,8 +13,9 @@ package orc.compile.flowanalysis
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
-import orc.util.DotUtils._
+
 import orc.compile.Logger
+import orc.util.DotUtils.{ DotAttributes, WithDotAttributes, quote }
 
 trait EdgeBase[Node] {
   def from: Node
@@ -37,7 +38,7 @@ trait GraphDataProvider[Node, Edge <: EdgeBase[Node]] {
     }
     collection.immutable.HashMap() ++ m
   }
-  
+
   protected[this] lazy val edgeToIndex: collection.Map[Node, Set[Edge]] = {
     val m = mutable.HashMap[Node, Set[Edge]]()
     for (e <- edges) {
@@ -62,30 +63,30 @@ trait GraphDataProvider[Node, Edge <: EdgeBase[Node]] {
       val TType = implicitly[ClassTag[T]]
       edgeFromIndex.
         getOrElse(n, Set()).
-        collect { 
-          case TType(e) => e 
+        collect {
+          case TType(e) => e
         }
     }
     def inEdgesOf[T <: Edge: ClassTag] = {
       val TType = implicitly[ClassTag[T]]
       edgeToIndex.
         getOrElse(n, Set()).
-        collect { 
-          case TType(e) => e 
+        collect {
+          case TType(e) => e
         }
     }
   }
 }
 
 class MutableGraphDataProvider[Node, Edge <: EdgeBase[Node]] extends GraphDataProvider[Node, Edge] {
-  private[this] val nodeStore = mutable.Set[Node]() 
+  private[this] val nodeStore = mutable.Set[Node]()
   private[this] val edgeStore = mutable.Set[Edge]()
-  
+
   def addNode(n: Node) = {
     nodeStore += n
-    
+
   }
-  
+
   def addEdge(e: Edge) = {
     edgeStore += e
     edgeFromIndex += (e.from -> (edgeFromIndex.getOrElse(e.from, Set[Edge]()) + e))
@@ -93,7 +94,7 @@ class MutableGraphDataProvider[Node, Edge <: EdgeBase[Node]] extends GraphDataPr
     addNode(e.to)
     addNode(e.from)
   }
-  
+
   def nodes: collection.Set[Node] = nodeStore
   def edges: collection.Set[Edge] = edgeStore
 
@@ -104,7 +105,7 @@ class MutableGraphDataProvider[Node, Edge <: EdgeBase[Node]] extends GraphDataPr
   // TODO: Eliminate these from the top level API.
   def subgraphs: collection.Set[_ <: GraphDataProvider[Node, Edge]] = Set()
 
-  protected[this] override lazy val edgeFromIndex: mutable.Map[Node, Set[Edge]] = mutable.HashMap[Node, Set[Edge]]()  
+  protected[this] override lazy val edgeFromIndex: mutable.Map[Node, Set[Edge]] = mutable.HashMap[Node, Set[Edge]]()
   protected[this] override lazy val edgeToIndex: mutable.Map[Node, Set[Edge]] = mutable.HashMap[Node, Set[Edge]]()
 }
 
@@ -159,22 +160,21 @@ $edgesStr
   }
 
   def debugShow(): Unit = {
-    import java.io.File
     import java.nio.charset.StandardCharsets
     import java.nio.file.Files
     import java.nio.file.Paths
     import scala.sys.process._
-    val tmpDot = File.createTempFile("orcprog", ".gv");
+    val tmpDot = Files.createTempFile("orcprog", ".gv");
     val outformat = "svg"
-    val tmpPdf = File.createTempFile("orcprog", s".$outformat");
+    val tmpPdf = Files.createTempFile("orcprog", s".$outformat");
     //tmp.deleteOnExit();
 
-    Files.write(Paths.get(tmpDot.toURI), toDot().getBytes(StandardCharsets.UTF_8))
+    Files.write(Paths.get(tmpDot.toUri), toDot().getBytes(StandardCharsets.UTF_8))
     Logger.info(s"Wrote gv to $tmpDot")
-    
-    Seq("dot", s"-T$outformat", tmpDot.getAbsolutePath, s"-o${tmpPdf.getAbsolutePath}").!
+
+    Seq("dot", s"-T$outformat", tmpDot.toAbsolutePath.toString, s"-o${tmpPdf.toAbsolutePath.toString}").!
     Logger.info(s"Wrote rendered to $tmpPdf")
-    
-    Seq("chromium-browser", tmpPdf.getAbsolutePath).!
+
+    Seq("chromium-browser", tmpPdf.toAbsolutePath.toString).!
   }
 }

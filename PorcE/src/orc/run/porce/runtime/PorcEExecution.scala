@@ -2,7 +2,7 @@
 // PorcEExecution.scala -- Scala class PorcEExecution
 // Project PorcE
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,13 +11,15 @@
 
 package orc.run.porce.runtime
 
-import java.io.{ FileOutputStream, OutputStreamWriter, PrintWriter }
+import java.io.PrintWriter
+import java.nio.file.Files
 import java.util.{ ArrayList, Collections }
 import java.util.logging.Level
 
 import scala.ref.WeakReference
 
-import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, PublishedEvent }
+import orc.{ CaughtEvent, ExecutionRoot, HaltedOrKilledEvent, OrcEvent, OrcExecutionOptions, PublishedEvent }
+import orc.compiler.porce.PorcToPorcE
 import orc.error.runtime.{ HaltException, TokenError }
 import orc.run.core.EventHandler
 import orc.run.distrib.porce.CallTargetManager
@@ -29,9 +31,6 @@ import com.oracle.truffle.api.{ RootCallTarget, Truffle }
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.{ Node, RootNode }
-import orc.OrcExecutionOptions
-import orc.run.porce.SpecializationConfiguration
-import orc.compiler.porce.PorcToPorcE
 
 abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHandler: OrcEvent => Unit, val options: OrcExecutionOptions)
   extends ExecutionRoot with EventHandler with CallTargetManager with NoInvocationInterception {
@@ -153,8 +152,8 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
     lastGoodRepNumber = repNum
     import scala.collection.JavaConverters._
     specializationsFile foreach { specializationsFile =>
-      specializationsFile.delete()
-      val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(specializationsFile)))
+      Files.delete(specializationsFile)
+      val out = new PrintWriter(Files.newBufferedWriter(specializationsFile))
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
         val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
       for (r <- (callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString)) {
@@ -163,8 +162,8 @@ abstract class PorcEExecution(val runtime: PorcERuntime, protected var eventHand
       out.close()
     }
     profileResultsFile foreach { profileResultsFile =>
-      profileResultsFile.delete()
-      val out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(profileResultsFile)))
+      Files.delete(profileResultsFile)
+      val out = new PrintWriter(Files.newBufferedWriter(profileResultsFile))
       val callTargets = callTargetMap.values.toSet ++ trampolineMap.values.asScala ++ callSiteMap.values.asScala
         val ers = extraRegisteredRootNodes.asScala.collect({ case WeakReference(r) => r })
       val hasNodes = DumpRuntimeProfile((callTargets.map(_.getRootNode) ++ ers).toSeq.sortBy(_.toString), 1, out)

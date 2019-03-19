@@ -2,7 +2,7 @@
 // porcEBenchmarkExperiments.scala -- Scala objects implementing various benchmarking experiments of PorcE
 // Project OrcTests
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,7 +11,7 @@
 
 package orc.test.proc
 
-import java.io.File
+import java.nio.file.{ Files, Path, Paths }
 
 import orc.test.util.FactorDescription
 
@@ -140,7 +140,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
 
   case class MyPorcEExperimentalCondition(
       run: Int,
-      orcFile: File,
+      orcFile: Path,
       nCPUs: Int,
       optLevel: Int)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
@@ -184,8 +184,8 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         nCPUs <- if (optLevel < 2) nCPUsValues.take(1) else nCPUsValues
         fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else onlyOpt(mainOrcBenchmarks)
       } yield {
-        assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs, optLevel)
+        assert(Files.isRegularFile(Paths.get(fn)), fn)
+        MyPorcEExperimentalCondition(run, Paths.get("OrcTests/" + fn), nCPUs, optLevel)
       }
       val scala = for {
         run <- 0 until 1
@@ -215,7 +215,7 @@ object PorcEKnownSiteSpecializationExperiment extends PorcEBenchmark {
 
   case class MyPorcEExperimentalCondition(
       run: Int,
-      orcFile: File,
+      orcFile: Path,
       nCPUs: Int,
       knownSiteSpecialization: Boolean)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition with HasRunNumber {
@@ -242,8 +242,8 @@ object PorcEKnownSiteSpecializationExperiment extends PorcEBenchmark {
         fn <- onlyOpt(mainPureOrcBenchmarks)
         knownSiteSpecialization <- Seq(true) // Seq(true, false)
       } yield {
-        assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(0, new File("OrcTests/" + fn), cpus, knownSiteSpecialization)
+        assert(Files.isRegularFile(Paths.get(fn)), fn)
+        MyPorcEExperimentalCondition(0, Paths.get("OrcTests/" + fn), cpus, knownSiteSpecialization)
       }
       porce
     }
@@ -259,7 +259,7 @@ object PorcESpawnFutureExperiment extends PorcEBenchmark {
 
   case class MyPorcEExperimentalCondition(
       run: Int,
-      orcFile: File,
+      orcFile: Path,
       nCPUs: Int,
       optLevel: Int,
       spawnLimit: Double,
@@ -277,7 +277,7 @@ object PorcESpawnFutureExperiment extends PorcEBenchmark {
     )
 
     val spawnsOptOpt = s"porc:eta-spawn-reduce=true" // ${spawnLimit > 0}"
-    val spawnsProperties = Map(
+    val spawnsProperties = Map[String, AnyVal](
           "orc.porce.inlineAverageTimeLimit" -> spawnLimit,
           "orc.porce.allowSpawnInlining" -> true) // (spawnLimit > 0))
     val futuresOptOpt = s"orct:future-elim=$optFutures,orct:unused-future-elim=$optFutures,orct:future-force-elim=$optFutures,porc:usegraft=$optFutures"
@@ -299,8 +299,8 @@ object PorcESpawnFutureExperiment extends PorcEBenchmark {
         (optSpawns, optFutures) <- Seq((true, true))// Seq((false, false), (true, false), (true, true))
         spawnLimit <- Seq(0.001, 0.01, 1, 10, 100, 1000, 10000, 0, 0.1)
       } yield {
-        assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs, optLevel, spawnLimit, optFutures)
+        assert(Files.isRegularFile(Paths.get(fn)), fn)
+        MyPorcEExperimentalCondition(run, Paths.get("OrcTests/" + fn), nCPUs, optLevel, spawnLimit, optFutures)
       }
       val lasts = Set(0, 0.1)
       porce.sortBy(c => (lasts contains c.spawnLimit))
@@ -318,7 +318,7 @@ object PorcEOptimizationExperiment extends PorcEBenchmark {
 
   case class MyPorcEExperimentalCondition(
       run: Int,
-      orcFile: File,
+      orcFile: Path,
       nCPUs: Int,
       optLevel: Int)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
@@ -343,8 +343,8 @@ object PorcEOptimizationExperiment extends PorcEBenchmark {
         fn <- onlyOpt(mainPureOrcBenchmarks)
         optLevel <- Seq(3, 0)
       } yield {
-        assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(0, new File("OrcTests/" + fn), nCPUs, optLevel)
+        assert(Files.isRegularFile(Paths.get(fn)), fn)
+        MyPorcEExperimentalCondition(0, Paths.get("OrcTests/" + fn), nCPUs, optLevel)
       }
       porce
     }
@@ -357,7 +357,7 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
   //override def hardTimeLimit: Double = 60 * 5.5
 
   case class MyPorcEExperimentalCondition(
-      orcFile: File,
+      orcFile: Path,
       nCPUs: Int,
       allowAllSpawnInlining: Boolean,
       universalTCO: Boolean,
@@ -422,8 +422,8 @@ object PorcEInliningTCOExperiment extends PorcEBenchmark {
         universalTCO <- Seq(true, false)
         actuallySchedule <- Seq(true, false)
       } yield {
-        assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, allowAllSpawnInlining, universalTCO, actuallySchedule, optLevel)
+        assert(Files.isRegularFile(Paths.get(fn)), fn)
+        MyPorcEExperimentalCondition(Paths.get("OrcTests/" + fn), nCPUs, allowAllSpawnInlining, universalTCO, actuallySchedule, optLevel)
       }
       porce
     }
@@ -582,7 +582,7 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
       )
 
   case class MyPorcEExperimentalCondition(
-      orcFile: File,
+      orcFile: Path,
       nCPUs: Int,
       step: Int)
       extends ArthursBenchmarkEnv.PorcEExperimentalCondition with ArthursBenchmarkEnv.CPUControlExperimentalCondition {
@@ -621,8 +621,8 @@ object PorcEDevelopmentImprovementExperiment extends PorcEBenchmark {
             )*/
         step <- 0 to Steps.indexOf(LastUsedStep)
       } yield {
-        assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), nCPUs, step)
+        assert(Files.isRegularFile(Paths.get(fn)), fn)
+        MyPorcEExperimentalCondition(Paths.get("OrcTests/" + fn), nCPUs, step)
       }
 
       /*for(c <- porce) {
@@ -640,7 +640,7 @@ object PorcESteadyStateExperiment extends PorcEBenchmark {
   def softTimeLimit: Double = 60 * 10
 
   case class MyPorcEExperimentalCondition(
-      orcFile: File,
+      orcFile: Path,
       truffleBackgroundCompilation: Boolean,
       truffleCompilationThreshold: Int,
       truffleCompilerThreads: Int)
@@ -678,8 +678,8 @@ object PorcESteadyStateExperiment extends PorcEBenchmark {
             "test_data/performance/canneal/canneal-naive.orc",
             )
       } yield {
-        assert(new File(fn).isFile(), fn)
-        MyPorcEExperimentalCondition(new File("OrcTests/" + fn), bg, threshold, compThreads)
+        assert(Files.isRegularFile(Paths.get(fn)), fn)
+        MyPorcEExperimentalCondition(Paths.get("OrcTests/" + fn), bg, threshold, compThreads)
       }
       val scala = for {
         benchmark <- Seq(

@@ -2,7 +2,7 @@
 // ExpectedOutput.java -- Java class ExpectedOutput
 // Project OrcTests
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,8 +12,8 @@
 package orc.test.util;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,8 +56,8 @@ public class ExpectedOutput {
     private final List<MaybePermutableOutput> outs = new LinkedList<MaybePermutableOutput>();
     private boolean shouldBenchmark = false;
 
-    public ExpectedOutput(final File file) throws IOException {
-        final BufferedReader r = new BufferedReader(new FileReader(file));
+    public ExpectedOutput(final Path file) throws IOException {
+        final BufferedReader r = Files.newBufferedReader(file);
 
         try {
             boolean permutable = false;

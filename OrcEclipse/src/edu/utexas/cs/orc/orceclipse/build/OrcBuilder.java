@@ -13,14 +13,24 @@
 
 package edu.utexas.cs.orc.orceclipse.build;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import orc.compile.StandardOrcCompiler;
+import orc.compile.parse.OrcFileInputContext;
+
+import edu.utexas.cs.orc.orceclipse.EclipseToOrcMessageAdapter;
+import edu.utexas.cs.orc.orceclipse.EclipseToOrcProgressAdapter;
+import edu.utexas.cs.orc.orceclipse.Messages;
+import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
+import edu.utexas.cs.orc.orceclipse.OrcPlugin;
+import edu.utexas.cs.orc.orceclipse.OrcPluginIds;
+import edu.utexas.cs.orc.orceclipse.OrcResources;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -41,17 +51,6 @@ import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
-
-import orc.compile.StandardOrcCompiler;
-import orc.compile.parse.OrcFileInputContext;
-
-import edu.utexas.cs.orc.orceclipse.EclipseToOrcMessageAdapter;
-import edu.utexas.cs.orc.orceclipse.EclipseToOrcProgressAdapter;
-import edu.utexas.cs.orc.orceclipse.Messages;
-import edu.utexas.cs.orc.orceclipse.OrcConfigSettings;
-import edu.utexas.cs.orc.orceclipse.OrcPlugin;
-import edu.utexas.cs.orc.orceclipse.OrcPluginIds;
-import edu.utexas.cs.orc.orceclipse.OrcResources;
 
 /**
  * Incremental builder for Orc source code.
@@ -486,7 +485,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
         try {
             final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
             config.filename_$eq(file.getLocation().toOSString());
-            final OrcFileInputContext ic = new OrcFileInputContext(new File(file.getLocation().toOSString()), file.getCharset());
+            final OrcFileInputContext ic = new OrcFileInputContext(Paths.get(file.getLocation().toOSString()), file.getCharset());
             final EclipseToOrcProgressAdapter prgsLstnr = new EclipseToOrcProgressAdapter(new SubProgressMonitor(monitor, 1000));
             final EclipseToOrcMessageAdapter compileLogger = new EclipseToOrcMessageAdapter(BUILDER_ID, false);
 

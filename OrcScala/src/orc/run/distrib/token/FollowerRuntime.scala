@@ -13,8 +13,10 @@
 
 package orc.run.distrib.token
 
-import java.io.{ EOFException, File, FileWriter, IOException, ObjectOutputStream }
+import java.io.{ EOFException, IOException, ObjectOutputStream }
 import java.net.{ InetAddress, InetSocketAddress, SocketException }
+import java.nio.charset.Charset
+import java.nio.file.{ Files, Path }
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.Level
 
@@ -66,7 +68,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime.RuntimeId) extends DOrcRuntime(runt
 
   val orderlyShutdown = new AtomicBoolean(false)
 
-  def listenAndContactLeader(listenAddress: InetSocketAddress, leaderAddress: InetSocketAddress, listenSockAddrFile: Option[File]): Unit = {
+  def listenAndContactLeader(listenAddress: InetSocketAddress, leaderAddress: InetSocketAddress, listenSockAddrFile: Option[Path]): Unit = {
     runtimeLocationRegister.put(runtimeId, here)
 
     listener = new RuntimeConnectionListener[OrcLeaderToFollowerCmd, OrcFollowerToLeaderCmd, DOrcExecution, PeerLocation](listenAddress)
@@ -80,7 +82,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime.RuntimeId) extends DOrcRuntime(runt
 
     listenSockAddrFile match {
       case Some(f) =>
-        val fw = new FileWriter(f)
+        val fw = Files.newBufferedWriter(f, Charset.forName("UTF-8"))
         try {
           fw.write(canonicalListenAddress.getHostName)
           fw.write(':')
@@ -380,7 +382,7 @@ class FollowerRuntime(runtimeId: DOrcRuntime.RuntimeId) extends DOrcRuntime(runt
   ////////
   // Load & unload programs
   ////////
-  
+
   val programs = new ExecutionMap[DOrcFollowerExecution]()
 
   def loadProgram(leaderLocation: LeaderLocation, executionId: DOrcExecution#ExecutionId, programOil: String, options: OrcExecutionOptions) {

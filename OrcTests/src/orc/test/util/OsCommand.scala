@@ -13,8 +13,9 @@
 
 package orc.test.util
 
-import java.io.{ ByteArrayOutputStream, File, IOException, InputStream, OutputStream, UnsupportedEncodingException }
+import java.io.{ ByteArrayOutputStream, IOException, InputStream, OutputStream, UnsupportedEncodingException }
 import java.nio.charset.{ Charset, StandardCharsets }
+import java.nio.file.Path
 
 import scala.collection.JavaConverters.seqAsJavaListConverter
 
@@ -36,7 +37,7 @@ object OsCommand {
   @throws[InterruptedException]
   @throws[IOException]
   @throws[UnsupportedEncodingException]
-  def run(command: Seq[String], workingDir: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8): Int = {
+  def run(command: Seq[String], workingDir: Path = null, stdin: String = "", stdout: Path = null, stderr: Path = null, charset: Charset = StandardCharsets.UTF_8): Int = {
     val p = runNoWait(command, workingDir, stdin, stdout, stderr, charset)
 
     val exitStatus = p.waitFor()
@@ -50,11 +51,11 @@ object OsCommand {
     */
   @throws[IOException]
   @throws[UnsupportedEncodingException]
-  def runNoWait(command: Seq[String], workingDir: File = null, stdin: String = "", stdout: File = null, stderr: File = null, charset: Charset = StandardCharsets.UTF_8): Process = {
+  def runNoWait(command: Seq[String], workingDir: Path = null, stdin: String = "", stdout: Path = null, stderr: Path = null, charset: Charset = StandardCharsets.UTF_8): Process = {
     val pb = new ProcessBuilder(command.asJava)
-    if (workingDir != null) pb.directory(workingDir)
-    pb.redirectOutput(if (stdout == null) ProcessBuilder.Redirect.INHERIT else ProcessBuilder.Redirect.to(stdout))
-    pb.redirectError(if (stderr == null) ProcessBuilder.Redirect.INHERIT else ProcessBuilder.Redirect.to(stderr))
+    if (workingDir != null) pb.directory(workingDir.toFile)
+    pb.redirectOutput(if (stdout == null) ProcessBuilder.Redirect.INHERIT else ProcessBuilder.Redirect.to(stdout.toFile))
+    pb.redirectError(if (stderr == null) ProcessBuilder.Redirect.INHERIT else ProcessBuilder.Redirect.to(stderr.toFile))
     val p = pb.start()
 
     val stdinStream = p.getOutputStream /* sic. yes, confusing naming */
@@ -76,9 +77,9 @@ object OsCommand {
   @throws[InterruptedException]
   @throws[IOException]
   @throws[UnsupportedEncodingException]
-  def runAndGetStatus(command: Seq[String], workingDir: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)): Int = {
+  def runAndGetStatus(command: Seq[String], workingDir: Path = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)): Int = {
     val pb = new ProcessBuilder(command.asJava)
-    if (workingDir != null) pb.directory(workingDir)
+    if (workingDir != null) pb.directory(workingDir.toFile)
     /* Lead pb's output & error redirect set as Redirect.PIPE */
     val p = pb.start()
 
@@ -118,7 +119,7 @@ object OsCommand {
   @throws[InterruptedException]
   @throws[IOException]
   @throws[UnsupportedEncodingException]
-  def runAndGetResult(command: Seq[String], workingDir: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)): OsCommandResult = {
+  def runAndGetResult(command: Seq[String], workingDir: Path = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)): OsCommandResult = {
 
     val outBAOS = new ByteArrayOutputStream()
     val errBAOS = new ByteArrayOutputStream()

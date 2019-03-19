@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 11, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,13 +13,14 @@
 
 package orc.util
 
-import java.io.{ File, FileInputStream }
+import java.io.File
+import java.nio.file.{ Files, Paths }
 import java.util.Properties
 
 import scala.collection.JavaConverters.propertiesAsScalaMapConverter
 
 /** A map of settings loaded from configuration files.
-  *  
+  *
   * Rule of thumb for configuration files vs. command line arguments:
   * Use configuration files for administrative values that do not change
   * frequently, i.e. general attributes of providing services.  Conceptually,
@@ -44,7 +45,7 @@ import scala.collection.JavaConverters.propertiesAsScalaMapConverter
   * @see java.util.Properties#load(java.io.Reader)
   * @author jthywiss
   */
-abstract class Config(val fileBasename: String, val systemProperty: String = "orc.config.dirs") extends scala.collection.immutable.AbstractMap[String,String] with scala.collection.immutable.DefaultMap[String, String]() {
+abstract class Config(val fileBasename: String, val systemProperty: String = "orc.config.dirs") extends scala.collection.immutable.AbstractMap[String, String] with scala.collection.immutable.DefaultMap[String, String]() {
 
   protected val filename: String = fileBasename + ".properties"
 
@@ -55,10 +56,15 @@ abstract class Config(val fileBasename: String, val systemProperty: String = "or
   protected def load(): Properties = {
     def wrapProps(dirs: Iterator[String], inner: Properties): Properties = {
       if (dirs.hasNext) {
-        val f = new File(dirs.next(), filename)
-        if (f.exists) {
+        val f = Paths.get(dirs.next(), filename)
+        if (Files.exists(f)) {
           val wrapper = new Properties(inner)
-          wrapper.load(new FileInputStream(f))
+          val pfis = Files.newInputStream(f)
+          try {
+            wrapper.load(pfis)
+          } finally {
+            pfis.close()
+          }
           wrapProps(dirs, wrapper)
         } else {
           wrapProps(dirs, inner)
@@ -79,7 +85,7 @@ abstract class Config(val fileBasename: String, val systemProperty: String = "or
     val configDirProp = System.getProperty(systemProperty)
     val propertiesFromFiles = if (configDirProp != null && configDirProp.nonEmpty) {
       val configDirs = configDirProp.split(File.pathSeparatorChar)
-      wrapProps(configDirs.reverseIterator,defaults)
+      wrapProps(configDirs.reverseIterator, defaults)
     } else {
       defaults
     }
@@ -87,7 +93,7 @@ abstract class Config(val fileBasename: String, val systemProperty: String = "or
     val sysPropOverrides = System.getProperties.asScala.filterKeys(_.startsWith(sysPropPrefix))
     if (sysPropOverrides.nonEmpty) {
       val wrapper = new Properties(propertiesFromFiles)
-      sysPropOverrides.foreach({case (key, value) => wrapper.put(key.stripPrefix(sysPropPrefix), value)})
+      sysPropOverrides.foreach({ case (key, value) => wrapper.put(key.stripPrefix(sysPropPrefix), value) })
       wrapper
     } else {
       propertiesFromFiles

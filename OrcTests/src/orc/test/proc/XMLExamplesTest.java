@@ -2,7 +2,7 @@
 // XMLExamplesTest.java -- Java class XMLExamplesTest
 // Project OrcTests
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,8 +11,9 @@
 
 package orc.test.proc;
 
-import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -46,18 +47,18 @@ import org.xml.sax.SAXException;
  */
 public class XMLExamplesTest {
     public static Test suite() {
-        return TestUtils.buildSuite(XMLExamplesTest.class.getSimpleName(), (s, t, f, e, b) -> new XMLExamplesTestCase(s, t, f, e, b), new OrcBindings(), new File("test_data"), new File("../OrcExamples"));
+        return TestUtils.buildSuite(XMLExamplesTest.class.getSimpleName(), (s, t, f, e, b) -> new XMLExamplesTestCase(s, t, f, e, b), new OrcBindings(), Paths.get("test_data"), Paths.get("../OrcExamples"));
     }
 
     public static class XMLExamplesTestCase extends OrcTestCase {
-        public XMLExamplesTestCase(final String suiteName1, final String testName, final File orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
+        public XMLExamplesTestCase(final String suiteName1, final String testName, final Path orcFile1, final ExpectedOutput expecteds1, final OrcBindings bindings1) {
             super(suiteName1, testName, orcFile1, expecteds1, bindings1);
         }
 
         @Override
         public void runTest() throws Throwable {
             System.out.println("\n==== Starting " + orcFile + " ====");
-            final OrcScriptEngine<Object>.OrcCompiledScript compiledScript = OrcForTesting.compile(orcFile.getPath(), bindings);
+            final OrcScriptEngine<Object>.OrcCompiledScript compiledScript = OrcForTesting.compile(orcFile.toString(), bindings);
             final Expression expr = getAstRoot(compiledScript);
 
             // AST -> XML

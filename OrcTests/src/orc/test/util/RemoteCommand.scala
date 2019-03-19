@@ -13,8 +13,9 @@
 
 package orc.test.util
 
-import java.io.{ File, IOException, UnsupportedEncodingException }
+import java.io.{ IOException, UnsupportedEncodingException }
 import java.net.{ InetAddress, NetworkInterface, SocketException }
+import java.nio.file.{ Files, Paths }
 
 /** Utility methods to interact with remote systems.
   *
@@ -29,8 +30,8 @@ object RemoteCommand {
   @throws[IOException]
   @throws[UnsupportedEncodingException]
   def mkdirAndRsync(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
-    val localFile = new File(localFilename)
-    val remoteDirPath = if (localFile.isDirectory) remoteFilename else new File(remoteFilename).getParent
+    val localFile = Paths.get(localFilename)
+    val remoteDirPath = if (Files.isDirectory(localFile)) remoteFilename else Paths.get(remoteFilename).getParent.toString
     mkdir(remoteHostname, remoteDirPath)
     rsyncToRemote(localFilename, remoteHostname, remoteFilename)
   }
@@ -56,11 +57,11 @@ object RemoteCommand {
   @throws[IOException]
   @throws[UnsupportedEncodingException]
   def rsyncToRemote(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
-    val localFile = new File(localFilename)
-    val localFileCanonicalName = localFile.getCanonicalPath + (if (localFile.isDirectory) "/" else "")
+    val localFile = Paths.get(localFilename)
+    val localFilePathname = localFile.toAbsolutePath.toString + (if (Files.isDirectory(localFile)) "/" else "")
     checkExitValue(
-      s"rsync of $localFileCanonicalName to $remoteHostname:$remoteFilename",
-      OsCommand.runAndGetResult(Seq("rsync", "-rlpt", "--exclude=.orcache", localFileCanonicalName, s"${remoteHostname}:${remoteFilename}")))
+      s"rsync of $localFilePathname to $remoteHostname:$remoteFilename",
+      OsCommand.runAndGetResult(Seq("rsync", "-rlpt", "--exclude=.orcache", localFilePathname, s"${remoteHostname}:${remoteFilename}")))
   }
 
   @throws[RemoteCommandException]
@@ -68,9 +69,9 @@ object RemoteCommand {
   @throws[IOException]
   @throws[UnsupportedEncodingException]
   def rsyncFromRemote(remoteHostname: String, remoteFilename: String, localFilename: String): Unit = {
-    val localFile = new File(localFilename)
-    val localFileCanonicalName = localFile.getCanonicalPath + (if (localFile.isDirectory) "/" else "")
-    checkExitValue(s"rsync of $remoteHostname:$remoteFilename to $localFileCanonicalName", OsCommand.runAndGetResult(Seq("rsync", "-rlpt", s"${remoteHostname}:${remoteFilename}", localFileCanonicalName)))
+    val localFile = Paths.get(localFilename)
+    val localFilePathname = localFile.toAbsolutePath.toString + (if (Files.isDirectory(localFile)) "/" else "")
+    checkExitValue(s"rsync of $remoteHostname:$remoteFilename to $localFilePathname", OsCommand.runAndGetResult(Seq("rsync", "-rlpt", s"${remoteHostname}:${remoteFilename}", localFilePathname)))
   }
 
   /** Run the given command, with an empty stdin, and using this process'

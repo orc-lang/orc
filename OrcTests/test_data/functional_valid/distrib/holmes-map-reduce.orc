@@ -16,13 +16,13 @@
 val repeatRead = 1
 
 def checkReadableFile(file) =
+  import class Files = "java.nio.file.Files"
   import class JavaSys = "java.lang.System"
-  if file.canRead() then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
+  if Files.isReadable(file) then signal else Error("Cannot read file: "+file+" in dir "+JavaSys.getProperty("user.dir")) >> stop
 
 def readFile(file) =
-  import class BufferedReader = "java.io.BufferedReader"
-  import class FileReader = "java.io.FileReader"
-  BufferedReader(FileReader(file))  >in>
+  import class Files = "java.nio.file.Files"
+  Files.newBufferedReader(file)  >in>
   (  def appendLinesFromIn(lines) =
       (in.readLine() ; null)  >nextLine>
       ( if nextLine = null
@@ -54,8 +54,8 @@ def mapOperation(filename) =
   def loop(1, f) = [f()]
   def loop(n, f) = {| f() |} : loop(n-1, f) 
   
-  import class File = "java.io.File"
-  File(filename)  >f>
+  import class Paths = "java.nio.file.Paths"
+  Paths.get(filename)  >f>
   checkReadableFile(f)  >>
   loop(repeatRead, 
     {
