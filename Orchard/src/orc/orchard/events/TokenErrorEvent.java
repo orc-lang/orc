@@ -2,7 +2,7 @@
 // TokenErrorEvent.java -- Java class TokenErrorEvent
 // Project Orchard
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -19,7 +19,7 @@ public class TokenErrorEvent extends JobEvent {
     private static final long serialVersionUID = -5055502756451078383L;
     public String message;
     public String positionString;
-    public String posFilename;
+    public String posPathname;
     public int posLine;
     public int posColumn;
 
@@ -34,7 +34,7 @@ public class TokenErrorEvent extends JobEvent {
 
             if (pos != null) {
                 positionString = pos.toString();
-                posFilename = pos.start().resource().descr();
+                posPathname = pos.start().resource().descr();
                 posLine = pos.start().line();
                 posColumn = pos.start().column();
             }

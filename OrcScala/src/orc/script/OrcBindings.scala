@@ -33,8 +33,8 @@ class OrcBindings(m: Map[String, Object]) extends SimpleBindings(m) with OrcOpti
 
   def this() = this(new java.util.HashMap[String, Object])
 
-  def filename: String = getString("javax.script.filename", "")
-  def filename_=(newVal: String) = putString("javax.script.filename", newVal)
+  def pathname: String = getString("javax.script.filename", "")
+  def pathname_=(newVal: String) = putString("javax.script.filename", newVal)
   def backend: BackendType = BackendType.fromString(getString("orc.backend", "Token"))
   def backend_=(newVal: BackendType) = putString("orc.backend", newVal.toString)
 

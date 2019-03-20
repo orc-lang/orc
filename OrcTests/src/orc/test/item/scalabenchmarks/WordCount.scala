@@ -46,9 +46,9 @@ object WordCount extends BenchmarkApplication[List[String], Long] with ExpectedB
   }
 
   // Lines: 4
-  def repeatCountFilename(filename: String) = {
+  def repeatCountFilename(pathname: String) = {
     def sumN(n: Int, f: () => Long): Long = if (n > 0) f() + sumN(n-1, f) else 0
-    val file = Paths.get(filename)
+    val file = Paths.get(pathname)
     sumN(repeatRead, () => countFile(file))
   }
 

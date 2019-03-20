@@ -4,7 +4,7 @@
 //
 // Created by amp on July 12, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,6 +14,7 @@
 package orc
 
 import java.io.IOException
+
 import orc.compile.parse.OrcInputContext
 import orc.error.compiletime.CompileLogger
 import orc.progress.ProgressMonitor
@@ -29,7 +30,7 @@ trait OrcCompilerProvides[+E] {
   */
 trait OrcCompilerRequires {
   @throws(classOf[IOException])
-  def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcCompilationOptions): OrcInputContext
+  def openInclude(includePathname: String, relativeTo: OrcInputContext, options: OrcCompilationOptions): OrcInputContext
   @throws(classOf[ClassNotFoundException])
   def loadClass(className: String): Class[_]
 }

@@ -56,12 +56,12 @@ abstract class DataOutput {
   protected def writeLine(s: String): Unit
 }
 
-class FileDataOutput(filename: Path, echo: Boolean = false) extends DataOutput {
-  val writer = Files.newBufferedWriter(filename, Charset.forName("UTF-8"))
+class FileDataOutput(pathname: Path, echo: Boolean = false) extends DataOutput {
+  val writer = Files.newBufferedWriter(pathname, Charset.forName("UTF-8"))
 
   def writeLine(s: String): Unit = {
     if (echo)
-      println(s"$filename< $s\n")
+      println(s"$pathname< $s\n")
     writer.write(s)
     writer.write('\n')
   }

@@ -4,12 +4,13 @@
 //
 // Created by jthywiss on Aug 11, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.error.compiletime
 
 import orc.compile.parse.OrcSourceRange
@@ -162,8 +163,8 @@ case class UnguardedRecursionException() extends SyntacticException("Unguarded r
 /** Indicate a problem with include file open/read operations.
   */
 @SerialVersionUID(479336004840472249L)
-case class IncludeFileException(val includeFileName: String, cause: Throwable)
-  extends CompilationException("Problem including " + includeFileName + (if (cause == null) "" else ": " + cause.toString()), cause)
+case class IncludeFileException(val includePathname: String, cause: Throwable)
+  extends CompilationException("Problem including " + includePathname + (if (cause == null) "" else ": " + cause.toString()), cause)
   with SeverityFatal
 
 /** Indicate a problem with site resolution. Ideally
@@ -222,7 +223,6 @@ case class InternalCompilerError(s: String) extends CompilationException(s"Compi
 /** Internal warning for the compiler writers
   */
 case class InternalCompilerWarning(s: String) extends CompilationException(s"Compiler bug: $s") with SeverityDebug
-
 
 /** Many errors occured during compilation and we want to report them all.
   *

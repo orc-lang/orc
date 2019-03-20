@@ -110,7 +110,7 @@ trait Compiler[+CompiledCode] {
   @throws(classOf[IOException]) @throws(classOf[CompilationException])
   def compileExceptionOnError(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): CompiledCode = {
     val logger = new ExceptionCollectingCompileLogger(new PrintWriter(err, true))
-    val res = compile(new OrcReaderInputContext(source, options.filename), options,
+    val res = compile(new OrcReaderInputContext(source, options.pathname), options,
       logger, NullProgressMonitor)
     logger.exceptions match {
       case Seq() =>
@@ -130,7 +130,7 @@ trait Compiler[+CompiledCode] {
   @throws(classOf[IOException])
   def compileLogOnError(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): CompiledCode = {
     val logger = new PrintWriterCompileLogger(new PrintWriter(err, true))
-    compile(new OrcReaderInputContext(source, options.filename), options,
+    compile(new OrcReaderInputContext(source, options.pathname), options,
       logger, NullProgressMonitor)
   }
 }

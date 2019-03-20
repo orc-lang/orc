@@ -22,11 +22,11 @@ def countFile(file) =
   in.close()  >>
   count
 
-def repeatCountFilename(filename) =
+def repeatCountFilename(pathname) =
   import class Paths = "java.nio.file.Paths"
   def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0
 
-  Paths.get(filename)  >file>
+  Paths.get(pathname)  >file>
   checkReadableFile(file)  >>
   sumN(repeatRead, { countFile(file) })
 

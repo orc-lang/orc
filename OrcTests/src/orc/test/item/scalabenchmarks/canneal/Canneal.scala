@@ -32,11 +32,11 @@ object Canneal extends BenchmarkApplication[NetList, Unit] {
 
   val swapsPerTemp = BenchmarkConfig.problemSizeScaledInt(3750)
   val initialTemperature = 2000
-  val filename = localInputFile
+  val pathname = localInputFile
   val nTempSteps = 128
   val nPartitions = BenchmarkConfig.nPartitions
 
-  lazy val netlist = NetList(filename)
+  lazy val netlist = NetList(pathname)
 
   def setup(): NetList = {
     netlist.resetLocations()

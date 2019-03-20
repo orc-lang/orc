@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 20, 2016.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -49,7 +49,7 @@ trait TextPosition[R] {
   val line: LineNumber
   /** Column number of the text that this position immediately precedes. One-based. */
   val column: ColumnNumber
-  /** A string identifying the resource, to be used when printing this position. (E.g., filename) */
+  /** A string identifying the resource, to be used when printing this position. (E.g., pathname) */
   def resourceDescription: String
 
   override def equals(that: Any) = that match {

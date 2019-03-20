@@ -36,8 +36,8 @@ def checkReadableFile(file) =
 def listFileNamesRecursively(dirPathName :: String) :: List[String] =
   import class Paths = "java.nio.file.Paths"
   import class WordCount = "orc.test.item.distrib.WordCount"
-  WordCount.listFileNamesRecursively(Paths.get(dirPathName))  >fileNameArray>
-  arrayToList(fileNameArray)
+  WordCount.listFileNamesRecursively(Paths.get(dirPathName))  >pathnameArray>
+  arrayToList(pathnameArray)
 
 def createTestDataFiles() =
   import class WordCount = "orc.test.item.distrib.WordCount"

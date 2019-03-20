@@ -72,11 +72,11 @@ trait OrcInputContext {
   protected def resolve(baseURI: URI, pathElements: String*): URI = {
     def allowedURIchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;="
     /** True if the argument string is in a form that can only be a file name */
-    def looksLikeFilename(s: String): Boolean =
+    def looksLikePathname(s: String): Boolean =
       (s.length >= 2 && s(0).isLetter && s(1) == ':') || // CP/M style drive letter
         !s.filterNot(allowedURIchars.contains(_)).isEmpty // Illegal URI chars
     def nameToURI(s: String): URI = {
-      if (!looksLikeFilename(s)) new URI(s) else Paths.get(s).toUri()
+      if (!looksLikePathname(s)) new URI(s) else Paths.get(s).toUri()
     }
     /** Ensure that "file:" URIs that refer to directories have a trailing slash.
       * This is necessary per URI parsing and resolution rules.

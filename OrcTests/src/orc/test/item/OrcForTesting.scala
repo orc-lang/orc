@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 22, 2010.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -36,14 +36,14 @@ object OrcForTesting {
   @throws(classOf[ClassNotFoundException])
   @throws(classOf[FileNotFoundException])
   @throws(classOf[OrcException])
-  def compile(filename: String, options: OrcBindings): OrcScriptEngine[AnyRef]#OrcCompiledScript = {
+  def compile(pathname: String, options: OrcBindings): OrcScriptEngine[AnyRef]#OrcCompiledScript = {
     val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[ScriptEngine with Compilable]
     if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
     var reader: InputStreamReader = null
     try {
-      options.filename = filename
+      options.pathname = pathname
       engine.setBindings(options, ENGINE_SCOPE)
-      reader = new InputStreamReader(new FileInputStream(options.filename), "UTF-8")
+      reader = new InputStreamReader(new FileInputStream(options.pathname), "UTF-8")
       engine.compile(reader).asInstanceOf[OrcScriptEngine[AnyRef]#OrcCompiledScript]
     } catch {
       case e: ScriptException if (e.getCause != null) => throw e.getCause // un-wrap and propagate
@@ -55,11 +55,11 @@ object OrcForTesting {
     }
   }
 
-  def importScript(filename: String, options: OrcBindings, script: OrcScriptEngine[AnyRef]#OrcCompiledScript): OrcScriptEngine[AnyRef]#OrcCompiledScript = {
+  def importScript(pathname: String, options: OrcBindings, script: OrcScriptEngine[AnyRef]#OrcCompiledScript): OrcScriptEngine[AnyRef]#OrcCompiledScript = {
     val engine = (new ScriptEngineManager).getEngineByName("orc").asInstanceOf[OrcScriptEngine[AnyRef]]
     if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
     try {
-      options.filename = filename
+      options.pathname = pathname
       engine.setBindings(options, ENGINE_SCOPE)
       engine.importLoaded(script)
     } catch {
@@ -72,7 +72,7 @@ object OrcForTesting {
   def run(compiledScript: OrcScriptEngine[AnyRef]#OrcCompiledScript, timeout: Long): String = {
     run(compiledScript, timeout, (v) => {})
   }
-  
+
   @throws(classOf[OrcException])
   @throws(classOf[TimeoutException])
   def run(compiledScript: OrcScriptEngine[AnyRef]#OrcCompiledScript, timeout: Long, publicationHandler: (AnyRef) => Unit): String = {
@@ -129,7 +129,7 @@ object OrcForTesting {
   @throws(classOf[FileNotFoundException])
   @throws(classOf[OrcException])
   @throws(classOf[TimeoutException])
-  def compileAndRun(filename: String, timeout: Long, bindings: OrcBindings = new OrcBindings()): String = {
-    run(compile(filename, bindings), timeout)
+  def compileAndRun(pathname: String, timeout: Long, bindings: OrcBindings = new OrcBindings()): String = {
+    run(compile(pathname, bindings), timeout)
   }
 }

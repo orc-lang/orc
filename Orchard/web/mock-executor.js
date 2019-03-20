@@ -2,7 +2,7 @@
 // mock-executor.js -- JavaScript source to simulate the executor service
 // Project Orchard
 //
-// Copyright (c) 2011 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -52,7 +52,7 @@ executorService = (function () {
 					timestamp:"error timestamp "+n,
 					message: "Error " + n,
 					location: {
-						filename: "test.orc",
+						pathname: "test.orc",
 						line: 100,
 						column: 5
 					},

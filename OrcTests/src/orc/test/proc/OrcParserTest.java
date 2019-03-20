@@ -66,7 +66,7 @@ public class OrcParserTest {
                 @Override
                 public void runTest() throws ParsingException, IOException {
                     final OrcFileInputContext ic = new OrcFileInputContext(file, "UTF-8");
-                    options.filename_$eq(file.toString());
+                    options.pathname_$eq(file.toString());
                     final Parsers.ParseResult<orc.ast.ext.Expression> pr = OrcProgramParser.apply(ic, co, envServices);
                     if (!file.toAbsolutePath().toString().contains(File.separatorChar + "functional_invalid" + File.separatorChar)) {
                         assertTrue("Parsing unsucessful: " + pr.toString(), pr.successful());

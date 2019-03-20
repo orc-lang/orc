@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 27, 2009.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -61,6 +61,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
  *
  * @see org.eclipse.core.resources.IncrementalProjectBuilder
  */
+@SuppressWarnings("deprecation")
 public class OrcBuilder extends IncrementalProjectBuilder {
     /**
      * Extension ID of the Orc builder, which matches the ID in the
@@ -475,16 +476,16 @@ public class OrcBuilder extends IncrementalProjectBuilder {
     protected void compile(final IFile file, final IProgressMonitor monitor) {
         checkCancel(monitor);
 
-        final String fileName = file.getFullPath().makeRelative().toString();
+        final String pathname = file.getFullPath().makeRelative().toString();
 
         if (DEBUG) {
-            getConsoleStream().println(Messages.OrcBuilder_BuildingOrcFile + fileName);
+            getConsoleStream().println(Messages.OrcBuilder_BuildingOrcFile + pathname);
         }
-        monitor.beginTask(NLS.bind(Messages.OrcBuilder_Compiling, fileName), 1000);
-        monitor.subTask(NLS.bind(Messages.OrcBuilder_Compiling, fileName));
+        monitor.beginTask(NLS.bind(Messages.OrcBuilder_Compiling, pathname), 1000);
+        monitor.subTask(NLS.bind(Messages.OrcBuilder_Compiling, pathname));
         try {
             final OrcConfigSettings config = new OrcConfigSettings(getProject(), null);
-            config.filename_$eq(file.getLocation().toOSString());
+            config.pathname_$eq(file.getLocation().toOSString());
             final OrcFileInputContext ic = new OrcFileInputContext(Paths.get(file.getLocation().toOSString()), file.getCharset());
             final EclipseToOrcProgressAdapter prgsLstnr = new EclipseToOrcProgressAdapter(new SubProgressMonitor(monitor, 1000));
             final EclipseToOrcMessageAdapter compileLogger = new EclipseToOrcMessageAdapter(BUILDER_ID, false);
@@ -494,7 +495,7 @@ public class OrcBuilder extends IncrementalProjectBuilder {
                 new StandardOrcCompiler().apply(ic, config, compileLogger, prgsLstnr);
                 // Disregard returned OIL, we just want the errors
             } catch (final IOException e) {
-                getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + fileName + ": " + e.toString()); //$NON-NLS-1$
+                getConsoleStream().println(Messages.OrcBuilder_IOErrorWhenBuilding + pathname + ": " + e.toString()); //$NON-NLS-1$
                 OrcPlugin.logAndShow(e);
             }
 
@@ -503,13 +504,13 @@ public class OrcBuilder extends IncrementalProjectBuilder {
         } catch (final Exception e) {
             // catch Exception, because any exception could break the
             // builder infrastructure.
-            getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + fileName + ": " + e.toString()); //$NON-NLS-1$
+            getConsoleStream().println(Messages.OrcBuilder_CompilerInternalErrorOn + pathname + ": " + e.toString()); //$NON-NLS-1$
             OrcPlugin.log(e);
         } finally {
             monitor.done();
         }
         if (DEBUG) {
-            getConsoleStream().println(Messages.OrcBuilder_DoneBuildingOrcFile + fileName);
+            getConsoleStream().println(Messages.OrcBuilder_DoneBuildingOrcFile + pathname);
         }
     }
 

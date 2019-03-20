@@ -283,7 +283,7 @@ class PorcOrcCompiler() extends OrctimizerOrcCompiler {
           o.backend)
     }
     val cacheFile = {
-      val inFile = Paths.get(co.options.filename)
+      val inFile = Paths.get(co.options.pathname)
       val dir = inFile.getParent
       dir.resolve(s".orcache${File.separator}${inFile.getFileName}.porc")
     }

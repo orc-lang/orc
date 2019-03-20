@@ -29,11 +29,11 @@ object RemoteCommand {
   @throws[InterruptedException]
   @throws[IOException]
   @throws[UnsupportedEncodingException]
-  def mkdirAndRsync(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
-    val localFile = Paths.get(localFilename)
-    val remoteDirPath = if (Files.isDirectory(localFile)) remoteFilename else Paths.get(remoteFilename).getParent.toString
+  def mkdirAndRsync(localPathname: String, remoteHostname: String, remotePathname: String): Unit = {
+    val localFile = Paths.get(localPathname)
+    val remoteDirPath = if (Files.isDirectory(localFile)) remotePathname else Paths.get(remotePathname).getParent.toString
     mkdir(remoteHostname, remoteDirPath)
-    rsyncToRemote(localFilename, remoteHostname, remoteFilename)
+    rsyncToRemote(localPathname, remoteHostname, remotePathname)
   }
 
   @throws[RemoteCommandException]
@@ -56,22 +56,22 @@ object RemoteCommand {
   @throws[InterruptedException]
   @throws[IOException]
   @throws[UnsupportedEncodingException]
-  def rsyncToRemote(localFilename: String, remoteHostname: String, remoteFilename: String): Unit = {
-    val localFile = Paths.get(localFilename)
+  def rsyncToRemote(localPathname: String, remoteHostname: String, remotePathname: String): Unit = {
+    val localFile = Paths.get(localPathname)
     val localFilePathname = localFile.toAbsolutePath.toString + (if (Files.isDirectory(localFile)) "/" else "")
     checkExitValue(
-      s"rsync of $localFilePathname to $remoteHostname:$remoteFilename",
-      OsCommand.runAndGetResult(Seq("rsync", "-rlpt", "--exclude=.orcache", localFilePathname, s"${remoteHostname}:${remoteFilename}")))
+      s"rsync of $localFilePathname to $remoteHostname:$remotePathname",
+      OsCommand.runAndGetResult(Seq("rsync", "-rlpt", "--exclude=.orcache", localFilePathname, s"${remoteHostname}:${remotePathname}")))
   }
 
   @throws[RemoteCommandException]
   @throws[InterruptedException]
   @throws[IOException]
   @throws[UnsupportedEncodingException]
-  def rsyncFromRemote(remoteHostname: String, remoteFilename: String, localFilename: String): Unit = {
-    val localFile = Paths.get(localFilename)
+  def rsyncFromRemote(remoteHostname: String, remotePathname: String, localPathname: String): Unit = {
+    val localFile = Paths.get(localPathname)
     val localFilePathname = localFile.toAbsolutePath.toString + (if (Files.isDirectory(localFile)) "/" else "")
-    checkExitValue(s"rsync of $remoteHostname:$remoteFilename to $localFilePathname", OsCommand.runAndGetResult(Seq("rsync", "-rlpt", s"${remoteHostname}:${remoteFilename}", localFilePathname)))
+    checkExitValue(s"rsync of $remoteHostname:$remotePathname to $localFilePathname", OsCommand.runAndGetResult(Seq("rsync", "-rlpt", s"${remoteHostname}:${remotePathname}", localFilePathname)))
   }
 
   /** Run the given command, with an empty stdin, and using this process'

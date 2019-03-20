@@ -39,7 +39,7 @@ object OrcXML {
       val ast = f(xml)
 
       //FIXME: Move to orc.util.TetxRange
-      //FIXME: Make robust to filenames with - and :
+      //FIXME: Make robust to pathnames with - and :
       // Extract position information, if available
       (xml \ "@pos").text.split("-").toList.map({ _.split(":").toList }) match {
         case List(List(file, line, col)) => {
@@ -427,11 +427,11 @@ object OrcXML {
     override def lineText(lineNum: LineNumber) = stubbed()
   }
 
-  /** An OrcSourcePosition that only knows its filename, line, and column.
+  /** An OrcSourcePosition that only knows its pathname, line, and column.
     * PlaceholderPositions are assigned a synthetic (fake) offset for comparison purposes.
     * PlaceholderPositions do not have any line content.
     */
-  class PlaceholderPosition(filename: String, override val line: Int, override val column: Int) extends OrcSourcePosition(new PlaceholderResource(filename), (line - 1) * 4096 + (column - 1)) with Serializable {
+  class PlaceholderPosition(pathname: String, override val line: Int, override val column: Int) extends OrcSourcePosition(new PlaceholderResource(pathname), (line - 1) * 4096 + (column - 1)) with Serializable {
     override protected def getLineCol() = (line, column)
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
@@ -442,15 +442,15 @@ object OrcXML {
     }
   }
 
-  protected case class PlaceholderPositionMarshalingReplacement(val filename: String, val line: Int, val column: Int) {
+  protected case class PlaceholderPositionMarshalingReplacement(val pathname: String, val line: Int, val column: Int) {
     @throws(classOf[java.io.ObjectStreamException])
-    protected def readResolve(): AnyRef = new PlaceholderPosition(filename, line, column)
+    protected def readResolve(): AnyRef = new PlaceholderPosition(pathname, line, column)
   }
 
   /** An OrcSourceRange made of two PlaceholderPositions. */
-  class PlaceholderSourceRange(filenameStart: String, lineStart: Int, columnStart: Int, filenameEnd: String, lineEnd: Int, columnEnd: Int)
+  class PlaceholderSourceRange(pathnameStart: String, lineStart: Int, columnStart: Int, pathnameEnd: String, lineEnd: Int, columnEnd: Int)
     extends OrcSourceRange(
-      (new PlaceholderPosition(filenameStart, lineStart, columnStart), new PlaceholderPosition(filenameEnd, lineEnd, columnEnd))) with Serializable {
+      (new PlaceholderPosition(pathnameStart, lineStart, columnStart), new PlaceholderPosition(pathnameEnd, lineEnd, columnEnd))) with Serializable {
     override def lineContent: String = ""
     override def lineContentWithCaret = ""
 
@@ -460,9 +460,9 @@ object OrcXML {
     }
   }
 
-  protected case class PlaceholderSourceRangeMarshalingReplacement(filenameStart: String, lineStart: Int, columnStart: Int, filenameEnd: String, lineEnd: Int, columnEnd: Int) {
+  protected case class PlaceholderSourceRangeMarshalingReplacement(pathnameStart: String, lineStart: Int, columnStart: Int, pathnameEnd: String, lineEnd: Int, columnEnd: Int) {
     @throws(classOf[java.io.ObjectStreamException])
-    protected def readResolve(): AnyRef = new PlaceholderSourceRange(filenameStart, lineStart, columnStart, filenameEnd, lineEnd, columnEnd)
+    protected def readResolve(): AnyRef = new PlaceholderSourceRange(pathnameStart, lineStart, columnStart, pathnameEnd, lineEnd, columnEnd)
   }
 
   @throws(classOf[OilParsingException])

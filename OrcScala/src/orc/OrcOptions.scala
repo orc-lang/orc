@@ -25,8 +25,8 @@ import orc.compile.CompilerFlagValue
 trait OrcOptions extends OrcCompilationOptions with OrcExecutionOptions
 
 trait OrcCommonOptions extends Serializable {
-  def filename: String
-  def filename_=(newVal: String)
+  def pathname: String
+  def pathname_=(newVal: String)
   def classPath: java.util.List[String]
   def classPath_=(newVal: java.util.List[String])
   def backend: BackendType

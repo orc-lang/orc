@@ -2,7 +2,7 @@
 // OilSecurityValidator.java -- Java class OilSecurityValidator
 // Project Orchard
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -32,7 +32,7 @@ import orc.orchard.errors.OrcProgramProblem;
  */
 public class OilSecurityValidator {
     private boolean hasProblems = false;
-    private final List<SecurityProblem> problems = new LinkedList<SecurityProblem>();
+    private final List<SecurityProblem> problems = new LinkedList<>();
 
     public boolean hasProblems() {
         return hasProblems;
@@ -44,7 +44,7 @@ public class OilSecurityValidator {
 
     private static Set<String> allowedClasses;
     static {
-        allowedClasses = new HashSet<String>(); // a Trie might be more efficient if it were standard
+        allowedClasses = new HashSet<>(); // a Trie might be more efficient if it were standard
 
         // java.lang
         allowedClasses.add("java.lang.StrictMath");
@@ -221,7 +221,7 @@ public class OilSecurityValidator {
             super();
             this.severity = Severity.ERROR.ordinal();
             this.message = message;
-            this.filename = position != null ? position.start().resource().descr() : "";
+            this.pathname = position != null ? position.start().resource().descr() : "";
             this.line = position != null ? position.start().line() : -1;
             this.column = position != null ? position.start().column() : -1;
             if (position != null) {

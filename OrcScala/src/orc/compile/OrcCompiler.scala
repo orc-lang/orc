@@ -129,12 +129,12 @@ trait CoreOrcCompilerPhases {
     @throws(classOf[IOException])
     override def apply(co: CompilerOptions) = { source =>
       val topLevelSourceStartPos = source.reader.pos.orcSourcePosition
-      var includeFileNames = co.options.additionalIncludes.asScala.toList
+      var includePathnames = co.options.additionalIncludes.asScala.toList
       if (co.options.usePrelude) {
-        includeFileNames = "prelude.inc" :: (includeFileNames).toList
+        includePathnames = "prelude.inc" :: (includePathnames).toList
       }
-      val includeAsts = for (fileName <- includeFileNames) yield {
-        val ic = openInclude(fileName, null, co.options)
+      val includeAsts = for (pathname <- includePathnames) yield {
+        val ic = openInclude(pathname, null, co.options)
         co.compileLogger.beginDependency(ic);
         try {
           OrcIncludeParser(ic, co, CoreOrcCompilerPhases.this) match {
@@ -313,7 +313,7 @@ abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
   @throws(classOf[IOException])
   def apply(source: OrcInputContext, options: OrcCompilationOptions, compileLogger: CompileLogger, progress: ProgressMonitor): E = {
     //Logger.config(options)
-    Logger.config("Begin compile " + options.filename)
+    Logger.config("Begin compile " + options.pathname)
     compileLogger.beginProcessing(source)
     try {
       val result = phases(new CompilerOptions(options, compileLogger))(source)
@@ -324,7 +324,7 @@ abstract class PhasedOrcCompiler[E >: Null] extends OrcCompiler[E] {
         null
     } finally {
       compileLogger.endProcessing(source)
-      Logger.config("End compile " + options.filename)
+      Logger.config("End compile " + options.pathname)
     }
   }
 
@@ -380,7 +380,7 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
 
   //  @throws(classOf[IOException])
   //  def apply(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): E = {
-  //    this(new OrcReaderInputContext(source, options.filename), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
+  //    this(new OrcReaderInputContext(source, options.pathname), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)
   //  }
 
   private object OrcNullInputContext extends OrcInputContext {
@@ -391,24 +391,24 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
   }
 
   @throws(classOf[IOException])
-  def openInclude(includeFileName: String, relativeTo: OrcInputContext, options: OrcCompilationOptions): OrcInputContext = {
+  def openInclude(includePathname: String, relativeTo: OrcInputContext, options: OrcCompilationOptions): OrcInputContext = {
     val baseIC = if (relativeTo != null) relativeTo else OrcNullInputContext
-    Logger.finer("openInclude " + includeFileName + ", relative to " + orc.util.GetScalaTypeName(baseIC) + "(" + baseIC.descr + ")")
+    Logger.finer("openInclude " + includePathname + ", relative to " + orc.util.GetScalaTypeName(baseIC) + "(" + baseIC.descr + ")")
 
     // If no include path, allow absolute HTTP and HTTPS includes
-    if (options.includePath.isEmpty && (includeFileName.toLowerCase.startsWith("http://") || includeFileName.toLowerCase.startsWith("https://"))) {
+    if (options.includePath.isEmpty && (includePathname.toLowerCase.startsWith("http://") || includePathname.toLowerCase.startsWith("https://"))) {
       try {
-        val newIC = new OrcNetInputContext(new URI(includeFileName))
-        Logger.finer("include " + includeFileName + " opened as " + orc.util.GetScalaTypeName(newIC) + "(" + newIC.descr + ")")
+        val newIC = new OrcNetInputContext(new URI(includePathname))
+        Logger.finer("include " + includePathname + " opened as " + orc.util.GetScalaTypeName(newIC) + "(" + newIC.descr + ")")
         return newIC
       } catch {
-        case e: URISyntaxException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; Check URI syntax (" + e.getMessage + ")");
-        case e: MalformedURLException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; Check URI syntax (" + e.getMessage + ")");
-        case e: IOException => throw new FileNotFoundException("Include file '" + includeFileName + "' not found; IO error (" + e.getMessage + ")");
+        case e: URISyntaxException => throw new FileNotFoundException("Include file '" + includePathname + "' not found; Check URI syntax (" + e.getMessage + ")");
+        case e: MalformedURLException => throw new FileNotFoundException("Include file '" + includePathname + "' not found; Check URI syntax (" + e.getMessage + ")");
+        case e: IOException => throw new FileNotFoundException("Include file '" + includePathname + "' not found; IO error (" + e.getMessage + ")");
       }
     }
 
-    // Try filename under the include path list
+    // Try pathname under the include path list
     for (incPath <- options.includePath.asScala) {
       try {
         //FIXME: Security implications of including local files:
@@ -416,8 +416,8 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
         // in certain cases, to prevent examining files by including
         // them.  This seems a weak barrier, and in fact was broken.
         // We need an alternative way to control local file reads.
-        val newIC = baseIC.newInputFromPath(incPath, includeFileName)
-        Logger.finer("include " + includeFileName + ", found on include path entry " + incPath + ", opened as " + orc.util.GetScalaTypeName(newIC) + "(" + newIC.descr + ")")
+        val newIC = baseIC.newInputFromPath(incPath, includePathname)
+        Logger.finer("include " + includePathname + ", found on include path entry " + incPath + ", opened as " + orc.util.GetScalaTypeName(newIC) + "(" + newIC.descr + ")")
         return newIC
       } catch {
         case _: IOException => /* Ignore, must not be here */
@@ -426,14 +426,14 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
 
     // Try in the bundled include resources
     try {
-      val newIC = new OrcResourceInputContext("orc/lib/includes/" + includeFileName, getResource)
-      Logger.finer("include " + includeFileName + ", found in bundled resources, opened as " + orc.util.GetScalaTypeName(newIC) + "(" + newIC.descr + ")")
+      val newIC = new OrcResourceInputContext("orc/lib/includes/" + includePathname, getResource)
+      Logger.finer("include " + includePathname + ", found in bundled resources, opened as " + orc.util.GetScalaTypeName(newIC) + "(" + newIC.descr + ")")
       return newIC
     } catch {
       case _: IOException => /* Ignore, must not be here */
     }
 
-    Logger.finer("include " + includeFileName + " not found")
-    throw new FileNotFoundException("Include file '" + includeFileName + "' not found; check the include path.");
+    Logger.finer("include " + includePathname + " not found")
+    throw new FileNotFoundException("Include file '" + includePathname + "' not found; check the include path.");
   }
 }

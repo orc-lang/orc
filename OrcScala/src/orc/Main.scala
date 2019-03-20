@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 20, 2010.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -48,7 +48,7 @@ object Main extends MainExit {
       if (engine == null) throw new ClassNotFoundException("Unable to load Orc ScriptEngine")
       engine.setBindings(options, ENGINE_SCOPE)
 
-      val stream = new FileInputStream(options.filename)
+      val stream = new FileInputStream(options.pathname)
 
       val compiledOrc =
         if (options.runOil) {
@@ -131,7 +131,7 @@ object Main extends MainExit {
   * @author jthywiss
   */
 trait CmdLineOptions extends OrcOptions with CmdLineParser {
-  StringOprd(() => filename, filename = _, position = 0, argName = "file", required = true, usage = "Path to script to execute.")
+  StringOprd(() => pathname, pathname = _, position = 0, argName = "file", required = true, usage = "Path to script to execute.")
 
   UnitOpt(() => (!usePrelude), () => usePrelude = false, ' ', "noprelude", usage = "Do not implicitly include standard library (prelude), which is included by default.")
 
@@ -149,7 +149,7 @@ trait CmdLineOptions extends OrcOptions with CmdLineParser {
 
   IntOpt(() => echoIR, echoIR = _, ' ', "echo-ir", usage = "Write selected program intermediate representations to the stdout. The argument is a bitmask. So, 0 means echo nothing, or -1 means echo all.")
 
-  FileOpt(() => oilOutputFile.getOrElse(null), f => oilOutputFile = Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given filename.")
+  FileOpt(() => oilOutputFile.getOrElse(null), f => oilOutputFile = Some(f), 'o', "output-oil", usage = "Write the compiled program in OIL format to the given pathname.")
 
   UnitOpt(() => runOil, () => runOil = true, ' ', "run-oil", usage = "Attempt to parse the given program as an OIL file and run it. This performs no compilation steps.")
 

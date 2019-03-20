@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on 04 Aug 2009.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -152,7 +152,7 @@ public class OrcLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 
             OrcConfigSettings orcConfig;
             orcConfig = new OrcConfigSettings(currentLaunchOrcProg.getProject(), configuration);
-            orcConfig.filename_$eq(currentLaunchOrcProg.getRawLocation().toFile().toString());
+            orcConfig.pathname_$eq(currentLaunchOrcProg.getRawLocation().toFile().toString());
 
             final Class<?> mainTypeClass = Main.class;
             final IVMRunner runner = getVMRunner(configuration, mode);

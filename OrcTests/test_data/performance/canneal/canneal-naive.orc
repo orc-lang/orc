@@ -16,7 +16,7 @@ def random() = ThreadLocalRandom.current().nextDouble()
 
 val swapsPerTemp = problemSizeScaledInt(3750)
 val initialTemperature = 2000 
-val filename = Canneal.localInputFile()
+val pathname = Canneal.localInputFile()
 val nTempSteps = 128
 
 def run(netlist) =
@@ -49,7 +49,7 @@ def run(netlist) =
     
     anneal(initialTemperature, 0)
 
-val netlist = NetList(filename)
+val netlist = NetList(pathname)
 val _ = Println(netlist.elements().size()) 
 
 

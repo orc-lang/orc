@@ -48,14 +48,14 @@ def wordCount(line) =
   wb.setText(line)  >>
   wordCount'(0, wb, 0)
 
-def mapOperation(filename) =
+def mapOperation(pathname) =
   -- Run n copies of f to build a list.
   def loop(0, f) = []
   def loop(1, f) = [f()]
   def loop(n, f) = {| f() |} : loop(n-1, f) 
   
   import class Paths = "java.nio.file.Paths"
-  Paths.get(filename)  >f>
+  Paths.get(pathname)  >f>
   checkReadableFile(f)  >>
   loop(repeatRead, 
     {

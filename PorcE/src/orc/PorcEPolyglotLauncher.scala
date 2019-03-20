@@ -79,7 +79,7 @@ object PorcEPolyglotLauncher {
       }
     }
 
-    context.eval(Source.newBuilder("orc", new File(options.filename)).mimeType(PorcELanguage.MIME_TYPE).build())
+    context.eval(Source.newBuilder("orc", new File(options.pathname)).mimeType(PorcELanguage.MIME_TYPE).build())
 
     engine.close()
     context.close()

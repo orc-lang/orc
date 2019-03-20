@@ -133,13 +133,13 @@ public class WordCount {
     public static String[] listFileNamesRecursively(final Path startFile) throws IOException {
         final ArrayList<Path> files = new ArrayList<>();
         listFilesRecursively(startFile, files);
-        final String[] fileNames = new String[files.size()];
+        final String[] pathnames = new String[files.size()];
         int i = 0;
         for (final Path file : files) {
-            fileNames[i] = file.toString();
+            pathnames[i] = file.toString();
             ++i;
         }
-        return fileNames;
+        return pathnames;
     }
 
     ////////

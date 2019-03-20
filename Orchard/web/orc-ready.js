@@ -2,7 +2,7 @@
 // orc-ready.js -- JavaScript source for the "Try Orc" Orchard Web interface
 // Project Orchard
 //
-// Copyright (c) 2012 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -310,7 +310,7 @@ function orcify(code, defaultConfig) {
         appendEventHtml('<div class="orc-error">'
             + (p.message ? escapeHtml(p.message) : 'Unknown exception thrown')
             + '</div>');
-        if (p.posFilename == "") {
+        if (p.posPathname == "") {
             codemirror.selectLines(codemirror.nthLine(p.posLine), p.posColumn-1, codemirror.nthLine(p.posLine), p.posColumn-1);
         }
     }
@@ -387,13 +387,13 @@ function orcify(code, defaultConfig) {
                     var errmsg = "";
                     if (problems[i].severity >= 5) errmsg += "Problem ";
                     if (problems[i].severity == 4) errmsg += "Warning ";
-                    var filenamelength = 0;
-                    if (problems[i].filename && problems[i].filename.length && problems[i].filename.length > 0) {
-                        errmsg += "in file "+problems[i].filename + " ";
-                        filenamelength = problems[i].filename.length;
+                    var pathnamelength = 0;
+                    if (problems[i].pathname && problems[i].pathname.length && problems[i].pathname.length > 0) {
+                        errmsg += "in file "+problems[i].pathname + " ";
+                        pathnamelength = problems[i].pathname.length;
                     }
                     errmsg += "near line "+problems[i].line+", column "+problems[i].column;
-                    errmsg += problems[i].longMessage.substring(filenamelength+problems[0].line.toString().length+problems[0].column.toString().length+2);
+                    errmsg += problems[i].longMessage.substring(pathnamelength+problems[0].line.toString().length+problems[0].column.toString().length+2);
                     var $eventMessage = $('<div class="orc-error">' + escapeHtml(errmsg) + '</div>');
                     if (problems[i].orcWikiHelpPageName && problems[i].orcWikiHelpPageName.length && problems[i].orcWikiHelpPageName.length > 0) {
                         $helpLink = $('<button class="orc-error-help" title="Orc wiki: ' + problems[i].orcWikiHelpPageName + '">&nbsp;?&nbsp;</button>')
@@ -405,7 +405,7 @@ function orcify(code, defaultConfig) {
                     }
                     appendEventHtml($eventMessage);
                 }
-                if (!problems[i].filename || !problems[i].filename.length || problems[i].filename.length == 0) {
+                if (!problems[i].pathname || !problems[i].pathname.length || problems[i].pathname.length == 0) {
                     codemirror.selectLines(codemirror.nthLine(problems[0].line), problems[0].column-1, codemirror.nthLine(problems[0].line), problems[0].column-1);
                 }
             } else {

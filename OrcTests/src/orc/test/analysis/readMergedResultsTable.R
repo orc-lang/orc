@@ -1,6 +1,6 @@
 # Utilities for reading results formatted using jthywiss' experiment infrastructure.
 #
-# Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+# Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 #
 # Use and redistribution of this file is governed by the license terms in
 # the LICENSE file found in the project's top-level directory and also found at
@@ -78,9 +78,9 @@ readMergedResultsTable <- function(runDirectory, fileBaseName, invalidate = FALS
   res
 }
 
-readResultsTable <- function(fileName) {
-  header <- read.csv(fileName, header = FALSE, nrows = 1, row.names = NULL)
+readResultsTable <- function(pathname) {
+  header <- read.csv(pathname, header = FALSE, nrows = 1, row.names = NULL)
   names <- vapply(header[1,], cleanColumnName, "")
-  res <- read.csv(fileName, col.names = names, row.names = NULL)
+  res <- read.csv(pathname, col.names = names, row.names = NULL)
   res
 }

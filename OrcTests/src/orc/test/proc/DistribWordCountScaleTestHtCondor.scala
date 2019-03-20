@@ -395,9 +395,9 @@ object DistribWordCountScaleTestHtCondor {
     print(s"Copying Orc test files to submit host $submitHostname...")
     for (cpEntry <- DistribTestConfig.expanded.getIterableFor("dOrcClassPath").get) {
       print(".")
-      val localFilename = ".." + cpEntry.stripPrefix(DistribTestConfig.expanded("testRootDir")).stripSuffix("/*")
-      val remoteFilename = cpEntry.stripSuffix("/*")
-      RemoteCommand.mkdirAndRsync(localFilename, submitHostname, remoteFilename)
+      val localPathname = ".." + cpEntry.stripPrefix(DistribTestConfig.expanded("testRootDir")).stripSuffix("/*")
+      val remotePathname = cpEntry.stripSuffix("/*")
+      RemoteCommand.mkdirAndRsync(localPathname, submitHostname, remotePathname)
     }
     print(".")
     RemoteCommand.mkdirAndRsync("config/logging.properties", submitHostname, DistribTestConfig.expanded("loggingConfigFile"))
