@@ -2,7 +2,7 @@
 // Job.java -- Java class Job
 // Project Orchard
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -38,8 +38,8 @@ import orc.orchard.events.PromptEvent;
 import orc.orchard.events.PublicationEvent;
 import orc.orchard.events.TokenErrorEvent;
 import orc.run.StandardOrcRuntime;
-import orc.run.core.ExternalSiteCallController;
 import orc.run.core.Execution;
+import orc.run.core.ExternalSiteCallController;
 
 /**
  * Standard implementation of a JobService. Extenders should only need to
@@ -67,7 +67,7 @@ public final class Job implements JobMBean {
         /**
          * Queue publications for retrieval by listen() and events().
          */
-        private final LinkedList<JobEvent> buffer = new LinkedList<JobEvent>();
+        private final LinkedList<JobEvent> buffer = new LinkedList<>();
         /**
          * Requests waiting on events.
          */
@@ -96,7 +96,7 @@ public final class Job implements JobMBean {
                 logger.finest("Orchard Job event buffer full; caller thread will block");
                 try {
                     blocked = true;
-                    wait(); //FIXME: Wait until timeout, then terminate job
+                    wait(); // FIXME: Wait until timeout, then terminate job
                     blocked = false;
                 } catch (final InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -122,7 +122,7 @@ public final class Job implements JobMBean {
                 waiters.suspend(waiter);
             }
             // return the contents of the buffer
-            final List<JobEvent> out = new LinkedList<JobEvent>(buffer);
+            final List<JobEvent> out = new LinkedList<>(buffer);
             purgable = out.size();
             return out;
         }
@@ -212,37 +212,37 @@ public final class Job implements JobMBean {
             // flush the buffer if anything is left
             final String printed = printBuffer.toString();
             if (printed.length() > 0) {
-                events.add(new PrintlnEvent(printed));
+                getEvents().add(new PrintlnEvent(printed));
             }
             super.stop(); // kill threads and reclaim resources
-            events.close();
-            Job.this.engine = null;
+            getEvents().close();
+            Job.this.stop();
         }
 
         class JobEventActions extends OrcEventAction {
             @Override
             public void published(final Object v) {
-                logger.finer("Orchard job \"" + id + "\": Queuing publication event with " + v);
-                events.add(new PublicationEvent(v));
+                logger.finer("Orchard job \"" + getId() + "\": Queuing publication event with " + v);
+                getEvents().add(new PublicationEvent(v));
             }
 
             /** Send token errors to the event stream. */
             @Override
             public void caught(final Throwable e) {
                 if (e instanceof Positional) {
-                    logger.log(Level.FINE, "Orchard job \"" + id + "\": Orc program exception at " + ((Positional) e).pos(), e);
+                    logger.log(Level.FINE, "Orchard job \"" + getId() + "\": Orc program exception at " + ((Positional) e).pos(), e);
                 } else {
-                    logger.log(Level.FINE, "Orchard job \"" + id + "\": Orc program exception", e);
+                    logger.log(Level.FINE, "Orchard job \"" + getId() + "\": Orc program exception", e);
                 }
 
                 final TokenErrorEvent ee = new TokenErrorEvent(e);
-                events.add(ee);
+                getEvents().add(ee);
             }
 
             /** Shut down the job engine when done running. */
             @Override
             public void haltedOrKilled() {
-                logger.log(Level.FINE, "Orchard job \"" + id + "\": Orc program halted or killed");
+                logger.log(Level.FINE, "Orchard job \"" + getId() + "\": Orc program halted or killed");
                 stop();
             }
 
@@ -254,21 +254,17 @@ public final class Job implements JobMBean {
             public void other(final OrcEvent event) throws Exception {
                 if (event instanceof orc.lib.util.PromptEvent) {
                     final orc.lib.util.PromptEvent pe = (orc.lib.util.PromptEvent) event;
-                    final int promptID;
-                    synchronized (pendingPrompts) {
-                        promptID = nextPromptID++;
-                        pendingPrompts.put(promptID, pe.callback());
-                    }
-                    logger.finer("Orchard job \"" + id + "\": Queuing prompt event with " + promptID + " " + pe.prompt());
-                    events.add(new PromptEvent(promptID, pe.prompt()));
+                    final int promptID = addPendingPrompt(pe.callback());
+                    logger.finer("Orchard job \"" + getId() + "\": Queuing prompt event with " + promptID + " " + pe.prompt());
+                    getEvents().add(new PromptEvent(promptID, pe.prompt()));
                 } else if (event instanceof orc.lib.web.BrowseEvent) {
                     final orc.lib.web.BrowseEvent be = (orc.lib.web.BrowseEvent) event;
-                    logger.finer("Orchard job \"" + id + "\": Queuing browse event with " + be.url());
-                    events.add(new BrowseEvent(be.url()));
+                    logger.finer("Orchard job \"" + getId() + "\": Queuing browse event with " + be.url());
+                    getEvents().add(new BrowseEvent(be.url()));
                 } else if (event instanceof orc.lib.str.PrintEvent) {
                     final orc.lib.str.PrintEvent pe = (orc.lib.str.PrintEvent) event;
-                    logger.finer("Orchard job \"" + id + "\": Queuing print event with " + pe.text());
-                    events.add(new PrintlnEvent(pe.text()));
+                    logger.finer("Orchard job \"" + getId() + "\": Queuing print event with " + pe.text());
+                    getEvents().add(new PrintlnEvent(pe.text()));
                 } else {
                     super.other(event);
                 }
@@ -285,7 +281,7 @@ public final class Job implements JobMBean {
     /** Events which can be monitored. */
     private final EventBuffer events;
     /** Tasks to run when the job finishes. */
-    private final LinkedList<FinishListener> finishers = new LinkedList<FinishListener>();
+    private final LinkedList<FinishListener> finishers = new LinkedList<>();
     private final String id;
     private final Account owner;
     protected static Logger logger = Logger.getLogger("orc.orchard");
@@ -300,7 +296,7 @@ public final class Job implements JobMBean {
 
     public static Job getJobFromHandle(final CallContext callContext) throws UnsupportedOperationException {
         try {
-            return ((JobEngine) ((ExternalSiteCallController) callContext).caller().runtime()).getJob();
+            return ((JobEngine) ((ExternalSiteCallController) ((orc.values.sites.compatibility.CallContext) callContext).underlying()).caller().runtime()).getJob();
         } catch (final ClassCastException e) {
             throw new UnsupportedOperationException("This site may be called only from an Orchard JobEngine", e);
         }
@@ -308,6 +304,19 @@ public final class Job implements JobMBean {
 
     public String getId() {
         return id;
+    }
+
+    protected EventBuffer getEvents() {
+        return events;
+    }
+
+    protected int addPendingPrompt(final PromptCallback callback) {
+        final int promptID;
+        synchronized (pendingPrompts) {
+            promptID = nextPromptID++;
+            pendingPrompts.put(Integer.valueOf(promptID), callback);
+        }
+        return promptID;
     }
 
     /**
@@ -341,6 +350,15 @@ public final class Job implements JobMBean {
                 logger.log(Level.SEVERE, "Orchard job \"" + id + "\": Caught remote exception", e);
             }
         }
+        finishers.clear();
+    }
+
+    /**
+     * Clean up at engine stop
+     */
+    protected synchronized void stop() {
+        pendingPrompts.clear();
+        engine = null;
     }
 
     /**
@@ -387,7 +405,7 @@ public final class Job implements JobMBean {
      * What is the job's state? Possible return values: NEW: not yet started.
      * RUNNING: started and processing tokens. BLOCKED: blocked because event
      * buffer is full. DONE: finished executing.
-     * 
+     *
      * @return the current state of the job.
      */
     @Override
@@ -424,29 +442,29 @@ public final class Job implements JobMBean {
 
     /**
      * Submit a response to a prompt (initiated by the Prompt site).
-     * 
+     *
      * @throws InvalidPromptException if promptID is invalid
      */
     public synchronized void respondToPrompt(final int promptID, final String response) throws InvalidPromptException {
-        final PromptCallback callback = pendingPrompts.get(promptID);
+        final PromptCallback callback = pendingPrompts.get(Integer.valueOf(promptID));
         if (callback == null) {
             throw new InvalidPromptException();
         }
-        pendingPrompts.remove(promptID);
+        pendingPrompts.remove(Integer.valueOf(promptID));
         callback.respondToPrompt(response);
     }
 
     /**
      * Cancel a prompt (initiated by the Prompt site).
-     * 
+     *
      * @throws InvalidPromptException if the promptID is not valid.
      */
     public synchronized void cancelPrompt(final int promptID) throws InvalidPromptException {
-        final PromptCallback callback = pendingPrompts.get(promptID);
+        final PromptCallback callback = pendingPrompts.get(Integer.valueOf(promptID));
         if (callback == null) {
             throw new InvalidPromptException();
         }
-        pendingPrompts.remove(promptID);
+        pendingPrompts.remove(Integer.valueOf(promptID));
         callback.cancelPrompt();
     }
 
@@ -472,9 +490,10 @@ public final class Job implements JobMBean {
 
     @Override
     public int getTokenCount() {
-        if (engine.roots().size() != 1)
+        if (engine.roots().size() != 1) {
             return -1;
-        Execution soleRoot = (Execution)engine.roots().iterator().next();
+        }
+        final Execution soleRoot = (Execution) engine.roots().iterator().next();
         return soleRoot.tokenCount().get();
     }
 
