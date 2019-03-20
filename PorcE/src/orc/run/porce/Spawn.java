@@ -2,7 +2,7 @@
 // Spawn.java -- Truffle node Spawn
 // Project PorcE
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -23,10 +23,8 @@ import orc.run.porce.runtime.PorcERuntime;
 import orc.run.porce.runtime.Terminator;
 
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
-import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.dsl.Introspectable;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -94,7 +92,7 @@ public abstract class Spawn extends Expression implements HasCalledRoots {
             final PorcEClosure computation) {
         final PorcERuntime r = execution.runtime();
         t.checkLive();
-        if (!moreTasksNeeded.profile(r.isWorkQueueUnderful(r.minQueueSize()))) {
+        if (!moreTasksNeeded.profile(r.isWorkQueueUnderful(PorcERuntime.minQueueSize()))) {
             dispatch.dispatch(frame, computation);
         } else {
             addCalledRoot(computation.body);

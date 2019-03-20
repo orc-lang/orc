@@ -4,7 +4,7 @@
 //
 // Created by dkitchin on Jun 3, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -13,17 +13,18 @@
 
 package orc.compile.translate
 
-import orc.ast.ext._
+import orc.ast.ext.{ Callable, CallableDeclaration, CallableSig, Def, DefDeclaration, Expression, LambdaType, Pattern, SiteDeclaration, Type, TypedPattern }
 import orc.ast.oil.named
-import orc.error.OrcExceptionExtension._
-import orc.error.compiletime._
-import orc.util.OptionMapExtension._
+import orc.error.OrcExceptionExtension.extendOrcException
+import orc.error.compiletime.{ RedundantArgumentType, RedundantReturnType, RedundantTypeParameters, UnusedFunctionSignature }
+import orc.util.OptionMapExtension.addOptionMapToList
 
-case class AggregateDef(clauses: List[Clause],
-  kindSample: Option[CallableDeclaration],
-  typeformals: Option[List[String]],
-  argtypes: Option[List[Type]],
-  returntype: Option[Type])(implicit translator: Translator) extends orc.ast.AST {
+case class AggregateDef(
+    clauses: List[Clause],
+    kindSample: Option[CallableDeclaration],
+    typeformals: Option[List[String]],
+    argtypes: Option[List[Type]],
+    returntype: Option[Type])(implicit translator: Translator) extends orc.ast.AST {
 
   import translator._
 
@@ -111,7 +112,7 @@ object AggregateDef {
   def formalsPartition(formals: List[Pattern]): (List[Pattern], Option[List[Type]]) = {
     val maybePartitioned =
       formals optionMap {
-        case TypedPattern(p, t) => Some(p, t)
+        case TypedPattern(p, t) => Some((p, t))
         case _ => None
       }
     maybePartitioned match {
@@ -126,6 +127,6 @@ object AggregateDef {
   def empty(implicit translator: Translator) = new AggregateDef(Nil, None, None, None, None)
 
   def apply(defn: CallableDeclaration)(implicit translator: Translator) = defn -> { empty + _ }
-  def apply(args: List[Pattern], body: Expression)(implicit translator: Translator) = body ->> { empty + (args, body) }
+  def apply(args: List[Pattern], body: Expression)(implicit translator: Translator) = body ->> { empty + ((args, body)) }
 
 }

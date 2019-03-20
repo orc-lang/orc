@@ -4,27 +4,27 @@
 //
 // Created by amp on Jan 26, 2015.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.compile.translate
 
 import scala.collection.immutable.ListMap
 import scala.collection.mutable
 import scala.language.reflectiveCalls
 
-import orc.ast.{ AST, Positioned, ext, hasOptionalVariableName }
+import orc.ast.{ AST, Positioned, ext }
+import orc.ast.hasOptionalVariableName._
 import orc.ast.oil.named.{ Argument, BoundTypevar, BoundVar, Call, Callable, Constant, DeclareCallables, DeclareType, Def, Expression, FieldAccess, Graft, HasType, IntersectionType, NamedASTTransform, New, NominalType, StructuralType, Top, Type, UnboundVar }
 import orc.compile.Logger
 import orc.compile.optimize.FractionDefs
 import orc.error.OrcExceptionExtension.extendOrcException
 import orc.error.compiletime.{ CompilationException, ConflictingOrderException, ContinuableSeverity, CyclicInheritanceException, InstantiatingAbstractClassException, MalformedExpression, UnboundClassVariableException }
 import orc.values.Field
-
-import hasOptionalVariableName._
 
 /** This class contains all the information needed to generate an instance of a class.
   *
@@ -49,12 +49,12 @@ import hasOptionalVariableName._
   *
   */
 class ClassInfo private (
-  val name: String,
-  val superclasses: Seq[String],
-  val abstractMembers: Seq[Field],
-  val concreteMembers: Seq[Field],
-  val classLiteral: Option[ext.ClassLiteral],
-  val capturedVariables: Option[Seq[BoundVar]] = None)(
+    val name: String,
+    val superclasses: Seq[String],
+    val abstractMembers: Seq[Field],
+    val concreteMembers: Seq[Field],
+    val classLiteral: Option[ext.ClassLiteral],
+    val capturedVariables: Option[Seq[BoundVar]])(
     val typeName: BoundTypevar = new BoundTypevar(Some(name)),
     val partialConstructorName: BoundVar = new BoundVar(Some(id"$$partialConstructor$$$name")),
     val partialConstructorPlaceholderName: BoundVar = new BoundVar(Some(id"placeholder$$partialConstructor$$$name")),
@@ -72,7 +72,8 @@ class ClassInfo private (
     }
   }
 
-  require(if (classLiteral.isEmpty) abstractMembers.isEmpty && concreteMembers.isEmpty else true,
+  require(
+    if (classLiteral.isEmpty) abstractMembers.isEmpty && concreteMembers.isEmpty else true,
     "If classLiteral is not provided then there may not be any members")
 
   fillSourceTextRange(classLiteral.flatMap(_.sourceTextRange))
@@ -87,11 +88,12 @@ class ClassInfo private (
     case _ => false
   }
 
-  def copy(superclasses: Seq[String] = this.superclasses,
-    abstractMembers: Seq[Field] = this.abstractMembers,
-    concreteMembers: Seq[Field] = this.concreteMembers,
-    classLiteral: Option[ext.ClassLiteral] = this.classLiteral,
-    capturedVariables: Option[Seq[BoundVar]] = this.capturedVariables) = {
+  def copy(
+      superclasses: Seq[String] = this.superclasses,
+      abstractMembers: Seq[Field] = this.abstractMembers,
+      concreteMembers: Seq[Field] = this.concreteMembers,
+      classLiteral: Option[ext.ClassLiteral] = this.classLiteral,
+      capturedVariables: Option[Seq[BoundVar]] = this.capturedVariables) = {
     new ClassInfo(
       name, superclasses, abstractMembers, concreteMembers, classLiteral, capturedVariables)(
       typeName, partialConstructorName, partialConstructorPlaceholderName, constructorName, constructorPlaceholderName)
@@ -100,12 +102,12 @@ class ClassInfo private (
 
 object ClassInfo {
   def apply(
-    name: String,
-    superclasses: Seq[String],
-    abstractMembers: Seq[Field],
-    concreteMembers: Seq[Field],
-    classLiteral: Option[ext.ClassLiteral],
-    capturedVariables: Option[Seq[BoundVar]] = None) = {
+      name: String,
+      superclasses: Seq[String],
+      abstractMembers: Seq[Field],
+      concreteMembers: Seq[Field],
+      classLiteral: Option[ext.ClassLiteral],
+      capturedVariables: Option[Seq[BoundVar]] = None) = {
     new ClassInfo(name, superclasses, abstractMembers, concreteMembers, classLiteral, capturedVariables)()
   }
 
@@ -320,7 +322,8 @@ case class ClassForms(val translator: Translator) {
               Graft(x, superRef,
                 Call(cls.partialConstructorPlaceholderName, List(self, x), Some(List())))
             val clsPartialField = partialField(cls.name)
-            state.copy(concreteFields = concreteFields ++ cls.concreteMembers.map(_ -> clsPartialField),
+            state.copy(
+              concreteFields = concreteFields ++ cls.concreteMembers.map(_ -> clsPartialField),
               partials = (clsPartialField, partialConstructorCall) +: partials,
               types = types + cls.typeName)
           }

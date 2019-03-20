@@ -2,7 +2,7 @@
 // VariableChecker.scala -- Scala object VariableChecker
 // Project OrcScala
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -11,10 +11,10 @@
 
 package orc.ast.porc
 
-import orc.compile.CompilerOptions
 import scala.collection.mutable
+
+import orc.compile.CompilerOptions
 import orc.error.compiletime.InternalCompilerError
-import orc.error.compiletime.InternalCompilerWarning
 
 object VariableChecker {
   def apply(e: PorcAST.Z, co: CompilerOptions): Unit = {
@@ -27,11 +27,11 @@ object VariableChecker {
     co.reportProblem(exc)
   }
 
-  private def checkWarning(b: Boolean, msg: => String, e: PorcAST.Z)(implicit co: CompilerOptions): Unit = if (!b) {
-    val exc = new InternalCompilerWarning(msg)
-    e.value.sourceTextRange foreach { exc.setPosition(_) }
-    co.reportProblem(exc)
-  }
+  //private def checkWarning(b: Boolean, msg: => String, e: PorcAST.Z)(implicit co: CompilerOptions): Unit = if (!b) {
+  //  val exc = new InternalCompilerWarning(msg)
+  //  e.value.sourceTextRange foreach { exc.setPosition(_) }
+  //  co.reportProblem(exc)
+  //}
 
   private def checker(implicit co: CompilerOptions) = new Transform {
     val encounteredVariables = mutable.HashSet[Variable]()

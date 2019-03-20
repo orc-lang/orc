@@ -4,12 +4,13 @@
 //
 // Created by dkitchin on Jul 10, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.util
 
 /** @author srosario
@@ -28,7 +29,7 @@ class Graph[T](var nodes: List[Node[T]]) {
       var resultTree = node :: tree
       time = time + 1
       node.startTime = Some(time)
-      var nextNodes = if (dir == Direction.Forward) { node.succs } else { node.precs }
+      val nextNodes = if (dir == Direction.Forward) { node.succs } else { node.precs }
       for (next <- nextNodes) {
         next.startTime match {
           case None => { resultTree = search(next, resultTree) }
@@ -51,7 +52,7 @@ class Graph[T](var nodes: List[Node[T]]) {
     forest
   }
 
-  def sort {
+  def sort(): Unit = {
     nodes = nodes sortWith { (n1: Node[T], n2: Node[T]) =>
       (n1.finishTime, n2.finishTime) match {
         case (Some(i), Some(j)) => i > j
@@ -60,7 +61,7 @@ class Graph[T](var nodes: List[Node[T]]) {
     }
   }
 
-  def clear {
+  def clear(): Unit = {
     for (n <- nodes) {
       n.startTime = None
       n.finishTime = None
@@ -78,6 +79,6 @@ class Node[T](val elem: T) {
   var finishTime: Option[Int] = None // End time of the DFS for this node
   var succs: List[Node[T]] = Nil
   var precs: List[Node[T]] = Nil
-  
-  override def toString(): String = s"Node($elem, $startTime, $finishTime)" 
+
+  override def toString(): String = s"Node($elem, $startTime, $finishTime)"
 }

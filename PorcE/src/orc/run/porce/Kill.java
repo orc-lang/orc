@@ -2,7 +2,7 @@
 // Kill.java -- Truffle node Kill
 // Project PorcE
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -12,7 +12,6 @@
 package orc.run.porce;
 
 import orc.run.porce.call.Dispatch;
-import orc.run.porce.call.InternalCPSDispatch;
 import orc.run.porce.runtime.Counter;
 import orc.run.porce.runtime.PorcEClosure;
 import orc.run.porce.runtime.PorcEExecution;

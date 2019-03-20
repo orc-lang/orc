@@ -13,10 +13,10 @@
 
 package orc.compile
 
-import java.io.{ BufferedReader, FileNotFoundException, IOException, OutputStreamWriter }
+import java.io.{ FileNotFoundException, IOException, OutputStreamWriter }
 import java.net.{ MalformedURLException, URI, URISyntaxException }
 import java.nio.charset.Charset
-import java.nio.file.{ Files, Paths }
+import java.nio.file.Files
 
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.compat.Platform.currentTime
@@ -371,13 +371,13 @@ trait StandardOrcCompilerEnvInterface[+E] extends OrcCompiler[E] with SiteClassL
     super.apply(source, options, compileLogger, progress) // This will call apply in the subCLASS of OrcCompiler
   }
 
-  private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
-    val file = Paths.get(descr)
-    override val reader = orc.compile.parse.OrcReader(this, new BufferedReader(javaReader))
-    override def toURI = file.toUri
-    override def toURL = toURI.toURL
-  }
-
+  // private class OrcReaderInputContext(val javaReader: java.io.Reader, override val descr: String) extends OrcInputContext {
+  //   val file = Paths.get(descr)
+  //   override val reader = orc.compile.parse.OrcReader(this, new BufferedReader(javaReader))
+  //   override def toURI = file.toUri
+  //   override def toURL = toURI.toURL
+  // }
+  //
   //  @throws(classOf[IOException])
   //  def apply(source: java.io.Reader, options: OrcCompilationOptions, err: Writer): E = {
   //    this(new OrcReaderInputContext(source, options.pathname), options, new PrintWriterCompileLogger(new PrintWriter(err, true)), NullProgressMonitor)

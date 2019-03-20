@@ -4,7 +4,7 @@
 //
 // Created by amp on Jun 25, 2018.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,7 +17,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.InvocationTargetException;
 
 import orc.DirectInvoker;
-import orc.compile.orctimizer.OrcAnnotation;
 import orc.error.runtime.JavaException;
 import orc.run.porce.NodeBase;
 import orc.run.porce.SpecializationConfiguration;

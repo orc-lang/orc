@@ -4,7 +4,7 @@
 //
 // Created by amp on Sept 16, 2015.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,27 +14,15 @@ package orc.compile.orctimizer
 
 import scala.collection.mutable
 
-import orc.compile.Logger
+import orc.ast.hasOptionalVariableName._
 import orc.ast.orctimizer.named._
-import orc.lib.builtin.structured.TupleConstructor
-import orc.lib.builtin.structured.TupleArityChecker
-import orc.compile.CompilerOptions
-import orc.ast.hasOptionalVariableName
-import orc.compile.OptimizerStatistics
-import orc.compile.NamedOptimization
-import orc.compile.AnalysisCache
-import orc.compile.orctimizer.FlowGraph._
+import orc.compile.{ AnalysisCache, CompilerOptions, Logger, NamedOptimization, OptimizerStatistics }
 import orc.compile.orctimizer.CallGraphValues._
 import orc.compile.orctimizer.DelayAnalysis.DelayInfo
-import orc.compile.orctimizer.FlowGraph.EverywhereNode
-import orc.ast.orctimizer.named.DeclareMethods
-import orc.lib.builtin.structured.TupleArityChecker
-import orc.lib.builtin.structured.TupleConstructor
-import orc.lib.builtin.structured.TupleArityChecker
+import orc.compile.orctimizer.FlowGraph._
+import orc.lib.builtin.structured.{ TupleArityChecker, TupleConstructor }
 
 import swivel.Zipper
-
-import hasOptionalVariableName._
 
 class HashFirstEquality[T](val value: T) {
   override def toString() = value.toString()
@@ -157,7 +145,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               Logger.warning(s"MAYBE A BUG: An argument in a non-expression position could be optimized but the result was not an argument:\n${e.toString.truncateTo(240)}")
               e
           }
-          if(optimizeOptimizationResult && e1 != e)
+          if (optimizeOptimizationResult && e1 != e)
             optimizationTransform(e1)
           else
             e1.value
@@ -167,7 +155,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       override val onExpression = {
         case (e: Expression.Z) => {
           val e1 = performOpts(e)
-          if(optimizeOptimizationResult && e1 != e)
+          if (optimizeOptimizationResult && e1 != e)
             optimizationTransform(e1)
           else
             e1.value
@@ -269,7 +257,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case Branch.Z(Future.Z(e), x, f) =>
         val fforces = a.forces(f)
         val publications = a.publicationsOf(e)
-        if(fforces.contains(x) && publications <= 1)
+        if (fforces.contains(x) && publications <= 1)
           Some(Branch(e.value, x, f.value))
         else {
           //Logger.info(s"Failed to apply future-force-elim $fforces $publications\nfuture { ${e.value.toString.take(100)} }\n>$x>\n${f.value.toString.take(100)}")
@@ -284,7 +272,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     e match {
       case Force.Z(xs, vs, body) => {
         def eliminateNonFutures() = {
-          val values = (xs zip vs).map(v => (v._1, v._2.value, a.valuesOf(v._2)))
+          //val values = (xs zip vs).map(v => (v._1, v._2.value, a.valuesOf(v._2)))
           val (fs, nfs) = (xs zip vs).partition(v => a.valuesOf(v._2).futures.nonEmpty)
 
           val (newXs, newVs) = fs.unzip
@@ -339,7 +327,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
         val vs = e.value.vs
         val toFix = body.freeVars intersect vs.collect({ case y: BoundVar => y }).toSet
         val replacements = toFix.map { y =>
-          (y : Argument, xs(vs.indexOf(y)) : Argument)
+          (y: Argument, xs(vs.indexOf(y)): Argument)
         }
 
         if (toFix.nonEmpty) {
@@ -442,12 +430,12 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
           _: DeclareMethods.Z |
           _: DeclareType.Z |
           _: Branch.Z
-          ), x, y) =>
+        ), x, y) =>
         Some(Branch(f.value, x, y.value))
       case Otherwise.Z(f @ (
           _: DeclareType.Z |
           _: Otherwise.Z
-          ), y) =>
+        ), y) =>
         Some(Otherwise(f.value, y.value))
       case _ => None
     }
@@ -518,13 +506,13 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
   def renameVariables(newN: BoundVar, e: Method.Z)(implicit mapping: Map[BoundVar, Argument], tmapping: Map[BoundTypevar, Type]): Method = {
     e.value ->> (e match {
-      case m@Method.Z(name, args, b, targs, argTypes, returnType) =>
+      case m @ Method.Z(name, args, b, targs, argTypes, returnType) =>
         val newArgs = args.map(newName)
         val newTArgs = targs.map(newName)
         val newMapping = mapping ++ (args zip newArgs)
         val newTMapping = tmapping ++ (targs zip newTArgs)
         m.value.copy(newN, newArgs, renameVariables(b)(newMapping, newTMapping),
-            newTArgs, argTypes.map(_.map(renameVariables(_)(newMapping, newTMapping))), returnType.map(renameVariables(_)(newMapping, newTMapping)))
+          newTArgs, argTypes.map(_.map(renameVariables(_)(newMapping, newTMapping))), returnType.map(renameVariables(_)(newMapping, newTMapping)))
     })
   }
 
@@ -636,7 +624,8 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                     case Zipper(`name`, _) => n += 1000; name
                   }
                   override val onExpression = {
-                    case Call.Z(Zipper(`name`, _), _, _) => n += 1; e.value
+                    case Call.Z(Zipper(`name`, _), _, _) =>
+                      n += 1; e.value
                     case a: Argument.Z if onArgument.isDefinedAt(a) => onArgument(a)
                   }
                 }
@@ -685,7 +674,7 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
               lazy val isRecursive2 = {
                 val searchForRecursiveCall = new Transform {
                   override val onExpression = {
-                    case e@Call.Z(target, _, _) => {
+                    case e @ Call.Z(target, _, _) => {
                       a.valuesOf(target).exists {
                         case NodeValue(MethodNode(Routine.Z(`name`, _, _, _, _, _), _)) => throw FoundException
                         case _ => false
@@ -717,8 +706,9 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
                 // Never inline recursive functions or functions with captured variables where we are not referencing the function directly.
                 None
               } else if (directCallCount <= 1 || cost < inlineCostThreshold || (cost < higherOrderInlineCostThreshold && hasClosureArgument)) {
-                Some(renameVariables(body)(Map() ++ (formals zip args.map(_.value)),
-                    Map() ++ (tformals zip targs.getOrElse(Seq()).map(_.value))))
+                Some(renameVariables(body)(
+                  Map() ++ (formals zip args.map(_.value)),
+                  Map() ++ (tformals zip targs.getOrElse(Seq()).map(_.value))))
               } else {
                 None
               }
@@ -965,10 +955,10 @@ abstract class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
 
 case class StandardOptimizer(co: CompilerOptions) extends Optimizer(co) {
   val allOpts = List(
-      Normalize, SequentializeForce,
-      IfDefElim, FutureForceElim, BranchElim, OtherwiseElim, TrimElim, UnusedFutureElim, StopEquiv,
-      ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant,
-      FutureElim, GetMethodElim, TupleElim, MethodElim, UnforcedRefElim, Inline)
+    Normalize, SequentializeForce,
+    IfDefElim, FutureForceElim, BranchElim, OtherwiseElim, TrimElim, UnusedFutureElim, StopEquiv,
+    ForceElim, ResolveElim, BranchElimArg, StopElim, BranchElimConstant,
+    FutureElim, GetMethodElim, TupleElim, MethodElim, UnforcedRefElim, Inline)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"orct:${o.name}").asBool()

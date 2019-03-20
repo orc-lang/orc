@@ -4,7 +4,7 @@
 //
 // Created by amp on Jun 30, 2017.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,9 +14,8 @@
 package orc
 
 import orc.ast.porc.MethodCPS
-import orc.compiler.porce.PorcToPorcE
-import orc.run.porce.runtime.{ PorcEExecution, PorcEExecutionWithLaunch, PorcERuntime }
 import orc.run.porce.PorcELanguage
+import orc.run.porce.runtime.{ PorcEExecution, PorcEExecutionWithLaunch, PorcERuntime }
 
 case class PorcEBackendType() extends BackendType {
   type CompiledCode = MethodCPS
@@ -34,13 +33,13 @@ object PorcEBackend {
   def loadOptOpts(options: OrcCompilationOptions) = {
     // Allow inline some spawns into there spawn site instead of calling them:
     setSystemPropertyIfUnset(
-        "orc.porce.allowSpawnInlining",
-        options.optimizationFlags("porce:inline-spawn").asBool(true))
+      "orc.porce.allowSpawnInlining",
+      options.optimizationFlags("porce:inline-spawn").asBool(true))
 
     // Only inlining fast tasks (based on runtime profiling):
     setSystemPropertyIfUnset(
-        "orc.porce.inlineAverageTimeLimit",
-        options.optimizationFlags("porce:inline-average-time-limit").asString("0.1"))
+      "orc.porce.inlineAverageTimeLimit",
+      options.optimizationFlags("porce:inline-average-time-limit").asString("0.1"))
 
     // Polymorphic inline caches for calls:
     if (!options.optimizationFlags("porce:polymorphic-inline-caching").asBool(true)) {

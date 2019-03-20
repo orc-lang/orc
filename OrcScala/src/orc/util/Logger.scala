@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 10, 2010.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -17,8 +17,6 @@ import java.io.{ PrintWriter, StringWriter }
 import java.lang.management.ManagementFactory
 import java.util.{ Calendar, GregorianCalendar, Locale, TimeZone }
 import java.util.logging.{ Formatter, Level, LogRecord }
-
-import scala.annotation.elidable
 
 /** A Scala wrapper around java.util.logging.Logger
   * <p>
