@@ -13,10 +13,10 @@
 
 package orc.util
 
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.logging.{ Level, LogRecord }
 
 import scala.util.control.ControlThrowable
-import java.util.concurrent.atomic.AtomicBoolean
 
 /** Handle exit from main method.  Provides failure diagnostic messages, sets
   * exit status values, and handles uncaught exceptions.
@@ -51,35 +51,33 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
 
   val shutdownInProgress = new AtomicBoolean(false)
 
-  /** Perform program failure exit processing, namely write diagnostic message
-    * and set exit status.
+  /** Perform program failure exit processing; namely, write diagnostic message
+    * and exit JVM with given status. Only one call to failureExit will
+    * succeed; others will hang pending JVM termination.
     */
   def failureExit(message: String, exitStatus: Int): Nothing = failureExit(null, message, exitStatus)
 
-  /** Perform program failure exit processing, namely write diagnostic message
-    * and set exit status.
+  /** Perform program failure exit processing; namely, write diagnostic message
+    * and exit JVM with given status. Only one call to failureExit will
+    * succeed; others will hang pending JVM termination.
     */
   def failureExit(pathName: String, message: String, exitStatus: Int): Nothing = {
-    writeHaltMessage(pathName, message)
-
-    /*
-     * Unfortunately, the JRE does not expose its "shutdown in progress"
-     * status, so we keep our own.  This is approximate -- if a shutdown is
-     * initiated somewhere else, and failureExit is invoked from a shutdown
-     * hook or finalizer, System.exit will be called a a second time, and
-     * will deadlock.
-     */
-    if (!shutdownInProgress.getAndSet(true)) {
-      System.exit(exitStatus).asInstanceOf[Nothing]
+    /* Only permit one failureExit call to succeed, and cause others to hang. */
+    getClass synchronized {
+      /* 
+       * Unfortunately, the JRE does not expose its "shutdown in progress"
+       * status, so we keep our own.  This is approximate -- if a shutdown is
+       * initiated somewhere else, and failureExit is invoked afterwards, e.g.
+       * from another thread, a shutdown hook, or a finalizer, we'll
+       * writeHaltMessage for the second shutdown reason (possibly misleading)
+       * and call System.exit a second time, which will hang (as intended).
+       */
+      shutdownInProgress.getAndSet(true)
+      writeHaltMessage(pathName, message)
       /* Cast to let type checker know System.exit never returns. */
-    } else {
-      throw new ShutdownDuringShutdown("failureExit called during a shutdown -- ignored")
+      System.exit(exitStatus).asInstanceOf[Nothing]
     }
   }
-  
-  /* Typed as an Error + ControlThrowable to reduce chances of being
-   * caught by callers who expect no return from a call to exit(). */
-  class ShutdownDuringShutdown(message: String) extends Error(message) with ControlThrowable {}
 
   /** Write a HALT diagnostic message to stderr.
     *
@@ -113,11 +111,11 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
   def writeInfoMessage(pathName: String, message: String): Unit =
     writeDiagnosticMessage(pathName, "INFO", message)
 
-  protected def writeDiagnosticMessage(pathName: String, severity: String, message: String): Unit = 
+  protected def writeDiagnosticMessage(pathName: String, severity: String, message: String): Unit =
     MainExit.writeDiagnosticMessage(progName, pathName, severity, message)
 
   /** Call to set this JVM's defaultUncaughtExceptionHandler to halt the JVM
-    * when an exception it thrown, but not caught.
+    * when an exception is thrown, but not caught.
     */
   def haltOnUncaughtException() {
     Thread.setDefaultUncaughtExceptionHandler(this)
@@ -150,7 +148,8 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
   val mainUncaughtExceptionHandler: PartialFunction[Throwable, Unit]
 
   /** Should the given Throwable be allowed to continue up the handler stack,
-    * without any logging/diagnostic messages?  */
+    * without any logging/diagnostic messages?
+    */
   def propagateThrowableQuietly(t: Throwable): Boolean = t match {
     case _: ThreadDeath | _: InterruptedException | _: ControlThrowable => true
     case _ => false
@@ -210,8 +209,7 @@ object MainExit {
     * severity level.
     */
   def printAndLogException(t: Thread, e: Throwable, level: Level): Unit = {
-    System.err.print("Exception in thread \"" + t.getName() + "\" ")
-    e.printStackTrace(System.err)
+    System.err.println("Exception " + e.toString + " in thread \"" + t.getName() + "\"")
     if (orc.Logger.julLogger.isLoggable(level)) {
       /* Log using the top stack trace frame as the "source" of the log record */
       val logRecord = new LogRecord(level, "Exception in thread \"" + t.getName + "\" #" + t.getId)
@@ -230,7 +228,6 @@ object MainExit {
   }
 
 }
-
 
 /** Program exit statuses.  0 indicates success. 1 to 63 are application-
   * specific failure reasons, although 1 is also used by the shell.  63 to 127

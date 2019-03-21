@@ -17,7 +17,6 @@ import java.io.{ EOFException, IOException, ObjectOutputStream }
 import java.net.{ InetAddress, InetSocketAddress, SocketException }
 import java.nio.file.{ Files, Path }
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.logging.Level
 
 import scala.util.control.NonFatal
 
@@ -277,11 +276,6 @@ class FollowerRuntime(runtimeId: DOrcRuntime.RuntimeId) extends DOrcRuntime(runt
         newPeerLocation match {
           case leaderLocation: LeaderLocation => followLeader(leaderLocation)
           case newPeerLoc: PeerLocationImpl => communicateWithPeer(newPeerLoc)
-        }
-      } catch {
-        case e: Throwable => {
-          Logger.Connect.log(Level.SEVERE, "MessageProcessorThread caught", e);
-          throw e
         }
       } finally {
         Logger.Connect.fine(s"Stopped reading events from ${connection.socket}")

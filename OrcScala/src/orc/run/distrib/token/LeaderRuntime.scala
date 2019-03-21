@@ -18,7 +18,6 @@ import java.net.{ InetAddress, InetSocketAddress, SocketException, SocketTimeout
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.logging.Level
 
 import scala.util.control.NonFatal
 
@@ -149,11 +148,6 @@ class LeaderRuntime() extends DOrcRuntime(new DOrcRuntime.RuntimeId(0L), "dOrc l
           }
           case DOrcConnectionHeader(sid, rid, _) => throw new AssertionError(f"Received DOrcConnectionHeader with wrong runtime ids: sender=${sid.longValue}%#x, receiver=${rid.longValue}%#x")
           case m => throw new AssertionError(s"Received message before DOrcConnectionHeader: $m")
-        }
-      } catch {
-        case e: Throwable => {
-          Logger.Connect.log(Level.SEVERE, "ReceiveThread caught", e);
-          throw e
         }
       } finally {
         Logger.Connect.fine(s"Stopped reading events from ${connection.socket}")

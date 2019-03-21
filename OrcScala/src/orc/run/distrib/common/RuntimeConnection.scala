@@ -13,7 +13,7 @@
 
 package orc.run.distrib.common
 
-import java.io.{ EOFException, IOException, InputStream, ObjectInputStream, ObjectOutputStream, OutputStream }
+import java.io.{ IOException, InputStream, ObjectInputStream, ObjectOutputStream, OutputStream }
 import java.net.{ ConnectException, InetAddress, InetSocketAddress, Socket }
 import java.util.logging.Level
 
@@ -34,15 +34,7 @@ class RuntimeConnection[+ReceivableMessage, -SendableMessage, Execution <: Execu
   override val ois = new RuntimeConnectionInputStream[Execution, Location, Execution#ExecutionId](socket.getInputStream())
 
   override def receive(): ReceivableMessage = {
-    val obj = try {
-      super.receive()
-    } catch {
-      case e: EOFException => throw e
-      case e: Throwable => {
-        Logger.Message.log(Level.SEVERE, s"RuntimeConnection.receive: $e thrown when reading from $socket", e)
-        throw e
-      }
-    }
+    val obj = super.receive()
     Logger.Message.finest(s"RuntimeConnection.receive: Received $obj on $socket")
     EventCounter.count(Symbol("recv " + orc.util.GetScalaTypeName(obj)))
     obj
@@ -80,7 +72,7 @@ class RuntimeConnection[+ReceivableMessage, -SendableMessage, Execution <: Execu
   }
 
   private def maybeReset() = {
-    /*FIXME:HACK: Clear ObjectOutputStream replacement and handle maps to reduce object leaks. 
+    /*FIXME:HACK: Clear ObjectOutputStream replacement and handle maps to reduce object leaks.
      * This breaks reference graph integrity, and leads to periodic resending of duplicate objects.
      * Time to manage our own handles? */
     val now = System.currentTimeMillis()
@@ -104,7 +96,7 @@ class RuntimeConnection[+ReceivableMessage, -SendableMessage, Execution <: Execu
 
 object RuntimeConnection {
   val objectStreamResetPeriod = System.getProperty("orc.distrib.objectStreamResetPeriod", "5000").toLong /* ms */
-  val socketWriteTimeout = System.getProperty("orc.distrib.socketWriteTimeout", "300000").toLong /* ms = 5 min */  
+  val socketWriteTimeout = System.getProperty("orc.distrib.socketWriteTimeout", "300000").toLong /* ms = 5 min */
 }
 
 /** Listens for incoming dOrc RuntimeConnections.  Extends ConnectionListener

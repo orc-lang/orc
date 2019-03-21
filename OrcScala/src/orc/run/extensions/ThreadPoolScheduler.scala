@@ -4,16 +4,16 @@
 //
 // Created by jthywiss on Mar 29, 2011.
 //
-// Copyright (c) 2017 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
 // URL: http://orc.csres.utexas.edu/license.shtml .
 //
+
 package orc.run.extensions
 
 import java.util.concurrent.{ LinkedBlockingQueue, ThreadFactory, ThreadPoolExecutor, TimeUnit }
-import java.util.logging.Level
 
 import orc.{ OrcExecutionOptions, Schedulable }
 import orc.run.Orc
@@ -132,13 +132,13 @@ trait OrcRunner {
   * @author jthywiss
   */
 class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) extends ThreadPoolExecutor(
-    //TODO: Make more of these params configurable
-    math.max(4, Runtime.getRuntime().availableProcessors * 2),
-    if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
-    2000L, TimeUnit.MILLISECONDS,
-    //new PriorityBlockingQueue[Runnable](11, new Comparator[Runnable] { def compare(o1: Runnable, o2: Runnable) = Random.nextInt(2)-1 }),
-    new LinkedBlockingQueue[Runnable](),
-    new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
+  //TODO: Make more of these params configurable
+  math.max(4, Runtime.getRuntime().availableProcessors * 2),
+  if (maxSiteThreads > 0) (math.max(4, Runtime.getRuntime().availableProcessors * 2) + maxSiteThreads) else 256,
+  2000L, TimeUnit.MILLISECONDS,
+  //new PriorityBlockingQueue[Runnable](11, new Comparator[Runnable] { def compare(o1: Runnable, o2: Runnable) = Random.nextInt(2)-1 }),
+  new LinkedBlockingQueue[Runnable](),
+  new ThreadPoolExecutor.CallerRunsPolicy) with OrcRunner with Runnable {
 
   val threadGroup = new ThreadGroup(engineInstanceName + " ThreadGroup")
 
@@ -325,7 +325,7 @@ class OrcThreadPoolExecutor(engineInstanceName: String, maxSiteThreads: Int) ext
         }
       }
     } catch {
-      case t: Throwable => { t.printStackTrace(); Logger.log(Level.SEVERE, "Caught in " + getClass.getCanonicalName + ".run()", t); shutdownNow(); throw t }
+      case t: Throwable => { shutdownNow(); throw t }
     } finally {
       try {
         if (!isTerminated) shutdownNow()
