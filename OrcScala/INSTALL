@@ -21,6 +21,9 @@ COMMAND LINE USERS
 
 You can run Orc programs directly from any OS's command prompt.
 
+In the following, it is assumed your copy of the orc-?.?.?.jar file is
+located at the path @orc.jar@.
+
 To run <your script file>:
   java -cp @orc.jar@:lib/\* orc.Main <your script file>
 
