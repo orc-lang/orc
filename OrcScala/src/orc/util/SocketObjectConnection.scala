@@ -128,12 +128,14 @@ object SocketObjectConnection {
   */
 class ConnectionListener[+ReceivableMessage, -SendableMessage](bindSockAddr: InetSocketAddress) {
 
-  val serverSocket = new ServerSocket()
+  val serverSocket = newServerSocket()
   try {
     serverSocket.bind(bindSockAddr)
   } catch {
     case ioe: IOException => throw new IOException(s"Unable to bind to $bindSockAddr: ${ioe.getMessage}", ioe)
   }
+
+  protected def newServerSocket() = new ServerSocket()
 
   def acceptConnection() = {
     val acceptedSocket = serverSocket.accept()
@@ -158,7 +160,7 @@ object ConnectionInitiator {
 
   def apply[ReceivableMessage, SendableMessage](remoteSockAddr: InetSocketAddress, localSockAddr: InetSocketAddress = null) = {
     try {
-      val socket = new Socket()
+      val socket = newSocket()
       SocketObjectConnection.configSocket(socket)
       if (localSockAddr != null) {
         socket.bind(localSockAddr)
@@ -175,6 +177,8 @@ object ConnectionInitiator {
 
   def apply[ReceivableMessage, SendableMessage](remoteHostname: String, remotePort: Int): SocketObjectConnection[ReceivableMessage, SendableMessage] = apply[ReceivableMessage, SendableMessage](new InetSocketAddress(remoteHostname, remotePort))
 
+  protected def newSocket() = new Socket()
+
 }
 
-private object SocketObjectConnectionLogger extends orc.util.Logger("orc.lib.SocketObjectConnection")
+private object SocketObjectConnectionLogger extends orc.util.Logger("orc.util.SocketObjectConnection")

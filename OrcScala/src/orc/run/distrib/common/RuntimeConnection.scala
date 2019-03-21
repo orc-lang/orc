@@ -18,7 +18,7 @@ import java.net.{ ConnectException, InetAddress, InetSocketAddress, Socket }
 import java.util.logging.Level
 
 import orc.run.distrib.Logger
-import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
+import orc.util.{ ConnectionListener, EventCounter, ServerSocketWithWriteTimeout, SocketObjectConnection, SocketWithWriteTimeout }
 
 /** A connection between DOrcRuntimes.  Extends SocketObjectConnection to
   * provide extra serialization support for Orc/dOrc values.
@@ -27,7 +27,6 @@ import orc.util.{ ConnectionListener, EventCounter, SocketObjectConnection }
   */
 class RuntimeConnection[+ReceivableMessage, -SendableMessage, Execution <: ExecutionMarshaling[Location], Location](socket: Socket) extends SocketObjectConnection[ReceivableMessage, SendableMessage](socket) {
   private var lastObjectStreamReset = System.currentTimeMillis()
-  private val objectStreamResetPeriod = System.getProperty("orc.distrib.objectStreamResetPeriod", "5000").toLong /* ms */
 
   /* Note: Always get output before input */
   val cos = new CountingOutputStream(socket.getOutputStream())
@@ -85,7 +84,7 @@ class RuntimeConnection[+ReceivableMessage, -SendableMessage, Execution <: Execu
      * This breaks reference graph integrity, and leads to periodic resending of duplicate objects.
      * Time to manage our own handles? */
     val now = System.currentTimeMillis()
-    if (now > lastObjectStreamReset + objectStreamResetPeriod) {
+    if (now > lastObjectStreamReset + RuntimeConnection.objectStreamResetPeriod) {
       oos.reset()
       lastObjectStreamReset = now
     }
@@ -103,12 +102,19 @@ class RuntimeConnection[+ReceivableMessage, -SendableMessage, Execution <: Execu
 
 }
 
+object RuntimeConnection {
+  val objectStreamResetPeriod = System.getProperty("orc.distrib.objectStreamResetPeriod", "5000").toLong /* ms */
+  val socketWriteTimeout = System.getProperty("orc.distrib.socketWriteTimeout", "300000").toLong /* ms = 5 min */  
+}
+
 /** Listens for incoming dOrc RuntimeConnections.  Extends ConnectionListener
   * to provide extra serialization support for Orc/dOrc values.
   *
   * @author jthywiss
   */
 class RuntimeConnectionListener[+ReceivableMessage, -SendableMessage, Execution <: ExecutionMarshaling[Location], Location](bindSockAddr: InetSocketAddress) extends ConnectionListener[ReceivableMessage, SendableMessage](bindSockAddr) {
+
+  override protected def newServerSocket() = new ServerSocketWithWriteTimeout(RuntimeConnection.socketWriteTimeout)
 
   override def acceptConnection(): RuntimeConnection[ReceivableMessage, SendableMessage, Execution, Location] = {
     val acceptedSocket = serverSocket.accept()
@@ -132,7 +138,7 @@ object RuntimeConnectionInitiator {
     var retryDelay = retryPeriodInitial
     for (retryNum <- 0 to retryTimes) {
       val rc = try {
-        val socket = new Socket()
+        val socket = newSocket()
         SocketObjectConnection.configSocket(socket)
         if (localSockAddr != null) {
           socket.bind(localSockAddr)
@@ -157,6 +163,8 @@ object RuntimeConnectionInitiator {
   def apply[ReceivableMessage, SendableMessage, Execution <: ExecutionMarshaling[Location], Location](remoteHostAddr: InetAddress, remotePort: Int): SocketObjectConnection[ReceivableMessage, SendableMessage] = apply[ReceivableMessage, SendableMessage, Execution, Location](new InetSocketAddress(remoteHostAddr, remotePort))
 
   def apply[ReceivableMessage, SendableMessage, Execution <: ExecutionMarshaling[Location], Location](remoteHostname: String, remotePort: Int): SocketObjectConnection[ReceivableMessage, SendableMessage] = apply[ReceivableMessage, SendableMessage, Execution, Location](new InetSocketAddress(remoteHostname, remotePort))
+
+  protected def newSocket() = new SocketWithWriteTimeout(RuntimeConnection.socketWriteTimeout)
 
 }
 
