@@ -13,14 +13,18 @@
 
 package orc.run.core
 
-import orc.{ CaughtEvent, ErrorAccessor, FutureState, OrcEvent, OrcRuntime, Schedulable, StoppedFuture }
-import orc.ast.oil.nameless._
+import scala.util.control.NonFatal
+
+import orc.{ CaughtEvent, ErrorAccessor, FutureState }
+import orc.{ OrcEvent, OrcRuntime, Schedulable, StoppedFuture }
+import orc.FutureState.Bound
+import orc.ast.oil.nameless.{ Argument, Call, Constant, DeclareCallables, DeclareType, Def, Expression, FieldAccess, Graft, HasType, Hole, New, Otherwise, Parallel, Sequence, Site, Stop, Trim, UnboundVariable, Variable, VtimeZone }
 import orc.error.OrcException
 import orc.error.runtime.{ ArgumentTypeMismatchException, ArityMismatchException, DoesNotHaveMembersException, JavaStackLimitReachedError, NoSuchMemberException, StackLimitReachedError, TokenException }
 import orc.lib.time.{ Vawait, Vtime }
 import orc.run.Logger
 import orc.run.distrib.NoLocationAvailable
-import orc.run.distrib.token.DOrcExecution
+import orc.run.distrib.token.{ DOrcExecution, RemoteFutureRef }
 import orc.values.{ Field, OrcObject, Signal }
 
 /** Token represents a "process" executing in the Orc program.
@@ -534,6 +538,34 @@ class Token protected (
     * The call target is resolved, but the parameters are not yet resolved.
     */
   protected def makeCall(target: AnyRef, params: List[Binding]) {
+    //FIXME:Refactor: Place in correct classes, not all here
+    def derefAnyBoundLocalFuture(value: AnyRef): AnyRef = {
+      value match {
+        case _: RemoteFutureRef => value
+        case f: Future => f.get match {
+          case Bound(bv) => bv
+          case _ => value
+        }
+        case _ => value
+      }
+    }
+    def safeToString(v: AnyRef): String = if (v == null) "null" else try v.toString catch { case NonFatal(_) | _: LinkageError => s"${orc.util.GetScalaTypeName(v)}@${System.identityHashCode(v)}" }
+
+    group.execution match {
+      case dOrcExecution: DOrcExecution => {
+        if (/*FIXME:HACK*/ target.isInstanceOf[Closure] && target.toString.startsWith("ᑅSubAstValueSetDef")) {
+          /* Attempt to prospectively migrate to Sub-AST value set */
+          /* Look up current locations, and find their intersection */
+          val intersectLocs = params.map(derefAnyBoundLocalFuture(_)).map(dOrcExecution.currentLocations(_)).fold(dOrcExecution.currentLocations(target))({ _ & _ })
+          orc.run.distrib.Logger.Invoke.finest(s"prospective migrate: ${safeToString(target)}(${params.map(safeToString(_)).mkString(",")}): intersection of current locations=$intersectLocs")
+          /* Prospective migrate found a location to move to */
+          intersectLocs.nonEmpty && !(intersectLocs contains dOrcExecution.runtime.here)
+        }
+      }
+      case _ => /* Not a distributed execution */
+    }
+    //End of code needing refactoring
+
     lazy val applyValue = try {
       runtime.getAccessor(target, Field("apply")) match {
         case _: ErrorAccessor =>
