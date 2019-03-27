@@ -36,6 +36,7 @@ orct:max-passes=5
 porc
 porc:eta-reduce
 porc:eta-spawn-reduce
+porc:unused-let-elim
 porc:var-let-elim 
 porc:specialize-sitecall
 porc:inline-let

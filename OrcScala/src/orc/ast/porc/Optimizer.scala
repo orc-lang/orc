@@ -270,6 +270,10 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
     case (Let.Z(x, Zipper(y: Variable, _), b), a) => b.value.substAll(Map((x, y)))
   }
 
+  val UnusedLetElim = Opt("unused-let-elim") {
+    case (Let.Z(x, _:Continuation.Z, b), a) if !b.freeVars.contains(x) => b.value
+  }
+
   val spawnCostInlineThreshold = co.options.optimizationFlags("porc:spawn-inline-threshold").asInt(-1)
 
   val InlineSpawn = OptFull("inline-spawn") { (e, a) =>
@@ -285,13 +289,13 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
       case _ => None
     }
   }
-  
+
   def isTail(e: PorcAST.Z): Boolean = {
     val p = e.parent
     p map { p => p match {
         case Let.Z(_, _, `e`) => isTail(p)
         case Let.Z(_, `e`, _) => false
-        case Continuation.Z(_, `e`) => isTail(p)
+        case Continuation.Z(_, `e`) => true
         case MethodDeclaration.Z(_, _, `e`) => isTail(p)
         case _: Argument.Z => isTail(p)
         case CallContinuation.Z(t, args) => false
@@ -337,7 +341,9 @@ case class Optimizer(co: CompilerOptions) extends OptimizerStatistics {
   }
 
 
-  val allOpts = List[Optimization](TailSpawnElim, InlineLet, EtaReduce, TryCatchElim, TryFinallyElim, EtaSpawnReduce, InlineSpawn)
+  val allOpts = List[Optimization](
+      TailSpawnElim, InlineLet, EtaReduce, TryCatchElim, TryFinallyElim,
+      EtaSpawnReduce, InlineSpawn, UnusedLetElim, VarLetElim)
 
   val opts = allOpts.filter { o =>
     co.options.optimizationFlags(s"porc:${o.name}").asBool()

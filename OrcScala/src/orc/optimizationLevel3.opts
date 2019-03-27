@@ -37,6 +37,7 @@ porc
 porc:eta-reduce
 porc:eta-spawn-reduce
 porc:var-let-elim
+porc:unused-let-elim
 porc:specialize-sitecall
 porc:inline-let
 porc:let-inline-expansion-threshold=300
