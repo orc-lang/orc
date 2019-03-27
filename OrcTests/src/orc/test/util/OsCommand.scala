@@ -17,6 +17,7 @@ import java.io.{ ByteArrayOutputStream, File, InputStream, OutputStream }
 import java.nio.charset.{ Charset, StandardCharsets }
 
 import scala.collection.JavaConverters.seqAsJavaListConverter
+import java.util.concurrent.TimeUnit
 
 /** Utility methods to invoke commands of the underlying OS.
   *
@@ -57,7 +58,7 @@ object OsCommand {
   /** Run the given command, either with the given string as stdin, or
     * an empty stdin.  Return the command's exit value.
     */
-  def getStatusFrom(command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)) = {
+  def getStatusFrom(command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err), timeout: Option[Double] = None) = {
     val pb = new ProcessBuilder(command.asJava)
     if (directory != null) pb.directory(directory)
     /* Lead pb's output & error redirect set as Redirect.PIPE */
@@ -77,7 +78,17 @@ object OsCommand {
     val errDrainThread = new StreamDrainThread(p.getErrorStream, errs, "Subprocess stderr reader")
     errDrainThread.start()
 
-    val exitStatus = p.waitFor()
+    val exitStatus = timeout match {
+      case Some(t) =>
+          if (p.waitFor((t * 1000).toInt, TimeUnit.MILLISECONDS)) {
+            p.exitValue()
+          } else {
+            p.destroyForcibly()
+            -1
+          }
+      case None =>
+        p.waitFor()
+    }
 
     outDrainThread.join(400 /*ms*/)
     errDrainThread.join(400 /*ms*/)
@@ -90,14 +101,14 @@ object OsCommand {
   /** Run the given command, saving stdout and stderr, and either with the
     * given string as stdin, or an empty stdin.
     */
-  def getResultFrom(command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err)) = {
+  def getResultFrom(command: Seq[String], directory: File = null, stdin: String = "", charset: Charset = StandardCharsets.UTF_8, teeStdOutErr: Boolean = false, stdoutTee: Traversable[OutputStream] = Seq(System.out), stderrTee: Traversable[OutputStream] = Seq(System.err), timeout: Option[Double] = None) = {
 
     val outBAOS = new ByteArrayOutputStream()
     val errBAOS = new ByteArrayOutputStream()
 
     val outs = (if (teeStdOutErr) stdoutTee else Seq()) ++ Seq(outBAOS)
     val errs = (if (teeStdOutErr) stderrTee else Seq()) ++ Seq(errBAOS)
-    val exitStatus = getStatusFrom(command, directory, stdin, charset, true, outs, errs)
+    val exitStatus = getStatusFrom(command, directory, stdin, charset, true, outs, errs, timeout)
 
     val stdoutString = outBAOS.toString(charset.name)
     val stderrString = errBAOS.toString(charset.name)
