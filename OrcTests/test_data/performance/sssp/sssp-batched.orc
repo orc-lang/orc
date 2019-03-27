@@ -43,7 +43,6 @@ def sssp(nodes :: Array[Node], edges :: Array[Integer], source :: Integer) =
 		val node = nodes(index)?
 		val currentCost = result.get(index)
 		--Println("Processing node " + index + " " + node + " " + currentCost) >>
-		currentCost >>
 		for(node.initialEdge(), node.initialEdge() + node.nEdges()) >edgeIndex> 
 			processEdge(edgeIndex, outQ, currentCost) >> stop ;
 		signal

@@ -9,8 +9,6 @@ implementation.
 
 include "benchmark.inc"
 
-import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
-
 import class DedupData = "orc.test.item.scalabenchmarks.dedup.DedupData"
 import class Rabin = "orc.test.item.scalabenchmarks.dedup.Rabin"
 import class Chunk = "orc.test.item.scalabenchmarks.dedup.Chunk"
@@ -36,7 +34,7 @@ class CompressedChunk {
   val uncompressedSHA1
   val uncompressedSize
 }
-def CompressedChunk(s, n) = s >> n >> new CompressedChunk { val uncompressedSHA1 = s # val uncompressedSize = n }
+def CompressedChunk(s, n) = new CompressedChunk { val uncompressedSHA1 = s # val uncompressedSize = n }
 
 val rabin = Rabin()
 

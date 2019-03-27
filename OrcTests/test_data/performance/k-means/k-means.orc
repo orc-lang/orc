@@ -59,20 +59,6 @@ def updateCentroids(xs, centroids) =
   ) >> stop ;
   mapArray({ _.average() }, pointAdders)
 
-{-
-def minBy(f, l) = Sequentialize() >> (
-  def minBy'([x]) = (f(x), x)
-  def minBy'(x:xs) =
-    val (min, v) = minBy'(xs)
-    val m = f(x)
-    if min :> m then
-      (m, x)
-    else
-      (min, v)
-  minBy'(l)(1)
-  )
--}
-
 def closestIndex(x :: Point, choices) = 
   def h(-1, minV, minI) = minI 
   def h(i, minV, minI) =

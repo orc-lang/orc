@@ -9,8 +9,6 @@ implementation.
 
 include "benchmark.inc"
 
-import site Sequentialize = "orc.compile.orctimizer.Sequentialize"
-
 import class DedupData = "orc.test.item.scalabenchmarks.dedup.DedupData"
 import class Rabin = "orc.test.item.scalabenchmarks.dedup.Rabin"
 import class Chunk = "orc.test.item.scalabenchmarks.dedup.Chunk"
