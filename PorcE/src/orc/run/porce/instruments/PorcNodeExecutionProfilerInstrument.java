@@ -46,7 +46,7 @@ public final class PorcNodeExecutionProfilerInstrument extends TruffleInstrument
 		SourceSectionFilter.Builder builder = SourceSectionFilter.newBuilder();
 		SourceSectionFilter filter = builder.tagIs(ProfiledPorcNodeTag.class).build();
 		Instrumenter instrumenter = env.getInstrumenter();
-		instrumenter.attachFactory(filter, new EventFactory(env));
+		instrumenter.attachExecutionEventFactory(filter, new EventFactory(env));
 	}
 
 	@Override
