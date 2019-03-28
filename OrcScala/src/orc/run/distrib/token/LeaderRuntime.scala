@@ -335,7 +335,7 @@ class LeaderRuntime() extends DOrcRuntime(new DOrcRuntime.RuntimeId(0L), "dOrc l
           try {
             recipientFollower.send(RemovePeerCmd(subjectFollower.runtimeId))
           } catch {
-            case NonFatal(e) => Logger.finer(s"Ignoring $e") /* Ignore send RemovePeerCmd failures at this point */
+            case NonFatal(e) => Logger.Connect.finer(s"Ignoring $e") /* Ignore send RemovePeerCmd failures at this point */
           }
         }
       }

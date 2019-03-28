@@ -182,7 +182,7 @@ trait GroupProxyManager { self: DOrcExecution =>
   }
 
   def sendPublish(destination: PeerLocation, proxyId: GroupProxyId)(token: Token, pv: Option[AnyRef]) {
-    Logger.Proxy.fine(s"sendPublish: publish by token $token")
+    Logger.Proxy.fine(s"sendPublish: publish by token $token: $pv")
     Tracer.tracePublishSend(token, destination)
     destination.sendInContext(self)(PublishGroupCmd(executionId, proxyId, new PublishingTokenReplacement(token, proxyId, destination, pv)))
   }
