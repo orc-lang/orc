@@ -553,13 +553,26 @@ class Token protected (
 
     group.execution match {
       case dOrcExecution: DOrcExecution => {
-        if (/*FIXME:HACK*/ target.isInstanceOf[Closure] && target.toString.startsWith("ᑅSubAstValueSetDef")) {
-          /* Attempt to prospectively migrate to Sub-AST value set */
-          /* Look up current locations, and find their intersection */
-          val intersectLocs = params.map(derefAnyBoundLocalFuture(_)).map(dOrcExecution.currentLocations(_)).fold(dOrcExecution.currentLocations(target))({ _ & _ })
-          orc.run.distrib.Logger.Invoke.finest(s"prospective migrate: ${safeToString(target)}(${params.map(safeToString(_)).mkString(",")}): intersection of current locations=$intersectLocs")
-          /* Prospective migrate found a location to move to */
-          intersectLocs.nonEmpty && !(intersectLocs contains dOrcExecution.runtime.here)
+        target match {
+          /*FIXME:HACK*/
+          case c: Closure if c.definition.optionalVariableName.exists(_.startsWith("ᑅSubAstValueSetDef")) => {
+            /* Attempt to prospectively migrate to Sub-AST value set */
+            /* Look up current locations, and find their intersection */
+            val intersectLocs = params.map(derefAnyBoundLocalFuture(_)).map(dOrcExecution.currentLocations(_)).fold(dOrcExecution.currentLocations(target))({ _ & _ })
+            orc.run.distrib.Logger.Invoke.finest(s"prospective migrate: ${safeToString(target)}(${params.map(safeToString(_)).mkString(",")}): intersection of current locations=$intersectLocs")
+            if (intersectLocs.nonEmpty && !(intersectLocs contains dOrcExecution.runtime.here)) {
+              /* Prospective migrate found a location to move to */
+              val destination = dOrcExecution.selectLocationForCall(intersectLocs)
+              orc.run.distrib.Logger.Invoke.fine(s"prospective migrate: ${safeToString(target)}(${params.map(safeToString(_)).mkString(",")}): selected location for call: $destination")
+              dOrcExecution.sendToken(this, destination)
+              return
+            } else {
+              /* Call can be local after all, run here */
+              orc.run.distrib.Logger.Invoke.finest(s"prospective migrate: ${safeToString(target)}(${params.map(safeToString(_)).mkString(",")}): continuing locally")
+              /* Fall through */
+            }
+          }
+          case _ => /* Not a ᑅSubAstValueSetDef call */
         }
       }
       case _ => /* Not a distributed execution */
