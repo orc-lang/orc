@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 12, 2016.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -249,6 +249,7 @@ public interface OrcPluginIds {
     public interface NewWizard {
         static String NEW_ORC_PROJECT = makeId("newOrcProjectWizard");
         static String NEW_ORC_FILE = makeId("newOrcFileWizard");
+        static String NEW_ORC_INCLUDE_FILE = makeId("newOrcIncludeFileWizard");
     }
 
     /**

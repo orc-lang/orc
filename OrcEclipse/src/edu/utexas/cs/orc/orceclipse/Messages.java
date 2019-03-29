@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Sep 8, 2009.
 //
-// Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -29,6 +29,8 @@ public class Messages extends NLS {
     public static String EnableOrcNature_AlreadyJavaErrorTitle;
     public static String NewOrcFileWizardPage_Descrption;
     public static String NewOrcFileWizardPage_Title;
+    public static String NewOrcIncludeFileWizardPage_Descrption;
+    public static String NewOrcIncludeFileWizardPage_Title;
     public static String OrcBuilder_BuildingOrcFile;
     public static String OrcBuilder_BuildingProject;
     public static String OrcBuilder_CleaningProject;

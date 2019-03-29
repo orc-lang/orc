@@ -3,7 +3,7 @@
 <!-- plugin.xml - Eclipse plug-in manifest
      Project OrcEclipse
 
-     Copyright (c) 2016 The University of Texas at Austin. All rights reserved.
+     Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 
      Use and redistribution of this file is governed by the license terms in
      the LICENSE file found in the project's top-level directory and also found at
@@ -484,6 +484,9 @@
                id="edu.utexas.cs.orc.orceclipse.newOrcFileWizard">
          </newWizardShortcut>
          <newWizardShortcut
+               id="edu.utexas.cs.orc.orceclipse.newOrcIncludeFileWizard">
+         </newWizardShortcut>
+         <newWizardShortcut
                id="org.eclipse.ui.wizards.new.folder">
          </newWizardShortcut>
          <newWizardShortcut
@@ -560,8 +563,22 @@
             Create a new Orc source code file
          </description>
       </wizard>
+      <wizard
+            category="edu.utexas.cs.orc.orceclipse.orcWizardCategory"
+            class="edu.utexas.cs.orc.orceclipse.edit.NewOrcIncludeFileWizard"
+            icon="orc16.gif"
+            id="edu.utexas.cs.orc.orceclipse.newOrcIncludeFileWizard"
+            name="New Orc Include File"
+            project="false">
+         <description>
+            Create a new Orc source code file
+         </description>
+      </wizard>
       <primaryWizard
             id="edu.utexas.cs.orc.orceclipse.newOrcFileWizard">
+      </primaryWizard>
+      <primaryWizard
+            id="edu.utexas.cs.orc.orceclipse.newOrcIncludeFileWizard">
       </primaryWizard>
       <primaryWizard
             id="edu.utexas.cs.orc.orceclipse.newOrcProjectWizard">
@@ -572,6 +589,24 @@
       <commonWizard
             type="new"
             wizardId="edu.utexas.cs.orc.orceclipse.newOrcFileWizard">
+         <enablement>
+            <or>
+               <adapt
+                     type="org.eclipse.core.resources.IProject">
+                  <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="edu.utexas.cs.orc.orceclipse.project.orcNature">
+                  </test>
+               </adapt>
+               <adapt
+                     type="org.eclipse.core.resources.IFolder">
+               </adapt>
+            </or>
+         </enablement>
+      </commonWizard>
+      <commonWizard
+            type="new"
+            wizardId="edu.utexas.cs.orc.orceclipse.newOrcIncludeFileWizard">
          <enablement>
             <or>
                <adapt
