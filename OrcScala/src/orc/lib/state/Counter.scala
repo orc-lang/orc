@@ -68,6 +68,7 @@ object Counter
           Counter.this.synchronized {
             if (count > 0) {
               val r1 = ctx.publish(Signal)
+              count -= 1
               if (count == 0) {
                 val oldWaiters = waiters.asScala.toArray
                 waiters.clear()
