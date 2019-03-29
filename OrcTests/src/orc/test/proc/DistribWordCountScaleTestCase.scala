@@ -15,11 +15,13 @@ package orc.test.proc
 
 import java.nio.file.{ Path, Paths }
 
+import scala.collection.JavaConverters.enumerationAsScalaIteratorConverter
+
 import orc.script.OrcBindings
 import orc.test.item.distrib.WordCount
 import orc.test.util.{ ExpectedOutput, ExperimentalCondition, FactorDescription }
 
-import junit.framework.{ Test, TestSuite }
+import junit.framework.{ Test, TestCase, TestSuite }
 
 /** JUnit test case for a distributed-Orc scaling test.
   *
@@ -76,6 +78,17 @@ object DistribWordCountScaleTestCase {
       suiteForOneCondition.setName(experimentalCondition.toString)
       testRunSuite.addTest(suiteForOneCondition)
     }
+    def forEachTestCase(suite: TestSuite, f: TestCase => Unit): Unit = {
+      for (test <- suite.tests.asScala) {
+        test match {
+          case s: TestSuite => forEachTestCase(s, f)
+          case c: TestCase => f(c)
+        }
+      }
+    }
+    val testNames = scala.collection.mutable.ArrayBuffer.empty[String]
+    forEachTestCase(testRunSuite, { tc: TestCase => testNames += tc.getName })
+    DistribTestCase.writeReadme(experimentalConditions, testNames.distinct)
     testRunSuite
   }
 

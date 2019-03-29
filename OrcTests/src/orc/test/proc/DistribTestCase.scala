@@ -13,14 +13,17 @@
 
 package orc.test.proc
 
-import java.io.{ File, FileOutputStream }
+import java.io.{ File, FileOutputStream, IOException }
 import java.net.InetAddress
-import java.nio.file.{ Files, Path, Paths }
+import java.nio.file.{ Files, Path, Paths, StandardOpenOption }
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 import orc.error.compiletime.{ CompilationException, FeatureNotSupportedException }
 import orc.script.OrcBindings
-import orc.test.util.{ ExpectedOutput, OsCommand, RemoteCommand, TestRunNumber, TestUtils }
+import orc.test.util.{ ExpectedOutput, ExperimentalCondition, OsCommand, RemoteCommand, TestRunNumber, TestUtils }
 import orc.test.util.TestUtils.OrcTestCase
+import orc.util.WikiCreoleTableWriter
 
 import junit.framework.TestSuite
 import org.junit.Assume
@@ -223,4 +226,125 @@ object DistribTestCase {
       println("done")
     }
   }
+
+  def writeReadme(experimentalConditions: Traversable[ExperimentalCondition], testPrograms: Traversable[String]): Unit = {
+    val readmePath = Paths.get(System.getProperty("orc.executionlog.dir")).getParent.resolve("README.creole")
+    val readmeWriter = Files.newBufferedWriter(readmePath, StandardOpenOption.CREATE_NEW)
+    try {
+      readmeWriter.append(composeReadme(experimentalConditions, testPrograms))
+    } finally {
+      readmeWriter.close()
+    }
+  }
+
+  def composeReadme(experimentalConditions: Traversable[ExperimentalCondition], testPrograms: Traversable[String]): String = {
+    val testRunNumber = TestRunNumber.singletonNumber
+    val username = System.getProperty("user.name")
+    val runDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+    val testClass = getClass.getCanonicalName.stripSuffix("$")
+    val gitDescribe = {
+      try {
+        OsCommand.runAndGetResult(Seq("git", "describe", "--dirty", "--tags", "--always")).stdout.stripLineEnd
+      } catch {
+        case _: IOException => null
+      }
+    }
+    val gitLastCommit = {
+      try {
+        OsCommand.runAndGetResult(Seq("git", "log", "-1", "--format=%H")).stdout.stripLineEnd
+      } catch {
+        case _: IOException => null
+      }
+    }
+    val gitStatus = {
+      try {
+        OsCommand.runAndGetResult(Seq("git", "status", "-s")).stdout.stripLineEnd
+      } catch {
+        case _: IOException => null
+      }
+    }
+    val experimentalConditionsTable = new StringBuilder()
+    val creoleWriter = new WikiCreoleTableWriter(experimentalConditionsTable.append(_))
+    creoleWriter.writeHeader(experimentalConditions.head.factorDescriptions.map(_.toString))
+    creoleWriter.writeRows(experimentalConditions)
+
+    s"""= Run $testRunNumber =
+       |
+       |**Performed by:** $username
+       |
+       |**Date:** $runDate
+       |
+       |
+       |== Item Under Test ==
+       |
+       |**Run class:** {{{$testClass}}}, under JUnit's RemoteRunner
+       |
+       |=== Programs Run ===
+       |
+       |""".stripMargin +
+       testPrograms.mkString("* {{{", "}}}\n* {{{", "}}}") +
+    s"""
+       |
+       |
+       |=== SCM Status ===
+       |
+       |**git describe:** {{{$gitDescribe}}}
+       |
+       |**git last commit hash:** {{{$gitLastCommit}}}
+       |
+       |**git status:**
+       |{{{
+       |""".stripMargin +
+       gitStatus +
+    s"""
+       |}}}
+       |
+       |See the [[raw-output/envDescrip.json]] file for further details, including diffs to the SCM head.
+       |
+       |
+       |== Parameter Values ==
+       |
+       |=== Experimental Conditions ===
+       |
+       |""".stripMargin +
+       experimentalConditionsTable +
+    s"""
+       |
+       |=== Configuration ===
+       |
+       |See the [[config]] directory for configuration parameter files.
+       |
+       |
+       |== Raw Output ==
+       |
+       |Raw standard output & error files are in the [[raw-output]] directory, with files named using the schema //program//**_**//factors//**_**//n//**.**//ext//, where:
+       |* //program// is the test program being run;
+       |* //factors// are the experimental condition values for the test;
+       |* //n// is 0 for the leader, or ≥ 1 for a follower;
+       |* //ext// is {{{out}}} or {{{err}}}.
+       |
+       |Raw measurement data are also in the [[raw-output]] directory, with files named using the schema //program//**_**//factors//**_**//measurement//**_**//n//**.**//ext//, where:
+       |* //program// is the test program being run;
+       |* //factors// are the experimental condition values for the test;
+       |* //measurement// is the kind of data (run times, event counts, profiler, etc.), omitted for output/error files,
+       |* //n// is 0 for the leader, or ≥ 1 for a follower;
+       |* //ext// is the file extension indicating the format.
+       |
+       |Detailed environment snapshots are also in the [[raw-output]] directory, with files named using the schema //program//**_**//factors//**_**envDescrip**_**//n//**.**json, where:
+       |* //program// is the test program being run;
+       |* //factors// are the experimental condition values for the test;
+       |* //n// is 0 for the leader, or ≥ 1 for a follower;
+       |
+       |
+       |== Analyses ==
+       |
+       |Analysis procedure results are in the {{{analysis-*}}} directories.
+       |
+       |
+       |== Comments ==
+       |
+       |Commentary is in the [[notes]] file or directory.
+       |""".stripMargin
+  }
+
 }
