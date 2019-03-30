@@ -139,7 +139,8 @@ object ArthursBenchmarkEnv {
         directory = new File(workingDir),
         teeStdOutErr = true,
         stdoutTee = Seq(System.out, new FileOutputStream(outFile)),
-        stderrTee = Seq(System.err, new FileOutputStream(errFile)))
+        stderrTee = Seq(System.err, new FileOutputStream(errFile)),
+        timeout = Some(hardTimeLimit+1))
 
       targetHost match {
         case Some(host) =>

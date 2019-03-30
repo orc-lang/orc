@@ -11,3 +11,4 @@ Threads,     Fork Bomb
 wordcount,   Word Count
 WordCount,   Word Count
 N,           N-Queens
+philosopher, Dining Philosophers

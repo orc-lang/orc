@@ -61,10 +61,12 @@ object PorcEShared {
             "test_data/performance/sieve/savina_sieve-opt.orc",
             "test_data/performance/sieve/savina_sieve-scala.orc",
             "test_data/performance/sieve/savina_sieve-scala-opt.orc",
+            "test_data/performance/philosopher/simple-philosopher.orc",
             )
   private val nonOpt = Seq(
             "test_data/performance/threads.orc",
             "test_data/performance/threadring2.orc",
+            "test_data/performance/philosopher/simple-philosopher.orc",
             //"test_data/performance/Wide.orc",
             )
   private val externalLanguages = Seq("scala", "java")
@@ -110,10 +112,10 @@ object PorcEShared {
   val mainSystemProperties = Map[String, Any](
         "graal.TruffleBackgroundCompilation" -> true,
         "graal.TraceTruffleCompilation" -> true,
-        "graal.TruffleCompilationThreshold" -> 300,
+        "graal.TruffleCompilationThreshold" -> 1000,
         //"graal.TruffleMaximumRecursiveInlining" -> 10,
         "graal.TruffleInliningMaxCallerSize" -> 200,
-        "graal.InliningDepthError" -> 5000,
+        "graal.InliningDepthError" -> 3000,
         //"graal.MaximumInliningSize" -> 5000,
         //"graal.TrivialInliningSize" -> 1000,
         //"graal.MaximumDesiredSize" -> 30000,
@@ -125,7 +127,7 @@ object PorcEShared {
         //"orc.porce.optimizations.environmentCaching" -> false,
         "orc.ast.generateUniqueVariableNames" -> true,
         "orc.porce.truffleASTInlining" -> true,
-        "orc.porce.truffleASTInliningLimit" -> 10000,
+        "orc.porce.truffleASTInliningLimit" -> 300,
         //"orc.porce.universalTCO" -> true,
         //"orc.porce.useExternalCallKindDecision" -> true,
         "orc.porce.useControlledParallelism" -> true,
@@ -143,7 +145,7 @@ object PorcEShared {
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   import PorcEShared._
 
-  def softTimeLimit: Double = 60 * 16
+  def softTimeLimit: Double = 60 * 15
 
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -179,24 +181,24 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
     )
 
     override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs ++ Seq(
-        s"-Dorc.test.benchmark.softTimeLimit=${softTimeLimit / 2}",
-        s"-Dorc.test.benchmark.hardTimeLimit=${hardTimeLimit / 2}",
+        s"-Dorc.test.benchmark.softTimeLimit=${softTimeLimit / 4}",
+        s"-Dorc.test.benchmark.hardTimeLimit=${hardTimeLimit / 4}",
         )
 
   }
 
   def main(args: Array[String]): Unit = {
     val experimentalConditions = {
-      val nCPUsValues = Seq(16, 1, 8)
+      //val nCPUsValues = Seq(16, 1, 8)
       //val nCPUsValues = Seq(16, 1, 8, 12, 4)
       //val nCPUsValues = Seq(24, 12, 6, 18, 1)
-      //val nCPUsValues = Seq(24, 16, 1, 8)
+      val nCPUsValues = Seq(32, 16, 1, 24, 8)
       val nRuns = 1
       val porce = for {
         run <- 0 until nRuns
-        optLevel <- Seq(3, 0)
+        optLevel <- Seq(3) //, 0)
         nCPUs <- if (optLevel < 2) nCPUsValues.take(1) else nCPUsValues
-        fn <- if (optLevel < 2) onlyOpt(mainPureOrcBenchmarks) else onlyOpt(mainOrcBenchmarks)
+        fn <- if (optLevel < 2) mainPureOrcBenchmarks else mainOrcBenchmarks
       } yield {
         assert(new File(fn).isFile(), fn)
         MyPorcEExperimentalCondition(run, new File("OrcTests/" + fn), nCPUs, optLevel)
@@ -210,11 +212,11 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
       (porce ++ scala).sortBy(v => (v.run,
-          nCPUsValues.indexOf(v.nCPUs),
           (v match {
             case v: MyPorcEExperimentalCondition => -v.optLevel
-            case _ => -0
+            case _ => -1
           }),
+          nCPUsValues.indexOf(v.nCPUs),
           ))
     }
     runExperiment(experimentalConditions)
