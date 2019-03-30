@@ -24,7 +24,8 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
 
 object ReportPerformance extends TotalSite2Simple[Number, Number] {
   def eval(time: Number, reps: Number): Any = {
-    ParallelismController.active.reportPerformance((time.doubleValue*1000000000).toLong, reps.longValue)
+    if (ParallelismController.active != null)
+      ParallelismController.active.reportPerformance((time.doubleValue*1000000000).toLong, reps.longValue)
     Signal
   }
 }
