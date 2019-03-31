@@ -36,7 +36,7 @@ class DistribVertexScaleTestCase(
     testContext: Map[String, AnyRef],
     leaderSpecs: DistribTestCase.DOrcRuntimePlacement,
     followerSpecs: Seq[DistribTestCase.DOrcRuntimePlacement])
-  extends DistribTestCase(suiteName, testName, orcFile, expecteds, bindings, testContext, leaderSpecs, followerSpecs) {
+  extends DistribTestCase(suiteName, testName + factorValues.productIterator.mkString("[", ",", "]"), orcFile, expecteds, bindings, testContext, leaderSpecs, followerSpecs) {
 
   override def outFilenamePrefix: String = super.outFilenamePrefix + "_" + factorValues.productIterator.mkString("_")
 

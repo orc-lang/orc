@@ -37,7 +37,7 @@ class DistribWordCountScaleTestCase(
     testContext: Map[String, AnyRef],
     leaderSpecs: DistribTestCase.DOrcRuntimePlacement,
     followerSpecs: Seq[DistribTestCase.DOrcRuntimePlacement])
-  extends DistribTestCase(suiteName, testName, orcFile, expecteds, bindings, testContext, leaderSpecs, followerSpecs) {
+  extends DistribTestCase(suiteName, testName + factorValues.productIterator.mkString("[", ",", "]"), orcFile, expecteds, bindings, testContext, leaderSpecs, followerSpecs) {
 
   override def outFilenamePrefix: String = super.outFilenamePrefix + "_" + factorValues.productIterator.mkString("_")
 
@@ -73,7 +73,7 @@ object DistribWordCountScaleTestCase {
         programPaths)
       if (experimentalCondition.dOrcNumRuntimes == 1) {
         /* Special case: Measure the Java WordCount in the 1 runtime (non-distributed) experimental condition */
-        suiteForOneCondition.addTest(new RunMainMethodTestCase(s"WordCount_${experimentalCondition.productIterator.mkString("_")}", testContext, DistribTestConfig.expanded("leaderHostname"), DistribTestConfig.expanded("leaderWorkingDir"), classOf[WordCount]))
+        suiteForOneCondition.addTest(new RunMainMethodTestCase("WordCount" + experimentalCondition.productIterator.mkString("[", ",", "]"), s"WordCount_${experimentalCondition.productIterator.mkString("_")}", testContext, DistribTestConfig.expanded("leaderHostname"), DistribTestConfig.expanded("leaderWorkingDir"), classOf[WordCount]))
       }
       suiteForOneCondition.setName(experimentalCondition.toString)
       testRunSuite.addTest(suiteForOneCondition)

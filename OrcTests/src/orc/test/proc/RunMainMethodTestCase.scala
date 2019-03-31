@@ -25,18 +25,19 @@ import junit.framework.TestCase
   * @author jthywiss
   */
 class RunMainMethodTestCase(
+    testName: String,
     val outFilenamePrefix: String,
     val testContext: Map[String, AnyRef],
     val hostname: String,
     val workingDir: String,
     val testItem: Class[_],
     val mainArgs: String*)
-  extends TestCase(testItem.getSimpleName) {
+  extends TestCase(testName) {
 
   /* Current state is messy: Refactor into a "run JVM" test case, a output conventions mix-in, and a run Orc mix-in, or somesuch. */
 
-  def this(testContext: Map[String, AnyRef], hostname: String, workingDir: String, testItem: Class[_], mainArgs: String*) = {
-    this(testItem.getSimpleName, testContext, hostname, workingDir, testItem, mainArgs: _*)
+  def this(testName: String, testContext: Map[String, AnyRef], hostname: String, workingDir: String, testItem: Class[_], mainArgs: String*) = {
+    this(testName, testItem.getSimpleName, testContext, hostname, workingDir, testItem, mainArgs: _*)
   }
 
   @throws[Throwable]
