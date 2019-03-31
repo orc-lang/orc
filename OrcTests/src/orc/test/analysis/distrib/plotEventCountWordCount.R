@@ -1,7 +1,7 @@
-# plotEventCountVertex.R -- R script to plot event counts from Vertex DistribScaleTest runs
+# plotEventCountWordCount.R -- R script to plot event counts from WordCount DistribScaleTest runs
 # Project OrcTests
 #
-# Created by jthywiss on Mar 18, 2019.
+# Created by jthywiss on Mar 30, 2019.
 #
 # Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 #
@@ -20,19 +20,19 @@ options(echo = TRUE)
 runNumber <- commandArgs(trailingOnly = TRUE)[1]
 
 eventCounts <- read.csv("eventCount.csv")
-names(eventCounts) <- c("program", "numVertices", "probEdge", "dOrcNumRuntimes", "eventType", "count")
+names(eventCounts) <- c("program", "inputFileSize", "repeatRead", "numInputFiles", "dOrcNumRuntimes", "eventType", "count")
 
 options(tibble.print_max = Inf, tibble.width = Inf)
 
 for (currProgram in unique(eventCounts$program)) {
   for (currEventType in unique(eventCounts[eventCounts$program == currProgram,]$eventType)) {
 
-    ggplot(eventCounts[eventCounts$program == currProgram & eventCounts$eventType == currEventType,], aes(x = dOrcNumRuntimes, y = count, group = factor(numVertices), colour = factor(numVertices), shape = factor(numVertices))) +
+    ggplot(eventCounts[eventCounts$program == currProgram & eventCounts$eventType == currEventType,], aes(x = dOrcNumRuntimes, y = count, group = factor(sizeInput), colour = factor(sizeInput), shape = factor(sizeInput))) +
     geom_line() +
     geom_point(size = 3) +
     ggtitle(paste(currProgram, "Run", runNumber)) +
     xlab("Cluster size [Number of d-Orc runtimes]") +
-    labs(colour = "Number of vertices", shape = "Number of vertices") +
+    labs(colour = "Input size (GB)", shape = "Input size (GB)") +
     scale_y_continuous(name = paste("Count of ", currEventType, " on leader"), labels = function(n){format(n, scientific = FALSE)}) +
     expand_limits(x = 1, y = 0.0) +
     theme_minimal() +
@@ -46,11 +46,11 @@ for (currProgram in unique(eventCounts$program)) {
 for (currProgram in unique(eventCounts$program)) {
   for (currEventType in unique(eventCounts[eventCounts$program == currProgram,]$eventType)) {
 
-    ggplot(eventCounts[eventCounts$program == currProgram & eventCounts$eventType == currEventType,], aes(x = numVertices, y = count, group = factor(dOrcNumRuntimes), colour = factor(dOrcNumRuntimes), shape = factor(dOrcNumRuntimes))) +
+    ggplot(eventCounts[eventCounts$program == currProgram & eventCounts$eventType == currEventType,], aes(x = sizeInput, y = count, group = factor(dOrcNumRuntimes), colour = factor(dOrcNumRuntimes), shape = factor(dOrcNumRuntimes))) +
     geom_line() +
     geom_point(size = 3) +
     ggtitle(paste(currProgram, "Run", runNumber)) +
-    xlab("Number of vertices") +
+    xlab("Input size (GB)") +
     labs(colour = "Cluster size [Number of d-Orc runtimes]", shape = "Cluster size [Number of d-Orc runtimes]") +
     scale_y_continuous(name = paste("Count of ", currEventType, " on leader"), labels = function(n){format(n, scientific = FALSE)}) +
     expand_limits(x = 1, y = 0.0) +
