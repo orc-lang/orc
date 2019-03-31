@@ -36,6 +36,19 @@ def vertexNamed(VertexName, Graph) :: Vertex
 def vertexNamed(targetName, graph) =
   graph.get(targetName)
 
+import site Hash2Ints = "orc.lib.MurmurHash3Integer2"
+
+-- A "random" boolean: should an edge be present from vertex "head" to "tail"?
+def randomEdgePresent(Number, VertexName, VertexName) :: Boolean
+def randomEdgePresent(probEdge, head, tail) =
+  abs(Hash2Ints(head, tail)) <: (probEdge * 2147483647)
+
+-- A "random" weight for an edge from vertex "head" to "tail"
+def randomEdgeWeight(Number, VertexName, VertexName) :: Boolean
+def randomEdgeWeight(maxWeight, head, tail) =
+  (abs(Hash2Ints(head, tail)) % maxWeight) + 1
+
+
 {--------
  - Random graph generation 
  --------}
@@ -43,14 +56,14 @@ def vertexNamed(targetName, graph) =
 def randomEdges(head :: VertexName, numVertices :: Integer,  probEdge :: Number, randomWeight :: lambda() :: EdgeWeight) :: List[Edge] =
   collect({
     upto(numVertices) >vn> (
-      Ift(URandom() <: probEdge) >> mkEdge(head, vn, randomWeight())
+      Ift(randomEdgePresent(probEdge, head, vn)) >> mkEdge(head, vn, randomWeight(head, vn))
     )
   })
 
 def randomGraph(numVertices :: Number, probEdge :: Number, maxWeight :: EdgeWeight) :: Graph =
   def randomGraph'(vn :: Number, graph :: Graph) :: Graph =
     if vn <: numVertices then
-      graph.put(vn, mkVertex(vn, randomEdges(vn, numVertices,  probEdge, { Random(maxWeight) + 1 })))  >>
+      graph.put(vn, mkVertex(vn, randomEdges(vn, numVertices,  probEdge, lambda(head, tail) = randomEdgeWeight(maxWeight, head, tail))))  >>
       randomGraph'(vn + 1, graph)
     else
       graph
@@ -77,7 +90,7 @@ def dumpGraph(graph) =
     if vn <: graph.size() then
       graph.get(vn)  >v>
       (v.pathLen().readD(); "(undef)")  >pl>
-      Println(v.name() + ": pathLen=" + pl + afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges())))  >>
+      Println(v.name() + ": pathLen=" + pl + (if v.outEdges() = [] then "" else afold((+), map(lambda(e) = ",  |-"+e.weight()+"-> "+e.tail(), v.outEdges()))))  >>
       dumpGraph'(vn + 1)
     else
       signal
