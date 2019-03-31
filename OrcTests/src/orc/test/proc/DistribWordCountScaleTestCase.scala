@@ -62,18 +62,20 @@ object DistribWordCountScaleTestCase {
     ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
     DistribTestCase.setUpTestSuite()
     val programPaths = Array(Paths.get("test_data/performance/distrib/wordcount/"))
+    val testProgramNames = scala.collection.mutable.ArrayBuffer.empty[String]
     val testRunSuite = new TestSuite("DistribWordCountScaleTest")
     for (experimentalCondition <- experimentalConditions) {
 
       val testContext = experimentalCondition.toMap
 
       val suiteForOneCondition = DistribTestCase.buildSuite(
-        (s, t, f, e, b, tc, ls, fs) => new DistribWordCountScaleTestCase(experimentalCondition, s, t, f, e, b, tc, ls, fs),
+        (s, t, f, e, b, tc, ls, fs) => { testProgramNames += f.getFileName.toString; new DistribWordCountScaleTestCase(experimentalCondition, s, t, f, e, b, tc, ls, fs) },
         testContext,
         programPaths)
       if (experimentalCondition.dOrcNumRuntimes == 1) {
         /* Special case: Measure the Java WordCount in the 1 runtime (non-distributed) experimental condition */
         suiteForOneCondition.addTest(new RunMainMethodTestCase("WordCount" + experimentalCondition.productIterator.mkString("[", ",", "]"), s"WordCount_${experimentalCondition.productIterator.mkString("_")}", testContext, DistribTestConfig.expanded("leaderHostname"), DistribTestConfig.expanded("leaderWorkingDir"), classOf[WordCount]))
+        testProgramNames += "WordCount.java"
       }
       suiteForOneCondition.setName(experimentalCondition.toString)
       testRunSuite.addTest(suiteForOneCondition)
@@ -86,9 +88,7 @@ object DistribWordCountScaleTestCase {
         }
       }
     }
-    val testNames = scala.collection.mutable.ArrayBuffer.empty[String]
-    forEachTestCase(testRunSuite, { tc: TestCase => testNames += tc.getName })
-    DistribTestCase.writeReadme(experimentalConditions, testNames.distinct)
+    DistribTestCase.writeReadme(classOf[DistribWordCountScaleTest].getCanonicalName.stripSuffix("$") + ", under JUnit's RemoteRunner", experimentalConditions, testProgramNames.distinct)
     testRunSuite
   }
 

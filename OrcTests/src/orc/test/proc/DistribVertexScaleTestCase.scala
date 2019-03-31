@@ -61,13 +61,14 @@ object DistribVertexScaleTestCase {
     ExperimentalCondition.writeExperimentalConditionsTable(experimentalConditions)
     DistribTestCase.setUpTestSuite()
     val programPaths = Array(Paths.get("test_data/performance/distrib/vertex/"))
+    val testProgramNames = scala.collection.mutable.ArrayBuffer.empty[String]
     val testRunSuite = new TestSuite("DistribVertexScaleTest")
     for (experimentalCondition <- experimentalConditions) {
 
       val testContext = experimentalCondition.toMap
 
       val suiteForOneCondition = DistribTestCase.buildSuite(
-        (s, t, f, e, b, tc, ls, fs) => new DistribVertexScaleTestCase(experimentalCondition, s, t, f, e, b, tc, ls, fs),
+        (s, t, f, e, b, tc, ls, fs) => { testProgramNames += f.getFileName.toString; new DistribVertexScaleTestCase(experimentalCondition, s, t, f, e, b, tc, ls, fs) },
         testContext,
         programPaths)
       suiteForOneCondition.setName(experimentalCondition.toString)
@@ -81,9 +82,7 @@ object DistribVertexScaleTestCase {
         }
       }
     }
-    val testNames = scala.collection.mutable.ArrayBuffer.empty[String]
-    forEachTestCase(testRunSuite, { tc: TestCase => testNames += tc.getName })
-    DistribTestCase.writeReadme(experimentalConditions, testNames.distinct)
+    DistribTestCase.writeReadme(classOf[DistribVertexScaleTest].getCanonicalName.stripSuffix("$") + ", under JUnit's RemoteRunner", experimentalConditions, testProgramNames.distinct)
     testRunSuite
   }
 

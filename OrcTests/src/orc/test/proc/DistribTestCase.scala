@@ -23,7 +23,7 @@ import orc.error.compiletime.{ CompilationException, FeatureNotSupportedExceptio
 import orc.script.OrcBindings
 import orc.test.util.{ ExpectedOutput, ExperimentalCondition, OsCommand, RemoteCommand, TestRunNumber, TestUtils }
 import orc.test.util.TestUtils.OrcTestCase
-import orc.util.WikiCreoleTableWriter
+import orc.util.{ EventCounter, WikiCreoleTableWriter }
 
 import junit.framework.TestSuite
 import org.junit.Assume
@@ -227,21 +227,20 @@ object DistribTestCase {
     }
   }
 
-  def writeReadme(experimentalConditions: Traversable[ExperimentalCondition], testPrograms: Traversable[String]): Unit = {
+  def writeReadme(testProcedureName: String, experimentalConditions: Traversable[ExperimentalCondition], testProgramNames: Traversable[String]): Unit = {
     val readmePath = Paths.get(System.getProperty("orc.executionlog.dir")).getParent.resolve("README.creole")
     val readmeWriter = Files.newBufferedWriter(readmePath, StandardOpenOption.CREATE_NEW)
     try {
-      readmeWriter.append(composeReadme(experimentalConditions, testPrograms))
+      readmeWriter.append(composeReadme(testProcedureName, experimentalConditions, testProgramNames))
     } finally {
       readmeWriter.close()
     }
   }
 
-  def composeReadme(experimentalConditions: Traversable[ExperimentalCondition], testPrograms: Traversable[String]): String = {
+  def composeReadme(testProcedureName: String, experimentalConditions: Traversable[ExperimentalCondition], testProgramNames: Traversable[String]): String = {
     val testRunNumber = TestRunNumber.singletonNumber
     val username = System.getProperty("user.name")
     val runDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
-    val testClass = getClass.getCanonicalName.stripSuffix("$")
     val gitDescribe = {
       try {
         OsCommand.runAndGetResult(Seq("git", "describe", "--dirty", "--tags", "--always")).stdout.stripLineEnd
@@ -277,12 +276,13 @@ object DistribTestCase {
        |
        |== Item Under Test ==
        |
-       |**Run class:** {{{$testClass}}}, under JUnit's RemoteRunner
+       |**Run test procedure class:** {{{$testProcedureName}}}
+       |
        |
        |=== Programs Run ===
        |
        |""".stripMargin +
-       testPrograms.mkString("* {{{", "}}}\n* {{{", "}}}") +
+       testProgramNames.mkString("* {{{", "}}}\n* {{{", "}}}") +
     s"""
        |
        |
@@ -339,6 +339,13 @@ object DistribTestCase {
        |== Analyses ==
        |
        |Analysis procedure results are in the {{{analysis-*}}} directories.
+       |
+       |In particular, elapsed time analysis is in the [[analysis-elapsedTime]] directory.""".stripMargin +
+       (if (EventCounter.counterOn)
+    s"""
+       |
+       |Event count analysis is in the [[analysis-eventCount]] directory.""".stripMargin else "") + 
+    s"""
        |
        |
        |== Comments ==

@@ -134,7 +134,8 @@ public final class TestUtils {
             } catch (final IOException e) {
                 throw new AssertionError(e);
             }
-            TestSuite nestedSuite = null;
+            /* If only one examplePath, don't create an unneeded nestedSuite */
+            TestSuite nestedSuite = examplePaths.length > 1 ? null : suite;
             for (final Path file : files) {
                 final ExpectedOutput expecteds;
                 try {

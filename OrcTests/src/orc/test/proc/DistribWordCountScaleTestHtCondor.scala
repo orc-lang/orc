@@ -438,7 +438,7 @@ object DistribWordCountScaleTestHtCondor {
     val testPrograms = getTestPrograms()
     val condorSubmissions = buildCondorSubmissions(testRunNumber, experimentalConditions, testPrograms)
     setUpTest(experimentalConditions)
-    DistribTestCase.writeReadme(experimentalConditions, testPrograms.map(_.toString))
+    DistribTestCase.writeReadme(getClass.getCanonicalName.stripSuffix("$") + ", using HTCondor jobs", experimentalConditions, testPrograms.map(_.getFileName.toString))
     runCondorSubmissions(testRunNumber, condorSubmissions)
   }
 }
