@@ -1,5 +1,5 @@
 benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline, implType, optimized, microbenchmark
-philosopher (Orc),                                       Fine,        F,            Naïve,       F,          Orc,      F,        T
+philosopher (Orc),                                       Fine,        F,            Naïve,       F,          Orc,      T,        T
 philosopher (Scala),                                     Fine,        F,            Actor,       T,          Scala,    F,        T
 N-Queens (Orc),                                          Fine,        F,            Naïve,       F,          Orc,      F,        T
 N-Queens-opt (Orc),                                      Fine,        F,            Naïve,       F,          Orc,      T,        T
@@ -42,7 +42,7 @@ ThreadRing-2 (Orc),                                      Fine,        F,        
 ThreadRing (Scala),                                      Fine,        NA,           Thread,      TRUE,       Scala,    F,        T
 Wide (Orc),                                              Fine,        F,            NA,          F,          Orc,      F,        T
 Threads (Orc),                                           Fine,        F,            NA,          F,          Orc,      T,        T
-Threads (Scala),                                         Fine,        NA,           NA,          F,          Scala,    T,        T
+Threads (Scala),                                         Fine,        NA,           NA,          F,          Scala,    F,        T
 wordcount-java (Orc),                                    Coarse,      T,            Naïve,       F,          Orc+Scala,F,        F
 wordcount-java-opt (Orc),                                Coarse,      T,            Naïve,       F,          Orc+Scala,T,        F
 wordcount (Orc),                                         Fine,        F,            Naïve,       F,          Orc,      F,        F
