@@ -145,7 +145,7 @@ object PorcEShared {
 object PorcEStrongScalingExperiment extends PorcEBenchmark {
   import PorcEShared._
 
-  def softTimeLimit: Double = 60 * 15
+  def softTimeLimit: Double = 60 * 30
 
   case class MyPorcEExperimentalCondition(
       run: Int,
@@ -180,10 +180,10 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       FactorDescription("nCPUs", "Number of CPUs", "", "The number of CPUs to use")
     )
 
-    override def toJvmArgs = mainJvmOpts ++ super.toJvmArgs ++ Seq(
-        s"-Dorc.test.benchmark.softTimeLimit=${softTimeLimit / 4}",
-        s"-Dorc.test.benchmark.hardTimeLimit=${hardTimeLimit / 4}",
-        )
+    override def toJvmArgs = mainJvmOpts ++ Seq(
+        s"-Dorc.test.benchmark.softTimeLimit=${softTimeLimit / 2}",
+        s"-Dorc.test.benchmark.hardTimeLimit=${hardTimeLimit / 2}",
+        ) ++ super.toJvmArgs
 
   }
 
@@ -196,7 +196,7 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
       val nRuns = 1
       val porce = for {
         run <- 0 until nRuns
-        optLevel <- Seq(3) //, 0)
+        optLevel <- Seq(3, 0)
         nCPUs <- if (optLevel < 2) nCPUsValues.take(1) else nCPUsValues
         fn <- if (optLevel < 2) mainPureOrcBenchmarks else mainOrcBenchmarks
       } yield {
@@ -212,11 +212,11 @@ object PorcEStrongScalingExperiment extends PorcEBenchmark {
         MyScalaExperimentalCondition(run, cls, nCPUs)
       }
       (porce ++ scala).sortBy(v => (v.run,
+          nCPUsValues.indexOf(v.nCPUs),
           (v match {
             case v: MyPorcEExperimentalCondition => -v.optLevel
             case _ => -1
           }),
-          nCPUsValues.indexOf(v.nCPUs),
           ))
     }
     runExperiment(experimentalConditions)

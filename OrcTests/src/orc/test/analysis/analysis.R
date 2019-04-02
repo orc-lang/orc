@@ -41,7 +41,7 @@ estimateWarmupRepetitions <- function(data, threshold = 1, minRemaining = 5) {
 }
 
 # TODO: Documentation
-dropWarmupRepetitionsTimedRuns <- function(.data, runIDCol, repetitionCol, timeCol, minWarmupReps, maxWarmupReps, maxWarmupTime, minRemaining = 3, maxRemaining = NA) {
+dropWarmupRepetitionsTimedRuns <- function(.data, runIDCol, repetitionCol, timeCol, minWarmupReps, maxWarmupReps, maxWarmupTime, minRemaining = 3, maxRemaining = NA, dropTailReps = 0) {
   runIDName <- if (is.name(substitute(runIDCol))) {
     deparse(substitute(runIDCol))
   } else runIDCol
@@ -55,14 +55,16 @@ dropWarmupRepetitionsTimedRuns <- function(.data, runIDCol, repetitionCol, timeC
   f <- function(group) {
     repsMinPred <- group[[repetitionColName]] >= minWarmupReps
     minRemPred <- group[[repetitionColName]] > (max(group[[repetitionColName]]) - minRemaining)
+    dropTailPred <- group[[repetitionColName]] < (max(group[[repetitionColName]]) - dropTailReps)
     repsPred <- group[[repetitionColName]] >= maxWarmupReps
     timePred <- lag(cumsum(group[[timeColName]]), default = 0) >= maxWarmupTime
-    pred <- ((repsPred | timePred) & repsMinPred) | minRemPred
+    pred <- (((repsPred | timePred) & repsMinPred) | minRemPred) & dropTailPred
     used <- group[pred, ]
     if (is.na(maxRemaining) || is.null(maxRemaining)) {
       used
     } else {
-      used[1:min(length(used[[repetitionColName]]), maxRemaining),]
+      n <- length(used[[repetitionColName]])
+      used[max(1, n-maxRemaining):n,]
     }
   }
   .data %>% group_by_at(runIDName) %>% do(f(.)) %>% ungroup()
@@ -87,6 +89,7 @@ dropWarmupRepetitions <- function(data, warmupReps, repetitionColName = NA) {
   }
   data[data[, repetitionColName] > warmupReps, ]
 }
+
 
 # Compute a statistic and bounds on it's value using the bootstrap method.
 #

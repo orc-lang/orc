@@ -1,5 +1,6 @@
 benchmarkName,                                           granularity, scalaCompute, parallelism, isBaseline, implType, optimized, microbenchmark
 philosopher (Orc),                                       Fine,        F,            Naïve,       F,          Orc,      F,        T
+philosopher (Scala),                                     Fine,        F,            Actor,       T,          Scala,    F,        T
 N-Queens (Orc),                                          Fine,        F,            Naïve,       F,          Orc,      F,        T
 N-Queens-opt (Orc),                                      Fine,        F,            Naïve,       F,          Orc,      T,        T
 N-Queens (Scala),                                        Fine,        NA,           Naïve,       T,          Scala,    F,        T

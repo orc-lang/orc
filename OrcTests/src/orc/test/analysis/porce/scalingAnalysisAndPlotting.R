@@ -22,33 +22,36 @@ source(file.path(scriptDir, "readMergedResultsTable.R"))
 source(file.path(scriptDir, "analysis.R"))
 source(file.path(scriptDir, "plotting.R"))
 source(file.path(scriptDir, "porce", "utils.R"))
+source(file.path(scriptDir, "porce", "savinaData.R"))
 
 
 # dataDir <- file.path(experimentDataDir, "PorcE", "strong-scaling", "20180203-a009")
 #dataDir <- file.path(localExperimentDataDir, "20180730-a010")
-dataDir <- file.path(localExperimentDataDir, "20181115-a001")
-scalaDataDir <- file.path(localExperimentDataDir, "20181114-edited")
+dataDir <- file.path(localExperimentDataDir, "20190330-a004")
+scalaDataDir <- file.path(localExperimentDataDir, "20190330-a004")
 
 if(!exists("processedData")) {
-  scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = F) %>%
+  scalaData <- readMergedResultsTable(scalaDataDir, "benchmark-times", invalidate = T) %>%
     filter(language == "Scala")
 
-  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = T) %>%
+  data <- readMergedResultsTable(dataDir, "benchmark-times", invalidate = F) %>%
     bind_rows(scalaData) %>%
     addBenchmarkProblemName()
 
-  includedBenchmarks <- c("Big Sort", "Black-Scholes", "Dedup", "Fork Bomb", "K-Means", "Savina Sieve", "Swaptions", "Word Count")
-  includedNCPUs <- c(1, 8, 16)
+  includedBenchmarks <- c("Big Sort", "Black-Scholes", "Dedup", "Fork Bomb", "K-Means", "Savina Sieve", "Swaptions", "Word Count", "Dining Philosophers")
+  includedNCPUs <- c(1, 8, 16, 24, 32)
   data <- data %>% filter(is.element(benchmarkProblemName, includedBenchmarks) & is.element(nCPUs, includedNCPUs))
 
   prunedData <- data %>%
-    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run", "optLevel"), rep, elapsedTime, 7, 25, 300, minRemaining = 1, maxRemaining = 20) %>%
-    # Drop any reps which have more than 1% compilation time.
+    dropWarmupRepetitionsTimedRuns(c("benchmarkName", "nCPUs", "run", "optLevel"), rep, elapsedTime, 7, 25, 300, minRemaining = 1, maxRemaining = 20, dropTailReps = 1) %>%
+    # Drop any reps which have more than 25% compilation time.
     filter(rtCompTime < cpuTime * 0.25)
+
+  prunedData <- bind_rows(prunedData, akka_philosopher) %>% mutate_if(is.character, as.factor)
 
   processedData <- prunedData %>%
     group_by(benchmarkProblemName, language, benchmarkName, nCPUs, optLevel) %>%
-    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), c(mean=mean, median=median), confidence = 0.95, R = 10000) %>%
+    bootstrapStatistics(c("elapsedTime", "cpuTime", "gcTime", "rtCompTime"), c(mean=mean, median=median), confidence = 0.95, R = 1) %>%
     mutate(cpuUtilization = cpuTime_mean / elapsedTime_mean,
            cpuUtilization_lowerBound = cpuTime_mean_lowerBound / elapsedTime_mean_upperBound,
            cpuUtilization_upperBound = cpuTime_mean_upperBound / elapsedTime_mean_lowerBound) %>%
@@ -336,7 +339,7 @@ trappings <- list(
   geom_hline(yintercept = 1, alpha = 0.6, color = "#111111"),
   scale_y_continuous(limits = c(0, NA)),
   # scale_y_log10(),
-  scale_x_continuous(breaks = c(1, 8, 16)),
+  scale_x_continuous(breaks = c(1, 8, 16, 24, 32)),
   theme_minimal(),
   scale_color_manual(name = "Language",
                      labels = levels(processedData$implType),
@@ -344,6 +347,7 @@ trappings <- list(
   scale_fill_manual(name = "Language",
                     labels = levels(processedData$implType),
                     values = c("#1b9e77","#7570b3","#d95f02")),
+  scale_linetype_manual(name = "Optimized", values = c(2, 1)),
   theme(
     #legend.justification = c("right", "top"),
     #legend.box.just = "top",
@@ -396,9 +400,11 @@ overallScalingViolinPlot <- prunedData %>%
     group = interaction(benchmarkName, factor(nCPUs))
   )) +
   geom_violin(aes(fill = implType), position=position_dodge(width = 1), alpha = 0.5, scale="width") +
-  geom_point(data=processedData %>% filter(is.na(optLevel) | optLevel == 3), aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
-  geom_line(data=processedData %>% filter(is.na(optLevel) | optLevel == 3), aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
-  facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 2) +
+  geom_point(data=processedData %>% filter(is.na(optLevel) | optLevel == 3),
+             aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
+  geom_line(data=processedData %>% filter(is.na(optLevel) | optLevel == 3),
+            aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName, linetype=optimized | implType == "Scala"), position=position_dodge(width = 1)) +
+  facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 3) +
   trappings
 
 print(overallScalingViolinPlot + theme(legend.position = "bottom"))
@@ -409,7 +415,7 @@ ggsave(file.path(outputDir, "allScalingPlot.svg"), device = "svg", overallScalin
 
 ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 12, height = 2.1, units = "in")
 
-ggsave(file.path(outputDir, "allScalingViolinPlot.pdf"), overallScalingViolinPlot + theme(legend.position = "bottom"), width = 9, height = 4, units = "in")
+ggsave(file.path(outputDir, "allScalingViolinPlot.pdf"), overallScalingViolinPlot + theme(legend.position = "bottom"), width = 7, height = 6, units = "in")
 
 svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
 # print(overallScalingPlot + theme(legend.position = "bottom"))
