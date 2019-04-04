@@ -42,12 +42,12 @@ abstract sealed class OrcPeerCmdInExecutionContext(executionId: DOrcExecution#Ex
 
 /** A new peer has joined this cluster */
 case class AddPeerCmd(peerRuntimeId: DOrcRuntime.RuntimeId, peerListenAddress: InetSocketAddress) extends OrcLeaderToFollowerCmd {
-  override def toString(): String = s"${getClass.getSimpleName}($peerRuntimeId, $peerListenAddress)"
+  override def toString: String = s"$productPrefix($peerRuntimeId, $peerListenAddress)"
 }
 
 /** A peer has left this cluster */
 case class RemovePeerCmd(peerRuntimeId: DOrcRuntime.RuntimeId) extends OrcLeaderToFollowerCmd {
-  override def toString(): String = s"${getClass.getSimpleName}($peerRuntimeId)"
+  override def toString: String = s"$productPrefix($peerRuntimeId)"
 }
 
 ////////
@@ -56,17 +56,17 @@ case class RemovePeerCmd(peerRuntimeId: DOrcRuntime.RuntimeId) extends OrcLeader
 
 /** Prepare for execution in the given Orc program AST */
 case class LoadProgramCmd(executionId: DOrcExecution#ExecutionId, programAst: DOrcRuntime#ProgramAST, options: OrcExecutionOptions, rootCounterId: CounterProxyManager#DistributedCounterId) extends OrcLeaderToFollowerCmd {
-  override def toString(): String = s"${getClass.getSimpleName}($executionId, ...programAst.., $options)"
+  override def toString: String = s"$productPrefix($executionId, ...programAst.., $options)"
 }
 
 /** This runtime is ready to execute in the indicated executionId */
 case class ProgramReadyCmd(executionId: DOrcExecution#ExecutionId) extends OrcFollowerToLeaderCmd {
-  override def toString(): String = s"${getClass.getSimpleName}($executionId)"
+  override def toString: String = s"$productPrefix($executionId)"
 }
 
 /** No further execution in this executionId, program AST can be discarded  */
 case class UnloadProgramCmd(executionId: DOrcExecution#ExecutionId) extends OrcLeaderToFollowerCmd {
-  override def toString(): String = s"${getClass.getSimpleName}($executionId)"
+  override def toString: String = s"$productPrefix($executionId)"
 }
 
 ////////
@@ -75,7 +75,7 @@ case class UnloadProgramCmd(executionId: DOrcExecution#ExecutionId) extends OrcL
 
 /** Notify leader/environment of an OrcEvent */
 case class NotifyLeaderCmd(executionId: DOrcExecution#ExecutionId, event: OrcEvent) extends OrcFollowerToLeaderCmdInExecutionContext(executionId) {
-  override def toString(): String = s"${getClass.getSimpleName}($executionId, $event)"
+  override def toString: String = s"$productPrefix($executionId, $event)"
 }
 
 ////////
@@ -84,7 +84,7 @@ case class NotifyLeaderCmd(executionId: DOrcExecution#ExecutionId, event: OrcEve
 
 /** Header -- always the first message on a new connection */
 case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime.RuntimeId, receivingRuntimeId: DOrcRuntime.RuntimeId, senderListenSocketAddress: InetSocketAddress) extends OrcPeerCmd {
-  override def toString(): String = s"${getClass.getSimpleName}($sendingRuntimeId, $receivingRuntimeId, $senderListenSocketAddress)"
+  override def toString: String = s"$productPrefix($sendingRuntimeId, $receivingRuntimeId, $senderListenSocketAddress)"
 }
 
 ////////
@@ -94,41 +94,41 @@ case class DOrcConnectionHeader(sendingRuntimeId: DOrcRuntime.RuntimeId, receivi
 /** Execute this token */
 case class MigrateCallCmd(executionId: DOrcExecution#ExecutionId, tokenId: Long, movedCall: CallMemento) extends OrcPeerCmdInExecutionContext(executionId) {
   // Token: This message carries a token on the counter movedCall.counterProxyId at the origin. (the location is important)
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $tokenId%#x, $movedCall)"
+  override def toString: String = f"$productPrefix($executionId, $tokenId%#x, $movedCall)"
 }
 
 /** This token has published in the given group */
 // TODO: This can probably be removed for PorcE.
 case class PublishGroupCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId, publication: PublishMemento) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $counterId%#x, $publication)"
+  override def toString: String = f"$productPrefix($executionId, $counterId%#x, $publication)"
 }
 
 /** Kill the given group which has already been killed at it's origin */
 case class KilledGroupCmd(executionId: DOrcExecution#ExecutionId, counterId: RemoteRef#RemoteRefId) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $counterId%#x)"
+  override def toString: String = f"$productPrefix($executionId, $counterId%#x)"
 }
 
 /** Notify the given group that an event has happened that will kill if it is not already dead. */
 case class KillingGroupCmd(executionId: DOrcExecution#ExecutionId, counterId: RemoteRef#RemoteRefId, killing: KillingMemento) extends OrcPeerCmdInExecutionContext(executionId) {
   // Credit: This message carries credit on the counter killing.counterProxyId.
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $counterId%#x, $killing)"
+  override def toString: String = f"$productPrefix($executionId, $counterId%#x, $killing)"
 }
 
 /** This group member has halted */
 case class HaltGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId, credit: Int) extends OrcPeerCmdInExecutionContext(executionId) {
   // Credit: This message carries credit on the counter counterId at the destination. (the location is important)
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $counterId%#x, $credit)"
+  override def toString: String = f"$productPrefix($executionId, $counterId%#x, $credit)"
 }
 
 /** This group member has discorporated */
 case class DiscorporateGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId, credit: Int) extends OrcPeerCmdInExecutionContext(executionId) {
   // Credit: This message carries credit on the counter counterId at the destination. (the location is important)
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $counterId%#x, $credit)"
+  override def toString: String = f"$productPrefix($executionId, $counterId%#x, $credit)"
 }
 
 /** This group member has resurrected */
 case class ResurrectGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $counterId%#x)"
+  override def toString: String = f"$productPrefix($executionId, $counterId%#x)"
 }
 
 /** Provide credit to a remote counter fragment.
@@ -137,22 +137,22 @@ case class ResurrectGroupMemberProxyCmd(executionId: DOrcExecution#ExecutionId, 
   */
 case class ProvideCounterCreditCmd(executionId: DOrcExecution#ExecutionId, counterId: CounterProxyManager#CounterId, credit: Int) extends OrcPeerCmdInExecutionContext(executionId) {
   // Credit: This message carries credit on the counter counterId at the **origin**. (the location is important)
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $counterId%#x, $credit)"
+  override def toString: String = f"$productPrefix($executionId, $counterId%#x, $credit)"
 }
 
 /** Post a read request on this future */
 case class ReadFutureCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureManager#RemoteFutureId, readerFollowerRuntimeId: DOrcRuntime.RuntimeId) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $futureId%#x, $readerFollowerRuntimeId)"
+  override def toString: String = f"$productPrefix($executionId, $futureId%#x, $readerFollowerRuntimeId)"
 }
 
 /** The given future has resolved to a value */
 case class DeliverFutureResultCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureManager#RemoteFutureId, value: Option[AnyRef]) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $futureId%#x, $value)"
+  override def toString: String = f"$productPrefix($executionId, $futureId%#x, $value)"
 }
 
 /** Resolve this future to the given value */
 case class ResolveFutureCmd(executionId: DOrcExecution#ExecutionId, futureId: RemoteFutureManager#RemoteFutureId, value: Option[AnyRef]) extends OrcPeerCmdInExecutionContext(executionId) {
-  override def toString(): String = f"${getClass.getSimpleName}($executionId, $futureId%#x, $value)"
+  override def toString: String = f"$productPrefix($executionId, $futureId%#x, $value)"
 }
 
 ////////

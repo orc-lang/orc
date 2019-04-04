@@ -215,6 +215,7 @@ protected final case class BoundFutureReplacement(bindingId: RemoteFutureRef#Rem
   override def unmarshalBinding(execution: DOrcExecution, origin: PeerLocation) = {
     BoundReadable(execution.futureForId(bindingId))
   }
+  override def toString: String = f"$productPrefix($bindingId%#x)"
 }
 
 protected final case class BoundClosureReplacement(c: Closure) extends BindingReplacement() {
