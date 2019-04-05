@@ -125,21 +125,22 @@ timeAndUtilizationPlot <- p +
 
 #print(timeAndUtilizationPlot)
 
-utilizationPlot <- function(problemName) {
-  p <- processedData %>% filter(benchmarkProblemName == problemName) %>% ggplot(aes(
+utilizationPlot <- function(problemName=NA) {
+  p <- processedData %>% filter(is.na(problemName) | benchmarkProblemName == problemName) %>% ggplot(aes(
     x = factor(nCPUs),
     fill = benchmarkName)) +
     labs(x = "Number of CPUs", color = "Benchmark", fill = "Benchmark") +
     theme_minimal() + scale_fill_brewer(palette="Dark2")
 
-  p + geom_col_errorbar(aes(y = cpuUtilization / nCPUs,
-                            ymin = cpuUtilization_lowerBound / nCPUs,
-                            ymax = cpuUtilization_upperBound / nCPUs)) +
+  p + geom_col_errorbar(aes(y = cpuUtilization,
+                            ymin = cpuUtilization_lowerBound,
+                            ymax = cpuUtilization_upperBound)) +
     labs(y = "Avg. Processor Utilization Over Run") +
-    ylim(c(0, 1))
+    ylim(c(0, max(processedData$nCPUs)))
 }
 
-#print(utilizationPlot("Black"))
+utilizationPlots <- lapply(levels(processedData$benchmarkProblemName), utilizationPlot)
+print(utilizationPlots)
 
 ## Seperate Scaling Plots for each problem.
 
@@ -347,7 +348,7 @@ trappings <- list(
   scale_fill_manual(name = "Language",
                     labels = levels(processedData$implType),
                     values = c("#1b9e77","#7570b3","#d95f02")),
-  scale_linetype_manual(name = "Optimized", values = c(2, 1)),
+  # scale_linetype_manual(name = "Optimized", values = c(2, 1)),
   theme(
     #legend.justification = c("right", "top"),
     #legend.box.just = "top",
@@ -392,18 +393,19 @@ implTypes <- c("Orc -O0", "Orc -O3", "Orc+Scala", "Scala")
 overallScalingViolinPlot <- prunedData %>%
   left_join(processedData %>% select(benchmarkName, nCPUs, optLevel, elapsedTime_median_problembaseline, elapsedTime_median_selfbaseline), by = c("benchmarkName", "nCPUs", "optLevel")) %>%
   addBenchmarkMetadata() %>%
-  filter(is.na(optLevel) | optLevel == 3) %>%
+  filter(is.na(optLevel) | (optLevel == 3 & optimized)) %>%
   ggplot(aes(
     x = nCPUs,
     y = elapsedTime_median_problembaseline / elapsedTime,
     color = implType,
+    # linetype = implType,
     group = interaction(benchmarkName, factor(nCPUs))
   )) +
   geom_violin(aes(fill = implType), position=position_dodge(width = 1), alpha = 0.5, scale="width") +
-  geom_point(data=processedData %>% filter(is.na(optLevel) | optLevel == 3),
+  geom_point(data=processedData %>% filter(is.na(optLevel) | (optLevel == 3 & optimized)),
              aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
-  geom_line(data=processedData %>% filter(is.na(optLevel) | optLevel == 3),
-            aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName, linetype=optimized | implType == "Scala"), position=position_dodge(width = 1)) +
+  geom_line(data=processedData %>% filter(is.na(optLevel) | (optLevel == 3 & optimized)),
+            aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
   facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 3) +
   trappings
 
@@ -417,7 +419,7 @@ ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(le
 
 ggsave(file.path(outputDir, "allScalingViolinPlot.pdf"), overallScalingViolinPlot + theme(legend.position = "bottom"), width = 7, height = 6, units = "in")
 
-svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
+# svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
 # print(overallScalingPlot + theme(legend.position = "bottom"))
 # dev.off()
 
