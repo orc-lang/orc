@@ -17,6 +17,7 @@ import class BufferedReader = "java.io.BufferedReader"
 import class FileReader = "java.io.FileReader"
 import class WordCount = "orc.test.item.distrib.WordCount"
 
+-- Lines: 6 (1)
 def countFile(file) = SinglePublication() >> 
   Sequentialize() >> -- Inferable
   BufferedReader(FileReader(file))  >in>
@@ -24,8 +25,10 @@ def countFile(file) = SinglePublication() >>
   in.close()  >>
   count
 
+-- Lines: 1
 def sumN(n, f) = if (n :> 0) then f() + sumN(n-1, f) else 0
 
+-- Lines: 5
 def repeatCountFilename(filename) =
   import class File = "java.io.File"
   File(filename)  >file>
@@ -43,6 +46,7 @@ def setUpTest() =
 def setUpTestRep() =
   signal
 
+-- Lines: 3
 def runTestRep(inputList) =
   map(repeatCountFilename, inputList)  >wordCountList>
   afold((+), wordCountList)

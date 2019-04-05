@@ -33,7 +33,7 @@ val readChunkSize = 128 * 1024 * 1024
 
 val sha1 = DedupOrc.sha1 
 
--- Lines: 12
+-- Lines: 12 (2)
 {-- Read chunks from an InputStream and publish chucks of it which are at least minimumSegmentSize long.  
 -}
 def readSegements(minimumSegmentSize, in) =

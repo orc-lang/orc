@@ -22,6 +22,7 @@ import class Collections = "java.util.Collections"
 
 val sieveFragementSize = 300
 
+-- Lines: 6
 def check(x, iter) = SinglePublication() >> Sequentialize() >> x >> iter >> ( -- Inferable (recursion)
     val p = Some(iter()) ; None() #
     --val _ = Println("Checking " + x + " " + p) #
@@ -30,6 +31,8 @@ def check(x, iter) = SinglePublication() >> Sequentialize() >> x >> iter >> ( --
         Iff(x % p = 0) >> 
         check(x, iter))
 )
+
+-- Lines: 13 (1)
 def filter(x, next, list, outChan) = SinglePublication() >> x >> next >> list >> outChan >> (
     val v = Sequentialize() >> -- Inferable 
         (check(x, IterableToStream(list)) >> true ; false)
@@ -60,7 +63,7 @@ def sforBy(low, high, step, f) =
   def h(i) = f(i) >> h(i + step)
   h(low)
 
--- Lines: 5
+-- Lines: 5 (2)
 def primes(Number) :: List[Number]
 def primes(n) =
 	val out = Channel() #

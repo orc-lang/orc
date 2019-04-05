@@ -23,6 +23,7 @@ import class Collections = "java.util.Collections"
 
 val sieveFragementSize = 300
 
+-- Lines: 12 (1)
 def filter(x, next, list, outChan) = SinglePublication() >> x >> next >> list >> outChan >> (
     val v = SavinaSieve.check(list, x)
     v >true> (

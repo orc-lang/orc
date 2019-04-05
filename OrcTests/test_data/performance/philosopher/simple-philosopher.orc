@@ -1,5 +1,6 @@
 include "benchmark.inc"
 
+-- Lines: 18
 def Arbitrator(n) = 
     val forks = Array(n) >a> (upto(n) >i> a(i) := false >> stop ; a)
     val chan = Channel()
@@ -23,6 +24,7 @@ def Arbitrator(n) =
         })
     ) >> stop
 
+-- Lines: 7
 def Philosopher(i, 0, arbitrator) = stop
 def Philosopher(i, m, arbitrator) =
     val ret = Cell()
@@ -40,6 +42,7 @@ def Philosopher(i, m, arbitrator) =
 val N = 20
 val M = 10000
 
+-- Lines: 4
 def philosophers() =
     val arbitrator = Arbitrator(N)
     upto(N) >i> Philosopher(i, M, arbitrator) ;

@@ -39,6 +39,7 @@ import class LongAdder = "java.util.concurrent.atomic.LongAdder"
 val n = KMeans.n()
 val iters = KMeans.iters()
 
+-- Lines: 5
 class PointAdder {
   val x
   val y
@@ -57,12 +58,14 @@ class PointAdder {
   def toString() = "<" + x + "," + y + ">"
 }
 
+-- Lines: 5
 def PointAdder() =
   DoubleAdder() >x'>
   DoubleAdder() >y'>
   LongAdder() >count'>
   new PointAdder { val x = x' # val y = y' # val count = count' }
 
+-- Lines: 5
 def run(xs) =
   def run'(0, centroids) = Println(unlines(map({ _.toString() }, arrayToList(centroids)))) >> centroids
   def run'(i, centroids) = run'(i - 1, updateCentroids(xs, centroids))
@@ -79,6 +82,7 @@ def tabulateArray(n, f) =
 def mapArray(f, a) =
     tabulateArray(a.length?, { SinglePublication() >> f(a(_)?) })
 
+-- Lines: 8
 def updateCentroids(xs, centroids) = 
   val pointAdders = fillArray(centroids.length?, { PointAdder() }) --listToArray(map({ _ >> PointAdder() }, arrayToList(centroids))) 
   pointAdders >>

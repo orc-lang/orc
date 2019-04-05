@@ -19,6 +19,7 @@ def eachArray(a) =
 
 def signals(n) = Ift(n :> 0) >> (signal | signals(n-1))
 
+-- Lines: 11 (2)
 def sim(processor, swaption) =
     val sum = DoubleAdder()
     val sumsq = DoubleAdder()
@@ -31,6 +32,7 @@ def sim(processor, swaption) =
     swaption.setSimSwaptionPriceMean(sum.sum() / nTrials) >>
     swaption.setSimSwaptionPriceStdError(sqrt((sumsq.sum() - sum.sum()*sum.sum()/nTrials) / (nTrials - 1.0)) / sqrt(nTrials))
 
+-- Lines: 4
 def simAll(data) =
     val processor = Processor(SwaptionData.nTrials())
     eachArray(data) >swaption> sim(processor, swaption) >> stop ; 
