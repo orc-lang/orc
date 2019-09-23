@@ -272,7 +272,7 @@ normalizedPerformancePlot <- function(problemName) {
     ymin = elapsedTime_mean_problembaseline / elapsedTime_mean_lowerBound,
     ymax = elapsedTime_mean_problembaseline / elapsedTime_mean_upperBound,
     linetype = parallelism,
-    fill = factor(if_else((language == "Orc") & scalaCompute, "Orc+Scala", as.character(language)), levels = c("Orc+Scala", "Orc", "Scala")),
+    fill = factor(if_else((language == "Orc") & scalaCompute, "PorcE+Scala", as.character(language)), levels = c("PorcE+Scala", "PorcE", "Scala")),
     color = granularity,
     group = benchmarkName)) +
     labs(y = "Speed up", x = "Number of CPUs", fill = "Language") +
@@ -343,11 +343,14 @@ trappings <- list(
   scale_x_continuous(breaks = c(1, 8, 16, 24, 32)),
   theme_minimal(),
   scale_color_manual(name = "Language",
-                     labels = levels(processedData$implType),
+                     labels = c("PorcE", "PorcE+Scala", "Scala"),
                      values = c("#1b9e77","#7570b3","#d95f02")),
   scale_fill_manual(name = "Language",
-                    labels = levels(processedData$implType),
+                    labels = c("PorcE", "PorcE+Scala", "Scala"),
                     values = c("#1b9e77","#7570b3","#d95f02")),
+  scale_shape_manual(name = "Language",
+                    labels = c("PorcE", "PorcE+Scala", "Scala"),
+                    values = c(3, 4, 1)),
   # scale_linetype_manual(name = "Optimized", values = c(2, 1)),
   theme(
     #legend.justification = c("right", "top"),
@@ -386,6 +389,7 @@ overallScalingPlot <- processedData %>%
   facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 1) +
   trappings
 
+
 print(overallScalingPlot + theme(legend.position = "bottom"))
 
 implTypes <- c("Orc -O0", "Orc -O3", "Orc+Scala", "Scala")
@@ -397,19 +401,49 @@ overallScalingViolinPlot <- prunedData %>%
   ggplot(aes(
     x = nCPUs,
     y = elapsedTime_median_problembaseline / elapsedTime,
-    color = implType,
+    # color = implType,
+    shape = implType,
     # linetype = implType,
     group = interaction(benchmarkName, factor(nCPUs))
   )) +
-  geom_violin(aes(fill = implType), position=position_dodge(width = 1), alpha = 0.5, scale="width") +
-  geom_point(data=processedData %>% filter(is.na(optLevel) | (optLevel == 3 & optimized)),
-             aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
+  geom_violin(aes(fill = implType, color = implType), position=position_dodge(width = 1), alpha = 0.5, scale="width") +
   geom_line(data=processedData %>% filter(is.na(optLevel) | (optLevel == 3 & optimized)),
-            aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName), position=position_dodge(width = 1)) +
+            aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName, color = implType), position=position_dodge(width = 1)) +
+  geom_point(data=processedData %>% filter(is.na(optLevel) | (optLevel == 3 & optimized)),
+             aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName),
+             size = 1.5,
+             position=position_dodge(width = 1)) +
   facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 3) +
   trappings
 
 print(overallScalingViolinPlot + theme(legend.position = "bottom"))
+
+overallScalingViolinPlotSlides <- prunedData %>%
+  left_join(processedData %>% select(benchmarkName, nCPUs, optLevel, elapsedTime_median_problembaseline, elapsedTime_median_selfbaseline), by = c("benchmarkName", "nCPUs", "optLevel")) %>%
+  addBenchmarkMetadata() %>%
+  filter(is.na(optLevel) | (optLevel == 3 & optimized)) %>%
+  filter(benchmarkProblemName %in% c("Black-Scholes", "Dining Philosophers", "K-Means")) %>%
+  ggplot(aes(
+    x = nCPUs,
+    y = elapsedTime_median_problembaseline / elapsedTime,
+    # color = implType,
+    shape = implType,
+    # linetype = implType,
+    group = interaction(benchmarkName, factor(nCPUs))
+  )) +
+#  geom_violin(aes(fill = implType, color = implType), position=position_dodge(width = 1), alpha = 0.5, scale="width") +
+  geom_line(data=processedData %>% filter(is.na(optLevel) | (optLevel == 3 & optimized)) %>%
+              filter(benchmarkProblemName %in% c("Black-Scholes", "Dining Philosophers", "K-Means")),
+            aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName, color = implType), position=position_dodge(width = 1)) +
+  geom_point(data=processedData %>% filter(is.na(optLevel) | (optLevel == 3 & optimized)) %>%
+               filter(benchmarkProblemName %in% c("Black-Scholes", "Dining Philosophers", "K-Means")),
+             aes(x = nCPUs, y = elapsedTime_median_problembaseline / elapsedTime_median, group = benchmarkName),
+             size = 1.5,
+             position=position_dodge(width = 1)) +
+  facet_wrap(~benchmarkProblemName, scales = "free_y", nrow = 1) +
+  trappings
+
+print(overallScalingViolinPlotSlides + theme(legend.position = "bottom"))
 
 #print(overallScalingPlot + scale_y_log10() + theme(legend.position = "bottom"))
 
@@ -418,6 +452,8 @@ ggsave(file.path(outputDir, "allScalingPlot.svg"), device = "svg", overallScalin
 ggsave(file.path(outputDir, "allScalingPlot.pdf"), overallScalingPlot + theme(legend.position = "bottom"), width = 12, height = 2.1, units = "in")
 
 ggsave(file.path(outputDir, "allScalingViolinPlot.pdf"), overallScalingViolinPlot + theme(legend.position = "bottom"), width = 7, height = 6, units = "in")
+
+ggsave(file.path(outputDir, "scalingPlot-slides.pdf"), overallScalingViolinPlotSlides + theme(legend.position = "bottom"), width = 5.5, height = 3, units = "in")
 
 # svg( file.path(outputDir, "allScalingPlot-legend.svg"), width = 7.5, height = 2 )
 # print(overallScalingPlot + theme(legend.position = "bottom"))
