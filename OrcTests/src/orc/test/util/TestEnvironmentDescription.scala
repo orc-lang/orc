@@ -21,7 +21,7 @@ import java.util.jar.Manifest
 
 import scala.collection.JavaConverters.{ enumerationAsScalaIteratorConverter, mapAsScalaMapConverter }
 
-import orc.util.ExecutionLogOutputStream
+import orc.util.{ ExecutionLogOutputStream, ShutdownHook }
 
 /** Captures a snapshot of the execution environment state at time of
   * construction.
@@ -204,7 +204,7 @@ object TestEnvironmentDescription {
     JsonGenerator(System.out)(new TestEnvironmentDescription().toMap)
   }
 
-  private object TestEnvironmentDescriptionDumpThread extends Thread("TestEnvironmentDescriptionDumpThread") {
+  private object TestEnvironmentDescriptionDumpThread extends ShutdownHook("TestEnvironmentDescriptionDumpThread") {
     override def run = synchronized {
       val envDescOut = ExecutionLogOutputStream("envDescrip", "json", "Test environment description output file")
       if (envDescOut.isDefined) {

@@ -23,7 +23,7 @@ import orc.error.compiletime.{ CompilationException, FeatureNotSupportedExceptio
 import orc.script.OrcBindings
 import orc.test.util.{ ExpectedOutput, ExperimentalCondition, OsCommand, RemoteCommand, TestRunNumber, TestUtils }
 import orc.test.util.TestUtils.OrcTestCase
-import orc.util.{ EventCounter, WikiCreoleTableWriter }
+import orc.util.{ EventCounter, ShutdownHook, WikiCreoleTableWriter }
 
 import junit.framework.TestSuite
 import org.junit.Assume
@@ -218,7 +218,7 @@ object DistribTestCase {
     println("done")
   }
 
-  private object DistribTestCopyBackThread extends Thread("DistribTestCopyBackThread") {
+  private object DistribTestCopyBackThread extends ShutdownHook("DistribTestCopyBackThread") {
     override def run(): Unit = synchronized {
       val localRunOutputDir = "../" + pathRelativeToTestRoot(remoteRunOutputDir + "/")
       print(s"Copying run output from leader to $localRunOutputDir...")

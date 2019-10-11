@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Feb 21, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -14,7 +14,6 @@
 package orc.util
 
 import java.io.OutputStreamWriter
-import java.lang.IndexOutOfBoundsException
 
 /** Rudimentary event tracing facility.
   *
@@ -60,7 +59,8 @@ object Tracer {
       newBuf.add(AllocateNewBufferEnd, 0, System.currentTimeMillis, System.nanoTime, 0, 0)
       newBuf
     }
-  } else null
+  }
+  else null
 
   def registerEventTypeId(eventTypeId: Long, eventTypeName: String): Unit = synchronized {
     require(eventTypeName.length == 8, s"Tracer event type ID ${eventTypeId}'s name must be 8 characters.  Got '${eventTypeName}'")
@@ -77,7 +77,7 @@ object Tracer {
     registerEventTypeId(eventTypeId, eventTypeName, prettyprintFromArg)
     eventPrettyprintToArg.put(eventTypeId, prettyprintToArg)
   }
-  
+
   val AllocateNewBufferStart = Int.MaxValue + 1L
   Tracer.registerEventTypeId(AllocateNewBufferStart, "NewBufSt", _ => "", _ => "")
   val AllocateNewBufferEnd = Int.MaxValue + 2L
@@ -135,7 +135,7 @@ object Tracer {
       eventsInBuffer = nextWriteIndex
       nextWriteIndex = size
     }
-    
+
     def dispose() = this synchronized {
       typeIds = null
       locationIds = null
@@ -155,7 +155,7 @@ object Tracer {
   private var buffers = scala.collection.mutable.Set[TraceBuffer]()
 
   /** Return the current set of TraceBuffers and reset tracing.
-    * 
+    *
     * After this is called all new events will go in new buffers
     * so the returned buffers will not change.
     *
@@ -172,12 +172,12 @@ object Tracer {
     */
   def takeBuffers(): collection.Set[TraceBuffer] = synchronized {
     val oldBuffers = buffers
-    
-    // The point at which events are "after this dump" in a thread is somewhere between the 
+
+    // The point at which events are "after this dump" in a thread is somewhere between the
     // reassignment of buffers and the call to close on the buffer in use by that thread.
-    buffers = scala.collection.mutable.Set[TraceBuffer]()    
+    buffers = scala.collection.mutable.Set[TraceBuffer]()
     oldBuffers.foreach(_.close())
-    
+
     oldBuffers
   }
 
@@ -196,7 +196,7 @@ object Tracer {
     */
   def dumpBuffers(suffix: String) = synchronized {
     val oldBuffers = takeBuffers()
-    
+
     // Use lazy to prevent the file from being opened and created if it's not needed
     lazy val csvOut = ExecutionLogOutputStream(s"trace-$suffix", "csv", "Trace output file")
     if (oldBuffers.nonEmpty && oldBuffers.exists(_.eventsInBuffer > 0) && csvOut.isDefined) {
@@ -222,7 +222,7 @@ object Tracer {
 
   if (traceOn) {
     DumperRegistry.register(dumpBuffers)
-    Runtime.getRuntime().addShutdownHook(new Thread(() => dumpBuffers("shutdown"), "TraceBufferDumpThread"))
+    Runtime.getRuntime().addShutdownHook(new ShutdownHook(() => dumpBuffers("shutdown"), "TraceBufferDumpThread"))
   }
 }
 

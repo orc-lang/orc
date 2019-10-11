@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Jul 18, 2017.
 //
-// Copyright (c) 2018 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -31,7 +31,8 @@ object EventCounter {
 
   private final val eventCountsTL = if (counterOn) new ThreadLocal[EventCounts]() {
     override protected def initialValue = new EventCounts(Thread.currentThread().getId)
-  } else null
+  }
+  else null
 
   @inline
   def count[A](eventType: Symbol) = {
@@ -59,7 +60,7 @@ object EventCounter {
     EventCountDumpThread.register(this)
   }
 
-  private object EventCountDumpThread extends Thread("EventCountDumpThread") {
+  private object EventCountDumpThread extends ShutdownHook("EventCountDumpThread") {
     private val accums = scala.collection.mutable.Set[EventCounts]()
     override def run = synchronized {
       val sumMap = new scala.collection.mutable.HashMap[Symbol, Array[Long]]
@@ -92,7 +93,7 @@ object EventCounter {
         val csvWriter = new CsvWriter(eventCountCsv.append(_))
         val tableColumnTitles = Seq("Event Type", "Count")
         csvWriter.writeHeader(tableColumnTitles)
-        val rows = sumMap.map(e => ((e._1.name,e._2(0))))
+        val rows = sumMap.map(e => ((e._1.name, e._2(0))))
         csvWriter.writeRows(rows)
         eventCountCsv.close()
       }

@@ -34,21 +34,6 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
    * finishes, it must exit with a non-zero exit status.
    */
 
-  /** This program's name, for stderr messages */
-  val progName: String = {
-    /* Based on Sun JVM monitoring tools' heuristic */
-    val commandProperty = System.getProperty("sun.java.command")
-    if (commandProperty != null && !commandProperty.isEmpty()) {
-      val firstSpace = if (commandProperty.contains(" ")) commandProperty.indexOf(" ") else commandProperty.length
-      val lastFileSep = commandProperty.lastIndexOf(java.io.File.separator, firstSpace - 1)
-      val mainClass = commandProperty.substring(lastFileSep + 1, firstSpace)
-      val lastDot = mainClass.lastIndexOf(".")
-      mainClass.substring(lastDot + 1)
-    } else {
-      null
-    }
-  }
-
   val shutdownInProgress = new AtomicBoolean(false)
 
   /** Perform program failure exit processing; namely, write diagnostic message
@@ -112,7 +97,7 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
     writeDiagnosticMessage(pathName, "INFO", message)
 
   protected def writeDiagnosticMessage(pathName: String, severity: String, message: String): Unit =
-    MainExit.writeDiagnosticMessage(progName, pathName, severity, message)
+    MainExit.writeDiagnosticMessage(MainExit.progName, pathName, severity, message)
 
   /** Call to set this JVM's defaultUncaughtExceptionHandler to halt the JVM
     * when an exception is thrown, but not caught.
@@ -173,6 +158,20 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
 }
 
 object MainExit {
+  /** This program's name, for stderr messages */
+  val progName: String = {
+    /* Based on Sun JVM monitoring tools' heuristic */
+    val commandProperty = System.getProperty("sun.java.command")
+    if (commandProperty != null && !commandProperty.isEmpty()) {
+      val firstSpace = if (commandProperty.contains(" ")) commandProperty.indexOf(" ") else commandProperty.length
+      val lastFileSep = commandProperty.lastIndexOf(java.io.File.separator, firstSpace - 1)
+      val mainClass = commandProperty.substring(lastFileSep + 1, firstSpace)
+      val lastDot = mainClass.lastIndexOf(".")
+      mainClass.substring(lastDot + 1)
+    } else {
+      null
+    }
+  }
 
   /** Write a diagnostic message to stderr.
     *

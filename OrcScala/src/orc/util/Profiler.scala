@@ -111,7 +111,7 @@ object Profiler {
     ProfilingAccumulatorsDumpThread.register(this)
   }
 
-  private object ProfilingAccumulatorsDumpThread extends Thread("ProfilingAccumulatorsDumpThread") {
+  private object ProfilingAccumulatorsDumpThread extends ShutdownHook("ProfilingAccumulatorsDumpThread") {
     private val accums = scala.collection.mutable.Set[ProfilingAccumulators]()
     override def run = synchronized {
       val sumMap = new scala.collection.mutable.HashMap[Symbol, Array[Long]]
