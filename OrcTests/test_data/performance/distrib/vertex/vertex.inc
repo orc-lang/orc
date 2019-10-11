@@ -9,10 +9,10 @@ include "write-csv-file.inc"
 import class JavaSys = "java.lang.System"
 
 {- Number of vertices to generate. -}
-val numVertices = Read(JavaSys.getProperty("orc.test.numVertices", "130"))
+val numVertices = Read(JavaSys.getProperty("orc.test.numVertices"))
 
 {- Probability of edge between a given vertex pair. -}
-val probEdge = Read(JavaSys.getProperty("orc.test.probEdge", "0.035"))
+val probEdge = Read(JavaSys.getProperty("orc.test.probEdge"))
 
 
 {--------

@@ -8,7 +8,7 @@ include "benchmark.inc"
 import class JavaSys = "java.lang.System"
 
 {- Number of files to read. -}
-val numInputFiles = 24 -- problemSizeScaledInt(1.2) -- Read(JavaSys.getProperty("orc.test.numInputFiles", "12"))
+val numInputFiles = 24 -- problemSizeScaledInt(1.2) -- Read(JavaSys.getProperty("orc.test.numInputFiles"))
 
 {- Number of times to re-read and word count each file. -}
 val repeatRead = 1 -- Read(JavaSys.getProperty("orc.test.repeatRead", "1"))
