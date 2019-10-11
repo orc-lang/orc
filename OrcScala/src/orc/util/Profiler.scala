@@ -74,29 +74,31 @@ object Profiler {
 
   @inline
   private final class ProfilingAccumulators(val javaThreadId: Long) {
-    final val accumulatorMap = new scala.collection.mutable.HashMap[Symbol, Array[Long]]
+    final val accumulatorMap = new scala.collection.mutable.HashMap[Symbol, Array[Long]] {
+      override def default(key: Symbol): Array[Long] = null
+    }
 
     @inline
     def add(locationId: Long, intervalType: Symbol, intervalCount: Long, intervalDurationNanos: Long) {
-      val accums = accumulatorMap.get(intervalType)
-      if (accums.isDefined) {
-        accums.get(0) += intervalCount
-        accums.get(1) += intervalDurationNanos
+      val accums = accumulatorMap(intervalType)
+      if (accums != null) {
+        accums(0) += intervalCount
+        accums(1) += intervalDurationNanos
         /* duration ^ 2 can overflow a Long, so switch to milliseconds in that case */
-        val oldDurn2 = accums.get(2)
+        val oldDurn2 = accums(2)
         if (oldDurn2 >= 0 && (oldDurn2 + intervalDurationNanos * intervalDurationNanos) >= 0) {
-          accums.get(2) += intervalDurationNanos * intervalDurationNanos
+          accums(2) += intervalDurationNanos * intervalDurationNanos
         } else {
           if (oldDurn2 >= 0) {
             /* Just overflowed, switch to millisecond mode */
-            accums.get(2) = -(accums.get(2) / 1000000000000L)
+            accums(2) = -(accums(2) / 1000000000000L)
           }
           /* Now in millisecond mode */
           val intervalDurationMillis = intervalDurationNanos / 1000000L
-          accums.get(2) -= intervalDurationMillis * intervalDurationMillis
+          accums(2) -= intervalDurationMillis * intervalDurationMillis
         }
-        accums.get(3) = Math.min(accums.get(3), intervalDurationNanos)
-        accums.get(4) = Math.max(accums.get(4), intervalDurationNanos)
+        accums(3) = Math.min(accums(3), intervalDurationNanos)
+        accums(4) = Math.max(accums(4), intervalDurationNanos)
       } else {
         val newAccums = new Array[Long](5)
         newAccums(0) = intervalCount
