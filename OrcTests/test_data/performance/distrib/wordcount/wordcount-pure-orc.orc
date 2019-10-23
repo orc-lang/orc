@@ -63,7 +63,7 @@ def tearDownTest() =
   -- deleteTestDataFiles()
   signal
 
-executeTest("wordcount-pure-orc-java.orc", setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest)
+executeTest("wordcount-pure-orc.orc", setUpTest, setUpTestRep, runTestRep, tearDownTestRep, tearDownTest)
 
 
 {-
