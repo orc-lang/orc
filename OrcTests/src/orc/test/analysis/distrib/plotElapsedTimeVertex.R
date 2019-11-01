@@ -18,7 +18,7 @@ source("analysis.R")
 options(echo = TRUE)
 
 runNumber <- commandArgs(trailingOnly = TRUE)[1]
-warmupReps <- 9
+warmupReps <- 0
 
 allRepetitionTimes <- read.csv("repetition-times.csv")
 names(allRepetitionTimes) <- c("program", "numVertices", "probEdge", "dOrcNumRuntimes", "repetitionNumber", "elapsedTime", "cpuTime")

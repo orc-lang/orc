@@ -169,7 +169,7 @@ object DistribTestCase {
     val (leaderSpec, followerSpecs) = computeLeaderFollowerSpecs(numRuntimes)
     val options = new orc.Main.OrcCmdLineOptions()
     //options.parseCmdLine(DistribTestConfig.expanded.getIterableFor("leaderOpts").getOrElse(Seq()))
-    options.backend = orc.BackendType.fromString("porc-distrib")
+    options.backend = orc.BackendType.fromString("distrib")
     options.showJavaStackTrace = true
     options.followerCount = followerSpecs.size
     TestUtils.buildSuite(classOf[DistribTest].getSimpleName(), (s, t, f, e, b) => testCaseFactory(s, t, f, e, b, testContext, leaderSpec, followerSpecs), options, programPaths: _*)
