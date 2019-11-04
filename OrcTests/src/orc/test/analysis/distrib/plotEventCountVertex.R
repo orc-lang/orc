@@ -31,7 +31,7 @@ for (currProgram in unique(eventCounts$program)) {
     geom_line() +
     geom_point(size = 3) +
     ggtitle(paste(currProgram, "Run", runNumber)) +
-    xlab("Cluster size [Number of d-Orc runtimes]") +
+    xlab("Cluster size [Number of runtimes]") +
     labs(colour = "Number of vertices", shape = "Number of vertices") +
     scale_y_continuous(name = paste("Count of ", currEventType, " on leader"), labels = function(n){format(n, scientific = FALSE)}) +
     expand_limits(x = 1, y = 0.0) +
@@ -51,7 +51,7 @@ for (currProgram in unique(eventCounts$program)) {
     geom_point(size = 3) +
     ggtitle(paste(currProgram, "Run", runNumber)) +
     xlab("Number of vertices") +
-    labs(colour = "Cluster size [Number of d-Orc runtimes]", shape = "Cluster size [Number of d-Orc runtimes]") +
+    labs(colour = "Cluster size [Number of runtimes]", shape = "Cluster size [Number of runtimes]") +
     scale_y_continuous(name = paste("Count of ", currEventType, " on leader"), labels = function(n){format(n, scientific = FALSE)}) +
     expand_limits(x = 1, y = 0.0) +
     theme_minimal() +
