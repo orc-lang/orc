@@ -5,7 +5,7 @@
 #
 # Created by jthywiss on Sep 8, 2017.
 #
-# Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
+# Copyright (c) 2020 The University of Texas at Austin. All rights reserved.
 #
 # Use and redistribution of this file is governed by the license terms in
 # the LICENSE file found in the project's top-level directory and also found at
@@ -20,7 +20,7 @@ CONDOR_CHIRP="$(condor_config_val libexec)/condor_chirp"
 
 get_job_attr ()
 {
-  awk "/^[ \\t]*$@[ \\t]*=[ \\t]*/ { sub(\"^[ \\t]*$@[ \\t]*=[ \\t]*\\\"?\",\"\"); sub(\"\\\"?[ \\t]*\$\",\"\"); print \$0 }" <${_CONDOR_JOB_AD}
+  awk "/^[ \\t]*$@[ \\t]*=[ \\t]*/ { sub(\"^[ \\t]*$@[ \\t]*=[ \\t]*\\\"?\",\"\"); sub(\"\\\"?[ \\t]*\$\",\"\"); print \$0 }" <"${_CONDOR_JOB_AD}"
 }
 
 get_job_attr_at_submit ()
@@ -69,7 +69,7 @@ main ()
 
     started_waiting=$(date +"%s")
 
-    while [[ ! -e ${listen_sockaddr} || $(grep -c '$' ${listen_sockaddr}) -ne 1 ]]; do
+    while [[ ! -e ${listen_sockaddr} || $(grep -c '$' "${listen_sockaddr}") -ne 1 ]]; do
       sleep 1
       if [[ $(( $(date +"%s") - ${started_waiting} )) -gt ${max_wait_listeners} ]]; then
         errmsg="Timed out waiting for leader to write its listen socket address.  Waited ${max_wait_listeners} seconds for one line in ${listen_sockaddr}."
@@ -79,12 +79,12 @@ main ()
       fi
     done
 
-    leaderListenAddress=$(cat ${listen_sockaddr})
+    leaderListenAddress=$(cat "${listen_sockaddr}")
 
     ${CONDOR_CHIRP} ulog "Starting Orc follower node ${_CONDOR_PROCNO}"
 
-    echo ${JavaCmd} -cp ${JavaClassPath} ${JavaVMArguments} ${JavaMainClassOtherNodes} ${JavaMainArgumentsOtherNodes//#Orc:leaderListenAddress#/${leaderListenAddress}} 1>&2
-    exec ${JavaCmd} -cp ${JavaClassPath} ${JavaVMArguments} ${JavaMainClassOtherNodes} ${JavaMainArgumentsOtherNodes//#Orc:leaderListenAddress#/${leaderListenAddress}}
+    echo "${JavaCmd}" -cp "${JavaClassPath}" "${JavaVMArguments}" "${JavaMainClassOtherNodes}" "${JavaMainArgumentsOtherNodes//#Orc:leaderListenAddress#/${leaderListenAddress}}" 1>&2
+    exec "${JavaCmd}" -cp "${JavaClassPath}" "${JavaVMArguments}" "${JavaMainClassOtherNodes}" "${JavaMainArgumentsOtherNodes//#Orc:leaderListenAddress#/${leaderListenAddress}}"
 
   else
 
@@ -92,8 +92,8 @@ main ()
 
     ${CONDOR_CHIRP} ulog "Starting Orc leader"
 
-    echo ${JavaCmd} -cp ${JavaClassPath} ${JavaVMArguments} ${JavaMainClassNode0} ${JavaMainArgumentsNode0} 1>&2
-    exec ${JavaCmd} -cp ${JavaClassPath} ${JavaVMArguments} ${JavaMainClassNode0} ${JavaMainArgumentsNode0}
+    echo "${JavaCmd}" -cp "${JavaClassPath}" "${JavaVMArguments}" "${JavaMainClassNode0}" "${JavaMainArgumentsNode0}" 1>&2
+    exec "${JavaCmd}" -cp "${JavaClassPath}" "${JavaVMArguments}" "${JavaMainClassNode0}" "${JavaMainArgumentsNode0}"
 
   fi
 }

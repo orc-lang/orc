@@ -28,7 +28,7 @@ post() {
 # post a request, compare against a response glob,
 # and report an error if it fails
 check() {
-        [[ "$1" == $2 ]] || error "$3: $1"
+        [[ "$1" == "$2" ]] || error "$3: $1"
 }
 
 JOBQ="$(post "{compileAndSubmit:{program:'1'}}")"
