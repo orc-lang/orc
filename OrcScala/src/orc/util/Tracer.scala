@@ -181,49 +181,59 @@ object Tracer {
     oldBuffers
   }
 
-  /** Dump the trace buffers to the terminal and to files.
-    *
-    * This is mostly thread safe w.r.t. adding trace events. However,
-    * the dump point is not atomic meaning that events can appear in
-    * the dump even if they are caused by events which appear after
-    * this dump in another thread. This is because, while there is a
-    * atomic dump point for each thread, those points are not
-    * synchronized between threads.
-    *
-    * While this method is running tracing will block in all threads.
-    * In general this method should be called when no important
-    * tracing is happening.
-    */
-  def dumpBuffers(suffix: String) = synchronized {
-    val oldBuffers = takeBuffers()
+  private object TraceBufferDumpThread extends Thread("TraceBufferDumpThread") {
+    override def run = synchronized {
+      val oldBuffers = takeBuffers()
 
-    // Use lazy to prevent the file from being opened and created if it's not needed
-    lazy val csvOut = ExecutionLogOutputStream(s"trace-$suffix", "csv", "Trace output file")
-    if (oldBuffers.nonEmpty && oldBuffers.exists(_.eventsInBuffer > 0) && csvOut.isDefined) {
-      val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
-      val csvWriter = new CsvWriter(traceCsv.append(_))
-      val tableColumnTitles = Seq("Absolute Time (ms) [absTime]", "Precise Time (ns) [time]", "Thread ID [threadId]", "Token/Group ID [sourceId]", "Event Type [type]", "From [from]", "To [to]")
-      csvWriter.writeHeader(tableColumnTitles)
-      for (tb <- oldBuffers) {
-        tb synchronized {
-          val numRows = tb.eventsInBuffer
-          val eventTypeNames = tb.typeIds.view(0, numRows).map(eventTypeNameMap(_).trim)
-          val rows = new JoinedColumnsTraversable(numRows, tb.millitimes, tb.nanotimes, new ConstantSeq(tb.javaThreadId, numRows), tb.locationIds, eventTypeNames, tb.fromArgs, tb.toArgs)
-          csvWriter.writeRows(rows)
+      val a = System.err
+      /* Convention: synchronize on a during output of block */
+      a synchronized {
+        a.append(s"Trace Buffer: begin\n")
+        a.append(s"-----Time-(ms)-----  -----Time-(ns)-----  -----Thread-ID-----  -Token/Group-ID-  EvntType  ------From------  -------To-------\n")
+
+        for (tb <- oldBuffers) {
+          Tracer synchronized {
+            tb synchronized {
+              for (i <- 0 to tb.eventsInBuffer - 1) {
+                if (!onlyDumpSelectedLocations || selectedLocations.contains(tb.locationIds(i))) {
+                  val eventTypeName = eventTypeNameMap(tb.typeIds(i))
+                  val prettyFromArg = eventPrettyprintFromArg(tb.typeIds(i))(tb.fromArgs(i))
+                  val prettyToArg = eventPrettyprintToArg(tb.typeIds(i))(tb.toArgs(i))
+                  a.append(f"${tb.millitimes(i)}%19d  ${tb.nanotimes(i)}%19d  ${tb.javaThreadId}%19d  ${tb.locationIds(i)}%016x  ${eventTypeName}  ${prettyFromArg}%16s  ${prettyToArg}%16s\n")
+                }
+              }
+            }
+          }
         }
+        a.append(s"Trace Buffer: end\n")
       }
-      traceCsv.close()
+
+      // Use lazy to prevent the file from being opened and created if it's not needed
+      lazy val csvOut = ExecutionLogOutputStream(s"trace", "csv", "Trace output file")
+      if (oldBuffers.nonEmpty && oldBuffers.exists(_.eventsInBuffer > 0) && csvOut.isDefined) {
+        val traceCsv = new OutputStreamWriter(csvOut.get, "UTF-8")
+        val csvWriter = new CsvWriter(traceCsv.append(_))
+        val tableColumnTitles = Seq("Absolute Time (ms) [absTime]", "Precise Time (ns) [time]", "Thread ID [threadId]", "Token/Group ID [sourceId]", "Event Type [type]", "From [from]", "To [to]")
+        csvWriter.writeHeader(tableColumnTitles)
+        for (tb <- oldBuffers) {
+          tb synchronized {
+            val numRows = tb.eventsInBuffer
+            val eventTypeNames = tb.typeIds.view(0, numRows).map(eventTypeNameMap(_).trim)
+            val rows = new JoinedColumnsTraversable(numRows, tb.millitimes, tb.nanotimes, new ConstantSeq(tb.javaThreadId, numRows), tb.locationIds, eventTypeNames, tb.fromArgs, tb.toArgs)
+            csvWriter.writeRows(rows)
+          }
+        }
+        traceCsv.close()
+      }
     }
+
   }
 
   private def register(tb: TraceBuffer) = synchronized {
     buffers += tb
   }
 
-  if (traceOn) {
-    DumperRegistry.register(dumpBuffers)
-    Runtime.getRuntime().addShutdownHook(new ShutdownHook(() => dumpBuffers("shutdown"), "TraceBufferDumpThread"))
-  }
+  if (traceOn) Runtime.getRuntime().addShutdownHook(TraceBufferDumpThread)
 }
 
 private class ConstantSeq[A](val value: A, override val length: Int) extends Seq[A] {
