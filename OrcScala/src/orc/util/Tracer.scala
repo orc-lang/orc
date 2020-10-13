@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Feb 21, 2017.
 //
-// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2020 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -45,6 +45,8 @@ object Tracer {
 
   private val selectedLocations: java.util.HashSet[Long] = new java.util.HashSet[Long]()
 
+  final val traceTraceBufAlloc = false
+
   private final val eventIdMapInitSize = 32
   private val eventTypeNameMap = new scala.collection.mutable.LongMap[String](eventIdMapInitSize)
   private final val defaultPrettyprint = (_: Long) => (arg: Long) => f"${arg}%016x"
@@ -53,10 +55,10 @@ object Tracer {
 
   private final val traceBufferTL = if (traceOn) new ThreadLocal[TraceBuffer]() {
     override protected def initialValue = {
-      val (mTime, nTime) = (System.currentTimeMillis, System.nanoTime)
+      val (mTime, nTime) = if (traceTraceBufAlloc) (System.currentTimeMillis, System.nanoTime) else (0L, 0L)
       val newBuf = new TraceBuffer(Thread.currentThread().getId)
-      newBuf.add(AllocateNewBufferStart, 0, mTime, nTime, 0, 0)
-      newBuf.add(AllocateNewBufferEnd, 0, System.currentTimeMillis, System.nanoTime, 0, 0)
+      if (traceTraceBufAlloc) newBuf.add(AllocateNewBufferStart, 0L, mTime, nTime, 0L, 0L)
+      if (traceTraceBufAlloc) newBuf.add(AllocateNewBufferEnd, 0L, System.currentTimeMillis, System.nanoTime, 0L, 0L)
       newBuf
     }
   }
@@ -90,10 +92,10 @@ object Tracer {
         traceBufferTL.get().add(eventTypeId, eventLocationId, System.currentTimeMillis, System.nanoTime, eventFromArg, eventToArg)
       } catch {
         case _: IndexOutOfBoundsException =>
-          val (mTime, nTime) = (System.currentTimeMillis, System.nanoTime)
+          val (mTime, nTime) = if (traceTraceBufAlloc) (System.currentTimeMillis, System.nanoTime) else (0L, 0L)
           val newBuf = new TraceBuffer(Thread.currentThread().getId)
-          newBuf.add(AllocateNewBufferStart, 0, mTime, nTime, 0, 0)
-          newBuf.add(AllocateNewBufferEnd, 0, System.currentTimeMillis, System.nanoTime, 0, 0)
+          if (traceTraceBufAlloc) newBuf.add(AllocateNewBufferStart, 0L, mTime, nTime, 0L, 0L)
+          if (traceTraceBufAlloc) newBuf.add(AllocateNewBufferEnd, 0L, System.currentTimeMillis, System.nanoTime, 0L, 0L)
           newBuf.add(eventTypeId, eventLocationId, System.currentTimeMillis, System.nanoTime, eventFromArg, eventToArg)
           traceBufferTL.set(newBuf)
       }
