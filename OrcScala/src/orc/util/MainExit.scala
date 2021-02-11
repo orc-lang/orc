@@ -4,7 +4,7 @@
 //
 // Created by jthywiss on Nov 7, 2017.
 //
-// Copyright (c) 2019 The University of Texas at Austin. All rights reserved.
+// Copyright (c) 2021 The University of Texas at Austin. All rights reserved.
 //
 // Use and redistribution of this file is governed by the license terms in
 // the LICENSE file found in the project's top-level directory and also found at
@@ -158,16 +158,23 @@ trait MainExit extends Thread.UncaughtExceptionHandler {
 }
 
 object MainExit {
-  /** This program's name, for stderr messages */
-  val progName: String = {
+  /** A guess at this program's main class name */
+  val mainClassName: String = {
     /* Based on Sun JVM monitoring tools' heuristic */
     val commandProperty = System.getProperty("sun.java.command")
     if (commandProperty != null && !commandProperty.isEmpty()) {
       val firstSpace = if (commandProperty.contains(" ")) commandProperty.indexOf(" ") else commandProperty.length
       val lastFileSep = commandProperty.lastIndexOf(java.io.File.separator, firstSpace - 1)
-      val mainClass = commandProperty.substring(lastFileSep + 1, firstSpace)
-      val lastDot = mainClass.lastIndexOf(".")
-      mainClass.substring(lastDot + 1)
+      commandProperty.substring(lastFileSep + 1, firstSpace)
+    } else {
+      null
+    }
+  }
+
+  /** This program's name, for stderr messages */
+  val progName: String = {
+    if (mainClassName != null && !mainClassName.isEmpty()) {
+      mainClassName.substring(mainClassName.lastIndexOf(".") + 1)
     } else {
       null
     }
@@ -204,12 +211,18 @@ object MainExit {
     }
   }
 
-  /** Print an exception to stderr, and log to the "orc" logger at the given
-    * severity level.
+  /** Print an exception to stderr, and log to the main class package's logger
+    * at the given severity level.
     */
   def printAndLogException(t: Thread, e: Throwable, level: Level): Unit = {
     System.err.println("Exception " + e.toString + " in thread \"" + t.getName() + "\"")
-    if (orc.Logger.julLogger.isLoggable(level)) {
+    val mainExitLogger =
+      if (mainClassName != null && !mainClassName.isEmpty()) {
+        java.util.logging.Logger.getLogger(mainClassName.substring(0, mainClassName.lastIndexOf(".")))
+      } else {
+        java.util.logging.Logger.getGlobal
+      }
+    if (mainExitLogger.isLoggable(level)) {
       /* Log using the top stack trace frame as the "source" of the log record */
       val logRecord = new LogRecord(level, "Exception in thread \"" + t.getName + "\" #" + t.getId)
       if (e != null && e.getStackTrace != null && e.getStackTrace().length > 0) {
@@ -221,8 +234,8 @@ object MainExit {
       }
       logRecord.setThreadID(t.getId.asInstanceOf[Int])
       logRecord.setThrown(e)
-      logRecord.setLoggerName(orc.Logger.julLogger.getName)
-      orc.Logger.julLogger.log(logRecord)
+      logRecord.setLoggerName(mainExitLogger.getName)
+      mainExitLogger.log(logRecord)
     }
   }
 
